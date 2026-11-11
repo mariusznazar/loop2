@@ -5741,7 +5741,7 @@ switch, and the ways out of them are „Wróć do logowania” and „Anuluj”.
     page opened by a password-reset link showing the heading „Ustaw nowe hasło”, no switch and
     „Anuluj”
   - violates: the switch in the form „Nie pamiętam hasła”; a heading „Załóż konto” under the switch
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row S1
+- **Origin:** none
 
 *Rationale:* the switch offers the two forms a visitor comes for, and a heading beside it would say
 what it says. The form of a password-reset link already ends through „Anuluj”, which removes the
@@ -5766,7 +5766,7 @@ pamiętam hasła” does, and the page's one sentence (D-261) stays.
     field of „Załóż konto” empty, with focus in it
   - violates: a password kept for the way back to the other state; a refusal under the form still
     standing after the switch
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2, and § Settlements to record, row S2
+- **Origin:** none
 
 *Rationale:* one rule for every change between the card's forms leaves no password in a field nobody
 sees and no old message on the way back. Accepted with it: a visitor who typed an address under
@@ -5789,15 +5789,15 @@ while the card changes state and leaves only at a change between the card and th
   - complies: „Gra została zaktualizowana. Odśwież stronę.” standing in the card above the switch and
     still there after the visitor switches to „Załóż konto”
   - violates: that sentence standing outside the card; a press of the switch removing it
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row S3
+- **Origin:** none
 
 *Rationale:* the sentence tells the visitor what happened to the page, so one click on another form
 does not take it away, and inside the card it needs no panel of its own. Accepted with it: the card
 grows by one row for a moment, and a visitor who changed a password and switches to „Załóż konto”
 reads „Zaloguj się nowym hasłem.” above the creation of an account.
 *Rejected:* the sentence above the card — once a picture stands behind the card it takes a second
-panel, since text stands on a solid background and never on a picture; the sentence going at a
-switch — one click removes „Gra została zaktualizowana. Odśwież stronę.”
+panel, since text stands on a solid background and never on a picture (D-272); the sentence going at
+a switch — one click removes „Gra została zaktualizowana. Odśwież stronę.”
 
 ### D-262 — What stands on the screen of the login card, and where do the waiting screens stand?
 
@@ -5816,16 +5816,26 @@ handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” sta
     the game; a card whose drawing threw replaced by „Coś w grze się zepsuło — odśwież stronę.”
     alone, with no header
   - violates: the card standing under the header; „Sprawdzanie logowania…” written inside the card
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row S4 · napis_o_awarii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 5
+- **Origin:** none
 
 *Rationale:* a signed-in player passes through the waiting screens at every reload, and they say
-nothing about signing in, so they stay what they are. Accepted with it: at each entry a signed-out
-visitor sees the header for a moment before the card comes, and the waiting screen shows no
-credits, which stand one click away on the login card and on Siedziba (D-27).
+nothing about signing in, so they stay what they are. The case of a card that React took down is
+written here, where the rule is read, because a screen the card has left is no longer the screen of
+the card, yet this rule read to the letter would look contradictory to D-323, which places the
+sentence there; a reader of this decision meets the exception where the rule stands, and a search of
+the foundation finds no apparent collision. The sentence stands alone, outside React, since React
+takes down the root of the card with whatever stood in it. Accepted with it: at each entry a
+signed-out visitor sees the header for a moment before the card comes, and the waiting screen shows
+no credits, which stand one click away on the login card and on Siedziba (D-27).
 *Rejected:* the waiting in the card — a signed-in player sees the login card at every reload, as if
-logged out; the header beside the card too — the visitor sees one card (D-96); a folded section of
-credits in the place of the footer on the waiting screens — a third place for the credits and a
-section on a screen that usually leaves after a moment.
+logged out; the header and a footer beside the card too — the visitor sees one card (D-96), and
+D-27 refuses credits in a footer of every screen, dozens of rows standing below the game; a folded
+section of credits in the place of the footer on the waiting screens — a third place for the credits
+and a section on a screen that usually leaves after a moment; leaving this decision without the
+case of the card taken down, on the ground that such a screen is no longer the screen of the card —
+read to the letter, the rule would look contradictory to D-323, an agent searching the foundation
+could take it for a collision and put it before the human, and whoever reads this decision alone
+would not learn of the case.
 
 ### D-263 — Which tool bundles the browser's code?
 
@@ -5838,13 +5848,14 @@ esbuild bundles the browser's code when the application is built.
   - complies: the build calling esbuild as a development dependency, its version pinned in the
     lockfile
   - violates: a second bundler for a part of the browser's code
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, „Którym narzędziem składać kod przeglądarki?”, and § Settlements to record, row S6 · plan_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Open questions
+- **Origin:** none
 
 *Rationale:* the browser cannot load React's packages by itself (D-06), so one tool has to join the
 browser's code. Accepted with it: esbuild counts as one package for each system, so a lockfile
-written on one system has to carry the package of the system the image is built on.
-*Rejected:* another tool — a trial of Vite, which nobody has made, would have to come before the
-work.
+written on one system has to carry the package of the system the image is built on; when this was
+settled, the lockfile was written on Windows and the image built on Linux.
+*Rejected:* another tool, Vite being the other bundler named beside esbuild — a trial of Vite, which
+nobody has made, would have to come before the work.
 
 ### D-264 — What does a test of a screen built with React run on?
 
@@ -5863,14 +5874,23 @@ on a report of React's development build through `console.error`.
     screens still in DOM included; a test of another screen keeping its own stand-in
   - violates: a hand-made document model grown until React runs on it; a second harness for the next
     screen; a test that passes while React's development build reports a changed order of hooks
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czym zastąpić ręczny model dokumentu w testach ekranów przechodzących na React?”
+- **Origin:** none
 
-*Rationale:* React cannot draw on a hand-made document model, and a ready-made imitation carries the
-whole page with the product's own calls left as they are. Each rule of the harness answers what
+*Rationale:* React cannot draw on a hand-made document model: tried in plain Node, React drew a row
+of the account screen on both ready-made imitations of a document, jsdom and happy-dom, and failed on
+that screen's hand-made model. A ready-made imitation carries the whole page with the product's own
+calls left as they are, which the tests need, because when the choice was made the hand-made model
+took the first part of the account screen's tests, and of the cases there, counted over their blocks
+and so only approximately, 37 of 67 read the inside of the model directly, 44 fired events through
+its own `.fire`, 41 walked the whole page and 13 did none of these; the cases that walk the page also
+build the screens still in DOM, so what stands in for the model has to carry those too. Other tests
+had stand-ins of their own for the document, among them those that draw the section of credits, and
+only the files of screens built with React leave theirs. Each rule of the harness answers what
 such an imitation leaves out: with the window installed after React loads a controlled field's
 change never fires and nothing fails loudly, neither imitation takes focus from a control that
 becomes disabled, and a report of React's development build stands where a broken rule of hooks
-shows. Only the harness of one kind of test hangs on the choice, so a wrong one costs little. What
+shows. Only the harness of one kind of test hangs on the choice, so a wrong one costs little.
+Accepted with it: a new development dependency, jsdom, with the packages it brings. What
 the imitation does not prove stays with a person and an agent (D-88, D-254): pressing Enter in a
 field does not send a form, a click on a label does not move focus, and nothing computes layout.
 *Rejected:* happy-dom — faster and lighter, but a browser constructor the product calls has to be
@@ -5900,13 +5920,16 @@ the one place of the look of both.
   - violates: a React component that wraps the DOM function; a class that only the React form sets;
     a React form with no case in the test that compares the two; a new screen that builds its
     DOM elements with `document.createElement` after the pattern of a DOM module
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Jak wspólne kontrolki z `src/browser/view/controls/` istnieją w ekranie React, skoro pozostałe ekrany dalej używają ich w DOM?” · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, questions 5 and 5b, and § Settlements to record, row 7
+- **Origin:** none
 
 *Rationale:* the screens move to React one task at a time, so for a while both kinds stand on one
-page and have to look alike. Components written as React writes them give the next screens an
+page and have to look alike. The shared controls were functions that return finished elements and
+change them in place, a waiting button for one, and a library makes such controls its components or
+leaves them as wrapped elements. Components written as React writes them give the next screens an
 exemplar with controlled fields and state in the component, and a module that builds its DOM
-elements stands beside that exemplar as if it were one, so a new screen could follow it; its pure
-functions draw nothing and serve both kinds. A new section of a screen in DOM may stay in DOM, since
+elements stands beside that exemplar as if it were one, the more so as the coding guidelines had
+marked those modules as ones to copy from, so a new screen could follow it; its pure functions draw
+nothing and serve both kinds. A new section of a screen in DOM may stay in DOM, since
 React on part of a screen takes a mounting place of its own in DOM and makes small additions dear.
 Accepted with it: the two forms live until the last DOM screen moves, and a new attribute is written
 twice, with the test failing until both agree; the screens in DOM may still grow, so moving them to
@@ -5934,11 +5957,15 @@ bundle, the page and the static files. A build that writes them first removes bo
     `dist/public/`
   - violates: a compiled module written into `dist/public/`; a test importing the bundle; a bundler
     reading the sources
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Gdzie stoi wynik kompilacji po modułach, którego używają testy, skoro D-06 składa kod przeglądarki w pliki podawane przez serwer?”
+- **Origin:** none
 
 *Rationale:* what the server hands out is what a player can reach, so that directory holds nothing
-else. Bundling the compiler's output leaves one compiler reading the sources and the code tests
-import the code that is bundled. A module left from an earlier build would be served or imported
+else. Before the bundle, the compiler's per-module output stood among the files the server hands
+out: the tests imported those modules one file at a time from there, and the browser loaded them the
+same way, one module after another. Once D-06 bundles the browser's code into the files the server
+hands out, the per-module output is what the tests import and no longer what a player loads.
+Bundling the compiler's output leaves one compiler reading the sources and the code tests import
+the code that is bundled. A module left from an earlier build would be served or imported
 silently, so a build starts from neither directory. Accepted with it: every path of a test that
 imports a module names the new directory.
 *Rejected:* keeping the compiler's output in `dist/public/` with the bundle beside it under another
@@ -5967,7 +5994,7 @@ reopens D-29 for the human.
   - violates: `eslint-plugin-react-hooks` added to `eslint.config.mjs` without a human-accepted change
     of D-29; a Hook called inside a condition; a sign-in sent from an Effect in place of its event
     handler
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czy reguł Reacta pilnuje narzędzie, skoro D-29 trzyma zestaw reguł ESLint bez zmian, czy tylko przewodnik i przegląd?”
+- **Origin:** none
 
 *Rationale:* the rule set of the linter changes only with a human-accepted change of D-29, which
 this decision does not ask for. The compiler, the linter's rules for types and, through D-264,
@@ -6037,10 +6064,13 @@ build step and never of its lines that serve files.
     on the DOM form of each control
   - violates: a module the page imports that imports a `.tsx` file; a sample of the page drawn with
     a React form while the page's command bundles nothing
-- **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions carried to cycle, „Czy strona wszystkich stanów wstaje bez zmiany `scripts/kitchen-sink.mjs`, gdy stała `RESET_REQUESTED_SENTENCE` przejdzie do modułu bez Reacta?”
+- **Origin:** none
 
 *Rationale:* the page's own command compiles its modules one by one and the browser resolves no bare
-import, so a module that reaches React leaves a blank page while its build passes. The page needs no
+import, so a module that reaches React leaves a blank page while its build passes. The page took a
+single constant, the sentence of the answer to a request for a password-reset link, from the module
+of the account screen, which draws with React; moving that constant to a module with no React lets
+the page stand as it is, a way that had not been tried when the question was put. The page needs no
 React: a test keeps the two forms of a control alike and the look stands in one stylesheet, so the
 DOM form shows what the React form looks like. Accepted with it: the page shows the React forms only
 through that likeness, and nothing fails when a module lets React in, so review keeps this decision.
@@ -6101,28 +6131,29 @@ scene is the mage of Pixel Crawler.
     other than the two named; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
     game; the hooded figure of loop as the character of the scene
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
-  rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
-  the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
-  come from?” · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
-  item 2
+- **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
-fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
-are ready. Kept apart from what the server serves, as the icons and
-the fonts are, a picture reaches the player only through the build; it comes from outside the
-product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
-credit and allow its arts to be altered, so a picture made from them may be dimmed and composed.
+fire and trees the game's pictures show; what they ask is the cutting of frames from their sheets.
+The mage matches the game's only archetype and its frames are ready, but only for standing, running
+and dying: the clothed characters of the pack have no pose of gathering. Kept apart from what the
+server serves, as the icons and the fonts are, a picture reaches the player only through the build;
+it comes from outside the product, and holding pixels alone it cannot act in the player's page. The
+pack's terms ask for no credit and allow its arts to be altered, so a picture made from them may be
+dimmed and composed.
 The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
-the pack Smoke & Fire Animated Particle holds a cloud that, recoloured to the browns of the scene,
-stands out from the ground; its licence asks for a credit, which the game gives. Accepted with it:
-credits for the pack of the dust, and frames of a bending mage made by hand or generated.
-*Rejected:* the hooded figure of loop — it is a rogue, though the game calls it a mage; generated
-pictures as the main way — frames drift apart; any other new pack — another palette and scale,
-new licences; for the dust of a miss: the smoke of Pixel Crawler — it cannot be seen on the
-ground; particles of single pixels in a brown that stands out from the ground — barely visible; a
-cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only at
-the request.
+the pack Smoke & Fire Animated Particle holds a ready cloud in a flat style without outline, like the
+smoke of Pixel Crawler, that, recoloured to the browns of the scene, stands out from the ground; its
+licence asks for a credit, which the game gives. Accepted with it: credits for the pack of the dust,
+and frames of a bending mage made by hand or, where hand work comes out weak, generated for those
+few frames.
+*Rejected:* the hooded figure of loop — its sheet is the pack's rogue, though the game calls the
+character a mage; generated pictures as the main way — frames drift apart, which the makers of such
+tools name as their main problem, and the pixels need correcting by hand; any other new pack — a
+wider choice, but another palette and scale, new licences and more credits; for the dust of a miss:
+the smoke of Pixel Crawler — it cannot be seen on the ground; particles of single pixels in a brown
+that stands out from the ground — barely visible; a cloud drawn by hand from the pixels of Pixel
+Crawler — hand pixel work whose look is judged only at the request.
 
 ### D-272 — Where may a picture of the game stand?
 
@@ -6140,16 +6171,15 @@ background, never on a picture.
   - violates: a sentence of the page standing on the picture outside the card; the card's background
     made half-transparent over the picture; the game minute or the name of the map written over the
     scene
-- **Origin:** rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), part C.2 ·
-  rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
-  the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where may a picture of the game
-  stand?”
+- **Origin:** none
 
 *Rationale:* the game stops looking like a form through pictures where there is nothing to read,
 and contrast stays what its check measures, since that check knows colours and not what lies under
-text.
+text. A picture stands beside the text and never under it, so the thresholds of contrast of D-42
+stay as they are, and the text stays on opaque panels.
 *Rejected:* a half-transparent card over a picture — the check of contrast reads colour values, not
-the picture beneath; a pattern on the page's background — a form with wallpaper.
+the picture beneath; a pattern on the page's background — a form with wallpaper, the least a picture
+is worth, since the panels stand still and the form is still seen under it.
 
 ### D-273 — When do the files of `assets/sprites/` gain a refusal test?
 
@@ -6168,14 +6198,18 @@ files holding pixels alone, and only into what `npm run build` writes.
   - violates: a change making the build copy SVG files from `assets/sprites/`, or copy the
     directory into the kitchen-sink page, with no refusal test and sprite-file-content still checked
     by review
-- **Origin:** logowanie_na_tle_gry_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania),
-  Questions to settle, questions 3 and 4, and § Settlements to record, row C1 · plan_mvp2_loop2.md in
-  the vault (Notes/Projects/(P) Loop), Open questions
+- **Origin:** none
 
 *Rationale:* the boundary of the pictures is kept as the fonts and the preview server are, by review
-until a change of its principle, so the tasks that add the scene's pictures bring no test files.
-Accepted with it: further files are kept by review alone, so the deferral may in practice last for
-good, and absence of a test proves no refusal.
+until a change of its principle, so the tasks that add the scene's pictures bring no test files. The
+rule on trust boundaries in the testing guidelines asks a permanent refusal test of each boundary,
+and `assets/sprites/` is a new one, but the invariant sprite-file-content has the method review. The
+deferral ends only with a change of the boundary's principle — another kind of file, another way in,
+another recipient — and a further PNG file is none of these. When this was settled, one function
+copied the static files for the build of the application and for the build of the kitchen-sink page
+alike, so a sprite file added to it would have reached the preview server too, and that new
+recipient is what ends the deferral. Accepted with it: further files are kept by review alone, so
+the deferral may in practice last for good, and absence of a test proves no refusal.
 *Rejected:* a permanent refusal test, as the rule „Trust boundaries” of the testing guidelines asks
 — the plan records neither its cost nor the human's reason for it; every change of the files of the
 boundary ending the deferral — a test at the task that first adds a picture, a change of the answer
@@ -6201,21 +6235,27 @@ form keeps the button D-44 gives it.
     headquarters made with the plain shared button
   - violates: a form with two buttons in the main look; a main button filled, or framed in
     `selected` or in a colour other than its text's; a role of colour added for the main button
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 1 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6
+- **Origin:** none
 
 *Rationale:* a visitor tells the button that sends a form from the ways around it, and the next
 screens take their layout from the login card. The look is that of the main button of loop, a light
 frame and strong text, and it needs no colour, so the roles and their contrast stay as they are; the
 frame takes the colour of its text rather than `selected`, which means only the one chosen in its
-group. The submit mark the shared button already carries tells which button is the main one, so the
-main button is no new control. Accepted with it: the difference from a plain button is smaller than
-a fill would give, the main look reaches beyond forms to „Wejdź”, with several characters several
+group. At rest the button lies on the card's background, under the pointer on `highlight` with frame
+and text unchanged, and while the form waits for the server it looks as every disabled button does,
+its text in `text-disabled` and its frame in `control-border`. The submit mark the shared button
+already carries tells which button is the main one, so the main button is no new control. „Wejdź”
+takes the same look because entering a map is the main action of the screen Mapy, as a design review
+of the screens of loop names it, and loop showed it in a green frame beside the grey frame of the
+button of the earning loop. Accepted with it: the difference from a plain button is smaller than a
+fill would give, the main look reaches beyond forms to „Wejdź”, with several characters several
 buttons in the main look stand on a screen at once, and any other main action outside a form takes
 its look in the task of its screen.
 *Rejected:* leaving every button as it is — four alike buttons, and the next screens repeat the
-layout; „Wejdź” as a plain button — „Wejdź” and „Puść w pętlę” would look alike; the main button unchanged and only the secondary actions as text — the form „Załóż konto”
-holds no secondary action, so nothing would change there; a light fill with dark text — the
-strongest difference, but three new colour entries, a change of the rules of colour and of the
+layout; „Wejdź” as a plain button — the rules would stay as they are, but „Wejdź” and „Puść w pętlę”
+would look alike; the main button unchanged and only the secondary actions as text — the form
+„Załóż konto” holds no secondary action, so nothing would change there; a light fill with dark text —
+the strongest difference, but three new colour entries, a change of the rules of colour and of the
 contrast test and a divergence from the project definition's entries, with GOV.UK alone as a model,
 on a dark part of a light page; a green fill with dark text — the cost of the light fill, green
 coming to mean two things, and a colour under the pointer the game does not hold; a frame in
@@ -6236,13 +6276,15 @@ and has no address. Every other action of the browser view keeps the button D-44
     frame, a button the keyboard reaches; „Wyloguj” in the menu „Konto” kept a plain button
   - violates: „Usuń” of a program rule drawn as underlined text; „Nie pamiętam hasła” made a link
     with an address; a secondary action given a frame
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 1a and 1b, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* a way into or out of a form's state, such as a forgotten password, is commonly made as
 clickable text, so beside the main button it reads as the lesser way; it stays a button because it
 changes the card and leads to no address. Its text is a note, as the credits on the same card are.
-Holding the text to the actions under a form leaves no screen to judge for itself what is
-secondary. Accepted with it: the hierarchy of actions outside forms stays with the plain buttons.
+At rest it has no frame and no spacing at its sides, so that it begins level with the fields; under
+the pointer its text takes `text`, and disabled it takes `text-disabled`. Holding the text to the
+actions under a form leaves no screen to judge for itself what is secondary. Accepted with it: the
+hierarchy of actions outside forms stays with the plain buttons.
 *Rejected:* leaving every button as it is — four alike buttons, and the next screens repeat the
 layout; the secondary actions left as plain buttons — no new look, but the hierarchy rests on the
 main button alone; text wherever an action is secondary — each agent judges what is secondary, so
@@ -6265,11 +6307,15 @@ buttons of D-130 keep the look of the button selected in its group.
     focus to its address field
   - violates: arrow keys moving between tabs, or `role="tab"`, with no change of this decision; the
     chosen tab marked by a line in `positive`; a pace button drawn as a tab
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 2a and 2c, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* the switch and the button that sends the form both read „Zaloguj się”, so the switch
 takes a look that says it chooses rather than sends. The line takes `selected`, which means the one
-chosen in its group, rather than green, which means that something works or is active now. A tab
+chosen in its group, rather than green, which means that something works or is active now. The tabs
+stand without frames: the chosen one in `text-strong` over a thick line in `selected`, the others in
+`text-label`, as the inactive tabs of loop are, under the pointer on `highlight`, in `text-disabled`
+while the form waits for the server, with the line of the choice staying, and a thin line in
+`divider` runs under all of them. A tab
 here names a look, not the tabs of WAI-ARIA: the requirements of accessibility the browser view
 keeps ask for no arrow keys, and a task that needs them adds them. Accepted with it: a reader who
 knows the tabs of WAI-ARIA finds pressed buttons under that name.
@@ -6298,7 +6344,7 @@ The menu bar marks the place the player is at as the chosen tab is marked (D-276
   - complies: the item of the menu bar for the screen the player is on with its text in
     `text-strong` and a line in `selected` at its bottom
   - violates: that item marked in green, by a background or by a frame
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 2b, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* one mark says where the player is, among tabs and on the menu bar alike, so the bar
 takes no look of its own for it. Accepted with it: the menu bar and the tabs look alike, though NN/g
@@ -6320,11 +6366,13 @@ nothing above them.
     folded and unfolded, and after a switch to „Załóż konto”
   - violates: the card centred in the window's height; a top edge computed from the card's own
     height
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 5
+- **Origin:** none
 
 *Rationale:* a card in the exact middle grows both ways, so whatever stands above a change moves
-with it, and a second click on the credits or on the switch misses. Accepted with it: on a tall
-window the card stands clearly above the middle.
+with it, and a second click on the credits or on the switch misses. At a window of 1280 × 800 the
+title of the credits moved by 96 px when they unfolded and the tabs by 8 px when the state changed,
+with the card in the middle; with the top edge fixed neither moves, and the card with its credits
+unfolded ends at 682 px. Accepted with it: on a tall window the card stands clearly above the middle.
 *Rejected:* leaving the card in the middle — the credits and the switch jump whenever the card
 grows; unfolding the credits outside the card — a new HTML element with its own background, while
 the jumps of the switch and of the form stay.
@@ -6344,11 +6392,13 @@ meaning D-39 and D-40 give it. A line that marks the one chosen in its group sta
     bar of the answer in the colour of its sentence
   - violates: the bar of the answer in `text-secondary` beside its sentence in `text`; the main
     button's frame in `selected`
-- **Origin:** zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3b, and § Settlements to record, row 8
+- **Origin:** none
 
 *Rationale:* every role of text stands as text, and a frame or a bar in the text's own colour reads
 with that text, as the frame of a field in error reads with its message, so it takes no role and
-gives none a new meaning.
+gives none a new meaning, and the sentence of D-40 that each of its five roles of text stands as text
+stays true. The bar of the answer takes the colour of its sentence and not `text-secondary`. The text
+of a secondary action in `text-secondary` is a note, as „Autorzy grafiki” on the same card is.
 *Rejected:* recording nothing — the question comes up in the review of the change and can stop it;
 a change of D-40 — D-40 joins the divergence from the project definition, and the plan gains one
 more entry the task that writes that decision has to keep in mind.
