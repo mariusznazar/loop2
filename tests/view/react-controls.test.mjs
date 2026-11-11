@@ -840,7 +840,7 @@ test("a pick cell with its icon of an action is the same element in both forms",
       document,
       createElement(ReactPickCell, { text: PICK_TEXT, icon: PICK_ICON }),
     );
-    const drawnIcon = drawing.container.querySelector(".action-icon");
+    const drawnIcon = drawing.container.querySelector(".icon-mask");
     assert.equal(
       drawnIcon.getAttribute("style").includes(`/icons/${PICK_ICON}.svg`),
       true,
@@ -849,7 +849,7 @@ test("a pick cell with its icon of an action is the same element in both forms",
     const domCell = createPickCell({ text: PICK_TEXT, icon: PICK_ICON });
     assert.equal(
       domCell
-        .querySelector(".action-icon")
+        .querySelector(".icon-mask")
         .getAttribute("style")
         .includes(`/icons/${PICK_ICON}.svg`),
       true,

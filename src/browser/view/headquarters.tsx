@@ -4,8 +4,9 @@
  * holds a line, with „Zamknij”; the section „Drużyna” with its heading, at each character in the
  * order of creation its name as a link to its screen Postać, its generation „pokolenie {n}” from 2
  * up, its archetype, its resurrection line, the line of its earning loop with „Zatrzymaj” or the
- * line of a stopped loop, and the creation of a character; and the section „Skrzynka {n}/{cap}”
- * with the team's chest. The screen sends nobody and leads to no map: a character is sent from the
+ * line of a stopped loop, and the creation of a character; the section „Skrzynka {n}/{cap}”
+ * with the team's chest; and, last on the screen, the folded section of credits of the game's
+ * icons „Autorzy grafiki” (D-27). The screen sends nobody and leads to no map: a character is sent from the
  * card of a map on the screen Mapy, which the bar's „Mapy” opens (D-53, D-330).
  *
  * The page holds the screen behind one boundary, `createHeadquarters` (D-36), as it holds the
@@ -33,6 +34,7 @@ import {
 } from "./away-report.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactTextField } from "./controls/react-text-field.js";
+import { CreditsSection } from "./credits-section.js";
 import { screenAddress } from "./screen-address.js";
 import {
   chestLines,
@@ -229,7 +231,10 @@ function CharacterCreation({ onCreate }: { onCreate: (name: string) => void }) {
   );
 }
 
-/** The screen: the report, the team with the creation of a character, and the chest. */
+/**
+ * The screen: the report, the team with the creation of a character, the chest, and the folded
+ * section of credits last.
+ */
 function HeadquartersView({
   controls,
   props,
@@ -291,6 +296,7 @@ function HeadquartersView({
           </ul>
         )}
       </section>
+      <CreditsSection />
     </div>
   );
 }

@@ -9,6 +9,7 @@
  * in another area. It imports the pure `terrainPicture` and `tileKey` and builds no element after
  * the pattern of a DOM module (D-265). Nothing runs when the module is imported.
  */
+import type { CSSProperties } from "react";
 import type { GameState } from "../sim/types.js";
 import { terrainPicture, type PictureIconPlace } from "./terrain-picture.js";
 import { tileKey } from "./tile-list.js";
@@ -26,6 +27,11 @@ export type TerrainDrawingProps = {
   onHover: (key: string | null) => void;
 };
 
+/**
+ * An icon of the drawing: the mask of the icon file, which takes the colour `text-strong` from the
+ * styles, in the square of a foreign object, so the drawing draws an icon as the game does
+ * elsewhere (D-43).
+ */
 function Icon({
   place,
   className,
@@ -34,14 +40,18 @@ function Icon({
   className: string;
 }) {
   return (
-    <image
-      href={place.href}
+    <foreignObject
       x={place.x}
       y={place.y}
       width={place.size}
       height={place.size}
       className={className}
-    />
+    >
+      <div
+        className="icon-mask"
+        style={{ "--icon": `url("${place.href}")` } as CSSProperties}
+      />
+    </foreignObject>
   );
 }
 

@@ -25,7 +25,7 @@ export type PickCellOptions = {
 /** The icon of an action, drawn as a mask in the colour of the text beside it (D-291, D-43). */
 function iconElement(file: string): HTMLSpanElement {
   const icon = document.createElement("span");
-  icon.className = "action-icon";
+  icon.className = "icon-mask";
   icon.setAttribute("aria-hidden", "true");
   icon.style.setProperty("--icon", `url("/icons/${file}.svg")`);
   return icon;

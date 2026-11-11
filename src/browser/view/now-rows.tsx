@@ -16,7 +16,7 @@ import { NEXT_LABEL, nowRows, type NextRow, type NowRow } from "./now-lines.js";
 function ActionIcon({ icon }: { icon: string }) {
   return (
     <span
-      className="action-icon"
+      className="icon-mask"
       aria-hidden="true"
       style={{ "--icon": `url("/icons/${icon}.svg")` } as CSSProperties}
     />

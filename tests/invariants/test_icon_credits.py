@@ -1,26 +1,22 @@
-"""Invariant icon-credits: For each SVG icon file directly in `assets/icons/`, the game's footer
-and the game's section of credits each hold a credit that names the icon's title as its page on
-game-icons.net gives it, the icon's author, that page and the licence CC BY 3.0, and says how the
-icon file differs from its source.
+"""Invariant icon-credits: For each SVG icon file directly in `assets/icons/`, the game's section of
+credits holds a credit that names the icon's title as its page on game-icons.net gives it, the
+icon's author, that page and the licence CC BY 3.0, and says how the icon file differs from its
+source.
 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
-is never written). A Node script this check writes to a temporary directory installs a small
-stand-in for the page's `document` (elements, text, attributes, properties such as `href`, and
-`innerHTML` kept as written), calls `createFooter()` of the built `dist/browser/view/footer.js` and
-writes the element it returns out as HTML, which the check parses. The section of credits is a
-React component, `CreditsSection` of the built `dist/browser/view/credits-section.js`; a second
-Node script, written to a temporary directory, loads `react` and `react-dom/server` from the
-built copy (not from where the script stands), renders the component with `renderToStaticMarkup`,
-which needs no document, and writes the HTML out for the same parsing. The SVG files are the files
-with the extension `.svg` that git tracks or would track directly in `assets/icons/`.
+is never written). The section of credits is a React component, `CreditsSection` of the built
+`dist/browser/view/credits-section.js`; a Node script this check writes to a temporary directory
+loads `react` and `react-dom/server` from the built copy (not from where the script stands),
+renders the component with `renderToStaticMarkup`, which needs no document, and writes the HTML
+out, which the check parses. The SVG files are the files with the extension `.svg` that git tracks
+or would track directly in `assets/icons/`.
 
 Reading of the sentence:
 - the section of credits: the `<details>` that `CreditsSection` renders, folded, with the summary
-  "Autorzy grafiki"; that the login card draws it is held by D-27 and by
-  `tests/view/account-screen.test.mjs`, not by this check;
-- the game's footer: the element `createFooter()` returns, which a built module of the game's view
-  other than `footer.js` imports and calls (checked by a scan of the built modules' text);
-- shows: stands in the footer's text, or, for a page, as the target of a link (`href`) or in text;
+  "Autorzy grafiki"; that the login card and Siedziba draw it is held by D-27 and by
+  `tests/view/account-screen.test.mjs` and `tests/view/headquarters-screen.test.mjs`, not by this
+  check;
+- shows: stands in the section's text, or, for a page, as the target of a link (`href`) or in text;
 - the icon's page on game-icons.net: `https://game-icons.net/1x1/<author folder>/<file name less
   .svg>.html`;
 - a credit for a file: the largest element around that page's link or text that holds no page of
@@ -37,20 +33,16 @@ Reading of the sentence:
 - says how the file differs from its source: the credit's text holds a statement of change, one
   of the stems written out in CHANGE_WORDS (Polish, the game's language, or English).
 
-Controls, so the check can fail: the stand-in `document`, given a made-up footer built with
-`createElement`, `textContent`, `append`, `appendChild`, `setAttribute`, the `href` property,
-`className`, `innerHTML` and a fragment, writes out the HTML the made-up footer means; and the
-comparison flags made-up footers lacking, in turn, a credit for one file, the title (also when
-another title or the title in other letter case stands there), the author, the page, the licence
-(also when it stands once outside the credits) and the statement of change, and an icon file with
-no title written out, while a made-up footer holding all of them passes.
+Controls, so the check can fail: a made-up section built with `createElement` is rendered by the
+same script and gives the HTML it means, and the comparison flags made-up credits lacking, in turn,
+a credit for one file, the title (also when another title or the title in other letter case stands
+there), the author, the page, the licence (also when it stands once outside the credits) and the
+statement of change, and an icon file with no title written out, while made-up credits holding all
+of them pass.
 
-The section is read by the same comparison; a made-up section built with `createElement` is
-rendered by the same script, and the comparison flags it when a credit of a file is taken out.
-
-Does NOT cover: whether the statement of change is true of the file; how the footer or the section
-looks in a browser (they are not rendered); credits shown anywhere but the footer and the section;
-whether the login card draws the section.
+Does NOT cover: whether the statement of change is true of the file; how the section looks in a
+browser (it is not rendered); credits shown anywhere but the section; whether the login card or
+Siedziba draws the section.
 """
 
 import html.parser
@@ -64,10 +56,8 @@ import unittest
 import loop2_invariant_support as support
 
 ICON_DIRECTORY = "assets/icons/"
-FOOTER_MODULE = "dist/browser/view/footer.js"
 SECTION_MODULE = "dist/browser/view/credits-section.js"
 SECTION_SUMMARY = "Autorzy grafiki"
-VIEW_DIRECTORY = "dist/browser"
 LICENCE = "CC BY 3.0"
 PAGE = re.compile(r"https://game-icons\.net/1x1/([\w-]+)/([\w-]+)\.html")
 # Stems of a statement that a file was changed: zmienione, zmodyfikowane, przerobione; changed,
@@ -121,109 +111,6 @@ TITLES = {
     "wood-pile.svg": "Wood Pile icon",
 }
 
-FAKE_DOCUMENT = r"""
-const VOID = new Set(['br', 'hr', 'img', 'input', 'meta', 'link', 'wbr', 'source']);
-const escapeText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const escapeAttribute = (s) => escapeText(s).replace(/"/g, '&quot;');
-const PROPERTY_ATTRIBUTES = { className: 'class', htmlFor: 'for' };
-class Text {
-  constructor(text) { this.nodeType = 3; this.data = String(text); this.parentNode = null; }
-  get textContent() { return this.data; }
-  set textContent(v) { this.data = String(v); }
-  toHTML() { return escapeText(this.data); }
-  remove() { if (this.parentNode) this.parentNode.removeChild(this); }
-}
-class Raw {
-  constructor(html) { this.nodeType = 99; this.html = String(html); this.parentNode = null; }
-  get textContent() { return this.html.replace(/<[^>]*>/g, ''); }
-  toHTML() { return this.html; }
-}
-const toNode = (n) => (typeof n === 'object' && n !== null ? n : new Text(n));
-class Element {
-  constructor(tag) {
-    this.nodeType = 1; this.localName = String(tag).toLowerCase();
-    this.tagName = this.localName.toUpperCase(); this.childNodes = []; this.attributes = {};
-    this.parentNode = null; this.style = { setProperty() {}, removeProperty() {} };
-    this.dataset = {};
-    const self = this;
-    this.classList = {
-      add: (...c) => { const s = new Set((self.attributes.class || '').split(/\s+/).filter(Boolean)); c.forEach((x) => s.add(x)); self.attributes.class = [...s].join(' '); },
-      remove: (...c) => { self.attributes.class = (self.attributes.class || '').split(/\s+/).filter((x) => x && !c.includes(x)).join(' '); },
-      toggle: (c, force) => { const has = (self.attributes.class || '').split(/\s+/).includes(c); if (force === undefined ? !has : force) self.classList.add(c); else self.classList.remove(c); },
-      contains: (c) => (self.attributes.class || '').split(/\s+/).includes(c),
-    };
-    return new Proxy(this, {
-      set(target, prop, value) {
-        if (prop in target || typeof prop === 'symbol') { target[prop] = value; return true; }
-        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-          target.attributes[PROPERTY_ATTRIBUTES[prop] || String(prop).toLowerCase()] = String(value);
-          return true;
-        }
-        target[prop] = value; return true;
-      },
-      get(target, prop) {
-        if (prop in target || typeof prop === 'symbol') return target[prop];
-        const name = PROPERTY_ATTRIBUTES[prop] || String(prop).toLowerCase();
-        if (name in target.attributes) return target.attributes[name];
-        return undefined;
-      },
-    });
-  }
-  get children() { return this.childNodes.filter((n) => n.nodeType === 1); }
-  get firstChild() { return this.childNodes[0] || null; }
-  get textContent() { return this.childNodes.map((n) => n.textContent).join(''); }
-  set textContent(v) { this.replaceChildren(String(v)); }
-  get innerText() { return this.textContent; }
-  set innerText(v) { this.textContent = v; }
-  set innerHTML(v) { this.childNodes = [new Raw(v)]; }
-  get innerHTML() { return this.childNodes.map((n) => n.toHTML()).join(''); }
-  setAttribute(name, value) { this.attributes[String(name).toLowerCase()] = String(value); }
-  getAttribute(name) { const v = this.attributes[String(name).toLowerCase()]; return v === undefined ? null : v; }
-  hasAttribute(name) { return String(name).toLowerCase() in this.attributes; }
-  removeAttribute(name) { delete this.attributes[String(name).toLowerCase()]; }
-  toggleAttribute(name, force) { if (force === false || (force === undefined && this.hasAttribute(name))) this.removeAttribute(name); else this.setAttribute(name, ''); }
-  addEventListener() {}
-  removeEventListener() {}
-  appendChild(node) { this.append(node); return node; }
-  append(...nodes) {
-    for (const n of nodes.map(toNode)) {
-      if (n.nodeType === 11) { for (const c of [...n.childNodes]) this.append(c); n.childNodes = []; continue; }
-      if (n.parentNode) n.parentNode.removeChild(n);
-      n.parentNode = this; this.childNodes.push(n);
-    }
-  }
-  prepend(...nodes) { const rest = this.childNodes; this.childNodes = []; this.append(...nodes); this.childNodes.push(...rest); }
-  insertBefore(node, ref) { const rest = this.childNodes; const i = ref ? rest.indexOf(ref) : rest.length; this.childNodes = rest.slice(0, i); this.append(node); this.childNodes.push(...rest.slice(i)); return node; }
-  replaceChildren(...nodes) { this.childNodes = []; this.append(...nodes); }
-  removeChild(node) { this.childNodes = this.childNodes.filter((n) => n !== node); node.parentNode = null; return node; }
-  remove() { if (this.parentNode) this.parentNode.removeChild(this); }
-  toHTML() {
-    const attributes = Object.entries(this.attributes).map(([k, v]) => ` ${k}="${escapeAttribute(v)}"`).join('');
-    if (VOID.has(this.localName)) return `<${this.localName}${attributes}>`;
-    return `<${this.localName}${attributes}>${this.childNodes.map((n) => n.toHTML()).join('')}</${this.localName}>`;
-  }
-}
-globalThis.document = {
-  createElement: (tag) => new Element(tag),
-  createElementNS: (_ns, tag) => new Element(tag),
-  createTextNode: (text) => new Text(text),
-  createDocumentFragment: () => { const f = new Element('template'); f.nodeType = 11; return f; },
-  addEventListener() {},
-};
-"""
-
-DRIVER = (
-    "import { writeFileSync } from 'node:fs';\n"
-    "import { pathToFileURL } from 'node:url';\n"
-    + FAKE_DOCUMENT
-    + r"""
-const [modulePath, exportName, outPath] = process.argv.slice(2);
-const module = await import(pathToFileURL(modulePath).href);
-const element = module[exportName]();
-writeFileSync(outPath, JSON.stringify({ html: element.toHTML() }));
-"""
-)
-
 REACT_DRIVER = r"""
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
@@ -261,36 +148,6 @@ MADE_UP_SECTION_EXPECTED = (
     '<a href="https://game-icons.net/1x1/delapouite/flax.html">game-icons.net</a>, CC BY 3.0, '
     'zmienione</li></ul></details>'
 )
-
-MADE_UP_FOOTER = r"""
-export function made() {
-  const footer = document.createElement('footer');
-  footer.className = 'credits';
-  const list = document.createElement('ul');
-  const item = document.createElement('li');
-  const link = document.createElement('a');
-  link.href = 'https://game-icons.net/1x1/delapouite/fern.html';
-  link.textContent = 'Fern icon';
-  item.append('Mech: ', link, ' — Delapouite, ');
-  const licence = document.createElement('a');
-  licence.setAttribute('href', 'https://creativecommons.org/licenses/by/3.0/');
-  licence.appendChild(document.createTextNode('CC BY 3.0'));
-  item.append(licence, '; zmienione');
-  const fragment = document.createDocumentFragment();
-  fragment.append(item);
-  list.appendChild(fragment);
-  const note = document.createElement('p');
-  note.innerHTML = '<b>Ikony</b> &amp; więcej';
-  footer.append(list, note);
-  return footer;
-}
-"""
-MADE_UP_EXPECTED = (
-    '<footer class="credits"><ul><li>Mech: <a href="https://game-icons.net/1x1/delapouite/'
-    'fern.html">Fern icon</a> — Delapouite, <a href="https://creativecommons.org/licenses/by/3.0/">'
-    'CC BY 3.0</a>; zmienione</li></ul><p><b>Ikony</b> &amp; więcej</p></footer>'
-)
-
 
 class Tree(html.parser.HTMLParser):
     """Elements as dicts: {'tag', 'attrs', 'children'}; text as str."""
@@ -358,15 +215,15 @@ def credit_for(root, stem):
     return search(root)
 
 
-def violations(footer_html, files, titles=None):
+def violations(section_html, files, titles=None):
     titles = TITLES if titles is None else titles
-    root = parse(footer_html)
+    root = parse(section_html)
     found = []
     for name in files:
         stem = name[:-len(".svg")]
         credit = credit_for(root, stem)
         if credit is None:
-            found.append(f"{name}: the footer shows no credit with its page on game-icons.net")
+            found.append(f"{name}: the section shows no credit with its page on game-icons.net")
             continue
         text = " ".join(text_of(credit).split())
         if name not in titles:
@@ -395,22 +252,6 @@ def node():
     if path is None:
         raise AssertionError("node is not on PATH")
     return path
-
-
-def render(module_path, export_name):
-    work = tempfile.mkdtemp(prefix="loop2-icon-credits-")
-    try:
-        script = os.path.join(work, "driver.mjs")
-        out_path = os.path.join(work, "footer.json")
-        with open(script, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write(DRIVER)
-        code, output = support.run([node(), script, module_path, export_name, out_path], work)
-        if code != 0:
-            raise AssertionError(f"the driver exited {code}:\n{output}")
-        with open(out_path, encoding="utf-8") as handle:
-            return json.load(handle)["html"]
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
 
 
 def render_section(module_path, export_name, built_root, mode):
@@ -450,27 +291,6 @@ def credit_html(stem, author="Delapouite", folder="delapouite", licence=LICENCE,
 
 class IconCredits(unittest.TestCase):
 
-    def test_footer_credits_each_icon_file(self):
-        # invariant: icon-credits
-        files = icon_files()
-        self.assertTrue(files, f"the working tree holds no SVG file in {ICON_DIRECTORY}")
-        copy = support.built_copy()
-        footer = copy.file(FOOTER_MODULE)
-        self.assertTrue(os.path.isfile(footer), f"`npm run build` placed no {FOOTER_MODULE}")
-        callers = []
-        for current, _dirs, names in os.walk(copy.file(VIEW_DIRECTORY)):
-            for name in names:
-                path = os.path.join(current, name)
-                if name.endswith(".js") and os.path.abspath(path) != os.path.abspath(footer):
-                    text = support.read_text(path)
-                    if re.search(r"from\s*['\"][./]*(?:view/)?footer\.js['\"]", text) and \
-                            re.search(r"\bcreateFooter\s*\(", text):
-                        callers.append(name)
-        self.assertTrue(callers, "no module of the game imports footer.js and calls "
-                                 "createFooter, so the footer is not the game's")
-        markup = render(footer, "createFooter")
-        self.assertEqual(violations(markup, files), [], f"the footer:\n{markup}")
-
     def test_credits_section_credits_each_icon_file(self):
         # invariant: icon-credits
         files = icon_files()
@@ -503,46 +323,33 @@ class IconCredits(unittest.TestCase):
         self.assertTrue(violations(markup.split("<li>Len")[0] + "</ul></details>", ["flax.svg"]),
                         "a section without the credit of a file goes unseen")
 
-    def test_control_the_stand_in_document_writes_what_a_footer_means(self):
-        # invariant: icon-credits
-        work = tempfile.mkdtemp(prefix="loop2-icon-credits-made-")
-        try:
-            module = os.path.join(work, "made.mjs")
-            with open(module, "w", encoding="utf-8", newline="\n") as handle:
-                handle.write(MADE_UP_FOOTER)
-            markup = render(module, "made")
-        finally:
-            shutil.rmtree(work, ignore_errors=True)
-        self.assertEqual(markup, MADE_UP_EXPECTED)
-        self.assertEqual(violations(markup, ["fern.svg"]), [])
-
     def test_control_the_comparison_flags_missing_parts(self):
         # invariant: icon-credits
         files = ["fern.svg", "flax.svg"]
-        good = "<footer><ul>" + credit_html("fern") + credit_html("flax") + "</ul></footer>"
+        good = "<section><ul>" + credit_html("fern") + credit_html("flax") + "</ul></section>"
         self.assertEqual(violations(good, files), [])
         broken = {
-            "no credit for one file": "<footer>" + credit_html("fern") + "</footer>",
-            "no author": "<footer>" + credit_html("fern", author="") + credit_html("flax")
-                         + "</footer>",
-            "another author": "<footer>" + credit_html("fern", author="Lorc", folder="lorc")
-                              + credit_html("flax") + "</footer>",
-            "no title": "<footer>" + credit_html("fern", title="") + credit_html("flax")
-                        + "</footer>",
-            "another title": "<footer>" + credit_html("fern", title="Flax icon")
-                             + credit_html("flax") + "</footer>",
-            "the title in other letter case": "<footer>" + credit_html("fern", title="fern icon")
-                                              + credit_html("flax") + "</footer>",
-            "no page": "<footer><li>fern: Fern icon, Delapouite, CC BY 3.0, zmienione</li>"
-                       + credit_html("flax") + "</footer>",
-            "no licence": "<footer>" + credit_html("fern", licence="CC BY") + credit_html("flax")
-                          + "</footer>",
-            "licence outside the credits": "<footer><p>CC BY 3.0</p><ul>"
+            "no credit for one file": "<section>" + credit_html("fern") + "</section>",
+            "no author": "<section>" + credit_html("fern", author="") + credit_html("flax")
+                         + "</section>",
+            "another author": "<section>" + credit_html("fern", author="Lorc", folder="lorc")
+                              + credit_html("flax") + "</section>",
+            "no title": "<section>" + credit_html("fern", title="") + credit_html("flax")
+                        + "</section>",
+            "another title": "<section>" + credit_html("fern", title="Flax icon")
+                             + credit_html("flax") + "</section>",
+            "the title in other letter case": "<section>" + credit_html("fern", title="fern icon")
+                                              + credit_html("flax") + "</section>",
+            "no page": "<section><li>fern: Fern icon, Delapouite, CC BY 3.0, zmienione</li>"
+                       + credit_html("flax") + "</section>",
+            "no licence": "<section>" + credit_html("fern", licence="CC BY") + credit_html("flax")
+                          + "</section>",
+            "licence outside the credits": "<section><p>CC BY 3.0</p><ul>"
                                            + credit_html("fern", licence="licencja")
                                            + credit_html("flax", licence="licencja")
-                                           + "</ul></footer>",
-            "no change": "<footer>" + credit_html("fern", change="") + credit_html("flax")
-                         + "</footer>",
+                                           + "</ul></section>",
+            "no change": "<section>" + credit_html("fern", change="") + credit_html("flax")
+                         + "</section>",
         }
         for label, markup in broken.items():
             with self.subTest(case=label):

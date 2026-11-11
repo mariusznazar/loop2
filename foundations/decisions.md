@@ -656,10 +656,10 @@ the map run, and the campfires arise during it.
 
 The game's icons are SVG files from game-icons.net, kept in `assets/icons/` outside the directory
 the account and save server serves and copied into that directory when the application is built.
-An icon file holds nothing that runs and refers to nothing outside itself. The game's footer and a
-section of credits on the login card, folded and opened with one click, each credit each icon with
-its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and
-say how the icon file differs from its source.
+An icon file holds nothing that runs and refers to nothing outside itself. A section of credits,
+folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its
+last part, and credits each icon with its title as game-icons.net gives it, its author, its page on
+game-icons.net and its licence, and says how the icon file differs from its source.
 
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** game-icons-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
@@ -667,8 +667,8 @@ say how the icon file differs from its source.
 - **Verification:** invariants: icon-file-content · icon-credits · loop2-container-icons. For where
   the icons come from and where their source files stand, an agent compares the change with the
   decision:
-  - complies: a campfire icon taken from game-icons.net into `assets/icons/`, credited in the footer
-    and in the folded section of the login card
+  - complies: a campfire icon taken from game-icons.net into `assets/icons/`, credited in the folded
+    section of the login card and of Siedziba
   - violates: an icon file placed straight in the directory the server serves; an icon drawn from
     an emoji, or loaded from another site while the game runs
 - **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 "Grafika" · mag_w_lesie_loop2.md in the vault (Notes/Projects/(P) Loop), "Questions carried to cycle", "Skąd biorą się ikony zasobów i czynności" · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-27
@@ -682,12 +682,21 @@ icons are changed to sit on the game's tiles, and the licence asks whoever distr
 work to include the licence or its address, to credit the work's original author, its title where
 one is supplied and the address the licensor gives for it, and to identify the use of the work in
 the changed work. game-icons.net supplies a title for each icon on its page. Saying how each icon
-file differs from its source goes beyond what the licence asks: it is the product's own choice. A
-list of credits takes more room than the login card can give, and folded it stays one click away,
-which keeps what the licence asks.
+file differs from its source goes beyond what the licence asks: it is the product's own choice. With
+dozens of icons a list of credits on every screen takes more room than the game can give, and
+folded on two screens it stays one click away, which keeps what the licence asks. On Siedziba it
+stands at the bottom, as the last part of the screen, where the old Loop, from whose views the
+product starts, stands its credits on the main screen. Accepted with it:
+a long list once it is opened on the login card, and, with a long team, a scroll down Siedziba to
+reach it, which the licence allows as long as the credits can be reached.
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
-keep itself, entering through what the product already treats as untrusted.
+keep itself, entering through what the product already treats as untrusted; the credits open in a
+footer of every screen — dozens of rows standing below the game; the section on Siedziba under its
+heading — the caption of the credits would be the first thing on the main screen of the game, and
+the screen would leave the old Loop's with no gain for the player; the section just
+under the chest — once the chest stands at the top of Siedziba the section would stand high on the
+main screen too.
 
 ### D-28 — Which coding-guideline discipline does loop2 adopt?
 
@@ -867,18 +876,18 @@ In the browser view the role `positive` means that something works, is in order 
 
 ### D-40 — What do the neutral roles of the browser view mean?
 
-In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with. The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it. The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text.
+In the browser view the background `page` means that here is the game, `panel` a block set apart, and `highlight` that this row or track is marked or that this control is under the pointer, `rule-winning` that this program rule wins now, and `rule-running` that this program rule's action is being carried out; `divider` means that one section ends and the next begins, `control-border` that something can be clicked or typed into, `selected` that this is the one chosen in its group, and `condition-unmet` that the condition of this program rule or rule group does not hold. Of the roles of the kind text, `text-strong` means a name, heading or value looked at first, `text` content to read, `text-secondary` a description, explanation or note, `text-label` the name of a field or section, or a date, and `text-disabled` that this cannot be used now. Each of the five stands as text on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text` is the text each of these backgrounds is written with. The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it; so does the icon flying to the mage, on its plaque in `panel`, and so do the icons of the drawing of the map, on `tile-revealed`. The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`; the bar of „Passa 120/480” in the header with its track in `highlight` and its fill in `text`;
-  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`; the bar of a requirement of the solving condition not yet met filled in `positive`.
+  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the icon of a resource flying to the mage in `text-strong` on its plaque in `panel`; the icon of a resource in the drawing of the map in `text-strong` on `tile-revealed`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`; the bar of „Passa 120/480” in the header with its track in `highlight` and its fill in `text`;
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`; an icon of the drawing of the map or an icon flying to the mage written in `text` or in the colour its file holds; the bar of a requirement of the solving condition not yet met filled in `positive`.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q4. Jakie role mają tła, ramki i tekst?", "Q12. Jakie są wspólne kontrolki i ich stany?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point C · zadanie_hierarchia_przyciskow_i_karta_logowania.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, and Questions to settle, questions 2c and 3b · stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 2, 8 and 10, Questions to settle, questions 1 and 2 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 12, and § Settlements to record, row 9 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3 and 6, Questions to settle, question 5
 
-*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. Accepted with it: a role of the kind text stands at something that is no text.
-*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well.
+*Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. Accepted with it: the backgrounds of the two rules are paler than loop's, so that the text on them keeps the contrast the product holds, and the dark bar is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. Accepted with it: a role of the kind text stands at something that is no text, and the icons of the drawing of the map stand in `text-strong` on `tile-revealed`, a background outside the five that the contrast of the roles is held for, so a later change of `tile-revealed` can lessen their legibility with no check showing it.
+*Rejected:* three greys for every neutral use — fewer roles, each grey carrying several meanings; the rule that wins marked by `highlight` — that background already says that a row is marked or under the pointer; the backgrounds of the two rules in loop's colours on the page background — on the panel the row comes out darker than its surroundings, like a greenish hole; a dark bar of a value visible on every background, at least 3:1 — a clear grey bar at most rules, a busier program and a departure from loop; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well; the icons of the drawing of the map in `text` — darker than the icon in the row of a rule and in the badge, with a contrast against `tile-revealed` of 3.27:1 in place of 4.39:1, though still over the 3:1 asked of an element that is no text.
 
 ### D-41 — What do the roles of the terrain grid and of keyboard focus mean?
 
@@ -912,18 +921,18 @@ For now every screen of the browser view keeps three success criteria of WCAG 2.
 
 ### D-43 — What counts in the browser view as a value written in place of a design token?
 
-In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/` — that of an icon of an action drawn as a mask, taking its colour from the text beside it or, in the badge over the mage's head where no text stands beside it, from `text-strong`, and that of any other icon holding its colour in the file, changed by hand when the value of `text-strong` changes.
+In the files of the part browser-view other than its file of design tokens, a value written in place of a design token is a colour in any notation — hexadecimal, functional, a named colour or a system colour — in styles and in TypeScript and, in styles, a size or spacing in `px`, `rem` or `em`, a font name, or a unitless stroke width, dash pattern, opacity or font weight, those four unitless kinds being all. None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
 - **Verification:** invariants: browser-view-token-values. For values the text of a file does not show, an agent compares a change with the decision:
-  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`; the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell; the frames and positions of the mage's sprite given from TypeScript as percentages of the scene's width and height; the icon of „Zbierz” in the badge over the mage's head drawn as a mask in `text-strong`;
-  - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style.
+  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`; the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell; the icon of a resource in the card of a map drawn as a mask in the colour of the text beside it; the frames and positions of the mage's sprite given from TypeScript as percentages of the scene's width and height; the icon of „Zbierz” in the badge over the mage's head, the icon of a resource flying to the mage on its plaque and the icon of a resource in the drawing of the map drawn as masks in `text-strong`;
+  - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style; an icon of `assets/icons/` drawn as a picture of its file, with the colour the file holds.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q15. Co liczy się jako wartość wpisana zamiast tokenu projektowego?" and "Q19. Jak rozstrzygnąć luki i sprzeczności, które znalazła krytyka?", point D · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5 · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 12, and § Settlements to record, row 9
 
-*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, the frames and positions of a sprite, and the icon files. An icon of an action drawn as a mask takes the role of the text beside it, so it dims with a greyed cell, needs no file for each state, and a change of `text-strong` reaches it at once, and in the badge over the mage's head, where no text stands beside it, it takes `text-strong`, the role of the action in the row of a rule; the other icons hold their colour themselves, so a change of `text-strong` reaches them only by hand. Accepted with it: two ways of drawing an icon stand side by side.
-*Rejected:* the colour of an icon of an action standing in its file and changed by hand — every state of the icon takes a file; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well; the icons of actions as pictures dimmed by opacity — a new value of appearance and a second way of drawing to remove later; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
+*Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, the frames and positions of a sprite, and the icon files. An icon drawn as a mask takes the role of the text beside it, so dimmed and amber icons need no files of their own and a change of `text-strong` reaches them at once, and where no text stands beside it, in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map, it takes `text-strong`, the role of the action in the row of a rule; one way of drawing an icon holds for every icon of the game.
+*Rejected:* the colour of an icon standing in its file and changed by hand — every state of an icon takes a file, and two ways of drawing an icon stand side by side; the icons of the drawing of the map left as pictures of their files, with the colour the file holds — the goal that every icon takes its colour from the text beside it is not met; the icons of the drawing of the map in `text` — darker than the icon in the row of a rule and in the badge; the icon in the badge over the mage's head in `text` — darker than the icon in the row of a rule and than the icons on the map, though both values read well; the icons of actions as pictures dimmed by opacity — a new value of appearance and a second way of drawing to remove later; a gentler check counting no more such values than before the change — the screens are moved onto the tokens at once.
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
@@ -978,12 +987,12 @@ A control of the browser view is every HTML element the browser lets the keyboar
 - **Based on:** none
 - **Relations:** derives from D-42
 - **Verification:** invariants: browser-view-focus-outline. An agent compares a change with the decision:
-  - complies: a link of the footer showing the outline of `focus` when the keyboard reaches it;
+  - complies: a link of the folded section of credits showing the outline of `focus` when the keyboard reaches it;
   - violates: a class added to the controls to give them their focus; `outline: none` on a shared button; an outline set from TypeScript.
 - **Origin:** styleguide_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "Q21. Które elementy są kontrolkami dla testu widocznego fokusu i jak kod je oznacza?" and "Q22. Jak brzmią niezmienniki i decyzja fokusu po krytyce?"
 
 *Rationale:* One rule reaches every element the keyboard reaches without the code marking it, so a new control or link shows its focus with nothing added. A control that needs another outline takes a change of this decision, and an outline turned off in an unusual way is found only by review.
-*Rejected:* a class on each control; the shared controls alone, without links — the links of the footer would show no focus.
+*Rejected:* a class on each control; the shared controls alone, without links — the links of the folded section of credits would show no focus.
 
 ### D-48 — How are the design tokens of the browser view named?
 
@@ -5465,10 +5474,10 @@ switch — one click removes „Gra została zaktualizowana. Odśwież stronę.�
 
 ### D-262 — What stands on the screen of the login card, and where do the waiting screens stand?
 
-Nothing stands on the screen of the login card but the card, neither header nor footer. The waiting
+Nothing stands on the screen of the login card but the card, not even the header. The waiting
 screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and
-the moment after a sign-in that succeeded — stand outside the card, with the header and the footer,
-for a signed-in player too. When React takes the card down after an exception no code of the game
+the moment after a sign-in that succeeded — stand outside the card, with the header, for a
+signed-in player too. When React takes the card down after an exception no code of the game
 handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” stands alone in the card's place
 (D-323).
 
@@ -5476,18 +5485,20 @@ handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” sta
 - **Based on:** none
 - **Relations:** derives from D-96 · narrows D-156
 - **Verification:** an agent compares a change with the decision:
-  - complies: a reload showing „Sprawdzanie logowania…” with the header and the footer, and then the
-    card alone or the game; a card whose drawing threw replaced by „Coś w grze się zepsuło — odśwież
-    stronę.” alone, with neither header nor footer
+  - complies: a reload showing „Sprawdzanie logowania…” with the header, and then the card alone or
+    the game; a card whose drawing threw replaced by „Coś w grze się zepsuło — odśwież stronę.”
+    alone, with no header
   - violates: the card standing under the header; „Sprawdzanie logowania…” written inside the card
 - **Origin:** logowanie_w_react_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row S4 · napis_o_awarii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 5
 
 *Rationale:* a signed-in player passes through the waiting screens at every reload, and they say
 nothing about signing in, so they stay what they are. Accepted with it: at each entry a signed-out
-visitor sees the header and the footer for a moment before the card comes.
+visitor sees the header for a moment before the card comes, and the waiting screen shows no
+credits, which stand one click away on the login card and on Siedziba (D-27).
 *Rejected:* the waiting in the card — a signed-in player sees the login card at every reload, as if
-logged out; the header and the footer beside the card too — the visitor sees one card (D-96), with
-the credits in it (D-27).
+logged out; the header beside the card too — the visitor sees one card (D-96); a folded section of
+credits in the place of the footer on the waiting screens — a third place for the credits and a
+section on a screen that usually leaves after a moment.
 
 ### D-263 — Which tool bundles the browser's code?
 
@@ -5757,7 +5768,7 @@ scene is the mage of Pixel Crawler.
     PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
     the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
     a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
-    holds, with a credit line for the pack in the footer
+    holds, with a credit line for the pack in the folded section of credits
   - violates: a picture placed straight in the directory the server serves; a sprite file in
     another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
     other than the two named; the cloud of dust in a colour that does not stand out from the
@@ -8227,7 +8238,7 @@ When a gathering ends with a piece more in the backpack, the icon of the gathere
 - **Origin:** none
 
 *Rationale:* the icon is the picture of the resource that the player knows from the map, and the plaque keeps it legible on the forest, as the badge over the head keeps the icon of an action. Nothing new enters the game's files for it.
-*Rejected:* the icon alone on the forest, with no plaque — it has its colour in its file and on a light ground it can vanish, for the reason D-320 puts the icon over the head on a plaque; a pixel picture of the resource from a pack in place of the icon — a new cut-out picture for each resource, the pack holds none of fibre, and leaving the words of the approved definition, „the icon flies”, is a change of the definition
+*Rejected:* the icon alone on the forest, with no plaque — it takes `text-strong` and on a light ground it can vanish, for the reason D-320 puts the icon over the head on a plaque; a pixel picture of the resource from a pack in place of the icon — a new cut-out picture for each resource, the pack holds none of fibre, and leaving the words of the approved definition, „the icon flies”, is a change of the definition
 
 ### D-366 — Where does the dust of a miss stand?
 

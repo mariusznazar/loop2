@@ -531,7 +531,7 @@ export function RuleListView({
         <span className="rule-arrow">→</span>
         <span className="rule-action">
           <span
-            className="action-icon"
+            className="icon-mask"
             aria-hidden="true"
             style={
               {
