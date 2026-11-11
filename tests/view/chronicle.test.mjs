@@ -670,7 +670,7 @@ test("a listener is called once for a result that changed the chronicle and once
 });
 
 // Catches the last minutes that take the paragraph of the last encounter as an entry, run on past the
-// death's entry, or change with edits of the copy made after the end (D-364, D-147, D-339). The
+// death's entry, or change with edits of the copy made after the end (D-368, D-147, D-339). The
 // paragraph stands at the game minute of the attack and is no entry; the death's entry is the last of
 // the minutes, and an act after the end stands after it.
 test("the entries up to the death end with its entry, oldest first, leave out the paragraph of the last encounter and stay as they were after an edit", () => {

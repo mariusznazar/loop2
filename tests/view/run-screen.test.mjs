@@ -826,7 +826,7 @@ function coveredState(screen) {
   assert.fail(`the header and the areas differ in being hidden: ${states}`);
 }
 
-// D-311, D-364, binding answer 1 of slice 4. Catches a window drawn while it is not set open or
+// D-311, D-368, binding answer 1 of slice 4. Catches a window drawn while it is not set open or
 // over a map run that goes on, a header or an area left visible under the window, and a screen
 // that stays covered after the window is set closed.
 test("told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again", async () => {
@@ -952,7 +952,7 @@ test("„Dodaj regułę z tym” of the window closes the window and then does w
   });
 });
 
-// D-364, D-147. Catches the entries of „Ostatnie minuty” read from anywhere but the chronicle
+// D-368, D-147. Catches the entries of „Ostatnie minuty” read from anywhere but the chronicle
 // memory the screen was given, and a death whose window shows none.
 test("the window's „Ostatnie minuty” are the entries of the chronicle memory the screen was given, up to the death", async () => {
   await withPage(async (page) => {
@@ -984,7 +984,7 @@ test("the window's „Ostatnie minuty” are the entries of the chronicle memory
   });
 });
 
-// D-364, D-88. The window takes the focus as it appears, which in a browser scrolls the page to its
+// D-368, D-88. The window takes the focus as it appears, which in a browser scrolls the page to its
 // edge, and the screen it covers may have been scrolled down: the page must go to its top at each
 // appearance, and only then, or the menu bar stays out of sight above the window. Catches no scroll,
 // a scroll at every draw while the window stands, and a scroll with no window drawn.

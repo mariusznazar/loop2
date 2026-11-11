@@ -669,7 +669,7 @@ w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
 
 ### The end-of-run window
 
-- **Decision:** D-364 · D-311 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
+- **Decision:** D-368 · D-311 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
 - **Invariant:** none
 - **Good:** Okno po śmierci z tytułem „Mag zamarzł” w `text-strong` na `panel`, nad nim pasek menu i wiersz ostrzeżeń, pod nim przyciski „Restart”, „Zakończ” i „Otwarte: …” stojące w polu widzenia, gdy sekcje się przewijają; Escape zamyka okno, a nagłówek ekranu ma wtedy „Koniec przejścia”.
 - **Bad:** Okno przykrywające pasek menu; okno z zasłoną za sobą; przycisk zrobiony w oknie osobnym `<button>` albo z czcionką Geist Mono; pasek czasu w roli, której nie ma w tabeli Roles; Escape czytany na dokumencie.
@@ -677,7 +677,7 @@ w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
 Okno końca przejścia, `src/browser/view/end-window.tsx`, jest pierwszym oknem
 nad ekranem gry. Otwiera się samo, gdy przejście ręczne kończy się śmiercią
 postaci albo ukończeniem mapy, i otwiera się znowu przy każdym wejściu na ekran
-zakończonego przejścia (D-364). Jego treść i kolejność podaje D-364, jego
+zakończonego przejścia (D-368). Jego treść i kolejność podaje D-368, jego
 teksty — `src/browser/view/end-window-lines.ts`; ta reguła podaje, jak okno
 wygląda, jak przykrywa ekran, jak się zamyka i jak bierze fokus. Reguły okna
 stoją w `src/browser/styles.css` pod klasami `end-window`.
@@ -688,7 +688,7 @@ Jak przykrywa ekran:
   jest pokazany: elementy mają atrybut `hidden` i zostają w drzewie. Pasek menu
   z wierszem ostrzeżeń pod nim stoi nad oknem i działa, więc nieudany zapis
   (D-208) i awaria gry (D-323) są widoczne, a kliknięcie w pasek opuszcza
-  ekran przejścia (D-311, D-364). Okno nie przykrywa paska menu.
+  ekran przejścia (D-311, D-368). Okno nie przykrywa paska menu.
 - Okno nie ma zasłony ani tła za sobą. Stoi na tle `panel` z tekstem w `text` i ramką w `divider`
   (D-40), w kolumnie treści ekranu, o takiej wysokości, że pod nim zostaje
   miejsce na pasek menu i wiersz ostrzeżeń.
@@ -698,7 +698,7 @@ Jak przykrywa ekran:
   się w oknie, nie wypycha go.
 - Przewija się tylko część środkowa: nagłówek okna — napis „Koniec przejścia”,
   tytuł i „✕” — oraz rząd przycisków u dołu stoją w miejscu i są stale w polu
-  widzenia (D-364).
+  widzenia (D-368).
 
 Jak się zamyka i otwiera:
 
@@ -707,7 +707,7 @@ Jak się zamyka i otwiera:
   dokument (D-285).
 - „Koniec przejścia” w nagłówku ekranu otwiera okno znowu. Stoi przed „Restart”,
   póki okno jest zamknięte po końcu przejścia; gdy okno stoi, nagłówek jest
-  ukryty razem z ekranem (D-311, D-364).
+  ukryty razem z ekranem (D-311, D-368).
 - „Restart” zaczyna przejście od nowa, „Zakończ” i „Otwarte: {mapa} →” kończą
   je i opuszczają ekran. Gdy kopia ma niezapisane zmiany, te dwa przyciski
   zamiast tego zamykają okno i stawiają pytanie „Zapisać, odrzucić, wrócić?”

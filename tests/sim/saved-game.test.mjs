@@ -43,7 +43,7 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // The document of the current version, version 4, is that of version 3 with the three fields of the
 // record of a manual map run added to its map run: the longest streak, the game minutes by what the
 // character was doing, and what the character entered with (task koniec-przejscia, To do 5 and 10
-// with D-206, D-135 and D-364). It fills every optional branch of the game state: a map run with a
+// with D-206, D-135 and D-368). It fills every optional branch of the game state: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
