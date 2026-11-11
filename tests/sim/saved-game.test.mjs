@@ -1539,6 +1539,22 @@ const CRAFTED = {
     (document.game.run.enteredWith[3] = { item: "berry", count: 1 }),
   "a key added to what it entered with": (document) =>
     (document.game.run.enteredWith.extra = 1),
+  // The game writes the entries in the order of the data's items (stick, berry, moss, fiber) and
+  // their counts sum to at most the character's carrying capacity (15 in this document).
+  "what it entered with out of the order of the data's items": (document) =>
+    (document.game.run.enteredWith = [
+      { item: "berry", count: 1 },
+      { item: "stick", count: 1 },
+    ]),
+  "what it entered with of a count above the carrying capacity": (document) =>
+    (document.game.run.enteredWith[0].count = 16),
+  "what it entered with of counts summing above the carrying capacity": (
+    document,
+  ) =>
+    (document.game.run.enteredWith = [
+      { item: "stick", count: 8 },
+      { item: "berry", count: 8 },
+    ]),
   // The activity going on is an ordinary action or a wait, so no minute counts to a combat action.
   "a combat action as the activity going on": (document) =>
     (document.game.run.current.activity = {
@@ -1979,6 +1995,12 @@ test("a record at the edges of what it admits loads", () => {
       (document.game.run.minutesByAction = { ...onlyWaiting, wait: 212 }),
     "a map run that entered with nothing": (document) =>
       (document.game.run.enteredWith = []),
+    "a map run that entered with the whole of its carrying capacity in two items":
+      (document) =>
+        (document.game.run.enteredWith = [
+          { item: "stick", count: 8 },
+          { item: "berry", count: 7 },
+        ]),
     "a map run that entered with every item": (document) =>
       (document.game.run.enteredWith = [
         { item: "stick", count: 1 },

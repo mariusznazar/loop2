@@ -975,11 +975,12 @@ function plainMapRun(
 /**
  * What a manual map run keeps for its end: the longest streak, from the streak going on up to the
  * game minute; a count of game minutes for each kind of the closed list and for no other, summing to
- * the game minute; and the items the character entered with, read as a trip list is.
+ * the game minute; and the items the character entered with, read as a trip list is, in the order
+ * of the data's items and no more pieces together than the character carries.
  */
 function record(
   read: Record<"longestStreak" | "minutesByAction" | "enteredWith", unknown>,
-  run: Pick<MapRun, "streak" | "minute">,
+  run: Pick<MapRun, "streak" | "minute" | "character">,
 ): RunRecord {
   const longestStreak = count(read.longestStreak);
   if (longestStreak < run.streak || longestStreak > run.minute) refuse();
@@ -991,11 +992,16 @@ function record(
     total += minutesByAction[kind];
   }
   if (total !== run.minute) refuse();
-  return {
-    longestStreak,
-    minutesByAction,
-    enteredWith: tripList(read.enteredWith),
-  };
+  const enteredWith = tripList(read.enteredWith);
+  const order = Object.keys(ITEMS);
+  const ordered = enteredWith.every(
+    (entry, index) =>
+      index === 0 ||
+      order.indexOf(enteredWith[index - 1].item) < order.indexOf(entry.item),
+  );
+  const pieces = enteredWith.reduce((sum, entry) => sum + entry.count, 0);
+  if (!ordered || pieces > run.character.traits.carryingCapacity) refuse();
+  return { longestStreak, minutesByAction, enteredWith };
 }
 
 /**
