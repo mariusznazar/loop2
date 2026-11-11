@@ -127,7 +127,7 @@ def git_bash():
 
 
 def shell_path(path):
-    """A path as Git's bash writes it: /c/... on Windows."""
+    """A path as Git's bash writes it: on Windows, the drive letter in lower case as the first directory."""
     path = os.path.abspath(path).replace("\\", "/")
     if os.name == "nt" and re.match(r"^[A-Za-z]:/", path):
         path = "/" + path[0].lower() + path[2:]
