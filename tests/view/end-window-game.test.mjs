@@ -830,6 +830,68 @@ test("the window stands in no game state and no saved document: closing and open
   });
 });
 
+// D-212, D-135, D-185, D-216, task To do 10. Catches a window that, after a reload of the screen of
+// an ended map run, reads its streak line or its line of what the end gave or cost from anything but
+// the loaded game state (the header's streak, a constant, the memory of the page). The expectations
+// are written out: the streak of the death is set to 116 and that of the completion to 480, each
+// above the streak the state holds when it ended; the lines are the sentences of To do 5 and 6 of
+// the task and of D-185 for a bring plan that takes nothing.
+test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
+  /** The window's streak line and cost line after a reload of `document`. */
+  async function lines(document, root) {
+    const loaded = loadSavedGame(JSON.parse(JSON.stringify(document)));
+    assert.equal(loaded.ok, true, "precondition: the document loads");
+    const again = await viewOf(loaded.state);
+    const opened = expectWindow(root);
+    const read = {
+      streak: byClass(opened, "run-header-requirement-text")[0]?.textContent,
+      cost: byClass(opened, "end-window-cost")[0]?.textContent,
+    };
+    await inAct(() => again.view.dispose());
+    pageDocument().body.replaceChildren();
+    return read;
+  }
+  await onPage(async (page) => {
+    const { root } = page;
+    const died = await dieOnTheScreen(page);
+    const diedDocument = structuredClone(
+      (await inAct(() => died.view.keep())).document,
+    );
+    await inAct(() => died.view.dispose());
+    pageDocument().body.replaceChildren();
+    const { run } = diedDocument.game;
+    assert.ok(run.minute >= 116, "precondition: the death is after 116");
+    assert.ok(run.streak <= 116, "precondition: the streak is below 116");
+    run.longestStreak = 116;
+    assert.deepEqual(await lines(diedDocument, root), {
+      streak: "najdłuższa passa 116/480",
+      cost: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach czasu realnego.",
+    });
+
+    const start = completed(going());
+    const everyMinuteExploring = Object.fromEntries(
+      Object.keys(start.run.minutesByAction).map((kind) => [kind, 0]),
+    );
+    everyMinuteExploring.explore = 480;
+    const done = await viewOf({
+      ...start,
+      run: {
+        ...start.run,
+        longestStreak: 480,
+        minutesByAction: everyMinuteExploring,
+        deposited: [],
+      },
+    });
+    const doneDocument = (await inAct(() => done.view.keep())).document;
+    await inAct(() => done.view.dispose());
+    pageDocument().body.replaceChildren();
+    assert.deepEqual(await lines(doneDocument, root), {
+      streak: "najdłuższa passa 480/480",
+      cost: "Do skrzynki nic nie trafiło.",
+    });
+  });
+});
+
 // D-323. Catches a window that still opens and closes after an error nothing handled.
 test("after halt() the window's buttons change nothing", async () => {
   await onPage(async (page) => {
