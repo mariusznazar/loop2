@@ -5040,14 +5040,18 @@ run of an earning loop is going on: the function that reaches its end deals with
   - violates: a second earning loop for one character; a saved game state admitted with the map run
     of an earning loop ended in a death or in a completion; a pause, a pace or firing counts held
     for an earning loop
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 3, 4 and 6, and § Questions carried to cycle, first question
+- **Origin:** none
 
 *Rationale:* the shape itself gives a character one earning loop, and the manual map run stays as
 D-55 keeps it, so what reads it goes on reading it. Content that never changes needs no link to the
 program, so deleting or editing a program, or a rule written at a discovery, reaches no earning loop,
 and each map run binds the same lists anew. An end dealt with where it is reached leaves a load
-nothing to settle. Accepted with it: a later preview of an earning loop's map run needs more of the
-copy, which is a change of the shape and of its version.
+nothing to settle. The practice gathered from completions stays with the earning loop, outside the
+character's skills, until the loop stops, and a death with no resurrection ready takes it with the
+rest. Before earning loops the game state held one map run, with characters not going in parallel,
+a cost accepted on the ground that map runs would be rebuilt per character, and D-56 has a map run
+name its character by number. Accepted with it: a later preview of an earning loop's map run needs
+more of the copy, which is a change of the shape and of its version.
 *Rejected:* map runs held by character in place of the one manual map run — everything that reads the
 manual map run changes, and D-55 keeps one manual map run anyway; an earning loop holding the whole
 map run and copy of a manual map run — it reuses the load's reading of a map run whole, but carries what an earning
@@ -5080,14 +5084,17 @@ minute the characters in the team's order, however many game minutes it brings.
     value held in the game state; one character passed through all the game minutes of a reading
     before the next in the open game; the speed control or the pause of a manual map run reaching
     the loop clock
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2, 11, 12 and 14, and § Questions carried to cycle, third question
+- **Origin:** none
 
 *Rationale:* one game minute per real minute is world time, and a date says what time it is with no
 statement about what a monotonic clock does during sleep, so a hidden tab, throttled timers and a
 sleeping computer all arrive as more whole game minutes at the next reading. The manual map run keeps
 its elapsed measure, so a date that jumps changes no pace there. Between whole game minutes the game
 state stays the very same value, as D-04 and the saving of D-207 want. Whole real moments keep a death
-at one place on the clock however the span is read, and passing the open game minute by minute keeps
+at one place on the clock however the span is read, so a resurrection used in a death during an
+absence renews from that death's own moment and can cover a further death the same night, with real
+time passed in as an argument (D-04) keeping the earning loop, the catch-up and the renewal of a
+resurrection on one footing. Passing the open game minute by minute keeps
 `minute-span-split` true for every split, two earning loops reaching one chest included. Accepted
 with it: a character reaching the chest in the open game can differ from the catch-up, where the
 characters go one at a time (D-240), which `catch-up-state` leaves outside its words.
@@ -5116,13 +5123,16 @@ currently inactive, and the player stops the earning loop first.
     an earning loop reaching its next send or start and leaving the running earning loop as it is
   - violates: a question for a program or a map before the start; „Wejdź” stopping the earning
     loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick standing
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1 and Q3, and § Settlements to record, rows 1, 2 and 5 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-243 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
+- **Origin:** none
 
 *Rationale:* a character goes to earn from the place it is sent from, on the program it already
 shows, so a tuned program goes out with one click. Stopping first keeps the backpack of the map run
-going on from being lost by a click on another button.
+going on from being lost by a click on another button. Accepted with it: one more button in a long
+row of buttons, and one click more where the predecessor game stopped the earning loop when a
+character was sent.
 *Rejected:* a section „Pętle” with a pick of character, map and program — a second place for sending
-characters; „Wejdź” stopping the earning loop by itself — one click silently loses the backpack.
+characters and several times more to draw; „Wejdź” stopping the earning loop by itself, as sending a
+character did in the predecessor game — one click silently loses the backpack.
 
 ### D-244 — What does the player see of an earning loop?
 
@@ -5138,10 +5148,10 @@ A running earning loop currently shows on the card and the screen of its charact
     starts; the program editor staying on the player's programs while earning loops pass
   - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
     earning loop's map run; the start of an earning loop clearing the counts
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2 and Q20, and § Settlements to record, rows 3 and 4 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-244 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5
+- **Origin:** none
 
-*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. Accepted with it: the player sees neither what the character does nor why it died, and the rule that a map run counts its firings takes an exception.
-*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of map-run screen and a large piece of work.
+*Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. The firing counts stay as they were because D-93 holds a manual map run's counts until the next send or map run restart. On the card of a map the character in an earning loop shows the same line as on its card in Siedziba, with „Zatrzymaj”, and the buttons below it inactive. Accepted with it: the player sees neither what the character does nor why it died, cannot watch an earning loop, as the predecessor game allowed, and checks a program only by a manual map run, the rule that a map run counts its firings takes an exception, and a destructive button stands on the screen where characters are sent.
+*Rejected:* a button „Podgląd” with the map of an earning loop's map run to watch — a second kind of map-run screen and a large piece of work; on the card of a map a sentence in place of „Zatrzymaj”, telling the player to stop the earning loop in Siedziba or on the screen Postać — a new sentence and one more transition, though nothing destructive would stand on the card; the inactive buttons alone — a button inactive with no reason shown, which D-287 refuses for a manual map run.
 
 ### D-245 — What does „Zatrzymaj” do?
 
@@ -5161,11 +5171,16 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
     at rest and in `danger` under the pointer
   - violates: a question before the stop; the text of „Zatrzymaj” in `danger` at rest; the stopped map run left on the screen; the line gone after
     a reload; the loot of the stopped map run reaching the chest
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, Q5 and Q18, and § Settlements to record, row 7
+- **Origin:** none
 
 *Rationale:* a stop is the player's own act on a character it can see, so it acts at once, and the
-line says what the stop paid; the button is destructive for the backpack it drops. Accepted with
-it: the player does not see the map run it stopped.
+line says what the stop paid; the button is destructive for the backpack it drops. The stop ends
+the map run going on as „Zakończ” and „Restart” do, so what it carries is lost (D-183), while its
+practice is paid: loot leaves a map in the character's backpack, so a map run that did not complete
+brought nothing out, and paying the practice at the stop keeps the player fixing the program rather
+than waiting for a completion. The line without practice is only „Pętla zatrzymana”, one condition
+in the view on the same principle as the report, where empty parts are left out. Accepted with it:
+the player does not see the map run it stopped.
 *Rejected:* the map run left on the screen to look at, as in the predecessor game — a third kind of
 end of a map run, and it takes the place of the one manual map run; no line after a stop that
 gathered no practice — nothing says that what the player asked for took place; „Pętla zatrzymana ·
@@ -5206,23 +5221,30 @@ manual map run reads the report on reaching Siedziba.
     „Zamknij” at each character; a stop in the first game minute of the catch-up left out of the
     section; „Gdy cię nie było” over a section that holds stops in the open game and no return; the report drawn on the
     screen of a manual map run
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16, Questions to settle, Q6, Q19 and Q21, and § Settlements to record, rows 10, 11, 22, 23, 24 and 26 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §5
+- **Origin:** none
 
 *Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
 line for each character says which of them it was, and one button closes the section in one click.
 In the game state the report outlives a reload between the return and the reading. Each character
 counts its own change, which the catch-up taking characters one at a time gives. A line that closes
 at the death that stops its earning loop keeps both a right {m} and the return of a later earning
-loop. Accepted with it: a new
+loop. {m} in the line of an earning loop that a death stopped after a return is what the earning
+loop did in the catch-up before it stopped, not the time since the save. An earning loop a death
+stopped opens the section at any number of game minutes, so the player learns of one that stopped in
+the first game minute. When this was settled, Siedziba was not on view while a map run stood in the
+game state, and a player returning to a manual map run reads the report on reaching it. Accepted
+with it: a new
 section and a new piece of the game state, a section that shows after a short reload too, one line
-closed along with the others, a stop in the open game that does not say how long the earning loop
-went, and the chest and practice of an earlier return leaving the screen when that line stops in the
-open game.
-*Rejected:* closing at each character — as many clicks as characters; one line for the whole team —
-the player does not know which character it was about; all the minutes of the earning loop from its
-start in a line of a stop in the open game — a number that can exceed the last absence, and {m} means
-two things in the section; the minutes from the last catch-up there — a further counter in the game
-state, for a number that says little; „Gdy cię nie było” kept as the title of stops in the open game —
+closed along with the others, which the predecessor game did not do, a stop in the open game that
+does not say how long the earning loop went, a second title and one more condition in the view, and
+the chest and practice of an earlier return leaving the screen when that line stops in the open
+game.
+*Rejected:* closing at each character, as the predecessor game did — as many clicks as characters; one
+line for the whole team — the player does not know which character it was about; all the minutes of
+the earning loop from its start in a line of a stop in the open game — a number that can exceed the
+last absence, and {m} means two things in the section, which also departs from the predecessor game;
+the minutes from the last catch-up there — a further counter in the game state, for a number that
+says little; „Gdy cię nie było” kept as the title of stops in the open game —
 the title says what is untrue to a player who sat at the game.
 
 ### D-247 — When is time away computed, and how much?
@@ -5242,14 +5264,20 @@ browser's (D-209) and after a sign-in to the same account with that unsaved game
     through it and changing nothing
   - violates: a load that advances earning loops itself; a bound on the minutes with the rest lost; a
     state kept in the page's memory going on from the sign-in with its missed game minutes dropped
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 11 and 13, Questions to settle, Q7, and § Settlements to record, rows 12 and 25
+- **Origin:** none
 
 *Rationale:* the player comes back to what the earning loops earned, however long the absence, and
 each way back into the game counts its time alike. Standing apart from the load, it keeps the load free of
-time passed, and a manual map run standing in the loaded state stands through it (D-212). Accepted
+time passed, and a manual map run standing in the loaded state stands through it (D-212): the
+catch-up starts from the loaded state, a manual map run that was going on standing paused in the
+game minute of the save, and a map run ended by a completion or a death staying on its screen after
+its end. The predecessor game bounded the catch-up, and this departs from it. Accepted
 with it: after many months the page stands for some seconds per character, longer on a telephone and
 on longer map runs, and a clock moved by years gives progress in the player's own game, which D-07
-accepts. A bound can be added later.
+accepts. The seconds rest on one measurement, made on short map runs ended by death: about 0.0068 ms
+for a game minute of one character, a lower estimate, since the cost of a game minute grows with the
+length of a map run. A bound can be added later, when the game has matured and the approved project
+definition has to change for another reason.
 *Rejected:* a bound of 7 days with the rest lost — a change of the approved project definition, with
 its readiness gate and the plan checked again, and no task going ahead until they end; another
 number — the same cost.
@@ -5270,11 +5298,12 @@ moment of that save.
     D-207 sees no change
   - violates: a column of the account database for the save time; the server's clock as the save
     time; the loop clock's value written as the save time; a load reading the clock
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10, Questions to settle, Q8, § Questions carried to cycle, fifth question, and § Settlements to record, row 13
+- **Origin:** none
 
 *Rationale:* the catch-up counts from this moment, and the renewal of a resurrection goes by the same
-clock, so the game holds one (D-219). Inside the game the moment travels with the document, and the
-server stays as it is (D-07). Written on the way to the document, it changes at every save and changes
+clock, so the game holds one (D-219), the browser's, as the predecessor game kept it. The name keeps the
+save time apart from the moment of saving of D-207, which means the occasion to send a save. Inside
+the game the moment travels with the document, and the server stays as it is (D-07). Written on the way to the document, it changes at every save and changes
 no game state, so a comparison by identity keeps its meaning, and between saves nothing reads it but
 the catch-up, once, on a loaded state. What passed of a game minute of an earning loop before
 the save is not counted after a load: at most a game minute per load. Accepted with it: a wrong clock
@@ -5304,11 +5333,13 @@ discovers what the character met in a manual map run.
     what a manual map run discovers meanwhile widening an earning loop's repertoire, as D-119 gives
   - violates: an earning loop's map run stopping at a discovery; a program rule written into a
     program by an earning loop; a discovery named in the report
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, Q9, and § Settlements to record, rows 16 and 17
+- **Origin:** none
 
 *Rationale:* on a solved map discoveries are few and nothing loses them, the player makes them in a
 manual map run, and a catch-up that leaves the Understanding and the programs as they stand is what keeps
-`catch-up-state` true. Accepted with it: a character meets hunger and the game records nothing of it.
+`catch-up-state` true. With nothing discovered, nothing stops game time, which D-118 stops at a
+discovery, and the game writes no program rule of D-123. Accepted with it: a character meets hunger
+and the game records nothing of it.
 *Rejected:* a discovery entering at once, the report naming it — `catch-up-state` stops being true, so
 the project definition changes with its gate; discoveries waiting in the report and entering when it
 closes — one more piece of the game state.
@@ -5327,12 +5358,14 @@ and the earning loops of other characters go on through them.
     loop deposits into the chest
   - violates: one pause holding every map run of the game; earning loops standing still while the
     screen after a completion stays
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, P1 and Q17, and § Settlements to record, row 20
+- **Origin:** none
 
 *Rationale:* earning goes with the world's time (D-239), so looking at a manual map run or at its
 result does not hold up what the other characters earn. A manual map run and the earning loops pass
 apart, so a pause, a stop at a discovery and the screen after an end hold that one map run, and the
-words "time stands still" of the screens after an end speak of it.
+words "time stands still" of the screens after an end speak of it. Before earning loops the game
+state held one pause for the whole game, and real time moved nothing while it was set, so without
+this decision a pause and the screens after an end would have held every earning loop.
 *Rejected:* the screen after an end stopping the earning loops of other characters — looking at the
 result holds up what they earn.
 
@@ -5351,11 +5384,14 @@ program, clipped by carrying capacity and the map's entry cap, exceeds the stock
     „Wejdź” at Las once Las is solved; the same program at a map not yet solved showing no line
   - violates: the line measured against the take list before its clipping; the line in a role other
     than `warning`
-- **Origin:** petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 18, Questions to settle, Q14, and § Settlements to record, row 21 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, D-251 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5
+- **Origin:** none
 
 *Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
 where an earning loop, bound to the chest, goes cut, and the mark names that one price before the
-player starts. It stands where the line of D-188 stands, in the same role.
+player starts. It stands where the line of D-188 stands, in the same role. The mark comes with the
+earning loop, whose name it can then use on the screen, since before the loop the game would speak of
+a loop it does not have. Accepted with it: until the loop came, a trial took stock without a word,
+though there was nothing yet to foresee.
 *Rejected:* the mark brought in before the earning loop — the game speaks of a loop it does not have
 yet; another text, given by the human — its cost was not named.
 
@@ -5393,7 +5429,7 @@ identifier of a thing included, while anything that points to a person takes the
     quote a value; an email address added to the list without the human's consent; a line for each
     save of a game; a failure line of the log form, with `failure`, `kind`, `code` and `place`, written by
     `account-database-check` or `measure-passwords`; the error's text left out of the message of either
-- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 1, 9 and 10, and § Settlements to record, row 1 · zadanie_loop2_teksty_rozjechane_z_kodem.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 7, and § Settlements to record, row 1
+- **Origin:** none
 
 *Rationale:* when something fails, the owner and an agent see its cause and not only its effect, and
 new code starts from rules instead of logging as it happens to. One object on one line keeps a value
@@ -5439,15 +5475,20 @@ the last two touch those data and write no kind or code.
     data of accounts; a handler of its own added to a script that touches none; the event of an
     error nothing handled left uncancelled, so that the browser prints its text and stack; the text
     of an error in a line of the page
-- **Origin:** reguly_awarii_i_logow_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2 · napis_o_awarii_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* a process that reads accounts can fail on an error that quotes an address or a stored
 value, and its default print would write it. A person at a terminal reads the default print of a
 script that touches no account, and it already says what went wrong. The browser prints an error
 that the page does not cancel with its text and stack, which can quote a value from a save or a
 request; cancelling it leaves the page's line the only one, and an agent that reads it learns that
-the error came and of what kind, then reproduces it locally or in a simulation run in Node.js, where
-the text shows.
+the error came and of what kind, then reproduces it locally, with a game state built as D-255 gives,
+or in a simulation run in Node.js, where the text shows. The line carries the name of the place of
+the handler, as the rules on failures call for a failure recorded with its kind, code and place, and
+a line already written when a saved game fails to load carries it too. An error that comes back, as
+one in the code of saving comes back at every moment of saving, leaves the same line once until the
+page is reloaded. Accepted with it: the agent knows from the line that an error came and of what
+kind, but not where in the code nor about what.
 *Rejected:* a handler of its own in every script — it does what the default print does and only adds
 code; the page's line without cancelling the event, so that the browser goes on printing the text and
 the stack — an agent reads the text, but the console is a log in the sense of D-252, whose logs hold
@@ -5472,21 +5513,53 @@ D-75 and D-88 leave with a person and replaces none of them.
     and the person's check of that change still made
   - violates: a Playwright test left in the repository; a request that drops the person's check
     because an agent has seen the screen
-- **Origin:** technologia_obsluga_gry_przez_agenta.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2)
+- **Origin:** none
 
 *Rationale:* the project is made of screens, and an agent that cannot use them as a player does
-cannot check its own work. Its maker recommends the CLI to agents writing code for the tokens it
-saves, its setting for a certificate stands in a file of the repository, and it holds the same
-engine as the MCP server, so going back costs almost nothing. Lacks of the option chosen: its
-version is below 1.0 and leans on an alpha of Playwright, a session with no window closes by itself
-after an hour, the text of a page shows no motion, and images cost tokens. Risks taken, each a
-hypothesis: a drag may catch a select list instead of a handle; an agent judging motion from a few
-frames may report that a scene works while a person sees it jerk at 16×.
+cannot check its own work; left as it was, an agent has no described way to the game, and each
+session finds one anew or waits for a person's description. Playwright was no stranger to the
+project, since agents had already operated this game through its MCP server. Its maker recommends
+the CLI to agents writing code for the tokens it saves, though with no figures, its setting for a
+certificate stands in a file of the repository, and it holds the same engine as the MCP server, so
+going back costs almost nothing. The inspection only adds to the checks of D-75 and D-88: an agent
+that looks in addition collides with neither, while one that replaced the person would collide, on
+one reading, with „a changed journey is checked manually” of D-75 and „a person catches event and
+focus defects” of D-88, though both set manual checking against permanent tests and not against an
+agent, and a script left in the repository would be a permanent test against both. Motion is read
+from a stream of frames because the text of a page shows none, a single screenshot of a short
+effect taken a second late shows the state before it, and the model takes images one at a time and
+uses only the first frame of an animated one. A stream of frames, measured once with the library
+form of Playwright on a stand-in page with a moving sprite, came about every tenth of a second and
+caught an effect of 300 ms. The fake clock of Playwright moves the game's clock but not motion made
+by CSS, so motion at the faster paces is judged in real time. A cropped picture of the scene costs
+far less than a picture of the whole screen, and a text read of the game is not cheaper than a
+screenshot of it. Lacks of the option chosen: its version is below 1.0 and leans on an alpha of
+Playwright, a session with no window closes by itself after an hour, the text of a page shows no
+motion, and images cost tokens. Risks taken, each a hypothesis: a drag may catch a select list
+instead of a handle; an agent judging motion from a few frames may report that a scene works while a
+person sees it jerk at 16×.
 *Rejected:* Playwright MCP as the first way — more tokens and a command sent at each tab where the
-CLI reads one file of the repository; Chrome DevTools MCP and agent-browser — no clock, and their
-frames unchecked; Puppeteer, Selenium, WebdriverIO, Cypress and Stagehand — nothing above
-Playwright; computer use, direct calls to the API, a document model and a person clicking — an agent
-does not check the running product this way.
+CLI reads one file of the repository, a version that changes with no question because it runs the
+latest release and is not pinned in the repository, a setting for a certificate that lies in a
+plugin and not in the repository, and a stream of frames only through its tool that runs any code;
+Playwright as a library — a script written at each check costs tokens, each version wants its own
+browser version, and kept in the repository the script is a permanent test against D-75 and D-88,
+with a new dependency for the audit and the lock file and files that must each belong to a part;
+Chrome DevTools MCP and agent-browser — no clock found in their descriptions, which only a return
+after an absence needs, and a stream of frames never shown to arrive as images, the first also
+sending usage statistics to Google by default and the second being a young project; Puppeteer,
+Selenium, WebdriverIO, Cypress and Stagehand — nothing above Playwright, Puppeteer and Selenium
+having no skeleton of a project, Selenium wanting a newer Node than the computer had and types
+apart, Cypress being tests only and its dragging made of events a browser does not trust, and
+Stagehand needing a key and a bill for a model; Claude in Chrome — it waits for a person at a
+login, gives a moving image of which the model sees the first frame alone, and whether it is
+installed was not checked; computer use — in the command line it works only on macOS, and on Windows
+only in the Desktop application, a route never tried; direct calls to the API — the game is
+computed in the browser, and they show a save and not a screen; a document model — it computes no
+layout, and a hand-made model proves no real events (D-88); a person clicking and describing — the
+agent knows only what the person describes, and only the person judges whether the game is fun;
+Protractor, PhantomJS, Nightmare and Zombie — discontinued or not maintained; browser-use,
+Nightwatch and TestCafe were not examined.
 
 ### D-255 — Where does the data an agent checks the game on come from?
 
@@ -5504,20 +5577,53 @@ touches neither the test server nor a player's save.
     and sent by the save request of that account
   - violates: a check that signs in to the test server; a check that opens a copy of a player's
     save; a game state written straight into the database of the local start
-- **Origin:** technologia_dane_do_sprawdzania.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2) · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 16
+- **Origin:** none
 
 *Rationale:* the late states of the game take too long to reach by playing, and a state built by the
 simulation goes through the same load as any save, so a change of the save's version costs nothing
-here. Lacks of the option chosen: the repository holds no program that solves a map. Risks taken,
+here. Playing does not bring an agent to the states where the pick of an action holds the verbs of
+combat and a bought branch, so without a built state it cannot check a new pick of actions; the early
+states are quick to reach by playing, a death on an empty program coming after 243 game minutes,
+about 15 seconds at 16× by calculation, and a solved map needs a tuned program that the repository
+does not hold. The built state is sent the way the game sends a save, so a check covers the real
+sign-in, session and save, and a new database for each check goes around the limit on new accounts,
+which the server keeps in its memory. Accepted with it: the script that builds the states changes
+together with the rules of the game, and fields set by hand may stop fitting. Lacks of the option
+chosen: it rested on a start over HTTPS that the repository had not held yet, since a server with
+accounts takes requests only over HTTPS and at the configured address, and the repository holds no
+program that solves a map. Risks taken,
 each a hypothesis: a loaded save carries no events, so effects of the scene and the chronicle may
 stand empty until the game passes a stretch; a state built by the game's own code agrees with the
 game even where both are wrong; protection on a computer may block the script that makes a
 certificate.
-*Rejected:* swapping the server's answer in the browser — it passes over signing in and saving;
-writing straight into the database — it passes over the way of a save; ready files of saves — every
-change of version renews them; a developer screen like the old probe — much work and a new entry for
-a game state; a lasting local database — its saves go at a change of version; a lasting environment
-on a server — much work for the owner; the test server itself — it rests on how D-12 reads.
+*Rejected:* swapping the server's answer in the browser — it passes over signing in and over the
+refusals of a save (a conflict, a save too large, an expired session), so it suits screens and not
+saving, as a rule of testing would not replace the mechanism whose failure is checked, and its
+answers must keep the shape of the server's or the check notices nothing when the server changes;
+writing straight into the database — it passes over the way of a save and the checks of the server,
+the database taking a version number that the server then refused in the game's saves, and it puts
+the knowledge of the table in a second place; ready files of saves — every change of version renews them, all at once, a
+file written by hand has to be rewritten, and the game checks nothing until it loads them, while the
+rule that a program's result today is no proof of correctness covers the files too; a developer
+screen like the old probe — the most work among the local ways, a screen to write and keep, a page
+with a test that it does not reach the players, a function of the simulation for „discover all”, and
+a new entry for a game state with a change of the wording of D-04 and, for the present page, of
+D-45; a lasting local database — its saves go at a change of version, the state depends on earlier
+sessions so a check may not start from what the agent assumes, two sessions at once may disturb one
+another, and no time passes in a database, since the game is computed in the browser; a lasting
+environment on a server — much work for the owner: free memory on the host or a separate paid
+server, a second address, a tunnel and secrets, a second way of deploying with its copies, saves
+lost at each new version, and the dearest to change later, though it alone checks the real way
+through the tunnel; the test server itself — it rests on how D-12 reads, which does not speak of the
+game through a public address, and it brings real mail at registration and limits on messages, the
+agent's data beside the owner's and saves lost as the owner's are, a loss accepted for the owner
+alone; playing from a new game with no prepared data alone — time and tokens at each check, and
+every state after a solved map needs a tuned program that the repository lacks; a service worker
+answering from inside the page — a new dependency, a file served by the application and a change of
+the page's start, and the gaps of swapping the answer; a library for assembling states — an addition
+to the other ways and no way to the game, knowing no rule of it, so a state is still checked only
+by the load, and the repository already has helpers of its own; factory-girl, rosie, local-ssl-proxy
+and mockdate — not maintained, judged by their dates.
 
 ### D-256 — Does the local start keep an account between its starts?
 
@@ -5534,7 +5640,7 @@ counts as running. A person plays on the test server.
     beside a later one
   - violates: a setting that keeps the database between starts; a start that removes the database
     of a start still running
-- **Origin:** lokalny_start_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q1, and § Settlements to record, row 1
+- **Origin:** none
 
 *Rationale:* a database made for one check starts from what the check assumes, and a person has the
 test server to play on, so nothing of worth goes with it. The removal comes at the next start
@@ -5555,14 +5661,17 @@ as it is. A person goes through the whole way with mail on the test server.
     address unconfirmed; confirming an address left to a person on the test server
   - violates: a branch of the server that switches mail off for the local start; a check at the
     local start that claims a message arrived
-- **Origin:** lokalny_start_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q2, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* a server that holds accounts always has its mail settings, so the local start gives
 them too, and an address where nothing answers fails a message at once instead of holding a
 registration up to its deadline. Accepted with it: confirming an address and setting a new password
 run to their end only on the test server, so every later check of them stands there.
 *Rejected:* a small mail receiver on the computer with the links printed by the command — the work
-grows, the server may have to change, and the variable that would spare that change was never run.
+grows, the server may have to change, since the running server gave its mail sender no extra
+certificate and only tests passed it one, and the variable that would spare that change was never
+run; mail switched off for the local start by a branch of the server — a second configured but
+incomplete mode beside the one unconfigured mode, as D-111 refuses.
 
 ### D-258 — What does the game present to a browser at the local start?
 
@@ -5575,7 +5684,7 @@ The local start makes its own certificate, and a person clicks through the brows
   - complies: a certificate made by the command, and a warning a person passes in the browser
   - violates: a step that adds a certificate authority to the trusted ones of the system; an
     instruction to install another program for the certificate
-- **Origin:** lokalny_start_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q3, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* the command needs no new program and changes no trust on the computer, at the price of
 a click for a person. Accepted with it: an agent cannot type the commands that make a certificate by
