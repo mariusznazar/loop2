@@ -4394,11 +4394,13 @@ server's log.
   - violates: a lookup of the account or the recording of a link before the response has ended; an
     answer that waits for the mail service; a failure of the work after the answer that ends the
     process
-- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 13 and 15, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* one sentence for every well-formed address says nothing about any account, and the only
-other sentence depends on what the player typed, so it says nothing about an account either. The
-answer leaves before the work because recording a link writes to the disk only for a confirmed
+other sentence depends on what the player typed, so it says nothing about an account either. An
+address with a typo that is still well formed, such as a misspelled domain, gets the one answer, and
+the answer's ending, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”, is the „try later”
+that D-105 gives a player above a limit. The answer leaves before the work because recording a link writes to the disk only for a confirmed
 account that is neither blocked nor above a limit, so an answer that waited for it would tell by its
 time what its sentence hides. Accepted with it: a player with an unconfirmed address, above a limit
 or during a failure of the mail service waits for a message that does not come, and only the
@@ -4438,11 +4440,12 @@ the game's address is given to other players, if abuse has become real.
   - complies: a request for a link going through the two limits of D-105 and no other count
   - violates: a counter of requests per client address added beside those limits while this decision
     stands
-- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* accounts belong to the owner alone for now, so a limit of its own would guard against
-nobody yet. Accepted with it, as no other entry accepts it: whoever knows ten confirmed addresses
-exhausts the 30 messages within an hour, and for that hour nobody gets a message, a new player's
+nobody yet. Accepted with it, as no other entry accepts it, since D-105 accepts only the exhaustion
+of the provider's monthly allowance and not that of an hourly ceiling: whoever knows ten confirmed
+addresses exhausts the 30 messages within an hour, and for that hour nobody gets a message, a new player's
 confirmation included; and the same person can stop another player's waiting link three times an hour
 (D-155).
 *Rejected:* a limit of its own, for example five requests from a client address per hour, counted in
@@ -4465,7 +4468,7 @@ address and sends it only with the form „Ustaw nowe hasło”, in a request me
     `POST` only when the form is sent
   - violates: a link carrying its token in its path or query; a token kept in clear in the database
     or written to a log
-- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 5
+- **Origin:** none
 
 *Rationale:* the link is built as a confirmation link is (D-156), for the same reasons: a fragment
 reaches no server, no request log and no `Referer`, a digest in the database yields no working link
@@ -4494,19 +4497,22 @@ connection or a full password gate leaves the form, one sentence under it and th
   - violates: a request sent when the page opens; the fragment kept after a refusal of the link; the
     form closed by a 429 or by a lost connection; „Anuluj” of a signed-in player opening the screen
     of a manual map run
-- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 4 and 14, and § Settlements to record, rows 8, 9, 10, 11 and 13 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 16
+- **Origin:** none
 
 *Rationale:* a form shown without a question to the server gives nobody a way of asking whether a
 token works. Accepted with it: a player with an expired link types the password twice in vain; a
 refusal costs one request more, so that a player with a valid session returns to the game at once;
 and an answer lost after the server committed leaves the form standing, a second sending then being
 refused although the password did change, which the new password on the form or a new link puts
-right.
+right. „Anuluj” ends a page that an emailed link opened, so, as after any emailed link (D-96), it
+opens Siedziba for a signed-in player, while a signed-out player sees the account forms as before.
 *Rejected:* a page that checks the link by a request of its own and shows „Sprawdzanie odnośnika…”,
 with the sentence of a refusal at once — a second new route without a session, answering anyone
 whether a token works, one more state of the page with its tests, and one more sentence in D-109;
 the account forms with that sentence after every refusal — a player with a valid session sees the
-login as if signed out, though a reload returns to the game and nothing is lost.
+login as if signed out, though a reload returns to the game and nothing is lost; „Anuluj” of a
+signed-in player taking the screen from the saved game state, the manual map run it holds — a
+departure from D-96, under which the page opens Siedziba after an emailed link.
 
 ### D-226 — How does the route that sets a password by a link check its request and bound its password work?
 
@@ -4567,10 +4573,11 @@ się nie zmieni.”. After a change of password the player gets no message about
     and a text body with the link on a line of its own
   - violates: an HTML body beside the text; a message handed to the mail service after a password is
     set
-- **Origin:** reset_hasla_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 7 and 9, and § Settlements to record, rows 16 and 18
+- **Origin:** none
 
-*Rationale:* the message has the sender and form of the confirmation message, so it reads as coming
-from the same place, and says what to do if it was not asked for. Accepted with it, as a departure
+*Rationale:* the message has the sender and form of the confirmation message and goes out with the
+same mail settings and the same SMTP password, so it reads as coming from the same place, and says
+what to do if it was not asked for. Accepted with it, as a departure
 from the OWASP advice this entry cites: a player whose password someone else changed learns of it
 only at a failed login, though that someone needed access to the same mailbox such a message would
 go to.
@@ -4594,16 +4601,17 @@ with the planned retained backups; otherwise another device outside the game ser
     they do not fit, so the deployment uses another device outside the game server host
   - violates: Strych passes the checks but another location is chosen without review; Strych fails
     and the only remaining backup is on the game server host
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "Which failure does the database backup survive?"
+- **Origin:** none
 
 *Rationale:* a second file on the game server protects against some mistakes but disappears with
 the host. Keeping a consistent backup elsewhere preserves the possibility of restoring accounts and
 progress after that loss. Strych may meet this boundary within the existing Mikrus arrangement;
 its activation, capacity for real saved games and restore path need a practical check. Another device
-can serve the same boundary if Strych does not.
+can serve the same boundary if Strych does not. The choice is to be looked at again when backups
+stop fitting at their destination or a restore from outside the game server fails.
 *Rejected:* a backup only on the game server — losing that host loses every backup; requiring a
 backup outside the Mikrus provider from the outset — adds another destination to operate before the
-MVP requires protection against provider-wide loss.
+scope the game started with calls for protection against provider-wide loss.
 
 ### D-229 — How does the account and save server access SQLite?
 
@@ -4617,12 +4625,14 @@ database read, write and backup operations have been checked on that release.
 - **Verification:** invariants: account-save-sqlite-access · account-save-sqlite-upgrade. An agent compares a change with the decision:
   - complies: a step of the image's final stage that checks read, write and backup on the image's own Node.js release, so that a release failing it fails the build and the running containers stay in service
   - violates: a server image built without that step; an external SQLite driver among the server's dependencies
-- **Origin:** the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How does the account and save server access SQLite?"
+- **Origin:** none
 
 *Rationale:* the built-in module avoids another native runtime package and its installation in the
 deployment image. Node marks the API as a release candidate, so compatibility with a later Node
 release is checked before deployment. Broad public use of this specific API is not established; the
-choice accepts that evidence gap for the MVP's small account and save server.
+choice accepts that evidence gap for this small account and save server, and is to be looked at
+again when a planned Node.js update changes `node:sqlite` incompatibly or the check of the
+database's read, write and backup operations fails.
 *Rejected:* better-sqlite3 — its established API adds a native package, separate TypeScript types
 and independent updates for the work this server needs; legacy sqlite3 — its original package is
 deprecated and unmaintained; the maintained fork — its documentation and breadth of use were not
@@ -4642,7 +4652,7 @@ command deletes one, and nothing reads the destination's list of files.
 - **Verification:** an agent compares a change with the decision:
   - complies: a send that names one of the seven files, computed from the date, and replaces that file whole, so a failed send leaves the older backup standing
   - violates: a file name taken from a listing of the destination; a deleting option or command aimed at the destination; a name that leaves an eighth file there
-- **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 1, and § Settlements to record, row 1
+- **Origin:** none
 
 *Rationale:* a player loses at most a day of play, and a fault noticed after a week has no clean
 backup. Each backup takes its full size, since the database changes between backups. While a send
@@ -4686,7 +4696,7 @@ installing or reinstalling them being a human's change.
 - **Verification:** an agent compares a change with the decision:
   - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on; a run of the command without its fixed word that ends with the usage exit code, an empty standard output and the database never opened
   - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a schedule installed under a file name with a dot; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
-- **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 3, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* the key to Strych stays away from the process that serves players, a failed send
 happens outside it, and the game goes on running during a backup. When the container is not running
@@ -4696,7 +4706,8 @@ connector: for a script that has to act from outside the container and hold a ke
 must not hold, that reasoning is reversed in this case, D-10 stays as it is, and the human reinstalls
 the script at each of its changes, as with the deploy script of D-16. The comparison at each
 deployment shows the drift this accepts, and a warning rather than a refusal keeps a rollback past a
-change of the sources possible. The plain database rests in the container's writable layer for the
+change of the sources possible. The key to Strych is a new secret on the server, which D-13 records,
+as it would in any of the ways. The plain database rests in the container's writable layer for the
 seconds of the run and on the host only passes through a pipe. The command counts towards the
 container's memory limit on a host without swap; measured in a container limited to 512 MiB, its
 backup step alone on a 66 MB database peaks at 58 MiB and the whole command, streaming a 33 MB
@@ -4737,7 +4748,7 @@ backup is not compressed.
 - **Verification:** invariants: account-save-backup-encrypted. An agent compares a change with the decision:
   - complies: a script that sends only after every stage of its pipe exited 0 and the file is not empty
   - violates: a plain database file on the host's disk on its way to the encryption; the key handed into the game container
-- **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 4, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* a leak from Strych reveals no player's address. The price is one more secret and one
 more step at a restore, and losing the key makes every backup useless. `age` reports success only
@@ -4747,8 +4758,8 @@ exchange for two short commands. Without compression the bound of the database's
 is, and compression is one more pipe stage and one more restore step for room nothing needs yet,
 with no guarantee, since it depends on the content; it can be added later without touching the keys
 or the weekday files.
-*Rejected:* no encryption, only access by an SSH key to one's own place on Strych — the addresses
-and password hashes of all players would lie in plain form on a shared server whose protection
+*Rejected:* no encryption, only access by an SSH key to one's own place on Strych — after the public
+launch of accounts the addresses and password hashes of all players would lie in plain form on a shared server whose protection
 nobody knows, though the backup and the restore would be simpler and there would be no key to lose;
 an `age` key pair with the public half on the server and the private half only in the note —
 stronger against a thief of the server, who however reads the live database anyway, while D-13 keeps
@@ -4779,12 +4790,14 @@ reaches no file.
 - **Verification:** invariants: account-save-backup-failure-notice. An agent compares a change with the decision:
   - complies: one handler at the script's exit that sends the fixed text whatever caused a non-zero end
   - violates: a tool's output piped into `pusher`, as its documentation shows; the error text of `rsync` written to the log, since a refused login prints the login
-- **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 5, and § Settlements to record, rows 8 and 9
+- **Origin:** none
 
 *Rationale:* the script stands outside the game container, so a failed backup, a full Strych, a wrong
-key and a dead game container report themselves. A stopped schedule writes nothing, and that silence
-looks the same as everything working, which is why the gap has a written review; the review is a
-reminder that blocks nothing, and until it the silence stays. A human who needs the reason for a
+key and a dead game container report themselves. A message sent by hand through `pusher` from the
+server reached the owner's mailbox when this was weighed. A stopped schedule writes nothing, and that
+silence looks the same as everything working, though such a schedule no longer keeps the day-old
+bound of D-230, which is why the gap has a written review; the review is a reminder that blocks
+nothing, and until it the silence stays. A human who needs the reason for a
 failed send runs the send by hand in a private terminal, since a refused login prints the login, an
 access value, and an agent may read the log.
 *Rejected:* the log on the server alone — a break can go unnoticed for weeks; email to the owner
@@ -4812,7 +4825,7 @@ procedure.
 - **Verification:** an agent compares a change with the decision:
   - complies: the owner runs the trial on an image built from the same commit and sees a name given in the game before the backup was made come back
   - violates: a backup taken as checked because its file opens; an agent that fetches, decrypts or opens a backup
-- **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 12
+- **Origin:** none
 
 *Rationale:* a login that brings the saved game state back shows that a backup gives the player's
 game back, not merely that a file opens, and it takes no second server. The trial does not show that
@@ -4839,12 +4852,14 @@ The agreement with them is checked by a human when the way of talking to them ch
 - **Verification:** an agent compares a change with the decision:
   - complies: a test whose stand-in `rsync` exits non-zero and that sees exactly one call of the stand-in `pusher`
   - violates: a test that connects to Strych or calls the real `pusher`; a test that takes what a stand-in recorded as proof that a file or a message arrived
-- **Origin:** kopia_bazy_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 9
+- **Origin:** none
 
 *Rationale:* a test against the real services needs the key to Strych outside the server, and its
 result changes with the service rather than with the code. A stand-in shows how the script reacts to
 a failure and nothing of the service it replaces, so only a human's run from the server shows that
-the services accept the script's way of talking to them.
+the services accept the script's way of talking to them. When this was decided, the testing
+guidelines' table for code that talks to someone else's service named the package registry and the
+mail service only, with no rule for a backup server or a message service.
 *Rejected:* a contract test against the real services, as the adopted template asks for someone
 else's service — takes the key to Strych outside the server against D-13 and gives a result that
 depends on the service.
@@ -4966,13 +4981,14 @@ unlocks its earning loop without certifying that the chosen program survives eve
   - violates: an earning loop going sixteen game minutes per real minute when the speed is set so;
     an earning loop kept as one long map run; an earning loop started on a map not yet solved; a
     solved map refused as unsafe after a failed seed
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D22 and §5 "Pętla zarobkowa" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "How fast does the earning loop go?"
+- **Origin:** none
 
 *Rationale:* solving a map is a puzzle and may be fast-forwarded; earning is income and goes with the
 world's time. Without that split "passive" would be a fiction — fast-forward a day and take the
 wages. With it comes the rhythm of a session: tinker with a program, let the character go, come back
 the next day. Short map runs keep the catch-up cheap, since the cost of a game minute grows with the
-length of a map run. One completion opens the earning loop but does not establish that the program
+length of a map run: a loop of short map runs was expected to catch up a week of absence in about a
+second, while one map run without end would choke after a few days. One completion opens the earning loop but does not establish that the program
 survives every seed, so trying to earn still carries the risk of death.
 *Rejected:* the earning loop as one long map run — the cost of a game minute grows without end; one
 speed control for tuning and earning — passivity goes, and with it the sense of the earning loop;
@@ -4996,11 +5012,12 @@ character's loot only, the character earlier on the list takes it.
     first taking its loot into a chest with room for one
   - violates: characters caught up together, game minute by game minute; a map run that takes from
     the chest in the middle of another character's map run
-- **Origin:** koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), D23 and §4 "Wiele postaci — fundament zbudowany" · the full approved entry: definicja_mvp_loop2.md in the vault (Notes/Projects/(P) Loop), § Projected foundation changes, "When and how is the time away computed?"
+- **Origin:** none
 
-*Rationale:* nothing has to run while no browser is open. Characters that meet only at the borders
-of map runs make several characters several independent computations rather than a schedule, so the
-catch-up stays cheap arithmetic; a handover between map runs going on at once would need a schedule
+*Rationale:* nothing has to run while no browser is open, so the catch-up needs no server of its own.
+Characters that meet only at the borders of map runs make several characters several independent
+computations rather than a schedule, so the catch-up stays cheap arithmetic, and the order of the
+player's list of characters becomes a contract; a handover between map runs going on at once would need a schedule
 and lose that.
 *Rejected:* the simulation running on a server — there is nothing to compute while no browser is
 open; characters meeting inside map runs — needs a schedule and loses the cheap catch-up.
