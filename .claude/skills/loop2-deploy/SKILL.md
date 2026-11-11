@@ -91,7 +91,7 @@ files or requests. The MCP has full rights, so the following limits are an agree
 - No token-file, session-key-file or SMTP-password-file reads, no triggering of mail (below), no reading or copying of the account database or
   its volume (it holds e-mail addresses and password hashes), no reading of the backup
   encryption key or the known-hosts file, no reading of root's SSH configuration beyond that
-count, no running of the backup script or of the backup
+  count, no running of the backup script or of the backup
   command, no hand run of the send, no fetching, opening or listing of backups on Strych, full `docker inspect`, Compose
   configuration dumps, arbitrary container execution, restarts, deployments, key changes or
   secret rotation. The MCP's changing tools

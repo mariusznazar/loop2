@@ -207,13 +207,14 @@ scan() {
   local file=$1 base=$2 depth=$3 word path f
   [ -r "$file" ] || return 0
   if [ "$depth" -gt 16 ]; then n=$((n + 1)); return 0; fi
-  n=$((n + $(grep -v -E "^[[:space:]]*#" "$file" | grep -c -i -E "^[[:space:]]*(KnownHostsCommand|VerifyHostKeyDNS)([[:space:]=]|$)")))
+  n=$((n + $(grep -v -E "^[[:space:]]*#" "$file" | grep -c -i -E "^[[:space:]]*(\"|(KnownHostsCommand|VerifyHostKeyDNS)([[:space:]=]|$))")))
   while IFS= read -r word; do
     [ -n "$word" ] || continue
     if ! [[ $word =~ ^[A-Za-z0-9_./*?~+-]+$ ]]; then n=$((n + 1)); continue; fi
     case $word in
       /*) path=$word ;;
       \~/*) path=$home/${word#\~/} ;;
+      \~*) n=$((n + 1)); continue ;;
       *) path=$base/$word ;;
     esac
     for f in $path; do
@@ -229,13 +230,16 @@ echo "$n"
 
 The count covers `/root/.ssh/config`, `/etc/ssh/ssh_config` and every file their `Include`
 lines name, to any depth up to 16, with wildcards expanded and a relative path taken from
-`/root/.ssh` or `/etc/ssh` as `ssh_config(5)` gives it. It counts a line whose first word is
-either option in any letter case, with a space or `=` after it, and skips lines whose first
-character after spaces is `#`; a line that sets the option to `no` still counts. A word of an
-`Include` line the command cannot follow (a variable, a `%` token, a quote, a trailing comment)
-and a nesting deeper than 16 each count as one, so the number is never 0 for a configuration the
-command could not read to the end. A number above 0 is a finding for the human, not a line to
-read: the agent reports the number and does not open the files.
+`/root/.ssh` or `/etc/ssh` as `ssh_config(5)` gives it; a path that begins with `~/` is taken
+from `/root`. It counts a line whose first word is either option in any letter case, with a
+space or `=` after it, and skips lines whose first character after spaces is `#`; a line that
+sets the option to `no` still counts. Four cases the command cannot follow each count as one,
+so the number is not 0 for any of them: a line whose first character after spaces is a double
+quote (`ssh` reads a quoted keyword as the option); a word of an `Include` line with a character
+outside letters, digits and `_ . / * ? ~ + -` (a variable, a `%` token, a quote, a trailing
+comment); a word of an `Include` line that begins with `~` but not with `~/` (a `~user/` path);
+and a nesting deeper than 16. A number above 0 is a finding for the human, not a line to read:
+the agent reports the number and does not open the files.
 
 Never: reading the content of the key, the known-hosts file or root's SSH configuration (the count
 above is the only reading of the configuration); running
@@ -412,8 +416,11 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    Take the newest unless another is wanted. A size near 200 bytes is an empty backup (see "The
    log"): take the next newest. While the log of the backup exists, its last `end: sent` line
    names the weekday file of the newest night and should agree; a disagreement is for the owner
-   to understand before going on.
-2. Decrypt it there: `age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file>`.
+   to understand before going on. Then enter the directory and stay in it for step 2:
+   `cd /root/loop2-restore`.
+2. Decrypt it there, from `/root/loop2-restore`, so that the plain database is written inside
+   the private directory that step 7 removes and nowhere else:
+   `age --decrypt -i /etc/loop2/backup-encryption-key -o accounts.sqlite <file>`.
    `head -c 15 accounts.sqlite` shows `SQLite format 3`. A backup made before the last change of
    the key ("Changing the encryption key") is refused by `age` with the current key. Open it with
    the old key from the private note, the one marked old: put it into a file of its own in the
@@ -465,8 +472,8 @@ A second attempt after a failed one. `/root/loop2-restore` stays after a failed 
 step 4 has run, `previous` in it holds the database from before the restore. Do not start again
 from step 1: its `mkdir` refuses a directory that exists, and step 4 run again would move the
 restored files over the ones in `previous` and lose the way back. Instead, leave the directory
-as it is and: choose and fetch the backup (step 1 without the `mkdir`), decrypt it (step 2; the
-new `accounts.sqlite` replaces the earlier decrypted one, never anything in `previous`), stop
+as it is and: choose and fetch the backup (step 1 without the `mkdir`), decrypt it (step 2, from
+`/root/loop2-restore`; the new `accounts.sqlite` replaces the earlier decrypted one, never anything in `previous`), stop
 `app` if it runs (step 3), and in step 4 remove the restored `accounts.sqlite` and any `-wal`
 and `-shm` from the volume's directory instead of moving them. Then go on with step 5. When
 `previous` is empty, the first attempt stopped before step 4, and step 4 stands as written.
@@ -492,9 +499,11 @@ in this order:
    stat -c '%U %g %a' /etc/loop2/session-secrets
    ```
 
-   The last row expects `root 1000 440`. Do not make a new key here, neither with "Creating the
-   file" nor with "Rotating" in "Session signing keys" of `setup_and_secrets.md`: the restored
-   sessions are signed with the keys of the note, and a new key signs every player out.
+   The last row expects `root 1000 440`. Do not make a new key here. "Creating the file" in
+   "Session signing keys" of `setup_and_secrets.md` writes a file with one new key, which signs
+   every player out, because the restored sessions were signed with the keys of the note.
+   "Rotating" there needs the file in place first, and it only prepends a new key to it; the
+   file is already the note's.
 4. `apt install age`. Check that `rsync` exists (`rsync --version`; install it with `apt` if not)
    and that `pusher` exists (`command -v pusher`). Send a test message with
    `echo test | pusher test_kopii` and check that it arrives. On a host where it does not arrive
