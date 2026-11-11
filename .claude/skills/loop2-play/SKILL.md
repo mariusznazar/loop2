@@ -212,9 +212,9 @@ on.
 ## Where the CLI fails: Playwright MCP
 
 Use this way only from a session of the agent that started in the worktree of your cycle. Playwright
-MCP keeps one browser profile for the workspace root of its client, which is taken to be the
-directory the session started in, and a profile serves one browser at a time, so two sessions
-started from one directory block each other.
+MCP by default keeps one browser profile for the workspace root of its client, which is taken to
+be the directory the session started in, and a profile serves one browser at a time, so two
+sessions started from one directory block each other.
 
 Playwright MCP has no setting for the local certificate here, so its first navigation ends in
 `ERR_CERT_AUTHORITY_INVALID`. Run this through `browser_run_code_unsafe`, with the address of the
