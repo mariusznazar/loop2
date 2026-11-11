@@ -8083,7 +8083,7 @@ The rule panel shows beside an action what it costs, read from the game's data, 
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
-- **Relations:** derives from D-288 · derives from D-63
+- **Relations:** derives from D-288 · derives from D-63 · derives from D-293
 - **Verification:** an agent compares a change with the decision:
   - complies: the cell „Wytwórz — ognisko (6 patyków)” in the pick of the rule panel, greyed with its price when it may not be picked; „Uderz — patyk” with no price, since the stick stays in the backpack after a strike (D-145); the row „Zapas poniżej 8 · Patyk → Wytwórz — ognisko” with no price;
   - violates: a price in the row of a program rule; „(6 × patyk)” in the panel; a price with a name in the singular after a count of 6; „Zapal — ognisko (2 patyki, 10 energii natury)” shown to the character with „Czysty płomień” during a map run
