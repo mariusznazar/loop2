@@ -684,14 +684,17 @@ one is supplied and the address the licensor gives for it, and to identify the u
 the changed work. game-icons.net supplies a title for each icon on its page. Saying how each icon
 file differs from its source goes beyond what the licence asks: it is the product's own choice. With
 dozens of icons a list of credits on every screen takes more room than the game can give, and
-folded on two screens it stays one click away, which keeps what the licence asks. Accepted with it:
+folded on two screens it stays one click away, which keeps what the licence asks. On Siedziba it
+stands at the bottom, as the last part of the screen, where the old Loop, from whose views the
+product starts, stands its credits on the main screen. Accepted with it:
 a long list once it is opened on the login card, and, with a long team, a scroll down Siedziba to
 reach it, which the licence allows as long as the credits can be reached.
 *Rejected:* emoji — their look differs from one system to another; shapes drawn by hand — every new
 thing costs drawing work; an icon package from npm — a dependency more for files the product can
 keep itself, entering through what the product already treats as untrusted; the credits open in a
 footer of every screen — dozens of rows standing below the game; the section on Siedziba under its
-heading — the first thing on the main screen of the game would be the credits; the section just
+heading — the caption of the credits would be the first thing on the main screen of the game, and
+the screen would leave the old Loop's with no gain for the player; the section just
 under the chest — once the chest stands at the top of Siedziba the section would stand high on the
 main screen too.
 
