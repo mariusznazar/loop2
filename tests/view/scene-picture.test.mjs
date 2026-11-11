@@ -7,6 +7,7 @@ import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   SCENE,
+  SCENE_DUST,
   SCENE_FIRE,
   SCENE_MAGES,
   SCENE_PROPS,
@@ -17,7 +18,10 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { sceneDrawing } from "../../dist/browser/view/scene-picture.js";
+import {
+  sceneDrawing,
+  sceneEffect,
+} from "../../dist/browser/view/scene-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -452,9 +456,11 @@ test("every file the scene's data names stands directly in assets/sprites/ as a 
   const names = [
     SCENE.background.file,
     SCENE_FIRE.picture.file,
+    SCENE_DUST.file,
     ...Object.values(SCENE_MAGES).flatMap((sheets) => [
       sheets.idle.file,
       sheets.run.file,
+      sheets.bend.file,
     ]),
     ...Object.values(SCENE_PROPS).map((prop) => prop.picture.file),
   ];
@@ -467,4 +473,167 @@ test("every file the scene's data names stands directly in assets/sprites/ as a 
       `${name} is not in assets/sprites/`,
     );
   }
+});
+
+test("the mage's third sheet, the bend, and the cloud of dust come from the data, with the frame size and the frame count of the files", () => {
+  assert.deepEqual(sceneDrawing(sent()).mage.bend, {
+    href: "/sprites/mage-bend.png",
+    width: 64,
+    height: 64,
+    frames: 4,
+  });
+  assert.deepEqual(SCENE_DUST, {
+    file: "dust.png",
+    width: 16,
+    height: 16,
+    frames: 8,
+  });
+});
+
+test("the mage bends while it gathers, whichever the target, and at nothing else", () => {
+  const bending = (state) => sceneDrawing(state).mage.bending;
+  for (const resource of ["stick", "berry", "moss", "fiber"]) {
+    assert.equal(bending(doing({ kind: "gather", resource })), true, resource);
+    assert.equal(bending(doing({ kind: "patrol", resource })), true, resource);
+  }
+  for (const kind of ["explore", "eat", "kick", "craftCampfire"])
+    assert.equal(bending(doing({ kind })), false, kind);
+  assert.equal(bending(withRun(sent(), { current: null })), false, "combat");
+  assert.equal(
+    bending(
+      doing(
+        { kind: "gather", resource: "stick" },
+        { death: { minute: 3, cause: "cold" } },
+      ),
+    ),
+    false,
+    "dead",
+  );
+  assert.equal(
+    bending(
+      doing(
+        { kind: "gather", resource: "stick" },
+        { completion: { minute: 3 } },
+      ),
+    ),
+    false,
+    "completed",
+  );
+});
+
+// --- the effect of the end of a gathering (D-04, D-66, D-317) ---------------------------------------
+
+const STICK = { kind: "gather", resource: "stick" };
+const FIBER = { kind: "gather", resource: "fiber" };
+
+/** The state with `count` pieces of the resource carried. */
+function carrying(state, item, count) {
+  return withRun(state, {
+    character: {
+      ...state.run.character,
+      backpack: { ...state.run.character.backpack, [item]: count },
+    },
+  });
+}
+
+const finished = (action) => ({
+  kind: "activityFinished",
+  minute: 10,
+  activity: { kind: "rule", ruleId: 1, action },
+});
+
+/** The effect of a reading that carries `events`, from `before` pieces to `after`, mage at 42. */
+function effectOf(resource, before, after, events, mageX = MAGE_AT_STICKS) {
+  return sceneEffect(
+    carrying(sent(), resource, before),
+    carrying(sent(), resource, after),
+    events,
+    mageX,
+  );
+}
+
+test("a hit flies the resource's icon from the middle of its prop to the mage's body, 32 right of its frame's edge and 18 over the ground line", () => {
+  // Sticks at 80 × 132, 22 × 13: their middle is 91 and 125.5. The mage's frame at 42: body 74, line 136.
+  assert.deepEqual(effectOf("stick", 0, 1, [finished(STICK)]), {
+    kind: "flight",
+    href: "/icons/wood-stick.svg",
+    from: { x: 91, y: 125.5 },
+    to: { x: 74, y: 118 },
+  });
+  // The bush at 252 × 122, 29 × 27: the middle is 266.5 and 108.5; the mage's frame at 224: body 256.
+  assert.deepEqual(
+    effectOf(
+      "berry",
+      1,
+      2,
+      [finished({ kind: "gather", resource: "berry" })],
+      224,
+    ),
+    {
+      kind: "flight",
+      href: "/icons/berry-bush.svg",
+      from: { x: 266.5, y: 108.5 },
+      to: { x: 256, y: 118 },
+    },
+  );
+});
+
+test("a hit of the fibre, which has no prop, flies from under the mage's feet, 3 over the ground line", () => {
+  assert.deepEqual(effectOf("fiber", 0, 1, [finished(FIBER)], 144), {
+    kind: "flight",
+    href: "/icons/flax.svg",
+    from: { x: 176, y: 133 },
+    to: { x: 176, y: 118 },
+  });
+});
+
+test("„Obchód” flies one icon whatever it brought, and shows nothing when it brought nothing", () => {
+  const patrol = { kind: "patrol", resource: "moss" };
+  const brought = effectOf("moss", 0, 9, [finished(patrol)], 32);
+  assert.equal(brought.kind, "flight");
+  assert.equal(brought.href, "/icons/fern.svg");
+  assert.equal(effectOf("moss", 4, 4, [finished(patrol)], 32), null);
+});
+
+test("a „Zbierz” that put no piece into the backpack puts the cloud of dust at the prop, centred on it with its bottom 2 under its line", () => {
+  // Sticks: middle 91, so the 16-wide frame starts at 83; the line is 132, so its bottom is at 134.
+  assert.deepEqual(effectOf("stick", 3, 3, [finished(STICK)]), {
+    kind: "dust",
+    sprite: {
+      href: "/sprites/dust.png",
+      width: 16,
+      height: 16,
+      frames: 8,
+      x: 83,
+      y: 134,
+    },
+  });
+  // The fibre: under the mage's feet, centred on its body at 176, the ground line 136 and 2 under it.
+  const fibre = effectOf("fiber", 0, 0, [finished(FIBER)], 144);
+  assert.equal(fibre.kind, "dust");
+  assert.equal(fibre.sprite.x, 168);
+  assert.equal(fibre.sprite.y, 138);
+});
+
+test("no effect without exactly one end of a gathering, in a reading that has a map run before it", () => {
+  assert.equal(effectOf("stick", 0, 1, []), null, "no end");
+  assert.equal(effectOf("stick", 0, 1, [finished({ kind: "eat" })]), null);
+  assert.equal(
+    effectOf("stick", 0, 2, [finished(STICK), finished(STICK)]),
+    null,
+    "two ends are overdue",
+  );
+  assert.equal(
+    effectOf("stick", 0, 1, [
+      { kind: "mapRunStarted", seed: 1 },
+      finished(STICK),
+    ]),
+    null,
+    "a map run started",
+  );
+  assert.equal(
+    sceneEffect(newGame(), carrying(sent(), "stick", 1), [finished(STICK)], 42),
+    null,
+    "no map run before",
+  );
 });

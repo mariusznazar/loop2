@@ -361,7 +361,7 @@ export function Scene({
       )}
       {effect.shown === null || effect.shown.kind !== "dust" ? null : (
         <Effect
-          key={effect.serial}
+          key={`effect-${effect.serial}`}
           effect={effect.shown}
           frame={frame}
           onEnd={effectEnded(effect.serial)}
@@ -388,7 +388,7 @@ export function Scene({
       </div>
       {effect.shown === null || effect.shown.kind !== "flight" ? null : (
         <Effect
-          key={effect.serial}
+          key={`effect-${effect.serial}`}
           effect={effect.shown}
           frame={frame}
           onEnd={effectEnded(effect.serial)}
