@@ -14,7 +14,7 @@ bez odstępstw zgodnie z D-38.
 | Role | Kind | Meaning for the user | Text on it | Decision |
 |---|---|---|---|---|
 | `page` | background | Tu jest gra. | `text` | D-40 |
-| `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci. | `text` | D-40 |
+| `panel` | background | To osobny, wydzielony blok, także plakietka nad głową postaci i plakietka lecącej ikony zasobu. | `text` | D-40 |
 | `highlight` | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem. | `text` | D-40 |
 | `rule-winning` | background | Ta reguła programu wygrywa teraz. | `text` | D-40 |
 | `rule-running` | background | Czynność tej reguły programu trwa teraz. | `text` | D-40 |
@@ -127,7 +127,7 @@ wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w T
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
 kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
 przy jednym rozmiarze sceny (D-349). Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
-ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga i paska) oraz dwóch
+ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony i kurzu) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
 sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach. D-43 ich też
 nie liczy; czy staną się tokenami, ten przewodnik nie rozstrzyga.
@@ -597,7 +597,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-39 · D-40 · D-43
+- **Decision:** D-271 · D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-39 · D-40 · D-43
 - **Invariant:** none
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
 - **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę.
@@ -623,10 +623,32 @@ Ruch daje CSS, bez pętli rysowania: klatki maga i ognia zmieniają się w stał
 takcie, dojście maga na miejsce trwa zawsze tyle samo, niezależnie od tempa gry,
 a pasek płynie między odczytami zegara (D-316, D-319, D-320); czasy stoją
 w `src/browser/styles.css`. Zmiana celu w drodze skręca maga z miejsca, w którym jest.
+Mag, który zbiera, schyla się w pętli w tym samym takcie klatek przez całe zbieranie,
+od chwili, gdy stanie na miejscu czynności, zwrócony ku rekwizytowi, który zbiera, z danych
+gry: ku prawej przy patykach i jagodach, ku lewej przy mchu; przy włóknie, które rekwizytu nie ma,
+zwrócony tak, jak stoi (D-364); jego klatki schylenia leżą w osobnym arkuszu z obrazkiem pierwszej klatki, pełnym
+schyleniem, na którym mag staje pod ustawieniem ograniczenia ruchu.
+
+Koniec zbierania pokazuje efekt zwykłego zdarzenia, najwyżej 300 ms, bez tekstu (D-317).
+Gdy do plecaka przybyła sztuka, z rekwizytu, a przy włóknie spod stóp maga, leci łukiem do jego
+tułowia ikona zasobu z danych gry, ta sama co na rysunku mapy, na małej plakietce w tle `panel`,
+jak plakietka nad głową; ikona trzyma kolor w swoim pliku (D-365, D-43). Gdy „Zbierz” chybi,
+przy rekwizycie, a przy włóknie pod stopami maga, staje obłok kurzu z paczki Smoke & Fire
+Animated Particle [16x16], przekolorowany na brązy sceny, które odróżniają się od gruntu, na
+którym stoi (D-366, D-271). Lot i kurz biegną w CSS z `src/browser/styles.css`, każdy 300 ms, kurz
+raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zdarzenia wywołania,
+żeby rozpoznać koniec zbierania i trafienie albo chybienie, i nie zaczyna efektu zaległego: tego, którego
+kolej przychodzi przy zatrzymaniu, tego z odczytu, który niesie kilka końców zbierania, i tego z odczytu,
+w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zaczęty stawia przy miejscu, w którym
+mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
+a nowy zajmuje jego miejsce (D-367).
+
 Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
-także ogień i mag, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
+także ogień, mag, lot ikony i kurz, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
 klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
-(D-317, D-319, D-320).
+(D-317, D-319, D-320); mag, który zbiera, stoi w jednej klatce schylenia, a ikona i kurz
+pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają
+(D-317).
 
 Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę tą samą
 wartością co stara Loop (D-322). Martwy mag i wygasłe ognisko mają jedną wspólną
