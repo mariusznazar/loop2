@@ -200,17 +200,10 @@ function fought() {
     mapId: "forestDeep",
     ms: FIGHT_MS,
   });
-  const seen = { minutes: {}, longest: 0, attackedAt: null };
+  const seen = { longest: 0, attackedAt: null };
   while (!state.run.death && state.run.minute < 600) {
-    const { run } = state;
-    const kind = run.activeCombat
-      ? "combat"
-      : run.current?.activity.kind === "rule"
-        ? run.current.activity.action.kind
-        : "wait";
     const result = advanceMinutes(state, 1);
     state = result.state;
-    seen.minutes[kind] = (seen.minutes[kind] ?? 0) + 1;
     seen.longest = Math.max(seen.longest, state.run.streak);
     for (const event of result.events)
       if (event.kind === "attacked") seen.attackedAt = event.minute;
@@ -235,8 +228,18 @@ test("the minutes of a fight count to the fight, the minute of the attack to wha
   );
   // No kick is counted: a combat action is no ordinary action, the fight is.
   assert.equal(Object.hasOwn(run.minutesByAction, "kick"), false);
-  // What a watcher of each game minute's start counts is what the map run holds.
-  assert.deepEqual(counted(run.minutesByAction), seen.minutes);
+  // The counts of this map run, written down from one run of it and checked by hand where the rule
+  // gives a figure: the game minutes up to and including the attack, 39 + 5 + 170, make the attack
+  // minute 214, and the fight adds its 5 to the death at 219.
+  assert.deepEqual(counted(run.minutesByAction), {
+    explore: 39,
+    wander: 5,
+    gather: 170,
+    combat: 5,
+  });
+  assert.equal(seen.attackedAt, 214);
+  assert.equal(run.minute, 219);
+  assert.equal(run.longestStreak, 33);
   assert.equal(run.longestStreak, seen.longest);
 });
 
