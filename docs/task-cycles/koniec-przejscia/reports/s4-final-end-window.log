@@ -1,0 +1,29 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/end-window.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the window is a dialog named by its title, with the label „Koniec przejścia” above it and „✕” after it; the title is the cause after a death and the map's sentence in positive after a completion (140.0842ms)
+✔ nothing is drawn for a state without an ended map run (24.3472ms)
+✔ the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery with „Dodaj regułę z tym” and no „Wznów”, then the cost line (29.7745ms)
+✔ a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery whose rule cannot be built has its button disabled (40.5048ms)
+✔ after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the trip (28.6915ms)
+✔ the paragraph of the last encounter stands once, in its own section, and never in the last minutes; without an attack there is none (25.2076ms)
+✔ a section stands only where it has content (31.555ms)
+✔ the last minutes come from the entries the screen gives and stand only with them (30.0768ms)
+✔ the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map (31.375ms)
+✔ the warning of a cut trip plan stands between „Restart” and „Zakończ”, from the copy's take list (26.8908ms)
+✔ „✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj regułę z tym” ask for their own control and nothing else (26.2748ms)
+✔ Escape pressed inside the window asks to close it through the control; another key and Escape outside it do not (20.1758ms)
+✔ when the window appears the focus moves to it, and a later draw leaves the focus where the player put it (29.4743ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1476.4747

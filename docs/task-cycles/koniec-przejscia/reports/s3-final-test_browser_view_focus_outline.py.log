@@ -1,0 +1,9 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_browser_view_focus_outline.py
+
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.327s
+
+OK

@@ -1,0 +1,45 @@
+✔ the window opens at the game minute a character's death ends the map run while the player is on its screen, and covers the header and the three areas (258.3926ms)
+✔ the window opens at a completion too, titled by the completion text, with the way to the map it opened (71.2904ms)
+✔ the window opens again at every entering of the screen of an ended map run: after a link of the menu bar and back, and after the browser's back (108.6695ms)
+✔ a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address (94.5256ms)
+✔ a window open at the build takes the keyboard focus at the first reading of the clock, unless the focus already stands on a control (75.4563ms)
+✔ „Ostatnie minuty” are the last entries of the chronicle up to the entry of the death after a death on the screen, and stand nowhere after a completion or a load (111.8125ms)
+✔ „✕” and Escape close the window and uncover the screen, the header holds „Koniec przejścia” before „Restart” with the focus on it, and it opens the window again (76.5447ms)
+✔ the header has no „Koniec przejścia” while the map run goes on or is paused (31.9603ms)
+✔ „Koniec przejścia” pressed while the question stands closes the question and opens the window, so the two never stand together (48.5537ms)
+✔ „Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with the header's „Restart” focused (52.4611ms)
+✔ „Restart” of the header after „✕” starts the map run again and no window stands (33.6429ms)
+✔ „Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać (28.0869ms)
+✔ „Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it (46.355ms)
+✔ the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć” (76.1954ms)
+✔ „Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać (25.5217ms)
+✔ the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere (107.9869ms)
+✔ after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte” (30.0872ms)
+✔ „Dodaj regułę z tym” of the window closes it, adds the rule of the discovery at the end of the copy's first group and opens its panel (34.7275ms)
+✔ the window stands in no game state and no saved document: closing and opening it changes the document not at all, and a load opens it by the rule of an ended map run (40.7379ms)
+✖ a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion (64.8405ms)
+✔ after halt() the window's buttons change nothing (29.1556ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 20
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2309.683
+
+✖ failing tests:
+
+test at tests\view\end-window-game.test.mjs:840:1
+✖ a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion (64.8405ms)
+  Error: precondition: the document loads: expected true, got false
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.equal (tests/view/page-document.mjs:201:5)
+      at lines (tests/view/end-window-game.test.mjs:844:12)
+      at tests/view/end-window-game.test.mjs:876:28
+      at async tests/view/end-window-game.test.mjs:57:7
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async onPage (tests/view/end-window-game.test.mjs:47:3)
+      at async TestContext.<anonymous> (tests/view/end-window-game.test.mjs:855:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

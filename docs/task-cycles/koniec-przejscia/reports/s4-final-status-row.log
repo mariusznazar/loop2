@@ -1,0 +1,35 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/status-row.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a running map run reads „Minuta {game minute}” and a paused one adds „ (pauza)” (5.8294ms)
+✔ the minute shown is the map run's game minute (2.5337ms)
+✔ the clock names no activity, resource, creature or streak, whatever the character does (1.1995ms)
+✔ a paused map run gets „ (pauza)” appended, and loses it when resumed (1.8015ms)
+✔ at a stop at a discovery the clock reads „ (pauza)” as at the player's pause, and loses it at „Wznów” (3.3288ms)
+✔ after a death the clock stands at the minute of the death, with no cause and no „ (pauza)”, paused or not (0.7208ms)
+✔ after a completion the clock stands at the minute of the completion, with no completion text and no „ (pauza)”, paused or not (0.5024ms)
+✔ „Pauza” while running, „Wznów” while paused, and no pause button after death (0.4378ms)
+✔ a mage left without a program dies, and the clock reads the minute of its death (3.0103ms)
+✔ the text for the first finished exploration of a tile with sticks and berries is the task's example (0.4703ms)
+✔ the text for the first chill names its actions and its condition with the unit (0.1872ms)
+✔ a discovery of an action alone has no second sentence, and the campfire is named with a capital letter (0.1355ms)
+✔ a discovered creature is named from the creature data (0.1126ms)
+✔ a condition that takes no number is named without a unit, and a discovery of conditions alone has no first sentence (0.0679ms)
+✔ no pause button after a completion, as after death (0.3317ms)
+✔ the words of Las read „Passa {streak}/{required}” and those of Las — głębiej read the passa before the beaten attacks (2.233ms)
+✔ on Las — głębiej a requirement that is met reads its own numbers while the other stays unmet (0.4613ms)
+✔ the words after a death of cold show the streak at zero (0.3314ms)
+✔ the share of a requirement is the count over the number required, never above 1 (0.9861ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.402

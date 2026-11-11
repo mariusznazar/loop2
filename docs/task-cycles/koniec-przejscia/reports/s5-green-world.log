@@ -1,0 +1,50 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/world-area.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter (92.9361ms)
+✔ Teraz and Potem name the action under way with its rule and minutes and the rule that wins, and follow the game minute (38.2053ms)
+✔ Teraz says the wait alone, and Potem with no winning rule says the character will stand in the role warning (20.2436ms)
+✔ after a death Teraz says its cause in the role text, after a completion the text of the map in positive, and Potem stays (42.2642ms)
+✔ in the minutes of an attack Teraz says the fight alone and Potem names the combat rule the turn would choose (20.2529ms)
+✔ a death that used a resurrection shows no line of its settlement and no deposit and no preview in the world area (28.4881ms)
+✔ the scene is the picture of the forest at the one size of D-349, with no text inside or over it (38.0072ms)
+✔ only the value below its threshold stands in danger, and the backpack reads its pieces of the cap (27.3027ms)
+✔ the body row stands in cells with the minutes of the needs under temperature and satiety from game minute zero, none under health and nature energy (22.7092ms)
+✔ a note under temperature and one under satiety read „marznie” and „głoduje” in danger below their thresholds and the minutes at them (24.7759ms)
+✔ by a fire the note under temperature reads „przy ogniu”, and the notes follow the game minute (20.6473ms)
+✔ the notes stand after the end of a map run, on the state at the stopped minute (37.289ms)
+✔ the world area draws no paragraph of the last encounter, with a record of one or without (27.3975ms)
+✔ without a map run the world area and the table draw nothing (10.2796ms)
+✔ the drawing has a tile per tile of the map run, the icons of the resources a revealed tile holds dimmed at a stock of 0, and no text (23.1738ms)
+✔ the character's tile and the step's target carry an outline each, the target apart by its class (20.3594ms)
+✔ the drawing is a picture: a click on a tile changes nothing, and nothing in it is a control (20.9047ms)
+✔ a hovered tile marks its row and the line under the drawing shows its numbers; a hovered row marks its tile; with none hovered the line is the character's tile (70.2328ms)
+✔ a hovered tile not revealed marks the tile alone, and the line gives its label with nothing of its stock (22.8672ms)
+✔ the campfire's icon stands in its tile and its state in the row of the same key, and nowhere else (58.5985ms)
+✔ the table has a column per resource of the map, a row per revealed tile with the stock, and the fire cell (19.2386ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 20
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1679.1343
+
+✖ failing tests:
+
+test at tests\view\world-area.test.mjs:177:1
+✖ the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter (92.9361ms)
+  Error: expected ["scene","now-row","next-row","body-row","world-drawing","tile-line"], got ["scene","now-row","next-row","body-row","run-practice","world-drawing","tile-line"]
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.deepEqual (tests/view/page-document.mjs:223:5)
+      at tests/view/world-area.test.mjs:233:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/world-area.test.mjs:178:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)

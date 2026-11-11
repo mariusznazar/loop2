@@ -1,0 +1,40 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/run-header.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the header reads the character's name, the map's name, the clock, the bar of the solving condition, „Pauza”, the paces, „Restart” and „Zakończ”, in that order, with no action of the character (51.6602ms)
+✔ the name is the one of the team member whose map run it is (16.0016ms)
+✔ the clock reads the game minute, „ (pauza)” after it while paused, and „Wznów” takes the place of „Pauza” (21.4915ms)
+✔ the buttons ask for what they say: the pause, the restart and the end (18.3148ms)
+✔ „Restart” and „Zakończ” are destructive buttons and the paces and „Pauza” are not (D-44) (14.3909ms)
+✔ the header shows five pace buttons, 1× to 16×, with the one of the state's pace selected (23.7382ms)
+✔ a click on a pace button asks for that pace; the buttons stay while paused and go with death (28.3213ms)
+✔ after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Koniec przejścia”, „Restart” and „Zakończ” stand (18.4418ms)
+✔ after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Koniec przejścia”, „Restart” and „Zakończ” stand (19.8571ms)
+✔ „Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window (23.6023ms)
+✔ the header is hidden while the window stands over an ended map run, and shown otherwise (17.5353ms)
+✔ the warning of a cut trip plan follows the current copy's take list (15.9839ms)
+✔ a focused pace button keeps the focus across updates, also while the clock moves and the map run is paused (93.9202ms)
+✔ the header draws nothing while the game state holds no map run (12.612ms)
+✔ the clock stands in the mono face of the stylesheet, with tabular figures (93.4794ms)
+✔ the clock is in the role text while running, after a death and after a completion (49.2285ms)
+✔ the bar of the solving condition stands right after the clock, with its numbers and its bar (23.2035ms)
+✔ on Las — głębiej the passa stands before the beaten attacks, each with its own bar (16.4961ms)
+✔ Las has no part for beaten attacks, as it asks for none (22.4534ms)
+✔ the fill of each bar is as long as the share of its count, never more than whole (17.5911ms)
+✔ a requirement not met has its fill in text on a track in highlight, a met one its fill, name and numbers in positive (41.3712ms)
+✔ after a death of cold the bar stands and reads „Passa 0/480” (19.5309ms)
+✔ after a completion the bar stands, met, at the minute of the completion (17.3503ms)
+✔ the words of the bar of the solving condition are not in the mono face of the clock, and keep tabular figures (33.0851ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1835.6811

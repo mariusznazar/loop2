@@ -1,0 +1,53 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/run-header.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the header reads the character's name, the map's name, the clock, the bar of the solving condition, „Pauza”, the paces, „Restart” and „Zakończ”, in that order, with no action of the character (43.869ms)
+✔ the name is the one of the team member whose map run it is (14.8195ms)
+✔ the clock reads the game minute, „ (pauza)” after it while paused, and „Wznów” takes the place of „Pauza” (22.7481ms)
+✔ the buttons ask for what they say: the pause, the restart and the end (17.2485ms)
+✔ „Restart” and „Zakończ” are destructive buttons and the paces and „Pauza” are not (D-44) (19.9532ms)
+✔ the header shows five pace buttons, 1× to 16×, with the one of the state's pace selected (17.229ms)
+✔ a click on a pace button asks for that pace; the buttons stay while paused and go with death (24.9666ms)
+✔ after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Koniec przejścia”, „Restart” and „Zakończ” stand (15.6572ms)
+✔ after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Koniec przejścia”, „Restart” and „Zakończ” stand (17.2092ms)
+✔ „Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window (19.9428ms)
+✔ the header is hidden while the window stands over an ended map run, and shown otherwise (13.7301ms)
+✔ the warning of a cut trip plan follows the current copy's take list (13.0898ms)
+✔ a focused pace button keeps the focus across updates, also while the clock moves and the map run is paused (74.8513ms)
+✔ the header draws nothing while the game state holds no map run (8.3016ms)
+✔ the clock stands in the mono face of the stylesheet, with tabular figures (61.025ms)
+✔ the clock is in the role text while running, after a death and after a completion (34.3142ms)
+✔ the bar of the solving condition stands right after the clock, with its numbers and its bar (12.8276ms)
+✔ on Las — głębiej the passa stands before the beaten attacks, each with its own bar (18.2268ms)
+✔ Las has no part for beaten attacks, as it asks for none (10.1954ms)
+✔ the fill of each bar is as long as the share of its count, never more than whole (12.8823ms)
+✔ a requirement not met has its fill in text on a track in highlight, a met one its fill, name and numbers in positive (32.1825ms)
+✖ after a death of cold the bar stands and reads „Passa 0/480” (12.4815ms)
+✔ after a completion the bar stands, met, at the minute of the completion (10.0412ms)
+✔ the words of the bar of the solving condition are not in the mono face of the clock, and keep tabular figures (25.9313ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 23
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1447.3673
+
+✖ failing tests:
+
+test at tests\view\run-header.test.mjs:553:1
+✖ after a death of cold the bar stands and reads „Passa 0/480” (12.4815ms)
+  Error: expected ["Restart","Zakończ"], got ["Koniec przejścia","Restart","Zakończ"]
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.deepEqual (tests/view/page-document.mjs:223:5)
+      at tests/view/run-header.test.mjs:571:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/run-header.test.mjs:554:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

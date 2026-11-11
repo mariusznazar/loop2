@@ -1,0 +1,164 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/end-window.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ the window is a dialog named by its title, with the label „Koniec przejścia” above it and „✕” after it; the title is the cause after a death and the map's sentence in positive after a completion (32.3969ms)
+✖ nothing is drawn for a state without an ended map run (22.517ms)
+✖ the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery with „Dodaj regułę z tym” and no „Wznów”, then the cost line (10.91ms)
+✖ a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery whose rule cannot be built has its button disabled (10.1183ms)
+✖ after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the trip (13.095ms)
+✖ the paragraph of the last encounter stands once, in its own section, and never in the last minutes; without an attack there is none (10.2508ms)
+✖ a section stands only where it has content (10.8598ms)
+✖ the last minutes come from the entries the screen gives and stand only with them (11.8547ms)
+✖ the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map (12.0478ms)
+✖ the warning of a cut trip plan stands between „Restart” and „Zakończ”, from the copy's take list (10.5935ms)
+✖ „✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj regułę z tym” ask for their own control and nothing else (7.9703ms)
+✖ Escape pressed inside the window asks to close it through the control; another key and Escape outside it do not (7.8315ms)
+✖ when the window appears the focus moves to it, and a later draw leaves the focus where the player put it (77.2618ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 0
+ℹ fail 13
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18740.151
+
+✖ failing tests:
+
+test at tests\view\end-window.test.mjs:166:1
+✖ the window is a dialog named by its title, with the label „Koniec przejścia” above it and „✕” after it; the title is the cause after a death and the map's sentence in positive after a completion (32.3969ms)
+  TypeError: Cannot read properties of null (reading 'tagName')
+      at tests/view/end-window.test.mjs:170:23
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:167:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at tests\view\end-window.test.mjs:211:1
+✖ nothing is drawn for a state without an ended map run (22.517ms)
+  Error: the window stands once it ended: expected a true value, got null
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at tests/view/end-window.test.mjs:218:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:212:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:227:1
+✖ the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery with „Dodaj regułę z tym” and no „Wznów”, then the cost line (10.91ms)
+  TypeError: Cannot read properties of null (reading 'querySelector')
+      at tests/view/end-window.test.mjs:232:25
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:228:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:272:1
+✖ a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery whose rule cannot be built has its button disabled (10.1183ms)
+  TypeError: Cannot read properties of null (reading 'classList')
+      at tests/view/end-window.test.mjs:278:9
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:273:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:320:1
+✖ after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the trip (13.095ms)
+  Error: expected ["Ostatnie minuty","(no name) Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.","Nie zadziałały a, got []
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.deepEqual (tests/view/page-document.mjs:223:5)
+      at tests/view/end-window.test.mjs:340:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:321:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:397:1
+✖ the paragraph of the last encounter stands once, in its own section, and never in the last minutes; without an attack there is none (10.2508ms)
+  Error: one section holds the paragraph: expected 1, got 0
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.equal (tests/view/page-document.mjs:201:5)
+      at tests/view/end-window.test.mjs:405:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:398:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:438:1
+✖ a section stands only where it has content (10.8598ms)
+  Error: expected ["Wyprawa i teren"], got []
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.deepEqual (tests/view/page-document.mjs:223:5)
+      at tests/view/end-window.test.mjs:441:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:439:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:492:1
+✖ the last minutes come from the entries the screen gives and stand only with them (11.8547ms)
+  Error: expected "Ostatnie minuty", got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.equal (tests/view/page-document.mjs:201:5)
+      at tests/view/end-window.test.mjs:501:12
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:493:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:510:1
+✖ the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map (12.0478ms)
+  TypeError: Cannot read properties of null (reading 'children')
+      at tests/view/end-window.test.mjs:519:16
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:511:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:547:1
+✖ the warning of a cut trip plan stands between „Restart” and „Zakończ”, from the copy's take list (10.5935ms)
+  TypeError: Cannot read properties of null (reading 'textContent')
+      at tests/view/end-window.test.mjs:561:17
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:548:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:582:1
+✖ „✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj regułę z tym” ask for their own control and nothing else (7.9703ms)
+  Error: the button ✕ stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at buttonNamed (tests/view/end-window.test.mjs:149:10)
+      at tests/view/end-window.test.mjs:592:19
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:583:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:605:1
+✖ Escape pressed inside the window asks to close it through the control; another key and Escape outside it do not (7.8315ms)
+  Error: the button Restart stands: expected a true value, got undefined
+      at refuse (tests/view/page-document.mjs:173:9)
+      at Object.ok (tests/view/page-document.mjs:230:5)
+      at buttonNamed (tests/view/end-window.test.mjs:149:10)
+      at tests/view/end-window.test.mjs:614:17
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:606:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\end-window.test.mjs:631:1
+✖ when the window appears the focus moves to it, and a later draw leaves the focus where the player put it (77.2618ms)
+  TypeError: Cannot read properties of null (reading 'getAttribute')
+      at tests/view/end-window.test.mjs:646:23
+      at async withPage (tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (tests/view/end-window.test.mjs:632:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

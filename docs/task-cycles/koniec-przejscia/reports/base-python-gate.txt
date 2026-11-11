@@ -1,0 +1,110 @@
+== tests/agent_workflow
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 0.763s
+
+OK
+== tests/deploy
+ss......................................................................................................................s....s...............................................................................................s.........
+skipped: test_account_backup_stream.BackupBytesThroughDockerExec.test_bytes_of_docker_exec_without_a_terminal_open_as_the_database: no Docker daemon answers; whether the bytes of `docker exec` open as the database stays unchecked
+skipped: test_account_storage.AccountsSurviveContainerReplacement.test_replaced_container_keeps_accounts_and_sessions: no Docker daemon answers; whether accounts and sessions outlive a container replacement stays unchecked
+skipped: test_loop2_image_icons.ImageServesIcons.test_built_image_serves_every_icon_and_the_page: no Docker daemon answers; the image's build and the icons it serves stay unchecked
+skipped: test_loop2_tunnel_image.ConnectorImage.test_nonroot_connector_can_run_the_disconnected_readiness_check: Docker daemon unavailable; connector image capabilities stay unchecked
+skipped: test_restore_trial.RunOnARealBackup.test_pass_fail_on_wrong_password_fail_on_absent_marker_and_interruption: no Docker daemon answers; whether the launcher restores a backup, judges it and removes its container and volumes stays unchecked
+----------------------------------------------------------------------
+Ran 231 tests in 718.357s
+
+OK (skipped=5)
+== tests/invariants
+..............................................................................................................................s...s..................................................s.............................................................................
+skipped: test_loop2_container_icons.ContainerServesIcons.test_container_serves_each_icon_with_the_file_bytes: no Docker daemon answers; whether the loop2 container serves the icons of assets/icons/ (loop2-container-icons) stays unchecked
+skipped: test_loop2_container_sprites.ContainerServesSprites.test_container_serves_each_sprite_with_the_file_bytes: no Docker daemon answers; whether the loop2 container serves the sprites of assets/sprites/ (loop2-container-sprites) stays unchecked
+skipped: test_loop2_one_serving_process_container.RunningContainerHasOneServingProcess.test_running_container_has_one_listening_node_process: no Docker daemon answers; the container part of loop2-one-serving-process stays unchecked
+----------------------------------------------------------------------
+Ran 259 tests in 1451.313s
+
+OK (skipped=3)
+== tests/quality
+...............................EE.......
+======================================================================
+ERROR: test_ruff_source_rules (test_quality_invariants.QualityInvariants.test_ruff_source_rules)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tests\quality\test_quality_invariants.py", line 54, in test_ruff_source_rules
+    self.assert_passes(venv_tool("ruff"), "check", "--config", "ruff.toml", "--ignore-noqa",
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       "--no-fix", "--no-cache", ".")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "tests\quality\test_quality_invariants.py", line 35, in assert_passes
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
+                            encoding="utf-8", errors="backslashreplace", timeout=900,
+                            check=False)
+  File "a file in the author's home directory", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "a file in the author's home directory", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "a file in the author's home directory", line 1552, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] Nie mo¿na odnaleŸæ okreœlonego pliku
+
+======================================================================
+ERROR: test_shellcheck_source_rules (test_quality_invariants.QualityInvariants.test_shellcheck_source_rules)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tests\quality\test_quality_invariants.py", line 59, in test_shellcheck_source_rules
+    self.assert_passes(venv_tool("shellcheck"), "--norc", "--shell=bash",
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       "--extended-analysis=true", *BASH_SCRIPTS)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "tests\quality\test_quality_invariants.py", line 35, in assert_passes
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
+                            encoding="utf-8", errors="backslashreplace", timeout=900,
+                            check=False)
+  File "a file in the author's home directory", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "a file in the author's home directory", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "a file in the author's home directory", line 1552, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] Nie mo¿na odnaleŸæ okreœlonego pliku
+
+----------------------------------------------------------------------
+Ran 40 tests in 116.966s
+
+FAILED (errors=2)
+543 tests in 4 directories; failed: tests/quality (exit code 1)
+EXIT=1
