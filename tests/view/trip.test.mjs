@@ -312,10 +312,20 @@ function solvedSent() {
     23,
   ).state;
 }
-// The minute is set with the streak, as the load admits a streak no longer than the run.
+// The minute is set with the streak and the record, as the load admits a streak no longer than the
+// run and game minutes by action that sum to the minute: 479 minutes of waiting, a streak of 479.
 const completed = (state) =>
   advanceMinutes(
-    { ...state, run: { ...state.run, minute: 479, streak: 479 } },
+    {
+      ...state,
+      run: {
+        ...state.run,
+        minute: 479,
+        streak: 479,
+        longestStreak: 479,
+        minutesByAction: { ...state.run.minutesByAction, wait: 479 },
+      },
+    },
     1,
   ).state;
 /**

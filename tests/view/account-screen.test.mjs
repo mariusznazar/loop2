@@ -1727,8 +1727,8 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206); 3 since To do 10 of petla-zarobkowa. */
-const VERSION = 3;
+/** The version of the shape of the saved game state this game writes and loads (D-206); 4 since To do 10 of koniec-przejscia. */
+const VERSION = 4;
 /** The version before the raise, which To do 10 and D-206 make another version. */
 const OLDER_VERSION = 2;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
@@ -3148,7 +3148,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    // To do 10 with D-206: 4 is the current version since the raise, so 2 is another one.
     [
       "another version",
       saveOf(withCharacter(), 7, OLDER_VERSION),
@@ -3289,7 +3289,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    // To do 10 with D-206: 3 is the current version since the raise, so 2 is another one.
+    // To do 10 with D-206: 4 is the current version since the raise, so 2 is another one.
     await held.answer(
       "loadSavedGame",
       saveOf(withCharacter(), 6, OLDER_VERSION),
