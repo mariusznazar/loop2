@@ -182,8 +182,8 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  // Version 4 is the saved game states of task zapis-stanu-na-serwerze (spec,
-  // decision 4; D-112), so 5 is the first version this code does not know.
+  // Version 4 is the current schema version (D-112), so 5 is the first version
+  // this code does not know.
   raw.exec("PRAGMA user_version = 5");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
   assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
@@ -1890,7 +1890,7 @@ test("persisted cookies must be usable after database expiry replacement and pac
     await t.test(name, async (t) => {
       // The library's Cookie copy reads the clock twice (maxAge, then expires),
       // so a real clock lets a millisecond between the reads move the expiry
-      // (loop2#043-28). A frozen clock keeps the expected value exact.
+      // A frozen clock keeps the expected value exact.
       t.mock.timers.enable({ apis: ["Date"], now: 1000 });
       const { store, raw, account } = await fixture(t);
       const valid = data(account.id);
@@ -1956,7 +1956,7 @@ test("set and touch refuse unusable cookie input without changing stored session
     ],
   ]) {
     await t.test(name, async (t) => {
-      // Frozen clock, as in the loop above: the load's expiry must stay exact (loop2#043-28).
+      // Frozen clock, as in the loop above: the load's expiry must stay exact.
       t.mock.timers.enable({ apis: ["Date"], now: 1000 });
       const { store, raw, account } = await fixture(t);
       await call(store, "set", "one", data(account.id));
@@ -2305,9 +2305,9 @@ test("the owner's command blocks and unblocks by address beside an open connecti
     assert.doesNotMatch(run.output, /encoded-hash|\bone\b|\btwo\b/);
 });
 
-// D-252, business events of the guidelines' list, kept from the task's
-// question 11. Faults: no line for a change, a line for a command that changed
-// nothing, the wrong account's number, the address in the line.
+// D-252, business events of the guidelines' list. Faults: no line for a
+// change, a line for a command that changed nothing, the wrong account's
+// number, the address in the line.
 test("the owner's command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
   const { path, database, account } = await fixture(t);
   database.createAccount("other@example.test", "hash");
@@ -2336,7 +2336,7 @@ test("the owner's command writes one event with the account's number for a chang
   );
 });
 
-// To do 6, cause 4. Faults: the failure's reason left out, so the owner only
+// D-252, D-354. Faults: the failure's reason left out, so the owner only
 // hears to try again; SQLite's message or the file's path in the output; a
 // sentence dropped, so the owner no longer reads what happened.
 test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
@@ -2364,7 +2364,7 @@ test("a database failure of the owner's command adds the error's kind and code a
   assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
 });
 
-// To do 8, cause 7, D-253. Faults: no handler, so the default print writes the
+// D-253. Faults: no handler, so the default print writes the
 // message and the stack; a handler that goes on after what no code handled.
 test("what no code of the owner's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
   const { path } = await fixture(t);
@@ -2383,7 +2383,7 @@ test("what no code of the owner's command handled ends it with one line of its k
 });
 
 // D-112's cleanup runs in a timer, so no caller could ever see its failure. The
-// fault: the failure's reason dropped from the line (cause 1).
+// fault: the failure's reason dropped from the line (D-252).
 test("a cleanup that fails in the background writes one line of its kind and code, and nothing of its text", async (t) => {
   const { path, raw, account } = await fixture(t);
   const logged = t.mock.method(console, "error", () => {});

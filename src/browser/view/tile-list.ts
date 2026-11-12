@@ -6,7 +6,7 @@ import type { ResourceId } from "../sim/data/resources.js";
 import { sameHex, tileLabel } from "../sim/hex.js";
 import type { GameState, MapRun, Tile } from "../sim/types.js";
 
-/** Shown in a cell for a resource the tile does not have (choice C5). */
+/** Shown in a cell for a resource the tile does not have. */
 const ABSENT = "—";
 /** Between the texts of the campfire and the burning items of one row. */
 const SEPARATOR = " · ";
@@ -22,14 +22,15 @@ export type TileListColumn = {
 export type TileListRow = {
   col: number;
   row: number;
-  /** „(col, row)” (choice C4). */
+  /** The tile's label, „(col, row)”. */
   label: string;
   /** The tile's stock per column, „—” where the tile lacks the resource. */
   cells: string[];
   /**
    * The state of the tile's campfire, then of each item burning on it, in the map run's order:
    * „ognisko — płonie, zostało 42 min”, „ognisko — wygasłe”, „patyk — płonie, zostało 2 min”,
-   * names from the data (task, To do 15; spec Decision 5). Empty where nothing stands there.
+   * names from the data (D-18; the campfire's text is D-70's, a burning item's D-385). Empty where
+   * nothing stands there.
    */
   fire: string[];
 };

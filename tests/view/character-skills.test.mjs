@@ -1,4 +1,5 @@
-// Accepted wprawa_i_drzewa_loop2.md Q9 and Q10: exact skill, branch and run labels.
+// The labels of the skills and branches of the screen Postać (D-199) and of the practice line of a
+// map run (D-201).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createCharacter, newGame } from "../../dist/browser/sim/game.js";

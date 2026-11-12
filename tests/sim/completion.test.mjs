@@ -1,8 +1,9 @@
 // The completion of a map run: when the streak reaches the solving condition of the map, the rest of
 // that game minute takes effect, no program rule is picked and the map run ends, solving its map.
-// Expectations come from the task "rozwiazanie-lasu", To do 5 and 7 and Questions to settle 6, 8,
-// 15 and 17 (task.md lines 19-22, 42-50, 66-71, 75-77); the streak of 480 is the solving condition
-// of Las (D-80), a streak of 479 stands one game minute short of it.
+// The solving condition of a map and the streak follow D-136, the last steps of a game minute D-71,
+// the screen after a completion D-132, the solved map D-134 and the counts of the rules D-93; a
+// completion in the game minute of a discovery is D-122. The streak of 480 is the solving condition
+// of Las (D-133), a streak of 479 stands one game minute short of it.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";

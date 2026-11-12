@@ -6,8 +6,8 @@ import { writeSync } from "node:fs";
 import { isMainThread, Worker, workerData } from "node:worker_threads";
 
 const MIB = 1024 ** 2;
-// spec.md of the task logowanie-w-react, decision 9: above the 1.68 GB the whole
-// Node stage peaked at, and low enough that several killed files add up safely.
+// D-268: above the 1.68 GB the whole Node stage peaked at when the limit was set,
+// and low enough that several killed files add up safely.
 const DEFAULT_LIMIT_BYTES = 2048 * MIB;
 const DEFAULT_INTERVAL_MS = 100;
 

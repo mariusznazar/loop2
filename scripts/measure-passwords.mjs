@@ -20,7 +20,8 @@ import { pathToFileURL } from "node:url";
 
 // compose.yaml gives the application service mem_limit: 512m.
 export const DEPLOYMENT_MEMORY_LIMIT = 512 * 1024 * 1024;
-// Memory must stay below this share of the deployment's limit (spec, section 6).
+// Memory must stay below this share of the deployment's limit (invariant
+// player-argon2-deployment-check).
 export const BUDGET_FRACTION = 0.8;
 export const MEASURED_PER_KIND = 20;
 const ENTRYPOINT = "dist/server/measure-passwords.js";

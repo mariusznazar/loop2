@@ -1,6 +1,5 @@
-// The confirmation from the link in the page's address (task potwierdzenie-adresu, To do 3 and 4;
-// spec sections 2 and 10; D-39, D-104). The pure reading of the fragment and the sentence for each
-// answer, and the module's use of the address against a client the test answers: proof of what is
+// The confirmation from the link in the page's address (D-39, D-104). The pure reading of the
+// fragment and the sentence for each answer, and the module's use of the address against a client the test answers: proof of what is
 // sent and when the fragment goes, never of a real address bar (D-88).
 import assert from "node:assert/strict";
 import { test } from "node:test";

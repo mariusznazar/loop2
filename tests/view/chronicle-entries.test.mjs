@@ -1,4 +1,4 @@
-// The entries of a change of the copy (task kronika-z-filtrami, To do 5; D-342, D-292; spec D4): the
+// The entries of a change of the copy (D-342, D-348, D-292): the
 // comparison of the copy's program before an act and after it, with the hint of a move the editor
 // gives. The programs are written out by hand, so each case states the words it expects (D-73): the
 // numbers are the editor's, the group's number and the rule's in the group (D-292), and a sentence

@@ -1,7 +1,6 @@
-// The pure rules of the program editor (spec section 5, program panel; choice C12), tested without a
-// browser. Importing the module must not touch the DOM. The DOM editor that drew them is gone (task
-// edytor-programu, slice 13): the rule list, the rule panel and the program panel draw them now, and
-// their cases stand in rule-editor.test.mjs and program-panel.test.mjs.
+// The pure rules of the program editor (D-288, D-306), tested without a browser. Importing the module
+// must not touch the DOM. The rule list, the rule panel and the program panel draw them, and their
+// cases stand in rule-editor.test.mjs and program-panel.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -107,7 +106,7 @@ const CAMPFIRE_AND_BACKPACK = [
   "eat",
 ];
 
-/** The numbers the conditions take, written out from the spec's table (Decision 3). */
+/** The numbers the conditions take, written out from D-376. */
 const HERE_BELOW = { defaultValue: 1, min: 0, max: 50, step: 1 };
 const TEMPERATURE = { defaultValue: 36.5, min: 30, max: 37, step: 0.1 };
 const ITEMS_LISTED = Object.keys(ITEMS);
@@ -115,15 +114,15 @@ const ITEMS_LISTED = Object.keys(ITEMS);
 /** A deep copy, to show that an edit leaves its input as it was. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
-/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+/** The program a game state holds: the copy during a map run, else the only program of the list. */
 function heldProgram(state) {
   return state.run === null
     ? state.programs[0].program
     : state.run.copy.program;
 }
 
-// Task grupy-regul-i-liczniki, To do 3–4 (Mariusz, 2026-10-24); D-90 and D-93.
-// Catches reused numbers, lost groups, insertion before removal and counts tied to position.
+// D-90 and D-93. Catches reused numbers, lost groups, insertion before removal and counts tied to
+// position.
 test("groups append with monotonic numbers through rename and deletion, including the last group", () => {
   const initial = newGame().programs[0].program;
   const added = addGroup(initial);
@@ -166,7 +165,7 @@ test("group conditions offer the same kinds and editable fields while preserving
     ["hereBelow", { kind: "hereBelow", resource: "stick", value: 1 }],
     ["temperatureBelow", { kind: "temperatureBelow", value: 36.5 }],
     ["satietyBelow", { kind: "satietyBelow", value: 50 }],
-    // Task plomyk, To do 5: „Energia natury poniżej” starts at 30.
+    // D-376: „Energia natury poniżej” starts at 30.
     ["natureEnergyBelow", { kind: "natureEnergyBelow", value: 30 }],
     ["itemBelow", { kind: "itemBelow", item: "stick", value: 8 }],
     ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],
@@ -699,7 +698,7 @@ test("the resource lists offer the shown map's resources before sending and the 
   assert.deepEqual(offeredResources(running), LAS);
 });
 
-// Task odkrywanie_loop2, To do 4 and 7 (vault, accepted 2026-10-26); D-124. Hand-written
+// D-124. Hand-written
 // Understandings: a new game holds the condition "Zawsze" alone; the first chill adds "Eksploruj",
 // "Wędruj" and "Temperatura poniżej" (written out here, not read from the data).
 const AFTER_FIRST_CHILL = {
@@ -763,8 +762,8 @@ test("a condition switching to „Zapas poniżej” takes the first of the offer
   );
 });
 
-// Review finding I-1: an action that names a resource is no choice while no resource is offered,
-// since the edit would commit nothing.
+// An action that names a resource is no choice while no resource is offered, since the edit would
+// commit nothing.
 const NO_TARGETS = {
   actions: ["explore", "wander", "walkTo", "gather"],
   conditions: ["always", "hereBelow", "itemBelow"],
@@ -926,7 +925,7 @@ test("every program the editor builds passes setProgram, before sending and duri
   }
 });
 
-// D-90 and the task's group-bound arrows: edits target a group identity, never its position.
+// D-90 and the group-bound arrows of D-297: edits target a group identity, never its position.
 test("rule edits preserve other groups, group boundaries and identities", () => {
   const first = {
     id: 8,
@@ -962,7 +961,7 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   const moved = moveRule(input, 3, 0, 1);
   assert.deepEqual(moved.groups[0], first);
   assert.deepEqual(moved.groups[1].rules, [ALWAYS_WALK, BELOW_WANDER]);
-  // D-297 (task edytor-programu, To do 7): „↓” on the last rule of a group goes to the start of the
+  // D-297: „↓” on the last rule of a group goes to the start of the
   // next group, „↑” on the first to the end of the previous one; null only at the program's ends.
   const down = moveRule(input, 8, 0, 1);
   assert.deepEqual(down.groups[0].rules, []);
@@ -998,7 +997,7 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   }
 });
 
-// Task edytor-programu, To do 4–5, D-289 and D-290: what the pick of the rule panel offers.
+// D-289 and D-290: what the pick of the rule panel offers.
 
 const NOT_BOUGHT = "gałąź niewykupiona";
 const NO_RUN = "wybierzesz w przejściu postaci, która ją kupiła";
@@ -1070,7 +1069,7 @@ function cellsOf(sections) {
   );
 }
 
-test("the actions of the pick stand in four named groups, in the order of the task, the combat ones picked outside combat", () => {
+test("the actions of the pick stand in four named groups, in the order of D-290, the combat ones picked outside combat", () => {
   const sections = actionPick(newKnowingGame(), EXPLORE);
   assert.deepEqual(
     sections.map((section) => [
@@ -1100,7 +1099,7 @@ test("the actions of the pick stand in four named groups, in the order of the ta
     assert.equal(cells[kind].greyed, false, kind);
 });
 
-test("the conditions of the pick stand in four sections with no names, in the order of the task", () => {
+test("the conditions of the pick stand in four sections with no names, in the order of D-290", () => {
   const sections = conditionPick(newKnowingGame(), ALWAYS);
   assert.deepEqual(
     sections.map((section) => [
@@ -1300,7 +1299,7 @@ test("a value the rule holds outside the pick stands chosen and greyed: with its
     [true, true, NOT_BOUGHT],
   );
   // No reason fits what the Understanding does not hold: the cell is shown, picked and greyed, with
-  // no reason made up (the slice's report names the case).
+  // no reason made up (D-289).
   const unknown = knowing(newKnowingGame(), {
     actions: ["explore"],
     conditions: ["always"],
@@ -1422,9 +1421,9 @@ test("the time of one execution: minutes from the data, „tura” in combat, a 
   assert.equal(actionTime(bought, "gather"), "10 min");
 });
 
-// The prices below are the task koszty-i-stan-ogniska, To do 1 to 4, written out by hand from the
-// examples of its To do 2 and from the data of the game: crafting a campfire uses 6 sticks, lighting it
-// 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1 stick, eating 1 berry.
+// The prices below (D-363) are written out by hand from D-387 and D-177: crafting a campfire uses 6
+// sticks, lighting it 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1
+// stick, eating 1 berry.
 test("the price of an action: the pieces it uses up, then nature energy, each name in the form its count takes", () => {
   const outside = newKnowingGame();
   assert.equal(actionPriceText(outside, "craftCampfire"), "6 patyków");

@@ -1,8 +1,8 @@
-// What the page does with an error that no code of the game handled (task napis-o-awarii, To do
-// 1–5; D-323, D-253, D-262, D-208, D-207, D-97). These tests run the page's logic on jsdom through
+// What the page does with an error that no code of the game handled (D-323, D-253, D-262, D-208,
+// D-207, D-97). These tests run the page's logic on jsdom through
 // tests/view/page-document.mjs (D-264): they prove which elements the page builds, which lines it
 // writes and what the game state does, never what a real browser prints, which the browser check
-// of the task covers (D-88). A browser reports an error to the window's `error` event and a
+// covers (D-88). A browser reports an error to the window's `error` event and a
 // rejection to `unhandledrejection`; jsdom reports neither of a timer or a promise of Node, so a
 // case reports to the window what the browser would.
 import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
@@ -352,7 +352,7 @@ async function playing(held) {
 // --- the game state after an error --------------------------------------------------------------
 
 // invariant: uncaught-failure-game-state
-// D-323, D-207, D-208, D-97; task napis-o-awarii, To do 3. Catches a game that goes on changing
+// D-323, D-207, D-208, D-97. Catches a game that goes on changing
 // after the error — the clock still reading, a button still acting — a save that reads the clock
 // again, whose error would come back with every save, and a save that sends anything but the last
 // whole state the page held before the error.
@@ -443,7 +443,7 @@ test("after an error nothing handled, an act of the player changes no state and 
 });
 
 // invariant: uncaught-failure-game-state
-// D-323; task karty-i-katalog-map, handoff item 2. The screen Mapy sends characters, so its buttons are
+// D-323. The screen Mapy sends characters, so its buttons are
 // acts of the player like „Pauza”. Catches a button of the screen Mapy that, after an error nothing
 // handled, still starts an earning loop, enters a map or moves the page, and so changes a state that
 // the page must hold as it was.
@@ -481,7 +481,7 @@ test("after an error nothing handled, the buttons of the screen Mapy change no s
 
 // --- the line in the console ------------------------------------------------------------------
 
-// D-323, D-253, D-252; task napis-o-awarii, To do 4. Catches an event left uncancelled, which the
+// D-323, D-253, D-252. Catches an event left uncancelled, which the
 // browser then prints itself with the error's text, and a line that carries that text or the stack.
 test("an error and a rejection nothing handled are cancelled, and each leaves one line of its kind, code and place and no word of its text", async () => {
   const cases = [
@@ -559,7 +559,7 @@ function recordReports(held, lines) {
   return sent;
 }
 
-// D-356, D-253; task skad-wiem-o-awarii, slice 4. Catches a report sent before its line is written,
+// D-356, D-253. Catches a report sent before its line is written,
 // a report sent again for a line already written, and a line the account client never hears of.
 test("each distinct line goes to the account client once per page load, after its console line, for errors and rejections alike", async () => {
   await onPage(async ({ lines }) => {
@@ -587,7 +587,7 @@ test("each distinct line goes to the account client once per page load, after it
   });
 });
 
-// D-323, D-253; task skad-wiem-o-awarii, slice 4. Catches a card taken down that reports under the
+// D-323, D-253. Catches a card taken down that reports under the
 // place of the page's handling instead of its own, and a report left out for it.
 test("a card taken down on the page is reported once, with the place of its own line", async () => {
   await onPage(async ({ root, lines }) => {
@@ -620,7 +620,7 @@ test("a card taken down on the page is reported once, with the place of its own 
   });
 });
 
-// D-323, D-253; task skad-wiem-o-awarii, slice 4. Catches a report whose failure leaves the error
+// D-323, D-253. Catches a report whose failure leaves the error
 // uncancelled, or writes a second line of its own, or reaches the window as an error of the page.
 test("a report the account client throws or refuses leaves the error cancelled, its one line written and no error of its own", async () => {
   const doubles = {
@@ -645,7 +645,7 @@ test("a report the account client throws or refuses leaves the error cancelled, 
 
 // --- the sentence ----------------------------------------------------------------------------
 
-// D-323, D-208; task napis-o-awarii, To do 2. Catches a sentence that replaces the sentence of a
+// D-323, D-208. Catches a sentence that replaces the sentence of a
 // failed save, one standing more than once, and one in a role but `warning`.
 test("on a game screen the sentence stands once in the row under the menu bar, in warning, beside the sentence of a failed save and not instead of it", async () => {
   await onPage(async ({ root }) => {
@@ -763,7 +763,7 @@ function assertWaitingWithSentence(root, intervals, reason) {
 }
 
 // invariant: uncaught-failure-game-state
-// D-323, D-247, D-211, D-207; task napis-o-awarii, To do 3. Catches a game built after the error
+// D-323, D-247, D-211, D-207. Catches a game built after the error
 // that catches up the earning loops of a loaded save, takes the result and saves a state the
 // error came before.
 test("after an error nothing handled no game is built: a card built after it shows the sentence, and a sign-in on it stays at the waiting screen and saves nothing", async () => {
@@ -820,7 +820,7 @@ const NO_CONNECTION = {
   },
 };
 
-// D-323, D-208, D-96, D-213; task napis-o-awarii, To do 5. Catches the sentence of the failure
+// D-323, D-208, D-96, D-213. Catches the sentence of the failure
 // standing beside the sentence a failure the game foresees already has, or its line written for it.
 test("a failure the game foresees keeps its own sentence alone: a lost connection, a refused sign-in and a load that meets an error of the code", async () => {
   await onPage(async ({ root, lines }) => {
@@ -884,7 +884,7 @@ test("a failure the game foresees keeps its own sentence alone: a lost connectio
 
 // --- a root of React ---------------------------------------------------------------------------
 
-// D-323, D-262; task napis-o-awarii, To do 1 and 2. Catches a root the page never hears of, and a
+// D-323, D-262. Catches a root the page never hears of, and a
 // card taken down that leaves an empty screen with the error only in the console.
 test("an error in the drawing of a root of the game reaches the page through the window", async () => {
   await onPage(async ({ root, lines }) => {

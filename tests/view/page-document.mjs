@@ -208,7 +208,7 @@ export const assert = {
     refuse(message, `expected anything but ${described(expected)}`);
   },
   // isDeepStrictEqual can walk the same paths as Node's message, so nothing but
-  // plain data reaches it (spec decision 10).
+  // plain data reaches it.
   deepEqual(actual, expected, message) {
     for (const value of [actual, expected]) {
       const found = notPlain(value);

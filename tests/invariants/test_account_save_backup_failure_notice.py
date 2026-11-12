@@ -188,7 +188,7 @@ FAILED_ENDS = (key_absent, log_cannot_be_written, lock_file_cannot_be_opened, lo
 STAGE = re.compile(r"stage (\w+):")
 FAILED_LAST_LINE = r"end: failed \(exit [1-9][0-9]*\)$"
 # 128 plus the signal's number on Linux, the server's system; the script writes them out, so they
-# hold on Windows too. The spec's log holds the exit code of a failure.
+# hold on Windows too. The log holds the exit code of a failure (D-233).
 EXIT_CODE_OF_SIGNAL = {"HUP": 129, "INT": 130, "USR1": 138, "USR2": 140, "ALRM": 142, "TERM": 143}
 EXIT_CODE_OF_SIGPIPE = 141
 

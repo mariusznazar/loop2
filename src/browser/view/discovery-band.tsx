@@ -1,12 +1,12 @@
 /**
- * The band of a discovery in React (D-122, D-312, D-313, D-39, D-44, D-279; task ekran-przejscia,
- * To do 7): the text of what a game minute revealed in the role `discovery`, the sentence about the
- * program rule the game wrote where the copy holds it, „Dodaj regułę z tym” and „Wznów”. It is a
- * component with no boundary of its own: the screen of a map run renders it above the program from
- * the game state it was given and answers its two callbacks, which are the screen's to carry out.
- * Its text is `discoveryBandText`, which the chronicle writes into the entry of the discovery too
- * (D-345). It imports the pure functions of the DOM modules (`discoveryRule`) and builds no element
- * after their pattern (D-265). Nothing runs when the module is imported.
+ * The band of a discovery in React (D-122, D-312, D-313, D-39, D-44, D-279): the text of what a game
+ * minute revealed in the role `discovery`, the sentence about the program rule the game wrote where
+ * the copy holds it, „Dodaj regułę z tym” and „Wznów”. It is a component with no boundary of its
+ * own: the screen of a map run renders it above the program from the game state it was given and
+ * answers its two callbacks, which are the screen's to carry out. Its text is `discoveryBandText`,
+ * which the chronicle writes into the entry of the discovery too (D-345). It imports the pure
+ * functions of the DOM modules (`discoveryRule`) and builds no element after their pattern (D-265).
+ * Nothing runs when the module is imported.
  */
 import { mapRunEnded } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";

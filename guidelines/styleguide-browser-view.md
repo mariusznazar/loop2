@@ -330,9 +330,9 @@ przez tyle linii, ile da jej Prettier. Zaraz po tym `;`, w tej samej linii,
 stoi komentarz zaczynający się od `Source:` z niepustą treścią. Reguła
 `@font-face` ma tylko deskryptory `font-family`, `src` i `font-weight`.
 
-Źródło wartości ustalone z Mariuszem dla loop2 w zadaniu „Styleguide loop2”
-(styleguide_loop2.md w vaulcie, Notes/Projects/(P) Loop/_zadania, pytania
-Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki”:
+Źródło wartości ustalone z Mariuszem dla loop2, z dwoma rodzajami dołożonymi
+później: grubością belki i linii zakładki (2026-11-02) oraz wyglądem sceny
+(2026-11-11):
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
@@ -345,15 +345,14 @@ Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki
 - dla wartości, której loop nie pokazała, a którą Mariusz wybrał z podglądu
   wariantów poza terenem i fokusem — grubość `--bar-width` belki przy zdaniu
   pod formularzem i linii wybranej zakładki, z podglądu wariantów karty
-  z 2026-11-02 w zadaniu „przyciski-i-zakladki” (To do 7) — wybór Mariusza
-  z tego podglądu, z nazwą zadania i datą wyboru;
+  z 2026-11-02 — wybór Mariusza z tego podglądu z datą wyboru;
 - dla wartości, których loop nie pokazała, a które Mariusz wybrał z podglądu wartości wyglądu
-  zadania „swit-rosnacy-z-passa” — chłodny i ciepły odcień światła sceny z ich kryciami oraz
-  wypełnienie, obrys i kryształki szronu — wybór Mariusza z podglądu wartości wyglądu tego zadania,
-  wariant A odcieni i wariant FA szronu, z nazwą zadania i datą wyboru, 2026-11-11; te same
-  nazwę i datę niesie komentarz przy regule powrotu odcienia, której wartość nie jest tokenem;
+  sceny — chłodny i ciepły odcień światła sceny z ich kryciami oraz wypełnienie, obrys
+  i kryształki szronu — wybór Mariusza z tego podglądu, wariant A odcieni i wariant FA szronu,
+  z datą wyboru, 2026-11-11; tę samą datę niesie komentarz przy regule powrotu odcienia, której
+  wartość nie jest tokenem;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
-  i grubości linii siatki — ustalenie zadania;
+  i grubości linii siatki — wybór Mariusza z 2026-10-20;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
   z którego pochodzą pliki czcionek (D-46), z jego tagiem i commitem.
 
@@ -700,10 +699,10 @@ klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
 pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają
 (D-317).
 
-Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę tą samą
-wartością co stara Loop (D-322). Martwy mag i wygasłe ognisko mają jedną wspólną
-szarość, też z wartością starej Loop (D-316, D-322); obie wartości stoją
-w regułach sceny w `src/browser/styles.css`, a źródła w ich komentarzach. Przy
+Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę filtrem
+`grayscale(1) brightness(0.5)` (D-322). Martwy mag i wygasłe ognisko mają jedną
+wspólną szarość, `grayscale(1) brightness(0.55)` (D-316, D-322); obie wartości
+stoją w regułach sceny w `src/browser/styles.css`, a źródła w ich komentarzach. Przy
 zatrzymaniu na odkryciu scena zostaje kolorowa, a po ukończeniu mag stoi
 w kolorze; po śmierci mag jest szary (D-322). Wygasłe ognisko to ten sam obrazek
 bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).

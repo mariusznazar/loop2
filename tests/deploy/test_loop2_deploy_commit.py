@@ -1,4 +1,4 @@
-"""The deployment script from the lock to the checkout (spec § 5, steps 2–6).
+"""The deployment script from the lock to the checkout.
 
 - the lock: `flock` on the lock file, waiting the script's 15 minutes; a held lock or a lock file
   it cannot open ends the run with exit 4;

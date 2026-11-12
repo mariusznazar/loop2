@@ -16,7 +16,6 @@ Reading of the sentence:
   starts, D-23, D-25); its full duration: its action kind and end minute remain unchanged,
   its effect occurs only at that end minute, and the next action follows the changed
   program then. Rule indices and the full activity representation are not requirements;
-  this reading follows accepted task przewodnik_testow_loop2.md, Q7a;
 - the condition of another program rule comes to hold: a program rule other than the one being
   carried out whose condition did not hold now holds and whose action can start; in the simulation
   this check drives, a condition changes only through the program or at the end of an action, so it

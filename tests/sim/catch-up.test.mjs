@@ -1,14 +1,13 @@
 // The time of earning loops: the open game passing them minute by minute, the catch-up after a load
 // passing the minutes away one character at a time, and the report the catch-up writes. The
-// expectations come from the task petla-zarobkowa (To do 2 and 11 to 16, answers P1, Q6, Q7 and Q19,
-// the settlements of rows 10 to 12, 14, 15 and 22 to 26) and from the spec (sections 2, 4, 6, 7, 8,
-// 11, 14 and 15), which bind the tests of loop at commit cdc7c0d where they cover a case:
-// `src/sim/loop.test.ts:44`, `:79`, `:91`-`92`, `:134`, `src/sim/sim.test.ts:1732`, `:1773`,
-// `:1811`, `:1848`, `:2015`-`2028`, `src/sim/chest.test.ts:535`. The departures are named: no upper
-// bound of the catch-up (Q7), one button for the whole report (Q21), no minutes in a line of a loop
-// that stopped in the open game (Q19). Where an expectation is a relation (the catch-up against the
-// open game) no value comes from today's run; the rest are written out by hand from the sentences
-// of the invariants.
+// expectations come from D-239 (a game minute of an earning loop is a real minute), D-240 (the
+// catch-up takes the characters one at a time), D-241 (the end of a loop's map run is dealt with at
+// once), D-242 (the clock of an earning loop), D-246 (the report), D-247 (the minutes it computes)
+// and D-248 (the save time). The decisions name where the game departs
+// from its predecessor: no upper bound of the catch-up (D-247), one button for the whole report
+// and no minutes in a line of a loop that stopped in the open game (D-246). Where an expectation is
+// a relation (the catch-up against the open game) no value comes from today's run; the rest are
+// written out by hand from the sentences of the invariants.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -171,7 +170,7 @@ function openGame(state, fromMs, minutes) {
   return { state: current, clockMs: clock, events };
 }
 
-// To do 11, 14, row 14, `catch-up-minutes`, loop `src/sim/sim.test.ts:2017`, `:2020`, `:2028`.
+// `catch-up-minutes` at its smallest: the span of real time as whole minutes, the rest waiting.
 test("the span gives whole minutes and the clock's new value, the rest waiting, and a clock turned back gives none and the reading", () => {
   const from = 5_000_000;
   assert.deepEqual(loopSpan(from, from + 90_000), {
@@ -194,7 +193,7 @@ test("the span gives whole minutes and the clock's new value, the rest waiting, 
   // Turned back: nothing is taken and the clock runs from the reading.
   assert.deepEqual(loopSpan(from, from - 1), { minutes: 0, clockMs: from - 1 });
   assert.deepEqual(loopSpan(from, 0), { minutes: 0, clockMs: 0 });
-  // A time of any sign is arithmetic; no upper bound (Q7): ten years of minutes.
+  // A time of any sign is arithmetic; no upper bound (D-247): ten years of minutes.
   assert.deepEqual(loopSpan(-90_000, 0), { minutes: 1, clockMs: -30_000 });
   const tenYears = 10 * 365 * 24 * 60;
   assert.deepEqual(loopSpan(0, tenYears * MIN), {
@@ -288,7 +287,7 @@ test("the open game passes no minute before a whole one: the very state, the clo
   assert.equal(result.clockMs, S);
 });
 
-// To do 2, row 20, P1: the catch-up reads neither the manual run nor the pause.
+// D-250: the catch-up reads neither the manual run nor the pause.
 test("the catch-up and the open game read neither the manual map run nor the pause, and leave them as they stand", () => {
   const manual = send(game(), FOREST, S).state;
   // Ola has a loop beside Ala's manual map run, which sits paused one minute in.
@@ -310,8 +309,6 @@ test("the catch-up and the open game read neither the manual map run nor the pau
 });
 
 // invariant: catch-up-death-moment
-// To do 14, loop `src/sim/sim.test.ts:1773`, `:1848`: a death in the k-th minute is settled at the
-// moment k real minutes after the save time, never at the reading.
 test("a death in game minute 243 of the catch-up is settled at the save time plus 243 minutes, whatever the reading", () => {
   const state = looping();
   const death = S + COLD_DEATH_MINUTE * MIN;
@@ -384,7 +381,7 @@ function assertRelation(state, minutes, label) {
 }
 
 // invariant: catch-up-state
-// Spec section 7 and 16: a relation, so no value comes from today's run.
+// D-240: a relation, so no value comes from today's run.
 test("a character no other loop reaches ends the catch-up as the open game does, through a covered death and an uncovered one", () => {
   // Both die of cold in minute 243: the first death is covered, the second (243 minutes later,
   // before the renewal) takes the character and stops the loop.
@@ -410,7 +407,7 @@ test("a character no other loop reaches ends the catch-up as the open game does,
 });
 
 // invariant: loop-run-knowledge
-// Row 17, To do 15: a loop passes through a span in which a manual map run would discover, and the
+// D-249: a loop passes through a span in which a manual map run would discover, and the
 // Understanding and the programs stay.
 test("a catch-up across the first chill leaves the Understanding and the programs as they were", () => {
   let state = setProgram(newGame(), EMPTY).state;
@@ -435,7 +432,7 @@ test("a catch-up across the first chill leaves the Understanding and the program
 
 // invariant: minute-span-split
 // invariant: map-run-repeatability
-// Spec section 2 and 6: one minute step, the moments counted from the loop clock, the open game
+// D-242: one minute step, the moments counted from the loop clock, the open game
 // minute by minute, so every split of a span agrees, through the ends of map runs.
 test("the open game over a span gives the same state and events in calls of any size", () => {
   let state = shortBy(looping({ moss: 50 }), 1, 1, { stick: 4 });
@@ -496,8 +493,8 @@ test("the open game passes minute by minute, the characters in the team's order,
 });
 
 // invariant: trip-transfer
-// To do 12, D-240: the open game alternates minute by minute and the catch-up goes one character at
-// a time, so who gets the last room of the chest differs, each as the spec section 7 gives.
+// D-240, D-242: the open game alternates minute by minute and the catch-up goes one character at
+// a time, so who gets the last room of the chest differs, each as the two decisions give.
 test("with room in the chest for one, the open game gives it to whoever completes first and the catch-up to the earlier character of the team", () => {
   let state = looping({ moss: 57 });
   state = shortBy(state, 1, 2, { stick: 5 });
@@ -523,7 +520,7 @@ test("with room in the chest for one, the open game gives it to whoever complete
 
 // invariant: trip-transfer
 // invariant: trip-run-end
-// To do 16, Q6, loop `src/sim/loop.test.ts:134`, `src/sim/chest.test.ts:535`: each character's own
+// D-246: each character's own
 // change of the chest and the practice its loop gathered from completions in this catch-up.
 test("each character's line holds its own change of the chest and its own practice gain, with no zero kept", () => {
   let state = looping({ moss: 57 });
@@ -574,8 +571,7 @@ test("a covered death in the catch-up gives the loop its next map run with nothi
   assertLoadsBack(result.state, "a covered death in a catch-up");
 });
 
-// To do 12, loop `src/sim/loop.test.ts:79`; To do 16, rows 23 and 24, Q19, loop `:91`-`92`,
-// `src/sim/sim.test.ts:1811`.
+// D-240, D-246: a loop a death stopped opens its line at any number of game minutes.
 test("a loop that stops in the catch-up writes its line with the minutes it worked, no practice and the generation, and the others go on", () => {
   let state = notReadyUntil(looping(), 1, S + 10_000 * MIN);
   state = changingLoop(state, 1, { practice: { eating: 3 } });
@@ -613,7 +609,7 @@ test("a catch-up with no whole minute writes no line", () => {
   assert.deepEqual(catchUp(state, S + MIN - 1).state.awayReport, []);
 });
 
-// To do 16, row 22: a further return before „Zamknij” adds to the report.
+// D-246: a further return before „Zamknij” adds to the report.
 test("a further return adds to the line of a loop still going, and its chest changes add up with no zero kept", () => {
   let state = looping({ stick: 1 });
   state = withSaveTime(state, S);
@@ -663,7 +659,7 @@ test("a later loop of a character whose line stopped opens a line of its own", (
   assertLoadsBack(result.state, "two lines of one character");
 });
 
-// To do 16, row 24, Q19: the open game writes a stop into the same report and no minutes of its own.
+// D-246: the open game writes a stop into the same report and no minutes of its own.
 test("a loop that stops in the open game writes a line of 0 minutes, and a covered death or a completion writes nothing", () => {
   const stopping = notReadyUntil(dyingNext(looping(), 1), 1, S + 99 * MIN);
   const stopped = passLoops(stopping, S, S + MIN + 5);
@@ -721,7 +717,7 @@ test("a stop in the catch-up closes the line of an earlier return with the minut
   assertLoadsBack(result.state, "a stop added to an earlier line");
 });
 
-// To do 16, Q21: one button closes the whole section.
+// D-246: one button closes the whole section.
 test("closing the report empties it and nothing else, and an empty report is the very state", () => {
   const state = {
     ...looping(),
@@ -747,7 +743,7 @@ function deepFreeze(value) {
 
 // invariant: simulation-inputs
 // The pool of `tests/invariants/test_simulation_inputs.py` holds no state with a loop, so the
-// functions of the slice are given such states here, frozen.
+// functions of the earning loop are given such states here, frozen.
 test("passLoops, catchUp and closeAwayReport write to nothing they are given, through a completion, a covered death and a stop", () => {
   const completing = withProgram(
     shortBy(looping({ moss: 50 }), 1, 1, { stick: 4 }),

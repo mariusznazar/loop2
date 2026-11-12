@@ -1,13 +1,13 @@
 /**
- * The drawing of the game map in React (D-19, D-70, D-41, D-125; task ekran-przejscia, To do 5):
- * the tiles of the map run with the icons of the resources they hold, the campfire's icon, the
- * outlines of the character and of the step's target, and the line around the hovered tile. It is a
- * picture, not a control: no click handling, hovering its only interaction, and it writes no number
- * of stock on itself (invariant `terrain-drawing-numbers`) — the numbers stand in the line under it
- * and in the table. The hovered tile's key is not the drawing's: the screen holds it and gives it
- * with its setter, so one hovered tile links the drawing, the line under it and the table standing
- * in another area. It imports the pure `terrainPicture` and `tileKey` and builds no element after
- * the pattern of a DOM module (D-265). Nothing runs when the module is imported.
+ * The drawing of the game map in React (D-19, D-70, D-41, D-125): the tiles of the map run with the
+ * icons of the resources they hold, the campfire's icon, the outlines of the character and of the
+ * step's target, and the line around the hovered tile. It is a picture, not a control: no click
+ * handling, hovering its only interaction, and it writes no number of stock on itself (invariant
+ * `terrain-drawing-numbers`) — the numbers stand in the line under it and in the table. The hovered
+ * tile's key is not the drawing's: the screen holds it and gives it with its setter, so one hovered
+ * tile links the drawing, the line under it and the table standing in another area. It imports the
+ * pure `terrainPicture` and `tileKey` and builds no element after the pattern of a DOM module
+ * (D-265). Nothing runs when the module is imported.
  */
 import type { CSSProperties } from "react";
 import type { GameState } from "../sim/types.js";

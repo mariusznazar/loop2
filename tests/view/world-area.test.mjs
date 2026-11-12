@@ -1,5 +1,5 @@
-// The world area of the screen of a map run in React (task ekran-przejscia, To do 4, 5 and 6; D-311,
-// D-19, D-70, D-147, D-185, D-186, D-201, D-215, D-216, D-272, D-314) on jsdom through
+// The world area of the screen of a map run in React (D-311, D-19, D-70, D-147, D-185, D-186,
+// D-201, D-215, D-216, D-272, D-314) on jsdom through
 // tests/view/page-document.mjs (D-264): the scene, the rows, the body row with the backpack, the lines
 // between the backpack and the drawing, the drawing
 // and the line of a tile under it, and the table of revealed tiles that stands in another area
@@ -175,10 +175,9 @@ const rowOf = (container, key) =>
   container.querySelector(`.tile-list tbody tr[data-tile="${key}"]`);
 
 // Catches a scene that is not the first part, „Teraz” and „Potem” anywhere but right under the scene,
-// a paragraph of the last encounter standing in the world area, which the chronicle holds since task
-// kronika-z-filtrami, To do 6, a part out of the order of task item 4 and of task teraz-i-potem, To do 2
-// (D-311), or a line of the deposit or of a death's settlement standing in the world area, which the
-// window of the end holds since task koniec-przejscia, To do 3 (D-185, D-216, D-311).
+// a paragraph of the last encounter standing in the world area, which the chronicle holds (D-147), a
+// part out of the order D-311 gives, or a line of the deposit or of a death's settlement standing in
+// the world area, which the window of the end holds (D-185, D-216, D-311).
 test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
@@ -338,7 +337,7 @@ test("Teraz says the wait alone, and Potem with no winning rule says the charact
 });
 
 // Catches the cause of a death in `danger` (D-334) or worded alike for two causes, a completion not in
-// `positive` (task teraz-i-potem, question 9), and rows that vanish after the end (D-335, D-334).
+// `positive` (D-132), and rows that vanish after the end (D-335, D-334).
 test("after a death Teraz says its cause in the role text, after a completion the text of the map in positive, and Potem stays", async () => {
   await withPage(async ({ document }) => {
     const rules = [{ condition: ALWAYS, action: { kind: "explore" } }];
@@ -414,11 +413,10 @@ test("a death that used a resurrection shows no line of its settlement and no de
 
 // Catches a second size of the scene (D-349) — one that follows the width of the window or the game
 // state — a size other than 672 × 304 on the background, a text on the picture or a background other
-// than the file of the forest. The scene is no longer one `img`: since the task scena-z-ludzikiem
-// (To do 1 and 7) it is a frame that holds the forest as its background image and the props, the
-// campfire, the mage and the badge over it (D-316, D-320), so the case reads the size and the source
-// from the background and the absence of text from the whole frame. The one size is twice the
-// picture of 336 × 152 (D-349, task proporcje-sceny-i-programu, To do 4).
+// than the file of the forest. The scene is not one `img`: it is a frame that holds the forest as its
+// background image and the props, the campfire, the mage and the badge over it (D-316, D-320), so
+// the case reads the size and the source from the background and the absence of text from the whole
+// frame. The one size is twice the picture of 336 × 152 (D-349).
 test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, sent());
@@ -474,7 +472,7 @@ test("the scene is the picture of the forest at the one size of D-349, with no t
 });
 
 // Catches a value in `danger` that is not below its threshold, or one below it that is not. The
-// thresholds are 35 °C and 30 % (spec Decision 3); the nature energy is never in `danger`.
+// thresholds are 35 °C and 30 % (D-337); the nature energy is never in `danger` (D-178).
 test("only the value below its threshold stands in danger, and the backpack reads its pieces of the cap", async () => {
   await withPage(async ({ document }) => {
     const base = sent();
@@ -500,8 +498,7 @@ test("only the value below its threshold stands in danger, and the backpack read
       container.querySelector(".backpack-text").textContent,
       "Plecak 7/15: patyk 5, jagoda 2",
     );
-    // The case that read the four values joined by „ · ” in one line changes with row 7 of the task
-    // (D-337): each value stands in a cell of its own, and no separator stands between the cells.
+    // D-337: each value stands in a cell of its own, and no separator stands between the cells.
     const cells = [...container.querySelectorAll(".body-cell")];
     assert.equal(cells.length, 4);
     assert.ok(
@@ -671,8 +668,8 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
 });
 
 // Catches the paragraph of the last encounter drawn in the world area, at its old place under „Teraz”
-// and „Potem” or anywhere else, while the map run holds a record of one (task kronika-z-filtrami,
-// To do 6; D-311, D-147): it stands in the chronicle in the area with the tabs alone.
+// and „Potem” or anywhere else, while the map run holds a record of one (D-311, D-147): it stands
+// in the chronicle in the area with the tabs alone.
 test("the world area draws no paragraph of the last encounter, with a record of one or without", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, sent());

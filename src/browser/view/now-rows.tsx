@@ -1,11 +1,11 @@
 /**
  * The rows „Teraz” and „Potem” under the scene of the screen of a map run in React (D-334, D-335,
- * D-291, D-292, D-311; task teraz-i-potem, To do 1): what the character does now and the rule that
- * wins now, in the words of a rule's row. It draws from the game state and from what `nowAndNext`
- * names, and only words and roles. A row that names a rule of the copy is a control, built as the
- * rows of the rule list are: a click, Enter or Space on it asks, through `onShowRule`, to show the
- * rule (D-336); a row that names none is text. „Teraz” keeps one height and cuts a longer text, so
- * its change moves nothing below it. Nothing runs when the module is imported.
+ * D-291, D-292, D-311): what the character does now and the rule that wins now, in the words of a
+ * rule's row. It draws from the game state and from what `nowAndNext` names, and only words and
+ * roles. A row that names a rule of the copy is a control, built as the rows of the rule list are:
+ * a click, Enter or Space on it asks, through `onShowRule`, to show the rule (D-336); a row that
+ * names none is text. „Teraz” keeps one height and cuts a longer text, so its change moves nothing
+ * below it. Nothing runs when the module is imported.
  */
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { nowAndNext } from "../sim/game.js";

@@ -133,7 +133,7 @@ test("map warning appears below desired load and backpack capacity, including a 
 const MARK =
   "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
 
-// D-251, To do 18. Catches a mark measured against the take list before its cut, one shown at a map
+// D-251. Catches a mark measured against the take list before its cut, one shown at a map
 // not yet solved, and one that stays where the chest holds exactly what the run takes.
 test("the mark shows at a solved map when a take entry cut by capacity and the entry cap exceeds the chest, and only then", () => {
   const take = (...entries) => ({ take: entries, bring: [] });
@@ -233,7 +233,7 @@ test("the mark shows at a solved map when a take entry cut by capacity and the e
   assert.equal(rehearsalMark(true, take(), 15, MAPS.forest, chest({})), null);
 });
 
-// D-180, D-189, To do 5 item 4: the line names what a send takes, which is the cut the send makes.
+// D-180, D-189: the line names what a send takes, which is the cut the send makes.
 // Catches a line that writes the take list as asked, not as cut; a solved map that reads the chest
 // where the run takes from nowhere; and an empty take that stands without „nic”.
 test("the enter line gives what a send takes, cut by the chest, the capacity and the entry cap", () => {
@@ -283,7 +283,7 @@ test("the enter line gives what a send takes, cut by the chest, the capacity and
   assert.equal(entersLine(take(), null, 15, MAPS.forest), "Wejdzie: nic");
 });
 
-// To do 6, D-326: a program whose bring list is empty earns nothing for the chest, so the loop mark
+// D-326: a program whose bring list is empty earns nothing for the chest, so the loop mark
 // stands; a list with an item in it does not. Catches the mark on a non-empty list, and no mark on
 // an empty one.
 test("the loop mark stands when the bring list is empty, and only then", () => {
@@ -343,8 +343,8 @@ function died(state, readyAtMs) {
 }
 
 // Catches a map-run screen that shows the deposit or the settlement in the world area, which the
-// window of the end holds (D-185, D-216, D-311), or that shows the solved-map line on a run that does
-// pay; the lines the world area reads, in decision 8's order, for the six screens of a map run.
+// window of the end holds (D-185, D-216, D-311), or that shows the solved-map line (D-215) on a run
+// that does pay; the lines the world area reads for the six screens of a map run.
 test("the six screens of a map run give the world area the solved-map line and the preview, and no deposit and no settlement", () => {
   const lines = (state) => ({
     solved: solvedRunText(state),
@@ -396,7 +396,7 @@ test("a death not yet settled has no settlement record, and a loaded game holds 
     completed(solvedSent()),
     solvedSent(),
   ]) {
-    // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+    // D-248: every document is stamped, and the load refuses one that is not.
     const loaded = loadSavedGame(savedGame(withSaveTime(state, 9_000_000)));
     assert.equal(loaded.ok, true, String(state.run.completion?.minute));
     assert.deepEqual(solvedRunText(loaded.state), solvedRunText(state));

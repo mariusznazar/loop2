@@ -58,7 +58,7 @@ test("the list shows the program given, whichever place it has on the list", () 
   assert.equal(programPositions(PROGRAMS, PROGRAMS[2]).value, "7");
 });
 
-// To do 19, Q12. A real moment of the browser's clock, in ms, and the lengths the cases use.
+// D-217. A real moment of the browser's clock, in ms, and the lengths the cases use.
 const NOW = 1_760_000_000_000;
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -70,7 +70,7 @@ const WARNING = " — śmierć zabierze wprawę i wykupione stopnie";
 const lineWhenLeft = (left, now = NOW) =>
   resurrectionLine({ resurrectionReadyAtMs: now + left }, now);
 
-// Q12's three examples, written out: the minutes go up to a whole minute before the split, so a
+// The three examples of D-217, written out: the minutes go up to a whole minute before the split, so a
 // time shown is never shorter than the real one.
 test("7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min", () => {
   assert.deepEqual(lineWhenLeft(7 * HOUR + 59 * MINUTE + 30 * SECOND), {
@@ -152,7 +152,7 @@ test("the label of a generation is „pokolenie {n}” from 2 up and nothing at 
   assert.equal(generationLabel(13), "pokolenie 13");
 });
 
-// D-244, To do 9. Catches a number of the line read from the wrong place (the run's number for the
+// D-244. Catches a number of the line read from the wrong place (the run's number for the
 // minute, the completed runs for the run's number) and a map name written into the view.
 test("the line of a character in a loop names the map, the run, its minute and the runs completed", () => {
   assert.equal(
@@ -173,7 +173,7 @@ test("the line of a character in a loop names the map, the run, its minute and t
   );
 });
 
-// D-245, To do 8, Q18. Catches a stop that gathered nothing reading „wprawa: nic”, a skill with
+// D-245. Catches a stop that gathered nothing reading „wprawa: nic”, a skill with
 // zero practice listed, and an order other than the skills' data.
 test("the line after a stop lists the practice gathered in the skills' order, and is the bare words where none was", () => {
   assert.equal(stoppedLoopLine({}), "Pętla zatrzymana");
@@ -188,7 +188,7 @@ test("the line after a stop lists the practice gathered in the skills' order, an
   );
 });
 
-// To do 8, row 1; question 3. Catches a sentence that names the map by a typed name instead of the
+// D-287. Catches a sentence that names the map by a typed name instead of the
 // data's, that drops the second sentence every inactive send shows, and a map other than the run's.
 test("the sentence beside an inactive send names the run's map from the data and tells the player to finish the run", () => {
   assert.equal(

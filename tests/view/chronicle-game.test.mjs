@@ -1,6 +1,5 @@
-// The chronicle in the game view (task kronika-z-filtrami, To do 1, 6 and 8; D-338, D-339, D-346,
-// D-147, D-311; spec D2, D9, D11) on jsdom through tests/view/page-document.mjs (D-264): the game
-// view is built as the page builds it, and the map run's screen is driven through the buttons the
+// The chronicle in the game view (D-338, D-339, D-346, D-383, D-147, D-311) on jsdom through
+// tests/view/page-document.mjs (D-264): the game view is built as the page builds it, and the map run's screen is driven through the buttons the
 // player presses and the address the page follows. What the cases hold is that the chronicle and the
 // tab and filter picked belong to the game view — they outlive a visit to Siedziba and „Restart”,
 // and a send after „Zakończ” starts them anew — and that a game loaded with a record of an
@@ -178,7 +177,7 @@ async function played({ pass, reading }, view) {
   return view;
 }
 
-// D-346, D-339, spec D2. Catches a chronicle that lives in the screen and so is lost when the
+// D-346, D-339. Catches a chronicle that lives in the screen and so is lost when the
 // player leaves for Siedziba and comes back, and a tab picked that returns to „Kronika”.
 test("the chronicle and the tab picked are there after Przejście, Siedziba and Przejście again", async () => {
   await onPage(async (page) => {
@@ -205,7 +204,7 @@ test("the chronicle and the tab picked are there after Przejście, Siedziba and 
   });
 });
 
-// D-343, D-346, spec D2. Catches „Restart” that keeps the entries of the map run before it, or that
+// D-343, D-346, D-383. Catches „Restart” that keeps the entries of the map run before it, or that
 // brings back „Kronika” or „Wszystko”.
 test("„Restart” starts the chronicle anew and keeps the tab and the filter picked", async () => {
   await onPage(async (page) => {
@@ -231,7 +230,7 @@ test("„Restart” starts the chronicle anew and keeps the tab and the filter p
   });
 });
 
-// D-343, D-346, spec D2. Catches the entries of an ended map run carried over to the next one, and
+// D-343, D-346, D-383. Catches the entries of an ended map run carried over to the next one, and
 // the tab and the filter of the ended one kept after a send.
 test("„Zakończ” clears the chronicle and a new send starts with Kronika and Wszystko picked", async () => {
   await onPage(async (page) => {
@@ -263,7 +262,7 @@ test("„Zakończ” clears the chronicle and a new send starts with Kronika and
   });
 });
 
-// D-339, D-147, task item 6. Catches the paragraph of the last encounter still standing in the world
+// D-339, D-147. Catches the paragraph of the last encounter still standing in the world
 // area, and a chronicle built from a loaded game that shows anything but the paragraph.
 test("a game loaded with a record of an encounter shows the paragraph in the chronicle alone and none in the world area", async () => {
   await onPage(async ({ root }) => {

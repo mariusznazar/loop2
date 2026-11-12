@@ -1,7 +1,7 @@
 /**
- * The table of revealed tiles in React (D-19, D-70, D-125, D-311; task ekran-przejscia, To do 3 and
- * 5): a column per resource of the map, a row per revealed tile with its stock, and a last cell with
- * the state of the campfire and the burning items standing on the tile. It stands in the area with the tabs
+ * The table of revealed tiles in React (D-19, D-70, D-125, D-311, D-385): a column per resource of
+ * the map, a row per revealed tile with its stock, and a last cell with the state of the campfire
+ * and the burning items standing on the tile. It stands in the area with the tabs
  * of the screen of a map run, away from the drawing, and shares the hovered tile with it: a hovered
  * row reports its tile's key through `onHover` and the row of the hovered tile is marked. The
  * hovered tile's key is the screen's, not the table's. It imports the pure `tileList` and builds no

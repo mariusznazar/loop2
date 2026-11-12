@@ -19,7 +19,7 @@ const entryPoint = fileURLToPath(
 );
 const commit = "0123456789abcdef0123456789abcdef01234567";
 const deploymentLimit = 536870912; // 512 MiB, compose.yaml mem_limit
-// 80% of 512 MiB is 409.6 MiB (spec, section 6); rounded down to whole MiB,
+// 80% of 512 MiB is 409.6 MiB (player-argon2-deployment-check); rounded down to whole MiB,
 // 409 * 1048576 = 428867584 bytes is the measurement container's limit.
 const limit = 428867584;
 
@@ -33,7 +33,7 @@ async function cgroupDirectory(t, files) {
 }
 
 // The memory files of a container's cgroup on the test server's kernel 5.15, which
-// has no memory.peak (reports/63-human-remarks.md, item 4).
+// has no memory.peak.
 const kernel515Cgroup = {
   "memory.max": "428867584\n",
   "memory.current": "100000000\n",
@@ -79,7 +79,7 @@ test("the entrypoint measures the production profile and gate with synthetic pas
   const { result } = run;
   assert.equal(result.ok, true);
   assert.deepEqual(result.errors, []);
-  // The provisional candidate of the spec, section 5: m=65536 KiB, t=3, p=1, 32 bytes.
+  // The explicit profile of src/server/passwords.ts (D-113): m=65536 KiB, t=3, p=1, 32 bytes.
   assert.deepEqual(result.profile, {
     type: "argon2id",
     memoryCostKiB: 65536,

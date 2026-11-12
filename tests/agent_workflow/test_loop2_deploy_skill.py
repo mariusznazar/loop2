@@ -1,4 +1,4 @@
-"""Static checks of the loop2-deploy skill (spec § 7). Standard library only."""
+"""Static checks of the loop2-deploy skill. Standard library only."""
 
 import os
 import re

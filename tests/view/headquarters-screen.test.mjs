@@ -1,9 +1,8 @@
-// The screen Siedziba in React (task karty-i-katalog-map, To do 8 and question 11; D-282, D-246,
-// D-217, D-218, D-244, D-245, D-184, D-51, D-330) on jsdom through tests/view/page-document.mjs
-// (D-264): which elements the screen builds, what it shows of the game state and of the clock's
-// moment, what its three acts hand the page, and that nothing on it sends a character. Real focus
-// order, Enter in a field and rendering are the browser check's (D-88), so a focus case here holds
-// only what jsdom shows.
+// The screen Siedziba in React (D-282, D-246, D-217, D-218, D-244, D-245, D-184, D-51, D-330) on
+// jsdom through tests/view/page-document.mjs (D-264): which elements the screen builds, what it
+// shows of the game state and of the clock's moment, what its three acts hand the page, and that
+// nothing on it sends a character. Real focus order, Enter in a field and rendering are the browser
+// check's (D-88), so a focus case here holds only what jsdom shows.
 import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import {
@@ -143,8 +142,8 @@ test("the screen holds its heading Siedziba, then the sections „Drużyna” an
   });
 });
 
-// Catches the credits of the icons left off Siedziba (D-27), opened by default, standing above the
-// last part of the screen (the task's settlement 3), or lost at a refresh of the game state.
+// Catches the credits of the icons left off Siedziba, opened by default, standing above the last
+// part of the screen (D-27), or lost at a refresh of the game state.
 test("the folded section „Autorzy grafiki” stands last on the screen, whatever the team and the chest hold, and stays as the player left it", async () => {
   await withPage(async (page) => {
     const state = teamOf(1);
@@ -497,7 +496,7 @@ test("the field keeps its element, its text and its focus, and the button its fo
 
 // --- what the screen does not do -------------------------------------------------------------
 
-// Catches a control of sending left on Siedziba (Settlement 4, D-330): the list „Program:”, „Wejdź”,
+// Catches a control of sending left on Siedziba (D-330): the list „Program:”, „Wejdź”,
 // „Puść w pętlę”, a button that leads to the screen Mapy or a link other than a character's name.
 test("nothing on the screen sends a character or leads to the screen Mapy", async () => {
   await withPage(async (page) => {

@@ -1,5 +1,4 @@
-// The rule list and the rule panel of the program editor (task edytor-programu, To do 1–10; D-93,
-// D-270, D-288 to D-306) on jsdom through tests/view/page-document.mjs (D-264). jsdom shows which
+// The rule list and the rule panel of the program editor (D-93, D-270, D-288 to D-306) on jsdom through tests/view/page-document.mjs (D-264). jsdom shows which
 // elements the list and the panel build, what they hand the page and which element holds the focus;
 // the real drag, the real focus ring and the look are the browser check's (D-88), so a drag case here
 // sends the events a drag sends.
@@ -397,10 +396,10 @@ test("a „↓” inside a group swaps the rule with its neighbour", async () =>
   });
 });
 
-// Task kronika-z-filtrami, To do 5; spec D4. The chronicle names the rule or group the player moved
-// from the hint the list hands over with the edit, since a swap of two neighbours leaves the copies
-// unable to tell which one moved. Catches a move site that hands no hint, one that names the
-// neighbour instead of the rule moved, and a hint that names the wrong kind.
+// D-348. The chronicle names the rule or group the player moved from the hint the list hands over
+// with the edit, since a swap of two neighbours leaves the copies unable to tell which one moved.
+// Catches a move site that hands no hint, one that names the neighbour instead of the rule moved,
+// and a hint that names the wrong kind.
 test("„↑” and „↓” hand the identity of the rule moved as the hint of the edit, across a group border too", async () => {
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
@@ -1049,8 +1048,7 @@ const ZAPAS_8_PATYK = { kind: "itemBelow", item: "stick", value: 8 };
 const ZBIERZ_PATYK = { kind: "gather", resource: "stick" };
 
 test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
-  // Task edytor-programu, Acceptance criteria: the row, „Zapas poniżej”, 8 with Enter, „Patyk”,
-  // „Zbierz”, „Patyk”.
+  // D-306: the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk”.
   await withPage(async (page) => {
     const editor = await mountEditor(page, twoGroups());
     await press(rowOf(page.root, 2).querySelector(".rule-condition"));
@@ -1077,8 +1075,7 @@ test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Paty
 });
 
 test("a number typed in the panel keeps its text and the focus while the game at 16× redraws the panel, and Enter commits it", async () => {
-  // Task edytor-programu, Acceptance criteria, and D-03: „a number field whose value the game clips
-  // may lose its cursor”.
+  // D-03: a number field whose value the game clips may lose its cursor.
   await withPage(async (page) => {
     let state = setPace(runningGame(), 16).state;
     const { panel, calls, props } = await mountPanel(
@@ -1109,9 +1106,8 @@ test("a number typed in the panel keeps its text and the focus while the game at
   });
 });
 
-// Task edytor-programu, slice 13: the case of the DOM editor about the range and step of its number
-// field now stands on the number field of the panel. Catches a field drawn with another kind's range
-// or step, so the browser would offer a temperature 0 to 100 or a count in tenths.
+// The range and the step of the number field of the panel (D-376). Catches a field drawn with another
+// kind's range or step, so the browser would offer a temperature 0 to 100 or a count in tenths.
 test("the number field of the panel takes the range and the step of the condition kind", async () => {
   for (const [condition, range] of [
     [
@@ -1163,10 +1159,10 @@ test("the number field of the panel takes the range and the step of the conditio
   }
 });
 
-// Task edytor-programu, Acceptance criteria 3, found in the browser in slice 13: the number field took
-// the focus with its digits unselected, so the 8 typed beside the 8 the rule held made 88 and the
-// rule needed more than six actions. jsdom has no selection of a number field to read, so the case
-// holds the call that makes it: the field is selected when the focus goes to it.
+// D-306: were the number field to take the focus with its digits unselected, the 8 typed beside the 8
+// the rule held would make 88 and the rule would need more than six actions. jsdom has no selection
+// of a number field to read, so the case holds the call that makes it: the field is selected when the
+// focus goes to it.
 test("the number field is selected when the focus goes to it, so what is typed replaces the number held", async () => {
   await withPage(async (page) => {
     const selected = [];
@@ -1318,7 +1314,7 @@ test("in a grid the arrow keys move among the cells, two columns of conditions, 
 });
 
 test("each reason stands beside its greyed cell: „gałąź niewykupiona”, „wybierzesz w przejściu…”, „nie znasz jeszcze celu”, „nie ma go na tej mapie”", async () => {
-  // D-289; the four sentences are written out as the task gives them.
+  // D-289; the four sentences are written out as D-289 gives them.
   const open = { groupId: 1, ruleId: 1, field: "action" };
   await withPage(async (page) => {
     await mountPanel(page, twoGroups(), open, { state: runningGame() });
@@ -1444,7 +1440,7 @@ test("the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walk
   });
 });
 
-// The price of the action (task koszty-i-stan-ogniska, To do 1 to 4; D-363): in the
+// The price of the action (D-363): in the
 // panel only, in brackets after the name, beside the time where the action is the value shown.
 test("the price stands in the name of each action cell, a greyed one too, and the row of the rule shows no price", async () => {
   await withPage(async (page) => {
@@ -1632,7 +1628,7 @@ test("opening another rule shows that rule on its condition", async () => {
 });
 
 // --- the rule panel under its row or header ------------------------------------------------------
-// Task proporcje-sceny-i-programu, To do 1 and 3; D-288, D-311. A panel the page hands the list
+// D-288, D-311. A panel the page hands the list
 // stands in the list, under the row or the header it changes, and is no part of that row.
 
 /** A stand-in for the rule panel the page hands the list: a field to focus and a button to click. */
@@ -1787,7 +1783,7 @@ test("a click, a key and a drag over the panel reach no handler of the row or th
   });
 });
 
-// Task proporcje-sceny-i-programu, finding I-1 of the review; D-288. The one panel is drawn anew in
+// D-288. The one panel is drawn anew in
 // a new place when the group of the open rule folds or the rule moves to another group; a panel built
 // again there starts with no memory of its field and takes the focus as an opening does. Catches the
 // panel mounted again at its new place: the element the page's panel drew is then another one.
@@ -1850,7 +1846,7 @@ test("a panel closed and opened again is drawn once, at the place of the row ope
   });
 });
 
-// Task proporcje-sceny-i-programu, finding M-6 of the review. The item that holds the panel stands in
+// D-288. The item that holds the panel stands in
 // the ordered list of the group's rules; assistive technology would count it as one rule more.
 // Catches the item left a list item of its own.
 test("the item that holds the panel under a row is no list item to assistive technology", async () => {
@@ -1865,7 +1861,7 @@ test("the item that holds the panel under a row is no list item to assistive tec
   });
 });
 
-// Task proporcje-sceny-i-programu, finding M-7 of the review. A rule dragged over the panel is over
+// D-288. A rule dragged over the panel is over
 // no row and no group's empty part: the panel takes no drop, and no line promises a landing the
 // pointer is not at. Catches a line at the end of the group when the pointer is on the panel.
 test("a rule or a group dragged over the panel shows no line, is not accepted there, and a drop on the panel changes nothing", async () => {

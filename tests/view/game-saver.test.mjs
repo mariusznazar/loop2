@@ -1,8 +1,7 @@
-// The game saver (task zapis-stanu-na-serwerze, To do 7, 8 and 10; spec sections 6 and 8; D-207,
-// D-208, D-209, D-210, D-211, D-97). These tests run the saver with a client the test answers,
-// Node's mocked timers and a hand-made document model: they prove when it sends, what it sends and
-// what it shows and reports for each outcome, never real events or rendering (D-88). Each document
-// holds the clock's moment as its save time (task petla-zarobkowa, To do 10 and row 13; D-248).
+// The game saver (D-207, D-208, D-209, D-210, D-211, D-97). These tests run the saver with a client
+// the test answers, Node's mocked timers and a hand-made document model: they prove when it sends,
+// what it sends and what it shows and reports for each outcome, never real events or rendering
+// (D-88). Each document holds the clock's moment as its save time (D-248).
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import {
@@ -190,7 +189,7 @@ function saverOf(held, game, revision = 3, extra = {}) {
 
 /**
  * What a save of `state` sends, written out from the document of the saved game state, stamped with
- * the clock's moment: To do 10 with D-206 and row 13, every document holds it.
+ * the clock's moment: every document holds it (D-248).
  */
 function submissionOf(state, basedOn) {
   const { version, game } = savedGame(state);
@@ -293,7 +292,7 @@ test("a failed save shows that the game retries, and the retries follow after 5,
       game.act(setPace(game.state, index % 2 === 0 ? 2 : 4));
       mock.timers.tick(1);
       assert.equal(held.sent.length, index + 2, `a retry at ${wait} ms`);
-      // To do 10 with D-206; row 13: each retry's document is stamped too.
+      // D-248: each retry's document is stamped too.
       assert.deepEqual(held.sent.at(-1).game, submissionOf(game.state, 0).game);
       await held.answer(FAILED);
       assert.equal(sentenceOf(saver), RETRYING);
@@ -425,7 +424,7 @@ test("a save refused as outdated shows its sentence, tells the page, and nothing
 // --- the checks for changes ------------------------------------------------------------------
 
 test("an untouched game sends nothing at the 30-second check or at hiding, and sends at the player's first act", async () => {
-  // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+  // D-248: every document is stamped, and the load refuses one that is not.
   const loaded = loadSavedGame(savedGame(withSaveTime(passing(), CLOCK_MS)));
   // Precondition: a loaded map run comes back paused, so real time changes nothing in it.
   assert.ok(loaded.ok && loaded.state.paused);
@@ -475,9 +474,8 @@ test("a passing map run is saved at the 30-second check and at hiding, and a hid
   });
 });
 
-// Task petla-zarobkowa, To do 17, row 18 (Q11); spec section 10; D-207. Catches a rhythm that sends
-// every 30 seconds for loops alone, which the player left on overnight, and a hidden page or an act
-// that no longer sends.
+// D-207. Catches a rhythm that sends every 30 seconds for loops alone, which the player left on
+// overnight, and a hidden page or an act that no longer sends.
 test("the 30-second check is silent while no manual map run passes, though the state changes at every reading; hiding and an act still send", async () => {
   const cases = [
     ["no manual map run", withCharacter()],
@@ -520,7 +518,7 @@ test("the 30-second check is silent while no manual map run passes, though the s
 /** The document a save sent, as the server hands it back. */
 const documentOf = ({ version, game }) => ({ version, revision: 9, game });
 
-// Spec section 9; D-248. Catches a document unstamped, which the load refuses, a moment read before
+// D-248. Catches a document unstamped, which the load refuses, a moment read before
 // the reading that sends, so older than the state it stamps, and a stamp written into the state held.
 test("each document holds the moment of the reading made for it and loads, and the state held stays what it was", async () => {
   await onPage(async () => {
@@ -561,7 +559,7 @@ test("each document holds the moment of the reading made for it and loads, and t
   });
 });
 
-// Spec section 9; D-207, D-248. Catches a stamped state taken for the one last sent, so that the
+// D-207, D-248. Catches a stamped state taken for the one last sent, so that the
 // comparison by identity finds a change at every check, and a tab that has only loaded sending.
 test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees", async () => {
   const savedMs = CLOCK_MS - 60_000;

@@ -168,8 +168,8 @@ test("advanceMinutes and setPaused without a map run change nothing", () => {
   assert.deepEqual(setPaused(state, true), { state, events: [] });
 });
 
-// The pace tests take their expectations from the task "rozwiazanie-lasu", To do 1 and Questions
-// 2 and 3: a game minute for each whole 1/pace of a real second, so 62.5 ms at 16x.
+// The pace tests take their expectations from D-21 and the invariant `player-map-run-pace`: a game
+// minute for each whole 1/pace of a real second, so 62.5 ms at 16x.
 
 test("at 16x each whole 62.5 ms of real time moves the run on by one game minute", () => {
   const fast = setPace(sent(), 16).state;

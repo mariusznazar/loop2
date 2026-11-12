@@ -1,5 +1,4 @@
-// The list of programs on the screen Programy (task ekrany-i-menu, To do 5 and 14; questions 5 and 15;
-// D-165, D-166, D-167, D-169) on jsdom through tests/view/page-document.mjs (D-264): which elements
+// The list of programs on the screen Programy (D-165, D-166, D-167, D-169) on jsdom through tests/view/page-document.mjs (D-264): which elements
 // the list builds, which program it marks, what its acts hand the page and which name the name rule
 // refuses. Real focus order and rendering are the browser check's (D-88), so a focus case here holds
 // only what jsdom shows.

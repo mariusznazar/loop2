@@ -195,8 +195,8 @@ function fireOf(
  * The tint of the scene's light, from 0, the cool tint, to 1, the warm one (D-315, D-316). It goes up
  * evenly with the streak to `SCENE_TINT.requiredShare` at the streak the map's solving condition asks
  * for and stays there when the streak goes on growing, and only a completion makes it 1. No map asks for
- * no streak today; the tint of one that does is for the task that adds it to settle, and until then it
- * stays at 0, the cool tint, before a completion. It is given
+ * no streak today; no decision gives the tint of a map that does, and until one does it stays at 0, the
+ * cool tint, before a completion. It is given
  * with four decimals, which is finer than a step of tone the eye tells apart.
  */
 function tintOf(run: GameMapRun): number {
@@ -210,7 +210,7 @@ function tintOf(run: GameMapRun): number {
 }
 
 /**
- * The thickness of the frost on the frame's edges, in the scene's pixels (D-316): none at the
+ * The thickness of the frost on the frame's edges, in the scene's pixels (D-372): none at the
  * temperature the body starts at, growing evenly to its greatest at the chill and staying there below
  * it, a whole number of pixels so that it grows by squares of the scene's grid.
  */

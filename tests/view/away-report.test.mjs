@@ -1,6 +1,6 @@
-// The report on earning loops, its pure texts (task petla-zarobkowa, To do 16; spec section 11;
-// D-246), tested without a browser. The expected wordings are written out from To do 16, not
-// computed from the module. Importing the module must not touch the DOM.
+// The report on earning loops, its pure texts (D-246), tested without a browser. The expected
+// wordings are written out from D-246, not computed from the module. Importing the module must not
+// touch the DOM.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
@@ -43,13 +43,13 @@ test("importing the report touches no DOM: Node has no document and the import s
   assert.equal(typeof reportEntries, "function");
 });
 
-test("the two titles and the sentence of a full chest are the wordings of To do 16", () => {
+test("the two titles and the sentence of a full chest are the wordings of D-246", () => {
   assert.equal(AWAY_TITLE, "Gdy cię nie było");
   assert.equal(STOPPED_TITLE, "Pętle, które stanęły");
   assert.equal(CHEST_FULL_TEXT, "Skrzynka jest pełna.");
 });
 
-// Catches the title chosen by the presence of a stop instead of by where the stop happened (Q19).
+// Catches the title chosen by the presence of a stop instead of by where the stop happened (D-246).
 test("the title is „Pętle, które stanęły” only while every line is a stop in the open game", () => {
   assert.equal(reportTitle([stoppedOpen(1, 2)]), "Pętle, które stanęły");
   assert.equal(
@@ -82,7 +82,7 @@ test("a loop that stopped in the open game reads without minutes, in danger", ()
   ]);
 });
 
-// Catches the minutes shown for a line that stopped live after an earlier return (Q19).
+// Catches the minutes shown for a line that stopped live after an earlier return (D-246).
 test("a line that holds minutes of an earlier return and stopped in the open game reads without minutes", () => {
   const [entry] = entriesOf([
     line(1, { minutes: 9, stop: { generation: 2, away: false } }),

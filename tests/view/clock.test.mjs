@@ -1,7 +1,5 @@
-// The clock of a game in the page: a game that leaves the page stops with it (spec section 7,
-// "Extend clock with stop/dispose so repeated login does not accumulate timers or keep hidden
-// games running"), and one reading of the browser's clock reaches the simulation and the store
-// (task rozliczenie-przejsc, To do 13 and 16; spec, decisions 4 and 7).
+// The clock of a game in the page: a game that leaves the page stops with it (D-97), and one
+// reading of the browser's clock reaches the simulation and the store (D-221, D-242).
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -141,7 +139,7 @@ test("the clock's send carries the program number to the simulation's send", () 
 
 /** A real moment of the browser's clock, in ms. */
 const T0 = 1_760_000_000_000;
-/** The renewal of a resurrection, 480 real minutes (task, *Context*), in ms: 480 × 60 000. */
+/** The renewal of a resurrection, 480 real minutes (D-190), in ms: 480 × 60 000. */
 const RENEWAL_MS = 28_800_000;
 const SENT = { mapId: "forest", characterId: 1 };
 
@@ -228,7 +226,6 @@ test("a flush reads the date once, whether the tick or a caller asks for it", ()
   });
 });
 
-// Spec, decision 7: a send knows the moment of the reading before it, not a moment of its own.
 test("a send takes the one reading of its flush", () => {
   withBothClocks(({ readings }) => {
     const state = createCharacter(newGame(), "Ala").state;
@@ -247,7 +244,7 @@ test("a send takes the one reading of its flush", () => {
 });
 
 // invariant: resurrection-renewal
-// Spec, decision 4: one result on each reading, so the store never holds a death unsettled.
+// D-221: one result on each reading, so the store never holds a death unsettled.
 test("a flush in which the character dies hands the store one result: the events of the passing of time with the death settled at that reading", () => {
   withBothClocks(({ pass }) => {
     const state = lastMinute();
@@ -293,7 +290,7 @@ test("a death is settled against the reading of its flush, not an earlier one", 
   });
 });
 
-// Spec, decision 4: a retained death goes through the same step of the clock, unsettled or settled.
+// D-221: a retained death goes through the same step of the clock, unsettled or settled.
 test("a death standing on the screen is settled once, at the first reading", () => {
   withBothClocks(({ pass }) => {
     const dead = advanceMinutes(lastMinute(), 1).state;
@@ -326,7 +323,6 @@ test("a flush of an unchanged game hands the store the very state it holds, with
   });
 });
 
-// Spec, decision 7: the moment of the latest reading is the clock's to give, read at the start too.
 test("the clock gives the moment of its latest reading: the start's until the first flush, then each flush's", () => {
   withBothClocks(({ pass }) => {
     const clock = startClock(
@@ -343,7 +339,6 @@ test("the clock gives the moment of its latest reading: the start's until the fi
   });
 });
 
-// Spec, decision 7: the send's flush is a reading like any other, and the moment stays that one.
 test("a send makes a reading, so the moment is the one the send took", () => {
   withBothClocks(() => {
     const clock = startClock(
@@ -355,7 +350,6 @@ test("a send makes a reading, so the moment is the one the send took", () => {
   });
 });
 
-// Spec, decision 7: the view is told after each flush, once the store has the result.
 test("a call follows each flush, after the store has the reading's result, and none follows dispose", () => {
   withBothClocks(() => {
     const order = [];
@@ -392,7 +386,7 @@ test("a flush that changes nothing in the game is still followed by the call", (
   });
 });
 
-// --- the earning loops (task petla-zarobkowa, To do 2, 11, 13 and 17; spec sections 6 and 8) ------
+// --- the earning loops (D-242, D-247) ----------------------------------------------------------
 
 /** One real minute of an earning loop, in ms (the balance's 60 real seconds of a game minute). */
 const LOOP_MINUTE_MS = 60_000;
@@ -424,7 +418,7 @@ function loopingOla(state = twoCharacters()) {
   );
 }
 
-// To do 2, 17; spec section 6. Catches loops passed before the manual run, and a reading that hands
+// D-221, D-242. Catches loops passed before the manual run, and a reading that hands
 // the store the manual run's result and the loops' as two, so a moment of saving would come twice.
 test("a reading passes the manual run, then the loops, and hands the store one result with their events together", () => {
   withBothClocks(({ pass, jump }) => {
@@ -460,8 +454,8 @@ test("a reading passes the manual run, then the loops, and hands the store one r
   });
 });
 
-// Spec section 6: the k-th minute has the real moment fromMs plus k minutes, so a death in the
-// loop is settled at the minute's moment, never at the reading's.
+// D-242: the k-th minute has the real moment fromMs plus k minutes, so a death in the loop is
+// settled at the minute's moment, never at the reading's.
 test("a loop's end is settled at the minute's own moment, not at the reading's", () => {
   withBothClocks(({ jump }) => {
     const store = holdingStore(loopingOla());
@@ -475,8 +469,8 @@ test("a loop's end is settled at the minute's own moment, not at the reading's",
   });
 });
 
-// Spec section 6, "the clock takes its new value before it hands the result to the store". Catches
-// a value taken after the hand-over: the saver's moment of saving reads the clock again inside
+// D-242: the loop clock takes its new value before it hands the result to the store. Catches a
+// value taken after the hand-over: the saver's moment of saving reads the clock again inside
 // `apply`, and the same minute would be passed twice.
 test("minutes of a loop are never passed twice when apply reads the clock again", () => {
   withBothClocks(({ jump }) => {
@@ -506,7 +500,7 @@ test("minutes of a loop are never passed twice when apply reads the clock again"
   });
 });
 
-// To do 11: a clock set back takes nothing and the loop clock runs from now; spec section 6.
+// D-242: a clock set back takes nothing and the loop clock runs from now.
 test("a date turned back passes nothing and the loop clock then runs from the date read", () => {
   withBothClocks(({ jump }) => {
     const state = loopingOla();
@@ -526,7 +520,7 @@ test("a date turned back passes nothing and the loop clock then runs from the da
   });
 });
 
-// Spec section 6: with no loop the clock is set to the reading, so a first loop gets a full minute.
+// D-242: with no loop the clock is set to the reading, so a first loop gets a full minute.
 test("a loop started by the clock gets a full first minute, and its first run is seeded by the reading it took", () => {
   withBothClocks(({ jump }) => {
     const state = twoCharacters();
@@ -569,8 +563,8 @@ function savedBefore(state, savedMs) {
   return withSaveTime(state, T0 + 1000 - savedMs);
 }
 
-// To do 11, 13; spec section 8. Catches a catch-up that reads another moment than the one the
-// clock keeps for the view, and one that loses the rest shorter than a minute.
+// D-247, D-242. Catches a catch-up that reads another moment than the one the clock keeps for the
+// view, and one that loses the rest shorter than a minute.
 test("the catch-up spans from the save time to the date it reads, which is the clock's moment, and the rest waits", () => {
   withBothClocks(({ jump }) => {
     const state = savedBefore(loopingOla(), 150_000);

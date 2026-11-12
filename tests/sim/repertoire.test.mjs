@@ -1,6 +1,7 @@
-// The Understanding of the game and the repertoire computed from it. Expectations come from the
-// task "odkrywanie" (To do 1, 3 and 4; Questions to settle 8 and 12), the vault file
-// `odkrywanie_loop2.md` (D-82): To do 1 at line 14, To do 3 at line 20, To do 4 at line 21.
+// The Understanding of the game and the repertoire computed from it. Expectations come from D-118
+// and D-119 (the Understanding is the player's, one for all characters), D-120 (what an archetype
+// opens), D-126 and D-127 (a program rule or rule group outside the repertoire is passed over and
+// stays).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -65,7 +66,7 @@ const FULL = {
   trees: [],
   creatures: ALL_CREATURES,
 };
-// Skill -> the actions it grows, as To do 3 gives them.
+// Skill -> the actions it grows (D-120).
 const GROWN = {
   exploration: ["explore"],
   smallItemGathering: ["gather"],

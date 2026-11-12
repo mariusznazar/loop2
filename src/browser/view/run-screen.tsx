@@ -1,13 +1,12 @@
 /**
  * The screen of a manual map run in React, Przejście (D-311, D-280, D-281, D-282, D-19, D-122, D-313,
- * D-368; task ekran-przejscia, To do 1 to 8; D-173, task pytanie-przy-zakoncz, To do 1; task
- * proporcje-sceny-i-programu, To do 1 and 2; task koniec-przejscia, To do 1, 2, 8 and 9): one header — the character's name, the map's name, the
- * clock, the bar of the solving condition and the buttons — over three areas, each a `screen-area`
- * element a narrower layout can rearrange, in this order in the document: the world, the program,
- * the band of a discovery above the program panel, and the area under the drawing, with the tabs
- * „Kronika” and „Teren” and the chronicle or the table of revealed tiles under the tab picked (D-311,
- * D-346). The stylesheet puts the world and, under it, the area with the tabs in the left column and
- * the program in the right one, and one under the other in a narrow window. A rule panel opens in the
+ * D-368, D-173): one header — the character's name, the map's name, the clock, the bar of the
+ * solving condition and the buttons — over three areas, each a `screen-area` element a narrower
+ * layout can rearrange, in this order in the document: the world, the program, the band of a
+ * discovery above the program panel, and the area under the drawing, with the tabs „Kronika” and
+ * „Teren” and the chronicle or the table of revealed tiles under the tab picked (D-311, D-346). The
+ * stylesheet puts the world and, under it, the area with the tabs in the left column and the
+ * program in the right one, and one under the other in a narrow window. A rule panel opens in the
  * program panel, under its row (D-288), and changes neither the tabs nor the tab picked. The
  * question „Zapisać, odrzucić, wrócić?” of „Zakończ” is the program panel's: it stands inside the
  * panel, just above the heading of the copy, and the screen only tells the panel when to show it

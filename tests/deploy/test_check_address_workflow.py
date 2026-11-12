@@ -1,4 +1,4 @@
-"""The scheduled check of the public address, `.github/workflows/check-address.yml` (spec § D).
+"""The scheduled check of the public address, `.github/workflows/check-address.yml` (D-356).
 
 Text checks read the workflow as text, like `test_deploy_workflow.py`; the run script of its one
 step is also run by Git's bash, with stand-ins for `curl` and `sleep`, to see what the step does on

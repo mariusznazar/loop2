@@ -416,7 +416,7 @@ test("a crafted recipient fails without connecting, and a plain one is sent", as
   assert.equal(smtp.record.messages.length, 1);
 });
 
-// To do 5, cause 3. Fault: two of these failures reading alike, as all of them
+// Fault: two of these failures reading alike, as all of them
 // once did, so that the owner cannot tell a refused address from a server that
 // went silent. The fields of the case come through unread (D-252).
 test("each failure with no error of the library names its reason, and the line carries the fields of its case", async (t) => {
@@ -622,6 +622,6 @@ test("nothing the mailer writes to the console holds the password, the login, th
     assert.equal(lines[0].includes(secret), false, `the line holds ${secret}`);
   }
   // The line names the library's code, which tells a refused login apart from
-  // a connection or TLS failure (spec Decision 11).
+  // a connection or TLS failure.
   assert.match(lines[0], /\bEAUTH\b/);
 });

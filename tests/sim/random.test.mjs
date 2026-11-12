@@ -71,7 +71,7 @@ test("mixSeed uses the high part of a large realMs", () => {
   assert.notEqual(mixSeed(1, 5), mixSeed(1, 5 + 2 ** 32));
 });
 
-// Adding the fifth stream, for the next seed of an earning loop (spec 5), changes no stream that
+// Adding the fifth stream, for the next seed of an earning loop (D-22), changes no stream that
 // existed: these are the states the four streams gave before it was added (an independent
 // computation of the same two published hash steps), so a stream of the same seed still starts
 // where it did.

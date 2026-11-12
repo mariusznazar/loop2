@@ -13,7 +13,7 @@ import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
 import { TRAITS } from "../../dist/browser/sim/data/traits.js";
 import { programFromRules, programWithRules } from "./program-fixture.mjs";
 
-test("the map Las has the size, entrance, step and resources of the task", () => {
+test("the map Las has the size, entrance, step and resources of D-388", () => {
   const forest = MAPS.forest;
   assert.equal(forest.name, "Las");
   assert.equal(forest.width, 4);
@@ -28,7 +28,7 @@ test("the map Las has the size, entrance, step and resources of the task", () =>
   ]);
 });
 
-test("Las — głębiej has the task's map data, attacker, solving requirements and opening map", () => {
+test("Las — głębiej has the map data, attacker, solving requirements and opening map of D-388", () => {
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,
@@ -152,8 +152,8 @@ test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", (
   });
 });
 
-// D-290 (task edytor-programu, To do 4): the group of each action and the section and place of each
-// condition in the pick of the rule panel, written out from the task's order.
+// D-290: the group of each action and the section and place of each condition in the pick of the
+// rule panel, written out in the order the pick shows them.
 test("each action names its group and each condition its section and place in the pick", () => {
   assert.deepEqual(
     Object.entries(ACTIONS).map(([id, action]) => [id, action.group]),
@@ -244,7 +244,7 @@ test("Las has an ambient temperature of 25 degrees in its map data", () => {
   }
 });
 
-test("the body starts at its caps and the rates and thresholds are the task's", () => {
+test("the body starts at its caps, with the rates and thresholds of D-387", () => {
   assert.deepEqual(BALANCE.body, {
     startTemperature: 37.0,
     startSatiety: 100,
@@ -260,7 +260,7 @@ test("the body starts at its caps and the rates and thresholds are the task's", 
   assert.equal(BALANCE.gatherChance, 0.7);
 });
 
-test("the cooling in Las is 0.024 degrees a minute, as the task works it out", () => {
+test("the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)", () => {
   const { startTemperature, coolingPerDegreeBelow } = BALANCE.body;
   const perMinute =
     (startTemperature - MAPS.forest.ambientTemperature) * coolingPerDegreeBelow;
@@ -274,6 +274,8 @@ test("a new character's traits hold carrying capacity 15, apart from the archety
   }
 });
 
+// The minutes a stick adds as fuel and burns when lit, its warmth and the satiety of a berry are
+// those of D-387.
 test("the items are the four resources of Las, with their uses", () => {
   assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
   assert.deepEqual(ITEMS.stick, {
@@ -297,6 +299,8 @@ test("the items are the four resources of Las, with their uses", () => {
   });
 });
 
+// The sticks to craft and to light a campfire, its minutes of burning and its warmth are those of
+// D-387.
 test("the campfire holds its name, costs, burning minutes, warmth and icon", () => {
   assert.deepEqual(CAMPFIRE, {
     id: "campfire",
@@ -326,15 +330,15 @@ test("every item and every item of the campfire names an item of the data", () =
   assert.ok(CAMPFIRE.light.item in ITEMS);
 });
 
-// Task rozliczenie-przejsc, To do 9 (question Q10): 480 real minutes, the number of loop, commit
-// cdc7c0d, `src/sim/data/balance.ts:125` (`revivalCooldownMinutes`). Real minutes, not game minutes.
+// D-190: the resurrection renews after eight hours, 480 real minutes. Real minutes, not game
+// minutes.
 test("the resurrection renews 480 real minutes after the death that used it", () => {
   assert.equal(BALANCE.resurrectionRenewalRealMinutes, 480);
 });
 
-// Task petla-zarobkowa, To do 2 (D-18, D-239, spec section 14): one game minute of an earning loop
-// is 60 real seconds, a whole number from 1 up so that every real moment of the loop clock stays a
-// whole number of milliseconds; the speed control does not reach it.
+// D-18, D-239: one game minute of an earning loop is 60 real seconds, a whole number from 1 up so
+// that every real moment of the loop clock stays a whole number of milliseconds; the speed control
+// does not reach it.
 test("an earning loop goes one game minute in 60 real seconds, a whole number of seconds", () => {
   assert.ok(
     Number.isInteger(BALANCE.loopMinuteRealSeconds) &&
@@ -346,16 +350,16 @@ test("an earning loop goes one game minute in 60 real seconds, a whole number of
 test("the archetype and the pace are in data", () => {
   assert.equal(ARCHETYPES.elementalMage.name, "Mag żywiołów");
   assert.equal(BALANCE.gameMinutesPerRealSecond, 1);
-  // The paces of the task "rozwiazanie-lasu", Question 3 (Mariusz, 2026-10-25).
+  // D-21: the paces 1×, 2×, 4×, 8× and 16×.
   assert.deepEqual(BALANCE.paces, [1, 2, 4, 8, 16]);
   assert.equal(BALANCE.waitMinutes, 1);
   assert.equal(INITIAL_SEED, 1);
 });
 
-// The expectations below come from the task document odkrywanie_loop2.md of the vault (D-82).
+// The expectations below come from D-118, D-120, D-121 and D-195.
 
-test("the character skills grow the pairs of verb and target of the task, and the walks stand in none", () => {
-  // Task: the character skills and the action pairs each one grows.
+test("the character skills grow the listed pairs of verb and target, and the walks stand in none", () => {
+  // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
     [
@@ -384,24 +388,22 @@ test("the elemental mage has all listed skills as predispositions", () => {
   assert.equal(Object.keys(SKILLS).length, 8);
 });
 
-/** The rows of the table of To do 2, by the revealing event: what each reveals. */
+/** The rows of D-121, by the revealing event: what each reveals. */
 const ROWS = [
   {
-    // odkrywanie_loop2.md:21
     event: { kind: "chilled" },
     actions: ["explore", "wander"],
     conditions: ["temperatureBelow"],
     items: [],
   },
   {
-    // odkrywanie_loop2.md:22 and :28 — an item enters with the revealed tile that holds it
+    // An item enters with the revealed tile that holds it.
     event: { kind: "explored" },
     actions: ["walkTo", "gather"],
     conditions: ["hereBelow", "itemBelow"],
     items: [],
   },
   {
-    // odkrywanie_loop2.md:23
     event: { kind: "gathered", item: "stick" },
     actions: ["craftCampfire", "lightCampfire", "lightItem"],
     conditions: [],
@@ -409,21 +411,18 @@ const ROWS = [
     campfire: true,
   },
   {
-    // odkrywanie_loop2.md:24
     event: { kind: "campfireCrafted" },
     actions: ["walkToCampfire"],
     conditions: ["campfireLeftBelow", "awayFromCampfire"],
     items: [],
   },
   {
-    // odkrywanie_loop2.md:25; the condition: plomyk_loop2.md:22 (task plomyk, To do 5)
     event: { kind: "lit" },
     actions: ["feedCampfire"],
     conditions: ["natureEnergyBelow"],
     items: [],
   },
   {
-    // odkrywanie_loop2.md:26
     event: { kind: "gathered", item: "berry" },
     actions: ["eat"],
     conditions: ["satietyBelow"],
@@ -437,14 +436,14 @@ const ROWS = [
     items: [],
   },
   {
-    // wprawa_i_drzewa_loop2.md: accepted Q3, the action is discovered with its tree.
+    // D-195: the action is discovered with its tree.
     event: { kind: "treeDiscovered", skill: "smallItemGathering" },
     actions: ["patrol"],
     conditions: [],
     items: [],
   },
   ...["stick", "berry", "moss", "fiber"].map((item) => ({
-    // odkrywanie_loop2.md:22 and :28 — each item with the revealed tile that holds it
+    // Each item with the revealed tile that holds it.
     event: { kind: "tileHolds", item },
     actions: [],
     conditions: [],
@@ -476,7 +475,7 @@ test("each revealing event reveals exactly the actions, conditions and items of 
 });
 
 test("every action and condition stands in exactly one row, and Zawsze in none", () => {
-  // odkrywanie_loop2.md:17-26 — the table; odkrywanie_loop2.md:80 — "Zawsze" is known from the start.
+  // D-121 is the table; D-118: „Zawsze” is known from the start.
   const revealing = (def) =>
     ROWS.filter(
       (row) => JSON.stringify(row.event) === JSON.stringify(def.revealedBy),
@@ -501,14 +500,14 @@ test("every action and condition stands in exactly one row, and Zawsze in none",
 });
 
 test("the campfire is revealed by the first gathered stick and has an identifier outside the items", () => {
-  // odkrywanie_loop2.md:23 — "pierwszy zebrany patyk" reveals the campfire.
+  // D-121: the first gathered stick reveals the campfire.
   assert.deepEqual(CAMPFIRE.revealedBy, { kind: "gathered", item: "stick" });
   assert.equal(CAMPFIRE.id, "campfire");
   assert.ok(!(CAMPFIRE.id in ITEMS));
   assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
 });
 
-// Validation of ids and programs against the data (spec 4.5): the ids come from the data files.
+// Validation of ids and programs against the data: the ids come from the data files.
 const [firstMapId, firstMap] = Object.entries(MAPS)[0];
 // The first character a new game creates takes the id 1.
 const SENT = { mapId: firstMapId, characterId: 1 };
@@ -519,7 +518,7 @@ const rule = (condition, action) => ({ condition, action });
 const below = (resource, value) => ({ kind: "hereBelow", resource, value });
 const walkTo = (resource) => ({ kind: "walkTo", resource });
 
-/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+/** The program a game state holds: the copy during a map run, else the only program of the list. */
 function heldProgram(state) {
   return state.run === null
     ? state.programs[0].program
@@ -695,7 +694,7 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
   );
 });
 
-test("each map's solving condition holds a requirement, each a whole number above zero, and Las's is the task's", () => {
+test("each map's solving condition holds a requirement, each a whole number above zero, and Las's is a streak of 480", () => {
   for (const [id, map] of Object.entries(MAPS)) {
     const requirements = Object.entries(map.solving);
     assert.ok(requirements.length >= 1, `map ${id} solving`);

@@ -50,7 +50,7 @@ function createdKnowing(...names) {
   return createdIn(newKnowingGame(), names);
 }
 
-// Generation 1 and a resurrection ready from the start: task rozliczenie-przejsc, To do 8.
+// Generation 1 and a resurrection ready from the start (D-220).
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
   const state = created("Ala", "Ola", "Ela");
   assert.deepEqual(state.team.characters, [

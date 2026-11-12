@@ -1,10 +1,9 @@
-// The screen of a map run in React (task ekran-przejscia, To do 2, 3, 5, 7 and 8; D-311, D-281,
-// D-282, D-19, D-122, D-313) on jsdom through tests/view/page-document.mjs (D-264): the header over
-// three areas — the world, the program with the band of a discovery above the program panel, and
-// third the area under the drawing with the tabs „Kronika” and „Teren” and the chronicle or the table
-// of revealed tiles (task kronika-z-filtrami, To do 8; D-346; task proporcje-sceny-i-programu, To do
-// 1 and 2) — drawn from the map run the screen is given, and the one hovered tile the screen holds
-// for the drawing, its line and the table. A rule panel opens in the program, under its row. The
+// The screen of a map run in React (D-311, D-281, D-282, D-19, D-122, D-313) on jsdom through
+// tests/view/page-document.mjs (D-264): the header over three areas — the world, the program with
+// the band of a discovery above the program panel, and third the area under the drawing with the
+// tabs „Kronika” and „Teren” and the chronicle or the table of revealed tiles (D-346) — drawn from
+// the map run the screen is given, and the one hovered tile the screen holds for the drawing, its
+// line and the table. A rule panel opens in the program, under its row. The
 // screen is built here as the game view builds it, with a program panel of its own and controls
 // that make the real simulation calls. Real events, focus and the look are checked in the browser
 // (D-88). Every comparison is of plain data or of a handful of words (D-268).
@@ -218,7 +217,7 @@ function withTiles() {
   };
 }
 
-// D-311, D-282, task items 1 and 2. Catches the header standing inside an area, two areas drawn as
+// D-311, D-282. Catches the header standing inside an area, two areas drawn as
 // one block, the areas out of the order world, program, tabs, a part standing in another area: the
 // drawing beside the program, the program panel or the table in the world, and a host for the rule
 // panel standing in the screen, which the panel opening in the program no longer has.
@@ -261,7 +260,7 @@ test("the header stands above three areas of their own in the order world, progr
   });
 });
 
-// D-122, task item 7. Catches the band standing in the world area, under the program panel, or
+// D-122. Catches the band standing in the world area, under the program panel, or
 // outside the program's area.
 test("at a discovery the band stands in the program's area, above the program panel", async () => {
   await withPage(async (page) => {
@@ -280,7 +279,7 @@ test("at a discovery the band stands in the program's area, above the program pa
   });
 });
 
-// D-173, task pytanie-przy-zakoncz, To do 1 and question 8. Catches the question standing before the
+// D-173. Catches the question standing before the
 // screen asks for it, in the world or the area under the drawing, above the band of a discovery, outside the
 // program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
 test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
@@ -310,8 +309,7 @@ test("the question stands in the program panel, directly above the heading of th
   });
 });
 
-// To do 8, D-281, D-166, the review of the whole change of task ekrany-i-menu (B2), moved here from
-// tests/view/account-screen.test.mjs with the screen it tests. Catches the screen, its program
+// D-281, D-166. Catches the screen, its program
 // panel with the copy included, drawing the map run of the game state beside the one it was given.
 test("the screen draws the map run it was given, the copy of that map run in its program panel, not the game state's", async () => {
   await withPage(async (page) => {
@@ -351,7 +349,7 @@ test("the screen draws the map run it was given, the copy of that map run in its
   });
 });
 
-// Task item 3, D-311, D-282, D-288, D-346; task proporcje-sceny-i-programu, To do 1 and 2. Catches the
+// D-311, D-282, D-288, D-346. Catches the
 // rule panel standing in the area under the drawing or in the world instead of in the program under
 // the header it changes, the tabs and their content leaving while it is open, the drawing leaving
 // with them, and „✕” changing the tab picked, whichever it was.
@@ -417,7 +415,7 @@ test("an open rule panel stands in the program under its header, the tabs and th
   });
 });
 
-// Task item 7, D-313, D-131; task proporcje-sceny-i-programu, To do 1. Catches „Dodaj regułę z tym”
+// D-313, D-131. Catches „Dodaj regułę z tym”
 // not reaching the panel, the rule added to a saved program or to a group of its own, the panel
 // opened outside the program, not under the new rule's row, or on the condition, the tabs taken away
 // by it, and the streak left as it stood.
@@ -477,7 +475,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
   });
 });
 
-// D-122, task item 7. Catches the band's „Wznów” doing anything other than the header's one
+// D-122. Catches the band's „Wznów” doing anything other than the header's one
 // resumption, and the band standing after it.
 test("„Wznów” of the band goes on as the header's „Wznów” does, and the band goes", async () => {
   await withPage(async (page) => {
@@ -493,7 +491,7 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
   });
 });
 
-// D-19, task item 5, kronika-z-filtrami, To do 8, D-346. Catches the hovered tile kept by the drawing
+// D-19, D-346. Catches the hovered tile kept by the drawing
 // alone, so that the table in another area marks no row, its line shows no numbers, and a hovered row marks no tile.
 test("a hovered tile of the drawing marks its row in the table of the area under the drawing and the line gives its numbers; a hovered row marks its tile", async () => {
   await withPage(async (page) => {
@@ -528,7 +526,7 @@ test("a hovered tile of the drawing marks its row in the table of the area under
   });
 });
 
-// --- „Teraz” and „Potem” take the program to their rule (D-336, task teraz-i-potem, To do 1) -------
+// --- „Teraz” and „Potem” take the program to their rule (D-336) -------
 
 const NEVER = { kind: "hereBelow", resource: r[0], value: 0 };
 
@@ -713,7 +711,7 @@ test("the program scrolls once per click and does not follow the rule when the g
   });
 });
 
-// D-336, task To do 1. Catches a wait, a fight, a death, a completion and a Potem without a winner
+// D-336. Catches a wait, a fight, a death, a completion and a Potem without a winner
 // being a tab stop or scrolling, and an action whose rule the copy no longer holds scrolling to nothing.
 test("a row that names no rule is no control: the keyboard does not reach it and it scrolls nothing", async () => {
   await withPage(async (page) => {
@@ -826,7 +824,7 @@ function coveredState(screen) {
   assert.fail(`the header and the areas differ in being hidden: ${states}`);
 }
 
-// D-311, D-368, binding answer 1 of slice 4. Catches a window drawn while it is not set open or
+// D-311, D-368, D-370. Catches a window drawn while it is not set open or
 // over a map run that goes on, a header or an area left visible under the window, and a screen
 // that stays covered after the window is set closed.
 test("told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again", async () => {
@@ -873,7 +871,7 @@ test("what the window covers stays in the tree and keeps its state: the tab pick
   });
 });
 
-// Task To do 2, binding answer 2. Catches „✕” that does not ask the game view to close the window,
+// D-368, D-370. Catches „✕” that does not ask the game view to close the window,
 // and a focus left on nothing: it goes to „Koniec przejścia” in the header, which the closing shows.
 test("„✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it", async () => {
   await withPage(async (page) => {
@@ -894,7 +892,7 @@ test("„✕” asks the game view to close the window and the focus goes to „
   });
 });
 
-// Task To do 8. Catches window buttons wired to the header's act, to another map, or to none.
+// D-368. Catches window buttons wired to the header's act, to another map, or to none.
 test("the buttons of the window ask for „Restart”, „Zakończ” and the opening of the map they name", async () => {
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
@@ -921,7 +919,7 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
   });
 });
 
-// D-313, task To do 9. Catches the window left standing over the rule panel „Dodaj regułę z tym”
+// D-313. Catches the window left standing over the rule panel „Dodaj regułę z tym”
 // opens, and the rule added before the window closes, which would give the panel no room to focus.
 test("„Dodaj regułę z tym” of the window closes the window and then does what the panel's button does: the rule is added and its panel stands open", async () => {
   await withPage(async (page) => {

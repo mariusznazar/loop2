@@ -1,9 +1,9 @@
-// The shared controls in their two forms (spec decision 2, D-44): each control the card
+// The shared controls in their two forms (D-44, D-265): each control the card
 // uses is drawn by its DOM function and by its React component, and the two must be the
 // same element tree. The look lives in styles.css and reads these classes and attributes,
 // so a difference between the forms is a difference on the screen. The harness stands
 // first, and every comparison is of plain data: Node's assert on two rendered elements can
-// take the machine's memory (spec decisions 1, 9 and 11).
+// take the machine's memory (D-264, D-268).
 import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
@@ -178,7 +178,7 @@ test("a button not selected in its group is the same element in both forms", asy
   });
 });
 
-// The secondary action (pytania 1 and 1a of the task przyciski-i-zakladki): a further kind of the
+// The secondary action (D-275): a further kind of the
 // button, a plain `<button>` with the class `secondary`. The class is written out in each case,
 // since two forms that both leave it out would agree and show a plain button.
 test("a secondary action is the same element in both forms", async () => {
