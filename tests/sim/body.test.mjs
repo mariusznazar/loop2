@@ -19,9 +19,10 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 
-// Every expected number below is worked out by hand from the numbers of D-387: on Las the body
-// cools by 0.002 × (37 − 25) = 0.024 °C a minute, satiety falls by 0.6 a minute, health falls by
-// 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and rises by 0.05 otherwise.
+// Every expected number below is worked out by hand from the numbers of D-387 and D-388: on Las,
+// at 25 °C, the body cools by 0.002 × (37 − 25) = 0.024 °C a minute, satiety falls by 0.6 a
+// minute, health falls by 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and
+// rises by 0.05 otherwise.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
 // The first character a new game creates takes the id 1.

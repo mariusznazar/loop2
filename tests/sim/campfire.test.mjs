@@ -23,8 +23,9 @@ import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 // 6 sticks, lighting a campfire 5 minutes and 2 sticks and gives it 60 minutes of burning,
 // lighting a stick 5 minutes and the stick, which burns 3 minutes, feeding 5 minutes and one
 // stick, which adds 20 minutes, eating 5 minutes and one berry, which gives 25 satiety, not above
-// 100. On Las the body cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire warms
-// the character on its tile by 0.5 °C and a burning stick by 0.15 °C a minute.
+// 100. On Las, whose air of 25 °C is D-388's, the body cools by 0.002 × (37 − 25) = 0.024 °C a
+// minute; a burning campfire warms the character on its tile by 0.5 °C and a burning stick by
+// 0.15 °C a minute.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
 // The first character a new game creates takes the id 1.

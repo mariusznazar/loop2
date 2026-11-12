@@ -1161,7 +1161,8 @@ headquarters before sending any character to a game map.
 - **Origin:** none
 
 *Rationale:* every character of the team is then one the player created and named, the first one
-included, so creating a character is the first thing the player does in a new game.
+included, so creating a character is the first thing the player does in a new game. It is a choice
+for now, expected to change later, so the entry holds what is true today and stays open to a change.
 *Rejected:* a new game with one ready-made elemental mage in the team — a character the player
 neither created nor named.
 
@@ -1188,7 +1189,8 @@ differ, so two characters bearing one name stay two characters, which the game t
 something other than the name, and a name is no key of a character in a saved game state or in a
 calculation that goes through the characters one by one. The cost is one field and one trimming;
 the player cannot give a name that starts with a space, which nothing asks for, and renaming a
-character after it is created is not part of the decision.
+character after it is created is not part of the decision. It is a choice for now, expected to
+change later, so the entry holds what is true today and stays open to a change.
 *Rejected:* a name of white space alone taken as a name — it tells no character apart on the list;
 a name keeping white space at its start or end — it looks on the list as the same name without it.
 
@@ -1242,7 +1244,8 @@ event of the game changes, so the characters keep their order on the list and th
 among the others where it was; only the position number of a character on the list shifts, when a
 character before it leaves. The order also decides the later calculations that go through the
 characters one by one, such as adding up the time away and sharing out loot when the chest has no
-room for all of it, so the list needs one fixed order.
+room for all of it, so the list needs one fixed order. It is a choice for now, expected to change
+later, so the entry holds what is true today and stays open to a change.
 *Rejected:* unknown
 
 ### D-55 — How many manual map runs go on at a time?
@@ -1264,7 +1267,8 @@ sends no other on a manual map run.
 map run at a time beside the program panel. Earning loops, which go on side by side, stand beside
 the one manual map run rather than in its place. The rule holds also beside the earning loops, and
 the cost is that characters do not walk side by side in manual map runs; if earning loops later call
-for manual map runs side by side too, this entry is changed openly.
+for manual map runs side by side too, this entry is changed openly. It is a choice for now, expected
+to change later, so the entry holds what is true today and stays open to a change.
 *Rejected:* manual map runs of several characters at once — the game state would hold a manual map
 run for each character, and the screen one for each.
 
@@ -2740,9 +2744,9 @@ map run as „Zakończ” does, so D-53 and D-173 each take a second place to wh
 window hides the scene while it stands, and it does not cover the whole page as the end of loop
 does.
 *Rejected:* going back to the headquarters with a message at the completion — the player would lose
-the state of the map run that solved the map; no „Teraz” after the end of a map run — while the
-ended map run stands on the screen, the player reads nowhere why it ended; „Teraz” staying on the last action — after a death it reads as something the mage still
-does, and the cause is stated nowhere; the screen after the end stopping the earning loops of the
+the state of the map run that solved the map; no „Teraz” after the end of a map run — once „✕” has closed
+the window, the ended map run stands on the screen with nothing on it to read why it ended; „Teraz” staying on the last action — after a death it reads as something the mage still
+does, and once „✕” has closed the window the cause is stated nowhere on the screen; the screen after the end stopping the earning loops of the
 other characters — viewing the result would suspend their earning; a line of text with „Do skrzynki
 nic nie trafiło” under it — a win that reads as a defeat; the way to the opened map only at the first
 completion that really opens it — at later completions the player goes through „Zakończ”, Postać and
@@ -3046,7 +3050,7 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 - **Origin:** none
 
 *Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too: the chronicle lives in the memory of the page and not in the saved game, so after a load it begins with the paragraph of the last encounter, composed from the facts the saved state already holds — the creature, the attack minute and the result — and the entries from before the load are lost. The choice rests on two unmeasured assumptions: the size of a chronicle, for which an agent's estimate gives 50 to 60 bytes an entry and several hundred entries in a long map run, and the rarity of a refresh in the middle of a map run. The window gives the paragraph a section of its own and keeps it out of „Ostatnie minuty”, so the same paragraph does not stand twice in it. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; one more path in the code, with its test; after a load the chronicle holds the entry of the fight without the entries that preceded it; in „Ostatnie minuty” an attack does not stand among the other entries, though the paragraph gives the game minute of the attack. In the minutes of an attack „Teraz” is the inscription alone, with no icon, no number of a rule and no minutes: „Potem” right below it already says by which rule the mage fights, so a second same number would give the player nothing, and the predecessor game's round and number of the combat rule are lost without loss, since this game counts no rounds. The inscription comes from the state of the combat in progress and not from the function that picks the rule a character carries out, so the invariant on what the rows show from that function names it as an exception.
-*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter; the paragraph counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not, and after a load „Ostatnie minuty” holding one entry or none; a chronicle empty after a load — after a refresh the player cannot return to why the streak fell, and the paragraph of the last encounter stands nowhere; the whole chronicle in the saved game — the version of the saved game would rise at once, and by D-206 the saved games that hold the players' programs would be discarded, the size of a chronicle is unmeasured, a saved game over the limit is not sent, so the game would stop saving, a limit on the entries, the oldest dropped, would make untrue the sentence of D-338 that a manual map run keeps a chronicle of what happened in it, and raising the limit of the server changes D-104 and D-207 and is work in the account server; the number of the combat rule that the turn would pick standing in „Teraz” beside the inscription, with a click that scrolls to it — the same number twice, in „Teraz” and one row lower in „Potem”; no „Teraz” after the end of a map run, or „Teraz” staying on the last action — the first leaves the player nowhere to read why the map run ended while the ended map run stands on the screen, and the second reads after a death as something the mage still does.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter; the paragraph counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not, and after a load „Ostatnie minuty” holding one entry or none; a chronicle empty after a load — after a refresh the player cannot return to why the streak fell, and the paragraph of the last encounter stands nowhere; the whole chronicle in the saved game — the version of the saved game would rise at once, and by D-206 the saved games that hold the players' programs would be discarded, the size of a chronicle is unmeasured, a saved game over the limit is not sent, so the game would stop saving, a limit on the entries, the oldest dropped, would make untrue the sentence of D-338 that a manual map run keeps a chronicle of what happened in it, and raising the limit of the server changes D-104 and D-207 and is work in the account server; the number of the combat rule that the turn would pick standing in „Teraz” beside the inscription, with a click that scrolls to it — the same number twice, in „Teraz” and one row lower in „Potem”; no „Teraz” after the end of a map run, or „Teraz” staying on the last action — the first leaves the player, once „✕” has closed the end-of-run window, with nothing on the screen to read why the map run ended, and the second reads after a death as something the mage still does.
 
 ### D-148 — Where is an attacking creature pictured today?
 
@@ -7692,7 +7696,7 @@ overdue when its turn comes is dropped. The scene follows the system's setting f
 and shows no flash of its whole area.
 
 - **Scope:** browser-view
-- **Based on:** https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § 2.3.1 Three Flashes or Below Threshold — "Web pages do not contain anything that flashes more than three times in any one second period" · § General flash and red flash thresholds — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
+- **Based on:** https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § 2.3.1 Three Flashes or Below Threshold — "Web pages do not contain anything that flashes more than three times in any one second period, or the flash is below the general flash and red flash thresholds" · § general flash and red flash thresholds — "the combined area of flashes occurring concurrently occupies no more than a total of .006 steradians within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing distance" · same glossary entry, Note 1 of the WCAG text — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the scene under the system's setting for reduced motion keeping its frames still; an
@@ -7706,9 +7710,14 @@ and shows no flash of its whole area.
 - **Origin:** none
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed — the criterion
-2.3.1 of WCAG 2.2 forbids more than three flashes a second unless the flash stays below the general flash threshold, which it estimates for a screen of 1024 × 768 pixels as a rectangle of 341 × 256, 87,296 pixels, and
-the scene at twice its picture, 672 × 304 px, has 204,288 — so no effect takes the whole area of the
-scene, and a player who asks the system for less motion gets less, though that setting alone does not
+2.3.1 of WCAG 2.2 forbids more than three flashes a second unless the flash is below the general
+flash threshold, which lets the flashes occurring at once take no more than 25 % of any 10 degree
+visual field on the screen. The standard estimates that field for a screen of 1024 × 768 pixels as a
+rectangle of 341 × 256, 87,296 pixels, so a quarter of it is 21,824 pixels. The scene at twice its
+picture, 672 × 304 px, has 204,288, more than nine times that, and a flash of its whole area fills
+every 10 degree field inside it — so no effect takes the whole area of the scene. The threshold of
+the standard bears as well on a flash of a part of the area, which this decision does not bar by
+itself. A player who asks the system for less motion gets less, though that setting alone does not
 answer the flashes. An effect of an ordinary event is a short sign of one event, so it fits the
 fastest pace, where events follow one another quickly: in a trial of the simulation read every 200 ms,
 as the clock of the view reads it, with one program written for the trial, which won Las in 10 of 20 tries, so
@@ -9211,7 +9220,7 @@ The eight character skills give a level and a point at each of these amounts of 
   - violates: a level reached below its threshold; a rank bought for a price other than the one listed; a branch whose rank gives another effect than the one listed
 - **Origin:** none
 
-*Rationale:* the curves, the effects and the prices are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; tuning the numbers later is a change of data and tests (D-18). The floor of one minute under an action shortened by branches is D-374's.
+*Rationale:* the curves, the effects and the prices are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf. This decision forbids other numbers until it is changed, so tuning the numbers later is a change of this decision as well as of data and tests (D-18). The floor of one minute under an action shortened by branches is D-374's.
 *Rejected:* other numbers given by the human instead of the old loop game's data.
 
 ### D-380 — Which words name each refusal of an action?
@@ -9331,7 +9340,7 @@ These numbers are requirements of the game, held in its data (D-18), that tests 
   - violates: a campfire made from 5 sticks or in 15 game minutes; a campfire lit for 30 minutes of burning; a feeding that adds 10 minutes of burning; a berry that gives 20 satiety; a body chilled below 36.0 °C or starving below 25 satiety; health regained in a game minute in which the body is starving; a gathering that always succeeds
 - **Origin:** none
 
-*Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-80, D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The numbers of nature energy are D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game; tuning them later is a change of data and tests (D-18).
+*Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-80, D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The numbers of nature energy are D-176's, D-177's and D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning them later is a change of this decision as well as of data and tests (D-18).
 *Rejected:* other numbers than those of the old loop game's data.
 
 ### D-388 — What numbers do the maps Las and Las — głębiej have?
@@ -9346,5 +9355,5 @@ Las is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an amb
   - violates: Las on a grid of 5 × 5 tiles or solved at a streak of 540; Las — głębiej with a fixed entrance or solved by a streak alone; moss renewing in 30 game minutes; a berry stock of 12; a step between tiles of 10 game minutes
 - **Origin:** none
 
-*Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-80, D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, which chills a body in 33 game minutes against 83 on Las, its streak and its two beaten attacks are what set it apart as the second map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game; tuning the numbers of either map later is a change of data and tests (D-18).
+*Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-80, D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the second map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
 *Rejected:* other numbers for Las than those of the old loop game's data.

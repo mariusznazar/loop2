@@ -11,8 +11,9 @@ Przyjęty szablon przypiętego the-way określa D-73; jego dziesięć odstępstw
 to D-74, D-75, D-76, D-77, D-78, D-79, D-82, D-163, D-235 i D-273.
 D-77 jest odstępstwem tylko w sprawie limitu czasu całego przebiegu;
 wybór jednego pliku działa przez to samo `npm test`.
-D-82 jest odstępstwem tylko w sprawie komentarza, który nazywa źródło wartości;
-pozostałe źródła oczekiwania zostają takie, jak daje je szablon.
+D-82 jest odstępstwem w dwóch sprawach: komentarza, który nazywa źródło wartości,
+i oceny człowieka, która jest źródłem oczekiwania dopiero wtedy, gdy trzyma ją
+decyzja fundamentu; pozostałe źródła oczekiwania zostają takie, jak daje je szablon.
 
 ## Levels
 
@@ -98,7 +99,9 @@ dopiero potem test z niego korzysta. Komentarz, który niesie informację ważn�
 kodu, przenosi ją do fundamentu; komentarz bez takiej informacji się nie pisze —
 kod ma być zrozumiały sam, a 2 + 2 = 4 nie potrzebuje źródła. Komentarz testu nie
 wskazuje dokumentu spoza fundamentu. Recenzent pyta przy każdym sprawdzeniu:
-„skąd ta wartość?”; odpowiedzią jest wpis fundamentu.
+„skąd ta wartość?”; gdy wartość potrzebuje źródła, odpowiedzią jest wpis
+fundamentu, a relacja, której kod pod testem nie liczy, i awaria liczona jako
+niepowodzenie źródła we wpisie nie potrzebują.
 
 ### Test inputs and expected values
 
