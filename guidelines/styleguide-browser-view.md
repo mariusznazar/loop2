@@ -703,8 +703,8 @@ w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zacz
 mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
 a nowy zajmuje jego miejsce (D-367).
 
-Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
-także ogień, mag, lot ikony, kurz i powrót odcienia, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
+W pauzie gracza cały ruch sceny, także ogień, mag, lot ikony, kurz i powrót odcienia, stoi (D-322);
+przy odkryciu, śmierci i ukończeniu stoi cały ruch poza efektem tej chwili (niżej). Pod systemowym ustawieniem ograniczenia ruchu
 klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
 (D-317, D-319, D-320); mag, który zbiera, stoi w jednej klatce schylenia, a ikona i kurz
 pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają
@@ -741,7 +741,7 @@ trybem `color`, który zostawia jasność obrazu.
 - Rozwiązanie: mag stoi w kolorze, a nad polaną, w części kadru, unoszą się raz drobinki światła —
   kwadraty jednego piksela sceny na jej siatce, rosnące o całe piksele — i gasną; leżą nad odcieniem
   światła, żeby jego złoto nie zmieniało ich koloru, i odróżniają się od śniegu, nad którym się
-  unoszą, co najmniej 3:1. Ostatni obraz nie ma drobinek: to scena w pełnym złocie odcienia.
+  unoszą (D-271). Ostatni obraz nie ma drobinek: to scena w pełnym złocie odcienia.
 - Przy śmierci albo rozwiązaniu w minucie gry odkrycia scena pokazuje tylko efekt końca, bez plakietek
   odkrycia; odkrycie nazywa okno końca przejścia.
 
@@ -789,14 +789,15 @@ w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
 
 ### The end-of-run window
 
-- **Decision:** D-368 · D-311 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
+- **Decision:** D-368 · D-311 · D-322 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
 - **Invariant:** none
 - **Good:** Okno po śmierci z tytułem „Mag zamarzł” w `text-strong` na `panel`, nad nim pasek menu i wiersz ostrzeżeń, pod nim przyciski „Restart”, „Zakończ” i „Otwarte: …” stojące w polu widzenia, gdy sekcje się przewijają; Escape zamyka okno, a nagłówek ekranu ma wtedy „Koniec przejścia”.
 - **Bad:** Okno przykrywające pasek menu; okno z zasłoną za sobą; przycisk zrobiony w oknie osobnym `<button>` albo z czcionką Geist Mono; pasek czasu w roli, której nie ma w tabeli Roles; Escape czytany na dokumencie.
 
 Okno końca przejścia, `src/browser/view/end-window.tsx`, jest pierwszym oknem
 nad ekranem gry. Otwiera się samo, gdy przejście ręczne kończy się śmiercią
-postaci albo ukończeniem mapy, i otwiera się znowu przy każdym wejściu na ekran
+postaci albo ukończeniem mapy — po efekcie tego końca w scenie, żeby go było widać, a od razu tam,
+gdzie scena pokazuje ostatni obraz od razu (D-311, D-322) — i otwiera się znowu przy każdym wejściu na ekran
 zakończonego przejścia (D-368). Jego treść i kolejność podaje D-368, jego
 teksty — `src/browser/view/end-window-lines.ts`; ta reguła podaje, jak okno
 wygląda, jak przykrywa ekran, jak się zamyka i jak bierze fokus. Reguły okna

@@ -391,7 +391,7 @@ async function withReducedMotion(reduced, body) {
 // D-368, D-62, task To do 1. Catches a window that opens only after „Koniec przejścia”, one that
 // stands before the map run ends, one that leaves the header or an area of the screen visible
 // under it, and the death's title missing.
-test("the window opens at the game minute a character's death ends the map run while the player is on its screen, and covers the header and the three areas", async () => {
+test("the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers the header and the three areas", async () => {
   await onPage(async (page) => {
     const { root } = page;
     const { view } = await viewOf(freezing());

@@ -5764,7 +5764,7 @@ the cold layer of a death of cold and the frost, and specks, and the frost and t
 grid in colours of the palettes of the packs, while the colours of the tint layer and of the cold layer have their source in
 the human's choice; whatever has a drawing — a character, a creature, a thing — comes from a pack,
 and the colour of an effect stands out from the ground it stands on, the outline or the fill of the
-frost and each colour of the specks by at least 3:1 against the snow it lies on or rises over.
+frost by at least 3:1 against the snow it lies on.
 
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms · smoke-fire-particle-licence · cc-by-3-adaptation-credit
@@ -5782,13 +5782,13 @@ frost and each colour of the specks by at least 3:1 against the snow it lies on 
     snow under every tint of the light; the fall of the mage a sprite file made from the pack's death
     sheet of the mage, every pixel of it moved unchanged into frames of the mage's size; the specks of
     light after a completion built by CSS of squares of one pixel of the scene on its grid in colours
-    read from pixels of the pack's bonfire, each 3:1 or more against the snow under the full gold
+    read from pixels of the pack's bonfire, standing out from the open snow they rise over
   - violates: a picture placed straight in the directory the server serves; a sprite file in
     another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
     other than the two named; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
     game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
-    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck whose colour reads under 3:1 on the snow it rises over; a cold layer whose colour no choice of the human gave
+    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave
 - **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
@@ -7034,7 +7034,8 @@ The background picture of the scene is in full light and with no tint, and the t
 light is a layer over that picture, never a tint or a darkness in the picture's file. The layer lies
 over everything the scene draws — the background, the props, the campfire burning or extinguished,
 the mage, the wolf, the dust and the flying icon on its plaque — but the badge over the mage's head
-and the plaques of a discovery, which stay on their solid `panel` background (D-320, D-322), and the
+and the plaques of a discovery, which stay on their solid `panel` background (D-320, D-322), the
+specks of light after a completion, which stay in their own colours (D-322), and the
 frost on the edges of the frame, which lies over the layer and does not change its colour with the
 streak; the cold layer after a death of cold (D-322) lies over the layer of the tint, under the frost.
 
@@ -7048,7 +7049,7 @@ streak; the cold layer after a death of cold (D-322) lies over the layer of the 
     badge over the mage's head over it
   - violates: the file of the background darkened, as the picture behind the login card is, or
     tinted; a tint drawn by putting another file in place of the background; the mage or the
-    flying icon with its plaque left out of the layer, or the badge, a plaque of a discovery or the frost under it
+    flying icon with its plaque left out of the layer, or the badge, a plaque of a discovery, a speck of light or the frost under it
 - **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 3
 
 *Rationale:* the tint of the scene's light follows the streak and turns full gold at a completion, so
@@ -7276,7 +7277,7 @@ alone — it says what the grey and „Wznów” already say.
 
 ### D-322 — What does the scene show while time stands still?
 
-While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire and the mage standing as at every stop: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
+While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -8433,7 +8434,7 @@ While the end-of-run window (D-368) stands, the header and the three areas of th
 
 ### D-371 — Who remembers whether the end-of-run window is open, and where does „Koniec przejścia” stand?
 
-Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run, and „✕”, Escape and the question „Zapisać, odrzucić, wrócić?” (D-173) close it, and the window stands only while it is open, the player is on that screen and no question stands. „Koniec przejścia” stands in the header before „Restart”, only while the map run has ended and the window is closed.
+Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run, and „✕”, Escape and the question „Zapisać, odrzucić, wrócić?” (D-173) close it, and the window stands only while it is open, the player is on that screen and no question stands. „Koniec przejścia” stands in the header before „Restart”, only while the map run has ended and the window does not stand, which includes the wait of the window for the scene's effect of the end (D-322), when it opens the window at once.
 
 - **Scope:** browser-view
 - **Based on:** none
