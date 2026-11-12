@@ -1,6 +1,6 @@
 // What the pick judges of a program rule and rule group: the bar, the reason and the winner, from
-// the one function that picks the rule (task stan-i-powod-przy-regule, To do 2 to 6 and questions
-// 3 to 5). The reasons are those of the table of question 4, the bars those of To do 2 and 3.
+// the one function that picks the rule (D-308, D-309, D-310 and D-378). The reasons are those of
+// D-378 and D-309, the bars those of D-308.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -85,9 +85,8 @@ const campfireHere = (run, minutesLeft) => ({
 
 const refusalOf = (run, action) => actionRefusal(run, map, action);
 
-// The table of question 4: what refuses the action, and the words of the reason. Each case writes
-// the state out; the words are the task's, which is what binds them.
-test("each refusal of an action gives the reason of the table of question 4", () => {
+// What refuses the action, and the words of the reason (D-378). Each case writes the state out.
+test("each refusal of an action gives the reason of its row in D-378", () => {
   const here = revealedHere(freshRun(), { stick: 3 });
   const bare = revealedHere(freshRun());
   const alone = { ...freshRun(), tiles: [freshRun().tiles[0]] };
@@ -759,9 +758,9 @@ test("after a death in combat no action is running", () => {
   assert.equal(signs.judgement.rules[11].reason, "tylko w walce");
 });
 
-// What „Teraz” and „Potem” name (task teraz-i-potem, To do 1, questions 1, 2, 8, 9, 14 and 15; D-334,
-// D-335, D-147): the one function beside `ruleSigns`. The expected values are written out from the
-// task's examples and from the data (the explore action takes 20 game minutes).
+// What „Teraz” and „Potem” name (D-334, D-335, D-147): the one function beside `ruleSigns`. The
+// expected values are written out from the examples of those decisions and from the data (the
+// explore action takes 20 game minutes).
 const NOW_WOLF = { kind: "combat", creatureId: "wolf" };
 
 /** The state of a rule's action in its sixth game minute: 5 of 5 minutes at the start, 3 at minute 12. */

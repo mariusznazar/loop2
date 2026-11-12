@@ -109,7 +109,7 @@ test("a bought branch acts on entry equipment and completion pays practice and l
   assert.deepEqual(completed.run.deposited, [entry("berry", 2)]);
   assert.equal(completed.team.chest.pieces.berry, 9);
   assert.deepEqual(advanceMinutes(completed, 10).state, completed);
-  // The completion solved the map, so the restart is a manual run of a solved map (To do 3, 5): it
+  // The completion solved the map, so the restart is a manual run of a solved map (D-214): it
   // takes its three berries from nowhere and leaves the chest at 9, not 6.
   const restarted = restart(completed).state;
   assert.deepEqual(restarted.run.practice, {});
@@ -120,7 +120,7 @@ test("a bought branch acts on entry equipment and completion pays practice and l
   assert.equal(restarted.team.chest.pieces.berry, 9);
   assert.deepEqual(restarted.run.bringPlan, [entry("berry", 3)]);
 });
-// Each expected clipping is hand-counted from To do 4–6 of plan_wyprawy_loop2.md.
+// Each expected clipping is hand-counted from the rules of D-179 and D-187.
 test("entry spends one budget in order, shortages leave room and partial rows fit", () => {
   // invariant: trip-transfer
   assert.deepEqual(
@@ -345,7 +345,7 @@ test("switching programs retains the entry snapshot, including on solved-map run
     { mapId: "forest", characterId: 1, programId: 1 },
     23,
   ).state;
-  // A run of a solved map takes from nowhere (To do 5): the chest keeps its ten sticks.
+  // A run of a solved map takes from nowhere (D-189): the chest keeps its ten sticks.
   assert.equal(state.team.chest.pieces.stick, 10);
   assert.equal(state.run.character.backpack.stick, 8);
   const switched = switchProgram(state, 2).state;
@@ -359,7 +359,7 @@ test("switching programs retains the entry snapshot, including on solved-map run
     1,
   ).state;
   assert.ok(finished.run.completion);
-  // The marked run deposits nothing (To do 2), so the chest is as it was.
+  // The marked run deposits nothing (D-189), so the chest is as it was.
   assert.deepEqual(finished.run.deposited, []);
   assert.equal(finished.team.chest.pieces.stick, 10);
 });
@@ -378,7 +378,7 @@ test("unlisted and clipped contents of a completed backpack cannot fund a subseq
     1,
   ).state;
   assert.deepEqual(finished.team.chest.pieces, { stick: 4, berry: 3, moss: 2 });
-  // The restart follows the completion that solved forest, so it takes from nowhere (To do 3, 5).
+  // The restart follows the completion that solved forest, so it takes from nowhere (D-214).
   // A later run that takes from the chest starts on the still unsolved forestDeep: its backpack
   // holds the chest's four sticks and three berries, none of the leftovers of the completed run.
   const next = send(
@@ -539,8 +539,7 @@ test("the first action already sees entry equipment and transfers preserve their
   assert.deepEqual(result.run.deposited, [entry("berry", 10)]);
 });
 
-// Each expected value below is hand-counted from To do 1-5 and 14 of the task rozliczenie-przejsc;
-// the loop test a case follows is named in the case.
+// Each expected value below is hand-counted from the rules of D-189, D-190 and D-214.
 function solvedForest(state = equipped()) {
   return { ...state, solvedMaps: ["forest"] };
 }
@@ -550,8 +549,6 @@ function aboutToComplete(state) {
 
 test("a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is", () => {
   // invariant: solved-map-manual-run
-  // loop src/sim/chest.test.ts:316-338: 'wnosi plan i zostawia skrzynkę nietkniętą', 'wnosi także
-  // to, czego w skrzynce nie ma', 'dalej wiąże udźwig'.
   const capacity = equipped().team.characters[0].traits.carryingCapacity;
   const started = sent(solvedForest());
   assert.deepEqual(started.run.character.backpack, {
@@ -583,7 +580,6 @@ test("a manual run of a solved map takes its take list from nowhere, cut by capa
 
 test("takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else", () => {
   // invariant: solved-map-manual-run
-  // loop src/sim/chest.test.ts:316-338.
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
   assert.deepEqual(
@@ -624,7 +620,6 @@ test("clippedTake lists the take entries cut by capacity and the entry cap in li
 
 test("a run records at its start whether its map was solved, and a restart after the solving completion records it anew", () => {
   // invariant: solved-map-manual-run
-  // loop src/sim/chest.test.ts:358-367: 'start zapisuje w przejściu, czy jest próbą'.
   const unsolved = sent();
   assert.equal(unsolved.run.solvedMapRun, false);
   assert.equal(sent(solvedForest()).run.solvedMapRun, true);
@@ -639,7 +634,6 @@ test("a run records at its start whether its map was solved, and a restart after
 
 test("completing a manual run of a solved map pays no practice and deposits nothing, and the practice stays with the run", () => {
   // invariant: solved-map-manual-run
-  // loop src/sim/chest.test.ts:407-419 and src/sim/skills.test.ts:454-468.
   const started = sent(solvedForest());
   const fixture = aboutToComplete({
     ...started,
@@ -667,7 +661,6 @@ test("completing a manual run of a solved map pays no practice and deposits noth
 
 test("a run started before another character solved the map still pays practice and deposits at its completion", () => {
   // invariant: solved-map-manual-run
-  // loop src/sim/skills.test.ts:470-480.
   const started = sent();
   const fixture = aboutToComplete({
     ...started,
@@ -693,7 +686,6 @@ test("a run started before another character solved the map still pays practice 
 
 test("the preview of a marked run is empty whatever its backpack and the chest hold", () => {
   // invariant: solved-map-manual-run
-  // loop src/sim/chest.test.ts:407-419: the deposit of a trial is the empty list.
   const run = sent(solvedForest()).run;
   assert.deepEqual(tripLoot(run, { pieces: {} }, MAPS.forest), []);
   assert.deepEqual(
@@ -704,7 +696,7 @@ test("the preview of a marked run is empty whatever its backpack and the chest h
 
 test("a death on a manual run of a solved map takes what the character carried and pays nothing", () => {
   // invariant: trip-run-end
-  // To do 14, D-61, D-190, question Q1: a death costs as on any run and pays nothing.
+  // D-61, D-190: a death costs as on any run and pays nothing.
   const started = sent(solvedForest());
   const dying = {
     ...started,
@@ -723,7 +715,7 @@ test("a death on a manual run of a solved map takes what the character carried a
   assert.deepEqual(dead.run.character.backpack, started.run.character.backpack);
 });
 
-// What a send takes is one function for both kinds of start (To do 5, item 4): an unsolved map
+// What a send takes is one function for both kinds of start (D-189): an unsolved map
 // takes from the chest, a solved one from nowhere. The expected entries below are worked out by hand
 // from the chest, the carrying capacity and the map's entry cap, in list order.
 

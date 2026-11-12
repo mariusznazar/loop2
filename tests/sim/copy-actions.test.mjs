@@ -1,7 +1,6 @@
 // The operations on a manual map run's copy: the two measures of its record, the saves, the
-// discard and the switch. Expectations come from the task "programy-gracza", the vault file
-// `programy_gracza_loop2.md` (To do 6 to 12), and from D-93, D-131, D-136, D-164, D-171 and D-174
-// in foundations/decisions.md. Every expected value is written out here.
+// discard and the switch. Expectations come from D-93, D-131, D-136, D-164, D-171 and D-174 in
+// foundations/decisions.md. Every expected value is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -311,8 +310,8 @@ test("a switch gives the map run a fresh copy of the other program, with the str
   assert.equal(state.run.defeatedAttacks, 0);
   assert.deepEqual(state.ruleCounts, { 1: 0 });
   assert.equal(state.lastUsedPrograms[1], 3);
-  // Changed by the task "kronika-z-filtrami" (To do 4, D-341): a switch that sets a streak above
-  // zero to zero now returns the loss of the streak, at the map run's minute, as its one event.
+  // D-341: a switch that sets a streak above zero to zero returns the loss of the streak, at the
+  // map run's minute, as its one event.
   assert.deepEqual(events, [
     { kind: "streakLost", minute: 10, streak: 10, cause: "programSwitched" },
   ]);
@@ -396,7 +395,7 @@ test("no operation changes the state it is given", () => {
   assert.doesNotThrow(() => programHasChangesCopyLacks(edited));
 });
 
-// The loss of the streak as an event (task kronika-z-filtrami, To do 4; D-341, D-131): one
+// The loss of the streak as an event (D-341, D-131): one
 // `streakLost` where an act sets a streak above zero to zero, none where it leaves it or where it
 // stood at zero. Every expected streak and minute is written out from the fixtures above.
 

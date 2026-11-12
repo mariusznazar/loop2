@@ -14,7 +14,7 @@ import { streamState } from "../../dist/browser/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
-// „Zbierz — <zasób mapy>” (task, To do 5; D-25, D-64 to D-66, D-71). The numbers below are written
+// „Zbierz — <zasób mapy>” (D-25, D-64 to D-66, D-71). The numbers below are written
 // out by hand: a gathering lasts 10 game minutes and succeeds in 7 tries of 10, the backpack holds
 // 15 pieces of all items together. The gathering's one draw is worked out here apart from the
 // simulation: one mulberry32 step over the map run's gathering state, written out below from the
@@ -327,7 +327,7 @@ test("a map run restart starts the gathering generator anew from the seed", () =
   assert.equal(again.run.gatherRandom, streamState(seed, "gather"));
 });
 
-/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+/** The program a game state holds: the copy during a map run, else the only program of the list. */
 function heldProgram(state) {
   return state.run === null
     ? state.programs[0].program
