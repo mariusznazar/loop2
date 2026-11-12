@@ -9149,3 +9149,18 @@ An item burning on a revealed tile, a lit stick today, stands in that tile's row
 
 *Rationale:* a burning stick is shown only in the row of its tile, not on the drawing, and its minutes of burning are a number, which stands in the row of the tile as the campfire's do (D-70). A stick lit on a revealed tile (D-72) then shows in the list after the campfire's text, in the same words.
 *Rejected:* unknown.
+
+### D-384 — Which game states does the load of a saved game state admit?
+
+The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards. A moment of real time that the game state stores, the save time and the moment a character's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time and the function that settles a death refuse a moment that is no safe integer with a RangeError, and the function that settles a death reads no moment where there is no death to settle.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-213 · derives from D-221 · derives from D-248
+- **Verification:** an agent compares a change with the decision:
+  - complies: a game stamped by a device clock set before 1970, its save time below zero, saved and loaded back as the same game state; a save time of NaN, 1.5 or 2 to the power 53 refused by the function that stamps it with a RangeError; the function that settles a death given a game with no map run and an undefined moment returning that very game state
+  - violates: a load that refuses a save time below zero; a load that compares a moment with the clock; a function that stamps a save time or settles a death and stores a moment of 1.5 in the game state; a game state made by the game's own functions in a play that the load refuses
+- **Origin:** none
+
+*Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death at every step, a step with no death included, so a reading there is not looked at.
+*Rejected:* a load that refuses a moment below zero or beyond the present — a device clock set before 1970 reads below zero, and the refusal would discard a save the game itself wrote and start the player anew; a check of the moment against the clock at the load — the load takes no real time (D-247) and a forged moment costs its own player alone (D-07).
