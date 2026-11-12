@@ -7337,22 +7337,23 @@ hover over a tile of the drawing links with its row only while the table is pick
 of the map run stands in a window over the screen, so no place of the screen moves for it and its
 buttons stand in sight, and the menu bar with the row of warnings stays above it, so a failed save
 (D-208) and a broken game (D-323) are seen while it stands. The window covers the header, so one set
-of the buttons „Restart” and „Zakończ” stands on the screen at a time, and „✕” uncovers the scene,
-which keeps under the window the light that D-132 gives a solved map. The question of „Zakończ”
+of the buttons „Restart” and „Zakończ” stands on the screen at a time, and „✕” uncovers the screen. The question of „Zakończ”
 stands in the program panel, which the window covers, so the window closes while the question stands,
 and it stays closed after „Wróć”, which keeps the window from remembering that the question closed
 it. Accepted with it: the window hides the scene and the program while it stands, and does not cover
 the whole screen as the end of loop does; the end is out of sight while the question stands and after
-it, until the player opens it with „Koniec przejścia”; the keyboard handling, Escape and the return to
-the window are to build.
+it, until the player opens it with „Koniec przejścia”; the window needs keyboard handling of its own,
+Escape included, and a way back to it (D-370).
 *Rejected:* the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
 change their place at the moment of the end; the same buttons in both places at once, the header and
 a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to
 build and check; only the header's buttons, and the end offering only the way to the opened map —
 „Otwarte: …” stands apart from „Restart” and „Zakończ”, a departure from loop; the pick of an action in a window over the screen, as in loop — it hides what the
 character needs; the end of a map run below an open editor of a rule, as in loop — its buttons fall
-under the edge of the window; the needs below two drawings of one place, as in loop; the trip plan
-under the editor during a map run; the clock written as „03:32” — a new notation of time;
+under the edge of the window; the needs below two drawings of one place, as in loop — there the
+scene and the grid took about 320 px before the first number, and the needs began about 590 px down
+and the streak about 650 px, in small print with a 4 px bar; the trip plan under the editor during a
+map run — it took about 150 px of what the player watches (D-180); the clock written as „03:32” — a new notation of time;
 „Wróć do przejścia” on the screen of a map run too — a link to the place the player already stands
 in; „Restart”, the warning of a cut trip plan and „Zakończ” in the program column, in a row over the
 heading of the copy — the player looks for them in a new place, and the question at „Zakończ”
@@ -7387,7 +7388,9 @@ after „Wróć” — one state more, and a player who wanted to correct the co
 question „Zapisać, odrzucić, wrócić?” in the window above its buttons — a second place of the
 question, away from the copy it concerns and against the rejection of a window in D-173, and more to
 build and check; the scene shrunk to its size in loop with the split of the widths unchanged — it
-does not solve what the change is for, a program too narrow to write in (D-349).
+would give the program about as much width (510 px in a window 1280 px wide, 606 px at 1344 px;
+computed from the layout, not measured) only by halving the scene, while the aim was a program as
+wide as in loop with the scene kept at its size (D-349).
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
@@ -7425,7 +7428,8 @@ rule moved to a later group, or left standing after the game's rule or its group
 band names that group, where the same rule stands.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
-the numbering; no sentence about the rule — a departure from the project's definition; a name the
+the numbering; no sentence about the rule — the band would not name the program rule the game wrote, which D-122
+has it name; a name the
 screen holds from the moment of the discovery — lost at a load of the paused game, and stale after a
 rename; the copy's first rule group as it stands — false after another group is dragged above it or
 the group is deleted.
@@ -7473,7 +7477,7 @@ rule of acting on the list of discoveries, the adding setting the streak to zero
 offers the same button because the discovery of the game minute of an end is named there alone, and
 the window closes so that the rule panel it opens is seen under its row.
 *Rejected:* the button doing what „+ reguła” does — the words „z tym” promise more; the button left
-for later — a departure from the approved wording; the target always the first of the grid,
+for later — the band would lack the button D-122 gives it; the target always the first of the grid,
 whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the window naming the
 discovery of the end without the button — after the end the player adds a rule from the discovery only
 with the ordinary editor; the band of the discovery left standing beside the window, so that the same
@@ -7547,8 +7551,7 @@ the pace, with no loop of drawing.
 - **Origin:** none
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
-figure legible at the fastest pace. The concept of the game has drawn the scene from the state of
-the run alone, with positions and animations in CSS and no loop of rendering. The clock of the view
+figure legible at the fastest pace. The clock of the view
 reads the time every 200 ms, so the smoothness of motion has to come from CSS, which divides time
 into equal steps for the frames of the sprite and needs no clock of its own; the risk that D-03 took
 with React, a rebuilt node restarting a CSS animation and the figure shaking, is one this scene meets,
