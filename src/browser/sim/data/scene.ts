@@ -186,7 +186,7 @@ export type SceneSpeck = {
 export const SCENE_MOMENTS = {
   discovery: {
     centreX: SCENE.clearingX + SCENE.mageMiddle,
-    y: 64,
+    y: 56,
     step: 22,
     perRow: 8,
     rowStep: 22,

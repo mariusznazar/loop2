@@ -1040,7 +1040,7 @@ test("the end effect begins at the game minute of a death or a completion, not a
 
 // D-322, task To do 1. The icons are the files of the game's data: a discovered action's, a discovered
 // item's and the campfire's, in the order of the band's text, each on a plaque in a row over the
-// clearing centred on the mage's middle, 144 + 32 = 176, the line 64, a step of 22. Catches a plaque for
+// clearing centred on the mage's middle, 144 + 32 = 176, the line 56, a step of 22. Catches a plaque for
 // a thing with no icon, a missing icon, a row that is not centred and a plaque that comes out of the
 // wrong pine: the left half of a row from the left pine, the right half from the right one.
 test("a discovery shows the icon of each thing it revealed that has one, in a centred row over the clearing", () => {
@@ -1057,10 +1057,10 @@ test("a discovery shows the icon of each thing it revealed that has one, in a ce
   assert.deepEqual(
     moment.plaques.map((p) => [p.href, p.x, p.y, p.from]),
     [
-      ["/icons/binoculars.svg", 143, 64, left],
-      ["/icons/hiking.svg", 165, 64, left],
-      ["/icons/wood-stick.svg", 187, 64, right],
-      ["/icons/campfire.svg", 209, 64, right],
+      ["/icons/binoculars.svg", 143, 56, left],
+      ["/icons/hiking.svg", 165, 56, left],
+      ["/icons/wood-stick.svg", 187, 56, right],
+      ["/icons/campfire.svg", 209, 56, right],
     ],
   );
   assert.equal(moment.key, "discovery:" + sent().run.minute);
@@ -1118,15 +1118,15 @@ test("nine plaques stand in two rows, eight and one, each row centred", () => {
   assert.deepEqual(
     moment.plaques.map((p) => [p.x, p.y]),
     [
-      [99, 64],
-      [121, 64],
-      [143, 64],
-      [165, 64],
-      [187, 64],
-      [209, 64],
-      [231, 64],
-      [253, 64],
-      [176, 42],
+      [99, 56],
+      [121, 56],
+      [143, 56],
+      [165, 56],
+      [187, 56],
+      [209, 56],
+      [231, 56],
+      [253, 56],
+      [176, 34],
     ],
   );
 });

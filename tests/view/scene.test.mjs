@@ -1874,15 +1874,15 @@ test("a discovery shows a plaque for each icon on the clearing, each coming from
     const items = [...scene.querySelectorAll(".scene-discovery-item")];
     assert.equal(items.length, 3, "none for the condition");
     const expected = [
-      ["/icons/binoculars.svg", 154, -34, -14],
-      ["/icons/hiking.svg", 176, 89, -14],
-      ["/icons/wood-stick.svg", 198, 67, -14],
+      ["/icons/binoculars.svg", 154, -34, -6],
+      ["/icons/hiking.svg", 176, 89, -6],
+      ["/icons/wood-stick.svg", 198, 67, -6],
     ];
     items.forEach((item, index) => {
       const [icon, x, dx, dy] = expected[index];
       const plaque = one(item, ".scene-discovery-plaque");
       near(plaque.style.left, (x / 336) * 100, `${icon} left`);
-      near(plaque.style.top, (64 / 152) * 100, `${icon} top`);
+      near(plaque.style.top, (56 / 152) * 100, `${icon} top`);
       assert.equal(item.style.getPropertyValue("--index"), String(index));
       near(
         item.style.getPropertyValue("--from-x"),
