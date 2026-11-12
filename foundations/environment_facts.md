@@ -783,6 +783,12 @@ The page of the pack Smoke & Fire Animated Particle [16x16] on OpenGameArt gives
 
 - **Source:** https://opengameart.org/content/smoke-fire-animated-particle-16x16 (archived: https://web.archive.org/web/20260929142553/https://opengameart.org/content/smoke-fire-animated-particle-16x16, 2026-09-29) § author — "KnoblePersona" · § License(s) — "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/; read 2026-11-11
 
+## lpc-wolf-licence
+
+The page of the pack [LPC] Wolf Animation on OpenGameArt gives William.Thompsonj as its author and Redshrike as a collaborator, offers the pack under the licences CC-BY 4.0, CC-BY 3.0, GPL 3.0, GPL 2.0 and OGA-BY 3.0, the name of the licence CC-BY 3.0 linking to the Creative Commons Attribution 3.0 licence at http://creativecommons.org/licenses/by/3.0/, and asks for a credit to Stephen "Redshrike" Challener as graphic artist and to William.Thompsonj as contributor, with a link back to the page or to the OpenGameArt homepage if reasonable.
+
+- **Source:** https://opengameart.org/content/lpc-wolf-animation (archived: https://web.archive.org/web/20261030052334/https://opengameart.org/content/lpc-wolf-animation, 2026-10-30) § Author — "William.Thompsonj" · § Collaborators — "Redshrike" · § License(s) — "CC-BY 4.0" · "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/ · "GPL 3.0" · "GPL 2.0" · "OGA-BY 3.0" · § Attribution Instructions — "Attribute Stephen "Redshrike" Challener as graphic artist and William.Thompsonj as contributor. If reasonable link back to this page or the OGA homepage."; read 2026-11-12
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
