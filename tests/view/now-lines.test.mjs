@@ -1,6 +1,7 @@
-// The parts of the rows „Teraz” and „Potem” of the screen of a map run (D-334, D-335, D-291, D-292), from what `nowAndNext` names and the program of the copy. The input is
-// written out by hand, so each case states the words it expects (D-73) and does not run the
-// simulation; the function of the simulation has its own cases in tests/sim/rule-signs.test.mjs.
+// The parts of the rows „Teraz” and „Potem” of the screen of a map run (D-334, D-335, D-291, D-292),
+// from what `nowAndNext` names and the program of the copy. The input is written out by hand, so
+// each case states the words it expects (D-73) and does not run the simulation; the function of the
+// simulation has its own cases in tests/sim/rule-signs.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { NEXT_LABEL, nowRows } from "../../dist/browser/view/now-lines.js";

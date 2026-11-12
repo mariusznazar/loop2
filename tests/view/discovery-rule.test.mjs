@@ -1,6 +1,6 @@
-// The rule „Dodaj regułę z tym” adds (D-313, with D-124 and D-131). The pure function that builds it from a game state holding a map run and a held
-// discovery, tested without a page: the rules, the group and the field the panel opens on are written
-// out here, not read from the editor's functions.
+// The rule „Dodaj regułę z tym” adds (D-313, with D-124 and D-131). The pure function that builds it
+// from a game state holding a map run and a held discovery, tested without a page: the rules, the
+// group and the field the panel opens on are written out here, not read from the editor's functions.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";

@@ -1,5 +1,5 @@
-// The chronicle in the game view (D-338, D-339, D-346, D-381, D-147, D-311) on jsdom through tests/view/page-document.mjs (D-264): the game
-// view is built as the page builds it, and the map run's screen is driven through the buttons the
+// The chronicle in the game view (D-338, D-339, D-346, D-381, D-147, D-311) on jsdom through
+// tests/view/page-document.mjs (D-264): the game view is built as the page builds it, and the map run's screen is driven through the buttons the
 // player presses and the address the page follows. What the cases hold is that the chronicle and the
 // tab and filter picked belong to the game view — they outlive a visit to Siedziba and „Restart”,
 // and a send after „Zakończ” starts them anew — and that a game loaded with a record of an
