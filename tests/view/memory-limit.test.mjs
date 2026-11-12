@@ -53,7 +53,7 @@ function importedModules(text) {
 }
 
 // Read as text, so nothing is loaded. A dynamic import of a computed name goes
-// round it, as t.assert and a helper's own node:assert do (spec decision 10).
+// round it, as t.assert and a helper's own node:assert do.
 function refusals(files) {
   const refused = [];
   for (const [path, text] of Object.entries(files)) {

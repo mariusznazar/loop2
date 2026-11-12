@@ -1,5 +1,5 @@
 /**
- * The texts of the end-of-run window (D-368; task koniec-przejscia, To do 4 to 8): what each part of
+ * The texts of the end-of-run window (D-368): what each part of
  * the window says, from the game state and the map run it holds. Pure: each function reads its
  * arguments and draws nothing, and nothing runs when the module is imported.
  */

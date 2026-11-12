@@ -1,4 +1,4 @@
-// The end-of-run window in the game view (task koniec-przejscia, To do 1, 2, 8 and 9; D-368,
+// The end-of-run window in the game view (D-368, D-370, D-371,
 // D-311, D-62, D-132, D-173, D-122, D-313, D-212, D-53, D-323, D-324) on jsdom through
 // tests/view/page-document.mjs (D-264): the game view is built as the page builds it, as in
 // tests/view/end-question.test.mjs, and the window is driven through the buttons the player presses
@@ -325,7 +325,7 @@ async function completeOnTheScreen({ pass, reading }) {
 
 // --- opening ------------------------------------------------------------------------------------
 
-// D-368, D-62, task To do 1. Catches a window that opens only after „Koniec przejścia”, one that
+// D-368, D-62. Catches a window that opens only after „Koniec przejścia”, one that
 // stands before the map run ends, one that leaves the header or an area of the screen visible
 // under it, and the death's title missing.
 test("the window opens at the game minute a character's death ends the map run while the player is on its screen, and covers the header and the three areas", async () => {
@@ -359,7 +359,7 @@ test("the window opens at the game minute a character's death ends the map run w
   });
 });
 
-// D-132, D-368, task To do 1 and 8. Catches a window that opens after a death alone, and one
+// D-132, D-368. Catches a window that opens after a death alone, and one
 // that stands with no way to the map the completion opened.
 test("the window opens at a completion too, titled by the completion text, with the way to the map it opened", async () => {
   await onPage(async (page) => {
@@ -377,7 +377,7 @@ test("the window opens at a completion too, titled by the completion text, with 
   });
 });
 
-// task To do 2 (the window opens at every entering of the screen of an ended map run). Catches a
+// D-371 (the window opens at every entering of the screen of an ended map run). Catches a
 // window that stays closed after the player closed it and left, and one that stays open under
 // another screen's address.
 test("the window opens again at every entering of the screen of an ended map run: after a link of the menu bar and back, and after the browser's back", async () => {
@@ -404,7 +404,7 @@ test("the window opens again at every entering of the screen of an ended map run
   });
 });
 
-// D-212, D-368, D-96, task To do 2. Catches a game built on an ended map run — at a reload at its
+// D-212, D-368, D-96. Catches a game built on an ended map run — at a reload at its
 // address, after a sign-in, at another address of the page — with no window, and a window standing
 // under the other screen.
 test("a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address", async () => {
@@ -430,7 +430,7 @@ test("a game built on an ended map run opens the window: at a reload at its addr
   });
 });
 
-// Binding answer 2 of slice 4 (the window takes the focus when it appears) and D-88. A game is built
+// D-370 (the window takes the focus when it opens) and D-88. A game is built
 // before the page places it, so a window open at the build cannot take the focus then; the first
 // reading of the clock does it. Catches a window left with no focus after a reload, and one that
 // takes the focus from a control the player has already moved to.
@@ -514,7 +514,7 @@ test("„Ostatnie minuty” are the last entries of the chronicle up to the entr
 
 // --- closing and opening again ------------------------------------------------------------------
 
-// task To do 2, binding answer 2. Catches „✕” or Escape that leaves the window or the covering,
+// D-371, D-370. Catches „✕” or Escape that leaves the window or the covering,
 // a header without „Koniec przejścia” before „Restart”, a focus left behind, and a „Koniec
 // przejścia” that does not open the window again.
 test("„✕” and Escape close the window and uncover the screen, the header holds „Koniec przejścia” before „Restart” with the focus on it, and it opens the window again", async () => {
@@ -546,7 +546,7 @@ test("„✕” and Escape close the window and uncover the screen, the header h
   });
 });
 
-// task To do 2. Catches a „Koniec przejścia” drawn while the map run goes on or paused.
+// D-371. Catches a „Koniec przejścia” drawn while the map run goes on or paused.
 test("the header has no „Koniec przejścia” while the map run goes on or is paused", async () => {
   await onPage(async ({ root }) => {
     const { view } = await viewOf(going());
@@ -578,7 +578,7 @@ test("„Koniec przejścia” pressed while the question stands closes the quest
 
 // --- „Restart” ----------------------------------------------------------------------------------
 
-// D-62, D-132, task To do 2. Catches a „Restart” of the window that leaves the window or the
+// D-62, D-132, D-368. Catches a „Restart” of the window that leaves the window or the
 // ended map run, one that does not start the same seed from minute zero, and a focus lost.
 test("„Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with the header's „Restart” focused", async () => {
   await onPage(async (page) => {
@@ -605,7 +605,7 @@ test("„Restart” of the window closes it and starts the map run again from ga
   });
 });
 
-// task To do 2. Catches the header's „Restart” after a „✕” that leaves the window open for the
+// D-371. Catches the header's „Restart” after a „✕” that leaves the window open for the
 // next ended map run: the map run it starts is not ended, so no window stands.
 test("„Restart” of the header after „✕” starts the map run again and no window stands", async () => {
   await onPage(async (page) => {
@@ -636,7 +636,7 @@ test("„Zakończ” of the window with no unsaved changes ends the map run at o
   });
 });
 
-// D-173, task To do 8 and question 10. Catches the question standing in the window, the window
+// D-173, D-371. Catches the question standing in the window, the window
 // standing over the question, a map run ended by the click, and a window that opens again by itself
 // after „Wróć”.
 test("„Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it", async () => {
@@ -703,7 +703,7 @@ test("the question asked by „Zakończ” of the window leads to Postać after 
 
 const MAP_ADDRESS = "#/mapy/forestDeep";
 
-// D-53, D-173, task To do 8. Catches an „Otwarte” that leads to Postać, one that leaves the map run
+// D-53, D-173. Catches an „Otwarte” that leads to Postać, one that leaves the map run
 // standing, and one that opens the screen Mapy without the card of the map it opened.
 test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać", async () => {
   await onPage(async ({ root }) => {
@@ -722,7 +722,7 @@ test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map 
   });
 });
 
-// D-173, task To do 8 and question 10. Catches a question that forgets which button asked it and
+// D-173, D-371. Catches a question that forgets which button asked it and
 // leads to Postać, a „Zapisz” that does not save, and a „Wróć” that ends the map run or leads on.
 test("the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere", async () => {
   for (const [name, expectSaved] of [
@@ -778,7 +778,7 @@ test("after „Wróć” a later „Zakończ” leads to Postać, not to the map
 
 // --- „Dodaj regułę z tym” -----------------------------------------------------------------------
 
-// D-313, D-122, task To do 9. Catches a button that leaves the window over the rule panel, adds no
+// D-313, D-122. Catches a button that leaves the window over the rule panel, adds no
 // rule, adds it somewhere but the end of the first group, or opens no panel.
 test("„Dodaj regułę z tym” of the window closes it, adds the rule of the discovery at the end of the copy's first group and opens its panel", async () => {
   await onPage(async ({ root }) => {
@@ -830,12 +830,12 @@ test("the window stands in no game state and no saved document: closing and open
   });
 });
 
-// D-212, D-135, D-185, D-216, task To do 10. Catches a window that, after a reload of the screen of
+// D-212, D-135, D-185, D-216, D-369. Catches a window that, after a reload of the screen of
 // an ended map run, reads its streak line or its line of what the end gave or cost from anything but
 // the loaded game state (the header's streak, a constant, the memory of the page). The expectations
 // are written out: the streak of the death is set to 116 and that of the completion to 480, each
-// above the streak the state holds when it ended; the lines are the sentences of To do 5 and 6 of
-// the task and of D-185 for a bring plan that takes nothing.
+// above the streak the state holds when it ended; the lines are the sentences of D-368 and of D-185
+// for a bring plan that takes nothing.
 test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
   /** The window's streak line and cost line after a reload of `document`. */
   async function lines(document, root) {

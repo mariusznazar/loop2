@@ -110,7 +110,7 @@ type CardState = "login" | "register" | "request";
 /** The control the player sent a form from, for focus to come back to. */
 type FormOrigin = HTMLElement | null;
 
-/** The lock of the whole card while a form waits for the server (spec decision 8). */
+/** The lock of the whole card while a form waits for the server (D-44, D-276). */
 type CardLock = {
   /** Whether the card is drawn locked; every field and button of it reads this. */
   locked: boolean;

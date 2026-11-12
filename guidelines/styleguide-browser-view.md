@@ -646,10 +646,10 @@ klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
 pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają
 (D-317).
 
-Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę tą samą
-wartością co stara Loop (D-322). Martwy mag i wygasłe ognisko mają jedną wspólną
-szarość, też z wartością starej Loop (D-316, D-322); obie wartości stoją
-w regułach sceny w `src/browser/styles.css`, a źródła w ich komentarzach. Przy
+Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę filtrem
+`grayscale(1) brightness(0.5)` (D-322). Martwy mag i wygasłe ognisko mają jedną
+wspólną szarość, `grayscale(1) brightness(0.55)` (D-316, D-322); obie wartości
+stoją w regułach sceny w `src/browser/styles.css`, a źródła w ich komentarzach. Przy
 zatrzymaniu na odkryciu scena zostaje kolorowa, a po ukończeniu mag stoi
 w kolorze; po śmierci mag jest szary (D-322). Wygasłe ognisko to ten sam obrazek
 bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).

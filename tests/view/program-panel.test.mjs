@@ -622,7 +622,7 @@ test("the name field leaves without saving at „Zmień nazwę” again and at a
   });
 });
 
-// D-167: „Usuń” of the shown program shows the first of the list.
+// D-382: „Usuń” of the shown program shows the first of the list; D-167: a program left alone stays.
 // Catches the panel left on a deleted program and the last program deleted.
 test("„Usuń” of the shown program shows the first program of the list, and is disabled with one left", async () => {
   await withPage(async (page) => {
