@@ -2560,7 +2560,7 @@ opens another, „Otwarte: {mapa} →” in the window, the way to the map it op
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`; a completion of a map that opens another whose window has
     no „Otwarte: {mapa} →”; the scene after a completion left in the tint of the required streak
-- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 9 and 12 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 4 and 8, Questions to settle, questions 1 and 3, and § Settlements to record, rows 1 and 3 · swit_rosnacy_z_passa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 7, Questions to settle, questions 4 and 16
+- **Origin:** rozwiazanie_lasu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Questions to settle, "6. Co widzi i co może zrobić gracz po domknięciu przejścia?" · petla_zarobkowa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, Q17, and § Settlements to record, row 20 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 9 and 12 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1, 4 and 8, Questions to settle, questions 1 and 3, and § Settlements to record, rows 1 and 3
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
@@ -5760,10 +5760,11 @@ Pixel Crawler, and the dust of a miss is a sprite of the pack Smoke & Fire Anima
 account and save server serves and copied into it when the application is built. A sprite file holds
 pixels alone, the game credits each pack whose licence asks for a credit, and the character of the
 scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light
-and the frost, and specks, squares of one pixel of the scene on its grid in colours of the palettes
-of the packs, while whatever has a drawing — a character, a creature, a thing — comes from a pack,
-and the colour of an effect stands out from the ground it stands on, the outline of the frost by at
-least 3:1 against the snow it lies on.
+and the frost, and specks, and the frost and the specks are squares of one pixel of the scene on its
+grid in colours of the palettes of the packs, while the colours of the tint layer have their source in
+the human's choice; whatever has a drawing — a character, a creature, a thing — comes from a pack,
+and the colour of an effect stands out from the ground it stands on, the outline or the fill of the
+frost by at least 3:1 against the snow it lies on.
 
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms · smoke-fire-particle-licence · cc-by-3-adaptation-credit
@@ -5777,21 +5778,19 @@ least 3:1 against the snow it lies on.
     holds, with a credit line for the pack in the folded section of credits; the smaller flame of the
     campfire a sprite file made from the frames of the pack's fire with the flame cut down by hand;
     the frost on the edges of the frame built by CSS of squares of one pixel of the scene on its grid
-    in colours the pictures of the pack's trees hold, its outline 3:1 or more against the snow under
-    every tint of the light
+    in colours the pictures of the pack's trees hold, its outline or its fill 3:1 or more against the
+    snow under every tint of the light
   - violates: a picture placed straight in the directory the server serves; a sprite file in
     another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
     other than the two named; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
     game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
-    drawn by CSS as a shape; a frost whose outline reads on the snow of the open place under 3:1
+    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1
 - **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Postać w scenie” ·
   rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop), part 7 · definicja_mvp2_loop2.md in
   the vault (Notes/Projects/(P) Loop), Projected foundation changes, „Where do the scene's pictures
   come from?” · scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
-  item 2 · swit_rosnacy_z_passa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do,
-  items 4, 5 and 7, Questions to settle, questions 8, 10, 13 and 14, and § Settlements to record,
-  rows 5 and 7
+  item 2
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
 fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
@@ -5803,12 +5802,13 @@ down by hand.
 The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
 the pack Smoke & Fire Animated Particle holds a cloud that, recoloured to the browns of the scene,
 stands out from the ground; its licence asks for a credit, which the game gives. A layer of colour or
-a speck of one square needs no drawing, so CSS draws them on the grid of the scene's pixels in
-colours of the packs' palettes, and the one pixel style stays; a shape with a drawing, as a mage or a
+a speck of one square needs no drawing, so CSS draws them, the frost and the specks on the grid of the
+scene's pixels in colours of the packs' palettes and the tint layer in the colours the human chose
+from a preview, and the one pixel style stays; a shape with a drawing, as a mage or a
 prop, would stand beside the pixels as a smooth shape. A colour that does not stand out from the
-ground it stands on is not seen, so the outline of the frost is measured against the snow, at 3:1, the
-threshold the badge's bar keeps (D-39); the fill of the frost, which reads on the snow weakly by its
-brightness, is not measured. Accepted with it: credits for the pack of the dust, frames of a bending mage and a
+ground it stands on is not seen, so the outline or the fill of the frost is measured against the snow, at 3:1,
+the threshold the badge's bar keeps (D-39); the frost chosen meets it by its outline, the fill reading
+on the snow weakly by its brightness. Accepted with it: credits for the pack of the dust, frames of a bending mage and a
 smaller flame made by hand or generated, and colours of the specks and of the frost that enter the
 game's palette with a source in the pixel of a named picture of a pack.
 *Rejected:* the hooded figure of loop — it is a rogue, though the game calls it a mage; generated
@@ -7028,7 +7028,7 @@ from the pack's sheets.
 The background picture of the scene is in full light and with no tint, and the tint of the scene's
 light is a layer over that picture, never a tint or a darkness in the picture's file. The layer lies
 over everything the scene draws — the background, the props, the campfire burning or extinguished,
-the mage, the wolf and the dust — but the badge over the mage's head, which stays on its solid
+the mage, the wolf, the dust and the flying icon on its plaque — but the badge over the mage's head, which stays on its solid
 `panel` background (D-320), and the frost on the edges of the frame, which lies over the layer and
 does not change its colour with the streak.
 
@@ -7038,12 +7038,12 @@ does not change its colour with the streak.
 - **Verification:** an agent compares a change with the decision:
   - complies: the file of the background as light as the cut pictures it is composed from and in
     their colours, the cool tint at streak 0 and the gold at a completion a layer over it, the
-    props, the fire and the mage under that layer and the frost and the badge over the mage's head
-    over it
+    props, the fire, the mage and the icon flying on its plaque under that layer and the frost and the
+    badge over the mage's head over it
   - violates: the file of the background darkened, as the picture behind the login card is, or
-    tinted; a tint drawn by putting another file in place of the background; the mage left out of
-    the layer, or the badge or the frost under it
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 3 · swit_rosnacy_z_passa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 7, Questions to settle, questions 1, 6 and 10, and § Settlements to record, row 1
+    tinted; a tint drawn by putting another file in place of the background; the mage or the
+    flying icon with its plaque left out of the layer, or the badge or the frost under it
+- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 3
 
 *Rationale:* the tint of the scene's light follows the streak and turns full gold at a completion, so
 it changes while the background stays one picture in full light, and a layer that leaves the
@@ -7051,8 +7051,9 @@ brightness of the picture as it is lets a time of day lay its own darkness over 
 mage, the wolf and the dust lie under the layer because figures outside it would look pasted on a
 tinted forest, and the badge stays on its solid `panel` so that the sign over the head is read as
 D-320 gives. The frost lies over the layer so that its colour is the same at every streak. Accepted
-with it: the violet robe of the mage turns brown in the gold, and the grey of an extinguished fire
-and of a dead mage takes the hue of the layer in its opacity.
+with it: the violet robe of the mage turns brown in the gold, the grey of an extinguished fire and of
+a dead mage takes the hue of the layer in its opacity, and the plaque of the flying icon (D-365),
+which lies under the layer, takes its hue too while the icon on it stays light on a dark plaque.
 *Rejected:* a background darkened or tinted in its file — the tint would have to replace the file;
 the mage and the wolf outside the tint — they look pasted on a tinted forest; the frost under the
 tint — in the gold light it loses its icy colour and turns gold with the streak.
@@ -7092,7 +7093,7 @@ after „Restart” and after a load the tint stands at once where the streak, o
     game state; a tint in full gold at the required streak of Las; a tint that darkens or greys the
     scene or turns it blue; a return of the tint in one frame, or one that runs while the pause holds
     the map run; a tint that runs back from where it stood at a death or at „Restart”
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4, 5 and 7, Questions to settle, question 3, and § Settlements to record, row 3 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F1, F3, F4, F6 and F9 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), parts 8 and 9 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7 · swit_rosnacy_z_passa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2, 3 and 7, Questions to settle, questions 1, 3, 4, 5 and 7, and § Settlements to record, rows 2 and 3
+- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4, 5 and 7, Questions to settle, question 3, and § Settlements to record, row 3 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F1, F3, F4, F6 and F9 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), parts 8 and 9 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
 figure legible at the fastest pace. The pictures stand in the game's data, as the rest of the
@@ -8407,22 +8408,23 @@ Whether the end-of-run window (D-368) is open is a memory of the page, kept by t
 
 The scene shows frost on the edges of its frame, never over its whole area (D-317), that follows the
 temperature of the character's body: none at 37 °C, growing in thickness as the body cools to
-35 °C, at 36 °C half of its full thickness, 16 pixels of the scene (32 px on the screen) while the
-character is chilled, and taken back as the character warms at a fire. The frost lies over the
-layer of the tint (D-315).
+35 °C, at 36 °C half of its full thickness, 16 pixels of the scene (32 px on the screen) at its
+deepest while the character is chilled, and taken back as the character warms at a fire. Its inner
+edge is ragged, so its thickness is the depth of its deepest teeth, and at the first one or two pixels
+of thickness it is the outline alone. The frost lies over the layer of the tint (D-315).
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-271
 - **Verification:** an agent compares a change with the decision:
-  - complies: a character at 37 °C with no frost on the frame; at 36 °C a frost 8 pixels of the scene
-    thick on each edge; at 35 °C and at 20 °C one 16 pixels thick; the same character warmed to
-    36 °C at the fire with the frost 8 pixels thick again; the frost the same colours at streak 0 and
-    at a completion
+  - complies: a character at 37 °C with no frost on the frame; at 36 °C a frost whose deepest teeth
+    reach 8 pixels of the scene from each edge; at 35 °C and at 20 °C one whose deepest teeth reach 16;
+    the same character warmed to 36 °C at the fire with the teeth at 8 again; the frost the same
+    colours at streak 0 and at a completion
   - violates: a frost that starts only below 35 °C; a frost that grows further below 35 °C; a frost
-    of the same thickness at 36 °C and at 35 °C; half the opacity at the full thickness for a
+    whose deepest teeth stand at the same depth at 36 °C and at 35 °C; half the opacity at the full thickness for a
     half; a frost over the whole area of the scene; a frost that changes its colour with the streak
-- **Origin:** swit_rosnacy_z_passa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, questions 9 and 10, and § Settlements to record, row 4 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 6
+- **Origin:** none
 
 *Rationale:* the frost warns before the character starts losing health, which comes below 35 °C, and
 it fills the first minutes of a map run, as the reconnaissance wanted; a frost that is full while the
@@ -8456,7 +8458,7 @@ scene's data. An extinguished campfire stays as D-316 gives it.
   - violates: the smaller flame at 30 minutes left, or none at 10; a smaller flame of another
     size of the stones, or with a stage between; the full flame drawn at a fraction of its scale;
     the extinguished fire in the smaller flame
-- **Origin:** swit_rosnacy_z_passa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 8, and § Settlements to record, row 6 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 6
+- **Origin:** none
 
 *Rationale:* 20 minutes is what one stick adds to a burning fire, so a smaller flame says to feed the
 fire before it goes out, and the sprite of the full flame and that of the smaller one change at one

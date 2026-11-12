@@ -351,7 +351,7 @@ Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki
   zadania „swit-rosnacy-z-passa” — chłodny i ciepły odcień światła sceny z ich kryciami oraz
   wypełnienie, obrys i kryształki szronu — wybór Mariusza z podglądu wartości wyglądu tego zadania,
   wariant A odcieni i wariant FA szronu, z nazwą zadania i datą wyboru, 2026-11-11; te same
-  nazwę i datę niesie komentarz przy regule powrotu odcienia (2 s), której wartość nie jest tokenem;
+  nazwę i datę niesie komentarz przy regule powrotu odcienia, której wartość nie jest tokenem;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — ustalenie zadania;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
@@ -625,19 +625,19 @@ Plakietki nie ma przy czekaniu, w walce,
 po śmierci i po rozwiązaniu mapy (D-320, D-322).
 
 Światło sceny ma odcień (D-315, D-316): warstwa `scene-tint` leży nad wszystkim, co scena rysuje —
-lasem, rekwizytami, ogniskiem płonącym i wygasłym, magiem, wilkiem i kurzem — i pod szronem, plakietką
-lecącej ikony i plakietką nad głową maga, które zostają na własnych kolorach (D-320). Elementy leżą w
-tej kolejności od dołu: las, rekwizyty, ognisko, kurz, mag, odcień, szron, lot ikony, plakietka nad
-głową. Plakietka nie siedzi więc w elemencie maga, który leży pod odcieniem: jej nośnik to osobny
-element o tym samym polu i tym samym chodzie co mag. Warstwa miesza się ze sceną trybem
-`mix-blend-mode: color`, więc przenosi na scenę barwę i nasycenie, a jasność obrazu zostawia; jej kolor
-to mieszanka chłodnego i ciepłego odcienia w `oklch` w proporcji `t`, a jej krycie idzie liniowo z `t` od
-krycia chłodnego odcienia do krycia ciepłego. Oba odcienie i oba krycia to tokeny `--scene-tint-*`, a
-`t` (`--tint`, od 0 do 1) przychodzi z TypeScriptu jako liczba w stylu warstwy: żaden kolor nie jest
-składany z liczb w kodzie (D-43). `t` rośnie równo od 0 przy passie 0 do 0,80 przy passie, której
-wymaga warunek mapy, stoi na 0,80, gdy passa rośnie dalej, a 1, czyli pełne złoto, daje dopiero
-rozwiązanie mapy. Utrata passy w
-toku przejścia przywraca chłodny odcień w 2 s: warstwa dostaje nowy element, który startuje od
+lasem, rekwizytami, ogniskiem płonącym i wygasłym, magiem, wilkiem, kurzem i lecącą ikoną na jej
+plakietce — i pod szronem oraz plakietką nad głową maga, które zostają na własnych kolorach (D-320).
+Plakietka lecącej ikony (D-365) leży więc pod odcieniem i przyjmuje jego barwę, a ikona na niej zostaje
+jasna na ciemnej plakietce. Elementy leżą w tej kolejności od dołu: las, rekwizyty, ognisko, kurz, mag,
+lot ikony, odcień, szron, plakietka nad głową. Plakietka nad głową nie siedzi więc w elemencie maga,
+który leży pod odcieniem: jej nośnik to osobny element o tym samym polu i tym samym chodzie co mag.
+Warstwa miesza się ze sceną trybem `mix-blend-mode: color`, więc przenosi na scenę barwę i nasycenie,
+a jasność obrazu zostawia; jej kolor to mieszanka chłodnego i ciepłego odcienia w `oklch` w proporcji
+`t`, a jej krycie idzie liniowo z `t` od krycia chłodnego odcienia do krycia ciepłego. Oba odcienie
+i oba krycia to tokeny `--scene-tint-*`, a `t` (`--tint`, od 0 do 1) przychodzi z TypeScriptu jako liczba
+w stylu warstwy: żaden kolor nie jest składany z liczb w kodzie (D-43). Jak `t` idzie za passą, kiedy
+stoi w pełnym złocie i jak wraca po utracie passy, mówi D-316; długość powrotu stoi w regule powrotu
+w `src/browser/styles.css`. Utrata passy w toku przejścia daje warstwie nowy element, który startuje od
 odcienia, jaki stał, a animacja CSS prowadzi `--tint` do nowej wartości; pod ustawieniem ograniczenia
 ruchu odcień pokazuje od razu swój koniec. W pauzie gracza i przy odkryciu odcień stoi, a powrót po
 utracie passy w tym czasie zaczyna się dopiero, gdy scena rusza dalej. Przy śmierci, rozwiązaniu, na
@@ -645,26 +645,29 @@ starcie przejścia, po „Restart” i po wczytaniu odcień stoi od razu tam, gd
 rozwiązanie. Odcień i szron leżą w scenie, więc filtr pauzy szarzy je razem z nią, a po rozwiązaniu
 scena stoi w pełnym złocie także pod oknem końca przejścia, które „✕” odsłania (D-132).
 
-Płonące ognisko ma dwa stopnie płomienia (D-373): pełny płomień i w ostatnich 20 minutach palenia
+Płonące ognisko ma dwa stopnie płomienia (D-373): pełny płomień i, w ostatnich minutach palenia,
 mniejszy — ten sam płomień na tych samych kamieniach, zmniejszony ręcznie z klatek pełnego w kolorach
 paczki Pixel Crawler, w tylu samych klatkach i tym samym takcie. Plik mniejszego płomienia i próg
-20 minut stoją w danych sceny; wygasłe ognisko zostaje takie, jakie jest.
+w minutach palenia stoją w danych sceny; wygasłe ognisko zostaje takie, jakie jest.
 
 Na brzegach kadru leży szron (D-372), nad odcieniem, więc jego kolor nie zmienia się z passą, i pod
-plakietkami, nigdy na całym obszarze sceny. Jego grubość w pikselach obrazu sceny, liczba całkowita,
-przychodzi z TypeScriptu: 0 przy 37 °C, 8 przy 36 °C, 16 przy 35 °C i niżej, a ogrzanie przy ogniu ją
-cofa; przychodzi też wielkość jednego piksela obrazu sceny jako część szerokości i część wysokości
-kadru. CSS buduje szron z kwadratów jednego piksela obrazu sceny na jego siatce (D-271), z masek na
-czterech elementach: kolor obrysu, kolor wypełnienia i kolory kryształków to tokeny `--scene-frost-*`.
-Kształt postrzępionego brzegu: wzdłuż każdej krawędzi pas pełny o dwa piksele cieńszy od szronu, nad nim
-rząd zębów o jeden piksel głębszy, stojący na 3 z każdych 5 pikseli, i rząd zębów o dwa piksele
-głębszy, stojący na 2 z każdych 7, a na bokach okresy są inne; kryształki to pojedyncze piksele w dwóch
-kratach o różnych okresach, tylko w wypełnieniu. Obrys, jeden piksel obrazu sceny, to piksel, który
-wypełnienie, cieńsze o jeden piksel, zostawia pod wewnętrznym brzegiem każdej kolumny; przy grubości
-jednego piksela stoi więc sam obrys. Obrys odcina się od śniegu, na którym szron leży, kontrastem
-co najmniej 3:1 pod każdym odcieniem światła, także w pełnym złocie (D-271), co pilnuje test
-`tests/view/scene-frost-contrast.test.mjs`. Szron nie ma ruchu, więc pod ustawieniem ograniczenia
-ruchu nie ma czego wyłączać: każda jego zmiana pokazuje od razu swój koniec.
+plakietką nad głową, nigdy na całym obszarze sceny. Jego grubość w pikselach obrazu sceny, liczba
+całkowita, przychodzi z TypeScriptu i idzie za temperaturą ciała tak, jak mówi D-372, a ogrzanie przy
+ogniu ją cofa; przychodzi też wielkość jednego piksela obrazu sceny jako część szerokości i część
+wysokości kadru. CSS buduje szron z kwadratów jednego piksela obrazu sceny na jego siatce (D-271),
+z masek na czterech elementach: kolor obrysu, kolor wypełnienia i kolory kryształków to tokeny
+`--scene-frost-*`. Kształt postrzępionego brzegu stoi w regułach szronu w `src/browser/styles.css`:
+wzdłuż każdej krawędzi pas pełny nieco cieńszy od szronu, nad nim dwa rzędy zębów o różnych okresach,
+na bokach w innych okresach; kryształki to pojedyncze piksele w dwóch kratach o różnych okresach, tylko
+w wypełnieniu. Pełna grubość szronu stoi więc tylko na najgłębszych zębach. Obrys, jeden piksel obrazu
+sceny, to piksel, który wypełnienie, cieńsze o jeden piksel, zostawia pod wewnętrznym brzegiem każdej
+kolumny; przy pierwszym albo drugim pikselu grubości, tuż po tym, jak ciało odejdzie od 37 °C, stoi
+więc sam obrys, w jego ciemnym kolorze, a wypełnienie dochodzi z kolejnymi pikselami. Obrys odcina się
+od śniegu, na którym szron leży, kontrastem co najmniej 3:1 (D-271). Test
+`tests/view/scene-frost-contrast.test.mjs` pilnuje tokenu obrysu wobec próbek śniegu zmierzonych raz,
+pod chłodnym odcieniem, pod pełnym złotem i pomiędzy; zmiana tokenów odcienia, która zmienia śnieg pod
+szronem, wymaga nowego pomiaru. Szron nie ma ruchu, więc pod ustawieniem ograniczenia ruchu nie ma
+czego wyłączać: każda jego zmiana pokazuje od razu swój koniec.
 
 Ruch daje CSS, bez pętli rysowania: klatki maga i ognia zmieniają się w stałym
 takcie, dojście maga na miejsce trwa zawsze tyle samo, niezależnie od tempa gry,
