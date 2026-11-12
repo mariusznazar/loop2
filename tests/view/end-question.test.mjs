@@ -1,5 +1,5 @@
-// The question „Zapisać, odrzucić, wrócić?” of „Zakończ” (task pytanie-przy-zakoncz, To do 1 to 7;
-// D-173, D-172, D-171, D-168, D-122, D-283, D-284, D-212, D-44, D-323) on jsdom through
+// The question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173, D-324, D-172, D-171, D-168, D-122,
+// D-283, D-284, D-212, D-44, D-323) on jsdom through
 // tests/view/page-document.mjs (D-264). The component is drawn alone first; then the game view is
 // built as the page builds it, and „Zakończ” and what follows it are driven through the buttons the
 // player presses, the game state read back from the document the view keeps (`keep`). Real events,
@@ -279,7 +279,7 @@ test("the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapi
   });
 });
 
-// D-172 and row 3. Catches the line standing where the program holds nothing the copy lacks,
+// D-172. Catches the line standing where the program holds nothing the copy lacks,
 // standing where the copy's program is gone, naming a program other than the copy's, or missing
 // where the program holds such changes.
 test("the line of D-172 stands under the sentence only while the copy's program is on the list and holds changes the copy lacks", async () => {
@@ -336,7 +336,7 @@ test("the line of D-172 stands under the sentence only while the copy's program 
 
 // --- „Zakończ” ----------------------------------------------------------------------------------
 
-// To do 1, rows 4 and 7 of the settlements. Catches „Zakończ” ending the map run at once whatever
+// D-173, D-324. Catches „Zakończ” ending the map run at once whatever
 // the copy holds, the question missing at one moment of the map run (going on, paused, paused at a
 // discovery, after a death, after a completion), a map run that goes on while the question stands,
 // and a navigation to Postać before the answer.
@@ -388,7 +388,7 @@ test("„Zakończ” with unsaved changes asks at every moment of the map run, l
   }
 });
 
-// To do 2 and the second clause of D-173. Catches a question asked where the copy holds nothing
+// The second clause of D-173. Catches a question asked where the copy holds nothing
 // to lose, and „Zakończ” that no longer leads to Postać.
 test("„Zakończ” without unsaved changes ends the map run at once and opens Postać of its character", async () => {
   await onPage(async ({ root }) => {
@@ -414,7 +414,7 @@ const RENAMED_PROGRAM = {
   nextRuleId: 1,
 };
 
-// To do 3, rows 1 and 3 and D-172. Catches „Zapisz” that leaves the map run standing, saves into
+// D-173, D-172. Catches „Zapisz” that leaves the map run standing, saves into
 // no program or into another one, leaves the changes of the program the copy lacks in place of
 // the copy's, or does not lead to Postać; and the editor after it showing another program.
 test("„Zapisz” saves the copy into its program, replacing what the program had since, ends the map run and leads to Postać, and Programy then shows that program", async () => {
@@ -455,7 +455,7 @@ test("„Zapisz” saves the copy into its program, replacing what the program h
   });
 });
 
-// To do 3 last clause, row 2, D-171, D-168. Catches a name field opened by „Zapisz”, a name other
+// D-173, D-171, D-168. Catches a name field opened by „Zapisz”, a name other
 // than the first free one, a copy left belonging to the deleted program, the new program not the
 // one the character used last, and the editor after the end not showing the new program.
 test("„Zapisz” of a copy whose program was deleted saves it as a new program under the first free name with no name field, ends the map run, and Programy shows the new program", async () => {
@@ -521,7 +521,7 @@ test("„Zapisz” of a copy whose program was deleted saves it as a new program
   });
 });
 
-// To do 4, row 1. Catches „Odrzuć” that saves, that keeps the map run, that changes the program, or
+// D-173. Catches „Odrzuć” that saves, that keeps the map run, that changes the program, or
 // that does not lead to Postać.
 test("„Odrzuć” ends the map run with no save, the program as it was, and leads to Postać", async () => {
   await onPage(async ({ root }) => {
@@ -539,7 +539,7 @@ test("„Odrzuć” ends the map run with no save, the program as it was, and le
   });
 });
 
-// To do 5, row 5. Catches „Wróć” that leaves the map run paused, that sets going a map run that
+// D-324. Catches „Wróć” that leaves the map run paused, that sets going a map run that
 // was paused before the question, that leaves the question standing, or that drops the copy's
 // changes or the map run's minute.
 test("„Wróć” closes the question and puts the map run back as it was: one that went on goes on, one that was paused stays paused", async () => {
@@ -589,7 +589,7 @@ test("„Wróć” closes the question and puts the map run back as it was: one 
 
 // --- while the question stands ------------------------------------------------------------------
 
-// To do 6, row 6. Catches the question surviving the leaving of the screen, a map run that goes on
+// D-324, D-283, D-284. Catches the question surviving the leaving of the screen, a map run that goes on
 // on the return, and a question that comes back with the screen.
 test("leaving the screen closes the question and the map run stays paused on the return, “Zakończ” asking again", async () => {
   await onPage(async ({ root, pass, reading }) => {
@@ -611,7 +611,7 @@ test("leaving the screen closes the question and the map run stays paused on the
   });
 });
 
-// To do 6 second clause, row 6, D-212. Catches the question written into the game state or the
+// D-324, D-212. Catches the question written into the game state or the
 // save, and a reload that brings it back or that resumes the map run.
 test("the question lives in the page alone: a game built from the kept document stands with no question and the map run paused", async () => {
   await onPage(async ({ root }) => {
@@ -631,7 +631,7 @@ test("the question lives in the page alone: a game built from the kept document 
   });
 });
 
-// To do 6 third group, row 7. Catches „Wznów” of the header or of the band that leaves the question
+// D-324. Catches „Wznów” of the header or of the band that leaves the question
 // over a map run that goes on, „Restart” that keeps it over the restarted map run, and the pace
 // buttons and a second „Zakończ” that close it or stack a second one.
 test("„Wznów” of the header and of the band and „Restart” close the question and do their own act; the pace buttons and a second „Zakończ” leave it", async () => {
@@ -683,7 +683,7 @@ test("„Wznów” of the header and of the band and „Restart” close the que
 /** The program panel of the screen of a map run. */
 const panelOf = (root) => byClass(runScreenOf(root), "program-panel")[0];
 
-// To do 6 last group, row 7, D-173 read as the task gives. Catches the panel's buttons inactive
+// D-324 with D-173. Catches the panel's buttons inactive
 // while the question stands, a question left standing over a copy that holds nothing to save, a
 // map run that goes on when the question goes, and a „Zakończ” that still asks afterwards.
 test("the buttons of the panel work while the question stands, and it goes when the copy holds no unsaved changes, leaving the map run paused", async () => {
@@ -758,7 +758,7 @@ async function renameGroupTo(root, text) {
   await inAct(() => input.blur());
 }
 
-// To do 6 third bullet of the last group, row 7. Catches the question dropped by an edit after which
+// D-324. Catches the question dropped by an edit after which
 // the copy still differs from its program, and one kept by an edit after which it does not.
 test("an edit of the copy leaves the question unless the copy then equals its program, when the question goes like after a save", async () => {
   await onPage(async ({ root }) => {
@@ -798,7 +798,7 @@ function placeOf(root) {
   return { area: classes(area), panel: classes(panel), panelElement: panel };
 }
 
-// Row 4 and row 8, D-122, D-173. Catches the question standing above the band of a discovery, above
+// D-173, D-122. Catches the question standing above the band of a discovery, above
 // the list „Program:” and „Nowy program” (the program panel's first controls, which stay where
 // they were), under the heading of the copy, or not under the band after a completion in the minute
 // of a discovery, where no band stands at the end (D-122): the question stands in the panel, just above
@@ -846,7 +846,7 @@ test("the question stands under the band of a discovery and directly above the h
   });
 });
 
-// Row 7 with row 4. Catches the question tied to the copy being shown: a player who picks another
+// D-324 with D-173. Catches the question tied to the copy being shown: a player who picks another
 // program on the list „Program:” while it stands must still see it (the map run waits for the
 // answer), standing in the same place, and it must not move into the panel of Programy.
 test("the question stays in its place while the panel shows another program, and never stands on Programy", async () => {

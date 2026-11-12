@@ -1,9 +1,9 @@
-// The screen Mapy (task karty-i-katalog-map, To do 3 to 7; D-325 to D-331, D-134, D-149, D-170,
-// D-188, D-217, D-243, D-244, D-251, D-274, D-282, D-287, D-326) on jsdom through
-// tests/view/page-document.mjs (D-264): the list of open maps, the area on the right with no map
-// named and with one, the card of a map from the data, the section „Kto idzie” with each character's
-// lines and buttons, and what the buttons hand the page. Real focus order and rendering are the
-// browser check's (D-88), so a focus case here holds only what jsdom shows.
+// The screen Mapy (D-325 to D-331, D-134, D-149, D-170, D-188, D-217, D-243, D-244, D-251, D-274,
+// D-282, D-287, D-326) on jsdom through tests/view/page-document.mjs (D-264): the list of open
+// maps, the area on the right with no map named and with one, the card of a map from the data, the
+// section „Kto idzie” with each character's lines and buttons, and what the buttons hand the page.
+// Real focus order and rendering are the browser check's (D-88), so a focus case here holds only
+// what jsdom shows.
 import { assert, inAct, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -227,7 +227,7 @@ test("a map named whose opener is unsolved draws no card", async () => {
 
 // --- the card ------------------------------------------------------------------------------
 
-// D-327: the card of Las as To do 4 gives it, an unsolved Las with neither „Czyha” nor „Odbiera”.
+// D-327: the card of Las, an unsolved Las with neither „Czyha” nor „Odbiera”.
 test("the card of Las holds its heading, what it asks, its terrain and what lies there, and no part Las lacks", async () => {
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
@@ -280,7 +280,7 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
     const understanding = JSON.stringify(state.understanding);
     const { screen } = await mount(page, propsOf(state, "forest"));
     assert.equal(text(page.root, ".maps-card-solved"), "rozwiązana");
-    // The marks follow the name joined by „ · ”, as To do 4 gives it and as the old Loop joins them.
+    // The marks follow the name joined by „ · ” (D-327), as the old Loop joins them.
     assert.equal(text(page.root, ".maps-card-heading"), "Las · rozwiązana");
     await inAct(() => screen.update(propsOf(state, "forestDeep")));
     assert.equal(text(page.root, ".maps-card-name"), "Las — głębiej");
@@ -405,7 +405,7 @@ test("a team with no character reads the sentence under the heading of „Kto id
 });
 
 // D-54, D-329, D-217, D-170: the characters stand in the order of their creation, and each one's
-// lines stand from the top in the order the task gives.
+// lines stand from the top in the order D-329 gives.
 test("the characters stand in the order of their creation, each with its lines from the top", async () => {
   await withPage(async (page) => {
     const state = solved(

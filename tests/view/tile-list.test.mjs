@@ -1,4 +1,4 @@
-// The list of revealed tiles beside the terrain drawing (spec section 5, choices C4 and C5).
+// The list of revealed tiles beside the terrain drawing (D-19).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -122,11 +122,11 @@ test("a fresh map run lists nothing; exploring the entrance lists that tile with
   );
 });
 
-// The campfire and a burning stick in the row of their tile (task, To do 15; spec Decision 5;
-// D-70). The program below, on a backpack of 9 sticks, explores the entrance (20 minutes, to
-// minute 20), crafts a campfire there (20 minutes and 6 sticks, to minute 40), lights it (5
-// minutes and 2 sticks, to minute 45; it burns 60 minutes, to minute 105) and lights a stick (5
-// minutes and the last stick, to minute 50; it burns 3 minutes, to minute 53).
+// The campfire and a burning stick in the row of their tile (D-70, D-72). The program below, on a
+// backpack of 9 sticks, explores the entrance (20 minutes, to minute 20), crafts a campfire there
+// (20 minutes and 6 sticks, to minute 40), lights it (5 minutes and 2 sticks, to minute 45; it
+// burns 60 minutes, to minute 105) and lights a stick (5 minutes and the last stick, to minute 50;
+// it burns 3 minutes, to minute 53).
 const FIRE_PROGRAM = [
   { condition: ALWAYS, action: { kind: "craftCampfire" } },
   { condition: ALWAYS, action: { kind: "lightCampfire" } },
