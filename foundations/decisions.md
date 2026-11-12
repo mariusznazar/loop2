@@ -8179,15 +8179,20 @@ for the chronicle and the chronicle adds nothing to a save, which is not sent ab
 while the facts of the last encounter that the save already holds let its paragraph stand after a
 load as D-147 gives. Accepted with it: one more way through the code, with its test, and after a
 load a chronicle holding the encounter alone, without the entries that came before it. The choice
-rests on two things nobody measured, each a hypothesis: the estimate of the chronicle's size, and
-that a reload in the middle of a map run is rare.
+rests on two hypotheses: the estimate of the chronicle's size, which a measurement under narrower
+conditions (given in D-347) puts at fewer entries, and that a reload in the middle of a map run is
+rare, which nobody measured.
 *Rejected:* the chronicle in the memory of the page and empty after a load — after a reload the
 player cannot go back to why the streak fell, and the paragraph of the last encounter would stand
 nowhere after a load, against D-147; the chronicle in the save, coming back whole after a load —
 the version of the save rises, so saved game states with the player's programs are discarded
-(D-206), the size of the chronicle was never measured, estimated at 50 to 60 bytes an entry and
-several hundred entries in a long map run, and a save above 64 KiB is not sent (D-207), so the game
-would stop saving; with it, a limit of entries at which the oldest go would leave the chronicle
+(D-206), the size of the chronicle was estimated when this was decided at 50 to 60 bytes an entry
+and several hundred entries in a long map run, and a save above 64 KiB is not sent (D-207), so by
+that estimate the game would stop saving; a measurement made earlier, on 30 seeds of one character
+in Las with a ready program of 17 rules and without the player's changes and the losses of the
+streak, gave at most 102 entries and 13.4 KB of raw JSON in a map run beside a save of about 9.5 KB,
+which fits the limit for one map run, while the game already accepts that with several earning
+loops a save can stand at it (D-208); with it, a limit of entries at which the oldest go would leave the chronicle
 without part of what happened in the map run, against D-338, and raising the server's limit
 changes D-104 and D-207 and is work in the account and save server.
 
@@ -8433,12 +8438,21 @@ console. What the server of the game writes and how the owner learns of a failur
 D-355 and D-356. Lacks of the option chosen: the screen shows only the present, and at 16× the game
 changes the activity nearly twice a second, so what has passed is lost unless the agent stops the
 game; a reading of the page as text does not see the scene, which is read from a picture; an earning
-loop has no chronicle; an agent learns of a fault in the owner's own game only from the owner, since
-in the owner's browser it knows only what the owner passes on; the sentence says that something
+loop has no chronicle; what the owner sees on the screen and in the chronicle of the owner's own
+game reaches an agent only through the owner, since in the owner's browser it knows only what the
+owner passes on, while the kind, the code and the place of an error that no code handled reach the
+log of the game's server by D-356, which an agent reads by D-355; the sentence says that something
 broke, not where, which the line in the console gives; the console is read only in an open tab of
 the agent's own browser, and a person playing does not look there, so the agent knows there
 something other than the player; the chronicle covers a manual map run only and no failure of the
-code; and a state loaded from a save holds a chronicle only if the chronicle enters the save. Risks
+code; and a state loaded from a save holds a chronicle only if the chronicle enters the save. The
+size of the chronicle was measured when this was weighed, on 30 seeds of one character in Las with
+a ready program of 17 rules: a map run gave a median of 48 entries of the kinds the chronicle holds
+and 102 at most, as raw JSON 8.0 KB on average and 13.4 KB at most, beside a save of about 9.5 KB;
+the count leaves out the player's changes and the losses of the streak, which the game's events did
+not then carry, so a real map run holds more entries. The chronicle of one map run fits the limit
+of 64 KiB (D-207), while the game already accepts that with several earning loops a save can stand
+at that limit (D-208). Risks
 taken, each a hypothesis: the sentence may show with no fault or blink; logs of the console kept on
 disk may hold a real password-reset token; an agent may learn to ignore a console in which the
 browser writes ordinary refusals; a tab left overnight may slow down under a growing chronicle.
@@ -8837,7 +8851,7 @@ The rule panel shows beside an action what it costs, read from the game's data, 
   - violates: a price in the row of a program rule; „(6 × patyk)” in the panel; a price with a name in the singular after a count of 6; „Zapal — ognisko (2 patyki, 10 energii natury)” shown to the character with „Czysty płomień” during a map run
 - **Origin:** none
 
-*Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. When this was decided an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule keeps the narrow column of the program, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the scope of the project fixed, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, from whose solutions the game departs only for the better; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
+*Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. When this was decided an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule keeps the narrow column of the program, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop; whether that is a departure for the worse was put to the owner beside the rule that the game departs from the old loop's solutions only where the result is better, never worse, and he took this way; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
 *Rejected:* the price in the row of a rule as well, hidden where the reason says what is missing, as in the old loop — a longer row, which in the narrow column of the program more often wraps to two lines; the price with a „×” sign, „(6 × patyk)”, as the reason at a rule is written — it needs no new data, but it departs from the example „Wytwórz — ognisko (6 patyków)” and reads as a list, not as a sentence; the price always from the data, „(2 patyki, 10 energii natury)” on every screen — one price and simpler code, but the panel would name sticks that lighting will not take from a character with „Czysty płomień”
 
 ### D-364 — How does the mage show a gathering?
