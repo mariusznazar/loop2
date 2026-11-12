@@ -396,9 +396,9 @@ test("a database that cannot be opened and a temporary directory that cannot be 
   assert.doesNotMatch(result.stderr, /no[\\/]such|accounts\.sqlite/);
 });
 
-// To do 6, cause 4. Faults: the failure's reason left out, so the owner reads
+// D-233, D-252. Faults: the failure's reason left out, so the owner reads
 // only that the night's copy failed; SQLite's message or the path in standard
-// error, which the backup script appends to its log (D-233).
+// error, which the backup script appends to its log.
 test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {
   const box = await sandbox(t);
   const garbage = join(box.directory, "garbage-secret-name.sqlite");
@@ -445,7 +445,7 @@ function runBackupWithStandin(box, mode) {
   });
 }
 
-// To do 5, loop2#046-6, Settlement 3 (D-354), D-233. Faults: the removal's
+// D-354, D-233. Faults: the removal's
 // failure written as backup-database, so the operator reads "No backup was
 // made" after a backup that went out whole.
 test("a whole backup whose temporary directory cannot be removed is one failure of its own, with its cause and one sentence, and exits 1", async (t) => {
@@ -491,7 +491,7 @@ test("a whole backup whose temporary directory cannot be removed is one failure 
   );
 });
 
-// To do 8, cause 7, D-253. Faults: no handler, so the default print writes the
+// D-253. Faults: no handler, so the default print writes the
 // message and the stack; a line on standard output, which carries the backup.
 test("what no code of the command handled ends it with one line of its kind, code and place on standard error", async (t) => {
   const box = await sandbox(t);

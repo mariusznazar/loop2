@@ -118,7 +118,7 @@ test("exits with an error instead of reporting ready when its listening port is 
     const result = spawnSync(process.execPath, [entryPoint], {
       encoding: "utf8",
       // A bound on the wait, not a speed claim: a loaded computer may take
-      // longer than 5 s to start the process (loop2#050-21).
+      // longer than 5 s to start the process.
       timeout: 20000,
       env: {
         ...cleanEnvironment(),
@@ -200,7 +200,7 @@ for (const value of ["0", "65536", "abc", "3000x", ""]) {
       `stderr must name the value: ${result.stderr}`,
     );
     assert.doesNotMatch(result.stdout, /Loop: http:/);
-    // To do 3, D-252: a start that fails is a failure the server handled, so
+    // D-252: a start that fails is a failure the server handled, so
     // it goes the one way of writing, as one JSON object on one line.
     const lines = result.stderr.split(/\r?\n/).filter((line) => line !== "");
     assert.equal(lines.length, 1, result.stderr);
@@ -320,7 +320,7 @@ test(
   async (t) => {
     // invariant: account-startup-configuration
     // Fault: an invalid mail setting is accepted or echoed, so a typo reaches
-    // Outsider or a value lands in the log. D-111, spec Decision 7.
+    // Outsider or a value lands in the log. D-111.
     const f = await configurationFixture(t);
     const cases = [
       ["LOOP2_MAIL_FROM", "no-at-sign.example.test"],
@@ -565,7 +565,7 @@ test(
   "a start that fails names the setting and the original error's kind and code, so that two causes of one setting read apart",
   { timeout: 20000 },
   async (t) => {
-    // To do 4, cause 2. Faults: every failure of the database reading as one
+    // D-111, D-252. Faults: every failure of the database reading as one
     // bad path, which sends the owner to look for a wrong setting; a value of
     // the setting or of a secret file in the line.
     const f = await configurationFixture(t);
@@ -614,7 +614,7 @@ for (const [mode, origin] of [
     `${origin} no code of the server handled ends it with one line of its kind, code and place`,
     { timeout: 20000 },
     async (t) => {
-      // To do 8, cause 7, D-253. Faults: no handler, so the default print
+      // D-253. Faults: no handler, so the default print
       // writes the message and the stack; a handler that keeps the process.
       const f = await configurationFixture(t);
       const standin = new URL(

@@ -693,9 +693,8 @@ test(
   },
 );
 
-// Credential transitions. The required messages come from the task's To do 2, 4
-// and 10 (D-100, D-102); the limits and windows from D-102 and the orchestrator's
-// answer 5 (reports/02-designer-answers.md).
+// Credential transitions. The required messages come from D-100 and D-102; the
+// limits and windows from D-102.
 const password = "  Correct horse 🙂 battery  ";
 const duplicateMessage = "Konto z tym adresem już istnieje.";
 const loginMessage = "Nieprawidłowy adres e-mail lub hasło.";
@@ -1501,8 +1500,8 @@ test(
   },
 );
 
-// Clearing an address's attempts after a password reset (D-102, task
-// reset-hasla). These cases drive the policy with an explicit clock.
+// Clearing an address's attempts after a password reset (D-102). These cases
+// drive the policy with an explicit clock.
 function clockedPolicy(options = {}) {
   const clock = { time: 1_000_000 };
   return {
@@ -1727,8 +1726,7 @@ test("clearing an unknown address changes nothing and a clear frees a locked pla
   );
 });
 
-// Blocking by the owner (task blokada-konta, To do 3 and 4). The message is the
-// one the owner settled (task, question 4; Mariusz, 2026-10-28).
+// Blocking by the owner (D-137). The message is the one D-139 gives.
 const blockedMessage = "To konto jest zablokowane.";
 
 test(
@@ -2089,9 +2087,8 @@ test(
   },
 );
 
-// Email confirmation (task potwierdzenie-adresu). The routes, bodies and the
-// one refusal of a link come from spec Decision 4 and D-156; the link's form
-// from spec Decision 2; its 24 hours from D-155; the limits from D-105.
+// Email confirmation. The routes, bodies, the one refusal of a link and the
+// link's form come from D-156; its 24 hours from D-155; the limits from D-105.
 const invalidLink = {
   code: "invalid-link",
   error: "Odnośnik jest nieważny albo wygasł.",
@@ -2682,7 +2679,7 @@ test(
   },
 );
 
-// The request for a password-reset link (task reset-hasla, spec decisions 1 to 3).
+// The request for a password-reset link (D-222).
 const resetMessagePath = "/api/password-reset-message";
 const hour = 60 * minute;
 const invalidEmail = {
@@ -2726,7 +2723,7 @@ function resetLinks(f, accountId) {
 
 // Work that follows an answer ends after it, and immediates run in order: a
 // request for a confirmed control address, once its message is handed on,
-// shows that the work of every earlier request has ended (spec decision 2).
+// shows that the work of every earlier request has ended (D-222).
 let controlCount = 0;
 async function afterEarlierWork(f) {
   controlCount += 1;
@@ -3195,8 +3192,7 @@ test(
   },
 );
 
-// Setting a password by a reset link (task reset-hasla, spec decisions 1, 4, 5,
-// 8 and 9).
+// Setting a password by a reset link (D-226).
 const resetPath = "/api/password-reset";
 const oldPassword = "the password before the reset";
 const newPassword = "  A new password 🙂 set by a link  ";
@@ -3796,7 +3792,7 @@ test(
   },
 );
 
-// The saved game state routes (task zapis-stanu-na-serwerze, spec decision 1).
+// The saved game state routes (D-204, D-209, D-210).
 // The server reads nothing inside `game`, so the games below are plain objects.
 const savedGamePath = "/api/saved-game";
 
@@ -4027,7 +4023,7 @@ test(
   "the save routes answer null with no save, count revisions from 1, refuse an outdated version before a stale basis and return the game unchanged",
   { timeout: 20000 },
   async (t) => {
-    // Spec decision 1; D-209 (revision basis), D-210 (version).
+    // D-209 (revision basis), D-210 (version).
     // Faults: the revision check before the version check; a revision that does
     // not advance by one; a game that comes back changed.
     const f = await accountFixture(t);
@@ -4100,7 +4096,8 @@ test(
   "each malformed save body is a 400 that stores nothing, and a body that is not an object never reaches the fields",
   { timeout: 20000 },
   async (t) => {
-    // Spec decision 1 (exact fields and types); trust boundary of the slice.
+    // D-104 (expected fields with explicit type checks, no coercion); trust
+    // boundary of the save route.
     // Faults: coercing a string to a number; accepting an extra field, a
     // missing basis, a fraction, an unsafe integer or a game that is not an
     // object.
@@ -4176,7 +4173,8 @@ test(
   "the stored text of a game is measured in bytes after re-serializing, at most 65 536, and a larger one is a 413 that stores nothing",
   { timeout: 20000 },
   async (t) => {
-    // Spec decision 3: the body limit alone does not bound the stored text.
+    // D-104: the server stores at most 64 KiB of each saved game state, which
+    // the body limit alone does not bound.
     // Faults: measuring the request's text, or characters, not the stored
     // bytes; a limit off by one.
     const f = await accountFixture(t);
@@ -4269,10 +4267,9 @@ test(
   "each business event of the server leaves one line with the account's number, and no line holds an address, a secret or a request's content",
   { timeout: 30000 },
   async (t) => {
-    // D-252, the events of the guidelines' list, kept from the task's question
-    // 11 and its acceptance criterion. Faults: an event with no line or two; a
-    // sign-in after a registration with none; a line under another account; an
-    // address, token, password or client address in a line.
+    // D-252, the events of the guidelines' list. Faults: an event with no line
+    // or two; a sign-in after a registration with none; a line under another
+    // account; an address, token, password or client address in a line.
     const f = await accountFixture(t);
     const logged = captureLog(t);
     const email = "events@example.test";
@@ -4409,7 +4406,7 @@ test(
   "every failure the server handles leaves a line of its kind, code and place, with the account's number, and no text of the error or the request",
   { timeout: 30000 },
   async (t) => {
-    // To do 3, cause 1. The trust boundary too: the request of the first case
+    // D-252. The trust boundary too: the request of the first case
     // is crafted to end a line and start another, which JSON keeps in its
     // field. Faults: a failure with no line, as each of these had; a line
     // without its cause; the error's message, which SQLite takes from the
@@ -4541,7 +4538,7 @@ test(
   "a route's deadline on a mailer that never answers writes the deadline as its reason",
   { timeout: 20000 },
   async (t) => {
-    // To do 5, cause 3: a failure with no error of the library names its reason.
+    // D-252: a failure with no error of the library names its reason.
     const f = await accountFixture(t, { sendingDeadline: 100 });
     const logged = captureLog(t);
     f.mailer.outcome = "never";
