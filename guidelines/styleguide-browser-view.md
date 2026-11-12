@@ -609,15 +609,15 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-42 · D-43
+- **Decision:** D-148 · D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-42 · D-43
 - **Invariant:** none
-- **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
-- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili.
+- **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi; wilk w walce stoi obok maga, a między nimi leży mały obłok kurzu.
+- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili; obłok szamotaniny, który zakrywa maga i wilka, albo błysk w nim; martwy wilk leżący w scenie do następnej napaści; bieg wilka dłuższy niż 300 ms.
 
-Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem i magiem. Stoi
+Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, wilkiem. Stoi
 w `src/browser/view/scene.tsx` i `src/browser/view/scene-picture.ts`, a jej
-ruch i szarości w `src/browser/styles.css`; nazwy plików obrazków postaci
-i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
+ruch i szarości w `src/browser/styles.css`; nazwy plików obrazków postaci,
+stworzeń i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
 widoku (D-316).
 Scena jest obrazem: nie ma na niej tekstu ani przycisku, kod nie daje jej
 reakcji na kliknięcie, a cały jej obszar nie błyska (D-272, D-321, D-317).
@@ -635,8 +635,8 @@ po śmierci i po rozwiązaniu mapy (D-320, D-322).
 lasem, rekwizytami, ogniskiem płonącym i wygasłym, magiem, wilkiem, kurzem i lecącą ikoną na jej
 plakietce — i pod szronem, plakietkami odkrycia i plakietką nad głową maga, które zostają na własnych kolorach (D-320, D-322).
 Plakietka lecącej ikony (D-365) leży więc pod odcieniem i przyjmuje jego barwę, a ikona na niej zostaje
-jasna na ciemnej plakietce. Elementy leżą w tej kolejności od dołu: las, rekwizyty, ognisko, kurz, mag,
-lot ikony, odcień, chłodna warstwa po śmierci z zimna, szron, drobinki światła po rozwiązaniu,
+jasna na ciemnej plakietce. Elementy leżą w tej kolejności od dołu: las, rekwizyty, ognisko, kurz, wilk, mag,
+obłok szamotaniny, lot ikony, odcień, chłodna warstwa po śmierci z zimna, szron, drobinki światła po rozwiązaniu,
 plakietki odkrycia, plakietka nad głową. Plakietka nad głową nie siedzi więc w elemencie maga,
 który leży pod odcieniem: jej nośnik to osobny element o tym samym polu i tym samym chodzie co mag.
 Warstwa miesza się ze sceną trybem `mix-blend-mode: color`, więc przenosi na scenę barwę i nasycenie,
@@ -701,12 +701,37 @@ w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zacz
 mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
 a nowy zajmuje jego miejsce (D-367).
 
-W pauzie gracza cały ruch sceny, także ogień, mag, lot ikony, kurz i powrót odcienia, stoi (D-322);
+Wilk (D-316, D-148, D-271) stoi w scenie przez minuty starcia, obok maga, tuż za jego sylwetką,
+z odstępem z danych sceny: po prawej, a gdy mag stoi przy prawym brzegu i prawa strona wyszłaby poza
+kadr, po lewej, odbity. Mag obraca się ku niemu i zostaje tak zwrócony po starciu. Wilk leży pod magiem,
+a obłok szamotaniny nad nim, w tej samej kolejności warstw co wyżej. Jego arkusze — stanie, bieg, gryzienie
+i śmierć — to klatki 64 × 32 z paczki LPC Wolf, przeniesione bez zmiany pikseli, z łapami w dolnym rzędzie
+każdej klatki, więc bieg, gryzienie i śmierć nie podskakują przy zmianie animacji; patrzą w lewo,
+a po lewej stronie maga i przy odbiegnięciu za prawy brzeg odbija je CSS, jak maga. Kłąb szamotaniny to ten
+sam plik kurzu co chybienie, osiem klatek w pętli w takcie klatek sceny, między wilkiem a magiem; jest mały,
+nie zakrywa żadnego z nich i nie błyska. Plik wilka i miejsce kłębu stoją w danych sceny, a czasy w regułach
+sceny w `src/browser/styles.css`; kod widoku nie nazywa żadnego pliku wilka.
+
+Bieg wilka z prawego brzegu kadru na jego miejsce to efekt zwykłego zdarzenia (D-317): trwa 300 ms przy
+każdym tempie, pięć klatek biegu raz, i scena zaczyna go w odczycie, którego zdarzenia niosą napaść, tylko
+tam, gdzie scena idzie; po wczytaniu, po powrocie na ekran i przy zatrzymaniu, także przy zatrzymaniu na
+odkryciu przy pierwszej napaści (D-322), wilk stoi od razu obok maga, a szamotanina rusza po „Wznów”.
+Szamotanina trwa tyle co starcie i efektem nie jest. Wynik starcia to efekt zwykłego zdarzenia w odczycie,
+który niesie koniec starcia: pokonany wilk pada w czterech klatkach śmierci i leży, aż efekt się skończy,
+a potem go nie ma; wilk, który odchodzi, odbiega w pięciu klatkach biegu za prawy brzeg kadru; po śmierci
+maga w walce wilk stoi nieruchomo obok niego w klatce stania, a po rozwiązaniu mapy w trakcie starcia stoi
+nieruchomo tam, gdzie stał. Zaległy efekt przepada i wilka po prostu nie ma. Bieg wilka, szamotanina i jej
+wynik nie rozjaśniają ani nie przyciemniają całego obszaru sceny (D-317, D-42): zmienia się najwyżej klatka
+wilka i kłąb kurzu, część kadru dużo mniejsza od progu błysku.
+
+W pauzie gracza cały ruch sceny, także ogień, mag, wilk, kłąb szamotaniny, lot ikony, kurz i powrót odcienia, stoi (D-322);
 przy odkryciu, śmierci i ukończeniu stoi cały ruch poza efektem tej chwili (niżej). Pod systemowym ustawieniem ograniczenia ruchu
 klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
 (D-317, D-319, D-320); mag, który zbiera, stoi w jednej klatce schylenia, a ikona i kurz
 pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają
-(D-317).
+(D-317); wilk staje od razu obok maga w pierwszej klatce gryzienia, kłąb stoi w pierwszej klatce,
+a wynik starcia to nieruchomy obraz na miejscu wilka, najwyżej na 300 ms: leżący wilk albo wilk w pierwszej
+klatce biegu.
 
 Trzy chwile, gdy czas stoi — odkrycie, śmierć i rozwiązanie mapy — mają w scenie każda swój efekt (D-322).
 Efekt gra raz, w odczycie, który niesie tę chwilę, i nie ma limitu 300 ms zwykłego efektu; potem scena
