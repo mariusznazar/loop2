@@ -37,8 +37,8 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // the document of version 1 keeps its characters and its map run without them.
 //
 // The document of version 3 is that of version 2 with the four keys of the earning loops added and
-// a third character for them (D-206; spec sections 1, 9, 11 and
-// 13); the game refuses it as another version since version 4.
+// a third character for them (D-206, D-241, D-245, D-246 and D-248); the game refuses it as
+// another version since version 4.
 //
 // The document of the current version, version 4, is that of version 3 with the three fields of the
 // record of a manual map run added to its map run: the longest streak, the game minutes by what the
@@ -716,7 +716,7 @@ test("the current version is the one the document of the current version is writ
   assert.equal(SAVED_GAME_VERSION, DOCUMENT.version);
 });
 
-// The `save` the server hands back: exactly `version`, `revision` and `game` (spec, decision 1).
+// The `save` the server hands back: exactly `version`, `revision` and `game` (D-204).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
   const save = {
     version: 4,
@@ -794,14 +794,14 @@ test("a map run that goes on comes back paused, at its game minute, pace and car
 });
 
 test("a map run that ended comes back as it ended", () => {
-  // Each kind of settlement of decision 5; Ala's generation is 2 in the document.
+  // Each kind of settlement of a death (D-190, D-216); Ala's generation is 2 in the document.
   const died = changed((document) => dead(document));
   assert.deepEqual(loadSavedGame(died), { ok: true, state: died.game });
   const lost = changed((document) =>
     dead(document, { kind: "progressLost", generation: 2 }),
   );
   assert.deepEqual(loadSavedGame(lost), { ok: true, state: lost.game });
-  // Decision 5: the number of that death stays, however far the character has gone on since.
+  // D-216: the number of that death stays, however far the character has gone on since.
   const earlier = changed((document) => {
     dead(document, { kind: "progressLost", generation: 2 });
     document.game.team.characters[0].generation = 5;
@@ -1058,7 +1058,8 @@ const CRAFTED = {
   "a key added to the map run": (document) => (document.game.run.speed = 2),
   "a key added to a character": (document) =>
     (document.game.team.characters[0].level = 9),
-  // Decision 9: the generation is an identity from 1 up, the moment a safe integer of any sign.
+  // The generation is an identity from 1 up (D-190, D-220), the moment a safe integer of any sign
+  // (D-384).
   "a character without its generation": (document) =>
     delete document.game.team.characters[0].generation,
   "a character without its moment of readiness": (document) =>
@@ -1333,7 +1334,7 @@ const CRAFTED = {
     document.game.run.completion = { minute: 212 };
     document.game.run.deposited = [{ item: "berry", count: 0 }];
   },
-  // The mark of the map run and the solved maps (decision 9; D-55, D-189).
+  // The mark of the map run and the solved maps (D-55, D-189).
   "the map run without its mark": (document) =>
     delete document.game.run.solvedMapRun,
   "a mark as text": (document) => (document.game.run.solvedMapRun = "false"),
@@ -1368,7 +1369,7 @@ const CRAFTED = {
     document.game.run.solvedMapRun = true;
     document.game.run.completion = { minute: 212 };
   },
-  // The settlement of a death (decision 9): null exactly when the map run has no death, a closed
+  // The settlement of a death (D-221, D-190): null exactly when the map run has no death, a closed
   // list of kinds, each with exactly its keys, and a generation from 2 up to the current one of the
   // map run's character. Ala's is 2 in the document.
   "the map run without its death settlement": (document) =>
@@ -1663,7 +1664,7 @@ const CRAFTED = {
     document.game.run.tiles.push(tile(0, 5, -2, false, {})),
   "the tiles of Las on Las — głębiej": (document) =>
     (document.game.run.tiles = document.game.run.tiles.slice(0, 16)),
-  // Spec section 13, the save time: a safe integer of any sign, so a document unstamped is refused.
+  // The save time (D-248, D-384): a safe integer of any sign, so a document unstamped is refused.
   "the game without its save time": (document) =>
     delete document.game.saveTimeMs,
   "a save time of none": (document) => (document.game.saveTimeMs = null),
@@ -1676,7 +1677,7 @@ const CRAFTED = {
     (document.game.saveTimeMs = 2 ** 53),
   "a save time below the safe integers": (document) =>
     (document.game.saveTimeMs = -(2 ** 53)),
-  // Spec section 13, the earning loops: a key in canonical form naming a character of the team.
+  // The earning loops (D-241): a key in canonical form naming a character of the team.
   "the game without its earning loops": (document) =>
     delete document.game.loops,
   "earning loops of none": (document) => (document.game.loops = null),
@@ -1812,7 +1813,7 @@ const CRAFTED = {
     (olaLoop(document).practice.exploration = 2.5),
   "an earning loop's practice by the key __proto__": (document) =>
     (olaLoop(document).practice = JSON.parse('{"__proto__":1}')),
-  // Spec section 13, the stopped loops: a character of the team, with no earning loop and not the
+  // The stopped loops (D-245, D-241): a character of the team, with no earning loop and not the
   // character of the manual map run; a value by `practice`.
   "the game without its stopped loops": (document) =>
     delete document.game.stoppedLoops,
@@ -1840,7 +1841,7 @@ const CRAFTED = {
     (document.game.stoppedLoops[3].kicking = 0),
   "a stopped loop's practice fractional": (document) =>
     (document.game.stoppedLoops[3].exploration = 2.5),
-  // Spec section 13, the report: a list of lines with exactly their keys.
+  // The report (D-246): a list of lines with exactly their keys.
   "the game without its report": (document) => delete document.game.awayReport,
   "a report of none": (document) => (document.game.awayReport = null),
   "a report that is no list": (document) => (document.game.awayReport = {}),
@@ -2255,14 +2256,14 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
     );
 });
 
-// Spec section 13. Catches a condition set one step too strict, each edge being a value the game
+// D-384. Catches a condition set one step too strict, each edge being a value the game
 // writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
 // the open game with no minutes, a second loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   const edges = {
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
-    // Spec section 13, as settled at the review of the slice: a safe integer of any sign, as
-    // `resurrectionReadyAtMs` is read, so the case left the crafted documents.
+    // D-384: a safe integer of any sign, as `resurrectionReadyAtMs` is read, so the case is no
+    // crafted document.
     "a save time below 0": (document) => (document.game.saveTimeMs = -1),
     "an earning loop in its first map run, nothing gathered": (document) => {
       olaLoop(document).runNumber = 1;
@@ -2316,8 +2317,8 @@ test("the load shares none of the earning loops, the stopped loops or the report
   assert.deepEqual(state, DOCUMENT.game);
 });
 
-// Spec section 1: no function fills the four keys yet but `withSaveTime`, and a game from no save
-// holds no save time.
+// D-241, D-246, D-248: a game from no save holds no earning loop, no stopped loop, no report and no
+// save time.
 test("a new game holds no earning loop, no stopped loop, no report and no save time", () => {
   const state = newGame();
   assert.deepEqual(state.loops, {});
@@ -2326,7 +2327,7 @@ test("a new game holds no earning loop, no stopped loop, no report and no save t
   assert.equal(state.saveTimeMs, null);
 });
 
-// Spec section 9: stamped only on the way to the document, so the state passed stays what it was.
+// D-248: stamped only on the way to the document, so the state passed stays what it was.
 test("a state with its save time is a copy holding the moment, the state passed left as it was", () => {
   const state = deepFreeze(newGame());
   const stamped = withSaveTime(state, 1760000000123);
@@ -2337,7 +2338,7 @@ test("a state with its save time is a copy holding the moment, the state passed 
   assert.equal(withSaveTime(stamped, 0).saveTimeMs, 0);
 });
 
-// Spec section 9: as in `settleDeath`, so a broken clock never reaches a document.
+// D-384: as in `settleDeath`, so a broken clock never reaches a document.
 test("a moment that is no safe integer gives no save time", () => {
   for (const moment of [NaN, Infinity, 1.5, 2 ** 53, "1760000000000", null]) {
     assert.throws(
@@ -2348,7 +2349,7 @@ test("a moment that is no safe integer gives no save time", () => {
   }
 });
 
-// Spec section 13; D-07, D-248. Catches a save the game writes and then refuses: a device clock set
+// D-384; D-07, D-248. Catches a save the game writes and then refuses: a device clock set
 // before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
   const state = newGame();
@@ -2363,7 +2364,7 @@ test("a state stamped by a clock set before 1970 loads back from its saved docum
   }
 });
 
-// Spec section 13: `savedGame` takes no real time, so a state never stamped does not load.
+// D-248: the save time is stamped on the way to the document, so a state never stamped does not load.
 test("the saved document of a state never stamped is refused as shape", () => {
   assertRefused("a new game unstamped", savedGame(newGame()), "shape");
 });

@@ -1,9 +1,8 @@
 // The life of an earning loop in the simulation: it starts, passes game minutes, takes each end of
 // a map run at once and stops. The expectations come from D-22 (the seed), D-179 (the trip plan),
 // D-183 and D-245 (stopping), D-190 (death), D-200 (a rank bought), D-241 (what the game state
-// holds of a loop), D-243 (the start) and D-249 (what a loop's map run discovers), and from the spec
-// (sections 1, 3, 4, 5 and 15). Where an expectation is a relation (a loop's map run equals the
-// manual one) no value comes from today's run.
+// holds of a loop), D-243 (the start) and D-249 (what a loop's map run discovers). Where an
+// expectation is a relation (a loop's map run equals the manual one) no value comes from today's run.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -428,8 +427,8 @@ test("a loop's map run through a death and its next map run still leaves the Und
   assert.deepEqual(state.programs, before.programs);
 });
 
-// Spec 3: the repertoire is computed on each call that passes minutes, so what a manual
-// map run discovers meanwhile widens a loop's repertoire (D-119, D-249).
+// D-249, D-119: the repertoire is computed on each call that passes minutes, so what a manual
+// map run discovers meanwhile widens a loop's repertoire.
 test("an action a manual map run discovers meanwhile enters the loop's next pick, and not before", () => {
   let state = setProgram(
     newGame(),
@@ -514,7 +513,8 @@ test("a rank bought during a loop reaches the next map run and not the one going
   assert.equal(next.loops[1].run.minute, 0);
 });
 
-// Spec 3: the repertoire is computed from the run's own skills, not from the manual map run's.
+// D-119: a character's repertoire comes from the branches that character has bought, so it is
+// computed from the loop's own skills, not from the manual map run's.
 test("a loop picks its rules by the skills of its own character, whatever the manual map run beside it has bought", () => {
   const patrolling = programFromRules(
     rule(ALWAYS, { kind: "patrol", resource: "berry" }),
@@ -623,7 +623,7 @@ test("minutes that are no whole number from 0 up are a RangeError", () => {
 
 // invariant: trip-transfer
 // invariant: trip-run-end
-// Spec 4, D-179: loot goes to the chest at completion by the frozen bring list, the
+// D-179: loot goes to the chest at completion by the frozen bring list, the
 // next map run takes from the chest as it then stands, on the same copy and at game minute 0.
 test("a completion deposits the bring list's clipped loot, counts the map run, adds its practice to the loop and starts the next map run in the same step", () => {
   const program = withTrip(
@@ -781,7 +781,7 @@ test("a death at the very moment of readiness uses the resurrection, and a milli
 });
 
 // invariant: death-settled-once
-// Spec 4: the end is consumed in the call that met it; no state leaves with a loop's run ended.
+// D-241, D-221: the end is consumed in the call that met it; no state leaves with a loop's run ended.
 test("a death is settled once: the state the end leaves holds no end, a further end changes nothing, and a load of it settles nothing", () => {
   const passed = advanceLoopRun(dyingNext(looping()), 1, 1).state;
   const settled = endLoopRun(passed, 1, T0);
@@ -906,9 +906,6 @@ test("a send throws for a character in a loop, and clears the stopped line of th
   });
 });
 
-// Spec 4, 15 and the plan's *Goal*: a state the simulation makes with a loop loads back at every
-// minute of a map run, the stopped state included. This slice does not change the trust boundary,
-// so a refusal here is a structural mismatch.
 test("every state a loop makes over a whole map run, an end and the next map run loads back, with the save time it was stamped with", () => {
   let state = looping(SURVIVING, { stick: 4, berry: 2 }, COLD_REAL_MS);
   let loaded = 0;
@@ -1000,7 +997,7 @@ function assertPure(name, call, ...inputs) {
 
 // invariant: simulation-inputs
 // The pool of `tests/invariants/test_simulation_inputs.py` holds no state with a loop, so the
-// functions of the slice are given such states here, frozen.
+// functions of the earning loop are given such states here, frozen.
 test("no function of the loop changes a value passed to it, a loop, a death and a completion included", () => {
   const program = withTrip(EMPTY, [entry("stick", 2)], [entry("stick", 2)]);
   const fresh = game(program, { stick: 5 });

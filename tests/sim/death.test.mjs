@@ -1,7 +1,7 @@
 // A character's resurrection and when it is ready, and how its death is settled, once, on the
 // browser's clock. The expectations come from D-190 (what a death takes), D-219 (whose clock counts
 // the renewal), D-220 (a new character's resurrection is ready from the start), D-221 (when a death
-// is settled) and the invariants `resurrection-renewal` (a moment equal to the moment of readiness
+// is settled), D-384 (which moments the game state holds) and the invariants `resurrection-renewal` (a moment equal to the moment of readiness
 // counts as ready) and `death-settled-once`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -155,7 +155,7 @@ test("a death with no resurrection ready takes all practice and ranks, the gener
   });
 });
 
-// D-190: the settlement holds the number this death gave, not always the second.
+// D-190, D-216: the settlement holds the number this death gave, not always the second.
 test("the settlement of a later death with no resurrection ready holds the number that death gave", () => {
   const state = fallen(T0 + 1);
   const [first, ...others] = state.team.characters;
@@ -330,7 +330,7 @@ test("a settled death saved and loaded on its screen is left as it stood by a la
   }
 });
 
-// Spec, decision 4: where there is nothing to settle the moment is not even looked at.
+// D-384: where there is nothing to settle the moment is not even looked at.
 test("with nothing to settle the very state comes back, whatever the moment", () => {
   const going = send(team(), SENT, T0).state;
   const completed = {
@@ -351,7 +351,7 @@ test("with nothing to settle the very state comes back, whatever the moment", ()
   }
 });
 
-// Spec, decision 4: a moment the load would refuse never enters the game state.
+// D-384: a moment the load would refuse never enters the game state.
 test("a moment that is no safe integer is refused at a death to settle", () => {
   const state = fallen();
   for (const nowMs of [
@@ -376,7 +376,7 @@ test("settling a death changes nothing passed to it", () => {
   }
 });
 
-// Spec, decision 4: the passing of game time leaves the settling to whoever knows real time.
+// D-221: the passing of game time leaves the settling to whoever knows real time.
 test("game time settles no death: a death stands unsettled after advanceMinutes and passRealTime", () => {
   const sent = send(team(), SENT, T0).state;
   for (const state of [
@@ -414,7 +414,7 @@ test("a death that takes everything leaves the map run on the screen as it was",
   assert.deepEqual(settled.run.practice, state.run.practice);
 });
 
-// Spec, decision 6; D-190: what a character can do follows it, and
+// D-190: what a character can do follows it, and
 // what the player knows stays. Catches a „Restart” giving the run back the ranks the death took.
 test("„Restart” after a death that took everything starts from the team: a branch action drops out of the run and stays in the Understanding and the copy", () => {
   const program = setProgram(team(), PATROLLING).state;
@@ -434,7 +434,7 @@ test("„Restart” after a death that took everything starts from the team: a b
   );
 });
 
-// Spec, decision 6; D-200: only a death that took everything reads the team.
+// D-190, D-200: only a death that took everything reads the team.
 test("„Restart” after a resurrection used, and of a map run going on, starts from the run it replaces", () => {
   const program = setProgram(team(), PATROLLING).state;
   const settled = settleDeath(died(program), T0).state;
@@ -460,7 +460,7 @@ test("„Restart” after a resurrection used, and of a map run going on, starts
   );
 });
 
-// Spec, decision 6: the character the team holds, not any first one.
+// D-190: the character the team holds, not any first one.
 test("„Restart” after a death that took everything reads the character that died", () => {
   const start = readyFrom(team(), T0 + 1);
   const [first, second] = start.team.characters;

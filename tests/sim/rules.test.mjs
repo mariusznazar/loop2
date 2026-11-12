@@ -1,4 +1,5 @@
-// Spec rules S1 and S2 (spec section 3), checked by scanning the source.
+// Two scans of the source. S1 checks the invariants simulation-isolation (D-04) and
+// simulation-randomness (D-22); S2 checks the invariant content-identifiers (D-18).
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
@@ -197,7 +198,7 @@ const S1_FORBIDDEN = [
 const IMPORT_SPECIFIER = /\b(?:from|import)\s*\(?\s*@S(\d+)@/g;
 const DYNAMIC_IMPORT = /\bimport\s*\(\s*(?!@S\d+@\s*\))/;
 
-/** What spec rule S1 finds in one file of the simulation; `file` is an absolute path under SIM. */
+/** What scan S1 finds in one file of the simulation; `file` is an absolute path under SIM. */
 function s1Findings(file, text) {
   const found = [];
   const { code, strings } = splitSource(text);
@@ -234,7 +235,7 @@ const NAMES = [
   ...Object.values(ARCHETYPES),
 ].map((entry) => entry.name);
 
-/** What spec rule S2 finds in one file outside sim/data: a literal id or name of the content. */
+/** What scan S2 finds in one file outside sim/data: a literal id or name of the content. */
 function s2Findings(where, text) {
   const found = [];
   const { code, strings } = splitSource(text);
