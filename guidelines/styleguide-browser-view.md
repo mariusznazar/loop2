@@ -330,8 +330,9 @@ przez tyle linii, ile da jej Prettier. Zaraz po tym `;`, w tej samej linii,
 stoi komentarz zaczynający się od `Source:` z niepustą treścią. Reguła
 `@font-face` ma tylko deskryptory `font-family`, `src` i `font-weight`.
 
-Źródło wartości ustalone z Mariuszem dla loop2, z jednym rodzajem dołożonym
-później:
+Źródło wartości ustalone z Mariuszem dla loop2, z dwoma rodzajami dołożonymi
+później: grubością belki i linii zakładki (2026-11-02) oraz wyglądem sceny
+(2026-11-11):
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
