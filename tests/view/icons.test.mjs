@@ -202,18 +202,24 @@ const NAMED = [
   ...ACTION_ICONS,
 ];
 
-// The credit of the pack of the cloud of dust, which follows the icons' lines (D-271, `sprite-credits`):
-// the title, author and licence the pack's page on OpenGameArt gives, read 2026-11-11, and the change
-// the files of the game made to it, with its page and its licence linked.
-const PACK_LINE =
-  "Kurz: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)";
-const PACK_PAGE =
-  "https://opengameart.org/content/smoke-fire-animated-particle-16x16";
+// The credits of the packs of the scene's pictures, which follow the icons' lines (D-271,
+// `sprite-credits`): what the pack is for, the title, author and licence the pack's page on OpenGameArt
+// gives, and the change the files of the game made to it, with its page and its licence linked. The
+// dust is the pack Smoke & Fire Animated Particle [16x16] and the wolf the pack LPC Wolf, whose files
+// are frames cut from its sheet.
+const PACK_LINES = [
+  "Kurz i obłók walki: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)",
+  "Wilk: „[LPC] Wolf Animation”, Stephen „Redshrike” Challener (grafika), William.Thompsonj (współtwórca), opengameart.org, CC BY 3.0, zmienione (wycięte klatki)",
+];
+const PACK_PAGES = [
+  "https://opengameart.org/content/smoke-fire-animated-particle-16x16",
+  "https://opengameart.org/content/lpc-wolf-animation",
+];
 const PACK_LICENCE = "http://creativecommons.org/licenses/by/3.0/";
 
 test("the section credits the campfire's icon, by Lorc, after the four resources' icons", () => {
   const items = itemsOf(sectionMarkup());
-  assert.equal(items.length, NAMED.length + 1);
+  assert.equal(items.length, NAMED.length + PACK_LINES.length);
   assert.equal(
     textOfMarkup(items[4]),
     "ognisko: „Campfire icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
@@ -298,7 +304,7 @@ test("the section is a folded details whose summary reads Autorzy grafiki, with 
 
 test("each line of the section holds the icon's title, author, game-icons.net, CC BY 3.0 and the change, for the icon of each credit", () => {
   const items = itemsOf(sectionMarkup());
-  assert.equal(items.length, NAMED.length + 1);
+  assert.equal(items.length, NAMED.length + PACK_LINES.length);
   NAMED.forEach((named, i) => {
     assert.equal(
       textOfMarkup(items[i]),
@@ -307,25 +313,27 @@ test("each line of the section holds the icon's title, author, game-icons.net, C
   });
 });
 
-test("the section's last line credits the pack of the dust: its title, author, page and licence, and that the files were recoloured, with its page and its licence linked", () => {
-  const items = itemsOf(sectionMarkup());
-  const last = items[items.length - 1];
-  // React writes the ampersand of the title as an entity, as markup does.
-  assert.equal(textOfMarkup(last).replaceAll("&amp;", "&"), PACK_LINE);
-  const links = [...last.matchAll(/<a ([^>]*)>(.*?)<\/a>/g)];
-  assert.deepEqual(
-    links.map((link) => [link[1], link[2]]),
-    [
+test("the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked", () => {
+  const items = itemsOf(sectionMarkup()).slice(NAMED.length);
+  assert.equal(items.length, PACK_LINES.length);
+  items.forEach((item, i) => {
+    // React writes the ampersand of the title as an entity, as markup does.
+    assert.equal(textOfMarkup(item).replaceAll("&amp;", "&"), PACK_LINES[i]);
+    const links = [...item.matchAll(/<a ([^>]*)>(.*?)<\/a>/g)];
+    assert.deepEqual(
+      links.map((link) => [link[1], link[2]]),
       [
-        `href="${PACK_PAGE}" target="_blank" rel="noopener noreferrer"`,
-        "opengameart.org",
+        [
+          `href="${PACK_PAGES[i]}" target="_blank" rel="noopener noreferrer"`,
+          "opengameart.org",
+        ],
+        [
+          `href="${PACK_LICENCE}" target="_blank" rel="noopener noreferrer"`,
+          "CC BY 3.0",
+        ],
       ],
-      [
-        `href="${PACK_LICENCE}" target="_blank" rel="noopener noreferrer"`,
-        "CC BY 3.0",
-      ],
-    ],
-  );
+    );
+  });
 });
 
 test("the section links each icon's page and the licence, each opening in a new tab without opener or referrer", () => {
