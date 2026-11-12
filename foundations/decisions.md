@@ -9089,3 +9089,33 @@ The page opens the login card as an object it creates, focuses and closes: an el
 
 *Rationale:* the page around the card is built another way than the card, so the two meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
 *Rejected:* the card kept in the page and hidden — a typed password would stay in the page behind the game; one card kept for the life of the page and emptied at each closing — a reset of state to keep right, for nothing gained; drawing the card later than its creation — every caller then has to wait for the card, and an empty moment is possible.
+
+### D-380 — How does the list of the chronicle draw a chronicle that grows through a long map run?
+
+The list of the chronicle draws the entries of the filter picked, newest first, in a window of a fixed size, and grows the window by that size when the player scrolls near its end, so that every entry stays reachable and the rows drawn do not grow with the chronicle; picking a filter, a send and „Restart” start the window anew, and an entry arriving does not. The text of an entry is composed once, when the entry is recorded, so no later change of the game state, the rename of a rule group included, rewrites an entry, and a draw composes only the paragraph of the last encounter (D-147), and only when that encounter changed. A draw in which neither the chronicle, nor the filter, nor the window, nor the last encounter changed draws no row again, and a row already drawn is not drawn again when an entry is added above it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-338 · derives from D-339 · derives from D-343 · derives from D-345
+- **Verification:** an agent compares a change with the decision:
+  - complies: a chronicle of 400 entries drawn at first with fewer rows than entries, the newest on top, the window growing by a scroll near its end until the oldest entry stands and not by a scroll far from it, and drawn with the first window again after „Czynności” is picked or after „Restart”; a new entry arriving while the window is grown leaving the window as it was; the entry of the first chill of a new game still reading „Gra dopisała regułę w grupie „Program”: Zawsze → Eksploruj.” after the group is renamed „Ogień”; a draw at the next reading of the clock with nothing changed reading no window from the memory and composing no paragraph
+  - violates: every entry of a long chronicle drawn at once; the window starting anew whenever an entry arrives; the entry of a discovery naming „Ogień” after the group was renamed; the paragraph of the last encounter composed again at each draw while the encounter stands as it was; the rows of a long chronicle drawn again at each reading of the clock
+- **Origin:** none
+
+*Rationale:* the screen of a map run is drawn again at each reading of the clock, up to five times a second (D-03), and the chronicle only grows through a map run (D-339), so drawing every entry would make each draw cost more the longer the map run lasts, which is the risk D-347 names of a tab left overnight slowing down under a growing chronicle. A window bounds the rows drawn and leaves every entry reachable by a scroll; a row not drawn again keeps the list from jumping under a player who is reading. An entry is a record of what was said or done at its game minute, so it is composed then and kept; the band of a discovery follows a rename only while it stands (D-312), and the entry that remains after it does not. Accepted with it: a player who scrolls far reads the older entries in more steps, and the size of the window is a value of the code, tuned there.
+*Rejected:* every entry drawn at once — the cost of each draw grows with the chronicle, against the risk of D-347; a limit of entries at which the oldest go — D-339 rejects it, since the chronicle would lose part of what happened in the map run; a library of virtual lists — a new dependency of the product, and rows of varying height, as a discovery or a paragraph wrapping over lines gives, make exact virtualization the costliest way.
+
+### D-381 — How long does the pick of a filter of the chronicle hold on the screen of a map run?
+
+The filter the player picks above the list of the chronicle stays picked through the whole map run, through leaving its screen and coming back, and through „Restart”, as the tab does (D-346); „Wszystko” stands picked again when the character is sent to the map (D-343).
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-343 · derives from D-346
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked; „Czynności” picked before „Restart” and still picked after it, over the entries of the new map run alone; a character sent after „Zakończ” with „Wszystko” picked
+  - violates: „Wszystko” picked again after „Restart” where the player had picked „Czynności”; the pick lost at a return from Siedziba; „Czynności” still picked at a send after „Zakończ”
+- **Origin:** none
+
+*Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives.
+*Rejected:* the filter picked again as „Wszystko” at „Restart” or at a return to the screen — the player picks it again each time, the cost D-346 names for the tab.
