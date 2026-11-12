@@ -8,7 +8,9 @@ import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   SCENE,
+  SCENE_CREATURES,
   SCENE_DUST,
+  SCENE_FIGHT,
   SCENE_FIRE,
   SCENE_MAGES,
   SCENE_MOMENTS,
@@ -21,10 +23,13 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import {
+  creatureEffect,
+  creaturePlace,
   endEffectBegins,
   momentBegins,
   sceneDrawing,
   sceneEffect,
+  scuffleCloud,
   tintShown,
 } from "../../dist/browser/view/scene-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
@@ -471,6 +476,12 @@ test("every file the scene's data names stands directly in assets/sprites/ as a 
       sheets.death.file,
     ]),
     ...Object.values(SCENE_PROPS).map((prop) => prop.picture.file),
+    ...Object.values(SCENE_CREATURES).flatMap((sheets) => [
+      sheets.idle.file,
+      sheets.run.file,
+      sheets.bite.file,
+      sheets.death.file,
+    ]),
   ];
   assert.ok(names.length > 0);
   for (const name of names) {
@@ -1238,4 +1249,247 @@ test("the death sheet holds pixels alone, six frames of the mage's size, the fir
   for (const box of boxes) assert.equal(box.bottom, 63, "on the ground line");
   assert.ok(boxes[0].height > boxes[0].width, "the first frame stands");
   assert.ok(boxes[5].width > boxes[5].height, "the last frame lies");
+});
+
+// --- the creature that attacks (D-316, D-271, D-317) -----------------------------------------------
+
+const FIGHT_FROM = 181;
+const ACTIVE = {
+  creatureId: "wolf",
+  attackMinute: FIGHT_FROM,
+  resolveMinute: FIGHT_FROM + 5,
+};
+const RESULT = (outcome) => ({ outcome });
+const SCENE_WIDTH = 336;
+const MAGE_WIDTH = 64;
+
+/** The sent state in the minutes of a combat: no current activity, the combat active. */
+const fighting = () =>
+  withRun(sent(), {
+    current: null,
+    minute: FIGHT_FROM,
+    activeCombat: ACTIVE,
+    lastCombat: { ...ACTIVE, result: null },
+  });
+
+/** The state after a combat that had the result given. */
+const afterFight = (outcome, patch = {}) =>
+  withRun(sent(), {
+    minute: FIGHT_FROM + 5,
+    activeCombat: null,
+    lastCombat: { ...ACTIVE, result: RESULT(outcome) },
+    ...patch,
+  });
+
+const creatureOf = (state) => sceneDrawing(state).creature;
+
+// D-316. Catches a scene that shows no creature in the minutes of a combat, one that shows it with no
+// scuffle, and a creature drawn from files the data does not name or from another size than theirs.
+test("through the minutes of a combat the scene draws the wolf scuffling, from the files and frames of the data", () => {
+  const creature = creatureOf(fighting());
+  assert.equal(creature.scuffling, true);
+  assert.equal(creature.key, "fight:181");
+  assert.deepEqual(
+    [creature.idle, creature.run, creature.bite, creature.death],
+    [
+      { href: "/sprites/wolf-idle.png", width: 64, height: 32, frames: 1 },
+      { href: "/sprites/wolf-run.png", width: 64, height: 32, frames: 5 },
+      { href: "/sprites/wolf-bite.png", width: 64, height: 32, frames: 5 },
+      { href: "/sprites/wolf-death.png", width: 64, height: 32, frames: 4 },
+    ],
+  );
+  assert.deepEqual(creature.cloud, {
+    href: "/sprites/dust.png",
+    width: 16,
+    height: 16,
+    frames: 8,
+  });
+});
+
+// D-316, Q4. Catches a wolf left in the scene after any end of a combat but the mage's death and a
+// map run solved in the combat, and one that disappears at those two.
+test("the wolf stays after the mage's death in the fight and after a map run solved in a combat, and after no other end", () => {
+  assert.equal(creatureOf(sent()), null, "no combat yet");
+  for (const outcome of ["creatureDefeated", "creatureDeparted"])
+    assert.equal(creatureOf(afterFight(outcome)), null, outcome);
+  const died = afterFight("characterDied", {
+    death: { minute: FIGHT_FROM + 5, cause: "combat" },
+  });
+  assert.deepEqual(
+    [creatureOf(died).scuffling, creatureOf(died).key],
+    [false, "fight:181"],
+  );
+  const solved = withRun(fighting(), {
+    activeCombat: null,
+    completion: { minute: FIGHT_FROM + 2 },
+  });
+  assert.equal(creatureOf(solved).scuffling, false);
+  // A completion after a combat that had a result leaves none, and nor does a death of cold.
+  assert.equal(
+    creatureOf(afterFight("creatureDefeated", { completion: { minute: 300 } })),
+    null,
+  );
+  assert.equal(
+    creatureOf(
+      afterFight("creatureDefeated", { death: { minute: 300, cause: "cold" } }),
+    ),
+    null,
+  );
+});
+
+// D-316, Q2. Catches a wolf on the wrong side, one that overlaps the figure of the mage or leaves the
+// picture, and a gap that differs from the data's. The mage's figure is columns 20 to 44 of its frame:
+// at 144 it ends at 189, so the wolf starts at 191; at the right edge, 275, the figure faces left and
+// starts at column 19, 294, so the wolf's frame of 64 ends at 292 and starts at 228.
+test("the wolf stands on the right of the mage, 2 pixels from its figure, and on the left where the right would leave the picture", () => {
+  assert.equal(SCENE_FIGHT.gap, 2);
+  assert.deepEqual(creaturePlace(144, MAGE_WIDTH, 64, SCENE_WIDTH), {
+    side: "right",
+    x: 191,
+    middle: 190,
+  });
+  assert.deepEqual(creaturePlace(275, MAGE_WIDTH, 64, SCENE_WIDTH), {
+    side: "left",
+    x: 228,
+    middle: 293,
+  });
+  // Every place the mage stands at but the right edge has the wolf on its right, inside the picture:
+  // at the berry bush, 224, its frame ends at 335 of 336.
+  for (const x of [32, 42, 80, 144, 224]) {
+    const place = creaturePlace(x, MAGE_WIDTH, 64, SCENE_WIDTH);
+    assert.equal(place.side, "right", `mage at ${x}`);
+    assert.ok(place.x + 64 <= SCENE_WIDTH, `mage at ${x}`);
+  }
+  assert.equal(creaturePlace(224, MAGE_WIDTH, 64, SCENE_WIDTH).x, 271);
+});
+
+// D-316, Q3. Catches a cloud of the scuffle that stands off the gap or in the air, and a size other
+// than the dust's.
+test("the cloud of the scuffle stands over the middle of the gap, its bottom 3 above the ground line", () => {
+  const cloud = creatureOf(fighting()).cloud;
+  const right = scuffleCloud(creaturePlace(144, 64, 64, 336), cloud);
+  assert.deepEqual(
+    [right.x, right.y, right.width, right.height],
+    [182, 133, 16, 16],
+  );
+  const left = scuffleCloud(creaturePlace(275, 64, 64, 336), cloud);
+  assert.equal(left.x, 285);
+});
+
+const ATTACKED = { kind: "attacked", minute: FIGHT_FROM, creature: "wolf" };
+const ENDED = (outcome) => ({
+  kind: "combatEnded",
+  minute: FIGHT_FROM + 5,
+  outcome,
+});
+
+// D-317, D-316. Catches an effect that is not made at the attack, a run in that carries the wrong
+// fight, and a reading with no previous reading, a map run started or several ends that shows one.
+test("the wolf runs in at the reading whose events carry its attack, and at none else", () => {
+  const before = sent();
+  const effect = creatureEffect(
+    before,
+    fighting(),
+    [ATTACKED],
+    144,
+    MAGE_WIDTH,
+    SCENE_WIDTH,
+  );
+  assert.deepEqual(effect, { kind: "creatureIn", key: "fight:181" });
+  const none = (events, from = before, to = fighting()) =>
+    creatureEffect(from, to, events, 144, MAGE_WIDTH, SCENE_WIDTH);
+  assert.equal(none([]), null, "no event of a fight");
+  assert.equal(none([ATTACKED, ENDED("creatureDefeated")]), null, "overdue");
+  assert.equal(
+    none([{ kind: "mapRunStarted", seed: 1 }, ATTACKED]),
+    null,
+    "a map run started",
+  );
+  assert.equal(
+    none([ATTACKED], { ...before, run: null }),
+    null,
+    "no run before",
+  );
+});
+
+// D-317, Q4. Catches an end that shows the wrong effect, one that is made for the mage's death, where
+// the wolf stands, one for a reading whose previous state held no combat, and a run off that does not
+// reach the right edge of the frame.
+test("the wolf falls where it stood when defeated and runs off to the right edge when it departs, and the mage's death shows no effect", () => {
+  const was = fighting();
+  const run = (outcome, mageX = 144) =>
+    creatureEffect(was, afterFight(outcome), [ENDED(outcome)], mageX, 64, 336);
+  const down = run("creatureDefeated");
+  assert.equal(down.kind, "creatureDown");
+  assert.equal(down.faces, "left");
+  assert.deepEqual(
+    [down.sprite.href, down.sprite.x, down.sprite.y, down.sprite.frames],
+    ["/sprites/wolf-death.png", 191, 136, 4],
+  );
+  const out = run("creatureDeparted");
+  assert.equal(out.kind, "creatureOut");
+  assert.equal(out.faces, "right");
+  assert.deepEqual(
+    [out.sprite.href, out.sprite.x, out.run, out.sprite.frames],
+    ["/sprites/wolf-run.png", 191, 336 - 191, 5],
+  );
+  assert.equal(run("characterDied"), null, "the mage's death");
+  assert.equal(
+    creatureEffect(
+      sent(),
+      afterFight("creatureDefeated"),
+      [ENDED("creatureDefeated")],
+      144,
+      64,
+      336,
+    ),
+    null,
+    "no combat before",
+  );
+  // On the left of the mage, at the right edge, the wolf faces right where it falls.
+  assert.equal(run("creatureDefeated", 275).faces, "right");
+  assert.equal(run("creatureDefeated", 275).sprite.x, 228);
+});
+
+// D-271, D-273, D-316. The wolf's files hold pixels alone, are the sheets of the data in size, hold only
+// fully opaque or fully clear pixels (the pack's own), and each frame has the wolf's feet on its bottom row,
+// the first frame of the death sheet standing and the last lying, so the bite, the death and the run do not
+// jump when the animation changes. Catches a file with a chunk that carries text or a profile, a sheet of
+// another size, a frame cut off the ground and a death sheet that does not end lying. Where the pixels come
+// from is not tested: they are the pack's own pixels moved unchanged into frames of 64 × 32, which only
+// the source sheet can show.
+test("the wolf's files hold pixels alone, in frames of 64 × 32 with the feet on the bottom row", () => {
+  const frameOf = (image, frame) => {
+    let [left, top, right, bottom] = [64, 32, -1, -1];
+    for (let y = 0; y < 32; y++)
+      for (let x = 0; x < 64; x++) {
+        const alpha = image.pixels[y][frame * 64 + x][3];
+        assert.ok(alpha === 0 || alpha === 255, "no half-clear pixel");
+        if (alpha > 0) {
+          [left, top] = [Math.min(left, x), Math.min(top, y)];
+          [right, bottom] = [Math.max(right, x), Math.max(bottom, y)];
+        }
+      }
+    return { width: right - left + 1, height: bottom - top + 1, bottom };
+  };
+  for (const [name, picture] of Object.entries(SCENE_CREATURES.wolf)) {
+    const image = decodePng(picture.file);
+    assert.deepEqual(
+      image.types,
+      ["IHDR", "IDAT", "IEND"],
+      `${name}: pixels alone`,
+    );
+    assert.deepEqual(
+      [image.width, image.height],
+      [64 * picture.frames, 32],
+      `${name}: the data's size`,
+    );
+    for (let frame = 0; frame < picture.frames; frame++)
+      assert.equal(frameOf(image, frame).bottom, 31, `${name} frame ${frame}`);
+  }
+  const death = decodePng(SCENE_CREATURES.wolf.death.file);
+  const first = frameOf(death, 0);
+  const last = frameOf(death, 3);
+  assert.ok(first.height > 25, "the first frame stands");
+  assert.ok(last.width > last.height * 2, "the last frame lies");
 });

@@ -2167,3 +2167,356 @@ test("the screen of a map run tells the game view when the scene's effect has en
     assert.deepEqual(told, ["effectEnded"]);
   });
 });
+
+// --- the creature that attacks (D-316, D-317, D-322, D-04) -------------------------------------------
+
+const ATTACK = { kind: "attacked", minute: 181, creature: "wolf" };
+const OVER = (outcome) => ({ kind: "combatEnded", minute: 186, outcome });
+const COMBAT = { creatureId: "wolf", attackMinute: 181, resolveMinute: 186 };
+
+/** The sent state in the minutes of a combat; `patch` changes the state itself. */
+const inCombat = (patch = {}) => ({
+  ...withRun(sent(), {
+    current: null,
+    minute: 181,
+    activeCombat: COMBAT,
+    lastCombat: { ...COMBAT, result: null },
+  }),
+  ...patch,
+});
+
+/** The state after the combat, with the outcome given. */
+const afterCombat = (outcome, patch = {}) =>
+  withRun(sent(), {
+    current: null,
+    minute: 186,
+    activeCombat: null,
+    lastCombat: { ...COMBAT, result: { outcome } },
+    ...patch,
+  });
+
+const creatureOf = (scene) => scene.querySelectorAll(".scene-creature");
+
+// D-316. Catches a combat with no wolf in the scene, a wolf drawn from other files than the data's, a wolf
+// without its cloud, and a wolf beside the mage of the wrong size or place. The mage stands in the clearing,
+// 144; its figure ends at 189, so the wolf's frame of 64 × 32 starts at 191 on the line 136, and the cloud
+// of 16 × 16 stands over the gap, from 182, its bottom 3 above the line.
+test("in the minutes of a combat the wolf stands beside the mage, on its right, facing it, with the cloud of the scuffle between them", async () => {
+  await withPage(async (page) => {
+    const scene = await drawn(page, inCombat());
+    const wolf = one(scene, ".scene-creature");
+    placedAt(
+      wolf,
+      [
+        (191 / 336) * 100,
+        (104 / 152) * 100,
+        (64 / 336) * 100,
+        (32 / 152) * 100,
+      ],
+      "wolf",
+    );
+    assert.equal(wolf.getAttribute("data-facing"), "left");
+    assert.ok(wolf.hasAttribute("data-scuffling"));
+    assert.equal(wolf.hasAttribute("data-entering"), false);
+    assert.deepEqual(sheetOf(one(wolf, ".scene-creature-idle")), {
+      src: "/sprites/wolf-idle.png",
+      alt: "",
+      frames: "1",
+    });
+    assert.deepEqual(sheetOf(one(wolf, ".scene-creature-run")), {
+      src: "/sprites/wolf-run.png",
+      alt: "",
+      frames: "5",
+    });
+    assert.deepEqual(sheetOf(one(wolf, ".scene-creature-bite")), {
+      src: "/sprites/wolf-bite.png",
+      alt: "",
+      frames: "5",
+    });
+    const cloud = one(scene, ".scene-scuffle");
+    placedAt(
+      cloud,
+      [
+        (182 / 336) * 100,
+        (117 / 152) * 100,
+        (16 / 336) * 100,
+        (16 / 152) * 100,
+      ],
+      "cloud",
+    );
+    assert.equal(sheetOf(cloud).src, "/sprites/dust.png");
+    assert.equal(
+      one(scene, ".scene-mage").getAttribute("data-facing"),
+      "right",
+    );
+    assert.equal(scene.textContent, "", "no text");
+  });
+});
+
+// D-316, Q2. Catches a wolf that stands on the right at the right edge, where its frame would leave the
+// picture, and a mage that does not turn to it: the mage there, 275, faces left, so its figure starts at
+// 294 and the wolf's frame ends at 292.
+test("where the mage stands at the right edge the wolf stands on its left, mirrored, and the mage turns toward it", async () => {
+  await withPage(async (page) => {
+    const scene = await drawn(page, {
+      ...inCombat(),
+      run: { ...inCombat().run, current: null },
+    });
+    assert.equal(
+      one(scene, ".scene-creature").getAttribute("data-facing"),
+      "left",
+    );
+    const { draw, scene: mountedScene } = await mounted(
+      page,
+      doing({ kind: "explore" }),
+    );
+    await draw(inCombat(), [ATTACK]);
+    const wolf = one(mountedScene(), ".scene-creature");
+    assert.equal(
+      wolf.getAttribute("data-facing"),
+      "right",
+      "mirrored, facing the mage",
+    );
+    near(wolf.style.left, (228 / 336) * 100, "the wolf's frame ends at 292");
+    assert.equal(
+      one(mountedScene(), ".scene-mage").getAttribute("data-facing"),
+      "left",
+      "the mage turns to it",
+    );
+  });
+});
+
+// D-319, D-317, D-04. Catches a wolf that runs in at a reading with no attack among its events, as at a
+// load or a return to the screen, one that does not, at the reading of the attack, and a run that
+// outlasts the attack's effect or does not end with its animation.
+test("the wolf runs in from the right edge at the reading whose events carry the attack, and stands at once at any other", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await mounted(
+      page,
+      withRun(sent(), { current: WAITING }),
+    );
+    await draw(inCombat(), [ATTACK]);
+    const wolf = one(scene(), ".scene-creature");
+    assert.ok(wolf.hasAttribute("data-entering"));
+    // From the right edge, 336, to 191: 145 pixels of the wolf's 64.
+    near(
+      wolf.style.getPropertyValue("--from-x"),
+      (145 / 64) * 100,
+      "from the right edge",
+    );
+    // A redraw keeps the run; its animation's end ends it and the wolf stands.
+    await draw(inCombat(), []);
+    assert.equal(one(scene(), ".scene-creature"), wolf, "the same element");
+    assert.ok(wolf.hasAttribute("data-entering"));
+    await inAct(() => endAnimation(one(wolf, ".scene-creature-run")));
+    assert.ok(
+      wolf.hasAttribute("data-entering"),
+      "a sheet's end is not the run's",
+    );
+    await inAct(() => endAnimation(wolf));
+    assert.equal(wolf.hasAttribute("data-entering"), false);
+
+    const loaded = await drawn(page, inCombat());
+    assert.equal(
+      one(loaded, ".scene-creature").hasAttribute("data-entering"),
+      false,
+    );
+    const again = await mounted(page, withRun(sent(), { current: WAITING }));
+    await again.draw(inCombat(), []);
+    assert.equal(
+      one(again.scene(), ".scene-creature").hasAttribute("data-entering"),
+      false,
+      "a reading with no event of the attack",
+    );
+  });
+});
+
+// D-322, Q5. Catches a wolf that runs in at the stop of the first attack, where time stands still, and a
+// scuffle that moves at a stop.
+test("at the stop at a discovery the wolf stands beside the mage with no run in, and every stop holds its frames and the cloud's", async () => {
+  await withPage(async (page) => {
+    const stopped = {
+      ...inCombat(),
+      paused: true,
+      discovery: { ...NO_UNDERSTANDING_ITEMS, creatures: ["wolf"] },
+    };
+    const { draw, scene } = await mounted(page, doing({ kind: "explore" }));
+    await draw(stopped, [ATTACK, FOUND({ creatures: ["wolf"] })]);
+    assert.equal(scene().getAttribute("data-standing"), "discovery");
+    const wolf = one(scene(), ".scene-creature");
+    assert.equal(wolf.hasAttribute("data-entering"), false, "no run at a stop");
+    for (const [standing, state] of [
+      ["going", inCombat()],
+      ["paused", { ...inCombat(), paused: true }],
+      ["discovery", stopped],
+    ]) {
+      const there = await drawn(page, state);
+      assert.equal(there.getAttribute("data-standing"), standing);
+      for (const selector of [".scene-creature-bite img", ".scene-scuffle img"])
+        assert.equal(
+          computed(one(there, selector), "animation-play-state") === "paused",
+          standing !== "going",
+          `${standing}: ${selector}`,
+        );
+    }
+  });
+});
+
+// D-316, Q4. Catches a wolf that fights on after the mage's death, one that stands in the bite frames
+// where it should stand, and one with a cloud of a scuffle; and one that is gone with the mage's death.
+test("the wolf stands still in its idle frame, with no cloud, beside the mage that died in the fight and after a map run solved in the combat", async () => {
+  await withPage(async (page) => {
+    for (const state of [
+      afterCombat("characterDied", { death: { minute: 186, cause: "combat" } }),
+      inCombat({
+        run: {
+          ...inCombat().run,
+          activeCombat: null,
+          completion: { minute: 183 },
+        },
+      }),
+    ]) {
+      const scene = await drawn(page, state);
+      const wolf = one(scene, ".scene-creature");
+      assert.equal(wolf.hasAttribute("data-scuffling"), false);
+      assert.equal(
+        computed(one(wolf, ".scene-creature-idle"), "display"),
+        "block",
+      );
+      assert.equal(
+        computed(one(wolf, ".scene-creature-bite"), "display"),
+        "none",
+      );
+      assert.equal(
+        scene.querySelectorAll(".scene-scuffle").length,
+        0,
+        "no cloud",
+      );
+    }
+    // The wolf has its idle frame over its bite frames while it fights, and the other way round.
+    const fight = await drawn(page, inCombat());
+    assert.equal(
+      computed(one(fight, ".scene-creature-idle"), "display"),
+      "none",
+    );
+    assert.equal(
+      computed(one(fight, ".scene-creature-bite"), "display"),
+      "block",
+    );
+  });
+});
+
+// D-317, Q4. Catches an end of a combat that leaves the wolf in the scene, one that shows no effect, an
+// effect of the mage's death, an effect longer than 300 ms or that stays after its animation, a wolf that
+// runs off the wrong way, and an effect at a reading with several ends.
+test("a defeated wolf falls and a departing one runs off to the right, each an effect of 300 ms at the place the wolf stood, and the mage's death shows none", async () => {
+  await withPage(async (page) => {
+    const after = async (outcome, events, state = afterCombat(outcome)) => {
+      const read = await mounted(page, inCombat());
+      await read.draw(state, events);
+      return read;
+    };
+    const defeated = await after("creatureDefeated", [
+      OVER("creatureDefeated"),
+    ]);
+    assert.equal(creatureOf(defeated.scene()).length, 0, "the wolf is gone");
+    assert.equal(defeated.scene().querySelectorAll(".scene-scuffle").length, 0);
+    const [fall] = effectsOf(defeated.scene());
+    assert.ok(fall.classList.contains("scene-creature-effect"));
+    assert.equal(fall.getAttribute("data-kind"), "down");
+    assert.equal(fall.getAttribute("data-facing"), "left");
+    near(fall.style.left, (191 / 336) * 100, "where it stood");
+    assert.deepEqual(sheetOf(fall), {
+      src: "/sprites/wolf-death.png",
+      alt: "",
+      frames: "4",
+    });
+    assert.equal(computed(fall, "animation-duration"), "300ms");
+    assert.equal(fall.textContent, "", "no text");
+    await inAct(() => endAnimation(one(fall, "img")));
+    assert.equal(
+      effectsOf(defeated.scene()).length,
+      1,
+      "an image's end is not the effect's",
+    );
+    await inAct(() => endAnimation(fall));
+    assert.equal(
+      effectsOf(defeated.scene()).length,
+      0,
+      "gone after its animation",
+    );
+
+    const departed = await after("creatureDeparted", [
+      OVER("creatureDeparted"),
+    ]);
+    const [run] = effectsOf(departed.scene());
+    assert.equal(run.getAttribute("data-kind"), "out");
+    assert.equal(run.getAttribute("data-facing"), "right");
+    near(
+      run.style.getPropertyValue("--run"),
+      (145 / 64) * 100,
+      "to the right edge",
+    );
+    assert.deepEqual(sheetOf(run), {
+      src: "/sprites/wolf-run.png",
+      alt: "",
+      frames: "5",
+    });
+
+    const died = await after(
+      "characterDied",
+      [OVER("characterDied"), DIED],
+      afterCombat("characterDied", { death: { minute: 186, cause: "combat" } }),
+    );
+    assert.equal(effectsOf(died.scene()).length, 0);
+    assert.equal(creatureOf(died.scene()).length, 1, "the wolf stands");
+
+    const overdue = await after("creatureDefeated", [
+      ATTACK,
+      OVER("creatureDefeated"),
+    ]);
+    assert.equal(
+      effectsOf(overdue.scene()).length,
+      0,
+      "overdue effects are dropped",
+    );
+    const solved = await after(
+      "creatureDefeated",
+      [OVER("creatureDefeated"), SOLVED],
+      afterCombat("creatureDefeated", { completion: { minute: 186 } }),
+    );
+    assert.equal(effectsOf(solved.scene()).length, 0, "no effect at a stop");
+  });
+});
+
+// D-316. Catches a mage that goes on facing away from the wolf after the fight, once it stood still
+// and turned, and a wolf that is drawn over the tint of the light.
+test("the mage keeps the way it turned after the fight, and the wolf and its cloud lie under the tint, the mage between them", async () => {
+  await withPage(async (page) => {
+    const { draw, scene, mage } = await mounted(
+      page,
+      doing({ kind: "explore" }),
+    );
+    await draw(inCombat(), [ATTACK]);
+    assert.equal(mage().getAttribute("data-facing"), "left");
+    await draw(afterCombat("creatureDefeated"), [OVER("creatureDefeated")]);
+    assert.equal(mage().getAttribute("data-facing"), "left", "kept");
+    await draw(inCombat(), [ATTACK]);
+    const layers = [...scene().children].map(
+      (part) => part.className.split(" ")[0],
+    );
+    const at = (name) => layers.indexOf(name);
+    assert.ok(
+      at("scene-creature") < at("scene-mage"),
+      "the wolf under the mage",
+    );
+    assert.ok(
+      at("scene-mage") < at("scene-scuffle"),
+      "the cloud over the mage",
+    );
+    assert.ok(
+      at("scene-scuffle") < at("scene-tint"),
+      "the cloud under the tint",
+    );
+  });
+});

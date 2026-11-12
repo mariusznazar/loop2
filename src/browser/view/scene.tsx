@@ -58,12 +58,17 @@ import type { GameEvent } from "../sim/game.js";
 import { SCENE, SCENE_EFFECTS } from "../sim/data/scene.js";
 import type { GameState } from "../sim/types.js";
 import {
+  creatureEffect,
+  creaturePlace,
   momentBegins,
   sceneDrawing,
   sceneEffect,
+  scuffleCloud,
   tintShown,
 } from "./scene-picture.js";
 import type {
+  CreaturePlace,
+  SceneCreature,
   SceneDrawing,
   SceneEffect,
   SceneMoment,
@@ -336,7 +341,7 @@ function Effect({
   frame,
   onEnd,
 }: {
-  effect: SceneEffect;
+  effect: Extract<SceneEffect, { kind: "flight" | "dust" }>;
   frame: SceneSprite;
   onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
 }) {
@@ -379,6 +384,118 @@ function Effect({
             />
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** The way a creature faces for the side of the mage it stands on: toward the mage, its sheets facing left. */
+function creatureFaces(place: CreaturePlace): Facing {
+  return place.side === "right" ? "left" : "right";
+}
+
+/**
+ * The creature that attacks, standing beside the mage at the place of `place`: its idle, run and bite
+ * sheets one over the other, the bite sheet shown while it fights and the idle sheet while it only
+ * stands. At the reading of its attack it runs in from the right edge of the frame on its run sheet
+ * (`entering`), and the end of that animation tells the scene the effect is over; at every other time,
+ * and under the system's setting for reduced motion, it stands at its place at once. Its sheets face
+ * left, so a creature on the left of the mage is mirrored, the figure alone.
+ */
+function Creature({
+  creature,
+  place,
+  frame,
+  entering,
+  onEnd,
+}: {
+  creature: SceneCreature;
+  place: CreaturePlace;
+  frame: SceneSprite;
+  entering: boolean;
+  onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
+}) {
+  const placed: ScenePlacedSprite = {
+    ...creature.bite,
+    x: place.x,
+    y: SCENE.groundLine,
+  };
+  const style = {
+    ...boxOf(placed, frame),
+    "--from-x": percent(frame.width - place.x, creature.bite.width),
+  } as CSSProperties;
+  return (
+    <div
+      className="scene-creature"
+      data-facing={creatureFaces(place)}
+      data-scuffling={creature.scuffling ? "" : undefined}
+      data-entering={entering ? "" : undefined}
+      style={style}
+      onAnimationEnd={onEnd}
+    >
+      <div className="scene-creature-sprite">
+        <Sheet sprite={creature.idle} className="scene-creature-idle" />
+        <Sheet sprite={creature.run} className="scene-creature-run" />
+        <Sheet sprite={creature.bite} className="scene-creature-bite" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The cloud of a scuffle over the gap between the creature and the mage, its frames run again and again
+ * by CSS for as long as the fight lasts; it stands still under the system's setting for reduced motion
+ * and does not stand while the creature is running in.
+ */
+function Scuffle({
+  creature,
+  place,
+  frame,
+}: {
+  creature: SceneCreature;
+  place: CreaturePlace;
+  frame: SceneSprite;
+}) {
+  const cloud = scuffleCloud(place, creature.cloud);
+  return (
+    <div className="scene-scuffle" style={boxOf(cloud, frame)}>
+      <Sheet sprite={cloud} />
+    </div>
+  );
+}
+
+/**
+ * The effect of a combat's end: the creature that was defeated falls in the frames of its death sheet and
+ * lies where it stood, the one that departs runs off to the right edge of the frame, each at the place
+ * the creature stood at. Its life lasts 300 ms and ends the way the other effects' do; under the system's
+ * setting for reduced motion it appears still for that time, the fallen creature lying and the running
+ * one on its first frame at its place.
+ */
+function CreatureEffect({
+  effect,
+  frame,
+  onEnd,
+}: {
+  effect: Extract<SceneEffect, { kind: "creatureDown" | "creatureOut" }>;
+  frame: SceneSprite;
+  onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
+}) {
+  const style = {
+    ...boxOf(effect.sprite, frame),
+    ...(effect.kind === "creatureOut"
+      ? { "--run": percent(effect.run, effect.sprite.width) }
+      : {}),
+  } as CSSProperties;
+  return (
+    <div
+      className="scene-effect scene-creature-effect"
+      data-kind={effect.kind === "creatureDown" ? "down" : "out"}
+      data-facing={effect.faces}
+      style={style}
+      onAnimationEnd={onEnd}
+    >
+      <div className="scene-creature-sprite">
+        <Sheet sprite={effect.sprite} />
       </div>
     </div>
   );
@@ -462,6 +579,27 @@ export function Scene({
   const next =
     drawing === null || current === null ? null : placeOf(drawing, current.x);
 
+  // Where the creature that attacks stands, from the place the mage stands at: the mage turns toward
+  // it where it stands still and keeps the way it faces after the fight (D-316).
+  const place =
+    drawing === null || drawing.creature === null || current === null
+      ? null
+      : creaturePlace(
+          current.x,
+          frameWidth,
+          drawing.creature.bite.width,
+          drawing.background.width,
+        );
+  if (
+    place !== null &&
+    current !== null &&
+    current.from === null &&
+    current.facing !== place.side
+  ) {
+    current = { ...current, facing: place.side };
+    setShown(current);
+  }
+
   // The effect of a gathering's end, from the previous reading and the events of this one, made only
   // where the scene goes on: an effect whose turn comes at a stop is overdue and dropped (D-317). A
   // map run started, or no map run, leaves none.
@@ -475,7 +613,16 @@ export function Scene({
     if (fresh && drawing.standing === "going" && current !== null) {
       // The effect belongs to the mage that gathered, at the place it stands or walks to at the previous
       // reading, and not at where the action that starts in this reading leads it.
-      const made = sceneEffect(lastState, state, events, current.x);
+      const made =
+        sceneEffect(lastState, state, events, current.x) ??
+        creatureEffect(
+          lastState,
+          state,
+          events,
+          current.x,
+          frameWidth,
+          drawing.background.width,
+        );
       if (made !== null) {
         effect = { serial: effect.serial + 1, shown: made };
         setEffects(effect);
@@ -649,6 +796,29 @@ export function Scene({
           onEnd={effectEnded(effect.serial)}
         />
       )}
+      {drawing.creature === null || place === null ? null : (
+        <Creature
+          key={`creature-${drawing.creature.key}`}
+          creature={drawing.creature}
+          place={place}
+          frame={frame}
+          entering={
+            effect.shown?.kind === "creatureIn" &&
+            effect.shown.key === drawing.creature.key
+          }
+          onEnd={effectEnded(effect.serial)}
+        />
+      )}
+      {effect.shown === null ||
+      (effect.shown.kind !== "creatureDown" &&
+        effect.shown.kind !== "creatureOut") ? null : (
+        <CreatureEffect
+          key={`effect-${effect.serial}`}
+          effect={effect.shown}
+          frame={frame}
+          onEnd={effectEnded(effect.serial)}
+        />
+      )}
       <div
         key={walk}
         ref={mageRef}
@@ -678,6 +848,16 @@ export function Scene({
           />
         </div>
       </div>
+      {drawing.creature === null ||
+      place === null ||
+      !drawing.creature.scuffling ? null : (
+        <Scuffle
+          key={`scuffle-${drawing.creature.key}`}
+          creature={drawing.creature}
+          place={place}
+          frame={frame}
+        />
+      )}
       {effect.shown === null || effect.shown.kind !== "flight" ? null : (
         <Effect
           key={`effect-${effect.serial}`}

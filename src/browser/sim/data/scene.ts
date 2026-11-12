@@ -1,5 +1,6 @@
 import type { ArchetypeId } from "./archetypes.js";
 import { BALANCE } from "./balance.js";
+import type { CreatureId } from "./creatures.js";
 import type { ResourceId } from "./resources.js";
 
 /** A picture in assets/sprites/: its file, the size of one frame and the frames it holds. */
@@ -81,9 +82,53 @@ export const SCENE_MAGES = {
 >;
 
 /**
- * The cloud of dust of a missed gathering: the eight cells of smoke of the pack Smoke & Fire Animated
- * Particle [16x16] in a row, recoloured to the browns of the scene (D-271). It plays once, from the
- * whole cloud to its last scraps, within the 300 ms of an effect of an ordinary event.
+ * The sheets of a creature that attacks, by its id: standing, running, biting and dying, each in its
+ * frame size, which is common to all of them and has the creature's feet on its bottom row. The pictures
+ * are the pack LPC Wolf's own side views of the wolf in the frames of the scene, facing left (D-271):
+ * the idle sheet is the standing frame of its walk, the run sheet serves the creature that runs in and
+ * runs off, the bite sheet loops while the creature fights and starts on the frame the idle sheet is,
+ * and the death sheet is the four frames in which it falls and lies, the last frame the creature lying
+ * down. A creature stands on the right of the mage, so the sheets face left and are mirrored where it
+ * stands on the left.
+ */
+export type SceneCreatureSheets = {
+  idle: ScenePicture;
+  run: ScenePicture;
+  bite: ScenePicture;
+  death: ScenePicture;
+};
+
+/** The creatures' sheets, by the creature's id. */
+export const SCENE_CREATURES = {
+  wolf: {
+    idle: { file: "wolf-idle.png", width: 64, height: 32, frames: 1 },
+    run: { file: "wolf-run.png", width: 64, height: 32, frames: 5 },
+    bite: { file: "wolf-bite.png", width: 64, height: 32, frames: 5 },
+    death: { file: "wolf-death.png", width: 64, height: 32, frames: 4 },
+  },
+} as const satisfies Record<CreatureId, SceneCreatureSheets>;
+
+/**
+ * Where a creature stands at the mage, in the scene's pixels. The mage's figure is columns 20 to 44 of
+ * its frame when it faces right and, mirrored about the frame's middle, columns 19 to 43 when it faces
+ * left, and it faces the creature; the creature's frame, which its sheets fill from its nose to its tail,
+ * starts `gap` pixels from the figure on the creature's side. A creature stands on the right of the mage
+ * where its frame then lies inside the scene, as it does at every place the mage stands at but the
+ * right edge, and on the left where it does not. The cloud of the scuffle, the dust's picture, stands
+ * over the gap, its middle on the gap's middle and its bottom edge `cloudUp` pixels above the ground
+ * line.
+ */
+export const SCENE_FIGHT = {
+  mageFigure: { left: 20, right: 44 },
+  gap: 2,
+  cloudUp: 3,
+} as const;
+
+/**
+ * The cloud of dust of a missed gathering and of a scuffle: the eight cells of smoke of the pack Smoke &
+ * Fire Animated Particle [16x16] in a row, recoloured to the browns of the scene (D-271). A miss plays it
+ * once, from the whole cloud to its last scraps, within the 300 ms of an effect of an ordinary event; a
+ * scuffle plays it again and again at the beat of the frames for as long as the fight lasts.
  */
 export const SCENE_DUST = {
   file: "dust.png",
