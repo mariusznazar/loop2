@@ -1287,7 +1287,7 @@ No file git tracks contains an absolute path on a disk or, in a Markdown file, a
 
 ## tracked-file-private-names
 
-No file git tracks names or points to a note the author keeps outside the repository, a task document included, or a file of the private repository of the old loop game.
+A file git tracks points to a place the author keeps outside the repository only by naming the entry `projects`, `tasks` or `task-rules` under `loop2` in the locations file `~/.the-way/locations.json`, and names no note, no folder of notes, no path on the author's disk and no file of the private repository of the old loop game.
 
 - **Method:** review
 - **Rests on:** none
