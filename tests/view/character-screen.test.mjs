@@ -1,5 +1,4 @@
-// The screen Postać (task ekrany-i-menu, To do 4 and 12; questions 3, 10 and 12; D-199, D-200,
-// D-217, D-244, D-245, D-287) on jsdom through tests/view/page-document.mjs (D-264): which elements
+// The screen Postać (D-199, D-200, D-217, D-244, D-245, D-287) on jsdom through tests/view/page-document.mjs (D-264): which elements
 // the screen builds, what it shows of the game state and of the moment, what its purchase and stop
 // hand to the page, and which buttons refuse. Real focus order and rendering are the browser check's
 // (D-88), so a focus case here holds only what jsdom shows.

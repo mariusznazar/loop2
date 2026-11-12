@@ -1,4 +1,4 @@
-// Icon files as untrusted input (spec sections 6 and 9.2): the check is run on the real files
+// Icon files as untrusted input (D-27, `icon-file-content`): the check is run on the real files
 // and on made-up files holding each forbidden form, so that it can fail.
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -204,8 +204,7 @@ const NAMED = [
 
 // The credit of the pack of the cloud of dust, which follows the icons' lines (D-271, `sprite-credits`):
 // the title, author and licence the pack's page on OpenGameArt gives, read 2026-11-11, and the change
-// the files of the game made to it; the text and the two links as the task zbieranie-jako-widowisko
-// (To do 7) writes them.
+// the files of the game made to it, with its page and its licence linked.
 const PACK_LINE =
   "Kurz: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)";
 const PACK_PAGE =

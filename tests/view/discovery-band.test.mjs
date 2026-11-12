@@ -1,4 +1,4 @@
-// The band of a discovery in React (task ekran-przejscia, To do 7; D-122, D-312, D-313, D-44, D-279)
+// The band of a discovery in React (D-122, D-312, D-313, D-44, D-279)
 // on jsdom through tests/view/page-document.mjs (D-264): the text of the discovery, the sentence about
 // the rule the game wrote and the group it names, „Wznów” and „Dodaj regułę z tym”, the band gone
 // without a discovery and the band gone at the end of a map run, where the window of the end names

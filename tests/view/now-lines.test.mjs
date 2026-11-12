@@ -1,5 +1,4 @@
-// The parts of the rows „Teraz” and „Potem” of the screen of a map run (task teraz-i-potem, To do 1;
-// D-334, D-335, D-291, D-292), from what `nowAndNext` names and the program of the copy. The input is
+// The parts of the rows „Teraz” and „Potem” of the screen of a map run (D-334, D-335, D-291, D-292), from what `nowAndNext` names and the program of the copy. The input is
 // written out by hand, so each case states the words it expects (D-73) and does not run the
 // simulation; the function of the simulation has its own cases in tests/sim/rule-signs.test.mjs.
 import assert from "node:assert/strict";
