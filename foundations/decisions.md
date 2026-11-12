@@ -2727,21 +2727,37 @@ opens another, „Otwarte: {mapa} →” in the window, the way to the map it op
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
-„Zakończ”. The role `positive` says that something works, which a completion shows of the program. A
-win opens with the win and leads on to what it opened, and the scene stays in full gold, which only
-a completion brings (D-316), so the solving is seen in the scene when the window is closed. Accepted
-with it: at a repeated completion the button says „Otwarte”, though the map was open before.
+„Zakończ”. The role `positive` says that something works, which a completion shows of the program.
+„Teraz” gives the outcome of a map run that has ended, the cause of a death or the map's completion
+text, so the player reads on the screen why the map run ended. The words „time stands still” of the
+screen after a completion, like those of the screen after a death, are read of that map run alone:
+the earning loops of the other characters go on, as they do in a pause. A win opens with the win and
+leads on to what it opened, which the end of a map run that opens a map names (D-149), and the scene
+stays in full gold, which only a completion brings (D-316), so the solving is seen in the scene when
+the window is closed. The end stands in a window over the screen (D-368), which puts it where nothing
+that stood there before has to move, and the menu bar with the row of warnings stays above it, so a
+failed save (D-208) and a broken game (D-323) are seen while it stands. Accepted with it: the same
+completion text is read on the screen in a second place, as the title of the window; at a repeated
+completion the button says „Otwarte”, though the map was open before; „Otwarte: {mapa} →” ends the
+map run as „Zakończ” does, so D-53 and D-173 each take a second place to which the end leads; the
+window hides the scene while it stands, and it does not cover the whole screen as the end of loop
+does.
 *Rejected:* going back to the headquarters with a message at the completion — the player would lose
-the state of the map run that solved the map; no „Teraz” after the end of a map run — while the end
-had no place of its own, the player would read nowhere why the map run ended; „Teraz” staying on the
-last action — after a death it reads as something the mage still does, and the cause is stated
-nowhere; the screen after the end stopping the earning loops of the other characters — viewing the
-result would suspend their earning; a line of text with „Do skrzynki nic nie trafiło” under
-it — a win that reads as a defeat; the way to the opened map only at the first completion that really
-opens it — at later completions the player goes through „Zakończ”, Postać and Mapy; a link to the card
-of the opened map that leaves the map run standing — the card of the new map then shows „Wejdź”
-inactive (D-55), and the player has to go back and end the map run; no button, the sentence „Otwarto: Las
-— głębiej” alone — the way to the new map is „Zakończ” and then Mapy.
+the state of the map run that solved the map; no „Teraz” after the end of a map run — when the
+choice was made the end had no place of its own, and the player would have read nowhere why the map
+run ended; „Teraz” staying on the last action — after a death it reads as something the mage still
+does, and the cause is stated nowhere; the screen after the end stopping the earning loops of the
+other characters — viewing the result would suspend their earning; a line of text with „Do skrzynki
+nic nie trafiło” under it — a win that reads as a defeat; the way to the opened map only at the first
+completion that really opens it — at later completions the player goes through „Zakończ”, Postać and
+Mapy; a link to the card of the opened map that leaves the map run standing — the card of the new
+map then shows „Wejdź” inactive (D-55), and the player has to go back and end the map run; no
+button, the sentence „Otwarto: Las — głębiej” alone — the way to the new map is „Zakończ” and then
+Mapy; the end in a place of the screen where something else stood until then, in a column or in a
+third tab under the world — what stood there moves down, and in a low window the buttons fall under
+the lower edge; the end in the place of the scene — it hides the scene, in which the solving is
+shown; the window covering the menu bar too — to go to another screen the player must first close
+the window, and neither a failed save (D-208) nor a broken game (D-323) is seen while it stands.
 
 ### D-133 — Where does the player see a map run's streak and a map's solving condition?
 
@@ -6175,27 +6191,34 @@ frost by at least 3:1 against the snow it lies on.
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
-fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
-are ready. Kept apart from what the server serves, as the icons and
+fire and trees the game's pictures show; what they ask is the cutting of frames from their sheets.
+The mage matches the game's only archetype and its frames are ready, but only for standing, running
+and dying: the clothed characters of the pack have no pose of gathering. Kept apart from what the
+server serves, as the icons and
 the fonts are, a picture reaches the player only through the build; it comes from outside the
 product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
 credit and allow its arts to be altered, so a picture made from them may be dimmed, composed and cut
 down by hand.
 The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
-the pack Smoke & Fire Animated Particle holds a cloud that, recoloured to the browns of the scene,
-stands out from the ground; its licence asks for a credit, which the game gives. A layer of colour or
+the pack Smoke & Fire Animated Particle holds a ready cloud in a flat style without outline, like the
+smoke of Pixel Crawler, that, recoloured to the browns of the scene, stands out from the ground; its
+licence asks for a credit, which the game gives. A layer of colour or
 a speck of one square needs no drawing, so CSS draws them, the frost and the specks on the grid of the
 scene's pixels in colours of the packs' palettes and the tint layer in the colours the human chose
 from a preview, and the one pixel style stays; a shape with a drawing, as a mage or a
 prop, would stand beside the pixels as a smooth shape. A colour that does not stand out from the
 ground it stands on is not seen, so the outline or the fill of the frost is measured against the snow, at 3:1,
 the threshold the badge's bar keeps (D-39); the frost chosen meets it by its outline, the fill reading
-on the snow weakly by its brightness. Accepted with it: credits for the pack of the dust, frames of a bending mage and a
-smaller flame made by hand or generated, and colours of the specks and of the frost that enter the
-game's palette with a source in the pixel of a named picture of a pack.
-*Rejected:* the hooded figure of loop — it is a rogue, though the game calls it a mage; generated
-pictures as the main way — frames drift apart; any other new pack — another palette and scale,
-new licences; for the dust of a miss: the smoke of Pixel Crawler — it cannot be seen on the
+on the snow weakly by its brightness. Accepted with it: credits for the pack of the dust, frames of a
+bending mage made by hand or, where hand work comes out weak, generated for those few frames, a
+smaller flame cut down by hand from the frames of the pack's fire, pixel work whose look is judged
+only at the request, and colours of the specks and of the frost that enter the game's palette with a
+source in the pixel of a named picture of a pack.
+*Rejected:* the hooded figure of loop — its sheet is the pack's rogue, though the game calls the
+character a mage; generated pictures as the main way — frames drift apart, which the makers of such
+tools name as their main problem, and the pixels need correcting by hand; any other new pack — a
+wider choice, but another palette and scale, new licences and more credits; for the dust of a miss:
+the smoke of Pixel Crawler — it cannot be seen on the
 ground; particles of single pixels in a brown that stands out from the ground — barely visible; a
 cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only at
 the request; any shape CSS draws in the scene in a colour of a token — smooth shapes of CSS beside
@@ -7630,10 +7653,17 @@ after „Restart” and after a load the tint stands at once where the streak, o
 - **Origin:** none
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
-figure legible at the fastest pace. The pictures stand in the game's data, as the rest of the
-game's content does, so the code of the view names no resource. The scene may thus show
-what the character's tile does not hold; the numbers of the stock are given by the table and the
-line under the map. An extinguished campfire is the picture of a
+figure legible at the fastest pace. The clock of the view reads the time every 200 ms, so the
+smoothness of motion has to come from CSS, which divides time into equal steps for the frames of the
+sprite and needs no clock of its own; the risk that D-03 took with React, a rebuilt node restarting a
+CSS animation and the figure shaking, is one this scene meets, since the screen changes up to five
+times a second. The mage walks to its place in 640 ms at every pace, a walk being a motion of the
+character and not an effect of an ordinary event, so the limit of D-317 does not cover it. The
+pictures stand in the game's data, as the rest of the game's content does, so the code of the view
+names no resource. The scene may thus show what the character's tile does not hold, which can
+mislead the reading of a condition such as „Tu leży mniej niż”, as the scene of loop, which did not
+show the tile either, could; the numbers of the stock are given by the table and the line under the
+map. An extinguished campfire is the picture of a
 burning one without colour and without motion. A tint tied to the streak explains its loss with no
 text, and a tint leaves the brightness as it is, so a time of day can lay its own darkness over the
 scene later. Full gold waits for a completion, so the required streak does not look like a win, and
@@ -7642,11 +7672,15 @@ be done. Blue says cold, which the frost says, and grey says that time stands st
 says (D-322). A loss of the streak takes the tint back over 2 s because a change of the scene's state
 may last longer than an effect (D-317), and in the pause the return waits for „Wznów” so that the
 loss is seen going. Accepted with it: a change of hue is subtler than a change of brightness, and at
-16× the scene may still be turning cool when the streak grows again.
+16× the scene may still be turning cool when the streak grows again; at 16× the mage is often still
+walking when its action ends.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
 a prop standing only while its resource lies on the character's tile — a piece of a scene showing
 the character's tile, left out of the project, would enter it, and the scene would change at
-„Eksploruj” with no transition; no props — the mage would have nothing to walk to; a night that
+„Eksploruj” with no transition; no props — the mage would have nothing to walk to; a walk as long
+as the shorter of 640 ms and the time of the action — its length would follow the pace, while the
+rhythm is to be apart from it; a walk of 300 ms — the mage jumps across the frame; a walk whose time
+follows the distance — it does not fit 16×; a night that
 brightens with the streak — it collides with a time of day added later and looks like the greyed,
 darkened pause; a cycle of day and night tied to nothing — it suggests a rule that does not exist;
 a light of the scene whose source each map picks — a mechanism for a need not yet known; mist or
