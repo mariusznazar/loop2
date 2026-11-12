@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
+import { inflateSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
@@ -21,6 +22,7 @@ import {
 import {
   sceneDrawing,
   sceneEffect,
+  tintShown,
 } from "../../dist/browser/view/scene-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
@@ -456,6 +458,7 @@ test("every file the scene's data names stands directly in assets/sprites/ as a 
   const names = [
     SCENE.background.file,
     SCENE_FIRE.picture.file,
+    SCENE_FIRE.low.picture.file,
     SCENE_DUST.file,
     ...Object.values(SCENE_MAGES).flatMap((sheets) => [
       sheets.idle.file,
@@ -684,4 +687,284 @@ test("each prop's facing is the side its middle lies on, from the places of the 
       resource,
     );
   }
+});
+
+// --- the smaller flame, the tint of the light and the frost (task swit-rosnacy-z-passa) -------------
+
+const FIRE_AT = () => sent().run.character.at;
+const burningWith = (minutesLeft) =>
+  sceneDrawing(withRun(sent(), { campfires: [{ at: FIRE_AT(), minutesLeft }] }))
+    .fire;
+
+// To do 4. Catches a smaller flame that comes at the wrong minute (the last 20 minutes of burning are
+// the ones with 20 or fewer left, one stick adding 20), one an extinguished fire takes, and a burning
+// fire left with the full flame.
+test("a burning fire draws the smaller flame with 20 minutes of burning left or fewer, and the full flame with more", () => {
+  const FULL = "/sprites/fire.png";
+  const SMALL = "/sprites/fire-small.png";
+  assert.equal(burningWith(60).href, FULL);
+  assert.equal(burningWith(20.5).href, FULL);
+  assert.equal(burningWith(20).href, SMALL);
+  assert.equal(burningWith(0.5).href, SMALL);
+  const out = burningWith(0);
+  assert.equal(out.href, FULL, "the extinguished fire stays as it is");
+  assert.equal(out.burning, false);
+  const small = burningWith(10);
+  assert.deepEqual(
+    { ...small, href: undefined },
+    {
+      href: undefined,
+      width: 32,
+      height: 32,
+      frames: 4,
+      x: 124,
+      y: 132,
+      burning: true,
+    },
+    "the same place, size and frame count as the full flame",
+  );
+});
+
+/** Pixels of a PNG file of 8-bit RGBA, rows of [r, g, b, a] by the chunks of its text, no library. */
+function decodePng(file) {
+  const bytes = readFileSync(join(SPRITES, file));
+  assert.deepEqual(
+    [...bytes.subarray(0, 8)],
+    [137, 80, 78, 71, 13, 10, 26, 10],
+  );
+  const chunks = [];
+  for (let at = 8; at < bytes.length;) {
+    const length = bytes.readUInt32BE(at);
+    chunks.push({
+      type: bytes.toString("latin1", at + 4, at + 8),
+      data: bytes.subarray(at + 8, at + 8 + length),
+    });
+    at += 12 + length;
+  }
+  const header = chunks[0].data;
+  const width = header.readUInt32BE(0);
+  const height = header.readUInt32BE(4);
+  assert.equal(header[8], 8, "8 bits");
+  assert.equal(header[9], 6, "RGBA");
+  const raw = inflateSync(
+    Buffer.concat(chunks.filter((c) => c.type === "IDAT").map((c) => c.data)),
+  );
+  const stride = width * 4;
+  const rows = [];
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    const line = Buffer.from(
+      raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)),
+    );
+    const above = y === 0 ? Buffer.alloc(stride) : rows[y - 1];
+    for (let i = 0; i < stride; i++) {
+      const left = i < 4 ? 0 : line[i - 4];
+      const up = above[i];
+      const upLeft = i < 4 ? 0 : above[i - 4];
+      const predictor = [
+        0,
+        left,
+        up,
+        (left + up) >> 1,
+        (() => {
+          const p = left + up - upLeft;
+          const [a, b, c] = [
+            Math.abs(p - left),
+            Math.abs(p - up),
+            Math.abs(p - upLeft),
+          ];
+          return a <= b && a <= c ? left : b <= c ? up : upLeft;
+        })(),
+      ][filter];
+      line[i] = (line[i] + predictor) & 255;
+    }
+    rows.push(line);
+  }
+  const pixels = rows.map((line) =>
+    Array.from({ length: width }, (_, x) => [
+      ...line.subarray(x * 4, x * 4 + 4),
+    ]),
+  );
+  return { types: chunks.map((c) => c.type), width, height, pixels };
+}
+
+// To do 4, D-271, D-273. A new file of assets/sprites/ does not change that trust boundary of the part,
+// which review keeps until the boundary changes (sprite-file-content), but its content is checked: it must hold
+// pixels alone and be the full flame's sheet with the flame cut down, on the same stones. Catches a file
+// with a chunk that carries text or a profile, a sheet of another size, a colour the pack's fire does
+// not have, and any change to a pixel that is not the flame's, a stone and a log included.
+test("the smaller flame's file holds pixels alone, is the full flame's sheet with only the flame's pixels cut down, and has no new colour", () => {
+  // The five reds and browns the full flame is drawn in, as the pixels of fire.png hold them.
+  const FLAME = ["124,9,12", "178,24,24", "222,83,37", "40,22,19", "76,44,28"];
+  const BLACK = [0, 0, 0, 255];
+  const full = decodePng("fire.png");
+  const small = decodePng("fire-small.png");
+  assert.deepEqual(small.types, ["IHDR", "IDAT", "IEND"], "pixels alone");
+  assert.deepEqual(
+    [small.width, small.height],
+    [128, 32],
+    "four frames of 32 × 32",
+  );
+  const cut = [0, 0, 0, 0];
+  for (let y = 0; y < 32; y++)
+    for (let x = 0; x < 128; x++) {
+      const was = full.pixels[y][x];
+      const is = small.pixels[y][x];
+      if (was.join() === is.join()) continue;
+      assert.ok(
+        FLAME.includes(was.slice(0, 3).join(",")),
+        `${x},${y} was no flame`,
+      );
+      assert.deepEqual(is, BLACK, `${x},${y} is the pit's black`);
+      cut[Math.floor(x / 32)]++;
+    }
+  // Each of the four frames loses part of its flame, none all of it.
+  const flame = (image, frame) => {
+    let count = 0;
+    for (let y = 0; y < 32; y++)
+      for (let x = frame * 32; x < frame * 32 + 32; x++)
+        if (FLAME.includes(image.pixels[y][x].slice(0, 3).join(","))) count++;
+    return count;
+  };
+  for (let frame = 0; frame < 4; frame++) {
+    assert.ok(cut[frame] > 0, `frame ${frame} is smaller`);
+    assert.ok(flame(small, frame) > 0, `frame ${frame} still has a flame`);
+    assert.ok(
+      flame(small, frame) <= flame(full, frame) * 0.7,
+      `frame ${frame} is clearly smaller`,
+    );
+  }
+});
+
+const run = (patch) => withRun(sent(), patch);
+const tintAt = (patch) => sceneDrawing(run(patch)).tint;
+
+// To do 2, D-315. Catches a tint that is not even in the streak, one that reaches 0.8 at another
+// streak than the map asks for (Las 480, Las — głębiej 540), one that goes past 0.8 without a
+// completion, and one that is 1 before it. The required streaks are the maps' own data.
+test("the tint is the streak's share of the required streak times 0.8, and 1 at a completion alone", () => {
+  assert.equal(tintAt({ streak: 0 }), 0);
+  assert.equal(tintAt({ streak: 120 }), 0.2);
+  assert.equal(tintAt({ streak: 480 }), 0.8);
+  assert.equal(tintAt({ streak: 481 }), 0.8);
+  assert.equal(tintAt({ streak: 100000 }), 0.8);
+  assert.equal(tintAt({ streak: 480, completion: { minute: 480 } }), 1);
+  assert.equal(tintAt({ streak: 0, completion: { minute: 1 } }), 1);
+  const deep = Object.keys(MAPS)[1];
+  assert.equal(tintAt({ mapId: deep, streak: 270 }), 0.4);
+  assert.equal(tintAt({ mapId: deep, streak: 540 }), 0.8);
+  assert.equal(
+    tintAt({ mapId: deep, streak: 540, defeatedAttacks: 1 }),
+    0.8,
+    "a streak that meets only one requirement is no completion",
+  );
+});
+
+test("the tint grows evenly in the streak, never down", () => {
+  let last = -1;
+  for (let streak = 0; streak <= 600; streak++) {
+    const tint = tintAt({ streak });
+    assert.ok(tint >= last, `streak ${streak}`);
+    last = tint;
+  }
+  assert.equal(tintAt({ streak: 240 }) * 2, tintAt({ streak: 480 }));
+});
+
+const frostAt = (temperature) =>
+  sceneDrawing(run({ body: { ...sent().run.body, temperature } })).frost;
+
+// To do 5. Catches a frost at 37 °C, a thickness that does not follow the cold evenly from 37 to 35 °C
+// (half, 8 pixels, at 36 °C), one that is not whole pixels, one that goes on below 35 °C, and one that
+// shrinks as the body cools.
+test("the frost is none at 37 °C, half of 16 pixels at 36 °C and the whole 16 at 35 °C and below", () => {
+  assert.equal(frostAt(37), 0);
+  assert.equal(frostAt(36.5), 4);
+  assert.equal(frostAt(36), 8);
+  assert.equal(frostAt(35.5), 12);
+  assert.equal(frostAt(35), 16);
+  assert.equal(frostAt(34.99), 16);
+  assert.equal(frostAt(10), 16);
+  assert.equal(frostAt(-300), 16);
+  let last = -1;
+  for (let degrees = 37; degrees >= 34; degrees -= 0.01) {
+    const thickness = frostAt(degrees);
+    assert.ok(Number.isInteger(thickness), `${degrees}`);
+    assert.ok(thickness >= last, `${degrees}`);
+    last = thickness;
+  }
+});
+
+test("the frost follows the body's temperature and nothing else, the streak included", () => {
+  assert.equal(sceneDrawing(run({ streak: 400 })).frost, 0);
+  assert.equal(
+    sceneDrawing(
+      run({ streak: 400, body: { ...sent().run.body, temperature: 36 } }),
+    ).frost,
+    8,
+  );
+});
+
+/** A tint shown after a first draw at `shown` (an unplaced first one). */
+const SHOWN = (shown, from = null, serial = 1) => ({ shown, from, serial });
+
+// To do 2 and 3, D-322. Catches a tint that returns at once, one that returns while time stands, one that
+// jumps at a death or a completion, and one that is restarted by a return already running.
+test("the tint shown stands at once at a first draw and where a map run starts, wherever it stood", () => {
+  assert.deepEqual(tintShown(null, 0.4, "going", false), SHOWN(0.4));
+  assert.deepEqual(tintShown(SHOWN(0.8), 0, "going", true), SHOWN(0, null, 2));
+  assert.deepEqual(
+    tintShown(SHOWN(0.8, 0.8), 0, "paused", true),
+    SHOWN(0, null, 2),
+  );
+});
+
+test("while the scene goes on, a fall of the target starts a return from the tint shown, and a rise only follows", () => {
+  assert.deepEqual(tintShown(SHOWN(0.8), 0, "going", false), SHOWN(0, 0.8, 2));
+  assert.deepEqual(
+    tintShown(SHOWN(0.8), 0.7, "going", false),
+    SHOWN(0.7, 0.8, 2),
+  );
+  assert.deepEqual(
+    tintShown(SHOWN(0.2), 0.3, "going", false),
+    SHOWN(0.3, null, 1),
+  );
+  const same = SHOWN(0.2);
+  assert.equal(tintShown(same, 0.2, "going", false), same, "nothing changed");
+  // A return that runs is kept, a rise and a further fall alike: no jump from where it has got to.
+  const running = SHOWN(0, 0.8, 2);
+  assert.deepEqual(
+    tintShown(running, 0.04, "going", false),
+    SHOWN(0.04, 0.8, 2),
+  );
+  assert.deepEqual(
+    tintShown(SHOWN(0.04, 0.8, 2), 0, "going", false),
+    SHOWN(0, 0.8, 2),
+  );
+});
+
+test("while time stands, in the player's pause and at a discovery, the tint shown is kept, and the return starts where the scene goes on", () => {
+  for (const standing of ["paused", "discovery"]) {
+    const held = SHOWN(0.8);
+    assert.equal(tintShown(held, 0, standing, false), held, standing);
+    assert.equal(tintShown(held, 0.9, standing, false), held, standing);
+  }
+  const held = SHOWN(0.8);
+  assert.deepEqual(
+    tintShown(tintShown(held, 0, "paused", false), 0, "going", false),
+    SHOWN(0, 0.8, 2),
+  );
+});
+
+test("at a death and at a completion the tint stands at once where the streak or the completion puts it, and a return running is dropped", () => {
+  assert.deepEqual(tintShown(SHOWN(0.6), 0, "dead", false), SHOWN(0, null, 2));
+  assert.deepEqual(
+    tintShown(SHOWN(0.8), 1, "completed", false),
+    SHOWN(1, null, 2),
+  );
+  assert.deepEqual(
+    tintShown(SHOWN(0, 0.8, 2), 0, "dead", false),
+    SHOWN(0, null, 3),
+  );
+  const stood = SHOWN(1);
+  assert.equal(tintShown(stood, 1, "completed", false), stood);
 });

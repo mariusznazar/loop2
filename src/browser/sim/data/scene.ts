@@ -1,4 +1,5 @@
 import type { ArchetypeId } from "./archetypes.js";
+import { BALANCE } from "./balance.js";
 import type { ResourceId } from "./resources.js";
 
 /** A picture in assets/sprites/: its file, the size of one frame and the frames it holds. */
@@ -99,12 +100,53 @@ export const SCENE_EFFECTS = {
   arc: 6,
 } as const;
 
-/** The campfire's sheet: burning with its frames, extinguished as the same picture without colour. */
+/**
+ * The smaller flame of a burning campfire in its last minutes: its own sheet, the same four frames of
+ * the same stones and logs as the full flame's, with the flame's fan cut down by hand (D-271), and the
+ * minutes of burning left at or below which the fire shows it. A stick added to a burning fire gives
+ * 20 minutes (the data of items), so the smaller flame says to feed the fire before it dies.
+ */
+export type SceneLowFlame = {
+  picture: ScenePicture;
+  lastMinutes: number;
+};
+
+/**
+ * The campfire's sheet: burning with its frames, extinguished as the same picture without colour. A
+ * burning fire shows the full flame, and `low` while it has `low.lastMinutes` minutes of burning left
+ * or fewer; the extinguished fire is always the full sheet's first frame, grey.
+ */
 export const SCENE_FIRE = {
   picture: { file: "fire.png", width: 32, height: 32, frames: 4 },
   place: { x: 124, y: 132 },
   mageAt: 80,
-} as const satisfies SceneSpot;
+  low: {
+    picture: { file: "fire-small.png", width: 32, height: 32, frames: 4 },
+    lastMinutes: 20,
+  },
+} as const satisfies SceneSpot & { low: SceneLowFlame };
+
+/**
+ * The tint of the scene's light follows the streak (D-315, D-316): from the cool tint at streak 0 to
+ * the warm one, which is full only at a completion. `requiredShare` is the part of the way from the
+ * cool tint to the warm one that the streak the map's solving condition asks for reaches, the rest, a
+ * trace of the cool tint, staying until a completion; a streak above the required one stays there.
+ */
+export const SCENE_TINT = {
+  requiredShare: 0.8,
+} as const;
+
+/**
+ * The frost on the edges of the scene's frame follows the body's temperature (D-316): none at the
+ * temperature the body starts with and the greatest at the chill, below which the body is chilled, and
+ * for that long as the body stays chilled. `thickness` is the frost's greatest thickness, in the
+ * scene's pixels.
+ */
+export const SCENE_FROST = {
+  none: BALANCE.body.startTemperature,
+  full: BALANCE.body.chilledBelow,
+  thickness: 16,
+} as const;
 
 /** The props of the scene, by the resource each shows; a resource with no prop has none here. */
 export const SCENE_PROPS = {
