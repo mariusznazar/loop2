@@ -64,9 +64,9 @@ OTHER_ID = "abcdef0123456789" * 4
 STARTED = "2026-11-08T22:00:00.123456789Z"
 RESTARTED = "2026-11-09T00:03:00.000000000Z"
 
-# The notices as the maker worded them (the spec leaves the Polish wording to the maker): the
-# subject goes into a URL path, so it is ASCII; the text is one sentence line in UTF-8, and it
-# differs per kind. The test of the invariant failure-watcher-message holds these words fixed.
+# The notices as the script words them (D-356 fixes only that they say which kind of trouble was
+# found): the subject goes into a URL path, so it is ASCII; the text is one sentence line in
+# UTF-8, and it differs per kind. The test of the invariant failure-watcher-message holds these words fixed.
 NOTICES = {
     "down": ("loop2_gra_nie_dziala",
              "Gra loop2 nie działa: kontener gry albo tunelu nie jest uruchomiony. "

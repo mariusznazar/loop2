@@ -9,7 +9,7 @@ repository standing in for GitHub with a clone of it standing in for the server'
 
 Reading of the sentence:
 - the command the automation's key runs: the forced-command path, `SSH_ORIGINAL_COMMAND` set and no
-  argument (spec § 5, "Input — two paths"); a key with a forced command also reaches the script
+  argument; a key with a forced command also reaches the script
   with the variable unset and no argument, when the client asks for no command;
 - refuses before it fetches, builds or changes a container: the run ends with the input refusal's
   exit 2, no docker call is recorded at all, git traces no fetch, and the checkout stays where it
@@ -78,7 +78,7 @@ REFUSED_INPUTS = {
 EXIT_INPUT_REFUSED = 2
 EXIT_COMMIT_REFUSED = 3
 # The only docker call the script makes before the commit stage: the read-only revision label of
-# the running loop2 container (spec § 5, step 3).
+# the running loop2 container.
 READ_RUNNING_REVISION = ["inspect", "--type", "container", "--format",
                          '{{ index .Config.Labels "org.opencontainers.image.revision" }}', "loop2"]
 

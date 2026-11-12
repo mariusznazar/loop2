@@ -1,4 +1,4 @@
-"""Static checks of the deployment workflow (spec § 4). Standard library only: the workflow is
+"""Static checks of the deployment workflow. Standard library only: the workflow is
 read as text, not parsed as YAML. No real run is possible before the merge."""
 
 import os

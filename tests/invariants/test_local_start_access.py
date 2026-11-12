@@ -476,7 +476,7 @@ class LocalStart(unittest.TestCase):
         self.assertFalse(accepts_connections("127.0.0.1", start.port), output)
 
     def test_a_directory_stop_cannot_be_told_to_leaves_one_failure_line_with_its_cause(self):
-        # Task item 7: the line of the failed telling and the line of the start that did not stop
+        # The line of the failed telling and the line of the start that did not stop
         # are one failure, so the run leaves one line, the one that carries the original error.
         self.local()
         os.makedirs(self.copy.file(f".runs/local-start/{self.planted_name()}/stop"))
@@ -487,7 +487,7 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(json.loads(lines[0])["code"], "EEXIST")
 
     def test_stop_with_no_built_game_still_tells_every_start_and_leaves_the_missing_writer_once(self):
-        # Task item 6: a copy that holds no dist/server/log-line.js, with a start of the stand-in
+        # A copy that holds no dist/server/log-line.js, with a start of the stand-in
         # server that holds no writer either, and a directory whose stop file cannot be written
         # listed before it.
         write_stand_in(self.copy, STAND_IN_SERVER)
@@ -579,7 +579,7 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(json.loads(lines[0])["code"], "ECONNRESET")
 
     def test_an_answer_the_server_breaks_off_after_its_headers_ends_the_browsers_connection(self):
-        # Task item 8: the browser is not left waiting for the rest of a cut-off answer, which
+        # The browser is not left waiting for the rest of a cut-off answer, which
         # does not end as a whole one, and the cut leaves one line with its cause.
         code, output = self.copy.npm("run", "build")
         self.assertEqual(code, 0, output)
@@ -615,7 +615,7 @@ class LocalStart(unittest.TestCase):
         self.assertEqual({json.loads(line)["code"] for line in lines}, {"ECONNRESET"})
 
     def test_a_browser_that_leaves_in_the_middle_of_a_request_leaves_no_failure_line(self):
-        # Task item 18: the line that follows is the one of the dropped request alone, and it
+        # The line that follows is the one of the dropped request alone, and it
         # comes after the held request's connection has ended on the server's side.
         code, output = self.copy.npm("run", "build")
         self.assertEqual(code, 0, output)
