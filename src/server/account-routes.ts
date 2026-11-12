@@ -348,7 +348,7 @@ async function sendLinkMessage(
   return outcome;
 }
 
-// Runs after the request for a link was answered (spec decision 2), with no
+// Runs after the request for a link was answered (D-222), with no
 // request to fall back on: a throw here would end the process, so it never
 // rejects. A message goes only to a confirmed address; whether it goes at all
 // is shown to nobody, so the outcome is ignored. A blocked account reaches
@@ -469,7 +469,8 @@ export function accountRoutes(
 
   // The checks come in this order: the guards, the fields, the session, the
   // size of the stored text, then one write that checks the block, the version
-  // and the revision (spec decision 1).
+  // and the revision (D-104 for the guards, the fields and the size, D-112 and
+  // D-210 for the write).
   router.put(paths.savedGame, (request, response) => {
     const fields = saveFields(request.body);
     if (!fields) {
