@@ -41,7 +41,7 @@ export function rehearsalMark(
 }
 
 /**
- * The line above „Wejdź” at a character (To do 5, item 4): what the send takes, from the function
+ * The line above „Wejdź” at a character (D-329): what the send takes, from the function
  * the send takes through, „Wejdzie: patyk 6, jagoda 4”, or „Wejdzie: nic” when it takes none. The
  * chest is `null` at a solved map, which takes from nowhere (D-189). Pure.
  */

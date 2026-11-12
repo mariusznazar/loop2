@@ -1,11 +1,11 @@
 /**
- * The trip plan of a program in React (D-180, D-181; task edytor-programu, Slice 11): the section the
- * program panel holds between the program's name and its rules. Folded, it is one line: the words
- * „Zabierz” and „Wynieś”, each position's item icon and count, or „Plan wyprawy: pusty” when both
- * lists are empty. Unfolded, each list shows its positions, each with an item select list, a count
- * field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” below it. Every edit hands the page a whole new
- * program through `onCommit`. The folding is the component's own state, folded at the start; a click
- * on the line opens and closes it, and so does Enter on its button, which is a click there.
+ * The trip plan of a program in React (D-180, D-181): the section the program panel holds between
+ * the program's name and its rules. Folded, it is one line: the words „Zabierz” and „Wynieś”, each
+ * position's item icon and count, or „Plan wyprawy: pusty” when both lists are empty. Unfolded,
+ * each list shows its positions, each with an item select list, a count field, „↑”, „↓” and
+ * „Usuń”, and „Dodaj przedmiot” below it. Every edit hands the page a whole new program through
+ * `onCommit`. The folding is the component's own state, folded at the start; a click on the line
+ * opens and closes it, and so does Enter on its button, which is a click there.
  *
  * The page holds the section behind `createTripPlan`, as it holds the rule panel: an element of its
  * own, `update(props)` and `dispose()`, called from an event handler or the continuation of an

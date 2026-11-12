@@ -9134,3 +9134,18 @@ Where the program the program panel shows is gone from the player's list, or the
 
 *Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
 *Rejected:* unknown.
+
+### D-383 — How does the list of revealed tiles show an item that burns on a tile?
+
+An item burning on a revealed tile, a lit stick today, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map, and its name comes from the game's data (D-18).
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-70 · derives from D-72
+- **Verification:** an agent compares a change with the decision:
+  - complies: a tile holding a campfire with 55 minutes left and a stick with 3 minutes left, its row reading „ognisko — płonie, zostało 55 min” and then „patyk — płonie, zostało 3 min”; the same tile after the stick's last minute, its row reading the campfire's text alone
+  - violates: an icon of a burning stick on the drawing of the game map; the text of the burning stick before the campfire's; the name „patyk” written in the code of the list instead of read from the game's data
+- **Origin:** none
+
+*Rationale:* a burning stick is shown only in the row of its tile, not on the drawing, and its minutes of burning are a number, which stands in the row of the tile as the campfire's do (D-70). A stick lit on a revealed tile (D-72) then shows in the list after the campfire's text, in the same words.
+*Rejected:* unknown.
