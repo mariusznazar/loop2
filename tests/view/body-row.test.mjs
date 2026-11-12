@@ -1,10 +1,8 @@
-// The row of the body and the backpack under the scene (spec Decision 3, "What the player
-// reads beside it"; task, To do 14): values cut down, never rounded, with a decimal comma; a value
-// below the threshold of chill or hunger in `danger`; the backpack's pieces of its cap. The row
-// ends with „Energia natury {n}”, cut down to a whole number, never in `danger` (task plomyk,
-// plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania, To do 6, line 23, and Q5). Under
-// temperature and satiety stands a note of the minutes the need lasts (task teraz-i-potem, To do 4
-// to 6, D-337); health and nature energy stand with none.
+// The row of the body and the backpack under the scene: the temperature in tenths with a decimal
+// comma (D-57), cut down, never rounded; a value below the threshold of chill or hunger in `danger`;
+// the backpack's pieces of its cap (D-64). The row ends with „Energia natury {n}”, cut down to a
+// whole number like satiety and health, never in `danger` (D-178). Under temperature and satiety
+// stands a note of the minutes the need lasts (D-337); health and nature energy stand with none.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -39,9 +37,8 @@ function character(backpack, carryingCapacity = 15) {
   };
 }
 
-// Row 7 of the task and the new example of D-178 replace the case that joined the four values by
-// „ · ”: the values now stand in cells of their own, each with its own note (D-337), so no joined
-// line is checked any more.
+// The values stand in cells of their own, each with its own note (D-337), so no line that joins the
+// four values by „ · ” is checked.
 test("the body row reads temperature, satiety, health and nature energy in cells, with the minutes under the first two, as D-178 gives for Las", () => {
   // D-178: „Temperatura 36,9 °C” with „bez ognia 79 min”, „Sytość 82 %” with „bez jedzenia 86 min”,
   // „Zdrowie 100” and „Energia natury 90”; the minutes are worked out by hand in tests/sim/body.test.mjs.

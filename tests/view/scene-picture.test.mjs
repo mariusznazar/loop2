@@ -35,11 +35,12 @@ const SENT = {
 };
 const ALWAYS = { kind: "always" };
 
-// The layout of the old Loop's scene (src/components/probe/Scene.tsx of the old Loop repository,
-// lines 44-58 at cdc7c0d), in the pixels of the 336 × 152 frame. A place is the left edge and the line the
-// picture stands on; the mage's place is its frame's left edge, its feet on the ground line. The
-// mage's frame is 64 pixels wide and the old Loop's was 32, so each of its places is the old one
-// moved 16 pixels left, which keeps the figure's centre where the old Loop had it.
+// The places of the scene (D-318) in the pixels of the 336 × 152 frame, as the data of the scene
+// holds them (src/browser/sim/data/scene.ts). A place is the left edge and the line the picture
+// stands on; the mage's place is its frame's left edge, its feet on the ground line. The mage's frame
+// is 64 pixels wide and the old Loop's was 32, so the places of the sticks, the berry bush, the fire
+// and the clearing are the old Loop's moved 16 pixels left, which keeps the figure's centre where
+// the old Loop had it; the moss place and the right edge are set otherwise in the data.
 const GROUND = 136;
 const MAGE_AT_STICKS = 42;
 const MAGE_AT_BERRY = 224;
@@ -638,8 +639,8 @@ test("no effect without exactly one end of a gathering, in a reading that has a 
   );
 });
 
-// Minor finding 3 of the review: a net change of the backpack decides hit or miss, so a reading in which
-// an action that takes pieces out of it also ended cannot be read.
+// D-367. A net change of the backpack decides hit or miss, so a reading in which an action that takes
+// pieces out of it also ended cannot be read.
 test("no effect where an action that takes pieces out of the backpack ended in the same reading", () => {
   for (const kind of [
     "craftCampfire",

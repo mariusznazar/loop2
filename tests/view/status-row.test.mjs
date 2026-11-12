@@ -1,9 +1,9 @@
-// The clock and the bar of the solving condition in the header of the screen of a map run (task
-// teraz-i-potem, To do 3; D-311, D-122, D-132, D-62, D-133): „Minuta {game minute}”, „ (pauza)” after
-// it at every pause, the stop at a discovery included, and at the game minute of the end, with no
-// „ (pauza)”, after a death and a completion; the character's action and the streak are not in it.
-// The words and the share of each requirement of the solving condition. And the text of a pause button and of a
-// discovery (task ognisko-i-jedzenie, To do 3; task odkrywanie, To do 5).
+// The clock and the bar of the solving condition in the header of the screen of a map run (D-311,
+// D-122, D-132, D-62, D-133): „Minuta {game minute}”, „ (pauza)” after it at every pause, the stop
+// at a discovery included, and at the game minute of the end, with no „ (pauza)”, after a death and
+// a completion; the character's action and the streak are not in it. The words and the share of
+// each requirement of the solving condition. And the text of a pause button and of a discovery
+// (D-122).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -86,8 +86,8 @@ test("the minute shown is the map run's game minute", () => {
   assert.equal(clockText(state.run, state.paused), "Minuta 7");
 });
 
-// D-311: the character's action is no longer in the header, and the streak is the bar's (slice 8).
-// The activities are the ones the status row once worded one by one: exploring, wandering, walking
+// D-311: the character's action is no longer in the header, and the streak is the bar's. The
+// activities are the ones the status row once worded one by one: exploring, wandering, walking
 // to and gathering each resource, a step to the campfire, waiting, an encounter.
 test("the clock names no activity, resource, creature or streak, whatever the character does", () => {
   const base = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
@@ -199,8 +199,7 @@ test("a mage left without a program dies, and the clock reads the minute of its 
   assert.equal(pauseLabel(ended), null);
 });
 
-// Slice 12 (task odkrywanie, To do 5, odkrywanie_loop2.md line 144): the line under the status row
-// says what was revealed, and goes when the player moves on.
+// D-122: the band under the header says what was revealed, and goes when the player moves on.
 const EXPLORED_REVEALED = {
   actions: ["walkTo", "gather"],
   conditions: ["hereBelow", "itemBelow"],
@@ -209,7 +208,7 @@ const EXPLORED_REVEALED = {
   creatures: [],
 };
 
-test("the text for the first finished exploration of a tile with sticks and berries is the task's example", () => {
+test("the text for the first finished exploration of a tile with sticks and berries is the example of D-122", () => {
   assert.equal(
     discoveryText(EXPLORED_REVEALED),
     "Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.",

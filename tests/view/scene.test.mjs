@@ -1,11 +1,11 @@
-// The scene (task scena-z-ludzikiem, To do 1 to 11; D-316 to D-322, D-272, D-43, D-04) on jsdom
-// through tests/view/page-document.mjs (D-264): the parts it draws in each way it stands, the badge
-// over the mage, the fire absent, burning and extinguished, the greys, that it is a picture nothing
-// in which the keyboard reaches or a click moves, and of its motion what jsdom can show — where the
-// mage stands at once and where it walks, the place kept where it stays, the stops that hold every
-// animation, the bar of a new action, and the elements a redraw keeps. jsdom runs no animation: the
-// motion itself, the beat and reduced motion are read from a stream of frames in the browser (D-254,
-// D-88). Every comparison is of plain data or of a handful of words (D-268).
+// The scene (D-316 to D-322, D-272, D-43, D-04) on jsdom through tests/view/page-document.mjs
+// (D-264): the parts it draws in each way it stands, the badge over the mage, the fire absent,
+// burning and extinguished, the greys, that it is a picture nothing in which the keyboard reaches or
+// a click moves, and of its motion what jsdom can show — where the mage stands at once and where it
+// walks, the place kept where it stays, the stops that hold every animation, the bar of a new action,
+// and the elements a redraw keeps. jsdom runs no animation: the motion itself, the beat and reduced
+// motion are read from a stream of frames in the browser (D-254, D-88). Every comparison is of plain
+// data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -123,8 +123,9 @@ const sheetOf = (element) => {
   };
 };
 
-// Catches a scene that leaves out a part of To do 1, 2 or 4, or draws a part from another file. The
-// mage holds its idle sheet and its run sheet, which it shows on a walk (To do 5).
+// Catches a scene that leaves out a part of D-316 (the background, the props, the mage), or draws a
+// part from another file. The mage holds its idle sheet and its run sheet, which it shows on a walk
+// (D-319).
 test("a scene going on draws the background, the three props and the mage with its idle and run sheets, and no fire", async () => {
   await withPage(async (page) => {
     const scene = await drawn(page, doing(GATHER_STICK));
@@ -313,7 +314,7 @@ const STANDINGS = {
     withRun({ ...sent(), paused: false }, { completion: { minute: 4 } }),
 };
 
-// Catches a standing the scene does not mark, which the stylesheet's greys and Slice 5's stops read.
+// Catches a standing the scene does not mark, which the stylesheet's greys and the stops of the motion read.
 test("the scene marks how it stands: going, paused, at a discovery, dead, completed", async () => {
   await withPage(async (page) => {
     for (const [standing, make] of Object.entries(STANDINGS)) {
@@ -463,7 +464,7 @@ test("a game with no map run draws no scene", async () => {
   });
 });
 
-// --- motion (Slice 5) -----------------------------------------------------------------------------
+// --- motion (D-319) -----------------------------------------------------------------------------
 
 /**
  * A scene mounted once and drawn again at each state given, with the events of the simulation call
@@ -522,7 +523,7 @@ const standingOf = (mage) => ({
   facing: mage.getAttribute("data-facing"),
 });
 
-// To do 5, D-319. Catches a mage that walks in from somewhere at the scene's first draw, after a load
+// D-319. Catches a mage that walks in from somewhere at the scene's first draw, after a load
 // included, instead of standing at its place at once.
 test("at its first draw, after a load included, the mage stands at its place at once, with no walk", async () => {
   await withPage(async (page) => {
@@ -534,7 +535,7 @@ test("at its first draw, after a load included, the mage stands at its place at 
   });
 });
 
-// To do 5, D-319. Catches a mage that jumps to its next place at an ordinary change of activity, walks
+// D-319. Catches a mage that jumps to its next place at an ordinary change of activity, walks
 // from another place than the one it stands at, or faces away from the way it walks. The offset the
 // walk starts from is a percentage of the mage's own frame of 64 pixels: from 42 to 275 it starts
 // 233 pixels to the left, -364.0625 %.
@@ -562,7 +563,7 @@ test("at an ordinary change of activity the mage walks from where it stands to i
   });
 });
 
-// To do 5, D-319, the glossary's map run restart. Catches a mage that walks across the scene at the
+// D-319, the glossary's map run restart. Catches a mage that walks across the scene at the
 // start of a map run or after „Restart”: the event `mapRunStarted` the simulation returned places it
 // at once, where the same state read without that event is an ordinary change and a walk.
 test("at „Restart”, the event of a map run started, the mage stands at its place at once, crossing nothing", async () => {
@@ -618,7 +619,7 @@ test("where the activity leaves the mage standing, it keeps the place of the pre
   });
 });
 
-// To do 8 and 9, D-322. Catches a stop that leaves an animation of the scene running: the frames of
+// D-322. Catches a stop that leaves an animation of the scene running: the frames of
 // the mage's sheets, the fire's or the mage's walk, at the player's pause, a discovery, a death or a
 // completion; and a scene going on whose animations stand.
 test("every stop holds every animation of the scene where it is, and a scene going on runs them", async () => {
@@ -644,7 +645,7 @@ test("every stop holds every animation of the scene where it is, and a scene goi
   });
 });
 
-// Carried question 4, D-320. Catches a bar that runs back from the last action's fill to the next
+// D-320. Catches a bar that runs back from the last action's fill to the next
 // action's — the same action again at the same place, where the mage does not walk, and the first
 // action after „Restart”, which starts at the same minute 0 as the last — and a bar rebuilt at every
 // reading, which could not fill smoothly from one reading to the next.
@@ -727,7 +728,7 @@ test("a redraw at each reading of the clock keeps every element that runs an ani
   });
 });
 
-// To do 5, the plan's wiring through run-screen.tsx and world-area.tsx (D-04). Catches a screen that
+// The wiring through run-screen.tsx and world-area.tsx (D-04, D-319). Catches a screen that
 // does not hand the events of its update to the scene, so the mage walks across the scene at
 // „Restart”.
 test("the screen of a map run hands the events of each update to the scene", async () => {
@@ -761,7 +762,7 @@ test("the screen of a map run hands the events of each update to the scene", asy
   });
 });
 
-// --- the gathering as a spectacle (task zbieranie-jako-widowisko, To do 1 to 6) --------------------
+// --- the gathering as a spectacle (D-364, D-365, D-366) --------------------
 
 const GATHER_FIBER = { kind: "gather", resource: "fiber" };
 const PATROL_STICK = { kind: "patrol", resource: "stick" };
@@ -817,7 +818,7 @@ function endAnimation(element) {
 
 const effectsOf = (scene) => [...scene.querySelectorAll(".scene-effect")];
 
-// To do 1, 2. Catches a mage that stands through the gathering, one that bends at „Zbierz” only, or
+// D-364. Catches a mage that stands through the gathering, one that bends at „Zbierz” only, or
 // at a target with a prop only, and one that bends where it does something else.
 test("the mage bends while it gathers, „Zbierz” and „Obchód”, fibre included, and stands otherwise", async () => {
   await withPage(async (page) => {
@@ -844,7 +845,7 @@ test("the mage bends while it gathers, „Zbierz” and „Obchód”, fibre inc
   });
 });
 
-// To do 2. Catches a bend sheet that is another file or has another frame count than the data's, and
+// D-364. Catches a bend sheet that is another file or has another frame count than the data's, and
 // a stylesheet that shows the idle sheet with the bend, or the bend sheet while the mage does not bend.
 test("the mage's bend sheet is the data's file, shown in place of the idle sheet while it bends and hidden otherwise", async () => {
   await withPage(async (page) => {
@@ -873,7 +874,7 @@ test("the mage's bend sheet is the data's file, shown in place of the idle sheet
   });
 });
 
-// To do 1. Catches a mage that bends with its back to the prop: it walks left to the sticks, so its
+// D-364. Catches a mage that bends with its back to the prop: it walks left to the sticks, so its
 // figure is mirrored, and the bend sheet, whose frames reach right, must not be.
 test("a mage that walked left to the sticks bends facing right, toward them", async () => {
   await withPage(async (page) => {
@@ -893,7 +894,7 @@ test("a mage that walked left to the sticks bends facing right, toward them", as
   });
 });
 
-// To do 3, 5, D-04. Catches an end of gathering that shows no flight, a flight of another icon than
+// D-365, D-04. Catches an end of gathering that shows no flight, a flight of another icon than
 // the resource's, or one that comes without the backpack having gained a piece.
 test("a gathering that ends with a piece more in the backpack sends the icon of the resource flying, on a plaque", async () => {
   await withPage(async (page) => {
@@ -942,7 +943,7 @@ test("a gathering that ends with a piece more in the backpack sends the icon of 
   });
 });
 
-// To do 3. Catches a flight at „Obchód” that carries one icon per piece, or none for the whole result.
+// D-365. Catches a flight at „Obchód” that carries one icon per piece, or none for the whole result.
 test("„Obchód” sends one icon for its whole result, however many pieces it brought", async () => {
   await withPage(async (page) => {
     const { scene } = await reading(page, PATROL_STICK, {
@@ -958,7 +959,7 @@ test("„Obchód” sends one icon for its whole result, however many pieces it 
   });
 });
 
-// To do 3. Catches a flight of the fibre that starts at a prop it has none of, or at the mage's head.
+// D-365. Catches a flight of the fibre that starts at a prop it has none of, or at the mage's head.
 test("the fibre's icon flies up from under the mage's feet, where it has no prop", async () => {
   await withPage(async (page) => {
     const { scene } = await reading(page, GATHER_FIBER, {
@@ -984,7 +985,7 @@ test("the fibre's icon flies up from under the mage's feet, where it has no prop
   });
 });
 
-// To do 4, D-66. Catches a miss that shows no dust, dust where the backpack gained a piece, dust at
+// D-366, D-66. Catches a miss that shows no dust, dust where the backpack gained a piece, dust at
 // „Obchód”, which never misses, and dust at another place than the prop's.
 test("„Zbierz” that ends with no new piece puts a cloud of dust at the prop, and no icon flies", async () => {
   await withPage(async (page) => {
@@ -1045,7 +1046,7 @@ test("an „Obchód” that brought nothing shows no effect", async () => {
   });
 });
 
-// To do 5, D-317. Catches an effect that comes with no end of a gathering, from a first draw, or from
+// D-367, D-317. Catches an effect that comes with no end of a gathering, from a first draw, or from
 // a reading that carries two ends, which are overdue; and one at the start of a map run.
 test("no effect without exactly one end of a gathering in a reading that has a previous reading", async () => {
   await withPage(async (page) => {
@@ -1201,7 +1202,7 @@ test("a map run started drops an effect still standing", async () => {
   });
 });
 
-// To do 3, 4, D-365, D-366. Catches an effect placed by where the mage goes next instead of where it
+// D-367, D-365, D-366. Catches an effect placed by where the mage goes next instead of where it
 // stood when the gathering ended: in the reading that carries the end the next action has started,
 // and a walk to the right edge (275) or to the sticks (42) is no place the mage is at. The mage of
 // every case stands at its place, which the first draw gives: the sticks 42, the bush 224, the
@@ -1294,7 +1295,7 @@ test("an effect stands at the mage that gathered, though the next action walks e
   });
 });
 
-// Finding B2 of the review. Catches a mage that bends with its back to its prop: the moss lies to the
+// D-364. Catches a mage that bends with its back to its prop: the moss lies to the
 // mage's left, the sticks and the bush to its right. The bend sheet's frames reach right and the mage's
 // figure is mirrored when it walked left, so the sheet is mirrored again where the two differ.
 test("the bending mage faces its prop whatever way it walked: sticks and bush to the right, moss to the left", async () => {
