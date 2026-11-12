@@ -41,9 +41,9 @@ SCRIPT = os.path.join(ROOT, "deploy", "loop2-deploy")
 BACKUP_SCRIPT = os.path.join(ROOT, "deploy", "loop2-backup")
 BACKUP_SCHEDULE = os.path.join(ROOT, "deploy", "loop2-backup.cron")
 LOGROTATE_FILE = os.path.join(ROOT, "deploy", "loop2-app.logrotate")
-# The failure watcher and its cron file are written in a later slice of the task; the deploy
-# script only compares the installed copies byte for byte with the files of the commit, so these
-# stand-in bytes are all the comparison needs.
+# The deploy script only compares the installed copies of the failure watcher and its cron file
+# byte for byte with the files of the commit, so these stand-in bytes are all the comparison
+# needs.
 WATCH_SCRIPT_BYTES = b"#!/bin/bash\n# stand-in for deploy/loop2-watch\n"
 WATCH_SCHEDULE_BYTES = b'MAILTO=""\n# stand-in for deploy/loop2-watch.cron\n'
 
@@ -377,8 +377,7 @@ class DeployFixture:
         """A new commit on main holding `compose.yaml` and the six installable files:
         `deploy/loop2-deploy` (by default the repository's script), `deploy/loop2-backup`,
         `deploy/loop2-backup.cron` and `deploy/loop2-app.logrotate` from the repository's own
-        files, and `deploy/loop2-watch` and `deploy/loop2-watch.cron` as stand-in bytes, as every
-        commit of this task on does."""
+        files, and `deploy/loop2-watch` and `deploy/loop2-watch.cron` as stand-in bytes."""
         files = {"compose.yaml": b"name: loop2\n",
                  "deploy/loop2-deploy": read_bytes(SCRIPT) if script is None else script,
                  "deploy/loop2-backup": read_bytes(BACKUP_SCRIPT),

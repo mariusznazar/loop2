@@ -229,14 +229,13 @@ header .failure-line {
 }
 
 /*
- * The screen of a map run (D-311, D-282, D-280, D-349; task ekran-przejscia, To do 2; task
- * proporcje-sceny-i-programu, To do 1 and 2): under its header three areas of their own, in the
- * document in the order world, program, tabs. In a window wide enough they stand in two columns by
- * named grid areas: on the left the world and, under it, the area with the tabs „Kronika” and
- * „Teren”, and on the right the program, as tall as the two together; narrower, one under the other
- * in the order of the document. The areas are not moved in the document and not nested. The sizes
- * are layout dimensions, which D-43 leaves out, chosen from the scene's width and the content of at
- * most 1344 px (D-280); the scene is drawn at its one size, 672 px wide (D-349).
+ * The screen of a map run (D-311, D-282, D-280, D-349): under its header three areas of their own,
+ * in the document in the order world, program, tabs. In a window wide enough they stand in two
+ * columns by named grid areas: on the left the world and, under it, the area with the tabs „Kronika”
+ * and „Teren”, and on the right the program, as tall as the two together; narrower, one under the
+ * other in the order of the document. The areas are not moved in the document and not nested. The
+ * sizes are layout dimensions, which D-43 leaves out, chosen from the scene's width and the content
+ * of at most 1344 px (D-280); the scene is drawn at its one size, 672 px wide (D-349).
  *
  * - The left column is the scene's width with the area's padding and frame, 2 × 16 px and 2 × 1 px:
  *   672 + 34 = 706 px.
@@ -301,10 +300,10 @@ header .failure-line {
 }
 
 /*
- * The chronicle (D-343, D-46; spec D5, D9): the filter row and the list on `panel`, the list and its
- * empty sentence in Geist Mono at the size the token file gives the chronicle. The filter buttons keep
- * the font of the shared button, whose look they take from the pace buttons. The row of filters wraps
- * to the lines the width of the area needs.
+ * The chronicle (D-343, D-46): the filter row and the list on `panel`, the list and its empty
+ * sentence in Geist Mono at the size the token file gives the chronicle. The filter buttons keep the
+ * font of the shared button, whose look they take from the pace buttons. The row of filters wraps to
+ * the lines the width of the area needs.
  */
 .chronicle {
   background: var(--panel);
@@ -319,9 +318,9 @@ header .failure-line {
 }
 
 /*
- * The list scrolls inside its own height, so the window of entries it draws grows by the scroll (spec
- * D7); the height is a layout dimension. A row is the minute alone in a column on the left and the
- * entry's text beside it, which wraps.
+ * The list scrolls inside its own height, so the window of entries it draws grows by the scroll
+ * (D-382); the height is a layout dimension. A row is the minute alone in a column on the left and
+ * the entry's text beside it, which wraps.
  */
 .chronicle-list,
 .chronicle-empty {
@@ -917,10 +916,9 @@ header .failure-line {
 }
 
 /*
- * The trip plan of a program in React (task edytor-programu, Slice 11): the folding line and the
- * lists under it. The lists take the look of the rows above (`trip-list`, `trip-entry`). The labels
- * stand in `text-label` and the rest in the text's own role; the icons keep the colour of their files,
- * so no colour is set for them.
+ * The trip plan of a program in React: the folding line and the lists under it. The lists take the
+ * look of the rows above (`trip-list`, `trip-entry`). The labels stand in `text-label` and the rest
+ * in the text's own role; the icons keep the colour of their files, so no colour is set for them.
  */
 .trip-plan {
   border-top: var(--frame-width) solid var(--divider);
@@ -1009,15 +1007,15 @@ header .failure-line {
  * or under the pointer stands on `highlight` with its text in `text`, the roles of its parts kept.
  * Only the handle drags, which the browser does by its own drag (D-270).
  *
- * The signs of the copy of a map run (task stan-i-powod-przy-regule): at the left edge of every row
- * and header a bar of `--bar-width` says what the condition is — `positive` where it holds and the
- * rule can start (of a header, one of its rules can), `warning` where it holds and the rule cannot,
+ * The signs of the copy of a map run (D-308, D-309, D-310): at the left edge of every row and
+ * header a bar of `--bar-width` says what the condition is — `positive` where it holds and the rule
+ * can start (of a header, one of its rules can), `warning` where it holds and the rule cannot,
  * `condition-unmet` where it does not hold. The bar says a state and takes no colour from the text
  * beside it, so it is no line at a text in the sense of D-279. A row that wins now stands on
  * `rule-winning`, a row whose action is being carried out, where another rule wins, on
- * `rule-running`, the reason a rule cannot start in `warning`. The order of the rules below is
- * the order of strength: the state under the pointer, then the state of the rule, then the row open
- * to editing, which stands on `highlight` alone — the state of a row under the pointer stays, the
+ * `rule-running`, the reason a rule cannot start in `warning`. The order of the rules below is the
+ * order of strength: the state under the pointer, then the state of the rule, then the row open to
+ * editing, which stands on `highlight` alone — the state of a row under the pointer stays, the
  * state of an open row gives way and its bar stays.
  */
 .rule-list-top {
@@ -1527,7 +1525,7 @@ header .failure-line {
  * a column on `panel` with its text in `text` and a frame in `divider`, as wide as the content column
  * of the screen it covers and no taller than 80vh, so that it leaves the menu bar and the row under
  * it visible in a window 720 px high and in the one column under 1074 px. The height is a layout
- * dimension (D-43); 80vh is the executor's choice, checked in a real browser. At the top the label in
+ * dimension (D-43); 80vh was chosen and checked in a real browser. At the top the label in
  * `text-label`, the title in `text-strong`, or in `positive` after a completion, and „✕”; in the
  * middle the part that scrolls, with its sections parted by a line in `divider` and their names in
  * `text-label`; at the bottom the buttons, which stay in sight while the middle scrolls. The last
@@ -1800,19 +1798,17 @@ header .failure-line {
  * the numbers of a tile are content to read (D-19). The other parts keep the rules of their DOM
  * modules.
  *
- * The scene (D-316, D-320, D-322; task scena-z-ludzikiem): the forest picture sets the frame's size
- * from its width and height attributes, and every other part lies over it at the place and size
- * TypeScript gives as percentages of the frame, so the stylesheet holds no length of a sprite. A sheet
- * holds all frames of a picture side by side; `--frames` is
- * their number, and the sheet shows one of them, the first where it stands still. The scene's motion
- * stands in the rules after the badge.
+ * The scene (D-316, D-320, D-322): the forest picture sets the frame's size from its width and
+ * height attributes, and every other part lies over it at the place and size TypeScript gives as
+ * percentages of the frame, so the stylesheet holds no length of a sprite. A sheet holds all frames
+ * of a picture side by side; `--frames` is their number, and the sheet shows one of them, the first
+ * where it stands still. The scene's motion stands in the rules after the badge.
  *
- * The layers of the scene, from the bottom (D-315, D-316, D-320, D-322; tasks swit-rosnacy-z-passa and
- * trzy-chwile-gdy-czas-stoi): the forest, the props, the fire, the dust, the mage, the flying icon on its
- * plaque, the tint of the light, the cold layer after a death of cold, the frost, the specks of light
- * after a completion, the plaques of a discovery and the badge over the mage's head. The scene isolates
- * its layers, so the tint and the cold layer blend with what lies under them in the scene and with
- * nothing else on the page.
+ * The layers of the scene, from the bottom (D-315, D-316, D-320, D-322, D-372): the forest, the props,
+ * the fire, the dust, the mage, the flying icon on its plaque, the tint of the light, the cold layer
+ * after a death of cold, the frost, the specks of light after a completion, the plaques of a discovery
+ * and the badge over the mage's head. The scene isolates its layers, so the tint and the cold layer
+ * blend with what lies under them in the scene and with nothing else on the page.
  */
 .scene {
   position: relative;
@@ -1871,10 +1867,10 @@ header .failure-line {
 }
 
 /*
- * The mage gathering bends in place of standing (D-316, task zbieranie-jako-widowisko): the bend sheet
- * takes the idle sheet's place for the whole gathering, from the moment the mage stands at its place
- * (the walk's own sheets show first, below), and stands on its first frame, a bend, where the frames
- * are left out.
+ * The mage gathering bends in place of standing (D-364, D-316): the bend sheet takes the idle
+ * sheet's place for the whole gathering, from the moment the mage stands at its place (the walk's
+ * own sheets show first, below), and stands on its first frame, a bend, where the frames are left
+ * out.
  */
 .scene-mage-bend {
   display: none;
@@ -1902,17 +1898,16 @@ header .failure-line {
 }
 
 /*
- * The player's pause greys the whole scene with the old Loop's value (Scene.tsx at commit cdc7c0d,
- * `paused ? 'grayscale(1) brightness(0.5)'`; D-322). At a discovery, after a completion and after a
- * death the scene itself keeps its colours.
+ * The player's pause greys the whole scene with `grayscale(1) brightness(0.5)` (D-322). At a
+ * discovery, after a completion and after a death the scene itself keeps its colours.
  */
 .scene[data-standing="paused"] {
   filter: grayscale(1) brightness(0.5);
 }
 
 /*
- * A dead mage and an extinguished fire share one grey, the old Loop's value for both (sprites.tsx
- * line 64 at commit cdc7c0d; D-322, D-316).
+ * A dead mage and an extinguished fire share one grey, `grayscale(1) brightness(0.55)` (D-322,
+ * D-316).
  */
 .scene[data-standing="dead"] .scene-mage-sprite,
 .scene-fire[data-burning="false"] {
@@ -1920,7 +1915,7 @@ header .failure-line {
 }
 
 /*
- * The moments in which time stands still (D-322; task trzy-chwile-gdy-czas-stoi): a discovery, a death
+ * The moments in which time stands still (D-322): a discovery, a death
  * and a completion each have an effect that plays once, and the scene then stands on its last image
  * until the moment ends. The rules of an element give that last image, with no animation, so it is also
  * what the scene shows when it is drawn again on the same moment and under the system's setting for
@@ -1994,17 +1989,17 @@ header .failure-line {
 }
 
 /*
- * The effects of the end of a gathering (D-317, task zbieranie-jako-widowisko): the icon of the
- * resource gathered flies to the mage, or the cloud of dust of a miss stands at the prop. Each is an
- * effect of an ordinary event: it lasts 300 ms at most, shows no text and is gone after, also under
- * the system's setting for reduced motion, which leaves only its movement out, so the icon then
- * stands on its plaque where it lands and the cloud on its first frame. The 300 ms is the limit D-317
+ * The effects of the end of a gathering (D-317, D-365, D-366, D-367): the icon of the resource
+ * gathered flies to the mage, or the cloud of dust of a miss stands at the prop. Each is an effect
+ * of an ordinary event: it lasts 300 ms at most, shows no text and is gone after, also under the
+ * system's setting for reduced motion, which leaves only its movement out, so the icon then stands
+ * on its plaque where it lands and the cloud on its first frame. The 300 ms is the limit D-317
  * gives. The plaque is a solid `panel` like the badge over the head (D-320), the icon on it of the
  * side of 24 px, a layout dimension chosen by viewing the scene at its one size (D-349), the icon
  * the mask of `.icon-mask` in `text-strong`, as the icon over the head is, though no text stands
- * beside it (D-40, D-43). The flight is laid over the whole frame in two layers,
- * so that the percentages of `translate` are parts of the frame: the outer one carries the icon
- * across, the inner one up and down.
+ * beside it (D-40, D-43). The flight is laid over the whole frame in two layers, so that the
+ * percentages of `translate` are parts of the frame: the outer one carries the icon across, the
+ * inner one up and down.
  */
 .scene-flight,
 .scene-flight-across,
@@ -2036,7 +2031,7 @@ header .failure-line {
 }
 
 /*
- * The tint of the scene's light (D-315, D-316; task swit-rosnacy-z-passa): a layer over everything the
+ * The tint of the scene's light (D-315, D-316): a layer over everything the
  * scene draws, the flying icon on its plaque included, but the frost and the badge, which stay on their
  * own colours. `mix-blend-mode: color` lays the layer's hue and saturation over the picture and leaves the
  * picture's brightness, so the tint never darkens or greys the scene as the pause does (D-322). `--tint`,
@@ -2044,7 +2039,7 @@ header .failure-line {
  * warm one by it, in `oklch`, and its opacity goes the same way from the cool tint's opacity to the warm
  * one's, evenly. The colours and opacities are the design tokens named for the tint; the source of
  * their values, and of the 2 s of the return below, is Mariusz's choice from the preview of the values
- * of appearance of the task swit-rosnacy-z-passa, variant A, 2026-11-11. `--tint` is registered as a
+ * of appearance, variant A, 2026-11-11. `--tint` is registered as a
  * number so that the return can run it.
  */
 @property --tint {
@@ -2070,10 +2065,10 @@ header .failure-line {
 }
 
 /*
- * The frost on the edges of the frame (D-316; task swit-rosnacy-z-passa, the shape of its ragged edge
- * settled there): built of squares of one pixel of the scene on the scene's grid, from custom
- * properties TypeScript gives, `--frost`, its thickness in the scene's pixels, and `--pixel-x` and
- * `--pixel-y`, one pixel as a part of the frame's width and of its height. Each of its three layers is a
+ * The frost on the edges of the frame (D-372, D-271): built of squares of one pixel of the scene on
+ * the scene's grid, from custom properties TypeScript gives, `--frost`, its thickness in the scene's
+ * pixels, and `--pixel-x` and `--pixel-y`, one pixel as a part of the frame's width and of its
+ * height. Each of its three layers is a
  * mask over a plain box, so no colour stands in the mask (the mask reads only the alpha of
  * `currentColor`) and every colour is a design token. The frost is a ring: along each edge a solid
  * band two pixels thinner than the frost, a row of teeth one pixel above it that stands on 3 of every 5
@@ -2083,8 +2078,9 @@ header .failure-line {
  * `--depth`; the body, in the colour of the fill, lies over it one pixel thinner, so the outline is
  * the pixel the body leaves under the inner edge of each column. The crystals are single squares in two
  * lattices of different periods, in the body only. The frost lies over the tint, so its colours do not
- * change with the streak, and under the plaque and the badge (D-320). It changes only with the state
- * and runs no motion, so the system's setting for reduced motion has nothing to take out of it.
+ * change with the streak (D-315, D-372), and under the plaque and the badge, as the styleguide's rule
+ * on the scene of a map run has it. It changes only with the state and runs no motion, so the
+ * system's setting for reduced motion has nothing to take out of it.
  */
 .scene-frost,
 .scene-frost-rim,
@@ -2217,14 +2213,14 @@ header .failure-line {
 }
 
 /*
- * The cold layer after a death of cold (D-322, D-315; task trzy-chwile-gdy-czas-stoi): a layer over
+ * The cold layer after a death of cold (D-322, D-315): a layer over
  * everything the scene draws, the tint of the light included, under the frost and the badge, which
  * stay on their own colours. It blends as the tint does, `mix-blend-mode: color`, so it lays its hue on
  * the picture and leaves the picture's brightness, never lighting or darkening the scene for a moment
  * (D-317), and it is blue where the tint of the light is never blue (D-316), so it tells from the cool
  * grey-green of streak 0. It is a state of the scene that stands until „Restart” or „Zakończ”, not an
- * effect. Its colour and opacity are the design tokens `--scene-chill*`, which the human chose at the
- * request of the task, accepting the cycle's proposal.
+ * effect. Its colour and opacity are the design tokens `--scene-chill*`, which Mariusz chose on
+ * 2026-11-12, accepting the proposal shown to him on screenshots of the scene.
  */
 .scene-chill {
   position: absolute;
@@ -2235,7 +2231,7 @@ header .failure-line {
 }
 
 /*
- * The plaques of a discovery (D-322, D-39, D-320; task trzy-chwile-gdy-czas-stoi): the icon of each thing
+ * The plaques of a discovery (D-322, D-39, D-320): the icon of each thing
  * the discovery revealed that the game's data gives an icon, each on a solid `panel` like the badge over
  * the mage's head, with a frame in `discovery` of the bar's thickness, one pixel of the scene at its one
  * size (D-349), which is at least 3:1 against `panel` as the role has 4.5:1 on it. They lie over the
@@ -2254,7 +2250,7 @@ header .failure-line {
 }
 
 /*
- * The specks of light after a completion (D-322, D-271, D-43; task trzy-chwile-gdy-czas-stoi): squares of
+ * The specks of light after a completion (D-322, D-271, D-43): squares of
  * one pixel of the scene, `--pixel-x` by `--pixel-y` as parts of the frame, each at the place TypeScript
  * gives on the scene's grid. They lie over the tint of the light, so the golden light does not change
  * their colour, and have no place of their own once their effect has played: the last image has none, so
@@ -2282,11 +2278,10 @@ header .failure-line {
 }
 
 /*
- * The scene's motion (D-316, D-319, D-320; task scena-z-ludzikiem, To do 5 and 10), from CSS at a
- * beat apart from the pace, and only where the system's setting asks for no less motion (D-317); under
- * that setting the frames stand on the first, the mage stands at its place at once and the bar jumps at
- * each reading. The animations are written in longhands, so none sets the play state the stop below
- * sets.
+ * The scene's motion (D-316, D-319, D-320), from CSS at a beat apart from the pace, and only where
+ * the system's setting asks for no less motion (D-317); under that setting the frames stand on the
+ * first, the mage stands at its place at once and the bar jumps at each reading. The animations are
+ * written in longhands, so none sets the play state the stop below sets.
  *
  * - The frames of the mage's sheets and of the burning fire change every 160 ms: the picture of all
  *   frames moves its own width in as many steps as it holds frames, one frame a step. An extinguished
@@ -2304,10 +2299,10 @@ header .failure-line {
  *   a change of the scene's state and not an effect of an ordinary event, so the 300 ms of D-317 does
  *   not limit it. A tint that stands at once, at a death, a completion, the start of a map run and a
  *   first draw, has no return, and under the system's setting for reduced motion none has.
- * - The three moments in which time stands still (D-322; task trzy-chwile-gdy-czas-stoi) play once each
+ * - The three moments in which time stands still (D-322) play once each
  *   while `data-moment-playing` stands on the scene, and are no effects of an ordinary event, so the
- *   300 ms of D-317 does not limit them; their durations are chosen by viewing the game and judged by
- *   the human at the request of the task, and each stands in one rule: the fall of the mage lasts the
+ *   300 ms of D-317 does not limit them; their durations were chosen by viewing the game and let through by
+ *   Mariusz on 2026-11-12, and each stands in one rule: the fall of the mage lasts the
  *   six frames of its death sheet at the beat of the frames, 160 ms, 960 ms, and the cold layer comes
  *   in over the same time with the fall, a rise of its opacity from 0 that lights or darkens nothing,
  *   since the layer keeps the picture's brightness (D-317); a plaque of a discovery comes out of the

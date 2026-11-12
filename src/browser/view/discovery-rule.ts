@@ -1,9 +1,9 @@
 /**
- * The rule „Dodaj regułę z tym” adds in the band of a discovery (D-313; task ekran-przejscia, To do
- * 7). Pure: it reads a game state and gives the copy's program with the rule added and the place
- * the rule panel opens on it, and draws nothing. It is built from the editor's own functions
- * (`addRule`, `withActionKind`, `withActionResource`, `withConditionKind`) and the targets they
- * offer, so a pick in the rule panel and this button give the same values.
+ * The rule „Dodaj regułę z tym” adds in the band of a discovery (D-313). Pure: it reads a game state
+ * and gives the copy's program with the rule added and the place the rule panel opens on it, and
+ * draws nothing. It is built from the editor's own functions (`addRule`, `withActionKind`,
+ * `withActionResource`, `withConditionKind`) and the targets they offer, so a pick in the rule panel
+ * and this button give the same values.
  */
 import type {
   Action,

@@ -413,7 +413,8 @@ test("sendConfirmationMessage gives the outcome of a 200 answer and no other bod
 
 // invariant: account-client-outcomes
 test("an error status is a refusal carrying the server's code and message, even beside an account body", async () => {
-  // The texts are the ones the server sends (task, To do 2, 4 and 10; src/server/account-routes.ts).
+  // The texts are sample refusals of the server (src/server/account-routes.ts); the client must
+  // hand on whatever code and message it is sent, so the wording is not what is tested.
   for (const [name, status, code, message] of [
     [
       "login",
@@ -435,7 +436,7 @@ test("an error status is a refusal carrying the server's code and message, even 
       "Sesja wygasła albo nie istnieje.",
     ],
     ["login", 503, "session-unavailable", "Nie udało się zalogować."],
-    // Task blokada-konta, To do 4: a blocked account's correct password.
+    // D-139: a blocked account's correct password.
     ["login", 403, "account-blocked", "To konto jest zablokowane."],
     ["logout", 500, "logout-failed", "Nie udało się wylogować."],
     [
@@ -580,7 +581,7 @@ test("a connection that fails before or inside the answer is a network failure, 
   );
 });
 
-// Saved game state routes (spec decisions 1 and 3; task To do 2, 4 and 7).
+// Saved game state routes (D-204, D-209, D-210).
 const gameJson = '{"program":[1,2],"note":"zażółć"}';
 const saveJson = `{"save":{"version":3,"revision":7,"game":${gameJson}}}`;
 const submission = { version: 3, basedOn: 6, game: { program: [1, 2] } };

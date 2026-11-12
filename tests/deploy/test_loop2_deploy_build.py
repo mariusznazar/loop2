@@ -1,4 +1,4 @@
-"""The deployment script from the checkout to the build (spec § 5, steps 7–9 and 12).
+"""The deployment script from the checkout to the build.
 
 - the six installed copies (the deploy script, the backup script and its schedule, the failure
   watcher and its schedule, and the logrotate file of the dump) compared with their sources at the
@@ -80,8 +80,8 @@ class InstalledScriptComparison(DeployBuildTestCase):
         self.assertLess(self.index_of("differs"), self.index_of("build of"))
 
     def test_commit_without_the_sources_warns_for_each_pair_then_fails_the_build_with_7(self):
-        # Changed from one warning to three by spec decision 10, and from three to six when the
-        # watcher, its schedule and the logrotate file joined the comparison.
+        # One warning for each of the six installed copies: the deploy script, the backup script
+        # and its schedule, the watcher and its schedule, and the logrotate file.
         sha = self.fixture.commit("main", "from before the deployment existed")
         self.fixture.install()
         self.fixture.answer_passing_run()

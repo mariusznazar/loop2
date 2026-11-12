@@ -1,6 +1,5 @@
-// The header of the screen of a map run in React (task ekran-przejscia, To do 1 and 8; task
-// teraz-i-potem, To do 3; D-311, D-130, D-132, D-133, D-122, D-62, D-188, D-44, D-46) on jsdom
-// through tests/view/page-document.mjs (D-264): the character's name and the map's name before the
+// The header of the screen of a map run in React (D-311, D-130, D-132, D-133, D-122, D-62, D-188,
+// D-44, D-46) on jsdom through tests/view/page-document.mjs (D-264): the character's name and the map's name before the
 // clock, „Pauza” and the rest in their order with no action of the character, the pace buttons, the
 // ends of a map run with the clock at the minute of the end, the warning of a cut trip plan and the
 // focus of a pace button across updates. Real events, focus rings and the look are checked in the browser (D-88), so a focus case
@@ -102,7 +101,7 @@ const click = (element) =>
     element.click();
   });
 
-// D-311, D-133, task teraz-i-potem To do 3. Catches the character's action left in the header, the
+// D-311, D-133. Catches the character's action left in the header, the
 // clock standing anywhere but after the map's name and the bar of the solving condition standing
 // anywhere but right after the clock.
 test("the header reads the character's name, the map's name, the clock, the bar of the solving condition, „Pauza”, the paces, „Restart” and „Zakończ”, in that order, with no action of the character", async () => {
@@ -270,7 +269,7 @@ test("after a completion the clock stands at the minute of the completion with n
   });
 });
 
-// D-311, D-173, task To do 2. Catches a „Koniec przejścia” standing while the map run goes on or is
+// D-311, D-173. Catches a „Koniec przejścia” standing while the map run goes on or is
 // paused, one standing while the window stands over the header, one missing after either end with
 // the window closed, one after „Restart” and one asking for anything but the window.
 test("„Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window", async () => {
@@ -306,7 +305,7 @@ test("„Koniec przejścia” stands before „Restart” only in an ended map r
   });
 });
 
-// D-311, binding answer 1 of slice 4. Catches a header drawn visibly under the window, and a header
+// D-311, D-368: the window covers the header. Catches a header drawn visibly under the window, and a header
 // hidden while the window is closed or while the map run goes on.
 test("the header is hidden while the window stands over an ended map run, and shown otherwise", async () => {
   await withPage(async ({ document }) => {
@@ -448,7 +447,7 @@ const trackOf = (requirement) =>
 const textOf = (requirement) =>
   requirement.querySelector(".run-header-requirement-text");
 
-// D-133, To do 3: the bar stands right after the clock, before „Pauza”. Catches a bar at the end
+// D-133: the bar stands right after the clock, before „Pauza”. Catches a bar at the end
 // of the header, before the clock or after the buttons.
 test("the bar of the solving condition stands right after the clock, with its numbers and its bar", async () => {
   await withPage(async ({ document }) => {
@@ -500,7 +499,7 @@ test("Las has no part for beaten attacks, as it asks for none", async () => {
   });
 });
 
-// D-40, task To do 3: the fill is as long as the share of the count in the number required, never
+// D-40, D-133: the fill is as long as the share of the count in the number required, never
 // more than whole. Catches a fill drawn from the wrong share, a percentage and one above whole.
 test("the fill of each bar is as long as the share of its count, never more than whole", async () => {
   await withPage(async ({ document }) => {
@@ -523,7 +522,7 @@ test("the fill of each bar is as long as the share of its count, never more than
   });
 });
 
-// D-40, D-39, D-133 (rows 5 and 6): the roles of the bar through the real stylesheet. A requirement
+// D-40, D-39, D-133: the roles of the bar through the real stylesheet. A requirement
 // not met has its track in `highlight`, its fill and its words in `text`; once met, its fill, its
 // name and its numbers are in `positive`, and the requirement beside it, unmet, stays as it was.
 // Catches a fill always green, a met requirement that turns only its fill and a track in another role.
@@ -548,7 +547,7 @@ test("a requirement not met has its fill in text on a track in highlight, a met 
   });
 });
 
-// D-133 rows 5 and 6, D-135: the bar stands after the end, at the stopped minute, with the current
+// D-133, D-135: the bar stands after the end, at the stopped minute, with the current
 // streak. Catches the bar gone after a death and the longest streak shown.
 test("after a death of cold the bar stands and reads „Passa 0/480”", async () => {
   await withPage(async ({ document }) => {

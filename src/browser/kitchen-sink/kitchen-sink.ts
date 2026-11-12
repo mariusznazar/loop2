@@ -339,7 +339,10 @@ function controlsSection(): HTMLElement {
 
 // --- forms waiting for the server -----------------------------------------------------------
 
-/** The sentences of the task and of the client in `account-api.ts`, as a form shows them (D-44). */
+/**
+ * The sentences of the server (D-100, D-102) and of the client in `account-api.ts`, as a form
+ * shows them (D-44).
+ */
 const REFUSAL = "Nieprawidłowy adres e-mail lub hasło.";
 const ACCOUNT_EXISTS = "Konto z tym adresem już istnieje.";
 const NO_CONNECTION = "Brak połączenia z serwerem. Spróbuj ponownie.";

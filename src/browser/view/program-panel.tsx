@@ -1,17 +1,17 @@
 /**
- * The program panel in React (D-36, D-166 to D-174, D-180, D-282, D-288, D-295, D-302, D-313; task
- * edytor-programu, To do 1, 8 and 11; task ekran-przejscia, To do 7). One panel serves the two screens
- * that edit programs, behind the boundary `createProgramPanel` that `createAccountCard` and
- * `createProgramList` give the page: an element of its own, a first render that is synchronous,
- * `update(state, events)`, `showProgram`, `addDiscoveredRule` and `dispose()`, called from an event
- * handler or the continuation of an answer, never from render or an effect. On the screen of a map
- * run the panel also draws the question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173), just above
- * the heading of the copy, while the screen tells it to (`setQuestion`). The panel holds the rule
- * list, which draws the rule panel in place, under the row or header it changes, the open rule a state
- * of the panel. It asks the game for every change through `ProgramPanelControls` and never writes the
- * game state. Which program it shows is the boundary's, changed by picking on the list and by the
- * operations of the game. The folding of rule groups is one memory of the page, `createFolding`, which
- * the page makes once and gives to both panels. Nothing runs when the module is imported.
+ * The program panel in React (D-36, D-166 to D-174, D-180, D-282, D-288, D-295, D-302, D-313). One
+ * panel serves the two screens that edit programs, behind the boundary `createProgramPanel` that
+ * `createAccountCard` and `createProgramList` give the page: an element of its own, a first render
+ * that is synchronous, `update(state, events)`, `showProgram`, `addDiscoveredRule` and `dispose()`,
+ * called from an event handler or the continuation of an answer, never from render or an effect. On
+ * the screen of a map run the panel also draws the question „Zapisać, odrzucić, wrócić?” of
+ * „Zakończ” (D-173), just above the heading of the copy, while the screen tells it to
+ * (`setQuestion`). The panel holds the rule list, which draws the rule panel in place, under the row
+ * or header it changes, the open rule a state of the panel. It asks the game for every change
+ * through `ProgramPanelControls` and never writes the game state. Which program it shows is the
+ * boundary's, changed by picking on the list and by the operations of the game. The folding of rule
+ * groups is one memory of the page, `createFolding`, which the page makes once and gives to both
+ * panels. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
@@ -90,8 +90,8 @@ export type ProgramPanelControls = {
 export type ProgramPanelMode = "run" | "programs";
 
 /**
- * The memory of the folding of rule groups (D-295, settlement row 6): which groups of each program
- * stand folded to their header. It lives in the page, outside the game state and the save, so a reload
+ * The memory of the folding of rule groups (D-295): which groups of each program stand folded to
+ * their header. It lives in the page, outside the game state and the save, so a reload
  * forgets it; the panels of the two screens read and change the one memory, so a group folded on one
  * screen stays folded on the other for the same program. A program's key is its number, the copy's
  * is „copy”.
@@ -176,7 +176,7 @@ const COPY_VALUE = "copy";
 const COPY_TEXT = "Kopia w przejściu";
 const NO_GROUPS: readonly GroupId[] = [];
 
-/** The message under the name field for each name the name rule refuses (spec decision 7). */
+/** The message under the name field for each name the name rule refuses (D-169). */
 export const NAME_MESSAGES: Record<ProgramNameRefusal, string> = {
   empty: "Wpisz nazwę programu.",
   taken: "Program o tej nazwie już istnieje.",
@@ -198,10 +198,10 @@ export function programListOptions(state: GameState): SelectOption[] {
 
 /**
  * Which program the panel shows after the simulation call that took `previous` to `state` and
- * produced `events` (spec decision 7): at a map run started, by a send or „Restart”, the copy, and
- * the same for the first state shown when it holds a map run, as a loaded game state may (D-212);
- * at a map run's end, the copy's program, or the first of the list where it is gone; a copy shown
- * without a map run or a saved program gone from the list gives way to the first of the list;
+ * produced `events` (D-166, D-173, D-384): at a map run started, by a send or „Restart”, the copy,
+ * and the same for the first state shown when it holds a map run, as a loaded game state may
+ * (D-212); at a map run's end, the copy's program, or the first of the list where it is gone; a copy
+ * shown without a map run or a saved program gone from the list gives way to the first of the list;
  * otherwise what was shown. Pure.
  */
 export function nextShown(
@@ -229,9 +229,9 @@ export function nextShown(
 }
 
 /**
- * The program the editor shows and the counts beside its rules (spec decision 6): the copy with
- * the counts of the map run, a saved program during a map run with none, and outside a map run a
- * saved program with the counts only where they stand beside it. Pure.
+ * The program the editor shows and the counts beside its rules (D-93): the copy with the counts of
+ * the map run, a saved program during a map run with none, and outside a map run a saved program
+ * with the counts only where they stand beside it. Pure.
  */
 export function shownContent(
   state: GameState,
@@ -251,7 +251,7 @@ export function shownContent(
 
 /**
  * Whether „Przełącz postać na ten program” stands beside the saved program shown: a map run not
- * ended, and a program other than the one the copy belongs to (spec decision 7).
+ * ended, and a program other than the one the copy belongs to (D-174).
  */
 function canSwitchTo(
   state: GameState,

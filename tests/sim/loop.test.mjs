@@ -1,10 +1,8 @@
 // The life of an earning loop in the simulation: it starts, passes game minutes, takes each end of
-// a map run at once and stops. The expectations come from the task petla-zarobkowa (To do 1 and 3 to
-// 9 and 15, answers Q4, Q5, Q9, Q10, Q13 and Q16, the settlements of rows 2 to 9, 16 and 17) and
-// from the spec (sections 1, 3, 4, 5 and 15), which bind the tests of loop at commit cdc7c0d where
-// they cover a case: `src/sim/sim.test.ts:1464`-`1730`, `src/sim/chest.test.ts:350`-`374`,
-// `src/sim/loop.test.ts:157`-`170` and `src/sim/policy.test.ts:587`. Where an expectation is a
-// relation (a loop's map run equals the manual one) no value comes from today's run.
+// a map run at once and stops. The expectations come from D-22 (the seed), D-179 (the trip plan),
+// D-183 and D-245 (stopping), D-190 (death), D-200 (a rank bought), D-241 (what the game state
+// holds of a loop), D-243 (the start) and D-249 (what a loop's map run discovers). Where an
+// expectation is a relation (a loop's map run equals the manual one) no value comes from today's run.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -217,7 +215,7 @@ test("the first map run of a loop goes on the program of its row, from the seed 
   assert.equal(loop.run.minute, 0);
   assert.equal(loop.run.mapId, "forest");
   assert.equal(loop.run.character.id, 1);
-  // Q10: the first seed is what a send of the same state at the same moment takes, and it is kept.
+  // D-22: the first seed is what a send of the same state at the same moment takes, and it is kept.
   assert.equal(loop.run.seed, sent.run.seed);
   assert.equal(loop.run.seed, mixSeed(state.lastSeed, T0));
   assert.equal(result.state.lastSeed, loop.run.seed);
@@ -326,7 +324,7 @@ test("a start the map, the character or the program does not allow returns the v
 });
 
 // invariant: trip-transfer
-// To do 5; loop `chest.test.ts:350`-`358`: a map run of a loop takes from the chest on a solved map,
+// A map run of a loop takes from the chest on a solved map,
 // and what the chest lacks does not come, the loop going on cut (D-179).
 test("the first map run of a loop takes its take list from the chest although the map is solved, as far as the chest holds", () => {
   const state = game(
@@ -359,7 +357,7 @@ test("a loop's map run is the map run of a manual send over the same game minute
 });
 
 // invariant: map-run-repeatability
-// Task, Q10: the first seed is the only one a loop takes from real time, so two starts from one state
+// D-22: the first seed is the only one a loop takes from real time, so two starts from one state
 // at one moment pass the same map runs through their ends.
 test("two loops from one state at one moment go the same map runs, ends and seeds included", () => {
   const route = () => {
@@ -380,7 +378,7 @@ test("two loops from one state at one moment go the same map runs, ends and seed
 });
 
 // invariant: loop-run-knowledge
-// To do 15, Q9; loop: none (the departure). A manual map run of the same game discovers the first
+// D-249: a manual map run of the same game discovers the first
 // chill, which the precondition shows; the loop's map run takes the same minutes and discovers
 // nothing.
 test("a loop's map run through the first chill leaves the Understanding, the programs and the counts as it found them, and its copy empty", () => {
@@ -429,8 +427,8 @@ test("a loop's map run through a death and its next map run still leaves the Und
   assert.deepEqual(state.programs, before.programs);
 });
 
-// To do 4 and spec 3: the repertoire is computed on each call that passes minutes, so what a manual
-// map run discovers meanwhile widens a loop's repertoire (D-119, D-249).
+// D-249, D-119: the repertoire is computed on each call that passes minutes, so what a manual
+// map run discovers meanwhile widens a loop's repertoire.
 test("an action a manual map run discovers meanwhile enters the loop's next pick, and not before", () => {
   let state = setProgram(
     newGame(),
@@ -464,7 +462,7 @@ test("an action a manual map run discovers meanwhile enters the loop's next pick
 });
 
 // invariant: saved-program-edit
-// To do 3; loop `loop.test.ts:157`-`170`, `policy.test.ts:587`: the copy is taken at the start and
+// D-241: the copy is taken at the start and
 // nothing the player does to the program reaches it, the next map runs of the loop included.
 test("editing or deleting the program after the start leaves the loop on the content it took, in every later map run", () => {
   let state = game(programFromRules(rule(ALWAYS, EXPLORE)));
@@ -496,7 +494,7 @@ test("editing or deleting the program after the start leaves the loop on the con
   });
 });
 
-// To do 9, Q4: a rank bought during the loop acts from the next map run; the one going on keeps the
+// D-200: a rank bought during the loop acts from the next map run; the one going on keeps the
 // skills of its start.
 test("a rank bought during a loop reaches the next map run and not the one going on", () => {
   let state = looping(EMPTY);
@@ -515,7 +513,8 @@ test("a rank bought during a loop reaches the next map run and not the one going
   assert.equal(next.loops[1].run.minute, 0);
 });
 
-// Spec 3: the repertoire is computed from the run's own skills, not from the manual map run's.
+// D-119: a character's repertoire comes from the branches that character has bought, so it is
+// computed from the loop's own skills, not from the manual map run's.
 test("a loop picks its rules by the skills of its own character, whatever the manual map run beside it has bought", () => {
   const patrolling = programFromRules(
     rule(ALWAYS, { kind: "patrol", resource: "berry" }),
@@ -624,7 +623,7 @@ test("minutes that are no whole number from 0 up are a RangeError", () => {
 
 // invariant: trip-transfer
 // invariant: trip-run-end
-// To do 4 and 6, spec 4, D-179: loot goes to the chest at completion by the frozen bring list, the
+// D-179: loot goes to the chest at completion by the frozen bring list, the
 // next map run takes from the chest as it then stands, on the same copy and at game minute 0.
 test("a completion deposits the bring list's clipped loot, counts the map run, adds its practice to the loop and starts the next map run in the same step", () => {
   const program = withTrip(
@@ -690,7 +689,7 @@ test("the seeds of the successive map runs of a loop follow the draw of the fift
 
 // invariant: trip-run-end
 // invariant: death-settled-once
-// To do 6 and 7, Q16, D-190: a ready resurrection does not save the map run; it is used up, the map
+// D-190: a ready resurrection does not save the map run; it is used up, the map
 // run pays nothing, what the loop gathered stays and the next map run starts at once.
 test("a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried items gone, the loop going on at its next map run", () => {
   const ready = holding(
@@ -729,7 +728,7 @@ test("a death with a resurrection ready is settled at the moment given: used up,
 });
 
 // invariant: death-settled-once
-// To do 7, Q13, D-190: without a resurrection the character loses its practice and ranks and the
+// D-190: without a resurrection the character loses its practice and ranks and the
 // loop stops with what it gathered.
 test("a death with no resurrection ready takes the character's skills, raises the generation, drops the loop with its practice and leaves the chest and the moment of readiness", () => {
   let state = looping(withTrip(EMPTY, [entry("berry", 2)], []), { berry: 4 });
@@ -782,7 +781,7 @@ test("a death at the very moment of readiness uses the resurrection, and a milli
 });
 
 // invariant: death-settled-once
-// Spec 4: the end is consumed in the call that met it; no state leaves with a loop's run ended.
+// D-241, D-221: the end is consumed in the call that met it; no state leaves with a loop's run ended.
 test("a death is settled once: the state the end leaves holds no end, a further end changes nothing, and a load of it settles nothing", () => {
   const passed = advanceLoopRun(dyingNext(looping()), 1, 1).state;
   const settled = endLoopRun(passed, 1, T0);
@@ -811,7 +810,7 @@ test("taking an end reads the moment only when there is an end to settle, and th
 });
 
 // invariant: trip-run-end
-// To do 8, Q5, D-245, D-183; loop `sim.test.ts:1630`-`1665`: the practice of the loop and of the map
+// D-245, D-183: the practice of the loop and of the map
 // run going on are paid, the loot of that map run stays out.
 test("stopping a loop pays the loop's practice and the map run's into the skills, records the sum, drops the loop and deposits nothing", () => {
   const program = withTrip(EMPTY, [], [entry("stick", 3)]);
@@ -907,9 +906,6 @@ test("a send throws for a character in a loop, and clears the stopped line of th
   });
 });
 
-// Spec 4, 15 and the plan's *Goal*: a state the simulation makes with a loop loads back at every
-// minute of a map run, the stopped state included. This slice does not change the trust boundary,
-// so a refusal here is a structural mismatch.
 test("every state a loop makes over a whole map run, an end and the next map run loads back, with the save time it was stamped with", () => {
   let state = looping(SURVIVING, { stick: 4, berry: 2 }, COLD_REAL_MS);
   let loaded = 0;
@@ -1001,7 +997,7 @@ function assertPure(name, call, ...inputs) {
 
 // invariant: simulation-inputs
 // The pool of `tests/invariants/test_simulation_inputs.py` holds no state with a loop, so the
-// functions of the slice are given such states here, frozen.
+// functions of the earning loop are given such states here, frozen.
 test("no function of the loop changes a value passed to it, a loop, a death and a completion included", () => {
   const program = withTrip(EMPTY, [entry("stick", 2)], [entry("stick", 2)]);
   const fresh = game(program, { stick: 5 });

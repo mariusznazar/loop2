@@ -1,9 +1,6 @@
-// The page before and after signing in (task konta-graczy-i-logowanie, To do 1, 3, 4, 5 and 15;
-// spec section 7; D-96, D-97) and with its saved game state (task zapis-stanu-na-serwerze, To do
-// 5–10; spec sections 7 and 8; D-96, D-97, D-208, D-209, D-210, D-211, D-212), holding the login
-// card (task logowanie-w-react, To do 2–8; spec decision 3; D-259, D-260, D-261, D-262) and its
-// screens by address (task ekrany-i-menu, To do 2, 3, 6, 7, 11 and 12; D-280, D-281, D-283, D-284,
-// D-286). These tests run the page's logic on jsdom through tests/view/page-document.mjs (D-264):
+// The page before and after signing in (D-96, D-97) and with its saved game state (D-96, D-97,
+// D-208, D-209, D-210, D-211, D-212), holding the login card (D-259, D-260, D-261, D-262) and its
+// screens by address (D-280, D-281, D-283, D-284, D-286). These tests run the page's logic on jsdom through tests/view/page-document.mjs (D-264):
 // they prove which elements it builds and what it does with the client's answers, never real
 // events, focus or rendering, which the browser check covers (D-88).
 import { assert, inAct, settle, typeInto, withPage } from "./page-document.mjs";
@@ -442,8 +439,8 @@ test("until the server names an account the page has neither the game nor a runn
     assert.equal(gameShown(root), false);
     assert.equal(intervals.size, 0);
     assert.deepEqual(forms(root), {});
-    // Changed with D-97 (task ekrany-i-menu, To do 9): „Wyloguj” stands in the menu „Konto”, so
-    // before the game the bar's name alone stands, with no „Konto” to hold it.
+    // D-97: „Wyloguj” stands in the menu „Konto”, so before the game the bar's name alone stands,
+    // with no „Konto” to hold it.
     assertNameAloneOnBar(root, "while the page asks");
 
     await held.answer("currentAccount", ACCOUNT);
@@ -466,8 +463,7 @@ test("until the server names an account the page has neither the game nor a runn
   });
 });
 
-// Task logowanie-w-react, To do 2 and 3, D-259: one form at a time, the card opening on „Zaloguj się” with „Załóż konto”
-// behind the switch.
+// D-259: one form at a time, the card opening on „Zaloguj się” with „Załóż konto” behind the switch.
 test("an answer of no session shows the card on „Zaloguj się”, and the switch „Załóż konto”, each with visible labels, and no game", async () => {
   await onPage(async ({ root, intervals }) => {
     const shownForms = await signedOutPage(heldClient());
@@ -558,8 +554,7 @@ test("an answer that names no account and is not a refusal of the session shows 
 
 // --- the forms ------------------------------------------------------------------------------
 
-// Task logowanie-w-react, To do 3 and 5: one form stands, so the lock of the whole card holds its field, its button and the
-// switch, where it held two forms.
+// D-381: one form stands, so the lock of the whole card holds its field, its button and the switch.
 test("a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -625,8 +620,8 @@ test("a lost connection on registration leaves one warning under that form and f
   });
 });
 
-// Task logowanie-w-react, spec decision 3: no state outlives dispose(), so a typed password leaves with the card, where it
-// used to stay in an emptied form behind the game; the next card opens with empty fields.
+// D-381: no state outlives the card, so a typed password leaves with it; the next card opens with empty
+// fields.
 test("a created account enters the game at once, and the page keeps no password", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
@@ -725,7 +720,7 @@ test("registration problems follow the server's rules, counting a password in co
   }
 });
 
-// --- the form „Nie pamiętam hasła” (task reset-hasla, To do 1 and 3; D-96, D-222) --------------
+// --- the form „Nie pamiętam hasła” (D-96, D-222) ---------------------------------------------
 
 const RESET_SENTENCE =
   "Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik. Gdy wiadomość nie przyjdzie, spróbuj ponownie później.";
@@ -751,7 +746,7 @@ async function requestPage(held) {
   return forms(pageDocument().body)["Nie pamiętam hasła"];
 }
 
-// Task logowanie-w-react, To do 2, D-96: the button puts the form in the card, in place of the one form that stands.
+// D-96: the button puts the form in the card, in place of the one form that stands.
 test("the button under „Zaloguj się” puts in its place one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania”", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -807,7 +802,7 @@ test("a request waits with its field and every button of the screen locked, and 
   });
 });
 
-// Task logowanie-w-react, To do 3: one form stands, so the button locks with it.
+// D-381: one form stands, so the button locks with it.
 test("while a login waits, the button „Nie pamiętam hasła” is locked with the form and opens nothing", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -906,7 +901,7 @@ test("a refusal or a lost connection on a request stands as the form's warning, 
   });
 });
 
-// Task logowanie-w-react, To do 2, D-96: „Wróć do logowania” brings back „Zaloguj się”, the one form that goes back to it.
+// D-96: „Wróć do logowania” brings back „Zaloguj się”, the one form that goes back to it.
 test("„Wróć do logowania” brings back „Zaloguj się”, and nothing typed, no sentence and no warning survives a second visit", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -965,7 +960,7 @@ async function signedInPage(held) {
   return logoutOf(pageDocument().body);
 }
 
-// Task logowanie-w-react, To do 3 and 8; the page calls focus() here, as it called it on the forms (spec decision 3).
+// The page calls focus() on the card here (D-381).
 test("a confirmed logout or an expired session removes the game and its clock and brings back the card, with focus in its first field", async () => {
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
@@ -1002,8 +997,7 @@ test("a confirmed logout or an expired session removes the game and its clock an
   }
 });
 
-// Changed with D-97 and D-285 (task ekrany-i-menu, To do 9): the one warning stands as the sentence
-// of the menu „Konto”, which stays open, and no longer as an alert of the header.
+// D-97 and D-285: the one warning stands as the sentence of the menu „Konto”, which stays open.
 test("a logout whose outcome is uncertain keeps the game with its sentence in the open menu „Konto”, and „Wyloguj” stays usable", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
@@ -1051,15 +1045,14 @@ test("signing in and out again and again keeps at most one clock running", async
       await held.answer("loadSavedGame", NO_SAVE);
     }
     assert.equal(intervals.size, GAME_INTERVALS);
-    // Changed with the screens by address (task ekrany-i-menu, To do 2): the game holds several
-    // screens, so one game is one element of the game, not one `columns`.
+    // The game holds several screens (D-280), so one game is one element of the game.
     assert.equal(byClass(root, "game-view").length, 1);
   });
 });
 
 // --- the sentence of an unconfirmed address, in the menu „Konto” ---------------------------
-// Changed with D-157 (task ekrany-i-menu, To do 9): the row under the header's title is gone, and the
-// sentence with „Wyślij ponownie” stands in the menu „Konto”, closed until the player opens it.
+// D-157: the sentence with „Wyślij ponownie” stands in the menu „Konto”, closed until the player
+// opens it.
 
 /** The sentence and the button of an unconfirmed address in the opened menu, or null where none stand. */
 async function unconfirmedPart(root) {
@@ -1227,7 +1220,7 @@ function noticeOf(root) {
   return byClass(root, "confirmation-notice").filter(shown);
 }
 
-/** The page's sentence in the card, above its switch and form (To do 6, D-261). */
+/** The page's sentence in the card, above its switch and form (D-261). */
 function assertAboveTheForm(root, notice) {
   const card = cardOf(root);
   assert.ok(card?.contains(notice), "the sentence stands in the card");
@@ -1260,7 +1253,7 @@ test("with a token in the address the page confirms first, saying so, and checks
   });
 });
 
-// Task logowanie-w-react, To do 3: the card shows one form.
+// D-259: the card shows one form.
 test("the result stands as one sentence above the game for a signed-in player and leaves at the next change between forms and game", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1285,7 +1278,7 @@ test("the result stands as one sentence above the game for a signed-in player an
   });
 });
 
-// Task logowanie-w-react, To do 6, D-261: the sentence stands in the card, above the switch.
+// D-261: the sentence stands in the card, above the switch.
 test("a refused link stands in warning above the form in the card for a player who is not signed in, and the fragment goes", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1551,8 +1544,8 @@ test("a password the server would refuse sends nothing, marks the field at fault
   });
 });
 
-// Task logowanie-w-react, To do 3 and 6, D-261, spec decision 3: the card of the link closes and one new card opens on
-// „Zaloguj się” with the sentence in it, above its switch.
+// D-261, D-381: the card of the link closes and one new card opens on „Zaloguj się” with the sentence in
+// it, above its switch.
 test("a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks about no session and focuses the address field", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
@@ -1584,7 +1577,7 @@ test("a change clears the fragment first, then shows a new card with the sentenc
   });
 });
 
-// Task logowanie-w-react, To do 6, D-261: where the check leads to the forms, the sentence stands in the card.
+// D-261: where the check leads to the forms, the sentence stands in the card.
 test("a refused link, whatever its reason, clears the fragment first and then checks the session: the card or the game with the sentence in warning above the form or the game", async () => {
   const reasons = {
     "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
@@ -1641,7 +1634,7 @@ test("a refused link, whatever its reason, clears the fragment first and then ch
   }
 });
 
-// Task logowanie-w-react, To do 3: the card shows one form.
+// D-259: the card shows one form.
 test("„Anuluj” clears the fragment first and opens the page as usual with the session check and no sentence", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -1730,9 +1723,9 @@ const OTHER_ACCOUNT = {
   value: { id: "b2", email: "ola@example.com", emailConfirmed: true },
 };
 
-/** The version of the shape of the saved game state this game writes and loads (D-206); 4 since To do 10 of koniec-przejscia. */
+/** The version of the shape of the saved game state this game writes and loads (D-206). */
 const VERSION = 4;
-/** The version before the raise, which To do 10 and D-206 make another version. */
+/** A version older than `VERSION`, which D-206 makes another version. */
 const OLDER_VERSION = 2;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
 const SAVED_MS = CLOCK_MS - 60_000;
@@ -1742,12 +1735,12 @@ const passing = () =>
   send(withCharacter(), { mapId: "forest", characterId: 1 }, 0).state;
 /** A game state as plain JSON, as it travels in a save. */
 const plain = (state) => JSON.parse(JSON.stringify(state));
-/** The server's answer holding a save of `game` at `revision`, stamped at its save (To do 10, row 13). */
+/** The server's answer holding a save of `game` at `revision`, stamped at its save (D-248). */
 const saveOf = (game, revision, version = VERSION) => ({
   ok: true,
   value: { version, revision, game: plain({ ...game, saveTimeMs: SAVED_MS }) },
 });
-/** What the page sends to save `game` on the basis of `basedOn`, stamped by the clock (To do 10, row 13). */
+/** What the page sends to save `game` on the basis of `basedOn`, stamped by the clock (D-248). */
 const submission = (game, basedOn) => ({
   version: VERSION,
   basedOn,
@@ -1789,10 +1782,9 @@ async function expiredPage(held) {
 }
 
 // invariant: expired-session-unsaved-progress
-// Task zapis-stanu-na-serwerze, To do 9; D-203, D-211. Catches the state lost at the 401, the game
-// left running beside the forms, the save asked for again instead of the kept state sent, and the
-// kept state sent on another basis than the revision last seen. Task logowanie-w-react, To do 3:
-// the card shows one form.
+// D-203, D-211. Catches the state lost at the 401, the game left running beside the forms, the save
+// asked for again instead of the kept state sent, and the kept state sent on another basis than the
+// revision last seen. D-259: the card shows one form.
 test("a 401 on a save keeps the state, and a sign-in to the same account sends it and returns to the game from it", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
@@ -1877,10 +1869,10 @@ function faultInLoad(quoted) {
   };
 }
 
-// Question 16 of the task, D-213, D-96. Catches the error taken for a refusal, which starts a new
-// game and saves it over the player's save; a game built or a save sent while the sentence stands;
-// the error's text in the console, which may quote what the save holds. The sentence and the button
-// are the task's, and that the retry saves nothing is D-207's: nothing the player did changed.
+// D-213, D-96. Catches the error taken for a refusal, which starts a new game and saves it over the
+// player's save; a game built or a save sent while the sentence stands; the error's text in the
+// console, which may quote what the save holds. The sentence and the button are D-96's, and that the
+// retry saves nothing is D-207's: nothing the player did changed.
 test("an error of the code in the load of a downloaded save keeps the save, builds no game, and the retry loads it", async () => {
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
@@ -1918,7 +1910,7 @@ test("an error of the code in the load of a downloaded save keeps the save, buil
   });
 });
 
-// Handoff question 1, D-211, D-213. Catches the kept state dropped before the load, so that the
+// D-211, D-213. Catches the kept state dropped before the load, so that the
 // retry finds no state and the next load brings the older save; the state left for another account.
 test("an error of the code in the load of the kept state keeps it for the retry, and only then is it sent", async () => {
   await onPage(async ({ root }) => {
@@ -1974,7 +1966,7 @@ test("an error of the code in the load of the kept state keeps it for the retry,
 
 /**
  * A game whose map run ended in Ala's death, the pause of each discovery lifted by the player, the
- * death settled as the game's clock settles it; the load refuses a death unsettled (spec, decision 9).
+ * death settled as the game's clock settles it; the load refuses a death unsettled (D-221).
  */
 /** The map run of `start`, Ala's passing one unless given, ended in a death, settled. */
 function ended(start = passing()) {
@@ -1997,7 +1989,7 @@ const pageNotices = (root) =>
     .filter(shown)
     .map((notice) => notice.textContent);
 
-// Spec section 7; D-96. Catches a game built before the saved game state answers, and a new game
+// D-96. Catches a game built before the saved game state answers, and a new game
 // saved by itself over nothing.
 test("after the session check the page keeps „Sprawdzanie logowania…” until the saved game state answers, and none gives a new game that saves nothing by itself", async () => {
   await onPage(async ({ root }) => {
@@ -2022,7 +2014,7 @@ test("after the session check the page keeps „Sprawdzanie logowania…” unti
   });
 });
 
-// To do 6; D-212. Catches a loaded map run left running, at another pace, or moved to the
+// D-212. Catches a loaded map run left running, at another pace, or moved to the
 // headquarters, an ended one closed, and a loaded game saved again by itself.
 test("a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on its screen after the end", async () => {
   const passingAt8 = { ...passing(), pace: 8 };
@@ -2036,8 +2028,7 @@ test("a save builds the game the load gives: a map run that went on comes back p
       await held.answer("currentAccount", ACCOUNT);
       await held.answer("loadSavedGame", saveOf(game, 3));
       assert.equal(shown(byClass(root, "headquarters")[0]), false, name);
-      // Task ekran-przejscia, To do 2 and 8: the screen of a map run holds no column of its own any
-      // more, so the screen itself is what shows.
+      // The screen of a map run holds no column of its own, so the screen itself is what shows.
       assert.ok(shown(byClass(root, "run-screen")[0]), name);
       assert.ok(shown(buttonNamed(root, "Restart")), name);
       assert.ok(shown(buttonNamed(root, "Zakończ")), name);
@@ -2082,8 +2073,7 @@ function hidePage() {
   fire(document, "visibilitychange");
 }
 
-// Task petla-zarobkowa, To do 11 and 17, row 25; spec sections 8 and 10; D-212. The save loaded was
-// made a minute before the clock's date. Catches a game that does not catch up after the load, and a
+// D-207, D-212. The save loaded was made a minute before the clock's date. Catches a game that does not catch up after the load, and a
 // catch-up that ended a run and is not saved at once, or saved once per run end.
 test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
   await onPage(async ({ root }) => {
@@ -2102,8 +2092,8 @@ test("a loaded game catches its loop up once, and a catch-up that ended a map ru
   });
 });
 
-// Spec section 10: saving after any caught-up minute would make each reload send, and two open tabs
-// refuse each other (D-209).
+// D-207: saving after any caught-up minute would make each reload send, and two open tabs refuse
+// each other (D-209).
 test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up once", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -2268,7 +2258,7 @@ const ACTS = [
     },
   },
   {
-    // The rank is bought on the screen Postać, where „Kup” stands since Slice 9 (D-199, D-200).
+    // The rank is bought on the screen Postać, where „Kup” stands (D-199, D-200).
     name: "buying a branch rank",
     start: eatingPoint,
     hash: "#/postac/1",
@@ -2435,7 +2425,7 @@ const ACTS = [
   },
 ];
 
-// Spec section 9; D-211, D-248. Catches `keep()` writing a document with no save time, which the
+// D-211, D-248. Catches `keep()` writing a document with no save time, which the
 // sign-in would refuse and start anew, a moment older than the reading it makes, and a stamp written
 // into the view's state, which the saver's comparison would take for a change.
 test("the document kept for the same account holds the moment of its reading and loads, and the view's state stays what it was", async () => {
@@ -2479,7 +2469,7 @@ test("the document kept for the same account holds the moment of its reading and
   });
 });
 
-// To do 7; D-207, decision 6's list. Catches an act of the player whose change is left to the next
+// D-207's list of acts. Catches an act of the player whose change is left to the next
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
   const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
@@ -2503,7 +2493,7 @@ test("each act of the player that changes the game state is saved at once, and o
         assert.deepEqual(waitingCalls(held), ["saveGame"], name);
         const [sent] = argsOf(held, "saveGame");
         assert.equal(sent.basedOn, 4, name);
-        // To do 10 with D-206; row 13: the document holds the clock's moment, the state does not.
+        // D-248: the document holds the clock's moment, the state does not.
         if (expected)
           assert.deepEqual(
             sent.game,
@@ -2522,10 +2512,9 @@ test("each act of the player that changes the game state is saved at once, and o
     await startPage(held);
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", saveOf(pausedRun(), 4));
-    // Without a map run the pause changes nothing (setPaused). Task ekran-przejscia, To do 8: the
-    // header in React draws nothing without a map run, where the status row in DOM stood with an
-    // unlabelled pause button, so the pause pressed without a map run is the „Wznów” the hidden
-    // screen of a map run still holds after „Zakończ” ended its map run (D-281).
+    // Without a map run the pause changes nothing (setPaused). The header in React draws nothing
+    // without a map run, so the pause pressed without a map run is the „Wznów” the hidden screen of
+    // a map run still holds after „Zakończ” ended its map run (D-281).
     await inAct(() => fire(buttonNamed(root, "Zakończ"), "click"));
     await settle();
     assert.deepEqual(
@@ -2544,7 +2533,7 @@ test("each act of the player that changes the game state is saved at once, and o
 });
 
 // --- the character's row: starting, watching and stopping an earning loop --------------------
-// Task petla-zarobkowa, To do 1, 8, 9 and 18; D-243, D-244, D-245, D-251; spec section 12.
+// D-243, D-244, D-245, D-251.
 
 /** The row of the character named `name` in the headquarters under `root`. */
 function rowOf(root, name) {
@@ -2616,8 +2605,8 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
     assert.ok(buttonNamed(ala, "Zatrzymaj").classList.contains("destructive"));
     assert.ok(!shown(byClass(ola, "team-member-loop")[0]));
     assert.ok(!shown(buttonNamed(ola, "Zatrzymaj")));
-    // Siedziba sends nobody: no list of programs and no button of sending in a row (To do 8). The
-    // screen is drawn in React since Slice 9, so a character in no loop has no „Zatrzymaj” at all.
+    // Siedziba sends nobody: no list of programs and no button of sending in a row (D-329, D-330).
+    // A character in no loop has no „Zatrzymaj” at all.
     for (const [row, buttons] of [
       [ala, ["Zatrzymaj"]],
       [ola, []],
@@ -2678,7 +2667,7 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
       false,
     );
     await inAct(() => view.dispose());
-    // „Kup” is not on Siedziba since Slice 9; the character in the loop buys on its screen Postać.
+    // „Kup” is not on Siedziba; the character in the loop buys on its screen Postać (D-200).
     const character = await viewOf(
       alaLoopingOlaFree(),
       fakeAddress("#/postac/1"),
@@ -2688,7 +2677,7 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
   });
 });
 
-// To do 8, row 1; question 3; D-287. Catches a block whose inactive „Wejdź” and „Puść w pętlę” say
+// D-287. Catches a block whose inactive „Wejdź” and „Puść w pętlę” say
 // nothing after the end of a map run, a sentence standing beside the buttons rather than under them,
 // one sentence per map instead of one per character, a sentence left on after „Zakończ”, and a
 // sentence of sending that stays in Siedziba.
@@ -2739,7 +2728,7 @@ test("after the end of a map run every character's „Wejdź” is inactive unde
   });
 });
 
-// To do 2, row 3; question 7. Catches a name that is no link, a link to another address, and a link
+// D-329. Catches a name that is no link, a link to another address, and a link
 // that does not open the character's screen Postać.
 test("the name in a character's row is a link to its screen Postać, which then opens", async () => {
   await onPage(async ({ root }) => {
@@ -2756,7 +2745,7 @@ test("the name in a character's row is a link to its screen Postać, which then 
   });
 });
 
-// To do 7; D-329. Catches a click on „Puść w pętlę” that leaves the character as it was, that opens a
+// D-329. Catches a click on „Puść w pętlę” that leaves the character as it was, that opens a
 // map run or leads away from the screen Mapy, that is not saved, or that does not move the focus to
 // the „Zatrzymaj” that now stands in the button's place; the loop line must stand at once with the
 // buttons of the character shut.
@@ -2794,7 +2783,7 @@ test("„Puść w pętlę” puts the character into a loop at once and the play
 });
 
 // Catches a stop that asks first, one that leaves the line of the loop or none of the stop, and one
-// that shows practice the loop did not gather (D-245, Q18).
+// that shows practice the loop did not gather (D-245).
 test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” with the practice paid, or the bare words, until the next start", async () => {
   await onPage(async ({ root }) => {
     const base = alaLoopingOlaFree();
@@ -2864,7 +2853,7 @@ test("a game built from a state with a stopped loop shows the line of the stop i
   });
 });
 
-// Catches the chest inside the key of the rows (spec section 12): a deposit, or a take at another
+// Catches the chest inside the key of the rows: a deposit, or a take at another
 // character's start, rebuilt every row of Siedziba and every block of „Kto idzie”, so a list open
 // at a character went. The start is made on the screen Mapy, where the characters are sent from, and
 // Siedziba, hidden meanwhile, draws the chest on.
@@ -2909,7 +2898,7 @@ test("a change of the chest redraws the chest alone: the rows of Siedziba and th
   });
 });
 
-// D-251, To do 18; D-329. Catches a mark in the wrong place or role, a mark at a map not yet solved,
+// D-251, D-329. Catches a mark in the wrong place or role, a mark at a map not yet solved,
 // and a mark that ignores the chest.
 test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
   const MARK =
@@ -2964,7 +2953,7 @@ function lastMinute() {
   return state;
 }
 
-// To do 7; D-207; To do 16. Catches a death left unsaved until the next 30-second check, and a death
+// D-207, D-221. Catches a death left unsaved until the next 30-second check, and a death
 // saved unsettled, which the next load would refuse.
 test("a game minute that ends the map run in a death is saved at once, settled", async () => {
   await onPage(async ({ root }) => {
@@ -3014,11 +3003,10 @@ function renewing(at, left) {
   };
 }
 
-// To do 19, 20; spec decisions 7 and 8; D-207. Catches a headquarters that draws the passing of
-// real time only when the game state changes, one that rewrites a line that did not change, and a
-// tick that makes a new state, which the saver would send. The screen is drawn in React since
-// Slice 9, so the writes of the line are counted as the changes of its text the page's document
-// records, and a tick that changes the text runs in act.
+// D-207, D-217. Catches a headquarters that draws the passing of real time only when the game state
+// changes, one that rewrites a line that did not change, and a tick that makes a new state, which
+// the saver would send. The screen is drawn in React, so the writes of the line are counted as the
+// changes of its text the page's document records, and a tick that changes the text runs in act.
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
   await onPage(async ({ root }) => {
     const T = 1_760_000_000_000;
@@ -3091,9 +3079,8 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
   });
 });
 
-// To do 6; D-96. Catches a new game built when the saved game state cannot be had, a retry that
-// asks for the save alone, and a 401 read as a failure. Task logowanie-w-react, To do 3: the card
-// shows one form.
+// D-96. Catches a new game built when the saved game state cannot be had, a retry that asks for the
+// save alone, and a 401 read as a failure. D-259: the card shows one form.
 test("a failed or uncertain answer for the saved game state shows the warning with retry, which asks both again; no session shows the forms", async () => {
   const answers = {
     "no connection": NO_CONNECTION,
@@ -3144,14 +3131,14 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
   });
 });
 
-// To do 5; D-96, D-206. Catches a refused save loaded in part, the sentence of another version
+// D-96, D-206. Catches a refused save loaded in part, the sentence of another version
 // for a damaged save, the sentence missing or under the confirmation notice, and the refused save
 // left on the server to come back at the next sign-in.
 test("a refused save starts a new game with its one-time sentence above it, after a confirmation notice, and saves the new game at once on the server's revision", async () => {
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
-    // To do 10 with D-206: 4 is the current version since the raise, so 2 is another one.
+    // D-206: a version older than the current one is another version.
     [
       "another version",
       saveOf(withCharacter(), 7, OLDER_VERSION),
@@ -3183,7 +3170,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
       );
       assert.equal(refusal.textContent, sentence, name);
       assert.equal(refusal.classList.contains("page-notice"), true, name);
-      // Changed with the screens by address (To do 2): the game's element holds its screens.
+      // The game's element holds its screens (D-280).
       assert.equal(game.className, "game-view", name);
       assert.ok(shown(byClass(root, "headquarters")[0]), name);
       assert.deepEqual(
@@ -3198,8 +3185,7 @@ test("a refused save starts a new game with its one-time sentence above it, afte
   }
 });
 
-// To do 7; D-208; changed with To do 10 (task ekrany-i-menu): the line stands under the menu bar
-// and not in the menu „Konto”. Catches the failure shown nowhere or only in the closed menu, no
+// D-208: the line stands under the menu bar and not in the menu „Konto”. Catches the failure shown nowhere or only in the closed menu, no
 // retry, and the sentence left after a save succeeds.
 test("a failed save shows its line under the menu bar, outside the menu „Konto”, and a retry that succeeds clears it", async () => {
   await onPage(async ({ root }) => {
@@ -3246,7 +3232,7 @@ test("a failed save shows its line under the menu bar, outside the menu „Konto
   });
 });
 
-// To do 8; D-209. Catches the lost game kept on screen or running, the server's save not asked
+// D-209. Catches the lost game kept on screen or running, the server's save not asked
 // for, the sentence missing or not leaving at the first successful save, and a refused save on that
 // path read as a conflict.
 test("a conflict drops the game, asks for the server's save and builds from it with its sentence in the header until a save succeeds; a refused one there starts anew", async () => {
@@ -3292,7 +3278,7 @@ test("a conflict drops the game, asks for the server's save and builds from it w
     await press(buttonNamed(root, "4×"));
     await settle();
     await held.answer("saveGame", { kind: "conflict" });
-    // To do 10 with D-206: 4 is the current version since the raise, so 2 is another one.
+    // D-206: a version older than the current one is another version.
     await held.answer(
       "loadSavedGame",
       saveOf(withCharacter(), 6, OLDER_VERSION),
@@ -3317,9 +3303,9 @@ async function loggingOutPage(held) {
   return logout;
 }
 
-// To do 10; D-97. Catches a session ended after a failed save, a logout held back by a refusal
-// that is for good, the update sentence missing, and the expiry path skipped at logout. Task
-// logowanie-w-react, To do 3 and 6, D-261: one form stands, and the sentence stands in the card, in `confirmation-notice`.
+// D-97. Catches a session ended after a failed save, a logout held back by a refusal that is for
+// good, the update sentence missing, and the expiry path skipped at logout. D-259, D-261: one form
+// stands, and the sentence stands in the card, in `confirmation-notice`.
 test("„Wyloguj” saves first and goes on, stays or ends each way its save's outcome gives", async () => {
   const outcomes = [
     ["saved", { kind: "saved", revision: 5 }, null],
@@ -3382,7 +3368,7 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
 });
 
 // D-97, D-210. Catches a stopped tab trying to save before logout, and the forms without the
-// sentence of the update. Task logowanie-w-react, To do 6, D-261: the sentence stands in the card.
+// sentence of the update. D-261: the sentence stands in the card.
 test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the form in the card", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -3405,9 +3391,9 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
   });
 });
 
-// D-97, D-211; the concern of slice 5. Catches the expiry path started while the logout's request
-// is under way, and a logout that does not happen leaving the save's 401 unanswered. Task logowanie-w-react, To do 6,
-// D-261: the sentence stands in the card.
+// D-97, D-211. Catches the expiry path started while the logout's request is under way, and a
+// logout that does not happen leaving the save's 401 unanswered. D-261: the sentence stands in the
+// card.
 test("a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path", async () => {
   for (const [name, answer] of [
     ["a confirmed logout", { ok: true, value: null }],
@@ -3453,8 +3439,7 @@ test("a save that finds no session while the logout's request is under way waits
 });
 
 // --- the report on earning loops in the headquarters ------------------------------------------
-// Task petla-zarobkowa, To do 16 and rows 10, 11, 22-24 and 26 of Settlements to record; spec
-// section 11; D-246, D-42.
+// D-246, D-42.
 
 /** The section of the report in the headquarters under `root`, or undefined. */
 const reportSection = (root) => {
@@ -3534,7 +3519,7 @@ test("a game built from a state with a report shows the section above „Drużyn
   });
 });
 
-// Catches the title of a section that holds only stops in the open game (Q19) and a full chest
+// Catches the title of a section that holds only stops in the open game (D-246) and a full chest
 // that is not said, or said for a chest that is not full.
 test("only stops in the open game give „Pętle, które stanęły”, and a full chest adds its sentence", async () => {
   await onPage(async ({ root }) => {
@@ -3580,7 +3565,7 @@ test("a state with an empty report shows no section", async () => {
 });
 
 // Catches a „Zamknij” that closes one line, one that is not saved, and one that leaves focus on the
-// page body once the button is gone (D-42; spec, Left to the maker).
+// page body once the button is gone (D-42).
 test("„Zamknij” closes the whole section at once, saves, and focus stays on the screen", async () => {
   await onPage(async ({ root }) => {
     const { view, held } = await viewOf(reported());
@@ -3630,8 +3615,8 @@ test("the report survives a reload, and a closed report stays closed after one",
   });
 });
 
-// Changed with D-246 and D-53 (task ekrany-i-menu, To do 3 and 6): „Zakończ” leads to the screen
-// Postać, so the report is read on reaching Siedziba, not after „Zakończ”. Catches the report drawn
+// D-246, D-53: „Zakończ” leads to the screen Postać, so the report is read on reaching Siedziba, not
+// after „Zakończ”. Catches the report drawn
 // on the screen of a manual map run or on Postać, and one not shown when Siedziba is reached.
 test("a manual map run hides the report with Siedziba, „Zakończ” opens Postać without it, and Siedziba shows it on being reached", async () => {
   await onPage(async ({ root }) => {
@@ -3653,8 +3638,7 @@ test("a manual map run hides the report with Siedziba, „Zakończ” opens Post
 });
 
 // --- the screens by address -----------------------------------------------------------------------
-// Task ekrany-i-menu, To do 2, 3, 6, 7, 11 and 12, questions 1, 6, 8, 9, 10, 12 and 16; D-96,
-// D-212, D-225, D-280, D-281, D-283, D-284, D-286. The address is the test's own, so these cases
+// D-96, D-212, D-225, D-280, D-281, D-283, D-284, D-286. The address is the test's own, so these cases
 // prove what the page reads and writes of it and which screen it shows, never the browser's history
 // (D-88); the real `browserAddress` has its own cases below, on jsdom's history.
 
@@ -3666,7 +3650,6 @@ function shownScreen(root) {
   };
   if (shows("character-screen")) return "character";
   if (shows("maps-screen")) return "maps";
-  // Task ekran-przejscia, To do 2 and 8: the screen of a map run holds no column of its own.
   if (shows("run-screen")) return "run";
   if (shows("headquarters")) return "headquarters";
   if (shows("programs-screen")) return "programs";
@@ -3689,8 +3672,7 @@ function returnItem(root) {
   return item ? [item.textContent, item.getAttribute("href")] : null;
 }
 
-// Task ekran-przejscia, To do 1 and 8, and task teraz-i-potem, To do 3 (D-311, D-122): the clock
-// stands in the header of the screen, in React, as „Minuta {game minute}”, with „ (pauza)” at a pause.
+// D-311, D-122: the clock stands in the header of the screen, in React, as „Minuta {game minute}”, with „ (pauza)” at a pause.
 const clockTextOf = (root) => byClass(root, "run-header-clock")[0]?.textContent;
 
 /** A click on the link to `hash`, inside act: the bar redraws at a change of screen. */
@@ -3729,7 +3711,7 @@ const fullGame = () => {
 
 const RUN_ADDRESS = "#/postac/1/przejscie";
 
-// To do 2, question 1, D-96, D-212, D-283. Catches the first screen read from the address after the
+// D-96, D-212, D-283. Catches the first screen read from the address after the
 // sign-in form (another account in the same tab would land at the previous player's address), the
 // manual map run of the save not opened after a sign-in or a reload with no fragment, and a reload
 // at an address taken to the map run.
@@ -3767,7 +3749,7 @@ test("the first screen of each entry: the sign-in form and a reload with no frag
       assert.equal(address.entries.length, 1, name);
     });
   }
-  // At a reload at an address, while the save holds a map run: the address wins (question 1).
+  // At a reload at an address, while the save holds a map run: the address wins (D-96).
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/programy", passing());
@@ -3780,7 +3762,7 @@ test("the first screen of each entry: the sign-in form and a reload with no frag
   });
 });
 
-// The slice's first failing case. To do 2, question 1, D-96: „a reload at `#/postac/2` while the
+// D-96: „a reload at `#/postac/2` while the
 // saved game state holds a manual map run staying on the screen Postać of character 2”. Catches
 // the save's map run winning over the address, and the screen Postać not built for the address.
 test("a reload at #/postac/1 while the save holds a map run opens the screen Postać of Ala, with the bar marking Siedziba and „Wróć do przejścia”", async () => {
@@ -3801,7 +3783,7 @@ test("a reload at #/postac/1 while the save holds a map run opens the screen Pos
   });
 });
 
-// To do 2, D-281. Catches an address of the five that opens another screen, or one the page
+// D-281. Catches an address of the five that opens another screen, or one the page
 // rewrites although it names an existing screen.
 test("a reload at each of the seven addresses opens its screen and leaves the address as it is", async () => {
   for (const [hash, screen] of [
@@ -3823,7 +3805,7 @@ test("a reload at each of the seven addresses opens its screen and leaves the ad
   }
 });
 
-// To do 2 and 3, questions 8 and 9, D-281, D-331. Catches a reload that leaves Mapy for another
+// D-281, D-331. Catches a reload that leaves Mapy for another
 // screen, a map picked at `#/mapy` before the player picks one, a card that is not the map the
 // address names, and the name of a character in „Kto idzie” that is no link to its screen Postać.
 test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none, and the name of a character is a link to its screen Postać", async () => {
@@ -3865,7 +3847,7 @@ test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none
   });
 });
 
-// To do 2 (the browser's back and forward), D-280, D-281. Catches a link that opens no screen, a
+// D-280, D-281 (the browser's back and forward). Catches a link that opens no screen, a
 // back or forward that leaves the screen where it was, and a mark of the bar that lags behind.
 test("the items of the bar lead to their screens, and back and forward walk the screens the player visited, the bar marking each", async () => {
   await onPage(async ({ root }) => {
@@ -3950,7 +3932,7 @@ test("the items of the bar lead to their screens, and back and forward walk the 
   });
 });
 
-// Question 8, D-281, trust: the fragment is the player's input. Catches a crafted fragment that
+// D-281, trust: the fragment is the player's input. Catches a crafted fragment that
 // throws, opens no screen, or stays in the address; and a replacement that adds an entry of the
 // history. The fragments of the emailed links are no row here since D-352: with the game standing
 // they reload the page (the case "a fragment of an emailed link that appears in the address of an
@@ -4007,7 +3989,7 @@ test("an address that leads to no existing screen opens the nearest one and has 
   }
 });
 
-// To do 6 and 7, question 6, D-53, D-280, D-329. Catches a send that leaves the player on the screen
+// D-53, D-280, D-329. Catches a send that leaves the player on the screen
 // Mapy, „Zakończ” that leads to Siedziba, either without an entry of the history, a screen of Mapy
 // left standing under the map run, and the back button after „Zakończ” landing on a screen of a map
 // run that is gone.
@@ -4064,7 +4046,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
   });
 });
 
-// The acceptance criterion; To do 1, 5 and 7; D-280, D-330. Catches a way from Siedziba to the first
+// D-280, D-330. Catches a way from Siedziba to the first
 // map run that takes more than three clicks, a first click that is no item of the bar, a row of the
 // list that leads elsewhere than to its map, and „Wejdź” that does not send the one character with
 // the program its list shows. A click on a link is the address changing, which the case makes with
@@ -4116,7 +4098,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
   });
 });
 
-// The slice's first failing case. To do 7, questions 10, D-283, D-284, D-207. Catches a map run
+// D-283, D-284, D-207. Catches a map run
 // that passes its game minutes while the player stands on another screen, a leave that pauses
 // without saving, a leave of a paused or ended map run that saves although nothing changed, and a
 // return that resumes the map run by itself.
@@ -4178,7 +4160,7 @@ test("leaving the screen of a map run that goes on pauses it as „Pauza” does
   }
 });
 
-// D-283's rejected way and the plan: a logout or an expiry leaves the game with no change of screen
+// D-283's rejected way: a logout or an expiry leaves the game with no change of screen
 // and pauses nothing. Catches a logout's save that pauses the map run, and a listener on the
 // address left behind by a game that has gone.
 test("„Wyloguj” on the screen of a map run going on saves it as it goes and pauses nothing, and the game that left listens to the address no more", async () => {
@@ -4199,7 +4181,7 @@ test("„Wyloguj” on the screen of a map run going on saves it as it goes and 
   });
 });
 
-// Question 16, D-225, D-96, D-281. Catches „Anuluj” or a refused link of a signed-in player
+// D-225, D-96, D-281. Catches „Anuluj” or a refused link of a signed-in player
 // leading to the save's map run, and a confirmation link doing so.
 test("after an emailed link — a confirmation, „Anuluj” of „Ustaw nowe hasło” or a refused link — a signed-in player opens Siedziba, whatever the save holds", async () => {
   await onPage(async ({ root }) => {
@@ -4242,7 +4224,7 @@ test("after an emailed link — a confirmation, „Anuluj” of „Ustaw nowe ha
   });
 });
 
-// D-209 with the plan: a game built again after a conflict stays on the screen the address names.
+// D-209: a game built again after a conflict stays on the screen the address names.
 // Catches the rebuilt game opening the save's map run or Siedziba instead.
 test("a game built again after a conflict stays on the screen the address names, also when the game before it came from the sign-in form", async () => {
   await onPage(async ({ root }) => {
@@ -4279,7 +4261,7 @@ test("a game built again after a conflict stays on the screen the address names,
   });
 });
 
-// Task proporcje-sceny-i-programu, To do 3; D-288, D-282. Catches the rule panel of Programy kept as a
+// D-288, D-282. Catches the rule panel of Programy kept as a
 // third area beside the list and the editor, or drawn outside the program panel, and an area of the
 // panel left standing while nothing is open.
 test("on Programy the list and the editor are the two areas, and an open group draws its panel inside the program panel, directly under its header", async () => {
@@ -4328,7 +4310,7 @@ test("on Programy the list and the editor are the two areas, and an open group d
 });
 
 // --- Programy: the list of programs and the panel beside it ----------------------------------
-// Task ekrany-i-menu, To do 3 and 5, questions 5, 8 and 15; D-166, D-281. The list is a link to each
+// D-166, D-281. The list is a link to each
 // program's address, so a pick is the address changing, which these cases make by `follow`.
 
 /** The screen Programy, shown or not. */
@@ -4354,7 +4336,7 @@ const NOTE = "Zmiany tutaj nie dotykają przejścia na mapie Las.";
 const groupsOf = (sent, id) =>
   sent.game.programs.find((saved) => saved.id === id).program.groups.length;
 
-// To do 3 and 5, D-166. Catches the program panel still standing beside Siedziba, Programy holding
+// D-166. Catches the program panel still standing beside Siedziba, Programy holding
 // the select list „Program:” or the copy beside its own list, the sentence missing above the editor
 // of Programy beside a waiting map run, and the sentence standing on the screen of the map run.
 test("Siedziba holds no program panel; Programy holds the list and a panel with the sentence; Przejście holds the select list with the copy first and no sentence", async () => {
@@ -4392,7 +4374,7 @@ test("Siedziba holds no program panel; Programy holds the list and a panel with 
   });
 });
 
-// To do 5, question 15, D-166; the invariant saved-program-edit. Catches a pick on the list that
+// D-166; the invariant saved-program-edit. Catches a pick on the list that
 // changes the program edited only on the list and not under the panel, the address not picking on
 // the list, and an edit on Programy reaching the copy.
 test("the address picks the program on the list and in the panel, an edit on Programy lands in it and never in the copy, and `#/programy` shows the first", async () => {
@@ -4441,7 +4423,7 @@ test("the address picks the program on the list and in the panel, an edit on Pro
   });
 });
 
-// To do 5, D-166. Catches the panel of Programy and the panel of Przejście sharing the program
+// D-166. Catches the panel of Programy and the panel of Przejście sharing the program
 // shown: the one panel that moved between the screens would carry what a pick on one into the other.
 test("the program each panel shows stays its own: a pick on the select list of Przejście does not move Programy", async () => {
   await onPage(async ({ root }) => {
@@ -4475,7 +4457,7 @@ test("the program each panel shows stays its own: a pick on the select list of P
   });
 });
 
-// To do 5, question 8. Catches „Nowy program” leaving the new program unshown, and without an entry
+// D-281. Catches „Nowy program” leaving the new program unshown, and without an entry
 // of the history.
 test("„Nowy program” of the list shows the new program with a new entry of the history", async () => {
   await onPage(async ({ root }) => {
@@ -4494,7 +4476,7 @@ test("„Nowy program” of the list shows the new program with a new entry of t
   });
 });
 
-// To do 5, question 8, D-281. Catches the deletion of the program shown leaving the address at a
+// D-281. Catches the deletion of the program shown leaving the address at a
 // program that is gone, or adding an entry the back button would land on that names a gone program.
 test("deleting the program shown opens the nearest screen, Programy with the first program, in place of its entry", async () => {
   await onPage(async ({ root }) => {
@@ -4627,7 +4609,7 @@ test("after „Zakończ” `#/programy` shows the first program once the copy's 
   });
 });
 
-// To do 11, question 12, D-286. Catches the sentence standing above Programy and Postać until a
+// D-286. Catches the sentence standing above Programy and Postać until a
 // reload, and one that comes back on the return to Siedziba.
 test("the page's sentence above the first screen leaves at the first change of screen and does not come back", async () => {
   await onPage(async ({ root }) => {
@@ -4660,7 +4642,7 @@ test("the page's sentence above the first screen leaves at the first change of s
   });
 });
 
-// Question 9, D-280, D-277. Catches „Wróć do przejścia” missing on a screen, standing on the map
+// D-280, D-277. Catches „Wróć do przejścia” missing on a screen, standing on the map
 // run's own screen, gone after the character's death, with the clock written otherwise than the
 // status row writes it, or an item marked on the screen of a map run.
 test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Postać, Programy and Mapy while a map run waits or has ended, leads to its screen and is gone there", async () => {
@@ -4701,10 +4683,10 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
   });
 });
 
-// The orchestrator's ruling (record Q14), To do 12, D-217: a reading of the clock rewrites the
-// resurrection lines of Siedziba, of Postać and of the characters in „Kto idzie” of the screen Mapy
-// whenever they show, also while a manual map run waits. Catches the lines refreshed only without a
-// map run, as before, a screen that draws its line at the moment it was built, and a tick that saves.
+// D-217: the screens refresh as time passes, so a reading of the clock rewrites the resurrection
+// lines of Siedziba, of Postać and of the characters in „Kto idzie” of the screen Mapy whenever they
+// show, also while a manual map run waits. Catches the lines refreshed only without a map run, a
+// screen that draws its line at the moment it was built, and a tick that saves.
 test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, and saves nothing", async () => {
   const T = 1_760_000_000_000;
   const warning = " — śmierć zabierze wprawę i wykupione stopnie";
@@ -4752,7 +4734,7 @@ test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of
   }
 });
 
-// The plan: Postać is created on entering it and disposed on leaving; the DOM screens are built
+// Postać and Mapy are created on entering them and disposed on leaving; the DOM screens are built
 // once. Catches a screen Postać left in the page after the player left it, or two of them.
 test("the screens Postać and Mapy are built on entering them and gone on leaving, while Siedziba and Programy are built once and hidden", async () => {
   await onPage(async ({ root }) => {
@@ -4793,7 +4775,7 @@ test("the screens Postać and Mapy are built on entering them and gone on leavin
   });
 });
 
-// Settlement 1 of the task porzadki-z-uwag-pr, D-352, D-156, D-224. A fragment of an emailed link
+// D-352, D-156, D-224. A fragment of an emailed link
 // that appears in the address of a tab whose game is open (the link pasted into the address bar) must
 // reload the page, which then does what a page opened by the link does; before, the listener took it
 // for an address with no screen and replaced it with Siedziba, so the link was lost. Catches a
@@ -4911,7 +4893,7 @@ test("browserAddress goes to a fragment with a new entry, replaces one without, 
 });
 
 // --- the page around the card -------------------------------------------------------------------
-// Task logowanie-w-react, To do 6 and 8; spec decision 3; D-261, D-262.
+// D-261, D-262, D-381.
 
 /** The page's own two parts, in the body beside the card. */
 function pageParts(root) {
@@ -4927,9 +4909,9 @@ const partsShown = (root) => pageParts(root).map(shown);
 const waitingText = (root) =>
   byClass(root, "session-check-text").find(shown)?.textContent;
 
-// To do 8, D-262. Catches the card inside `main` or under the header, and a waiting screen that
-// loses the header. To do 1 of the task spokojniejszy-wyglad: catches a footer, whatever it holds,
-// standing at the page's body on a waiting screen or over the game.
+// D-262. Catches the card inside `main` or under the header, and a waiting screen that loses the
+// header. D-27, D-262: catches a footer, whatever it holds, standing at the page's body on a waiting
+// screen or over the game.
 test("the card stands alone in the page's body, and the screens before and after it keep the header and have no footer", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -4975,7 +4957,7 @@ test("the card stands alone in the page's body, and the screens before and after
   });
 });
 
-// To do 1, D-262, D-280. Catches the game's name left as a title of its own beside the bar, an item
+// D-262, D-280. Catches the game's name left as a title of its own beside the bar, an item
 // or „Konto” on a waiting screen, and a bar over the game that lacks its items or its menu.
 test("the header holds the menu bar: the game's name alone on every waiting screen, the items and „Konto” over the game", async () => {
   await onPage(async ({ root }) => {
@@ -5013,7 +4995,7 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
   });
 });
 
-// To do 2 and 8, D-96, D-225, D-262; spec decision 3, on what closes a card. Catches a card left
+// D-96, D-225, D-262, D-381 (on what closes a card). Catches a card left
 // standing over a waiting screen, or under it the page still hidden.
 test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
   await onPage(async ({ root }) => {
@@ -5046,7 +5028,7 @@ test("the card of a reset link stands alone at once, and each way out of it show
   });
 });
 
-// D-96, D-213; spec decision 3. Catches a failed load of the kept state that leaves the card
+// D-96, D-213, D-381. Catches a failed load of the kept state that leaves the card
 // standing, its sentence and „Spróbuj ponownie” out of sight, since no waiting screen comes first.
 test("an error of the code in the load of the kept state closes the card, so its warning and retry show", async () => {
   await onPage(async ({ root }) => {
@@ -5064,7 +5046,7 @@ test("an error of the code in the load of the kept state closes the card, so its
   });
 });
 
-// D-211; spec decision 3. Catches a sign-in with a kept state, the one that shows the game with no
+// D-211, D-381. Catches a sign-in with a kept state, the one that shows the game with no
 // waiting screen before it, leaving the card over the game.
 test("a sign-in that goes straight back to the kept game closes the card", async () => {
   await onPage(async ({ root }) => {
@@ -5077,8 +5059,8 @@ test("a sign-in that goes straight back to the kept game closes the card", async
   });
 });
 
-// Spec decision 3: focus() is called after a confirmed logout and after a password was set, and no
-// other opening of the card moves focus. Catches a call of focus() added to `showForms` itself.
+// D-381: focus() is called after a confirmed logout and after a password was set, and no other
+// opening of the card moves focus. Catches a call of focus() added to `showForms` itself.
 test("a card opened by the session check or by an expired save takes no focus", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -5092,7 +5074,7 @@ test("a card opened by the session check or by an expired save takes no focus", 
   });
 });
 
-// To do 6, D-261: „Gra została zaktualizowana. Odśwież stronę.” stays when the visitor switches, and
+// D-261: „Gra została zaktualizowana. Odśwież stronę.” stays when the visitor switches, and
 // a sentence leaves at a change between the card and the game. Catches a warning in another role,
 // a sentence lost at a press, and a pending sentence that also comes back above the game.
 test("the page's sentence stays in the card through a press of the switch, in warning as an alert, and leaves when the game comes", async () => {
@@ -5131,11 +5113,10 @@ test("the page's sentence stays in the card through a press of the switch, in wa
 });
 
 // --- the login card -----------------------------------------------------------------------------
-// Task logowanie-w-react, To do 1–7; spec decisions 3 and 8; D-96, D-222, D-225, D-259, D-260,
-// D-261. These cases drive the card through createAccountCard alone, as the page does.
+// D-96, D-222, D-225, D-259, D-260, D-261, D-381. These cases drive the card through createAccountCard alone, as the page does.
 
 const GAME_NAME = "Loop";
-// The task, To do 1.
+// The sentence about the game (D-96).
 const GAME_SENTENCE =
   "Napisz postaci program i sprawdź, jak długo przeżyje bez ciebie.";
 const STORED_PASSWORD = "dwanaście znaków";
@@ -5250,7 +5231,7 @@ async function waitingLogin(root, held, options) {
   return opened;
 }
 
-// To do 1 and 3, spec decision 8, D-259. Catches a state other than „Zaloguj się” at the opening, a
+// D-259. Catches a state other than „Zaloguj się” at the opening, a
 // heading beside the switch, a request sent by the opening and another order in the card.
 test("the card opens on „Zaloguj się” with the name, the sentence, the switch, a form without a heading, „Nie pamiętam hasła” and the folded credits, in that order", async () => {
   await onPage(async ({ root }) => {
@@ -5291,7 +5272,7 @@ test("the card opens on „Zaloguj się” with the name, the sentence, the swit
   });
 });
 
-// To do 2 and 3, D-96, D-259. Catches the form of another state, a heading under the switch, and
+// D-96, D-259. Catches the form of another state, a heading under the switch, and
 // „Nie pamiętam hasła” standing under „Załóż konto”.
 test("„Załóż konto” shows address, password and repeated password, with no heading and no „Nie pamiętam hasła”, and the switch says so", async () => {
   await onPage(async ({ root }) => {
@@ -5315,7 +5296,7 @@ test("„Załóż konto” shows address, password and repeated password, with n
   });
 });
 
-// To do 2 and 3, D-96, D-259. Catches the switch in the state, a field not empty, the heading or a
+// D-96, D-259. Catches the switch in the state, a field not empty, the heading or a
 // way back missing, and a way back to another state than „Zaloguj się”.
 test("„Nie pamiętam hasła” shows its heading and an empty address with „Wyślij odnośnik” and „Wróć do logowania”, no switch, and the way back opens „Zaloguj się”", async () => {
   await onPage(async ({ root }) => {
@@ -5342,7 +5323,7 @@ test("„Nie pamiętam hasła” shows its heading and an empty address with „
   });
 });
 
-// To do 2 and 3, D-225, D-259. Catches the switch in the form of a link, whose press would have to
+// D-225, D-259. Catches the switch in the form of a link, whose press would have to
 // remove the link, the heading or „Anuluj” missing, and a request sent at the opening.
 test("a card opened with a reset link shows „Ustaw nowe hasło” with its heading, its two fields, „Ustaw hasło” and „Anuluj”, no switch, and asks nothing", async () => {
   await onPage(async ({ root }) => {
@@ -5363,8 +5344,8 @@ test("a card opened with a reset link shows „Ustaw nowe hasło” with its hea
   });
 });
 
-// Spec decision 8, „The fields keep everything they have today”. Each break here lets a browser
-// correct or refuse an address, or fill the wrong password, with nothing else showing it.
+// Each break here lets a browser correct or refuse an address, or fill the wrong password, with
+// nothing else showing it.
 test("every field keeps its label, hint and autocomplete token, the address its keyboard and no spell check, and no form checks itself", async () => {
   const states = [
     {
@@ -5428,7 +5409,7 @@ test("every field keeps its label, hint and autocomplete token, the address its 
   }
 });
 
-// To do 4, D-260. Catches a password kept for the way back, a refusal or a field's message left
+// D-260. Catches a password kept for the way back, a refusal or a field's message left
 // standing after the switch, focus left behind, and a press that takes the page's sentence too.
 test("a press of the switch empties every field, removes every message, moves focus to the address field and leaves the page's sentence", async () => {
   await onPage(async ({ root }) => {
@@ -5465,7 +5446,7 @@ test("a press of the switch empties every field, removes every message, moves fo
   });
 });
 
-// Spec decision 8, „The switch”. Catches a press that clears what is typed although nothing was
+// D-381. Catches a press that clears what is typed although nothing was
 // switched, and one that takes focus.
 test("a press of the state already shown clears nothing and moves no focus", async () => {
   await onPage(async ({ root }) => {
@@ -5487,7 +5468,7 @@ test("a press of the state already shown clears nothing and moves no focus", asy
   });
 });
 
-// To do 6, D-261, and the roles of createConfirmationNotice. Catches a sentence outside the card,
+// D-261, and the roles of createConfirmationNotice. Catches a sentence outside the card,
 // below the switch or the heading, gone at a change of state, or in another role.
 test("the page's sentence stands in the card above the switch, or above the form where none stands, in its role, through every change of state", async () => {
   for (const [notice, role] of [
@@ -5527,7 +5508,7 @@ test("the page's sentence stands in the card above the switch, or above the form
   });
 });
 
-// To do 7, spec decision 8. Catches credits missing from a state, not last, unfolded at the opening,
+// D-96. Catches credits missing from a state, not last, unfolded at the opening,
 // remounted by a change of state, which folds them again, or caught by the lock.
 test("the folded credits stand last in all four states, stay open across a change of state and stay usable while the card waits", async () => {
   await onPage(async ({ root }) => {
@@ -5571,7 +5552,7 @@ test("the folded credits stand last in all four states, stay open across a chang
   });
 });
 
-// Spec decision 3: the page places the card and calls focus() at once. Catches an asynchronous
+// D-381: the page places the card and calls focus() at once. Catches an asynchronous
 // render, which leaves the element empty when the function returns.
 test("the card stands in its element when createAccountCard returns", async () => {
   await onPage(async () => {
@@ -5589,7 +5570,7 @@ test("the card stands in its element when createAccountCard returns", async () =
   });
 });
 
-// Spec decision 3: no opening of the card moves focus but a call of focus(). Catches an autofocus,
+// D-381: no opening of the card moves focus but a call of focus(). Catches an autofocus,
 // and a focus() that holds the first state's field after a change of state.
 test("the card takes no focus when it opens, and focus() moves it to the first field of the state it stands in", async () => {
   await onPage(async ({ root }) => {
@@ -5622,7 +5603,7 @@ test("the card takes no focus when it opens, and focus() moves it to the first f
   });
 });
 
-// Spec decision 3. Catches an element left in the page, a typed password left behind in it, and an
+// D-381. Catches an element left in the page, a typed password left behind in it, and an
 // answer that still signs in, ends the form or clears the link's fragment after the card has gone.
 test("dispose() takes the element out with what it holds, and an answer still awaited is ignored", async () => {
   await onPage(async ({ root }) => {
@@ -5649,7 +5630,7 @@ test("dispose() takes the element out with what it holds, and an answer still aw
   });
 });
 
-// Spec decision 3: the page closes the card from signedIn and finished. React reports a root
+// D-381: the page closes the card from signedIn and finished. React reports a root
 // unmounted while it renders, and the harness fails the case on that report; called from render or
 // an effect these would do so. Catches those two places.
 test("signedIn and finished may dispose the card, from the answer and from the click", async () => {
@@ -5685,7 +5666,7 @@ test("signedIn and finished may dispose the card, from the answer and from the c
   });
 });
 
-// To do 5, D-44, spec decision 8. Catches a page reloaded by the send, a trimmed password (D-98), a
+// D-44, D-381. Catches a page reloaded by the send, a trimmed password (D-98), a
 // control left open by the lock, a second request, a warning elsewhere, and focus lost at the
 // unlock: it may return only after the commit, since a disabled control cannot take it.
 test("a sent login locks the whole card, and a refusal leaves one warning under the form and focus where the player sent it from", async () => {
@@ -5729,7 +5710,7 @@ test("a sent login locks the whole card, and a refusal leaves one warning under 
   });
 });
 
-// Spec decision 8, „One form waits at a time”: state shows only after a commit. Catches the guard
+// D-381: state shows only after a commit. Catches the guard
 // held in state alone, which lets a second send through before the lock is drawn.
 test("two sends and a switch before the lock is drawn send once and change nothing", async () => {
   await onPage(async ({ root }) => {
@@ -5751,7 +5732,7 @@ test("two sends and a switch before the lock is drawn send once and change nothi
   });
 });
 
-// To do 5, D-96: the entry to the game. Catches a confirmation's outcome lost or invented, a field
+// D-96: the entry to the game. Catches a confirmation's outcome lost or invented, a field
 // of the answer passed on beyond the account, a value trimmed, and a password left in the field.
 test("a sign-in and a registration hand the account on with the outcome of the message, and keep no password", async () => {
   await onPage(async ({ root }) => {
@@ -5795,7 +5776,7 @@ test("a sign-in and a registration hand the account on with the outcome of the m
   });
 });
 
-// To do 5, D-44. Catches a warning that does not show, a warning kept through the next send, and
+// D-44. Catches a warning that does not show, a warning kept through the next send, and
 // focus not returned to the button, which is the origin when the field holds no focus.
 test("a lost connection on a registration leaves one warning, removed by the next send, and focus on the button it was sent from", async () => {
   await onPage(async ({ root }) => {
@@ -5819,7 +5800,7 @@ test("a lost connection on a registration leaves one warning, removed by the nex
   });
 });
 
-// To do 5, D-98, D-99. Catches a request sent past a local check, a field marked other than the one
+// D-98, D-99. Catches a request sent past a local check, a field marked other than the one
 // at fault, and focus left where it was; the sentences are the server's (account-rules.ts).
 test("a registration the server would refuse sends nothing, marks each field at fault and takes focus to the first", async () => {
   const CASES = [
@@ -5869,7 +5850,7 @@ test("a registration the server would refuse sends nothing, marks each field at 
   }
 });
 
-// To do 5, D-222. Catches a badly written address sent, its sentence missing, and the lock of the
+// D-222. Catches a badly written address sent, its sentence missing, and the lock of the
 // state: the field, „Wyślij odnośnik” and „Wróć do logowania” alike.
 test("a request checks its address first and waits with its field and every button locked", async () => {
   await onPage(async ({ root }) => {
@@ -5899,7 +5880,7 @@ test("a request checks its address first and waits with its field and every butt
   });
 });
 
-// To do 5, D-222. Catches the sentence in the role of a refusal, an address left in the field, the
+// D-222. Catches the sentence in the role of a refusal, an address left in the field, the
 // form closed after the answer, and a sentence kept through the next send.
 test("a well-formed address gets the one sentence under the form in a status, with the field empty and focus back, and the form stays", async () => {
   await onPage(async ({ root }) => {
@@ -5929,7 +5910,7 @@ test("a well-formed address gets the one sentence under the form in a status, wi
   });
 });
 
-// To do 5, D-44. Catches a refusal taken for the sentence of the reset, an address lost, and focus
+// D-44. Catches a refusal taken for the sentence of the reset, an address lost, and focus
 // not back on the control the player sent from, field or button.
 test("a refusal or a lost connection on a request stands as the warning, keeps the address and returns focus", async () => {
   await onPage(async ({ root }) => {
@@ -5979,7 +5960,7 @@ test("nothing typed and no sentence survives leaving „Nie pamiętam hasła” 
   });
 });
 
-// To do 5, D-44, D-225. Catches a token left out of the request, a second request, „Anuluj” open
+// D-44, D-225. Catches a token left out of the request, a second request, „Anuluj” open
 // while the form waits, and a fragment cleared before the answer.
 test("a sent „Ustaw nowe hasło” waits with the whole card locked, sends the token and both passwords once and keeps the fragment", async () => {
   await onPage(async ({ root }) => {
@@ -6005,7 +5986,7 @@ test("a sent „Ustaw nowe hasło” waits with the whole card locked, sends the
   });
 });
 
-// To do 5, D-98, D-225. Catches a request sent past a local check, the message under the wrong
+// D-98, D-225. Catches a request sent past a local check, the message under the wrong
 // field, a warning left from the check before, and the link spent or cleared by it.
 test("a new password the server would refuse sends nothing, stands under its field, takes focus there and keeps the link", async () => {
   await onPage(async ({ root }) => {
@@ -6038,7 +6019,7 @@ test("a new password the server would refuse sends nothing, stands under its fie
   });
 });
 
-// To do 5, D-225: the fragment goes first, so neither a reload nor the back button returns to the
+// D-225: the fragment goes first, so neither a reload nor the back button returns to the
 // token. Catches the order turned, a refusal read by its sentence instead of its code, and the
 // ending of a change told as a refusal.
 test("a change and a refused link, whatever its reason, clear the fragment first and then end the form with their ending", async () => {
@@ -6064,7 +6045,7 @@ test("a change and a refused link, whatever its reason, clear the fragment first
   }
 });
 
-// To do 5, D-225; the form's own `ended`. Catches „Anuluj” that leaves the fragment, and a form
+// D-225; the form's own `ended`. Catches „Anuluj” that leaves the fragment, and a form
 // that ends twice or sends after its end while the page has not yet closed the card.
 test("„Anuluj” clears the fragment first and ends the form, which then ends no second time and sends nothing", async () => {
   await onPage(async ({ root }) => {
@@ -6084,7 +6065,7 @@ test("„Anuluj” clears the fragment first and ends the form, which then ends 
   });
 });
 
-// To do 5, D-225: no connection or a full gate leaves the form, one sentence and the link working.
+// D-225: no connection or a full gate leaves the form, one sentence and the link working.
 // Catches a failure read as an end, a lost field, focus not returned, and a token not sent again.
 test("a failure that is no change and no refused link keeps the form and the link, with the sentence under the form and focus back", async () => {
   for (const [name, failure] of Object.entries(KEEPING_FAILURES)) {

@@ -27,7 +27,7 @@ Reading of the sentence:
     an index, a tile's number, a resource given by its index);
   - a string outside a group name holds a digit (such as `1,1` or `(1, 1)`);
   - a `resource` field holds anything but one of the identifiers written out.
-  Structural metadata of the task's grouped program is not a world reference: positive integer
+  Structural metadata of a grouped program (D-90) is not a world reference: positive integer
   `nextGroupId` and `nextRuleId` at the program root, `id` on a direct group or its direct rule,
   and the group's string `name`. Only these exact locations are exempt; condition/action
   content and unexpected fields are still visited. The `value` exemption applies only to a
@@ -276,7 +276,7 @@ class ProgramWorldReference(unittest.TestCase):
 
     def test_control_grouped_metadata_is_not_a_world_reference(self):
         # invariant: program-world-reference
-        # D-90 and the task plan: ids identify groups/rules; a group name is player text.
+        # Ids identify groups and rules; a group name is player text.
         grouped = {
             "nextGroupId": 9, "nextRuleId": 15,
             "groups": [

@@ -415,7 +415,7 @@ export function startApp(
       notices.push(createPageNotice(REFUSED_LOAD[start.refused]));
     showPage(...notices, view.element);
     drawBar();
-    // A refused save is replaced at once, so its sentence does not come back (spec decision 7).
+    // A refused save is replaced at once, so its sentence does not come back (D-96).
     if (saveAtOnce || start.refused !== null) view.saveNow();
   }
 

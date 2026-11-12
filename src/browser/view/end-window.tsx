@@ -1,6 +1,6 @@
 /**
  * The end-of-run window in React (D-368, D-132, D-133, D-135, D-185, D-216, D-122, D-147, D-188,
- * D-313, D-44, D-39; task koniec-przejscia, To do 1, 2, 4 to 9): the window that opens over the
+ * D-313, D-44, D-39): the window that opens over the
  * screen of a map run when the map run ends in a death or a completion. It is a column in a
  * `section` with `role="dialog"` named by its title: at the top the label „Koniec przejścia”, the
  * title and „✕”; in the middle the scrolling part, which answers in order what happened (the longest

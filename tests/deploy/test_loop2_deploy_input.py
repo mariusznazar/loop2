@@ -1,4 +1,4 @@
-"""The deployment script's input, on its two paths (spec § 5, "Input — two paths"; WAY-48).
+"""The deployment script's input, on its two paths (invariant loop2-deploy-trigger-input).
 
 The forced command's path: `SSH_ORIGINAL_COMMAND` set and no argument. The human path: the
 variable unset and exactly one argument. The one value must be a commit name matching

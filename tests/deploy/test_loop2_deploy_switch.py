@@ -1,4 +1,4 @@
-"""The deployment script from the switch to its end (spec § 5, steps 10–13, "Never").
+"""The deployment script from the switch to its end.
 
 - the switch: `docker compose --project-name loop2 -f <checkout>/compose.yaml up -d --no-build
   --no-deps --remove-orphans --force-recreate --wait --wait-timeout 120 app cloudflared`; a container that does not become

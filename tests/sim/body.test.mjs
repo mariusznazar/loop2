@@ -19,9 +19,10 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 
-// Every expected number below is worked out by hand from the task's numbers: on Las the body
-// cools by 0.002 × (37 − 25) = 0.024 °C a minute, satiety falls by 0.6 a minute, health falls by
-// 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and rises by 0.05 otherwise.
+// Every expected number below is worked out by hand from the numbers of D-387 and D-388: on Las,
+// at 25 °C, the body cools by 0.002 × (37 − 25) = 0.024 °C a minute, satiety falls by 0.6 a
+// minute, health falls by 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and
+// rises by 0.05 otherwise.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
 // The first character a new game creates takes the id 1.
@@ -313,10 +314,9 @@ test("the body step names the cause of its loss from the same reading: cold, hun
   }
 });
 
-// Nature energy (task plomyk, plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania: To do
-// 1 at line 18 and To do 4 at line 21): the cap is 100 and every map run, a restart included,
-// starts full; outside combat a game minute whose satiety after its fall of 0.6 is 60 or above
-// gives back 0.5, not above the cap.
+// Nature energy (D-176, D-377): the cap is 100 and every map run, a restart included, starts full;
+// outside combat a game minute whose satiety after its fall of 0.6 is 60 or above gives back 0.5,
+// not above the cap.
 
 /** A game sent to Las with the program, its run's fields replaced at minute 0. */
 function sentWith(fields, program = EXPLORING) {
@@ -434,10 +434,10 @@ test("nature energy stays between 0 and its cap of 100 at every game minute", ()
   });
 });
 
-// The minutes each need lasts (task teraz-i-potem, To do 4 to 6, Pytanie 6, and D-337 in
-// foundations/decisions.md). Each expected number is worked out by hand from the data: Las cools
-// the body by 0.002 × (37 − 25) = 0.024 °C a minute, Las — głębiej by 0.002 × (37 − 7) = 0.06 °C,
-// satiety falls by 0.6 a minute, chilled is below 35.0 °C and starving below 30.
+// The minutes each need lasts (D-337). Each expected number is worked out by hand from the numbers
+// of D-387 and D-388: Las cools the body by 0.002 × (37 − 25) = 0.024 °C a minute, Las — głębiej by
+// 0.002 × (37 − 7) = 0.06 °C, satiety falls by 0.6 a minute, chilled is below 35.0 °C and starving
+// below 30.
 
 const { forestDeep } = MAPS;
 /** A map as warm as the body's start: it never cools the body. */

@@ -1,8 +1,9 @@
 // Discovery in the game minute of a map run: what a minute reveals, the Understanding growing and
-// the rule written at the first chill. Expectations come from the task "odkrywanie", the vault
-// file `odkrywanie_loop2.md` (D-82): To do 1 at line 16, the table of To do 2 at lines 17-26, To
-// do 6 at line 36, Questions to settle 2 at line 45 and 11 at line 76, and the minutes of the
-// first chill (minute 83 at 35,008 °C, minute 84 at 34,984 °C) in Context at line 99.
+// the rule written at the first chill. Expectations come from D-118 (what the Understanding holds
+// at the start), D-121 (what each discovery brings), D-122 (the pause after the minute of a
+// discovery) and D-123 (the rule written at the first chill). The first chill is minute 84: Las
+// cools the body by 0.002 × (37 − 25) = 0,024 °C a minute, so minute 83 ends at 35,008 °C and
+// minute 84 at 34,984 °C, below the 35,0 °C of a chill.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { BALANCE } from "../../dist/browser/sim/data/balance.js";
@@ -34,7 +35,7 @@ const EXPLORE_RULE = {
   action: { kind: "explore" },
 };
 
-// The Understanding after the first chill, from the first row of the table of To do 2.
+// The Understanding after the first chill, from the first row of D-121.
 const CHILLED = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
@@ -111,8 +112,8 @@ function explorationRule(id) {
   return { id, condition: { kind: "always" }, action: { kind: "explore" } };
 }
 
-// Task "programy-gracza", To do 11 (D-123): the rule written at the first chill goes into the copy
-// the map run carries out, into its base and into program 1, the copy's program, alike.
+// D-123: the rule written at the first chill goes into the copy the map run carries out, into its
+// base and into program 1, the copy's program, alike.
 function assertWritten(state, program) {
   assert.deepEqual(state.run.copy.program, program, "the copy");
   assert.deepEqual(state.run.copy.base, program, "the copy's base");
@@ -131,8 +132,8 @@ test("a new game sent with its one empty group waits until the minute of the fir
   const state = chilled.state;
   assert.equal(state.run.minute, 84);
   assert.equal(state.run.body.temperature, 34.984);
-  // Changed by the task "kronika-z-filtrami" (To do 4, D-341): minute 84 takes the streak of 83 to
-  // zero, so its events now begin with the loss of the streak, before the finish of the wait.
+  // D-341, D-348: minute 84 takes the streak of 83 to zero, so its events begin with the loss of
+  // the streak, before the finish of the wait.
   assert.deepEqual(chilled.events, [
     { kind: "streakLost", minute: 84, streak: 83, cause: "cold" },
     { kind: "activityFinished", minute: 84, activity: { kind: "wait" } },
@@ -266,7 +267,7 @@ test("a second chill and the minutes after reveal nothing and write no second ru
   const first = advanceMinutes(sentNew(), 84).state;
   const later = advanceMinutes(first, 10);
   assert.deepEqual(discoveries(later.events), []);
-  // Task "programy-gracza", To do 11: neither the copy nor a program gains a second rule.
+  // D-123: neither the copy nor a program gains a second rule.
   assert.deepEqual(later.state.run.copy, first.run.copy);
   assert.deepEqual(later.state.programs, first.programs);
   assert.deepEqual(later.state.understanding, CHILLED);
@@ -277,7 +278,7 @@ test("a chill that reveals nothing new writes no rule", () => {
   const knowing = { ...state, understanding: CHILLED };
   const result = advanceMinutes(knowing, 1);
   assert.deepEqual(discoveries(result.events), []);
-  // Task "programy-gracza", To do 11: neither the copy nor a program gains a rule.
+  // D-123: neither the copy nor a program gains a rule.
   assert.deepEqual(result.state.run.copy, state.run.copy);
   assert.deepEqual(result.state.programs, state.programs);
   assert.deepEqual(result.state.ruleCounts, {});
@@ -351,8 +352,8 @@ test("a later revealed tile adds its new items only, and a tile of known items r
   assert.deepEqual(known.state.understanding, understanding);
 });
 
-// The rows of the table of To do 2 after the first two, each as the finish that the row names and
-// exactly what it reveals.
+// The rows of D-121 after the first two, each as the finish that the row names and exactly what it
+// reveals.
 const ROWS = [
   {
     name: "the first gathered stick",
@@ -406,7 +407,7 @@ const ROWS = [
       current: ending(run, { kind: "lightCampfire" }),
     }),
     actions: ["feedCampfire"],
-    // Task plomyk, To do 5 (plomyk_loop2.md:22): with „Zasil — ognisko”, in one discovery line.
+    // D-121: with „Zasil — ognisko”, in one discovery line.
     conditions: ["natureEnergyBelow"],
     items: [],
     trees: ["campfireCrafting"],
@@ -587,7 +588,7 @@ test("advancing minutes through the first chill changes neither the game state g
   assert.deepEqual(state, copy);
 });
 
-// To do 2, first row: the first minute in which the body temperature is below 35,0 °C. The forest
+// D-121, first row: the first minute in which the body temperature is below 35,0 °C. The forest
 // cools a body by 0,024 °C a minute, so these bodies end the minute at 35,0 and at 34,999 °C.
 test("a body temperature of exactly 35,0 °C after the minute is not a chill, one thousandth below it is", () => {
   const cooling = (temperature) =>
@@ -650,17 +651,16 @@ test("a revealing event reveals what of its row is still new, though its actions
 test("a map run ended in death passes no further minute at the level of the run", () => {
   const dead = toDeath(sentNew());
   assert.ok(dead.run.death, "the character died");
-  // Task "programy-gracza", To do 6: the map run carries out its copy.
+  // The map run carries out its copy.
   assert.deepEqual(stepMinute(dead.run, MAPS[MAP_ID], dead.run.copy.program), {
     run: dead.run,
     events: [],
   });
 });
 
-// Slice 10 (O2, O3, O4, O5; task To do 5): game time stops after the whole minute of a discovery,
-// in the pause of "Pauza", and the game state holds what that minute revealed until the player
-// moves on. Minute 84 is the first chill (task Context, line 99); the first exploration ends at
-// minute 104.
+// D-71, D-122: game time stops after the whole minute of a discovery, in the pause of "Pauza", and
+// the game state holds what that minute revealed until the player moves on. Minute 84 is the first
+// chill; the first exploration ends at minute 104.
 const CHILL_REVEALED = {
   actions: ["explore", "wander"],
   conditions: ["temperatureBelow"],

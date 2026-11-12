@@ -54,8 +54,8 @@ test("all tiles are drawn from minute 0, unrevealed ones without icons", () => {
 });
 
 test("regular hexagons meet their neighbours along sides without gaps or overlap", () => {
-  // D-24 and accepted task przewodnik_testow_loop2.md, Q7b1: shape and adjacency,
-  // independent of rotation, translation, vertex order and the product's geometry helpers.
+  // D-24: shape and adjacency, independent of rotation, translation, vertex order and the
+  // product's geometry helpers.
   const state = sent();
   const tiles = [
     { col: 0, row: 0, at: { q: 0, r: 0 } },
@@ -223,7 +223,7 @@ test("the step target is outlined only while a move runs", () => {
   assert.ok(seenMove);
 });
 
-// The campfire on the drawing (task, To do 15; D-19, D-41, D-70). The program below, on a backpack
+// The campfire on the drawing (D-19, D-41, D-70). The program below, on a backpack
 // of 9 sticks, explores the entrance (20 minutes, to minute 20), crafts a campfire there (20
 // minutes and 6 sticks, to minute 40), lights it (5 minutes and 2 sticks, to minute 45; it burns
 // 60 minutes, to minute 105) and lights a stick (5 minutes and the last stick, to minute 50; it
@@ -284,7 +284,6 @@ test("the campfire's icon stands on its tile, burning and extinguished, and on n
 });
 
 // D-70: one icon for a burning campfire and one for an extinguished one, the same place and size.
-// The icon files are those of the task koszty-i-stan-ogniska: campfire.svg and wood-pile.svg.
 test("a burning campfire is drawn with campfire.svg and an extinguished one with wood-pile.svg, in the same place", () => {
   const [burning, extinguished] = fireRun(63, 110);
   const lit = atEntrance(terrainPicture(burning)).campfire;

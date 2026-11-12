@@ -211,9 +211,8 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
 });
 
 test("nature energy stands through the five combat minutes and comes back after them", () => {
-  // Task plomyk, Q3 and To do 4 (plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania,
-  // lines 21 and 36): in the minutes of combat nature energy stands, as the needs and recovery do;
-  // the next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
+  // D-71, D-377: in the minutes of combat nature energy stands, as the needs and recovery do; the
+  // next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
   let state = fighting(KICK, 235);
   state.run.body = { ...HEALTHY };
   state.run.natureEnergy = 50;
@@ -229,8 +228,8 @@ test("nature energy stands through the five combat minutes and comes back after 
 });
 
 test("a lighting interrupted by an attack takes neither its sticks nor its nature energy", () => {
-  // Task plomyk, To do 2 (plomyk_loop2.md, line 19). Satiety 50 falls below 60, so no energy
-  // comes back meanwhile and the energy shows only a payment.
+  // D-63. Satiety 50 falls below 60, so no energy comes back meanwhile and the energy shows only
+  // a payment.
   const state = prepared();
   const at = state.run.character.at;
   state.run.body = { temperature: 37, satiety: 50, health: 100 };

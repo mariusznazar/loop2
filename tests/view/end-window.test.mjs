@@ -1,4 +1,4 @@
-// The end-of-run window in React (task koniec-przejscia, To do 1, 2, 4 to 9; D-368, D-132, D-133,
+// The end-of-run window in React (D-368, D-370, D-132, D-133,
 // D-135, D-185, D-216, D-122, D-147, D-188, D-313, D-44, D-39) on jsdom through
 // tests/view/page-document.mjs (D-264): the title after a death and after a completion in its
 // role, the sections only where they have content and in their order, the paragraph of the last
@@ -7,7 +7,7 @@
 // when the window appears, and nothing drawn without an ended map run. The scrolling, the stay of
 // the buttons at the bottom and the look are checked in the browser (D-88), which jsdom cannot show.
 // Every comparison is of plain data or of a handful of words (D-268); every text is written out
-// from the task and the decisions, not computed by the code under test (D-73).
+// from the decisions, not computed by the code under test (D-73).
 import { assert, inAct, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
@@ -161,7 +161,7 @@ const sectionHeads = (container) =>
   );
 
 // Catches a title in the wrong words or role, a dialog that no title names, and a top that lacks the
-// label „Koniec przejścia” or the „✕” named „Zamknij okno” (D-132, D-334, task To do 4).
+// label „Koniec przejścia” or the „✕” named „Zamknij okno” (D-368, D-132, D-334).
 test("the window is a dialog named by its title, with the label „Koniec przejścia” above it and „✕” after it; the title is the cause after a death and the map's sentence in positive after a completion", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, DIED);
@@ -205,8 +205,7 @@ test("the window is a dialog named by its title, with the label „Koniec przej�
   });
 });
 
-// Catches a state that draws the window before the map run ends, or without a map run at all (task
-// To do 1).
+// Catches a state that draws the window before the map run ends, or without a map run at all (D-368).
 test("nothing is drawn for a state without an ended map run", async () => {
   await withPage(async ({ document }) => {
     const running = await draw(document, RUNNING);
@@ -315,7 +314,7 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
 });
 
 // Catches a section that stands with no content, a section out of its order, a name in another role
-// and the paragraph of the last encounter standing among the last minutes (D-368, task To do 7).
+// and the paragraph of the last encounter standing among the last minutes (D-368).
 test("after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the trip", async () => {
   await withPage(async ({ document }) => {
     const state = {
@@ -392,7 +391,7 @@ test("after a death the sections of „why” stand in order: the last minutes, 
 });
 
 // Catches the paragraph standing twice, among the last minutes too, or shown for a map run that had
-// no attack (D-147, task To do 7 and question 8).
+// no attack (D-147, D-368).
 test("the paragraph of the last encounter stands once, in its own section, and never in the last minutes; without an attack there is none", async () => {
   await withPage(async ({ document }) => {
     const fought = withRun(DIED, { lastCombat: WOLF });
@@ -432,7 +431,7 @@ test("the paragraph of the last encounter stands once, in its own section, and n
 });
 
 // Catches a section drawn for nothing: after a completion no last minutes, no rule that never fired
-// where every rule fired, no bar where no minute was counted (task To do 7: each only where it has
+// where every rule fired, no bar where no minute was counted (D-368: each section only where it has
 // content). The trip rows always have content.
 test("a section stands only where it has content", async () => {
   await withPage(async ({ document }) => {
@@ -501,7 +500,7 @@ test("the last minutes come from the entries the screen gives and stand only wit
 
 // Catches buttons in the scrolling part, a button of the wrong kind or in the wrong order, a
 // missing „Otwarte: …” after a completion of Las and one after a death or a completion of the map
-// it opens (D-44, D-132, D-188, task To do 8).
+// it opens (D-368, D-44, D-132, D-188).
 test("the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map", async () => {
   await withPage(async ({ document }) => {
     const { container, show } = await draw(
@@ -578,7 +577,7 @@ test("the warning of a cut trip plan stands between „Restart” and „Zakońc
 });
 
 // Catches a button that asks for the wrong act, for two, or for none, and „Otwarte: …” that does
-// not name its map (task To do 2, 8, 9).
+// not name its map (D-368, D-313).
 test("„✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj regułę z tym” ask for their own control and nothing else", async () => {
   await withPage(async ({ document }) => {
     const { container, asked, show } = await draw(document, SOLVED);
@@ -601,7 +600,7 @@ test("„✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj 
 
 // Catches Escape not closing the window from a control inside it, from the window itself, a key
 // other than Escape closing it, and Escape read on the document, where it would meet the menu
-// „Konto” and the rule panel (task To do 2; the rule panel does the same, D-285).
+// „Konto” and the rule panel (D-370, D-285).
 test("Escape pressed inside the window asks to close it through the control; another key and Escape outside it do not", async () => {
   await withPage(async ({ document, window }) => {
     const { container, asked } = await draw(document, DIED);
@@ -626,8 +625,8 @@ test("Escape pressed inside the window asks to close it through the control; ano
 });
 
 // Catches a window that opens with the focus left behind it, one that takes the focus back at every
-// draw while the player works inside it, and one that traps the focus (task To do 1; the menu bar
-// above it must stay reachable).
+// draw while the player works inside it, and one that traps the focus (D-370: the menu bar above it
+// must stay reachable).
 test("when the window appears the focus moves to it, and a later draw leaves the focus where the player put it", async () => {
   await withPage(async ({ document }) => {
     const before = document.createElement("button");

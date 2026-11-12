@@ -40,11 +40,12 @@ const SENT = {
 };
 const ALWAYS = { kind: "always" };
 
-// The layout of the old Loop's scene (src/components/probe/Scene.tsx of the old Loop repository,
-// lines 44-58 at cdc7c0d), in the pixels of the 336 × 152 frame. A place is the left edge and the line the
-// picture stands on; the mage's place is its frame's left edge, its feet on the ground line. The
-// mage's frame is 64 pixels wide and the old Loop's was 32, so each of its places is the old one
-// moved 16 pixels left, which keeps the figure's centre where the old Loop had it.
+// The places of the scene (D-318) in the pixels of the 336 × 152 frame, as the data of the scene
+// holds them (src/browser/sim/data/scene.ts). A place is the left edge and the line the picture
+// stands on; the mage's place is its frame's left edge, its feet on the ground line. The mage's frame
+// is 64 pixels wide and the old Loop's was 32, so the places of the sticks, the berry bush, the fire
+// and the clearing are the old Loop's moved 16 pixels left, which keeps the figure's centre where
+// the old Loop had it; the moss place and the right edge are set otherwise in the data.
 const GROUND = 136;
 const MAGE_AT_STICKS = 42;
 const MAGE_AT_BERRY = 224;
@@ -645,8 +646,8 @@ test("no effect without exactly one end of a gathering, in a reading that has a 
   );
 });
 
-// Minor finding 3 of the review: a net change of the backpack decides hit or miss, so a reading in which
-// an action that takes pieces out of it also ended cannot be read.
+// D-367. A net change of the backpack decides hit or miss, so a reading in which an action that takes
+// pieces out of it also ended cannot be read.
 test("no effect where an action that takes pieces out of the backpack ended in the same reading", () => {
   for (const kind of [
     "craftCampfire",
@@ -693,16 +694,16 @@ test("each prop's facing is the side its middle lies on, from the places of the 
   }
 });
 
-// --- the smaller flame, the tint of the light and the frost (task swit-rosnacy-z-passa) -------------
+// --- the smaller flame, the tint of the light and the frost -------------------------------------
 
 const FIRE_AT = () => sent().run.character.at;
 const burningWith = (minutesLeft) =>
   sceneDrawing(withRun(sent(), { campfires: [{ at: FIRE_AT(), minutesLeft }] }))
     .fire;
 
-// To do 4. Catches a smaller flame that comes at the wrong minute (the last 20 minutes of burning are
-// the ones with 20 or fewer left, one stick adding 20), one an extinguished fire takes, and a burning
-// fire left with the full flame.
+// D-373. Catches a smaller flame that comes at the wrong minute (the last 20 minutes of burning are
+// the ones with 20 or fewer left), one an extinguished fire takes, and a burning fire left with the
+// full flame.
 test("a burning fire draws the smaller flame with 20 minutes of burning left or fewer, and the full flame with more", () => {
   const FULL = "/sprites/fire.png";
   const SMALL = "/sprites/fire-small.png";
@@ -797,7 +798,7 @@ function decodePng(file) {
   return { types: chunks.map((c) => c.type), width, height, pixels };
 }
 
-// To do 4, D-271, D-273. A new file of assets/sprites/ does not change that trust boundary of the part,
+// D-373, D-271, D-273. A new file of assets/sprites/ does not change that trust boundary of the part,
 // which review keeps until the boundary changes (sprite-file-content), but its content is checked: it must hold
 // pixels alone and be the full flame's sheet with the flame cut down, on the same stones. Catches a file
 // with a chunk that carries text or a profile, a sheet of another size, a colour the pack's fire does
@@ -848,7 +849,7 @@ test("the smaller flame's file holds pixels alone, is the full flame's sheet wit
 const run = (patch) => withRun(sent(), patch);
 const tintAt = (patch) => sceneDrawing(run(patch)).tint;
 
-// To do 2, D-315. Catches a tint that is not even in the streak, one that reaches 0.8 at another
+// D-316. Catches a tint that is not even in the streak, one that reaches 0.8 at another
 // streak than the map asks for (Las 480, Las — głębiej 540), one that goes past 0.8 without a
 // completion, and one that is 1 before it. The required streaks are the maps' own data.
 test("the tint is the streak's share of the required streak times 0.8, and 1 at a completion alone", () => {
@@ -882,7 +883,7 @@ test("the tint grows evenly in the streak, never down", () => {
 const frostAt = (temperature) =>
   sceneDrawing(run({ body: { ...sent().run.body, temperature } })).frost;
 
-// To do 5. Catches a frost at 37 °C, a thickness that does not follow the cold evenly from 37 to 35 °C
+// D-372. Catches a frost at 37 °C, a thickness that does not follow the cold evenly from 37 to 35 °C
 // (half, 8 pixels, at 36 °C), one that is not whole pixels, one that goes on below 35 °C, and one that
 // shrinks as the body cools.
 test("the frost is none at 37 °C, half of 16 pixels at 36 °C and the whole 16 at 35 °C and below", () => {
@@ -916,7 +917,7 @@ test("the frost follows the body's temperature and nothing else, the streak incl
 /** A tint shown after a first draw at `shown` (an unplaced first one). */
 const SHOWN = (shown, from = null, serial = 1) => ({ shown, from, serial });
 
-// To do 2 and 3, D-322. Catches a tint that returns at once, one that returns while time stands, one that
+// D-316, D-322. Catches a tint that returns at once, one that returns while time stands, one that
 // jumps at a death or a completion, and one that is restarted by a return already running.
 test("the tint shown stands at once at a first draw and where a map run starts, wherever it stood", () => {
   assert.deepEqual(tintShown(null, 0.4, "going", false), SHOWN(0.4));
@@ -978,7 +979,7 @@ test("at a death and at a completion the tint stands at once where the streak or
   assert.equal(tintShown(stood, 1, "completed", false), stood);
 });
 
-// --- the three moments in which time stands still (task trzy-chwile-gdy-czas-stoi; D-322) ---------
+// --- the three moments in which time stands still (D-322) ---------
 
 const NOTHING = NO_UNDERSTANDING_ITEMS;
 /** The state at a stop at a discovery of what `found` lists, the rest of the Understanding empty. */
@@ -1007,7 +1008,7 @@ test("the scene shows a moment only at a discovery, after a death and after a co
 
 const ACT_EXPLORE = { kind: "explore" };
 
-// D-322, task To do 1, 3 and 8. Catches a scene that begins a moment from anything but the events of a
+// D-322. Catches a scene that begins a moment from anything but the events of a
 // simulation call: a scene drawn again has none, and the events must be those of its own moment.
 test("a moment has just begun where the events of the call carry its discovery, death or completion", () => {
   const discovered = { kind: "discovered", minute: 3, ...NOTHING };
@@ -1024,7 +1025,7 @@ test("a moment has just begun where the events of the call carry its discovery, 
   assert.equal(momentBegins("paused", [discovered, died, solved]), false);
 });
 
-// D-322, task To do 7. The game view waits for the effect of an end only where the scene plays one.
+// D-322. The game view waits for the effect of an end only where the scene plays one.
 test("the end effect begins at the game minute of a death or a completion, not at a discovery", () => {
   assert.equal(
     endEffectBegins([{ kind: "characterDied", minute: 1, cause: "cold" }]),
@@ -1038,7 +1039,7 @@ test("the end effect begins at the game minute of a death or a completion, not a
   assert.equal(endEffectBegins([]), false);
 });
 
-// D-322, task To do 1. The icons are the files of the game's data: a discovered action's, a discovered
+// D-322. The icons are the files of the game's data: a discovered action's, a discovered
 // item's and the campfire's, in the order of the band's text, each on a plaque in a row over the
 // clearing centred on the mage's middle, 144 + 32 = 176, the line 56, a step of 22. Catches a plaque for
 // a thing with no icon, a missing icon, a row that is not centred and a plaque that comes out of the
@@ -1131,7 +1132,7 @@ test("nine plaques stand in two rows, eight and one, each row centred", () => {
   );
 });
 
-// D-322, task To do 2. Catches a cold layer after a death of hunger or in a fight, which the scene
+// D-322. Catches a cold layer after a death of hunger or in a fight, which the scene
 // does not show, and a death of cold with none.
 test("after a death the scene shows the fall, and the cold layer after a death of cold alone", () => {
   assert.deepEqual(momentOf(dying("cold")), {
@@ -1143,7 +1144,7 @@ test("after a death the scene shows the fall, and the cold layer after a death o
   assert.equal(momentOf(dying("combat")).cold, false);
 });
 
-// D-322, task To do 8. Catches plaques of a discovery over a death or a completion in the game minute
+// D-322. Catches plaques of a discovery over a death or a completion in the game minute
 // of that discovery: the scene shows the effect of the end alone.
 test("a death or a completion in the game minute of a discovery shows the effect of the end alone", () => {
   const held = { ...NOTHING, actions: ["explore"] };
@@ -1159,7 +1160,7 @@ test("a death or a completion in the game minute of a discovery shows the effect
   assert.equal(momentOf(done).kind, "completion");
 });
 
-// D-322, D-271, task To do 3. The specks lie in a part of the frame, not over the whole scene, each a
+// D-322, D-271. The specks lie in a part of the frame, not over the whole scene, each a
 // whole pixel of the scene on its grid rising by whole pixels, over the snow of the open ground the
 // forest picture holds there: a speck that rose over a tree would be a colour on a ground it does not
 // stand out from.
@@ -1205,7 +1206,7 @@ test("the places of the moments in the data lie inside the frame", () => {
   }
 });
 
-// D-322, D-271, D-273, task To do 2. The death sheet holds pixels alone and six frames of 64 × 64 pixels;
+// D-322, D-271, D-273. The death sheet holds pixels alone and six frames of 64 × 64 pixels;
 // in the first the mage stands, taller than wide, in the last it lies, wider than tall, and in every one
 // its lowest pixel is the frame's bottom row, the ground line, so the fall does not float. Catches a file
 // with a chunk of text or a profile, a sheet of another size, a frame whose mage hangs above the ground

@@ -2,7 +2,7 @@
 kitchen-sink page of the browser view or code compiled from `src/browser/kitchen-sink/`.
 
 Building the application is `npm run build`, as README.md gives it; it writes below `dist/`. The
-page and its entry module each carry the marker string written out below (spec Decision 4): the
+page and its entry module each carry the marker string written out below: the
 page's HTML in a `<meta>` content value, the entry as a string constant that its compiled module
 keeps. A file below `dist/` holding the marker is the page, or code compiled from its sources;
 `dist/kitchen-sink/`, where the page's own command assembles it, must not exist after the build.
@@ -19,10 +19,10 @@ Covers:
 - positive control: `npm run kitchen-sink -- --build-only` exits 0 — the one compile of the page
   in `npm test`, which fails on a type error of the page — and the same search finds the marker
   in the page's HTML and in its compiled entry module below `dist/kitchen-sink/`; the command
-  writes nothing outside `dist/kitchen-sink/` (spec Decision 6).
+  writes nothing outside `dist/kitchen-sink/`.
 
 Does NOT cover: copies of the page's code without its marker (a function of the entry moved into a
-game module, for one), which review keeps out (spec Decision 4); what the account server serves
+game module, for one), which review keeps out; what the account server serves
 beyond `dist/public`; the page served by `npm run kitchen-sink` without `--build-only`.
 """
 

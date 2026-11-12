@@ -29,15 +29,14 @@ function contrast(a, b) {
   return (light + 0.05) / (dark + 0.05);
 }
 
-// To do 5, the condition of the rule D of D-271 for the frost: its outline stands out from the snow it
-// lies on by 3:1. The snow colours are fixed literals, each with its source: `#bccae5` (today's snow
-// without a tint), `#bacfd0` (under the cool tint at streak 0) and `#ddc69e` (under the full gold) are
-// in the task document (question 10, carried question 4); `#c2cebe` (t = 0.4) and `#d4caa5` (t = 0.8)
-// are in table (a) of the preview of the values of appearance the task cites, and my measurement of the
-// scene as the browser draws it on 2026-11-12 gave `#c2cebe` and `#d4caa6`. What this test guards: the
-// token of the outline against those snow samples, measured once. It does not follow the tint tokens:
-// a change to `--scene-tint-*` that changes the snow under the frost passes unseen, and its author
-// measures the snow again.
+// The condition of D-271 for the frost: its outline stands out from the snow it lies on by 3:1. The
+// snow colours are fixed literals, the snow measured once at each value of the tint:
+// `#bccae5` without a tint, `#bacfd0` under the cool tint at streak 0, `#c2cebe` at t = 0.4, `#d4caa5`
+// at t = 0.8 and `#ddc69e` under the full gold. A measurement of the scene as the browser draws it on
+// 2026-11-12 gave `#c2cebe` at t = 0.4 and `#d4caa6` at t = 0.8. What this test guards: the token of
+// the outline against those snow samples, measured once. It does not follow the tint tokens: a change
+// to `--scene-tint-*` that changes the snow under the frost passes unseen, and its author measures
+// the snow again.
 test("the frost's outline stands out from the snow at every tint, 3:1 at least", () => {
   const SNOW = {
     "no tint": "#bccae5",
@@ -54,8 +53,9 @@ test("the frost's outline stands out from the snow at every tint, 3:1 at least",
     );
 });
 
-// A hand check of the helper on the two colours the preview measured: 3.21 on the snow without a tint.
-test("the contrast helper reads the preview's measured 3.21:1 of the outline on the snow without a tint", () => {
+// A hand check of the helper on two colours whose ratio was measured outside it: 3.21 on the snow
+// without a tint.
+test("the contrast helper reads a measured 3.21:1 of the outline on the snow without a tint", () => {
   assert.ok(Math.abs(contrast("#3c7289", "#bccae5") - 3.21) < 0.01);
   assert.equal(contrast("#000000", "#ffffff"), 21);
 });

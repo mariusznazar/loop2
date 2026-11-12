@@ -1,12 +1,12 @@
 /**
- * The chronicle memory of a manual map run (D-338, D-339, D-346, D-147; task kronika-z-filtrami,
- * To do 1–9; spec D2, D6, D7): the entries in the memory of the page, never in the game state or the
- * save, the place of the paragraph of the last encounter, whether the last start of an activity
- * recorded was a wait, the tab and the filter picked, the number of the map run, and a number that
- * changes at every change of these, which a screen compares to draw nothing again where nothing
- * changed. The game view creates it from the game state it is built from and records into it every
- * result, with the state before it and, for an act on the copy, what the act was. It holds no React
- * and no DOM; nothing runs when the module is imported.
+ * The chronicle memory of a manual map run (D-338, D-339, D-346, D-147, D-382, D-383): the entries
+ * in the memory of the page, never in the game state or the save, the place of the paragraph of the
+ * last encounter, whether the last start of an activity recorded was a wait, the tab and the filter
+ * picked, the number of the map run, and a number that changes at every change of these, which a
+ * screen compares to draw nothing again where nothing changed. The game view creates it from the
+ * game state it is built from and records into it every result, with the state before it and, for an
+ * act on the copy, what the act was. It holds no React and no DOM; nothing runs when the module is
+ * imported.
  */
 import type { GameResult } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";

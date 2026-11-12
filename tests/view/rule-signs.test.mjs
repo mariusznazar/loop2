@@ -1,4 +1,4 @@
-// The signs at the rules of the copy of a map run (task stan-i-powod-przy-regule, To do 1 to 7) on
+// The signs at the rules of the copy of a map run (D-308, D-310) on
 // jsdom through tests/view/page-document.mjs: which rows stand as winning or running, the bar of
 // each row and header, the reason, and where the signs do not stand. The look itself, the colours and
 // the order of the backgrounds under the pointer, is checked in the browser (D-88); one case here
@@ -227,8 +227,8 @@ test("the signs stand on the screen after a death and go with „Zakończ”", a
 });
 
 // Catches a reorder of the rules of the stylesheet that lets the pointer cover the state of a row
-// (To do 1, question 8) or the state cover the open row (question 7): of rules of equal weight the
-// later wins, so the pointer must come first, then the states, then the open row.
+// or the state cover the open row (D-308): of rules of equal weight the later wins, so the pointer
+// must come first, then the states, then the open row.
 test("the stylesheet puts the background under the pointer before the states, and the open row after them", () => {
   const sheet = readFileSync(
     new URL("../../src/browser/styles.css", import.meta.url),

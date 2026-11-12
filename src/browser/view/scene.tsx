@@ -1,11 +1,11 @@
 /**
- * The scene of the world area of the screen of a map run (D-316 to D-322, D-272, D-43, D-04; task
- * scena-z-ludzikiem, To do 1 to 11): over the forest of D-314 the props, the campfire while one stands
- * on the character's tile, the mage with its idle and run sheets and, over its head, the badge — the
- * icon of the current action drawn as the mask of `.icon-mask` and under it the bar of the action's
- * progress. Its files, places and frame counts come from `sceneDrawing`, the view names none. A place
- * and a size are percentages of the frame and a frame count a custom property, so the stylesheet holds
- * no length of a sprite and the scene is right at its one size.
+ * The scene of the world area of the screen of a map run (D-316 to D-322, D-272, D-43, D-04): over
+ * the forest of D-314 the props, the campfire while one stands on the character's tile, the mage
+ * with its idle and run sheets and, over its head, the badge — the icon of the current action drawn
+ * as the mask of `.icon-mask` and under it the bar of the action's progress. Its files, places and
+ * frame counts come from `sceneDrawing`, the view names none. A place and a size are percentages of
+ * the frame and a frame count a custom property, so the stylesheet holds no length of a sprite and
+ * the scene is right at its one size.
  *
  * The scene moves by CSS alone, at a beat apart from the pace, with no interval, timer or animation
  * frame of its own (D-316, D-319): the stylesheet runs the frames of the sheets and of the burning
@@ -19,12 +19,12 @@
  * risk); a walk starts on a new element, which starts its animations afresh.
  *
  * The mage that gathers bends in a loop at its place, on a third sheet of its own that takes the idle
- * sheet's place for the whole action (task zbieranie-jako-widowisko). The end of a gathering shows an
- * effect of an ordinary event, the icon of the resource flying to the mage or the cloud of dust of a
- * miss, each at most 300 ms: the scene tells the end and its result from the game state of its
- * previous reading, which it keeps, and the events of the call (D-04), with no field of the game
- * state for it, and drops an effect that is overdue, one whose turn comes at a stop or in a reading
- * that carries several ends (D-317).
+ * sheet's place for the whole action (D-364). The end of a gathering shows an effect of an ordinary
+ * event, the icon of the resource flying to the mage or the cloud of dust of a miss, each at most
+ * 300 ms: the scene tells the end and its result from the game state of its previous reading, which
+ * it keeps, and the events of the call (D-04), with no field of the game state for it, and drops an
+ * effect that is overdue, one whose turn comes at a stop or in a reading that carries several ends
+ * (D-317, D-365, D-366, D-367).
  *
  * Over the picture of the forest, its props, its fire, the dust, the mage and the flying icon on its
  * plaque lies the layer of the tint of the scene's light, `mix-blend-mode: color`, over that the cold
@@ -36,8 +36,8 @@
  * to the cool one over 2 s on a new element of the layer, started where the scene goes on (D-317).
  *
  * In the three moments in which time stands still, a discovery, a death and a completion, the scene
- * shows an effect that plays once and then stands on its last image until the moment ends (D-322; task
- * trzy-chwile-gdy-czas-stoi): the icons of what was discovered come out of the forest on plaques, the
+ * shows an effect that plays once and then stands on its last image until the moment ends (D-322): the
+ * icons of what was discovered come out of the forest on plaques, the
  * mage falls in the frames of its death sheet, with the cold layer over the whole scene after a death of
  * cold, and specks of light rise over the clearing. The scene tells a moment that has just begun from one
  * drawn again by the events of the simulation call (D-04), as it tells a map run started: only the reading

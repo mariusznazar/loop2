@@ -1,4 +1,4 @@
-"""The failure watcher `deploy/loop2-watch` and its schedule (D-356, decisions C1 to C7 of the spec).
+"""The failure watcher `deploy/loop2-watch` and its schedule (D-356).
 
 The script runs as a black box through the seam of `watch_script_support.py`: stand-ins for
 `docker`, `pusher`, `flock` and `date`, a clock the test sets, and a state directory, a log and two
@@ -48,7 +48,7 @@ def notice(kind):
 
 
 def state_text(window_end, containers=None, last=None, messages=()):
-    """A state file written out by hand from the format the spec gives: `key value` lines."""
+    """A state file written out by hand in the format the script writes: `key value` lines."""
     if containers is None:
         containers = {GAME: (support.GAME_ID, support.STARTED),
                       TUNNEL: (support.TUNNEL_ID, support.STARTED)}

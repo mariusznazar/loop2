@@ -951,7 +951,7 @@ An action shortened by bought branches lasts at least one game minute.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** wprawa_i_drzewa_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania) § Settlements to record, row 7 — "Akcja skrócona gałęziami trwa co najmniej jedną minutę gry."; read 2026-10-29
+- **Derives from:** D-374
 - **Part:** simulation
 - **Violated:** no
 
@@ -1282,6 +1282,16 @@ No file git tracks contains an absolute path on a disk or, in a Markdown file, a
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-362 · .the-way/installation/README.md § A product whose repository is public adds a second check — "that no file git tracks holds an absolute path on the author's disk or, in a Markdown file, a link to a private note"; read 2026-11-11
+- **Part:** every
+- **Violated:** no
+
+## tracked-file-private-names
+
+A file git tracks points to a place the author keeps outside the repository only by naming the entry `projects`, `tasks` or `task-rules` under `loop2` in the locations file `~/.the-way/locations.json`, and names no note, no folder of notes, no path on the author's disk and no file of the private repository of the old loop game.
+
+- **Method:** review
+- **Rests on:** none
+- **Derives from:** D-362
 - **Part:** every
 - **Violated:** no
 

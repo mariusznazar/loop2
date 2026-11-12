@@ -649,7 +649,7 @@ npm copies the `peerDependencies` of a package's `package.json` into that packag
 
 The terms of the Pixel Crawler pack ask for no credit, allow its arts to be altered and used in commercial products, and forbid selling them as a final product.
 
-- **Source:** https://github.com/mariusznazar/loop/blob/8072ce6c02ad58d64f3eedc5a4b1e71c556b58e7/assets/pixel-crawler/Terms.txt § points 1, 2, 3 and 4 — "It is not necessary to credit the author for any use of the arts, but if it is done it is appreciated." · "The arts present can be altered in any shape, color or pattern" · "These arts cannot be sold as a final product, only the author can sell the assets" · "You can use these assets in creating commercial products, study or any other project where they are functional"; read 2026-11-02
+- **Source:** https://anokolisa.itch.io/free-pixel-art-asset-pack-topdown-tileset-rpg-16x16-sprites (archived: https://web.archive.org/web/20261016154500/https://anokolisa.itch.io/free-pixel-art-asset-pack-topdown-tileset-rpg-16x16-sprites, 2026-10-16) § the link "Terms", which opens the document https://drive.google.com/file/d/17y1gjuwVirE8V79WcTL9tgTUtMu6R1je/view?usp=sharing, points 1, 2, 3 and 4 — "It is not necessary to credit the author for any use of the arts, but if it is done it is appreciated." · "The arts present can be altered in any shape, color or pattern" · "These arts cannot be sold as a final product, only the author can sell the assets" · "You can use these assets in creating commercial products, study or any other project where they are functional" · the closing line — "These terms apply to all works available for sale or distribution by anokolisa"; read 2026-11-12
 
 ## html-exception-reporting
 

@@ -1,7 +1,6 @@
-// The numbers the card of a map shows (To do 4 of the task karty-i-katalog-map, in the vault's
-// karty_i_katalog_map_loop2.md; D-327 and D-142 in foundations/decisions.md). Each expected value
-// is written out here with the arithmetic that gives it from the data's temperatures, densities,
-// cooldowns and chances, never from the functions under test.
+// The numbers the card of a map shows (D-327, D-333 and D-142 in foundations/decisions.md). Each
+// expected value is written out here with the arithmetic that gives it from the temperatures,
+// densities, cooldowns and chances of D-388 and D-142, never from the functions under test.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -54,7 +53,7 @@ test("Las gives jagoda 8, mech 6 and włókno 6 of 16 tiles, from densities 0.5,
 });
 
 test("Las — głębiej gives patyk 18 of 25 tiles, from density 0.7 on 5 × 5 = 25 tiles", () => {
-  // 0.7 × 25 = 17.5, which the card shows as 18 (the task's To do 4 gives „≈ 18 z 25”).
+  // 0.7 × 25 = 17.5, which the card shows as 18 (D-333: rounded to the nearest whole).
   assert.deepEqual(expectedTiles(forestDeep, forestDeep.resources[0]), {
     holding: 18,
     tiles: 25,

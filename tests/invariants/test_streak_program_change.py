@@ -13,20 +13,19 @@ Understanding holds everything the built data modules list, as `KNOWING_GAME_JS`
 
 Reading of the sentence:
 - a change of the program rules or rule groups: an edit that hands `setProgram` a program
-  differing from the copy the map run carries out (task `rozwiazanie-lasu`, question 9 and row 6
-  of its settlements). Here: a rule added, a rule deleted, two rules swapped (also two of the same
+  differing from the copy the map run carries out (D-131). Here: a rule added, a rule deleted, two rules swapped (also two of the same
   content, which are two rules told apart by identity), the condition of a rule changed, the
   action of a rule changed, the name of a group changed, the condition of a group changed. An
   edit that hands back the same program, such as "↑" on the first rule, changes nothing and leaves
   the streak;
 - of the copy a map run carries out: the map run holds its own copy of the program it was sent
-  with, and within a map run `setProgram` edits that copy (task `programy-gracza`, To do 7). The
+  with, and within a map run `setProgram` edits that copy (D-164). The
   rule the game writes at the first chill does not go through `setProgram` and is not driven here;
 - every switch of the character to another program during the map run: `switchProgram` to a program
   of the list other than the one the copy belongs to, in a map run that runs and in one that is
   paused. Here: program 2, which holds other rules than the copy, and program 3, which holds the
-  very rules of the copy; both set the streak to zero (To do 12; the sentence says "to one holding
-  the same rules included");
+  very rules of the copy; both set the streak to zero (the sentence says "to one holding the same
+  rules included");
 - sets the streak to zero: read at once after the step, from a streak of 10 on the map Las
   (`forest`), reached by 10 game minutes in which the character explores and loses no health; a
   streak of 10 is the control's expected value, so the zero is the step's doing;
@@ -41,7 +40,7 @@ Controls, so the check can fail: the same scenario with the program handed back 
 with every field equal, rules in the same order), running and paused, leaves the streak at 10; and
 a map run ended in death leaves its 7 where the edit differs.
 
-Does NOT cover: a program of an earning loop's copy (task 18); the discard of the copy's changes
+Does NOT cover: a program of an earning loop's copy; the discard of the copy's changes
 (tests/sim/copy-actions.test.mjs); maps other than Las; real time (`passRealTime`) as the way
 minutes pass.
 """

@@ -7,10 +7,13 @@
 
 Przed napisaniem lub zmianą testu; przy przeglądzie porównaj test z tymi zasadami.
 Ogólne kontrole jakości kodu nadal określa `guidelines/coding.md` (D-28).
-Przyjęty szablon przypiętego the-way określa D-73; jego dziewięć odstępstw
-to D-74, D-75, D-76, D-77, D-78, D-79, D-163, D-235 i D-273.
+Przyjęty szablon przypiętego the-way określa D-73; jego dziesięć odstępstw
+to D-74, D-75, D-76, D-77, D-78, D-79, D-82, D-163, D-235 i D-273.
 D-77 jest odstępstwem tylko w sprawie limitu czasu całego przebiegu;
 wybór jednego pliku działa przez to samo `npm test`.
+D-82 jest odstępstwem w dwóch sprawach: komentarza, który nazywa źródło wartości,
+i oceny człowieka, która jest źródłem oczekiwania dopiero wtedy, gdy trzyma ją
+decyzja fundamentu; pozostałe źródła oczekiwania zostają takie, jak daje je szablon.
 
 ## Levels
 
@@ -81,25 +84,24 @@ zastąpienia mechanizmu, którego awarię sprawdzasz.
 - **Good:** Oczekiwana suma plecaka wynika z jawnych składników i arytmetyki.
 - **Bad:** Oczekiwany czas przeżycia zapisano z dzisiejszego wyniku symulacji bez uzgodnionego wymagania.
 
-Oczekiwanie pochodzi z uzgodnionego dokumentu, niezależnej zależności, awarii
-liczonej jako niepowodzenie lub jawnej oceny człowieka. Dzisiejszy wynik
-programu nie jest dowodem poprawności, również w zapisanych obrazach i stanach.
-Test parametru gry może użyć konkretnych liczb; oczekiwany czas przeżycia,
-tempo postępu lub trudność mapy wymagają uzgodnionego wymagania (D-80).
+Oczekiwanie pochodzi z fundamentu loop2 — decyzji, niezmienników i słownika —
+z niezależnej zależności, której kod pod testem nie liczy, albo z awarii liczonej
+jako niepowodzenie; ocena człowieka jest źródłem, gdy trzyma ją decyzja fundamentu
+(D-82). Dzisiejszy wynik programu nie jest dowodem poprawności, również
+w zapisanych obrazach i stanach. Test parametru gry może użyć konkretnych liczb;
+oczekiwany czas przeżycia, tempo postępu lub trudność mapy wymagają uzgodnionego
+wymagania (D-80).
 
-Dokumentami źródłowymi są fundament loop2 — decyzje, niezmienniki i słownik —
-zaakceptowane zadania w katalogu, który wskazuje pozycja `projects` pod `loop2`
-w pliku lokalizacji `~/.the-way/locations.json`, i jego podkatalogu zadań (stan
-`ready for cycle` lub wykonane) oraz zatwierdzona `definicja_mvp_loop2.md` z tego
-katalogu (D-82). `koncepcja_projektowa.md` z tego katalogu
-jest szkicem: źródłem jest tylko fragment przytoczony
-przez zaakceptowany dokument. Q7c zadania przewodnika przytacza linię 1261
-koncepcji jako źródło jednego losowania przy wyborze kroku.
-
-Gdy nazwa testu nie wyjaśnia źródła wartości, komentarz wskazuje plik i linię
-albo osobę i datę rozstrzygnięcia. Recenzent pyta przy każdym sprawdzeniu:
-„skąd ta wartość?”. Źródła poza repozytorium wymagają dostępu do vaultu;
-sam odsyłacz nie jest odczytem źródła.
+Szablon każe komentarzowi nazwać źródło wartości, gdy nazwa testu go nie pokazuje;
+w loop2 żaden komentarz nie musi tego robić (D-82). Wymaganie, którego test
+potrzebuje, a którego fundament jeszcze nie niesie, trafia najpierw do fundamentu,
+dopiero potem test z niego korzysta. Komentarz, który niesie informację ważną dla
+kodu, przenosi ją do fundamentu; komentarz bez takiej informacji się nie pisze —
+kod ma być zrozumiały sam, a 2 + 2 = 4 nie potrzebuje źródła. Komentarz testu nie
+wskazuje dokumentu spoza fundamentu. Recenzent pyta przy każdym sprawdzeniu:
+„skąd ta wartość?”; gdy wartość potrzebuje źródła, odpowiedzią jest wpis
+fundamentu, a relacja, której kod pod testem nie liczy, i awaria liczona jako
+niepowodzenie źródła we wpisie nie potrzebują.
 
 ### Test inputs and expected values
 
@@ -370,7 +372,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 
 ## Not tested on purpose
 
-- Kod jedynie przekazujący lub kopiujący dane, bez własnej decyzji: bez osobnego stałego testu; powrót, gdy pojawi się reguła, przekształcenie lub błąd wymagający ochrony. Nie obejmuje granic zaufania. (D-73)
+- Kod jedynie przekazujący lub kopiujący dane, bez własnej decyzji: bez osobnego stałego testu; powrót, gdy pojawi się reguła, przekształcenie lub błąd wymagający ochrony. Nie obejmuje granic zaufania. (D-73, D-89)
 - Całe ekrany porównywane piksel po pikselu: zmieniony wygląd oglądamy w przeglądarce; powrót przy konkretnej usterce wyglądu lub uzgodnionym wymaganiu dokładnego układu. Reguły wyglądu zachowują istniejące kontrole, a bezpieczeństwo ikon i fontów nie jest wyłączone. (D-87)
 - Całe ścieżki gracza w prawdziwej przeglądarce: ręczne sprawdzenie po zmianie; powrót przy błędzie krytycznej ścieżki niewykrytym przez mniejsze testy albo istotnym koszcie powtarzanego sprawdzania ręcznego; zadanie wybiera narzędzie i zakres. (D-75)
 - Prawdziwe zdarzenia, fokus i rysowanie SVG: ręczne sprawdzenie w przeglądarce po zmianie, także gdy test idzie na jsdom, który nie dowodzi, że Enter w polu wysyła formularz, że kliknięcie etykiety przenosi fokus ani układu; powrót przy usterce niewykrytej przez ręczny model dokumentu albo gotową imitację albo razem z automatyzacją całych ścieżek. Nie obejmuje granic zaufania. (D-88, D-264)

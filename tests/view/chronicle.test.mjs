@@ -1,5 +1,5 @@
-// The chronicle memory of the screen of a map run (task kronika-z-filtrami, To do 1–7; D-338 to D-346,
-// D-147, D-122; spec D2, D3, D6, D7, D8): what each result of the simulation and each act on the copy
+// The chronicle memory of the screen of a map run (D-338 to D-346, D-348, D-382, D-383, D-147,
+// D-122): what each result of the simulation and each act on the copy
 // records, newest first, by kind; the clearing at a send, at „Restart” and at „Zakończ”; the place of
 // the paragraph of the last encounter; a chronicle built from a loaded state; the window of a filter
 // and the number that changes at every change. Results come from the real functions of the simulation
@@ -115,7 +115,7 @@ test("a chronicle built from a game with no map run holds nothing, with Kronika 
 });
 
 // Catches a send that keeps the entries of the map run before it, or keeps the tab and filter picked
-// in it: a send starts the chronicle anew with „Kronika” and „Wszystko” (D-343, D-346).
+// in it: a send starts the chronicle anew with „Kronika” and „Wszystko” (D-343, D-346, D-383).
 test("a send starts the chronicle anew from the start of the first activity at minute 0, with Kronika and Wszystko picked", () => {
   const { chronicle, state } = sentChronicle();
   assert.deepEqual(rowsOf(chronicle), [waitAt(0)]);
@@ -250,7 +250,7 @@ test("the end of an action, a step, a revealed tile, an exchange and the end of 
 });
 
 // Catches the paragraph kept apart from the order of time, an earlier attack's paragraph kept beside
-// the later one, or an entry for each attack (D-147, question 5, way D1).
+// the later one, or an entry for each attack (D-147).
 test("an attack places the paragraph at its minute among the entries, and the next attack moves it", () => {
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
@@ -288,7 +288,7 @@ test("an attack ends the wait before it, so the next wait gives its entry", () =
 });
 
 // Catches „Restart” keeping the entries or the paragraph of the map run it ends, resetting the tab or
-// the filter the player picked (D-346), or keeping the wait of the ended map run so that the new
+// the filter the player picked (D-346, D-383), or keeping the wait of the ended map run so that the new
 // map run's first wait gives no entry.
 test("„Restart” clears the entries and the paragraph and keeps the tab and the filter", () => {
   const { chronicle, state } = sentChronicle();
@@ -415,7 +415,7 @@ test("the first chill gives one entry of the discovery holding the band's text, 
 });
 
 // Catches an entry that follows the group's later rename, as the band does while it stands (D-312
-// binds the band alone; spec D8).
+// binds the band alone; D-382).
 test("the entry of a discovery keeps the group the band named at the discovery after the group is renamed", () => {
   const { chronicle, state } = advanced(100);
   const program = structuredClone(state.run.copy.program);
@@ -529,7 +529,7 @@ test("an edit of the copy after a death stands at the game minute of the death",
 });
 
 // Catches a window that draws every entry, one that drops the newest, a filter that shows another
-// kind, or a window that hides that more entries stand beyond it (spec D7).
+// kind, or a window that hides that more entries stand beyond it (D-382).
 test("a filter's window holds its newest entries up to its size, newest first, and says whether more stand beyond it", () => {
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [
@@ -583,7 +583,7 @@ test("the paragraph stands in the window of Wszystko only where the window reach
 });
 
 // Catches a number that stays at a change, so the screen would not draw it, or one that changes with
-// nothing changed, so the screen would draw the rows again for nothing (spec D2, D7).
+// nothing changed, so the screen would draw the rows again for nothing (D-382).
 test("the number changes at every change of the chronicle, the tab or the filter, and at nothing else", () => {
   const { chronicle, state } = sentChronicle();
   const versions = [chronicle.snapshot().version];

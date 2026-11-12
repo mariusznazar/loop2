@@ -1,6 +1,5 @@
-// The operations on the player's program list. Expectations come from the task "programy-gracza",
-// the vault file `programy_gracza_loop2.md` (To do 3, 4, 5 and 9), and from D-164, D-165, D-168,
-// D-169 and D-170 in foundations/decisions.md. Every expected value is written out here.
+// The operations on the player's program list. Expectations come from D-164, D-165, D-168, D-169
+// and D-170 in foundations/decisions.md. Every expected value is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -346,7 +345,7 @@ test("a pick names a character of the team and a program of the list", () => {
   assert.throws(() => pickProgram(team(), 1, 2), /no program 2/);
 });
 
-// The row's program (spec decision 4): the pick, the program used last, the program entered with
+// The row's program (D-170): the pick, the program used last, the program entered with
 // last, the first of the list, each passed over once its program is deleted. It is read as the
 // program a send without a number sends with.
 const sentProgramOf = (state, characterId) =>
