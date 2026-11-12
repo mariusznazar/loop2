@@ -1803,9 +1803,15 @@ header .failure-line {
  * percentages of the frame, so the stylesheet holds no length of a sprite. A sheet holds all frames
  * of a picture side by side; `--frames` is their number, and the sheet shows one of them, the first
  * where it stands still. The scene's motion stands in the rules after the badge.
+ *
+ * The layers of the scene, from the bottom (D-315, D-316, D-320; task swit-rosnacy-z-passa): the
+ * forest, the props, the fire, the dust, the mage, the flying icon on its plaque, the tint of the light,
+ * the frost and the badge over the mage's head. The scene isolates its layers, so the tint blends with
+ * what lies under it in the scene and with nothing else on the page.
  */
 .scene {
   position: relative;
+  isolation: isolate;
   width: fit-content;
   max-width: 100%;
   overflow: hidden;
@@ -1821,7 +1827,8 @@ header .failure-line {
 .scene-prop,
 .scene-fire,
 .scene-dust,
-.scene-mage {
+.scene-mage,
+.scene-badge-carrier {
   position: absolute;
 }
 
@@ -1910,8 +1917,10 @@ header .failure-line {
 /*
  * The badge over the mage's head (D-320): a solid `panel` with the icon of the action drawn as the
  * mask of `.icon-mask` in `text-strong`, though no text stands beside it, and under it the bar of
- * the progress, the fill in `positive` on a track in `highlight`. It sits just above the head, at the
- * middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
+ * the progress, the fill in `positive` on a track in `highlight`. It is no part of the mage's element,
+ * which lies under the tint of the light that the badge must stay clear of: its own element, the badge's
+ * carrier, has the mage's box and walks with it (the walk's rules below name both). It sits just above
+ * the head, at the middle of the mage's frame. The icon's side is a layout dimension that D-43 leaves out, chosen by
  * viewing the scene at its one size: 32 px, about two thirds of the width of the mage's figure, 25
  * pixels of the picture drawn at twice its size; the padding and the gap are steps of the spacing
  * scale, and the bar's thickness is `--bar-width` doubled, as the whole scene is drawn at twice its
@@ -1989,6 +1998,187 @@ header .failure-line {
 }
 
 /*
+ * The tint of the scene's light (D-315, D-316; task swit-rosnacy-z-passa): a layer over everything the
+ * scene draws, the flying icon on its plaque included, but the frost and the badge, which stay on their
+ * own colours. `mix-blend-mode: color` lays the layer's hue and saturation over the picture and leaves the
+ * picture's brightness, so the tint never darkens or greys the scene as the pause does (D-322). `--tint`,
+ * from 0 to 1, comes from TypeScript as a number: the layer's colour is the mix of the cool tint and the
+ * warm one by it, in `oklch`, and its opacity goes the same way from the cool tint's opacity to the warm
+ * one's, evenly. The colours and opacities are the design tokens named for the tint; the source of
+ * their values, and of the 2 s of the return below, is Mariusz's choice from the preview of the values
+ * of appearance of the task swit-rosnacy-z-passa, variant A, 2026-11-11. `--tint` is registered as a
+ * number so that the return can run it.
+ */
+@property --tint {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+.scene-tint {
+  position: absolute;
+  inset: 0;
+  background-color: color-mix(
+    in oklch,
+    var(--scene-tint-cool),
+    var(--scene-tint-warm) calc(var(--tint) * 100%)
+  );
+  opacity: calc(
+    var(--scene-tint-cool-opacity) +
+      (var(--scene-tint-warm-opacity) - var(--scene-tint-cool-opacity)) *
+      var(--tint)
+  );
+  mix-blend-mode: color;
+}
+
+/*
+ * The frost on the edges of the frame (D-316; task swit-rosnacy-z-passa, the shape of its ragged edge
+ * settled there): built of squares of one pixel of the scene on the scene's grid, from custom
+ * properties TypeScript gives, `--frost`, its thickness in the scene's pixels, and `--pixel-x` and
+ * `--pixel-y`, one pixel as a part of the frame's width and of its height. Each of its three layers is a
+ * mask over a plain box, so no colour stands in the mask (the mask reads only the alpha of
+ * `currentColor`) and every colour is a design token. The frost is a ring: along each edge a solid
+ * band two pixels thinner than the frost, a row of teeth one pixel above it that stands on 3 of every 5
+ * pixels and a row two pixels above it that stands on 2 of every 7, so the inner edge is ragged by one
+ * and two pixels; the top and bottom edges run their teeth along the width, the left and right edges
+ * along the height, in other periods. The rim, in the colour of the outline, has the whole thickness
+ * `--depth`; the body, in the colour of the fill, lies over it one pixel thinner, so the outline is
+ * the pixel the body leaves under the inner edge of each column. The crystals are single squares in two
+ * lattices of different periods, in the body only. The frost lies over the tint, so its colours do not
+ * change with the streak, and under the plaque and the badge (D-320). It changes only with the state
+ * and runs no motion, so the system's setting for reduced motion has nothing to take out of it.
+ */
+.scene-frost,
+.scene-frost-rim,
+.scene-frost-body,
+.scene-frost-crystals,
+.scene-frost-crystals::before,
+.scene-frost-crystals::after {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-frost-crystals::before,
+.scene-frost-crystals::after {
+  content: "";
+  background: var(--scene-frost-crystal);
+  mask-composite: intersect;
+}
+
+.scene-frost-rim,
+.scene-frost-body {
+  --band-y: max(0%, calc((var(--depth) - 2) * var(--pixel-y)));
+  --teeth-a-y: max(0%, calc((var(--depth) - 1) * var(--pixel-y)));
+  --teeth-b-y: max(0%, calc(var(--depth) * var(--pixel-y)));
+  --band-x: max(0%, calc((var(--depth) - 2) * var(--pixel-x)));
+  --teeth-a-x: max(0%, calc((var(--depth) - 1) * var(--pixel-x)));
+  --teeth-b-x: max(0%, calc(var(--depth) * var(--pixel-x)));
+  --solid: linear-gradient(currentColor, currentColor);
+  mask:
+    var(--solid) 0 0 / 100% var(--band-y) no-repeat,
+    repeating-linear-gradient(
+        to right,
+        currentColor 0 calc(3 * var(--pixel-x)),
+        transparent 0 calc(5 * var(--pixel-x))
+      )
+      0 0 / 100% var(--teeth-a-y) no-repeat,
+    repeating-linear-gradient(
+        to right,
+        transparent 0 calc(1 * var(--pixel-x)),
+        currentColor 0 calc(3 * var(--pixel-x)),
+        transparent 0 calc(7 * var(--pixel-x))
+      )
+      0 0 / 100% var(--teeth-b-y) no-repeat,
+    var(--solid) 0 100% / 100% var(--band-y) no-repeat,
+    repeating-linear-gradient(
+        to right,
+        transparent 0 calc(2 * var(--pixel-x)),
+        currentColor 0 calc(5 * var(--pixel-x)),
+        transparent 0 calc(5 * var(--pixel-x))
+      )
+      0 100% / 100% var(--teeth-a-y) no-repeat,
+    repeating-linear-gradient(
+        to right,
+        transparent 0 calc(4 * var(--pixel-x)),
+        currentColor 0 calc(6 * var(--pixel-x)),
+        transparent 0 calc(7 * var(--pixel-x))
+      )
+      0 100% / 100% var(--teeth-b-y) no-repeat,
+    var(--solid) 0 0 / var(--band-x) 100% no-repeat,
+    repeating-linear-gradient(
+        to bottom,
+        currentColor 0 calc(3 * var(--pixel-y)),
+        transparent 0 calc(6 * var(--pixel-y))
+      )
+      0 0 / var(--teeth-a-x) 100% no-repeat,
+    repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(3 * var(--pixel-y)),
+        currentColor 0 calc(5 * var(--pixel-y)),
+        transparent 0 calc(8 * var(--pixel-y))
+      )
+      0 0 / var(--teeth-b-x) 100% no-repeat,
+    var(--solid) 100% 0 / var(--band-x) 100% no-repeat,
+    repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(2 * var(--pixel-y)),
+        currentColor 0 calc(5 * var(--pixel-y)),
+        transparent 0 calc(6 * var(--pixel-y))
+      )
+      100% 0 / var(--teeth-a-x) 100% no-repeat,
+    repeating-linear-gradient(
+        to bottom,
+        currentColor 0 calc(2 * var(--pixel-y)),
+        transparent 0 calc(5 * var(--pixel-y)),
+        currentColor 0 calc(6 * var(--pixel-y)),
+        transparent 0 calc(8 * var(--pixel-y))
+      )
+      100% 0 / var(--teeth-b-x) 100% no-repeat;
+}
+
+.scene-frost-rim {
+  --depth: var(--frost);
+  background: var(--scene-frost-outline);
+}
+
+.scene-frost-body {
+  --depth: calc(var(--frost) - 1);
+  background: var(--scene-frost-fill);
+}
+
+.scene-frost-crystals::before {
+  mask-image:
+    repeating-linear-gradient(
+      to right,
+      transparent 0 calc(4 * var(--pixel-x)),
+      currentColor 0 calc(5 * var(--pixel-x)),
+      transparent 0 calc(13 * var(--pixel-x))
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(3 * var(--pixel-y)),
+      currentColor 0 calc(4 * var(--pixel-y)),
+      transparent 0 calc(9 * var(--pixel-y))
+    );
+}
+
+.scene-frost-crystals::after {
+  mask-image:
+    repeating-linear-gradient(
+      to right,
+      transparent 0 calc(8 * var(--pixel-x)),
+      currentColor 0 calc(9 * var(--pixel-x)),
+      transparent 0 calc(11 * var(--pixel-x))
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(5 * var(--pixel-y)),
+      currentColor 0 calc(6 * var(--pixel-y)),
+      transparent 0 calc(7 * var(--pixel-y))
+    );
+}
+
+/*
  * The scene's motion (D-316, D-319, D-320), from CSS at a beat apart from the pace, and only where
  * the system's setting asks for no less motion (D-317); under that setting the frames stand on the
  * first, the mage stands at its place at once and the bar jumps at each reading. The animations are
@@ -2004,6 +2194,12 @@ header .failure-line {
  * - The bar's fill follows each reading of the clock over the reading's interval, the 200 ms of
  *   `TICK_MS` in src/browser/view/clock.ts, while the scene goes on; a new action's bar is a new
  *   element and starts empty, so it never runs back from the last action's fill.
+ * - A loss of the streak while the map run goes on takes the tint of the light back to the cool one
+ *   over 2 s (D-316; the source of the 2 s is named at the tint's rules): the layer's element is a new
+ *   one that starts at the tint it showed, `--tint-start`, and ends at its own `--tint`, linear. It is
+ *   a change of the scene's state and not an effect of an ordinary event, so the 300 ms of D-317 does
+ *   not limit it. A tint that stands at once, at a death, a completion, the start of a map run and a
+ *   first draw, has no return, and under the system's setting for reduced motion none has.
  */
 @media (prefers-reduced-motion: no-preference) {
   .scene-mage-sprite img,
@@ -2014,9 +2210,16 @@ header .failure-line {
     animation-iteration-count: infinite;
   }
 
-  .scene-mage[data-walking] {
+  .scene-mage[data-walking],
+  .scene-badge-carrier[data-walking] {
     animation-name: scene-walk;
     animation-duration: 640ms;
+    animation-timing-function: linear;
+  }
+
+  .scene-tint[data-returning] {
+    animation-name: scene-tint-return;
+    animation-duration: 2s;
     animation-timing-function: linear;
   }
 
@@ -2063,8 +2266,8 @@ header .failure-line {
 
 /*
  * Every stop — the player's pause, a discovery, a death and a completion — holds every animation of
- * the scene where it is: the frames, the fire and the mage on its way (D-322). Going on again goes on
- * from there. The pause's grey comes with no animation, and nothing lights or darkens the whole scene
+ * the scene where it is: the frames, the fire, the mage on its way and a return of the tint (D-322).
+ * Going on again goes on from there. The pause's grey comes with no animation, and nothing lights or darkens the whole scene
  * (D-317).
  */
 .scene:not([data-standing="going"]) * {
@@ -2103,6 +2306,12 @@ header .failure-line {
 @keyframes scene-frames {
   to {
     translate: -100%;
+  }
+}
+
+@keyframes scene-tint-return {
+  from {
+    --tint: var(--tint-start);
   }
 }
 

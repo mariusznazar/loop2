@@ -2705,9 +2705,10 @@ stands still for that map run, and „Teraz” reads the map's completion text, 
 and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header
 standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself
 over the screen, its header included and the menu bar not, under the same completion text as its title, in
-the role `positive`. „Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as
-after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in
-the window, the way to the map it opened (D-53, D-173).
+the role `positive`, and the light of the scene stands in full gold (D-315), under the window while it
+stands and in sight again when „✕” uncovers the screen. „Pauza” and the pace buttons are gone, and the
+player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that
+opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173).
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -2717,25 +2718,19 @@ the window, the way to the map it opened (D-53, D-173).
     `positive` and the clock „Minuta 480”, the window titled „Las rozwiązany” in `positive` standing
     over the screen under the menu bar, „Pauza” and the pace buttons are gone, the game minute stays at
     480, „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać
-    of that character
+    of that character, the scene under the window in full gold and still so when „✕” uncovers it
   - violates: the game going back to the headquarters with a message the moment the map run
     completes; „Pauza” or a pace button standing after a completion; the text of the completion
     written in a role other than `positive`; a completion of a map that opens another whose window has
-    no „Otwarte: {mapa} →”
+    no „Otwarte: {mapa} →”; the scene after a completion left in the tint of the required streak
 - **Origin:** none
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
 which the program met the map's condition, can repeat the same seed with „Restart” and returns with
-„Zakończ”. The role `positive` says that something works, which a completion shows of the program.
-„Teraz” gives the outcome of a map run that has ended, the cause of a death or the map's completion
-text, so the player reads on the screen why the map run ended. The „time stands still” of the screen
-after a completion, like that of the screen after a death, concerns that map run alone: the earning
-loops of the other characters go on, as they do in a pause. A win opens with the win and leads on to
-what it opened. The end stands in a window over the screen, which puts it where nothing that stood
-there before has to move, and the menu bar with the row of warnings stays above it. Accepted with
-it: the same completion text is read on the screen in a second place, as the title of the window; at
-a repeated completion the button says „Otwarte”, though the map was open before; the window hides
-the scene while it stands.
+„Zakończ”. The role `positive` says that something works, which a completion shows of the program. A
+win opens with the win and leads on to what it opened, and the scene stays in full gold, which only
+a completion brings (D-316), so the solving is seen in the scene when the window is closed. Accepted
+with it: at a repeated completion the button says „Otwarte”, though the map was open before.
 *Rejected:* going back to the headquarters with a message at the completion — the player would lose
 the state of the map run that solved the map; no „Teraz” after the end of a map run — while the end
 had no place of its own, the player would read nowhere why the map run ended; „Teraz” staying on the
@@ -6150,7 +6145,12 @@ Pixel Crawler, and the dust of a miss is a sprite of the pack Smoke & Fire Anima
 [16x16] recoloured to the scene's colours, all kept in `assets/sprites/` outside the directory the
 account and save server serves and copied into it when the application is built. A sprite file holds
 pixels alone, the game credits each pack whose licence asks for a credit, and the character of the
-scene is the mage of Pixel Crawler.
+scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light
+and the frost, and specks, and the frost and the specks are squares of one pixel of the scene on its
+grid in colours of the palettes of the packs, while the colours of the tint layer have their source in
+the human's choice; whatever has a drawing — a character, a creature, a thing — comes from a pack,
+and the colour of an effect stands out from the ground it stands on, the outline or the fill of the
+frost by at least 3:1 against the snow it lies on.
 
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms · smoke-fire-particle-licence · cc-by-3-adaptation-credit
@@ -6161,35 +6161,48 @@ scene is the mage of Pixel Crawler.
     PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
     the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
     a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
-    holds, with a credit line for the pack in the folded section of credits
+    holds, with a credit line for the pack in the folded section of credits; the smaller flame of the
+    campfire a sprite file made from the frames of the pack's fire with the flame cut down by hand;
+    the frost on the edges of the frame built by CSS of squares of one pixel of the scene on its grid
+    in colours the pictures of the pack's trees hold, its outline or its fill 3:1 or more against the
+    snow under every tint of the light
   - violates: a picture placed straight in the directory the server serves; a sprite file in
     another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
     other than the two named; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
-    game; the hooded figure of loop as the character of the scene
+    game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
+    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
-fire and trees the game's pictures show; what they ask is the cutting of frames from their sheets.
-The mage matches the game's only archetype and its frames are ready, but only for standing, running
-and dying: the clothed characters of the pack have no pose of gathering. Kept apart from what the
-server serves, as the icons and the fonts are, a picture reaches the player only through the build;
-it comes from outside the product, and holding pixels alone it cannot act in the player's page. The
-pack's terms ask for no credit and allow its arts to be altered, so a picture made from them may be
-dimmed and composed.
+fire and trees the game's pictures show. The mage matches the game's only archetype and its frames
+are ready. Kept apart from what the server serves, as the icons and
+the fonts are, a picture reaches the player only through the build; it comes from outside the
+product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
+credit and allow its arts to be altered, so a picture made from them may be dimmed, composed and cut
+down by hand.
 The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
-the pack Smoke & Fire Animated Particle holds a ready cloud in a flat style without outline, like the
-smoke of Pixel Crawler, that, recoloured to the browns of the scene, stands out from the ground; its
-licence asks for a credit, which the game gives. Accepted with it: credits for the pack of the dust,
-and frames of a bending mage made by hand or, where hand work comes out weak, generated for those
-few frames.
-*Rejected:* the hooded figure of loop — its sheet is the pack's rogue, though the game calls the
-character a mage; generated pictures as the main way — frames drift apart, which the makers of such
-tools name as their main problem, and the pixels need correcting by hand; any other new pack — a
-wider choice, but another palette and scale, new licences and more credits; for the dust of a miss:
-the smoke of Pixel Crawler — it cannot be seen on the ground; particles of single pixels in a brown
-that stands out from the ground — barely visible; a cloud drawn by hand from the pixels of Pixel
-Crawler — hand pixel work whose look is judged only at the request.
+the pack Smoke & Fire Animated Particle holds a cloud that, recoloured to the browns of the scene,
+stands out from the ground; its licence asks for a credit, which the game gives. A layer of colour or
+a speck of one square needs no drawing, so CSS draws them, the frost and the specks on the grid of the
+scene's pixels in colours of the packs' palettes and the tint layer in the colours the human chose
+from a preview, and the one pixel style stays; a shape with a drawing, as a mage or a
+prop, would stand beside the pixels as a smooth shape. A colour that does not stand out from the
+ground it stands on is not seen, so the outline or the fill of the frost is measured against the snow, at 3:1,
+the threshold the badge's bar keeps (D-39); the frost chosen meets it by its outline, the fill reading
+on the snow weakly by its brightness. Accepted with it: credits for the pack of the dust, frames of a bending mage and a
+smaller flame made by hand or generated, and colours of the specks and of the frost that enter the
+game's palette with a source in the pixel of a named picture of a pack.
+*Rejected:* the hooded figure of loop — it is a rogue, though the game calls it a mage; generated
+pictures as the main way — frames drift apart; any other new pack — another palette and scale,
+new licences; for the dust of a miss: the smoke of Pixel Crawler — it cannot be seen on the
+ground; particles of single pixels in a brown that stands out from the ground — barely visible; a
+cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only at
+the request; any shape CSS draws in the scene in a colour of a token — smooth shapes of CSS beside
+pixels break the one pixel style; CSS drawing only the layers and the plaque, with the specks taken
+from the packs — the missing specks would have to be made from the pixels of another sheet; to wait
+with the scene until the packs of effects and the tools for pixel scenes are explored — the work on
+the scene would wait.
 
 ### D-272 — Where may a picture of the game stand?
 
@@ -7543,26 +7556,40 @@ already cut. Accepted with it: frost shows worse on white, and snow lies also on
 *Rejected:* a green forest — another forest than the one behind the login card, and pictures cut
 from the pack's sheets.
 
-### D-315 — Where does the darkness of the scene stand?
+### D-315 — Where does the tint of the scene's light stand?
 
-The background picture of the scene is in full light, and a night or a dawn of the scene is a layer
-over that picture, never darkness in the picture's file.
+The background picture of the scene is in full light and with no tint, and the tint of the scene's
+light is a layer over that picture, never a tint or a darkness in the picture's file. The layer lies
+over everything the scene draws — the background, the props, the campfire burning or extinguished,
+the mage, the wolf, the dust and the flying icon on its plaque — but the badge over the mage's head, which stays on its solid
+`panel` background (D-320), and the frost on the edges of the frame, which lies over the layer and
+does not change its colour with the streak.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-314
 - **Verification:** an agent compares a change with the decision:
-  - complies: the file of the background as light as the cut pictures it is composed from, the
-    scene showing it unchanged while no layer stands over it
-  - violates: the file of the background darkened, as the picture behind the login card is; a night
-    drawn by putting another file in place of the background
+  - complies: the file of the background as light as the cut pictures it is composed from and in
+    their colours, the cool tint at streak 0 and the gold at a completion a layer over it, the
+    props, the fire, the mage and the icon flying on its plaque under that layer and the frost and the
+    badge over the mage's head over it
+  - violates: the file of the background darkened, as the picture behind the login card is, or
+    tinted; a tint drawn by putting another file in place of the background; the mage or the
+    flying icon with its plaque left out of the layer, or the badge or the frost under it
 - **Origin:** none
 
-*Rationale:* the night of the scene brightens with the streak and the solving of a map gives a full
-dawn, so the darkness changes while the background stays one picture, and the background in full
-light is that dawn. The night is a layer over the picture, and the scene has no night until that layer
-is built.
-*Rejected:* a background darkened in its file — the night would have to replace the file.
+*Rationale:* the tint of the scene's light follows the streak and turns full gold at a completion, so
+it changes while the background stays one picture in full light, and a layer that leaves the
+brightness of the picture as it is lets a time of day lay its own darkness over the scene later. The
+mage, the wolf and the dust lie under the layer because figures outside it would look pasted on a
+tinted forest, and the badge stays on its solid `panel` so that the sign over the head is read as
+D-320 gives. The frost lies over the layer so that its colour is the same at every streak. Accepted
+with it: the violet robe of the mage turns brown in the gold, the grey of an extinguished fire and of
+a dead mage takes the hue of the layer in its opacity, and the plaque of the flying icon (D-365),
+which lies under the layer, takes its hue too while the icon on it stays light on a dark plaque.
+*Rejected:* a background darkened or tinted in its file — the tint would have to replace the file;
+the mage and the wolf outside the tint — they look pasted on a tinted forest; the frost under the
+tint — in the gold light it loses its icy colour and turns gold with the streak.
 
 ### D-316 — What does the scene show, and from what does it draw?
 
@@ -7571,7 +7598,15 @@ the picture of each resource and archetype it shows standing in the game's data.
 bush and moss always stand in the scene, and the campfire only while it stands on the character's
 tile, burning with a fire that moves or extinguished, the same picture in `grayscale(1)
 brightness(0.55)` and without motion. Motion comes from CSS at a fixed beat that does not depend on
-the pace, with no loop of drawing.
+the pace, with no loop of drawing. The tint of its light (D-315), never blue and never greying the
+scene as the pause does, follows the streak: it goes evenly from a cool grey-green at streak 0 to
+a trace of the cool tint, 20 %, at the streak the map's condition asks for, stays there while the
+streak grows on, and is full warm gold only at a completion, and it leaves the brightness of the
+picture as it is and has no effect in the game. A loss of the streak while the map run goes on takes
+the tint back to the cool one over 2 s as a change of the scene's state, not an effect, which in the
+player's pause and at a discovery, where time stands still (D-322), begins where the scene goes on,
+while at a death, at a completion, at the start of a map run,
+after „Restart” and after a load the tint stands at once where the streak, or the completion, puts it.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -7582,28 +7617,50 @@ the pace, with no loop of drawing.
     place of the sticks, the bush and the moss read from the files of the game's data; the sticks,
     the bush and the moss standing in the scene while the character's tile holds none of them; an
     extinguished campfire on the character's tile drawn still and grey; the frames of the mage's
-    sprite changing by a CSS animation at the same beat at 1× and at 16×
+    sprite changing by a CSS animation at the same beat at 1× and at 16×; the tint at streak 240 of
+    Las standing at 0.4 of the way to the gold, at streak 480 at 0.8, and at streak 700 still there;
+    a loss of the streak taking the tint back over 2 s, and the same loss in the player's pause
+    or at a discovery showing nothing until the scene goes on
   - violates: the picture of a resource named in the code of the browser view; a canvas or a timer
     redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
     in the scene while the character's tile holds none; the place where the mage stands kept in the
-    game state
+    game state; a tint in full gold at the required streak of Las; a tint that darkens or greys the
+    scene or turns it blue; a return of the tint in one frame, or one that runs while the pause holds
+    the map run; a tint that runs back from where it stood at a death or at „Restart”
 - **Origin:** none
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
-figure legible at the fastest pace. The clock of the view
-reads the time every 200 ms, so the smoothness of motion has to come from CSS, which divides time
-into equal steps for the frames of the sprite and needs no clock of its own; the risk that D-03 took
-with React, a rebuilt node restarting a CSS animation and the figure shaking, is one this scene meets,
-since the screen is redrawn five times a second. The pictures stand in the game's data, as the rest of
-the game's content does, so the code of the view names no resource. The scene may thus show
-what the character's tile does not hold, which can mislead the reading of a condition such as „Tu leży
-mniej niż”, as the scene of loop, which did not show the tile either, could; the numbers of the stock are
-given by the table and the line under the map. An extinguished campfire is the picture of a
-burning one without colour and without motion.
+figure legible at the fastest pace. The pictures stand in the game's data, as the rest of the
+game's content does, so the code of the view names no resource. The scene may thus show
+what the character's tile does not hold; the numbers of the stock are given by the table and the
+line under the map. An extinguished campfire is the picture of a
+burning one without colour and without motion. A tint tied to the streak explains its loss with no
+text, and a tint leaves the brightness as it is, so a time of day can lay its own darkness over the
+scene later. Full gold waits for a completion, so the required streak does not look like a win, and
+the trace of the cool tint, 20 %, that stays at the required streak shows that something is still to
+be done. Blue says cold, which the frost says, and grey says that time stands still, which the pause
+says (D-322). A loss of the streak takes the tint back over 2 s because a change of the scene's state
+may last longer than an effect (D-317), and in the pause the return waits for „Wznów” so that the
+loss is seen going. Accepted with it: a change of hue is subtler than a change of brightness, and at
+16× the scene may still be turning cool when the streak grows again.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
 a prop standing only while its resource lies on the character's tile — a piece of a scene showing
 the character's tile, left out of the project, would enter it, and the scene would change at
-„Eksploruj” with no transition; no props — the mage would have nothing to walk to.
+„Eksploruj” with no transition; no props — the mage would have nothing to walk to; a night that
+brightens with the streak — it collides with a time of day added later and looks like the greyed,
+darkened pause; a cycle of day and night tied to nothing — it suggests a rule that does not exist;
+a light of the scene whose source each map picks — a mechanism for a need not yet known; mist or
+cloud at the edges of the frame that clears as the streak grows — it collides with the frost at the
+edges and hides the props at the edges at streak 0; no change of the scene with the streak — the
+loss of the streak is no longer explained without text; full gold at the required streak — on Las —
+głębiej, where the streak grows on and the map is not solved, it looks like a win that is not there;
+a tint that goes unevenly, slowly at first and fast at the end — a curve to choose and to describe,
+with little to see at 16×; a tint with no trace of the cool one at the required streak, or with 10 %
+or 35 % of it — a trace of 20 % was chosen from the preview; the pair of tints B, C or D of the
+preview — the pair A was chosen from the preview; a return to the cool tint in one frame — the
+whole scene jumps at each loss; a return of up to 300 ms as an effect of an ordinary event — an
+effect on the whole scene against D-317; a return in 1 s — 2 s was chosen from the preview; the
+tint at once cool at „Wznów” after a loss in the pause — the loss passes without a picture.
 
 ### D-317 — How long do the scene's effects last?
 
@@ -8971,6 +9028,79 @@ Whether the end-of-run window (D-368) is open is a memory of the page, kept by t
 
 *Rationale:* the window is a thing of the screen and not of the game, so a save holds nothing of it, and a reload opens it again as D-212 gives; a state in the save would come back closed after a reload, against its opening at every entry, and would change the shape of the save for a thing of the screen. The question stands where D-173 puts it, in the band of the program panel at the copy it concerns, since D-173 rejected the question in a window, so the question closes the window and the window does not come back of itself after „Wróć”, as D-173 gives, and the window needs no memory of why it was closed. „Koniec przejścia” stands only while the window is closed because the header is not shown while it stands, and before „Restart” so that the way back to the window comes before the buttons that end the map run. Accepted with it: the end is out of the player's sight while the question stands and after it, until the button opens it; a player who corrects the copy after „Wróć” has the window closed already, and one who wants to read the end again opens it with the button.
 *Rejected:* the question standing in the window, above its buttons — a second place of the question, far from the copy it concerns and against the rejection of D-173, with more to build and check, what D-324 gives while the question stands included; the state of the window in the game state or the save — it would come back closed after a reload, against its opening at every entry, and the save would change shape for a thing of the screen; the window opening itself again after „Wróć” — a state of its own, the window remembering that the question closed it (D-173); „Koniec przejścia” after „Zakończ”, or standing always — the button of the way back stands before the buttons that end the map run, and while the window stands the header is not shown.
+
+### D-372 — What does the frost on the edges of the scene's frame show?
+
+The scene shows frost on the edges of its frame, never over its whole area (D-317), that follows the
+temperature of the character's body: none at 37 °C, growing in thickness as the body cools to
+35 °C, at 36 °C half of its full thickness, 16 pixels of the scene (32 px on the screen) at its
+deepest while the character is chilled, and taken back as the character warms at a fire. Its inner
+edge is ragged, so its thickness is the depth of its deepest teeth, and at the first pixel of
+thickness it is the outline alone, the fill coming with the next pixels. The frost lies over the layer of the tint (D-315).
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-316 · derives from D-317 · derives from D-271
+- **Verification:** an agent compares a change with the decision:
+  - complies: a character at 37 °C with no frost on the frame; at 36 °C a frost whose deepest teeth
+    reach 8 pixels of the scene from each edge; at 35 °C and at 20 °C one whose deepest teeth reach 16;
+    the same character warmed to 36 °C at the fire with the teeth at 8 again; the frost the same
+    colours at streak 0 and at a completion
+  - violates: a frost that starts only below 35 °C; a frost that grows further below 35 °C; a frost
+    whose deepest teeth stand at the same depth at 36 °C and at 35 °C; half the opacity at the full thickness for a
+    half; a frost over the whole area of the scene; a frost that changes its colour with the streak
+- **Origin:** none
+
+*Rationale:* the frost warns before the character starts losing health, which comes below 35 °C, and
+it fills the first minutes of a map run, as the reconnaissance wanted; a frost that is full while the
+character is chilled and goes with the warming at a fire shows the race of the fire with the cold,
+which a number in the row of the body leaves unseen. Half of the thickness is half, since the
+colours of the frost keep their opacity. Accepted with it: frost shows worse on white (D-314), and
+snow lies also on a map of 25 °C.
+*Rejected:* frost only below 35 °C — nothing warns before the loss of health and the frost comes at
+once; frost that goes on growing below 35 °C up to a death of cold — the temperature has no lower
+bound, so a temperature at which it is full has to be invented, and it overlaps the effect of a death
+of cold; a full thickness of 8 pixels of the scene — a half is then 4 pixels, hardly seen; half the
+opacity at the full thickness for a half — a half-transparent frost on white snow stands out still
+less.
+
+### D-373 — How does the flame of the campfire show how long the fire has left?
+
+A burning campfire in the scene shows its full flame while it has more than 20 minutes of burning
+left and a smaller flame in its last 20 minutes: the same flame on the same stones, cut down by hand
+from the frames of the full flame in colours of the pack Pixel Crawler, in the same number of frames
+and at the same beat, from a sprite file of its own, while the file and the 20 minutes stand in the
+scene's data. An extinguished campfire stays as D-316 gives it.
+
+- **Scope:** browser-view · simulation
+- **Based on:** none
+- **Relations:** derives from D-316 · derives from D-271 · derives from D-349
+- **Verification:** an agent compares a change with the decision:
+  - complies: a fire with 21 minutes of burning left drawn with the full flame and the same fire with
+    20 left with the smaller flame in four frames at the beat of the full one; the file of the
+    smaller flame a PNG of the full flame's size holding the same stones and logs and no colour
+    the full flame's file lacks; an extinguished fire the full flame's first frame, grey
+  - violates: the smaller flame at 30 minutes left, or none at 10; a smaller flame of another
+    size of the stones, or with a stage between; the full flame drawn at a fraction of its scale;
+    the extinguished fire in the smaller flame
+- **Origin:** none
+
+*Rationale:* 20 minutes is what one stick adds to a burning fire, so a smaller flame says to feed the
+fire before it goes out, and the sprite of the full flame and that of the smaller one change at one
+moment with nothing between. The smaller flame is the full one cut down by hand, because the pack
+holds no smaller flame of the same fire on the same stones, and a fraction of the scale would give a
+picture of pixels of unequal sizes that shakes in motion (D-349). Accepted with it: hand pixel
+work whose look the human judges only at the request, and no new pack.
+*Rejected:* three stages, the full flame from 40 minutes up, a middle one from 20 to 40 and a small one
+below 20 — two new pictures, and the pack may hold no three sizes of one fire in one style; a flame
+that shrinks smoothly by scale — a pixel picture at a fractional scale has unequal pixels and shakes
+in motion, and D-349 rejected a fractional scale of the scene for that reason; the heap of embers of
+the pack as the second stage — the whole campfire changes, the stones go, and the player may take the
+embers for another fire or for an extinguished one; no stage of the flame — a flame that does not
+decrease leaves the aim that it decreases untrue; a picture of the pack for the smaller flame — the
+pack holds no smaller flame of the same fire on the same stones, and the candidates, a narrower but
+higher flame, the heap of embers and the same flame on a heap of sticks, do not say to feed the fire
+before it goes out.
 
 ### D-374 — How short can an action shortened by bought branches be?
 

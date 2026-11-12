@@ -220,7 +220,7 @@ test("the badge over the mage holds the icon of the action as a mask and a fill 
       realMsCarry: 500,
     };
     const scene = await drawn(page, state);
-    const badge = one(scene, ".scene-mage .scene-badge");
+    const badge = one(scene, ".scene-badge-carrier .scene-badge");
     const icon = one(badge, ".icon-mask");
     assert.equal(
       icon.style.getPropertyValue("--icon"),
@@ -631,6 +631,8 @@ test("every stop holds every animation of the scene where it is, and a scene goi
       ["run sheet", one(scene, ".scene-mage-run")],
       ["idle sheet", one(scene, ".scene-mage-idle")],
       ["fire frames", one(scene, ".scene-fire img")],
+      ["badge's carrier", one(scene, ".scene-badge-carrier")],
+      ["tint of the light", one(scene, ".scene-tint")],
     ];
     for (const [standing, make] of Object.entries(STANDINGS)) {
       const scene = await drawn(page, withFire(42, make()));
@@ -1350,5 +1352,338 @@ test("the bending mage faces its prop whatever way it walked: sticks and bush to
       assert.equal(fibre.getAttribute("data-bend-facing"), null, "no prop");
       assert.equal(bendMirror(fibre), false, "the fibre: as the mage faces");
     }
+  });
+});
+
+// --- the tint of the light, the smaller flame and the frost (task swit-rosnacy-z-passa) -------------
+
+/** The sent state at a streak, a body temperature and a standing, the rest of the map run as sent. */
+const lit = (
+  { streak = 0, temperature = 37, ...patch } = {},
+  standing = {},
+) => ({
+  ...doing(GATHER_STICK, {
+    streak,
+    body: { ...sent().run.body, temperature },
+    ...patch,
+  }),
+  paused: false,
+  discovery: null,
+  ...standing,
+});
+
+/** The names of the scene's direct children, in the order they are painted, from the bottom. */
+const layersOf = (scene) =>
+  [...scene.children].map((element) => element.className.split(" ")[0]);
+
+// To do 1, carried question 2, D-315. Catches a tint that lies under the mage or over the badge, a
+// frost under the tint, a flying icon with its plaque over the tint (row 1 puts under the tint everything
+// the scene draws but the badge and the frost), and a badge still inside the mage's element, which is
+// under the tint.
+test("the layers: the tint over everything the scene draws, the flying icon and the dust included, the frost and the badge over it", async () => {
+  await withPage(async (page) => {
+    const state = withFire(42, lit({ streak: 100, temperature: 36 }));
+    const scene = await drawn(page, state);
+    assert.deepEqual(layersOf(scene), [
+      "scene-background",
+      "scene-prop",
+      "scene-prop",
+      "scene-prop",
+      "scene-fire",
+      "scene-mage",
+      "scene-tint",
+      "scene-frost",
+      "scene-badge-carrier",
+    ]);
+    assert.equal(
+      scene.querySelector(".scene-mage .scene-badge"),
+      null,
+      "the badge is not inside the mage's element",
+    );
+
+    // A cloud of dust lies under the tint and a flying icon on its plaque over it.
+    const dust = await reading(
+      page,
+      { kind: "gather", resource: "stick" },
+      {
+        before: 1,
+        after: 1,
+        events: [ended({ kind: "gather", resource: "stick" })],
+      },
+    );
+    const layers = layersOf(dust.scene());
+    assert.ok(
+      layers.indexOf("scene-effect") < layers.indexOf("scene-tint"),
+      "dust under the tint",
+    );
+    const flight = await reading(
+      page,
+      { kind: "gather", resource: "stick" },
+      {
+        before: 1,
+        after: 2,
+        events: [ended({ kind: "gather", resource: "stick" })],
+      },
+    );
+    const flying = layersOf(flight.scene());
+    assert.ok(
+      flying.indexOf("scene-effect") < flying.indexOf("scene-tint"),
+      "the plaque of the icon under the tint",
+    );
+    assert.ok(
+      flying.indexOf("scene-effect") > flying.indexOf("scene-mage"),
+      "and over the mage it flies to",
+    );
+  });
+});
+
+// D-320. Catches a badge that does not walk with the mage, or stands at another place than over its
+// head: its carrier has the mage's box and the mage's walk, on both elements together.
+test("the badge's carrier stands where the mage stands and walks as it walks", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await mounted(page, doingFrom(GATHER_STICK, 0));
+    const both = () => [
+      standingOf(one(scene(), ".scene-mage")),
+      standingOf(one(scene(), ".scene-badge-carrier")),
+    ];
+    const [mage, carrier] = both();
+    assert.equal(carrier.left, mage.left);
+    assert.equal(carrier.walking, false);
+    await draw(
+      doingFrom({ kind: "explore" }, 10),
+      changed({ kind: "explore" }, 10),
+    );
+    const [walkingMage, walkingCarrier] = both();
+    assert.equal(walkingMage.walking, true, "precondition: the mage walks");
+    assert.equal(walkingCarrier.walking, true);
+    assert.equal(walkingCarrier.left, walkingMage.left);
+    assert.equal(walkingCarrier.from, walkingMage.from);
+    assert.equal(
+      one(scene(), ".scene-badge-carrier").style.top,
+      one(scene(), ".scene-mage").style.top,
+    );
+  });
+});
+
+const tintOf = (scene) => one(scene, ".scene-tint");
+const tintValue = (scene) => tintOf(scene).style.getPropertyValue("--tint");
+
+// To do 2. Catches a tint that does not follow the streak evenly to 0.8 at the streak the condition
+// asks for, one that goes on past it, and one that is full before the completion.
+test("the tint goes from 0 at streak 0 to 0.8 at the required streak, stays there and is 1 only at a completion", async () => {
+  await withPage(async (page) => {
+    const at = async (state) => tintValue(await drawn(page, state));
+    assert.equal(await at(lit({ streak: 0 })), "0");
+    assert.equal(await at(lit({ streak: 120 })), "0.2");
+    assert.equal(await at(lit({ streak: 240 })), "0.4");
+    assert.equal(await at(lit({ streak: 480 })), "0.8");
+    assert.equal(await at(lit({ streak: 700 })), "0.8");
+    assert.equal(
+      await at(lit({ streak: 480, completion: { minute: 480 } })),
+      "1",
+    );
+  });
+});
+
+// To do 2 and 3, D-322. Catches a loss that takes the tint back at once, a return that runs on a rise,
+// and a return that restarts when the streak grows again.
+test("a loss of the streak in the map run's course returns the tint to the cool one on a new element, and a rise runs no return", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await mounted(page, lit({ streak: 480 }));
+    const first = tintOf(scene());
+    assert.equal(tintValue(scene()), "0.8");
+    assert.equal(first.hasAttribute("data-returning"), false);
+
+    await draw(lit({ streak: 0 }));
+    const back = tintOf(scene());
+    assert.notEqual(back, first, "a return starts on an element of its own");
+    assert.equal(back.hasAttribute("data-returning"), true);
+    assert.equal(back.style.getPropertyValue("--tint-start"), "0.8");
+    assert.equal(tintValue(scene()), "0");
+
+    // The streak grows on while the return runs: the return is not restarted.
+    await draw(lit({ streak: 24 }));
+    assert.equal(tintOf(scene()), back);
+    assert.equal(tintValue(scene()), "0.04");
+    assert.equal(back.hasAttribute("data-returning"), true);
+
+    // A return that ran to its end is over, so a scene shown anew does not run it again.
+    await inAct(() => endAnimation(back));
+    assert.equal(tintOf(scene()).hasAttribute("data-returning"), false);
+    assert.equal(tintOf(scene()).style.getPropertyValue("--tint-start"), "");
+
+    // A rise from standing runs no return.
+    await draw(lit({ streak: 48 }));
+    assert.equal(tintOf(scene()).hasAttribute("data-returning"), false);
+    assert.equal(tintValue(scene()), "0.08");
+  });
+});
+
+// To do 3, D-322, accepted question 7. Catches a pause that returns the tint while time stands: the
+// loss in the pause shows no change, and the return runs where the scene goes on.
+test("a loss of the streak in the player's pause or at a discovery returns the tint only where the scene goes on", async () => {
+  await withPage(async (page) => {
+    for (const standing of [
+      { paused: true },
+      { paused: true, discovery: NO_UNDERSTANDING_ITEMS },
+    ]) {
+      const { draw, scene } = await mounted(page, lit({ streak: 480 }));
+      const before = tintOf(scene());
+      await draw(lit({ streak: 0 }, standing));
+      assert.equal(tintOf(scene()), before, "the same layer, unchanged");
+      assert.equal(tintValue(scene()), "0.8", "the tint it had");
+      assert.equal(before.hasAttribute("data-returning"), false);
+
+      await draw(lit({ streak: 0 }));
+      assert.equal(tintOf(scene()).hasAttribute("data-returning"), true);
+      assert.equal(
+        tintOf(scene()).style.getPropertyValue("--tint-start"),
+        "0.8",
+      );
+      assert.equal(tintValue(scene()), "0");
+    }
+  });
+});
+
+// To do 2. Catches a death or a completion that runs a return, a „Restart” that runs one, and a
+// first draw, a load included, that shows anything but where the streak puts the tint.
+test("at a death, a completion, a map run started and a first draw the tint stands at once where the streak puts it", async () => {
+  await withPage(async (page) => {
+    const standsAtOnce = (scene, value, name) => {
+      assert.equal(tintValue(scene), value, name);
+      assert.equal(tintOf(scene).hasAttribute("data-returning"), false, name);
+    };
+
+    const first = await drawn(page, lit({ streak: 300 }));
+    standsAtOnce(first, "0.5", "first draw");
+
+    const death = await mounted(page, lit({ streak: 480 }));
+    await death.draw(lit({ streak: 0, death: { minute: 480, cause: "cold" } }));
+    standsAtOnce(death.scene(), "0", "death");
+
+    const completion = await mounted(page, lit({ streak: 479 }));
+    await completion.draw(lit({ streak: 480, completion: { minute: 480 } }));
+    standsAtOnce(completion.scene(), "1", "completion");
+
+    const before = lit({ streak: 480 });
+    const restarted = restart(before);
+    const started = await mounted(page, before);
+    await started.draw(restarted.state, restarted.events);
+    standsAtOnce(started.scene(), "0", "a map run started");
+    const read = await mounted(page, before);
+    await read.draw(restarted.state, []);
+    assert.equal(
+      tintOf(read.scene()).hasAttribute("data-returning"),
+      true,
+      "the same state without the event is an ordinary loss",
+    );
+  });
+});
+
+// Carried question 1, D-43. Catches a tint or a frost that reaches the stylesheet as anything but
+// numbers from the state: the colour and the opacity are the stylesheet's, from the tokens.
+test("the layer of the tint carries the number and no colour in its style", async () => {
+  await withPage(async (page) => {
+    const scene = await drawn(page, lit({ streak: 240, temperature: 36 }));
+    const style = tintOf(scene).getAttribute("style");
+    assert.match(style, /^--tint: 0\.4;?$/);
+    assert.doesNotMatch(
+      one(scene, ".scene-frost").getAttribute("style"),
+      /#|rgb|hsl|oklch|color/i,
+    );
+  });
+});
+
+// To do 5. Catches a frost at 37 °C, one that does not grow with the cold or has the wrong thickness at
+// 36 °C and at 35 °C, and one that goes on below the chill or is built on another pixel than the
+// scene's: a pixel is 1/336 of the frame's width and 1/152 of its height.
+test("the frost is none at 37 °C, 8 pixels at 36 °C, the whole 16 at 35 °C and below, on the scene's pixel", async () => {
+  await withPage(async (page) => {
+    const frostAt = async (temperature) => {
+      const scene = await drawn(page, lit({ temperature }));
+      return scene.querySelector(".scene-frost");
+    };
+    assert.equal(await frostAt(37), null);
+    for (const [temperature, thickness] of [
+      [36.5, "4"],
+      [36, "8"],
+      [35.5, "12"],
+      [35, "16"],
+      [34, "16"],
+      [-20, "16"],
+    ]) {
+      const frost = await frostAt(temperature);
+      assert.equal(
+        frost.style.getPropertyValue("--frost"),
+        thickness,
+        `${temperature} °C`,
+      );
+    }
+    const frost = await frostAt(36);
+    assert.equal(frost.style.getPropertyValue("--pixel-x"), "0.297619%");
+    assert.equal(frost.style.getPropertyValue("--pixel-y"), "0.657895%");
+  });
+});
+
+// To do 5. Catches a frost that stays when the body is warmed at the fire, and one that is drawn at once
+// at its place with no change to run: its thickness is the state's, reading by reading.
+test("warming at the fire takes the frost back, reading by reading", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await mounted(page, lit({ temperature: 35.5 }));
+    const thickness = () =>
+      scene().querySelector(".scene-frost")?.style.getPropertyValue("--frost");
+    assert.equal(thickness(), "12");
+    await draw(lit({ temperature: 36 }));
+    assert.equal(thickness(), "8");
+    await draw(lit({ temperature: 37 }));
+    assert.equal(thickness(), undefined);
+  });
+});
+
+// To do 4, D-316. Catches a fire that shows the smaller flame too early or too late, the extinguished
+// fire that takes it, and a smaller flame of another file or another frame count.
+test("a burning fire shows the smaller flame in its last 20 minutes, the full one before and the extinguished fire always the full one", async () => {
+  await withPage(async (page) => {
+    const flame = async (minutesLeft) =>
+      sheetOf(one(await drawn(page, withFire(minutesLeft)), ".scene-fire"));
+    const FULL = { src: "/sprites/fire.png", alt: "", frames: "4" };
+    const SMALL = { src: "/sprites/fire-small.png", alt: "", frames: "4" };
+    assert.deepEqual(await flame(60), FULL);
+    assert.deepEqual(await flame(21), FULL);
+    assert.deepEqual(await flame(20), SMALL);
+    assert.deepEqual(await flame(1), SMALL);
+    assert.deepEqual(await flame(0), FULL, "the extinguished fire");
+    const small = one(await drawn(page, withFire(5)), ".scene-fire");
+    assert.equal(small.getAttribute("data-burning"), "true");
+    placedAt(small, [36.9048, 65.7895, 9.5238, 21.0526], "the smaller flame");
+  });
+});
+
+// To do 4, the beat of the frames. Catches a fire whose sheet is swapped on a new element, which
+// would restart its frames and show a jump at the minute the flame grows small.
+test("the fire's element stays the same when its flame turns small", async () => {
+  await withPage(async (page) => {
+    const { draw, scene } = await mounted(page, withFire(25));
+    const fire = one(scene(), ".scene-fire");
+    const frames = one(fire, "img");
+    await draw(withFire(19));
+    assert.equal(one(scene(), ".scene-fire"), fire);
+    assert.equal(one(fire, "img"), frames);
+    assert.equal(frames.getAttribute("src"), "/sprites/fire-small.png");
+  });
+});
+
+// To do 6, D-322. Catches a pause that leaves the tint or the frost out of its grey: they lie in the
+// scene, so the pause's filter on the scene greys them with the rest.
+test("the pause greys the tint and the frost with the whole scene, because they lie inside it", async () => {
+  await withPage(async (page) => {
+    const scene = await drawn(
+      page,
+      lit({ streak: 240, temperature: 36 }, { paused: true }),
+    );
+    assert.equal(filterOf(scene), "grayscale(1) brightness(0.5)");
+    for (const part of [tintOf(scene), one(scene, ".scene-frost")])
+      assert.ok(scene.contains(part), part.className);
+    assert.equal(filterOf(tintOf(scene)), "", "no second grey of its own");
   });
 });
