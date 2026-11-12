@@ -1,5 +1,5 @@
 /**
- * The composing of the entries of the chronicle (D-338 to D-345; task kronika-z-filtrami, To do 2–7):
+ * The composing of the entries of the chronicle (D-338 to D-345):
  * from an event of the simulation or an act of the player on the copy to an entry's kind, game
  * minute, text and role, and the comparison of the copy's program before and after an act, with the
  * hint of a move the program editor gives. Pure: every text is composed once, from the result being
@@ -212,7 +212,7 @@ function inOrder(places: Map<RuleId, RulePlace>): [RuleId, RulePlace][] {
 
 /**
  * The texts of the entries of an edit of the copy, comparing its program before the act with its
- * program after it, rules and groups matched by their identities (D-342; spec D4): a group removed,
+ * program after it, rules and groups matched by their identities (D-342): a group removed,
  * added, renamed or given another condition, moved; then a rule removed from a group that stays,
  * added, changed in its condition or action, moved; then a changed trip plan. A rule's entry names
  * the editor's number and its row's sentence: before the act for a removed rule, after it
@@ -291,7 +291,7 @@ function copyProgramName(state: GameState): string {
 
 /**
  * The entries of an act of the player on the copy, in the role `player-change`, at the game minute
- * of the map run after the act, which after its end is the minute of the end (D-342; spec D4, D5):
+ * of the map run after the act, which after its end is the minute of the end (D-342):
  * for an edit, one entry for each change `copyChangeTexts` finds; for a discard „Porzucono zmiany
  * kopii” alone; for a save, a save as a new program and a switch the sentence with the name of the
  * program the copy belongs to after the act. None without a map run. Pure.
@@ -345,13 +345,13 @@ function revealed(
 }
 
 /**
- * The entry one event of the simulation gives, as D3 of the spec tables it (D-340, D-341, D-344,
- * D-345): the start of a program rule's action in the words of its row, the start of a wait in the
- * words of „Teraz”, a discovery as the band's text for the state returned with it, a loss of the
- * streak, a campfire going out, a death in the words of „Teraz” and a completion in the map's text.
- * Null for every other event; an attack gives no entry here, since the chronicle places the
- * paragraph of the encounter itself (D-147), and whether a wait's start gives an entry is the
- * chronicle's to decide. `after` is the game state of the result the event came with. Pure.
+ * The entry one event of the simulation gives (D-340, D-341, D-344, D-345): the start of a program
+ * rule's action in the words of its row, the start of a wait in the words of „Teraz”, a discovery as
+ * the band's text for the state returned with it, a loss of the streak, a campfire going out, a
+ * death in the words of „Teraz” and a completion in the map's text. Null for every other event; an
+ * attack gives no entry here, since the chronicle places the paragraph of the encounter itself
+ * (D-147), and whether a wait's start gives an entry is the chronicle's to decide. `after` is the
+ * game state of the result the event came with. Pure.
  */
 export function eventEntry(
   event: GameEvent,

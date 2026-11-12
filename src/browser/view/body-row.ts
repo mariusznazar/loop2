@@ -21,10 +21,10 @@ function tenths(value: number): string {
 
 /**
  * The values of the body row: temperature cut down to tenths, satiety, health and nature energy cut
- * down to whole numbers (spec Decision 3; task plomyk, To do 6). Temperature below the threshold of
- * chill and satiety below that of hunger stand in `danger`; cut down, a shown value is below a
- * threshold exactly when the body's is. Nature energy never stands in `danger`, at 0 too: empty
- * energy closes the spells and takes no health. Pure.
+ * down to whole numbers (D-57, D-178). Temperature below the threshold of chill and satiety below
+ * that of hunger stand in `danger`; cut down, a shown value is below a threshold exactly when the
+ * body's is. Nature energy never stands in `danger`, at 0 too: empty energy closes the spells and
+ * takes no health. Pure.
  */
 export function bodyValues(body: Body, natureEnergy: number): BodyValue[] {
   const rules = BALANCE.body;

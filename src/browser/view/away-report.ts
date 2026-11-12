@@ -31,7 +31,7 @@ export type ReportEntry = { text: string; danger: boolean };
 
 /**
  * The section's title: „Gdy cię nie było” while some line is open or stopped in a catch-up, else
- * „Pętle, które stanęły”, since only stops in the open game stand there (Q19). Pure.
+ * „Pętle, które stanęły”, since only stops in the open game stand there (D-246). Pure.
  */
 export function reportTitle(report: readonly AwayReportLine[]): string {
   const returned = report.some((line) => line.stop === null || line.stop.away);
