@@ -1,0 +1,36 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/game-saver.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a moment during a request in flight sends once more, after the answer, with the state of that time (7.2582ms)
+✔ a save that succeeds keeps its revision for the next save and takes away the sentence that stood from a conflict (1.4156ms)
+✔ a failed save shows that the game retries, and the retries follow after 5, 10 and 20 s and then every 30 s, each with the state of its time (5.2945ms)
+✔ a moment while a retry waits sends at once, and its failure waits for the next step of the rhythm (2.6997ms)
+✔ a moment during a request that then fails sends once more at once after the answer, not after the retry's wait (1.1169ms)
+✔ a save refused as too large shows its sentence and is not retried; a moment, or a check that finds a changed state, tries again (1.3332ms)
+✔ a conflict and a missing session go to the page's callback, and the saver sends nothing more (8.7884ms)
+✔ a save refused as outdated shows its sentence, tells the page, and nothing is sent any more (1.5832ms)
+✔ an untouched game sends nothing at the 30-second check or at hiding, and sends at the player's first act (9.8877ms)
+✔ a passing map run is saved at the 30-second check and at hiding, and a hiding during a request in flight sends nothing more (4.2688ms)
+✔ the 30-second check is silent while no manual map run passes, though the state changes at every reading; hiding and an act still send (5.2805ms)
+✔ each document holds the moment of the reading made for it and loads, and the state held stays what it was (4.158ms)
+✔ a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees (2.2788ms)
+✔ before logout the saver waits for the request in flight, then sends the current state and reports it saved (0.7453ms)
+✔ before logout a refusal is reported for logout to go on, without the page's callbacks, and a too-large one is not retried (0.9831ms)
+✔ a failed save before logout asks to log out again, and the retries go on under that sentence until one succeeds (0.5035ms)
+✔ a moment during the save before a logout that goes on is not sent after its answer (0.4201ms)
+✔ before logout a request in flight that fails is followed by the logout's own save, and only that one is reported (0.3828ms)
+✔ a saver stopped as outdated reports so before logout without sending anything (0.2835ms)
+✔ a disposed saver leaves no timer or listener, sends nothing, and ignores an answer that comes after (0.3361ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 334.219

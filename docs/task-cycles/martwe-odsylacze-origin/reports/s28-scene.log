@@ -1,0 +1,51 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/scene.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a scene going on draws the background, the three props and the mage with its idle and run sheets, and no fire (139.8935ms)
+✔ the props and the mage stand at the places of the data, as percentages of the frame (24.8856ms)
+✔ the mage stands where the activity leads it: the sticks, the fire, the right edge, the clearing (88.5449ms)
+✔ the badge over the mage holds the icon of the action as a mask and a fill as long as the progress (62.0237ms)
+✔ no badge while waiting, in combat, after a death and after a completion (63.9906ms)
+✔ the fire is absent without a campfire on the tile, burning with minutes left and the same picture extinguished (43.2362ms)
+✔ the scene marks how it stands: going, paused, at a discovery, dead, completed (54.5553ms)
+✔ the greys: the whole scene at the player's pause, the mage after a death, the extinguished fire; every other stop in colour (375.3115ms)
+✔ the scene is a picture: hidden from assistive technology, no text, nothing the keyboard reaches (43.7425ms)
+✔ a click on the scene, on any part of it, does nothing (71.9187ms)
+✔ a game with no map run draws no scene (11.4821ms)
+✔ at its first draw, after a load included, the mage stands at its place at once, with no walk (21.1635ms)
+✔ at an ordinary change of activity the mage walks from where it stands to its next place, facing the way it walks (56.4166ms)
+✔ at „Restart”, the event of a map run started, the mage stands at its place at once, crossing nothing (29.4502ms)
+✔ where the activity leaves the mage standing, it keeps the place of the previous reading, in combat and after a death too (44.7894ms)
+✔ every stop holds every animation of the scene where it is, and a scene going on runs them (195.1798ms)
+✔ a new action's bar starts empty as a bar of its own, and one action's bar stays the same bar from reading to reading (77.9083ms)
+✔ a redraw at each reading of the clock keeps every element that runs an animation and starts no walk (62.949ms)
+✔ the screen of a map run hands the events of each update to the scene (142.6661ms)
+✔ the mage bends while it gathers, „Zbierz” and „Obchód”, fibre included, and stands otherwise (79.3391ms)
+✔ the mage's bend sheet is the data's file, shown in place of the idle sheet while it bends and hidden otherwise (100.1081ms)
+✔ a mage that walked left to the sticks bends facing right, toward them (84.8194ms)
+✔ a gathering that ends with a piece more in the backpack sends the icon of the resource flying, on a plaque (85.9815ms)
+✔ „Obchód” sends one icon for its whole result, however many pieces it brought (47.6039ms)
+✔ the fibre's icon flies up from under the mage's feet, where it has no prop (29.8701ms)
+✔ „Zbierz” that ends with no new piece puts a cloud of dust at the prop, and no icon flies (26.9384ms)
+✔ a missed „Zbierz” of the fibre puts the cloud under the mage's feet (29.0625ms)
+✔ an „Obchód” that brought nothing shows no effect (25.5974ms)
+✔ no effect without exactly one end of a gathering in a reading that has a previous reading (68.7861ms)
+✔ an effect whose turn comes at a stop is dropped, and one running stands still with the scene at a stop (69.0494ms)
+✔ an effect lasts 300 ms, is dropped when its animation ends, and a redraw does not restart it (77.6358ms)
+✔ a new effect takes the place of the one still running, and the old one's end does not remove it (31.0134ms)
+✔ a map run started drops an effect still standing (34.002ms)
+✔ an effect stands at the mage that gathered, though the next action walks elsewhere (84.9916ms)
+✔ the bending mage faces its prop whatever way it walked: sticks and bush to the right, moss to the left (128.6257ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4570.7369

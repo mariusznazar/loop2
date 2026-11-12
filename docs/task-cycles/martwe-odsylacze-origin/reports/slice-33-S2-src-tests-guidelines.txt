@@ -1,0 +1,32 @@
+src/browser/view/end-window-lines.ts:2: * The texts of the end-of-run window (D-368; task koniec-przejscia, To do 4 to 8): what each part of
+src/browser/view/end-window.tsx:3: * D-313, D-44, D-39; task koniec-przejscia, To do 1, 2, 4 to 9): the window that opens over the
+tests/sim/run-record.test.mjs:1:// The record a manual map run keeps for its end (task koniec-przejscia, To do 5, 10; D-135, D-368,
+tests/view/end-window-game.test.mjs:1:// The end-of-run window in the game view (task koniec-przejscia, To do 1, 2, 8 and 9; D-368,
+tests/view/end-window-game.test.mjs:328:// D-368, D-62, task To do 1. Catches a window that opens only after „Koniec przejścia”, one that
+tests/view/end-window-game.test.mjs:362:// D-132, D-368, task To do 1 and 8. Catches a window that opens after a death alone, and one
+tests/view/end-window-game.test.mjs:380:// task To do 2 (the window opens at every entering of the screen of an ended map run). Catches a
+tests/view/end-window-game.test.mjs:407:// D-212, D-368, D-96, task To do 2. Catches a game built on an ended map run — at a reload at its
+tests/view/end-window-game.test.mjs:517:// task To do 2, binding answer 2. Catches „✕” or Escape that leaves the window or the covering,
+tests/view/end-window-game.test.mjs:549:// task To do 2. Catches a „Koniec przejścia” drawn while the map run goes on or paused.
+tests/view/end-window-game.test.mjs:581:// D-62, D-132, task To do 2. Catches a „Restart” of the window that leaves the window or the
+tests/view/end-window-game.test.mjs:608:// task To do 2. Catches the header's „Restart” after a „✕” that leaves the window open for the
+tests/view/end-window-game.test.mjs:639:// D-173, task To do 8 and question 10. Catches the question standing in the window, the window
+tests/view/end-window-game.test.mjs:706:// D-53, D-173, task To do 8. Catches an „Otwarte” that leads to Postać, one that leaves the map run
+tests/view/end-window-game.test.mjs:725:// D-173, task To do 8 and question 10. Catches a question that forgets which button asked it and
+tests/view/end-window-game.test.mjs:781:// D-313, D-122, task To do 9. Catches a button that leaves the window over the rule panel, adds no
+tests/view/end-window-game.test.mjs:833:// D-212, D-135, D-185, D-216, task To do 10. Catches a window that, after a reload of the screen of
+tests/view/end-window-game.test.mjs:837:// above the streak the state holds when it ended; the lines are the sentences of To do 5 and 6 of
+tests/view/end-window-game.test.mjs:838:// the task and of D-185 for a bring plan that takes nothing.
+tests/view/end-window-lines.test.mjs:1:// The texts of the end-of-run window (task koniec-przejscia, To do 4 to 8; D-368, D-132, D-133, D-135,
+tests/view/end-window-lines.test.mjs:5:// way on. Each case states the words it expects, written out from the task and the decisions (D-73).
+tests/view/end-window.test.mjs:1:// The end-of-run window in React (task koniec-przejscia, To do 1, 2, 4 to 9; D-368, D-132, D-133,
+tests/view/end-window.test.mjs:10:// from the task and the decisions, not computed by the code under test (D-73).
+tests/view/end-window.test.mjs:164:// label „Koniec przejścia” or the „✕” named „Zamknij okno” (D-132, D-334, task To do 4).
+tests/view/end-window.test.mjs:209:// To do 1).
+tests/view/end-window.test.mjs:318:// and the paragraph of the last encounter standing among the last minutes (D-368, task To do 7).
+tests/view/end-window.test.mjs:395:// no attack (D-147, task To do 7 and question 8).
+tests/view/end-window.test.mjs:435:// where every rule fired, no bar where no minute was counted (task To do 7: each only where it has
+tests/view/end-window.test.mjs:504:// it opens (D-44, D-132, D-188, task To do 8).
+tests/view/end-window.test.mjs:581:// not name its map (task To do 2, 8, 9).
+tests/view/end-window.test.mjs:604:// „Konto” and the rule panel (task To do 2; the rule panel does the same, D-285).
+tests/view/end-window.test.mjs:629:// draw while the player works inside it, and one that traps the focus (task To do 1; the menu bar

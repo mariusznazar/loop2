@@ -1,0 +1,9 @@
+scene exit 0
+scene-picture exit 0
+terrain-picture exit 0
+world-area exit 0
+run-screen exit 0
+run-header exit 0
+status-row exit 0
+body-row exit 0
+character-skills exit 0

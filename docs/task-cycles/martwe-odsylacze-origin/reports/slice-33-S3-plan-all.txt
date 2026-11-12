@@ -1,0 +1,257 @@
+AGENTS.md:24:Write foundation entries only through the project skills `the-way-record-decision`, `the-way-record-invariant`, `the-way-record-glossary-term`, `the-way-update-part-map`, `the-way-record-environment-fact`. Use the project skills `the-way-find-foundation-entries`, `the-way-define-project`, `the-way-plan-project`, `the-way-lead-project`, `the-way-settle-technology`, `the-way-refine-task`, `the-way-implement-task`, `the-way-plan-task`, `the-way-write-spec`, `the-way-make-change`, `the-way-review-change`, `the-way-critique`, `the-way-review-foundation`, `the-way-maintain-styleguide`, `the-way-maintain-coding-guidelines`, `the-way-maintain-testing-guidelines` for their named work. Where a skill or a file it reads names one without the `the-way-` prefix, use the prefixed project skill, never a personal skill of that name. In a task cycle the methods of the-way apply — `the-way-write-spec`, `the-way-plan-task`, `the-way-make-change` and `the-way-review-change` — even where an installed plugin offers methods of its own.
+foundations/decisions.md:952:  - complies: `guidelines/styleguide-browser-view.md` holding the nine required rules in the template's order, each with its decision, its invariant or `none`, and the examples *Mockups* and *Plan of a user-interface change*;
+foundations/decisions.md:1608:*Rejected:* Adding both refusal tests with the guidelines — expands the work by two cases and requires a choice of font verification; no invariants for these two boundaries and an exception written into the rule — shorter, but the rule on trust boundaries would not name their refusal; every change of a file of the boundary ending the exception — a refusal test in tasks that change no principle, against the human's answer that they bring no test files, and a change of the project's plan; new files of the boundary ending it, and a change of the build not — the same costs.
+foundations/decisions.md:1862:- **Verification:** invariants: saved-program-edit · trip-plan-progress. An agent compares a change with the decision:
+foundations/decisions.md:2671:act of the program editor after which the copy is the same as before it, an edit or discard changing the trip plan alone, a save of the copy and an edit of a saved program leave the streak as it
+foundations/decisions.md:2677:- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save · trip-plan-progress. An agent compares a change with the decision:
+foundations/decisions.md:2835:program, sets it to zero, on every map, while a change of the trip plan alone leaves it.
+foundations/decisions.md:2840:- **Verification:** invariants: streak-program-change · trip-plan-progress. For the condition in the map's data and the
+foundations/decisions.md:3122:- **Based on:** mikrus-outsider-mail · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
+foundations/decisions.md:3545:The trip plan is a field of the program, both its lists are bound at the start of a map run — the list of what comes out as a frozen snapshot — and at a completion only what that list names goes to the chest. Reality cuts the trip plan down and never up: outside a manual map run of a map already solved, what the chest lacks does not go into the backpack, what the backpack lacks does not come back, and where items compete for one budget — the backpack, the map's cap, the free room in the chest — as many go in from the top of the list as fit. The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand.
+foundations/decisions.md:3551:  - complies: an item added to the trip plan during a map run that comes out only from the next map run; a trip plan over the map's cap entering cut, with a notice shown before the start; a character switched to another program in the middle of a map run bringing out at completion what the trip plan of the program it entered with names
+foundations/decisions.md:3552:  - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
+foundations/decisions.md:3555:*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it. The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in because carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is no longer a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
+foundations/decisions.md:3558:### D-180 — Where does the player arrange the trip plan?
+foundations/decisions.md:3560:The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”. Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list. The card of a map shows what of the plan enters.
+foundations/decisions.md:3570:*Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. The card of a map shows at each character what of the plan enters, and shows it always, also when the whole plan enters, so that a player with a full chest sees what will enter. Accepted with it: the plan of the copy is not changed during a map run, and one more line „Wejdzie: …” at each character on the card.
+foundations/decisions.md:3571:*Rejected:* the section under the rule groups, and on the screen of a map run — it takes the space of what the player watches, and with a long program the plan is reached only by scrolling; the plan in the headquarters character row — when the same editor was to serve the copy in a map run and the saved program, a plan there could not be corrected in the copy during a map run; the line „Wejdzie: …” on the card only when less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters.
+foundations/decisions.md:3575:The game currently accepts an item once on each trip list, and the same item can stand on both lists. A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is currently left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
+foundations/decisions.md:3583:*Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds. A count beyond the safe integers would make the load of the saved game state refuse it whole, so the game never takes one. The item select list of a position offers the items of the Understanding, since the trip plan is a part of the program and what the program editor offers is tied to the Understanding (D-119); an item already on a list is not offered again by the select lists of that list, and stands on the other list as well. That an item stands at most once on a list and that a count is a whole number from 1 up are what the tests of the predecessor game held. Accepted with it: a plan cannot be arranged before the first item is discovered, when the chest is empty anyway, and the field shows an invalid entry beside the count the game goes on holding.
+foundations/decisions.md:3586:### D-182 — What trip plan does a new program hold?
+foundations/decisions.md:3596:*Rationale:* The first plan belongs to the player, and before an item is discovered the chest is empty as well; the tests of the predecessor game held an empty plan for a fresh game. Accepted with it: before the first item is discovered the plan cannot be arranged at all.
+foundations/decisions.md:3599:### D-183 — What happens to carried items when the player stops a run or completes with items outside its plan?
+foundations/decisions.md:3609:*Rationale:* Equipment is spent on an attempt and loot leaves through the plan at completion; stopping the attempt costs its contents. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out, and what a character carries is lost with an attempt that ends before completion, as it is in death (D-190). Accepted with it: „Zakończ” after the character has brought a stock onto a map not yet solved loses that stock, and the player cannot view the earning-loop map run that „Zatrzymaj” cut off.
+foundations/decisions.md:3638:### D-186 — What does the running map show of the frozen bring plan?
+foundations/decisions.md:3648:*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives early a part of what a clear showing of the trip plan in force in the map run going on asks for. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the plan is edited, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
+foundations/decisions.md:3649:*Rejected:* a completion line alone — the running snapshot stays hidden; nothing beyond what stood on the screen; a line hidden for an empty snapshot — an item added during the first map run looks as though it could leave, the player does not see that it will not come out of that map run; a line from minute zero for every empty plan — persistent empty information, a constant line with no content at an empty plan; the line not counting the map's exit cap — on a map with an exit cap it would promise more than completion deposits; keeping the preview after the run ends, in the wording of the last minute, until „Restart” or „Zakończ”; the role `text`.
+foundations/decisions.md:3653:A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset. The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is currently bounded by the character's carrying capacity, which the map cap currently leaves unchanged.
+foundations/decisions.md:3664:### D-188 — Where does the player learn that a map cuts the trip plan?
+foundations/decisions.md:3666:On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity. The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is currently absent.
+foundations/decisions.md:3674:*Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places. A „Restart” is a map run, and a map run begins with entering the map, so the plan of the copy over the map's cap enters cut at a „Restart” and the player has to learn of it beforehand. The line compares the entry cap with the smaller of the take list's total and the carrying capacity, so it speaks of the map only when the map cuts the plan and not the backpack; when carrying capacity alone cuts it, the backpack already shows its cap as „Plecak {pieces}/{cap}”.
+foundations/decisions.md:3765:*Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — the player could complete Las again and again and farm practice, while a manual run of a solved map is to pay nothing (D-189); it is also a change of the goal of the work and of its plan, `solved-map-manual-run` broken on practice for that time, and this decision changed twice; the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
+foundations/decisions.md:6250:— the plan records neither its cost nor the human's reason for it; every change of the files of the
+foundations/decisions.md:6252:that the tasks bring no test files, and a change of the plan; new files ending it, and a change of
+foundations/decisions.md:6439:a change of D-40 — D-40 joins the divergence from the project definition, and the plan gains one
+foundations/decisions.md:6841:React a new control as well, though one needed anyway for programs and the trip plan; a list of
+foundations/decisions.md:7162:### D-307 — What does the line of an empty trip plan say?
+foundations/decisions.md:7164:Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy:
+foundations/decisions.md:7172:  - violates: the heading „Plan wyprawy” alone above an empty plan
+foundations/decisions.md:7175:*Rationale:* an empty plan shown as its heading alone looks as though it has not loaded.
+foundations/decisions.md:7176:*Rejected:* the heading alone — an empty plan looks as though it has not loaded.
+foundations/decisions.md:7319:„Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”, and after the end of the
+foundations/decisions.md:7394:and the streak about 650 px, in small print with a 4 px bar; the trip plan under the editor during a
+foundations/decisions.md:7397:in; „Restart”, the warning of a cut trip plan and „Zakończ” in the program column, in a row over the
+foundations/decisions.md:7830:The screen Mapy holds on the left the list of the maps open to the player, and on the right a card of the picked map with what it asks, its terrain, what lies there, what lurks there and what it takes, and a section „Kto idzie” with the characters, their program, what enters from the trip plan, „Wejdź” and „Puść w pętlę”.
+foundations/decisions.md:7890:At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać, the line of the resurrection and, at a character in an earning loop, the line of the loop, „Program:” with its list, „Wejdzie: …” in `text-secondary` always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and „Puść w pętlę” with their warnings, the characters standing in the order of D-54. „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card. A team with no character has in the section the sentence „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
+foundations/decisions.md:7897:  - violates: „Wejdzie: …” standing only where the plan enters clipped; a section with its heading alone for a team with no character; „Puść w pętlę” taking the player to the screen of a map run
+foundations/decisions.md:7900:*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243), the sentence of a rehearsal under „Wejdź” (D-251) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the three warnings stand in `warning`; the lines of the resurrection and of the loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
+foundations/decisions.md:7901:*Rejected:* „Wejdzie: …” only where less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters, and with a plan that enters whole the words of D-180 „the card of a map shows what of it enters” and of D-325 „what enters from the trip plan” would not hold; the rest as it stands but with no sentence for a team with no character — the section would have its heading alone, an empty area with no hint where to make a character.
+foundations/decisions.md:7931:*Rejected:* `#/mapy` showing at once the card of the first map of the list — two addresses would show the same, and the row of the first map would not be needed; the gain is two clicks to the first map run; the right area empty, as in the predecessor game — an empty area looks as if it had not loaded, which is why an empty trip plan says „Plan wyprawy: pusty” (D-307).
+foundations/decisions.md:8266:groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany kopii”,
+foundations/decisions.md:8459:free only within a small plan and paid beyond it; it collects everything unless set otherwise, and
+foundations/decisions.md:8748:*Rejected:* a conscious absence, „for now nothing” — free, but from the first outside player the owner learns of a failure from the player or not at all; an absence with a written review before the public opening of accounts, as in D-233 — free, but the review blocks nothing and until its date the silence stays; the watcher alone, without checking the address and without the browser — a server that is off, a dead cron and a dead `push.mikr.us` give a silence that looks like „all works”, and the browser is heard only from the player; the watcher with an outside „signal of life” (Healthchecks.io, Better Stack) — it also catches a server that is off, but it brings a new account in a foreign service and a secret on the server, which D-233 already rejected; a service that checks the address (Better Stack, UptimeRobot, Uptime Kuma of its own) — only a game that is unreachable, with an account in a foreign service, and Uptime Kuma on the same server does not see the server turned off; an alert of Cloudflare on the state of the tunnel — free with Zero Trust Free, but it does not see a dead game behind a live connector; Health Checks of Cloudflare — it catches the origin's answers, but needs the Pro plan or higher; Sentry — server and browser, with an availability monitor for an unreachable game, free from 0 to 5 thousand errors and then $29 a month, with data in a foreign cloud and collection and `beforeSend` to set so that no text or stack leaves (D-252, D-253); GlitchTip, hosted or of its own — server and browser, hosted free from 0 to 1000 events and then $15 a month, of its own a service, PostgreSQL, a copy of the database and at least 256 MB of memory on a server without swap, outside the loop2 project; Bugsink — as GlitchTip, with an SDK compatible with Sentry, its price list unread (404); an alarm in an outside store of logs — exists only with the choice of Grafana Cloud, Better Stack or a Loki of its own for the game's log, which was not made.
+foundations/decisions.md:8917:When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run, covering it with its header but not the menu bar nor the row of warnings under it, and under „Koniec przejścia” it answers in this order what happened, what it cost or gave, why and what next: the cause as a title — after a death „Mag zamarzł”, „Mag umarł z głodu” or „Mag zginął w walce”, after a completion the completion text of the map from its data, such as „Las rozwiązany”, in the role `positive` — with the longest streak the map run reached against the map's condition as „najdłuższa passa 116/480” with its bar in the form of the bar of the header (D-135, D-133), the discovery of that game minute where there is one (D-122), the line of what the end gave or cost (D-185, D-216), the sections of why and the buttons of what next. Each section of why stands only where it has content: „Ostatnie minuty” only after a death, the four last entries of the chronicle other than the paragraph of the last encounter, ending with the entry of the death, each with its game minute as in the chronicle; the paragraph of the last encounter, in the words of the chronicle, in a section of its own (D-147); „Nie zadziałały ani razu”, the rules of the copy with the counter „Wykonano 0×” (D-93), each with its number, such as „2.2”, and the sentence of its row; „Na co poszedł czas”, one bar with a legend and percentages, with a piece of its own for each action of at least 8 % of the time, at most five, the rest in „reszta”, where „Idź”, „Idź — ognisko” and „Wędruj” join as „W drodze”, waiting stands as „Czeka” and combat as „Walka”; and „Wyprawa i teren”, with the lines „weszła z …” or „pustym plecakiem”, „odsłonięto {n} z {m} kafelków” and „w drodze {n} min”, and no line „odłożyła”. The window scrolls in itself while its buttons — „Restart” with the warning of a cut trip plan (D-188), „Zakończ” and, after a completion of a map that opens another, „Otwarte: {mapa} →” (D-132) — stay fixed at its bottom; „✕” in the window and the key Escape pressed in it (D-370) close it and uncover the screen of the map run, whose header then holds „Koniec przejścia”, which opens it again, and the window opens again at every entry on the screen of an ended map run, after leaving by the menu bar and after a reload too.
+foundations/decisions.md:8943:*Rejected:* the game state keeping the four last entries before the end as well, so that the whole window comes back after a load — the entries of the chronicle are made in the view from events (D-348), so the simulation would have to compose those texts or the view write them into the game state, which changes D-339, and there is more to build and check; the three things in the plain map run that earning loops share — every earning loop would carry and save them, the saved game state would grow with the number of loops against the limits of D-207 and D-208, and the loops' map run in the document would change shape without any gain; the counts stored under the grouped names of the window — the simulation would know the view's wording and a new action would have to be grouped there; counting in the view from the events — lost at a load, since the events are not kept (D-348); the longest streak read from the entries of the chronicle that record a lost streak — they live in the memory of the page and are lost at a load (D-339); what the character entered with read at the end from the trip plan and the chest — both change during the map run; a lenient load that fills in a missing count or accepts counts that do not sum to the game minute — a migration by another name, against D-206 and D-213.
+foundations/glossary.md:28:program rules are ordered within each group, and holding a trip plan.
+foundations/glossary.md:199:## trip plan
+foundations/glossary.md:201:A trip plan is two ordered lists with counts: what a character takes into a map run and what it brings out of it.
+foundations/invariants.md:978:## trip-plan-progress
+foundations/invariants.md:980:Editing or discarding changes to the copy's trip plan alone leaves the run's streak, defeated-attack count and program-rule firing counts as they stood.
+guidelines/coding-browser-module.md:75:| `src/browser/view/trip-plan.tsx`                   | copy        | —        |
+guidelines/coding-saved-game.md:143:### Plan wyprawy i skrzynia
+guidelines/coding-saved-game.md:145:Plan wyprawy programu (`tripPlan`, listy `take` i `bring`) czyta sprawdzenie
+guidelines/coding-saved-game.md:146:programów z `programs.ts`, to samo, przez które gra przyjmuje plan od gracza:
+guidelines/coding-saved-game.md:148:trzyma liczności, której wczytanie by odmówiło. Zamrożony plan wynoszenia
+guidelines/styleguide-browser-view.md:805:### Plan of a user-interface change
+src/browser/sim/programs.ts:272:    throw new ProgramCheckError("program: no trip plan");
+src/browser/sim/programs.ts:568: * reported as one event of its loss, at the map run's minute. A trip-plan-only change leaves that
+src/browser/sim/programs.ts:609: * as whole data (trip plan and identity counters included), or its program is gone from
+src/browser/sim/saved-game.ts:758: * What completion put in the chest: none before a completion, and at one the frozen bring plan's
+src/browser/sim/saved-game.ts:1008: * The manual map run: a `MapRun`, and a deposit only at a completion, out of the frozen bring plan.
+src/browser/sim/trip.ts:20:  plan: readonly TripEntry[],
+src/browser/sim/trip.ts:26:  for (const { item, count } of plan) {
+src/browser/sim/trip.ts:43:  plan: TripPlan,
+src/browser/sim/trip.ts:48:  if (chest === null) return clippedTake(plan, capacity, map);
+src/browser/sim/trip.ts:50:    plan.take,
+src/browser/sim/trip.ts:58:  plan: TripPlan,
+src/browser/sim/trip.ts:66:  const taken = sendTake(plan, chest, capacity, map);
+src/browser/sim/trip.ts:81:  plan: TripPlan,
+src/browser/sim/trip.ts:86:    plan.take,
+src/browser/sim/trip.ts:87:    Object.fromEntries(plan.take.map(({ item, count }) => [item, count])),
+src/browser/sim/trip.ts:98:  plan: TripPlan,
+src/browser/sim/trip.ts:103:  for (const { item, count } of sendTake(plan, null, capacity, map))
+src/browser/sim/trip.ts:129:/** A map-specific warning ignores stock: the map, rather than the backpack, cuts this plan. */
+src/browser/sim/trip.ts:131:  plan: TripPlan,
+src/browser/sim/trip.ts:140:        plan.take.reduce((sum, entry) => sum + entry.count, 0),
+src/browser/styles.css:809: * The program's name above its trip plan and its rules on Programy: a name, so `text-strong` (D-40).
+src/browser/styles.css:819:.program-panel .trip-plan {
+src/browser/styles.css:919: * The trip plan of a program in React: the folding line and the lists under it. The lists take the
+src/browser/styles.css:923:.trip-plan {
+src/browser/styles.css:929:.trip-plan-line {
+src/browser/styles.css:937:.trip-plan-side {
+src/browser/styles.css:944:.trip-plan-label {
+src/browser/styles.css:949:.trip-plan-position {
+src/browser/styles.css:955:.trip-plan-list {
+src/browser/styles.css:959:.trip-plan-heading {
+src/browser/styles.css:1379: * a completion, since the text of a completion is „Teraz”'s (D-132). The warning of a cut trip plan
+src/browser/styles.css:2455:/* A resource's icon, in the colour of the text it stands in and as tall as the line, as the trip plan's icons are. */
+src/browser/styles.css:2468: * the clipped-plan line and the rehearsal mark are the `warning` lines `trip-warning` and
+src/browser/view/chronicle-entries.ts:217: * added, changed in its condition or action, moved; then a changed trip plan. A rule's entry names
+src/browser/view/chronicle-entries.ts:278:    texts.push("Zmieniono plan wyprawy");
+src/browser/view/maps-screen.tsx:259:  const plan = program.program.tripPlan;
+src/browser/view/maps-screen.tsx:262:  const warning = tripWarning(plan, capacity, map);
+src/browser/view/maps-screen.tsx:265:    plan,
+src/browser/view/maps-screen.tsx:270:  const emptyLoop = solved ? emptyLoopMark(plan) : null;
+src/browser/view/maps-screen.tsx:315:        {entersLine(plan, solved ? null : state.team.chest, capacity, map)}
+src/browser/view/program-editor.ts:600:/** A section of one group's cells, in a plan that parts what the data sets apart. */
+src/browser/view/program-panel.tsx:51:import { TripPlanView } from "./trip-plan.js";
+src/browser/view/program-panel.tsx:86: * na ten program”, no trip plan. `programs` is the screen Programy: the saved program the page names,
+src/browser/view/program-panel.tsx:88: * trip plan and its rules; the list of programs and its actions stand beside the panel, on the screen.
+src/browser/view/program-panel.tsx:335: * `programs` mode the sentence of a waiting map run, the program's name and its trip plan. Both hold
+src/browser/view/run-header.tsx:5: * „Koniec przejścia”, then „Restart”, the warning of a cut trip plan and „Zakończ”, in this order.
+src/browser/view/trip-editor.ts:2: * The pure rules of the trip plan's two lists, which the trip plan in React (`trip-plan.tsx`) and the
+src/browser/view/trip-lines.ts:9:  plan: TripPlan,
+src/browser/view/trip-lines.ts:13:  return tripEntryCut(plan, capacity, map)
+src/browser/view/trip-lines.ts:14:    ? `Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej ${map.carryIn} sztuk.`
+src/browser/view/trip-lines.ts:30:  plan: TripPlan,
+src/browser/view/trip-lines.ts:37:    clippedTake(plan, capacity, map).some(
+src/browser/view/trip-lines.ts:49:  plan: TripPlan,
+src/browser/view/trip-lines.ts:54:  const items = itemList(sendTake(plan, chest, capacity, map));
+src/browser/view/trip-lines.ts:62:export function emptyLoopMark(plan: TripPlan): string | null {
+src/browser/view/trip-lines.ts:63:  return plan.bring.length === 0 ? "Pętla nic nie zarobi do skrzynki" : null;
+src/browser/view/trip-plan.tsx:2: * The trip plan of a program in React (D-180, D-181): the section the program panel holds between
+src/browser/view/trip-plan.tsx:46:const EMPTY_LINE = "Plan wyprawy: pusty";
+src/browser/view/trip-plan.tsx:50:  /** The program whose plan is shown: the saved program or the copy. */
+src/browser/view/trip-plan.tsx:81:/** The trip plan section, folded or unfolded; the page gives it the program and the items found. */
+src/browser/view/trip-plan.tsx:195:    <section className="trip-plan" aria-label="Plan wyprawy">
+src/browser/view/trip-plan.tsx:196:      <div className="trip-plan-line" onClick={() => setOpen((on) => !on)}>
+src/browser/view/trip-plan.tsx:198:          text={empty ? EMPTY_LINE : "Plan wyprawy"}
+src/browser/view/trip-plan.tsx:204:              <span className="trip-plan-side" key={side}>
+src/browser/view/trip-plan.tsx:205:                <span className="trip-plan-label">{label}</span>
+src/browser/view/trip-plan.tsx:207:                  <span className="trip-plan-position" key={entry.item}>
+src/browser/view/trip-plan.tsx:228:              <section className="trip-plan-list" key={side}>
+src/browser/view/trip-plan.tsx:229:                <h4 className="trip-plan-heading">{label}</h4>
+src/browser/view/trip-plan.tsx:321: * Builds the trip plan in an element of its own, for the page to place. The first render is
+src/browser/view/trip-plan.tsx:327:  element.className = "trip-plan-host";
+src/browser/view/world-area.tsx:6: * backpack, the lines of a solved map, of the practice and of the preview of the bring plan between the
+tests/invariants/test_program_world_reference.py:197:        ("program", "tripPlan"): "trip-plan",
+tests/invariants/test_program_world_reference.py:198:        ("trip-plan", "take"): "trip-list", ("trip-plan", "bring"): "trip-list",
+tests/sim/catch-up.test.mjs:50:/** `program` with the trip plan given. */
+tests/sim/copy-actions.test.mjs:434:test("an edit of the copy that leaves its rules and rule groups, or changes only the trip plan, returns no loss", () => {
+tests/sim/loop.test.mjs:2:// a map run at once and stops. The expectations come from D-22 (the seed), D-179 (the trip plan),
+tests/sim/loop.test.mjs:82:/** `program` with the trip plan given. */
+tests/sim/loop.test.mjs:909:// Spec 4, 15 and the plan's *Goal*: a state the simulation makes with a loop loads back at every
+tests/sim/saved-game.test.mjs:48:// plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
+tests/sim/saved-game.test.mjs:1268:  "a program without its trip plan": (document) =>
+tests/sim/saved-game.test.mjs:1270:  "a trip plan without its bring list": (document) =>
+tests/sim/saved-game.test.mjs:1272:  "a key added to a trip plan's entry": (document) =>
+tests/sim/saved-game.test.mjs:1289:  "the map run without its frozen bring plan": (document) =>
+tests/sim/saved-game.test.mjs:1293:  "an item twice on the frozen bring plan": (document) =>
+tests/sim/saved-game.test.mjs:1305:  "a deposit of an item the frozen bring plan lacks": (document) => {
+tests/sim/saved-game.test.mjs:1319:  "a deposit out of the frozen bring plan's order": (document) => {
+tests/sim/saved-game.test.mjs:1717:  "an earning loop's program without its trip plan": (document) =>
+tests/sim/saved-game.test.mjs:1732:  "an earning loop's map run with a frozen bring plan": (document) =>
+tests/sim/saved-game.test.mjs:2038:// A completion may deposit exactly what its frozen bring plan planned, each item at its count
+tests/sim/saved-game.test.mjs:2495: * Ala sent to Las after buying „Szybki posiłek”, with a trip plan that takes 3 berries out of a
+tests/sim/trip.test.mjs:144:test("editing or discarding only a trip plan preserves solving progress and rule counts", () => {
+tests/sim/trip.test.mjs:145:  // invariant: trip-plan-progress
+tests/sim/trip.test.mjs:206:  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:210:    takeTrip(plan, chest, 15, { ...MAPS.forest, carryIn: 4, carryOut: 0 }),
+tests/sim/trip.test.mjs:217:    takeTrip(plan, chest, 15, { ...MAPS.forest, carryIn: 0 }).backpack.berry,
+tests/sim/trip.test.mjs:220:  assert.equal(takeTrip(plan, chest, 3, MAPS.forest).backpack.berry, 3);
+tests/sim/trip.test.mjs:259:  const plan = equipped().programs[0].program.tripPlan;
+tests/sim/trip.test.mjs:260:  assert.equal(tripEntryCut(plan, 15, MAPS.forest), false);
+tests/sim/trip.test.mjs:261:  assert.equal(tripEntryCut(plan, 15, { ...MAPS.forest, carryIn: 15 }), false);
+tests/sim/trip.test.mjs:262:  assert.equal(tripEntryCut(plan, 15, { ...MAPS.forest, carryIn: 14 }), true);
+tests/sim/trip.test.mjs:311:test("saved plan edits stay out of the copy; saves and overwrite detection include both lists", () => {
+tests/sim/trip.test.mjs:583:  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:584:  const before = structuredClone(plan);
+tests/sim/trip.test.mjs:586:    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 4, carryOut: 0 }),
+tests/sim/trip.test.mjs:589:  assert.deepEqual(takeFromNowhere(plan, 12, MAPS.forest), {
+tests/sim/trip.test.mjs:596:    takeFromNowhere(plan, 15, { ...MAPS.forest, carryIn: 0 }).moss,
+tests/sim/trip.test.mjs:599:  assert.deepEqual(plan, before);
+tests/sim/trip.test.mjs:604:test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
+tests/sim/trip.test.mjs:605:  const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:606:  const before = structuredClone(plan);
+tests/sim/trip.test.mjs:608:  assert.deepEqual(clippedTake(plan, 12, MAPS.forest), [
+tests/sim/trip.test.mjs:613:  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 4 }), [
+tests/sim/trip.test.mjs:616:  assert.deepEqual(clippedTake(plan, 15, { ...MAPS.forest, carryIn: 0 }), []);
+tests/sim/trip.test.mjs:618:  assert.deepEqual(plan, before);
+tests/sim/trip.test.mjs:726:  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:727:  assert.deepEqual(sendTake(plan, chest, 15, MAPS.forest), [
+tests/sim/trip.test.mjs:737:  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:738:  assert.deepEqual(sendTake(plan, chest, 12, MAPS.forest), [
+tests/sim/trip.test.mjs:747:  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:748:  assert.deepEqual(sendTake(plan, chest, 15, { ...MAPS.forest, carryIn: 4 }), [
+tests/sim/trip.test.mjs:756:  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:757:  assert.deepEqual(sendTake(plan, null, 12, MAPS.forest), [
+tests/sim/trip.test.mjs:766:  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:767:  assert.deepEqual(sendTake(plan, null, 15, MAPS.forest), [
+tests/sim/trip.test.mjs:775:  const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
+tests/sim/trip.test.mjs:776:  const backpack = takeFromNowhere(plan, 12, MAPS.forest);
+tests/view/account-screen.test.mjs:2238:    // The plan stands folded to a line, and the line opens the lists; each step runs in an act of its
+tests/view/account-screen.test.mjs:2240:    name: "an edit of a program's trip plan",
+tests/view/account-screen.test.mjs:2246:        byClass(programsScreenOf(root), "trip-plan-line")[0].querySelector(
+tests/view/chronicle-entries.test.mjs:28:/** A program of the given groups, its trip plan empty unless given. */
+tests/view/chronicle-entries.test.mjs:174:test("a changed trip plan gives one entry that names no item", () => {
+tests/view/chronicle-entries.test.mjs:180:    "Zmieniono plan wyprawy",
+tests/view/end-window-game.test.mjs:838:// the task and of D-185 for a bring plan that takes nothing.
+tests/view/end-window.test.mjs:545:// Catches the warning of a cut trip plan missing from the window, standing away from „Restart” or
+tests/view/end-window.test.mjs:547:test("the warning of a cut trip plan stands between „Restart” and „Zakończ”, from the copy's take list", async () => {
+tests/view/end-window.test.mjs:562:        "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 2 sztuk.",
+tests/view/end-window.test.mjs:569:        "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 2 sztuk.",
+tests/view/maps-screen.test.mjs:39:/** The state with the trip plan of the program at `index` of the list replaced. */
+tests/view/maps-screen.test.mjs:505:    const plan = {
+tests/view/maps-screen.test.mjs:512:    const bare = withPlan(teamOf("Ala"), plan);
+tests/view/maps-screen.test.mjs:542:// D-188: no map of the data cuts a plan today, so the case gives Las an entry cap for its length.
+tests/view/maps-screen.test.mjs:543:test("a map that cuts the plan shows the clipped-plan line and what enters cut", async () => {
+tests/view/maps-screen.test.mjs:562:        "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 5 sztuk.",
+tests/view/maps-screen.test.mjs:581:        "a plan that fits stands with no line",
+tests/view/maps-screen.test.mjs:652:    const plan = { take: [{ item: "stick", count: 3 }], bring: [] };
+tests/view/maps-screen.test.mjs:653:    const state = withChest(withPlan(teamOf("Ala"), plan), { stick: 2 });
+tests/view/program-editor.test.mjs:136:  const renamed = renameGroup(added, 2, "Plan");
+tests/view/program-editor.test.mjs:137:  assert.equal(renamed.groups[1].name, "Plan");
+tests/view/program-panel.test.mjs:205:// --- the trip plan: Programy holds it between the name and the rules, a map run's screen none -------
+tests/view/program-panel.test.mjs:208:test("Programy holds the trip plan between the program's name and its rules; the screen of a map run holds none", async () => {
+tests/view/program-panel.test.mjs:219:    assert.ok(at(".trip-plan") >= 0, "the trip plan stands");
+tests/view/program-panel.test.mjs:222:      at(".program-title") < at(".trip-plan"),
+tests/view/program-panel.test.mjs:223:      "the plan is under the name",
+tests/view/program-panel.test.mjs:226:      at(".trip-plan") < at(".rule-list"),
+tests/view/program-panel.test.mjs:227:      "the plan is above the rules",
+tests/view/program-panel.test.mjs:230:      game.root.querySelector(".trip-plan-line button").textContent,
+tests/view/program-panel.test.mjs:231:      "Plan wyprawy: pusty",
+tests/view/program-panel.test.mjs:237:      classed(game.root, "trip-plan").length,
+tests/view/program-panel.test.mjs:239:      "no plan on Przejście",
+tests/view/program-panel.test.mjs:244:      classed(game.root, "trip-plan").length,
+tests/view/program-panel.test.mjs:246:      "no plan beside the copy of a map run",
+tests/view/program-panel.test.mjs:251:// D-180: the trip plan of the saved program shown, also while a map run waits,
+tests/view/program-panel.test.mjs:252:// is an edit of that program. Catches an edit of the plan reaching the copy or another program, and a
+tests/view/program-panel.test.mjs:254:test("an edit of the trip plan on Programy goes to the program shown, and another program's section stands folded", async () => {
+tests/view/program-panel.test.mjs:263:    await click(game.root.querySelector(".trip-plan-line button"));
+tests/view/program-panel.test.mjs:273:        .querySelector(".trip-plan-line button")
+tests/view/program-panel.test.mjs:282:        .querySelector(".trip-plan-line button")
+tests/view/program-panel.test.mjs:288:      game.root.querySelector(".trip-plan-line button").textContent,
+tests/view/program-panel.test.mjs:289:      "Plan wyprawy: pusty",
+tests/view/run-header.test.mjs:4:// ends of a map run with the clock at the minute of the end, the warning of a cut trip plan and the
+tests/view/run-header.test.mjs:333:test("the warning of a cut trip plan follows the current copy's take list", async () => {
+tests/view/run-header.test.mjs:349:        "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 2 sztuk.",
+tests/view/trip-plan.test.mjs:1:// The trip plan of a program in React (D-180, D-181, D-264): the folded line with its positions,
+tests/view/trip-plan.test.mjs:8:import { TripPlanView } from "../../dist/browser/view/trip-plan.js";
+tests/view/trip-plan.test.mjs:14:/** A program of the given trip plan; its other parts are those of an empty program. */
+tests/view/trip-plan.test.mjs:20:/** Draws the trip plan of `program` in a root of its own; `commits` collects each program it gives. */
+tests/view/trip-plan.test.mjs:39: * Draws the trip plan so that each commit draws the program it gives, as the page does; `commits`
+tests/view/trip-plan.test.mjs:60:const lineButton = (root) => root.querySelector(".trip-plan-line button");
+tests/view/trip-plan.test.mjs:70:test("an empty trip plan folds to the line „Plan wyprawy: pusty” with no icon and no list", async () => {
+tests/view/trip-plan.test.mjs:75:    assert.equal(button.textContent, "Plan wyprawy: pusty");
+tests/view/trip-plan.test.mjs:308:    const plan = withTrip([
+tests/view/trip-plan.test.mjs:313:    const { root, commits } = await draw(document, plan);
+tests/view/trip.test.mjs:28:const plan = {
+tests/view/trip.test.mjs:32:function sent(tripPlan = plan) {
+tests/view/trip.test.mjs:92:    tripPlan: plan,
+tests/view/trip.test.mjs:124:  assert.equal(tripWarning(plan, 15, MAPS.forest), null);
+tests/view/trip.test.mjs:125:  assert.equal(tripWarning(plan, 3, { ...MAPS.forest, carryIn: 3 }), null);
+tests/view/trip.test.mjs:126:  assert.equal(tripWarning(plan, 15, { ...MAPS.forest, carryIn: 5 }), null);
+tests/view/trip.test.mjs:128:    tripWarning(plan, 15, { ...MAPS.forest, carryIn: 0 }),
+tests/view/trip.test.mjs:129:    "Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej 0 sztuk.",
+tests/view/world-area.test.mjs:44:/** A map run of the character „Ala” on Las under the given trip plan, a chest of ten sticks. */
+tests/view/world-area.test.mjs:183:    // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
