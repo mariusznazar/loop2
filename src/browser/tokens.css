@@ -78,13 +78,13 @@
   --focus-offset: 2px; /* Source: Mariusz's choice from the preview of the terrain and focus, variant A, 2026-10-20: the outline set 2 px off the control */
 
   /* Tint of the scene's light and frost on its edges */
-  --scene-tint-cool: #6f8f6a; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant A of the pair of tints: the cool grey-green of the scene's light at streak 0 (question 3 of that task) */
-  --scene-tint-warm: #e8a838; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant A of the pair of tints: the warm gold of the scene's light at a completion (question 3 of that task) */
-  --scene-tint-cool-opacity: 0.4; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant A of the pair of tints: the opacity of the cool tint's layer (question 3 of that task) */
-  --scene-tint-warm-opacity: 0.5; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant A of the pair of tints: the opacity of the warm tint's layer (question 3 of that task) */
-  --scene-frost-fill: #f3fbff; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant FA of the frost: its fill (question 10 of that task) */
-  --scene-frost-outline: #3c7289; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant FA of the frost: its inner outline of one pixel of the scene (question 10 of that task) */
-  --scene-frost-crystal: #c5dfed; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant FA of the frost: its crystals (question 10 of that task) */
+  --scene-tint-cool: #6f8f6a; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant A of the pair of tints: the cool grey-green of the scene's light at streak 0 */
+  --scene-tint-warm: #e8a838; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant A of the pair of tints: the warm gold of the scene's light at a completion */
+  --scene-tint-cool-opacity: 0.4; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant A of the pair of tints: the opacity of the cool tint's layer */
+  --scene-tint-warm-opacity: 0.5; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant A of the pair of tints: the opacity of the warm tint's layer */
+  --scene-frost-fill: #f3fbff; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant FA of the frost: its fill */
+  --scene-frost-outline: #3c7289; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant FA of the frost: its inner outline of one pixel of the scene */
+  --scene-frost-crystal: #c5dfed; /* Source: Mariusz's choice from the preview of the values of appearance, 2026-11-11, variant FA of the frost: its crystals */
 }
 
 @font-face {

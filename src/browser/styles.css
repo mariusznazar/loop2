@@ -1804,7 +1804,7 @@ header .failure-line {
  * of a picture side by side; `--frames` is their number, and the sheet shows one of them, the first
  * where it stands still. The scene's motion stands in the rules after the badge.
  *
- * The layers of the scene, from the bottom (D-315, D-316, D-320; task swit-rosnacy-z-passa): the
+ * The layers of the scene, from the bottom (D-315, D-316, D-320, D-372): the
  * forest, the props, the fire, the dust, the mage, the flying icon on its plaque, the tint of the light,
  * the frost and the badge over the mage's head. The scene isolates its layers, so the tint blends with
  * what lies under it in the scene and with nothing else on the page.
@@ -1998,7 +1998,7 @@ header .failure-line {
 }
 
 /*
- * The tint of the scene's light (D-315, D-316; task swit-rosnacy-z-passa): a layer over everything the
+ * The tint of the scene's light (D-315, D-316): a layer over everything the
  * scene draws, the flying icon on its plaque included, but the frost and the badge, which stay on their
  * own colours. `mix-blend-mode: color` lays the layer's hue and saturation over the picture and leaves the
  * picture's brightness, so the tint never darkens or greys the scene as the pause does (D-322). `--tint`,
@@ -2006,7 +2006,7 @@ header .failure-line {
  * warm one by it, in `oklch`, and its opacity goes the same way from the cool tint's opacity to the warm
  * one's, evenly. The colours and opacities are the design tokens named for the tint; the source of
  * their values, and of the 2 s of the return below, is Mariusz's choice from the preview of the values
- * of appearance of the task swit-rosnacy-z-passa, variant A, 2026-11-11. `--tint` is registered as a
+ * of appearance, variant A, 2026-11-11. `--tint` is registered as a
  * number so that the return can run it.
  */
 @property --tint {
@@ -2032,10 +2032,10 @@ header .failure-line {
 }
 
 /*
- * The frost on the edges of the frame (D-316; task swit-rosnacy-z-passa, the shape of its ragged edge
- * settled there): built of squares of one pixel of the scene on the scene's grid, from custom
- * properties TypeScript gives, `--frost`, its thickness in the scene's pixels, and `--pixel-x` and
- * `--pixel-y`, one pixel as a part of the frame's width and of its height. Each of its three layers is a
+ * The frost on the edges of the frame (D-372, D-271): built of squares of one pixel of the scene on
+ * the scene's grid, from custom properties TypeScript gives, `--frost`, its thickness in the scene's
+ * pixels, and `--pixel-x` and `--pixel-y`, one pixel as a part of the frame's width and of its
+ * height. Each of its three layers is a
  * mask over a plain box, so no colour stands in the mask (the mask reads only the alpha of
  * `currentColor`) and every colour is a design token. The frost is a ring: along each edge a solid
  * band two pixels thinner than the frost, a row of teeth one pixel above it that stands on 3 of every 5
@@ -2045,8 +2045,9 @@ header .failure-line {
  * `--depth`; the body, in the colour of the fill, lies over it one pixel thinner, so the outline is
  * the pixel the body leaves under the inner edge of each column. The crystals are single squares in two
  * lattices of different periods, in the body only. The frost lies over the tint, so its colours do not
- * change with the streak, and under the plaque and the badge (D-320). It changes only with the state
- * and runs no motion, so the system's setting for reduced motion has nothing to take out of it.
+ * change with the streak (D-315, D-372), and under the plaque and the badge, as the styleguide's rule
+ * on the scene of a map run has it. It changes only with the state and runs no motion, so the
+ * system's setting for reduced motion has nothing to take out of it.
  */
 .scene-frost,
 .scene-frost-rim,

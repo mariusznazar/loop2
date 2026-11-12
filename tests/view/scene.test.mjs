@@ -1355,7 +1355,7 @@ test("the bending mage faces its prop whatever way it walked: sticks and bush to
   });
 });
 
-// --- the tint of the light, the smaller flame and the frost (task swit-rosnacy-z-passa) -------------
+// --- the tint of the light, the smaller flame and the frost -------------------------------------
 
 /** The sent state at a streak, a body temperature and a standing, the rest of the map run as sent. */
 const lit = (
@@ -1376,10 +1376,9 @@ const lit = (
 const layersOf = (scene) =>
   [...scene.children].map((element) => element.className.split(" ")[0]);
 
-// To do 1, carried question 2, D-315. Catches a tint that lies under the mage or over the badge, a
-// frost under the tint, a flying icon with its plaque over the tint (row 1 puts under the tint everything
-// the scene draws but the badge and the frost), and a badge still inside the mage's element, which is
-// under the tint.
+// D-315, D-372. Catches a tint that lies under the mage or over the badge, a frost under the tint, a
+// flying icon with its plaque over the tint (D-315 puts under the tint everything the scene draws but
+// the badge and the frost), and a badge still inside the mage's element, which is under the tint.
 test("the layers: the tint over everything the scene draws, the flying icon and the dust included, the frost and the badge over it", async () => {
   await withPage(async (page) => {
     const state = withFire(42, lit({ streak: 100, temperature: 36 }));
@@ -1468,7 +1467,7 @@ test("the badge's carrier stands where the mage stands and walks as it walks", a
 const tintOf = (scene) => one(scene, ".scene-tint");
 const tintValue = (scene) => tintOf(scene).style.getPropertyValue("--tint");
 
-// To do 2. Catches a tint that does not follow the streak evenly to 0.8 at the streak the condition
+// D-316. Catches a tint that does not follow the streak evenly to 0.8 at the streak the condition
 // asks for, one that goes on past it, and one that is full before the completion.
 test("the tint goes from 0 at streak 0 to 0.8 at the required streak, stays there and is 1 only at a completion", async () => {
   await withPage(async (page) => {
@@ -1485,7 +1484,7 @@ test("the tint goes from 0 at streak 0 to 0.8 at the required streak, stays ther
   });
 });
 
-// To do 2 and 3, D-322. Catches a loss that takes the tint back at once, a return that runs on a rise,
+// D-316. Catches a loss that takes the tint back at once, a return that runs on a rise,
 // and a return that restarts when the streak grows again.
 test("a loss of the streak in the map run's course returns the tint to the cool one on a new element, and a rise runs no return", async () => {
   await withPage(async (page) => {
@@ -1519,7 +1518,7 @@ test("a loss of the streak in the map run's course returns the tint to the cool 
   });
 });
 
-// To do 3, D-322, accepted question 7. Catches a pause that returns the tint while time stands: the
+// D-316, D-322. Catches a pause that returns the tint while time stands: the
 // loss in the pause shows no change, and the return runs where the scene goes on.
 test("a loss of the streak in the player's pause or at a discovery returns the tint only where the scene goes on", async () => {
   await withPage(async (page) => {
@@ -1545,7 +1544,7 @@ test("a loss of the streak in the player's pause or at a discovery returns the t
   });
 });
 
-// To do 2. Catches a death or a completion that runs a return, a „Restart” that runs one, and a
+// D-316. Catches a death or a completion that runs a return, a „Restart” that runs one, and a
 // first draw, a load included, that shows anything but where the streak puts the tint.
 test("at a death, a completion, a map run started and a first draw the tint stands at once where the streak puts it", async () => {
   await withPage(async (page) => {
@@ -1580,7 +1579,7 @@ test("at a death, a completion, a map run started and a first draw the tint stan
   });
 });
 
-// Carried question 1, D-43. Catches a tint or a frost that reaches the stylesheet as anything but
+// D-43. Catches a tint or a frost that reaches the stylesheet as anything but
 // numbers from the state: the colour and the opacity are the stylesheet's, from the tokens.
 test("the layer of the tint carries the number and no colour in its style", async () => {
   await withPage(async (page) => {
@@ -1594,9 +1593,9 @@ test("the layer of the tint carries the number and no colour in its style", asyn
   });
 });
 
-// To do 5. Catches a frost at 37 °C, one that does not grow with the cold or has the wrong thickness at
-// 36 °C and at 35 °C, and one that goes on below the chill or is built on another pixel than the
-// scene's: a pixel is 1/336 of the frame's width and 1/152 of its height.
+// D-372, D-271, D-349. Catches a frost at 37 °C, one that does not grow with the cold or has the wrong
+// thickness at 36 °C and at 35 °C, and one that goes on below the chill or is built on another pixel
+// than the scene's: a pixel is 1/336 of the frame's width and 1/152 of its height.
 test("the frost is none at 37 °C, 8 pixels at 36 °C, the whole 16 at 35 °C and below, on the scene's pixel", async () => {
   await withPage(async (page) => {
     const frostAt = async (temperature) => {
@@ -1625,7 +1624,7 @@ test("the frost is none at 37 °C, 8 pixels at 36 °C, the whole 16 at 35 °C an
   });
 });
 
-// To do 5. Catches a frost that stays when the body is warmed at the fire, and one that is drawn at once
+// D-372. Catches a frost that stays when the body is warmed at the fire, and one that is drawn at once
 // at its place with no change to run: its thickness is the state's, reading by reading.
 test("warming at the fire takes the frost back, reading by reading", async () => {
   await withPage(async (page) => {
@@ -1640,7 +1639,7 @@ test("warming at the fire takes the frost back, reading by reading", async () =>
   });
 });
 
-// To do 4, D-316. Catches a fire that shows the smaller flame too early or too late, the extinguished
+// D-373, D-316. Catches a fire that shows the smaller flame too early or too late, the extinguished
 // fire that takes it, and a smaller flame of another file or another frame count.
 test("a burning fire shows the smaller flame in its last 20 minutes, the full one before and the extinguished fire always the full one", async () => {
   await withPage(async (page) => {
@@ -1659,8 +1658,8 @@ test("a burning fire shows the smaller flame in its last 20 minutes, the full on
   });
 });
 
-// To do 4, the beat of the frames. Catches a fire whose sheet is swapped on a new element, which
-// would restart its frames and show a jump at the minute the flame grows small.
+// D-373, the same beat. Catches a fire whose sheet is swapped on a new element, which would restart
+// its frames and show a jump at the minute the flame grows small.
 test("the fire's element stays the same when its flame turns small", async () => {
   await withPage(async (page) => {
     const { draw, scene } = await mounted(page, withFire(25));
@@ -1673,7 +1672,7 @@ test("the fire's element stays the same when its flame turns small", async () =>
   });
 });
 
-// To do 6, D-322. Catches a pause that leaves the tint or the frost out of its grey: they lie in the
+// D-322. Catches a pause that leaves the tint or the frost out of its grey: they lie in the
 // scene, so the pause's filter on the scene greys them with the rest.
 test("the pause greys the tint and the frost with the whole scene, because they lie inside it", async () => {
   await withPage(async (page) => {

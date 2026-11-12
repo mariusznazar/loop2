@@ -690,16 +690,16 @@ test("each prop's facing is the side its middle lies on, from the places of the 
   }
 });
 
-// --- the smaller flame, the tint of the light and the frost (task swit-rosnacy-z-passa) -------------
+// --- the smaller flame, the tint of the light and the frost -------------------------------------
 
 const FIRE_AT = () => sent().run.character.at;
 const burningWith = (minutesLeft) =>
   sceneDrawing(withRun(sent(), { campfires: [{ at: FIRE_AT(), minutesLeft }] }))
     .fire;
 
-// To do 4. Catches a smaller flame that comes at the wrong minute (the last 20 minutes of burning are
-// the ones with 20 or fewer left, one stick adding 20), one an extinguished fire takes, and a burning
-// fire left with the full flame.
+// D-373. Catches a smaller flame that comes at the wrong minute (the last 20 minutes of burning are
+// the ones with 20 or fewer left), one an extinguished fire takes, and a burning fire left with the
+// full flame.
 test("a burning fire draws the smaller flame with 20 minutes of burning left or fewer, and the full flame with more", () => {
   const FULL = "/sprites/fire.png";
   const SMALL = "/sprites/fire-small.png";
@@ -789,7 +789,7 @@ function decodePng(file) {
   return { types: chunks.map((c) => c.type), width, height, pixels };
 }
 
-// To do 4, D-271, D-273. A new file of assets/sprites/ does not change that trust boundary of the part,
+// D-373, D-271, D-273. A new file of assets/sprites/ does not change that trust boundary of the part,
 // which review keeps until the boundary changes (sprite-file-content), but its content is checked: it must hold
 // pixels alone and be the full flame's sheet with the flame cut down, on the same stones. Catches a file
 // with a chunk that carries text or a profile, a sheet of another size, a colour the pack's fire does
@@ -840,7 +840,7 @@ test("the smaller flame's file holds pixels alone, is the full flame's sheet wit
 const run = (patch) => withRun(sent(), patch);
 const tintAt = (patch) => sceneDrawing(run(patch)).tint;
 
-// To do 2, D-315. Catches a tint that is not even in the streak, one that reaches 0.8 at another
+// D-316. Catches a tint that is not even in the streak, one that reaches 0.8 at another
 // streak than the map asks for (Las 480, Las — głębiej 540), one that goes past 0.8 without a
 // completion, and one that is 1 before it. The required streaks are the maps' own data.
 test("the tint is the streak's share of the required streak times 0.8, and 1 at a completion alone", () => {
@@ -874,7 +874,7 @@ test("the tint grows evenly in the streak, never down", () => {
 const frostAt = (temperature) =>
   sceneDrawing(run({ body: { ...sent().run.body, temperature } })).frost;
 
-// To do 5. Catches a frost at 37 °C, a thickness that does not follow the cold evenly from 37 to 35 °C
+// D-372. Catches a frost at 37 °C, a thickness that does not follow the cold evenly from 37 to 35 °C
 // (half, 8 pixels, at 36 °C), one that is not whole pixels, one that goes on below 35 °C, and one that
 // shrinks as the body cools.
 test("the frost is none at 37 °C, half of 16 pixels at 36 °C and the whole 16 at 35 °C and below", () => {
@@ -908,7 +908,7 @@ test("the frost follows the body's temperature and nothing else, the streak incl
 /** A tint shown after a first draw at `shown` (an unplaced first one). */
 const SHOWN = (shown, from = null, serial = 1) => ({ shown, from, serial });
 
-// To do 2 and 3, D-322. Catches a tint that returns at once, one that returns while time stands, one that
+// D-316, D-322. Catches a tint that returns at once, one that returns while time stands, one that
 // jumps at a death or a completion, and one that is restarted by a return already running.
 test("the tint shown stands at once at a first draw and where a map run starts, wherever it stood", () => {
   assert.deepEqual(tintShown(null, 0.4, "going", false), SHOWN(0.4));
