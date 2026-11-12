@@ -237,6 +237,12 @@ WCAG 2.2 success criterion 2.4.7 Focus Visible, of level AA, requires any keyboa
 
 - **Source:** https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § 2.4.7 Focus Visible — "(Level AA)" · "Any keyboard operable user interface has a mode of operation where the keyboard focus indicator is visible."; read 2026-10-23
 
+## wcag-three-flashes
+
+WCAG 2.2 success criterion 2.3.1 Three Flashes or Below Threshold, of level A, requires web pages to contain nothing that flashes more than three times in any one second period, unless the flash is below the general flash and red flash thresholds.
+
+- **Source:** https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § 2.3.1 Three Flashes or Below Threshold — "(Level A)" · "Web pages do not contain anything that flashes more than three times in any one second period, or the flash is below the general flash and red flash thresholds."; read 2026-11-12
+
 ## wcag-contrast-ratio
 
 WCAG 2.2 defines the contrast ratio of two colours as (L1 + 0.05) / (L2 + 0.05), L1 and L2 being the relative luminances of the lighter and of the darker colour, and the relative luminance of an sRGB colour as 0.2126 R + 0.7152 G + 0.0722 B, where each of R, G and B is, for the quotient q of its 8-bit component by 255, q / 12.92 where q is at most 0.04045 and ((q + 0.055) / 1.055) raised to the power 2.4 otherwise.
