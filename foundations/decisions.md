@@ -7632,7 +7632,8 @@ berry bush and moss always stand in the scene, and the campfire only while it st
 character's tile, burning with a fire that moves or extinguished, the same picture in `grayscale(1)
 brightness(0.55)` and without motion. What attacks the character stands beside the mage through the
 minutes of the combat: it runs in from the right edge of the frame and stands on the right of the
-mage, facing it, or on its left where the mage stands at the right edge, and the mage turns toward it.
+mage, facing it, or on its left where the mage stands at the right edge, and the mage turns toward it;
+a death of the character or the solving of the map within the run leaves it standing beside the mage.
 The two scuffle, the creature in the frames of its bite and the mage in those of its idle sheet, with a
 small cloud of dust between them and no flash. A defeated creature falls where it stood and is gone, a
 creature that departs runs off to the right edge it came from, and after the character's death in the
@@ -7668,7 +7669,8 @@ after „Restart” and after a load the tint stands at once where the streak, o
   - violates: the picture of a resource named in the code of the browser view; the picture or the file
     of the wolf named in the code of the browser view; a wolf standing in the scene through the combat
     without a mage that turns to it; a blow shown by a flash or a mark of its own; a dead wolf left
-    lying in the scene until the next attack; a canvas or a timer
+    lying in the scene until the next attack; a wolf held part of the way across the frame by a death
+    of the mage within the 300 ms of its run; a canvas or a timer
     redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
     in the scene while the character's tile holds none; the place where the mage stands kept in the
     game state; a tint in full gold at the required streak of Las; a tint that darkens or greys the
@@ -7705,7 +7707,10 @@ at the beat of the scene, with a small cloud of dust between them that shows tha
 which blow falls. A cloud that hides both would hide the figures for the whole combat, and a flash in
 the cloud would picture a single blow and bring the flashes D-317 watches. The creature that is
 defeated, that departs, or that stays after the mage's death says in the picture how the combat
-ended, and nothing beyond it remains. Accepted with it: at the right edge the creature runs in past
+ended, and nothing beyond it remains. The creature stands on the side of the mage where its frame lies
+inside the picture, which at every place the mage stands at but the right edge is the right. At 16× the
+combat is decided 312 ms after the attack, so a death can come within the 300 ms of the run, and a scene
+that then stands still for good would hold the creature on its way; it stands beside the mage instead. Accepted with it: at the right edge the creature runs in past
 the mage to its left; a mage that falls toward the middle of the frame can lie over the nose of the
 wolf that stands there.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
@@ -7764,7 +7769,8 @@ a moment shows its last image at once. The scene shows no flash of its whole are
     effect of a reading that carries several ends of a gathering, as after a tab left in the
     background, left out; the wolf running in from the right edge in 300 ms at 1× and at 16×, and
     standing at once beside the mage after a load in the minutes of a combat and under the system's
-    setting for reduced motion; the scuffle lasting the five game minutes of the combat; a defeated
+    setting for reduced motion; a reading that carries the end of a gathering and an attack together showing the flight or the dust
+    and the wolf's run in; the scuffle lasting the five game minutes of the combat; a defeated
     wolf falling in 300 ms and gone, and under the setting for reduced motion lying still for 300 ms
     and gone
   - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
@@ -7790,9 +7796,11 @@ that the figure is an example of an order of magnitude, the game changed the
 character's action about 1.8 times a second at 16×, a pace the eye can follow, while text and
 anything longer than half a second could no longer be read. What the effect is, a sign of one event,
 leaves out what the character does through a whole action, which limited to 300 ms would leave the
-mage without a movement for the rest of a gathering that lasts ten seconds at 1×, and what a whole scene is in, which is no event but a state; the run of the
+mage without a movement for the rest of a gathering that lasts ten seconds at 1×, and what a whole scene is in, which is no event but a state. The run of the
 wolf is an effect, since a combat lasts about 625 ms at 8× and 312 ms at 16×, so that a run of 640 ms
-would come after the combat it begins. One whose turn has passed would show
+would come after the combat it begins. Effects of different parts of the scene, such as the flight of an
+icon and the run of the wolf, play together where one reading carries both events, since a game minute
+can end a gathering and bring an attack. One whose turn has passed would show
 something that is no longer so; that happens when the player steps down from 16× or returns to a tab
 left in the background, where the simulation gets a large stretch of time at once, and loop did the
 same. The
@@ -9104,7 +9112,7 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 
 ### D-367 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect that comes while another still runs takes its place.
+The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
 
 - **Scope:** browser-view
 - **Based on:** none
