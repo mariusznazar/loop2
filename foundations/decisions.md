@@ -5876,9 +5876,10 @@ on a report of React's development build through `console.error`.
     screen; a test that passes while React's development build reports a changed order of hooks
 - **Origin:** none
 
-*Rationale:* React cannot draw on a hand-made document model: tried in plain Node, React drew a row
-of the account screen on both ready-made imitations of a document, jsdom and happy-dom, and failed on
-that screen's hand-made model. A ready-made imitation carries the whole page with the product's own
+*Rationale:* what replaces the hand-made document model in the tests of screens that move to React
+is a ready-made imitation of a document, jsdom. React cannot draw on a hand-made model: tried in
+plain Node, React drew a row of the account screen on both ready-made imitations of a document,
+jsdom and happy-dom, and failed on that screen's hand-made model. A ready-made imitation carries the whole page with the product's own
 calls left as they are, which the tests need, because when the choice was made the hand-made model
 took the first part of the account screen's tests, and of the cases there, counted over their blocks
 and so only approximately, 37 of 67 read the inside of the model directly, 44 fired events through
