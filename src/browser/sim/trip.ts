@@ -34,7 +34,7 @@ export function clipTrip(
 }
 
 /**
- * The entries a send takes into a manual map run, the one rule both starts use (To do 5, item 4).
+ * The entries a send takes into a manual map run, the one rule both starts use.
  * At a map not solved the take list is cut by the chest's stock, the carrying capacity and the
  * map's entry cap in list order. A manual run of a solved map has no chest (`null`) and takes the
  * take list from nowhere, cut by the carrying capacity and the entry cap only (D-189, D-214).

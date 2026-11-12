@@ -34,8 +34,7 @@ Reading of the sentence:
   discovery is the first chill, a call whose span reaches past that game minute ends in it, and the
   comparison covers the game minutes up to and including it; each split, called with spans or real
   time that reach past it, must have ended a call in that game minute, with the reference's state
-  and events there (the game minute of the first chill is 84: the task "odkrywanie", Context, the
-  vault file `odkrywanie_loop2.md`, line 99, D-82).
+  and events there (the game minute of the first chill is 84, D-121).
 
 Scenarios (the program ACCEPTANCE is the one of `tests/sim/acceptance.test.mjs`):
 - ALIVE: ACCEPTANCE sent at ALIVE_REAL_MS, 480 game minutes; it gathers, eats, builds, lights and
@@ -46,7 +45,8 @@ Scenarios (the program ACCEPTANCE is the one of `tests/sim/acceptance.test.mjs`)
 - COMPLETES: ACCEPTANCE sent at ALIVE_REAL_MS with the streak of its map run replaced by 460 in the
   game state at game minute 0 (explicit state: the scenarios above reach 480 minutes without a
   loss in none), 40 game minutes; no loss to cold or hunger happens before minute 84, so the streak
-  reaches 480, the solving condition of Las (D-80), in game minute 20, where the map run completes;
+  reaches 480, the solving condition of Las (D-133, D-136), in game minute 20, where the map run
+  completes;
 - DISCOVERS: the program of a new game (one empty group) sent at ALIVE_REAL_MS from `newGame()`, a
   game that knows nothing, 100 game minutes; its first chill, in game minute 84, is a discovery.
 
@@ -148,7 +148,7 @@ IDLE_DEATH_MINUTE = 243
 DISCOVERS = ("DISCOVERS", ALIVE_REAL_MS, 100, 84)
 # The scenario whose map run completes: (program, real time of the send, span in game minutes, the
 # fields of the map run replaced at game minute 0, the game minute of the completion). A streak of
-# 460 plus one for each of the minutes 1 to 20 is 480, the solving condition of Las (D-80).
+# 460 plus one for each of the minutes 1 to 20 is 480, the solving condition of Las (D-133, D-136).
 COMPLETES = ("COMPLETES", ACCEPTANCE, ALIVE_REAL_MS, 40, {"streak": 460}, 20)
 
 REFERENCE = "one minute a call"

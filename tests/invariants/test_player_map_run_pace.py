@@ -34,15 +34,14 @@ Reading of the sentence:
   `setPaused(false)` leaves the minute where it is, and does not count towards the next second;
   setting a pace while paused changes the pace and leaves the map run paused where it stands;
 - a game minute in which something is discovered: the first chill of a new game, in game minute 84
-  (the task "odkrywanie", Context: minute 83 at 35,008 degrees, minute 84 at 34,984), and the
-  first finished exploration after it, in game minute 104;
+  (D-121), and the first finished exploration after it, in game minute 104;
 - leaves the map run paused, the real time beyond that game minute moving it on by no game minute:
   real time that would carry the map run past the game minute of a discovery ends it in that game
   minute, paused, with no real time carried over - also at 16x, where one real second carries up
   to 16 game minutes; further real time passed moves it no further; after `setPaused(false)` it
   moves on by one game minute for each whole 1/pace of a real second again;
 - paused unless the map run ends in it: a game minute in which the map run completes (its streak
-  reaching 480, the solving condition of Las, D-80) leaves it not paused, ended, with no real time
+  reaching 480, the solving condition of Las, D-133 and D-136) leaves it not paused, ended, with no real time
   carried over - also at 16x, where the same real time would carry it 16 game minutes on - and
   further real time passed moves it no further; the map run is brought to a streak of 479 at
   minute 0 by replacing that field of the map run in the game state (a patch step of the driver),
@@ -164,9 +163,8 @@ CONTROL = PREFIX + (
 # The discovery scenario: (input, the map run's game minute after it, whether the game is paused
 # after it, the real time carried over after it, whether the game holds a discovery). The new game
 # is the one that knows nothing, sent with its program of one empty group: its first chill is in
-# game minute 84 (the task "odkrywanie", Context, line 99 of the vault file `odkrywanie_loop2.md`,
-# D-82) and writes the rule that makes it explore, whose exploration ends, a discovery too, in
-# game minute 104.
+# game minute 84 (D-121) and writes the rule that makes it explore (D-123), whose exploration ends,
+# a discovery too, in game minute 104.
 BARE_START = [["newBareGame"], CREATE, ["send", SENT, T]]
 DISCOVERY_SCENARIO = (
     (passed(83500), 83, False, 500, False),
@@ -192,8 +190,8 @@ KNOWING_CONTROL = (
 
 # The pace scenario, on a game that knows everything: (input, the map run's game minute after it,
 # whether the game is paused after it, the real time carried over after it, whether the game
-# holds a discovery, the pace after it). The task "rozwiazanie-lasu", To do 1 and 2: a game minute
-# for each whole 1/pace of a real second, the pace staying until the player changes it.
+# holds a discovery, the pace after it). A game minute for each whole 1/pace of a real second, the
+# pace staying until the player changes it.
 PACE_SCENARIO = (
     (pace(16), 0, False, 0, False, 16),
     (passed(62), 0, False, 992, False, 16),
