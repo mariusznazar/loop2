@@ -7625,7 +7625,7 @@ tint — in the gold light it loses its icy colour and turns gold with the strea
 
 ### D-316 — What does the scene show, and from what does it draw?
 
-The scene draws the character, its campfire, what attacks it and how the map run stands from the game
+The scene draws the character, its campfire, what attacks it and the moment of the map run from the game
 state, its previous reading and the events the simulation returned, and it holds no state of the game,
 the picture of each resource, creature and archetype it shows standing in the game's data. Sticks, the
 berry bush and moss always stand in the scene, and the campfire only while it stands on the
@@ -7809,7 +7809,7 @@ the simplest rule, but it loses the single bend at the end of a gathering, so th
 stands ten seconds without a movement, and it changes D-317 for the darkening of the whole scene to
 300 ms; the moves of the character and the creatures of a fixed length like the walk of the mage — a
 second exception beside the walk, and a wolf that comes late at 8× and 16×, where the combat lasts
-about 625 ms and 312 ms; each task its own classification — the classifications could exclude one
+about 625 ms and 312 ms; a classification made anew for each kind of effect — the classifications could exclude one
 another, and the decision would gather the exceptions one by one; under the system's setting for
 reduced motion no effect of an ordinary event at all, the wolf standing at once beside the mage and
 the outcome of a combat not shown by an effect — the fewest stimuli, but a player with the setting
