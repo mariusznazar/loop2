@@ -1,0 +1,57 @@
+# Stages of the cycle run
+
+- Claude Code session `3ea91516-d2e1-4bb2-992f-cd800abfc71c`: 3 subagents — `3ea91516-d2e1-4bb2-992f-cd800abfc71c.jsonl`
+
+Warnings: none.
+
+A stage is one turn of a subagent the orchestrator started, from its prompt to its answer, or a stretch of the orchestrator's own work between such turns. Durations are h:mm:ss; an orchestrator stretch counts only the time inside the orchestrator's turns, never the wait for the human. Tokens are input, which includes the part read from a cache, plus output, which includes reasoning.
+
+Waiting for tools is the time of the stage's tool calls, not of its subagents' calls; see the section on the stages below.
+
+| # | Stage | Duration | Subagent model | Orchestrator model | Subagent tokens | Orchestrator tokens | Total tokens | Cached input | Output |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | orchestrator | 0:09:52 | — | claude-sonnet-5-5 | 0 | 5,345,322 | 5,345,322 | 5,143,103 | 28,084 |
+| 2 | Author: three moments of stopped time (general-purpose) — turn 1 | 0:53:08 | claude-sonnet-5-5 | claude-sonnet-5-5 | 110,900,186 | 196,527 | 111,096,713 | 110,227,322 | 238,478 |
+| 3 | orchestrator | 0:01:32 | — | claude-sonnet-5-5 | 0 | 1,917,835 | 1,917,835 | 1,881,640 | 10,912 |
+| 4 | Review of the whole change (general-purpose) — turn 1 | 0:16:04 | claude-opus-5-5 | claude-sonnet-5-5 | 26,889,706 | 223,676 | 27,113,382 | 26,603,943 | 74,656 |
+| 5 | orchestrator | 0:00:46 | — | claude-sonnet-5-5 | 0 | 703,297 | 703,297 | 682,670 | 5,116 |
+| 6 | Author: three moments of stopped time (general-purpose) — turn 2 | 0:01:52 | claude-sonnet-5-5 | claude-sonnet-5-5 | 7,182,371 | 242,114 | 7,424,485 | 6,764,944 | 9,366 |
+| 7 | orchestrator | 0:00:27 | — | claude-sonnet-5-5 | 0 | 491,656 | 491,656 | 485,025 | 2,407 |
+| 8 | Review of the whole change (general-purpose) — turn 2 | 0:02:49 | claude-opus-5-5 | claude-sonnet-5-5 | 4,003,820 | 248,690 | 4,252,510 | 4,224,854 | 7,235 |
+| 9 | orchestrator | 0:00:29 | — | claude-sonnet-5-5 | 0 | 760,679 | 760,679 | 751,384 | 3,504 |
+| 10 | Author: three moments of stopped time (general-purpose) — turn 3 | 0:01:23 | claude-sonnet-5-5 | claude-sonnet-5-5 | 4,676,147 | 257,561 | 4,933,708 | 4,907,669 | 8,674 |
+| 11 | orchestrator | 0:00:25 | — | claude-sonnet-5-5 | 0 | 523,038 | 523,038 | 515,806 | 2,871 |
+| 12 | Review of the return step commit (general-purpose) | 0:03:15 | claude-sonnet-5-5 | claude-sonnet-5-5 | 2,245,556 | 533,516 | 2,779,072 | 2,636,294 | 15,655 |
+| 13 | orchestrator | 0:06:35 | — | claude-sonnet-5-5 | 0 | 9,643,896 | 9,643,896 | 9,515,984 | 39,412 |
+
+- Working time, orchestrator turns and subagent turns joined: 1:38:37
+- Waiting for tools: 0:36:23
+- Working time without waiting for tools: 1:02:14
+- Tokens in all: 176,985,593 — cached input 174,340,638, output 446,370
+
+| Model | Total tokens | Input | Cached input | Output |
+|---|---|---|---|---|
+| claude-sonnet-5-5 | 146,092,067 | 145,726,522 | 143,979,458 | 365,545 |
+| claude-opus-5-5 | 30,893,526 | 30,812,701 | 30,361,180 | 80,825 |
+
+## Stages: start, waiting for tools and tokens by model
+
+Times are UTC. Each stage's waiting for tools is the time of its tool calls, from each call to its result; `unknown` marks a stage with a call whose result was not read or whose type is not recognised. Input includes the part read from a cache. The model `—` marks a stage with no token usage, and `unknown` with zero counts one whose transcript holds no token usage at all, so that its usage was not read. *Files named* lists the files of the cycle's `reports/` that the message starting a subagent turn names — its prompt, or the message that resumes it — each once; it is empty where that message names none and for the orchestrator's rows, and `unknown` where the message cannot be read.
+
+| # | Stage | Start | Waiting for tools | Model | Input | Cached input | Output | Files named |
+|---|---|---|---|---|---|---|---|---|
+| 1 | orchestrator | 2026-11-12 10:35:01 | 0:05:38 | claude-sonnet-5-5 | 5,317,238 | 5,143,103 | 28,084 |  |
+| 2 | Author: three moments of stopped time (general-purpose) — turn 1 | 2026-11-12 11:27:26 | 0:22:35 | claude-sonnet-5-5 | 110,858,235 | 110,227,322 | 238,478 | reports/author-handoff.md, reports/author-report.md |
+| 3 | orchestrator | 2026-11-12 12:20:34 | 0:00:05 | claude-sonnet-5-5 | 1,906,923 | 1,881,640 | 10,912 |  |
+| 4 | Review of the whole change (general-purpose) — turn 1 | 2026-11-12 12:22:06 | 0:03:35 | claude-opus-5-5 | 26,815,716 | 26,382,256 | 73,990 | reports/review-1-handoff.md, reports/review-1-report.md |
+| 4 | Review of the whole change (general-purpose) — turn 1 | 2026-11-12 12:22:06 | 0:03:35 | claude-sonnet-5-5 | 223,010 | 221,687 | 666 | reports/review-1-handoff.md, reports/review-1-report.md |
+| 5 | orchestrator | 2026-11-12 12:38:10 | 0:00:03 | claude-sonnet-5-5 | 698,181 | 682,670 | 5,116 |  |
+| 6 | Author: three moments of stopped time (general-purpose) — turn 2 | 2026-11-12 12:38:56 | 0:00:43 | claude-sonnet-5-5 | 7,415,119 | 6,764,944 | 9,366 | reports/findings-1.md, reports/fix-1-handoff.md, reports/fix-1-report.md |
+| 7 | orchestrator | 2026-11-12 12:40:48 | 0:00:04 | claude-sonnet-5-5 | 489,249 | 485,025 | 2,407 |  |
+| 8 | Review of the whole change (general-purpose) — turn 2 | 2026-11-12 12:41:15 | 0:01:45 | claude-opus-5-5 | 3,996,985 | 3,978,924 | 6,835 | reports/findings-1.md, reports/review-2-handoff.md, reports/fix-1-report.md, reports/review-2-report.md |
+| 8 | Review of the whole change (general-purpose) — turn 2 | 2026-11-12 12:41:15 | 0:01:45 | claude-sonnet-5-5 | 248,290 | 245,930 | 400 | reports/findings-1.md, reports/review-2-handoff.md, reports/fix-1-report.md, reports/review-2-report.md |
+| 9 | orchestrator | 2026-11-12 12:44:04 | 0:00:00 | claude-sonnet-5-5 | 757,175 | 751,384 | 3,504 |  |
+| 10 | Author: three moments of stopped time (general-purpose) — turn 3 | 2026-11-12 12:44:34 | 0:00:20 | claude-sonnet-5-5 | 4,925,034 | 4,907,669 | 8,674 | reports/return-handoff.md, reports/return-report.md |
+| 11 | orchestrator | 2026-11-12 12:45:56 | 0:00:03 | claude-sonnet-5-5 | 520,167 | 515,806 | 2,871 |  |
+| 12 | Review of the return step commit (general-purpose) | 2026-11-12 12:46:21 | 0:00:45 | claude-sonnet-5-5 | 2,763,417 | 2,636,294 | 15,655 | reports/review-3-handoff.md, reports/review-3-report.md |
+| 13 | orchestrator | 2026-11-12 12:49:36 | 0:00:49 | claude-sonnet-5-5 | 9,604,484 | 9,515,984 | 39,412 |  |
