@@ -7071,7 +7071,8 @@ a trace of the cool tint, 20 %, at the streak the map's condition asks for, stay
 streak grows on, and is full warm gold only at a completion, and it leaves the brightness of the
 picture as it is and has no effect in the game. A loss of the streak while the map run goes on takes
 the tint back to the cool one over 2 s as a change of the scene's state, not an effect, which in the
-player's pause begins at „Wznów”, while at a death, at a completion, at the start of a map run,
+player's pause and at a discovery, where time stands still (D-322), begins where the scene goes on,
+while at a death, at a completion, at the start of a map run,
 after „Restart” and after a load the tint stands at once where the streak, or the completion, puts it.
 
 - **Scope:** browser-view · simulation
@@ -7086,7 +7087,7 @@ after „Restart” and after a load the tint stands at once where the streak, o
     sprite changing by a CSS animation at the same beat at 1× and at 16×; the tint at streak 240 of
     Las standing at 0.4 of the way to the gold, at streak 480 at 0.8, and at streak 700 still there;
     a loss of the streak taking the tint back over 2 s, and the same loss in the player's pause
-    showing nothing until „Wznów”
+    or at a discovery showing nothing until the scene goes on
   - violates: the picture of a resource named in the code of the browser view; a canvas or a timer
     redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
     in the scene while the character's tile holds none; the place where the mage stands kept in the
@@ -8410,8 +8411,8 @@ The scene shows frost on the edges of its frame, never over its whole area (D-31
 temperature of the character's body: none at 37 °C, growing in thickness as the body cools to
 35 °C, at 36 °C half of its full thickness, 16 pixels of the scene (32 px on the screen) at its
 deepest while the character is chilled, and taken back as the character warms at a fire. Its inner
-edge is ragged, so its thickness is the depth of its deepest teeth, and at the first one or two pixels
-of thickness it is the outline alone. The frost lies over the layer of the tint (D-315).
+edge is ragged, so its thickness is the depth of its deepest teeth, and at the first pixel of
+thickness it is the outline alone, the fill coming with the next pixels. The frost lies over the layer of the tint (D-315).
 
 - **Scope:** browser-view · simulation
 - **Based on:** none

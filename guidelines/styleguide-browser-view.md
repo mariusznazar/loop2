@@ -661,7 +661,7 @@ wzdłuż każdej krawędzi pas pełny nieco cieńszy od szronu, nad nim dwa rzę
 na bokach w innych okresach; kryształki to pojedyncze piksele w dwóch kratach o różnych okresach, tylko
 w wypełnieniu. Pełna grubość szronu stoi więc tylko na najgłębszych zębach. Obrys, jeden piksel obrazu
 sceny, to piksel, który wypełnienie, cieńsze o jeden piksel, zostawia pod wewnętrznym brzegiem każdej
-kolumny; przy pierwszym albo drugim pikselu grubości, tuż po tym, jak ciało odejdzie od 37 °C, stoi
+kolumny; przy pierwszym pikselu grubości, tuż po tym, jak ciało odejdzie od 37 °C, stoi
 więc sam obrys, w jego ciemnym kolorze, a wypełnienie dochodzi z kolejnymi pikselami. Obrys odcina się
 od śniegu, na którym szron leży, kontrastem co najmniej 3:1 (D-271). Test
 `tests/view/scene-frost-contrast.test.mjs` pilnuje tokenu obrysu wobec próbek śniegu zmierzonych raz,
