@@ -18,9 +18,8 @@ import { actionFeasible, actionPrice } from "../../dist/browser/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
-// The campfire, the burning stick and eating (task, To do 7–12; D-26, D-63, D-68, D-69, D-71,
-// D-72). Every number below is written out by hand from the task: crafting lasts 20 game minutes
-// and uses 6 sticks, lighting a campfire 5 minutes and 2 sticks and gives it 60 minutes of
+// The campfire, the burning stick and eating (D-26, D-63, D-68, D-69, D-71, D-72). Every number
+// below is written out by hand: crafting lasts 20 game minutes and uses 6 sticks, lighting a campfire 5 minutes and 2 sticks and gives it 60 minutes of
 // burning, lighting a stick 5 minutes and the stick, which burns 3 minutes, feeding 5 minutes and
 // one stick, which adds 20 minutes, eating 5 minutes and one berry, which gives 25 satiety, not
 // above 100. On Las the body cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire
@@ -144,7 +143,7 @@ const range = (from, to) =>
 
 const burning = (minutesLeft) => [{ at: entrance, minutesLeft }];
 
-test("the six actions are on the closed list with the task's labels and minutes", () => {
+test("the six actions are on the closed list with their labels and minutes", () => {
   const listed = Object.fromEntries(
     NEW_ACTIONS.map(({ kind }) => [
       kind,
@@ -520,7 +519,7 @@ test("the action ending in the minute of death takes no effect", () => {
   assert.deepEqual(dead.character.backpack, run.character.backpack);
 });
 
-/** The program a game state holds: the copy during a map run, else the only program of the list (task, To do 1 and 7). */
+/** The program a game state holds: the copy during a map run, else the only program of the list. */
 function heldProgram(state) {
   return state.run === null
     ? state.programs[0].program
@@ -549,12 +548,11 @@ test("the program check takes the six actions before sending and during a map ru
 });
 
 // The spell Płomyk: „Zapal — ognisko” and „Zapal — patyk” paid with nature energy besides their
-// sticks (task plomyk, plomyk_loop2.md in the vault, Notes/Projects/(P) Loop/_zadania: To do 2 at
-// line 19, To do 3 at line 20, To do 4 at line 21 and Q10 at line 58). Every number is written out
-// by hand from the task: each lighting costs 10 nature energy, a campfire and a stick alike; energy
-// equal to the price is enough; the energy is taken when the lighting finishes, together with its
-// sticks; a game minute whose satiety after its fall of 0.6 is 60 or above gives back 0.5 energy,
-// not above the cap of 100, in the body's step, before the finishing action takes effect.
+// sticks (D-63, D-71, D-175, D-176, D-177, D-375). Every number is written out by hand: each
+// lighting costs 10 nature energy, a campfire and a stick alike; energy equal to the price is
+// enough; the energy is taken when the lighting finishes, together with its sticks; a game minute
+// whose satiety after its fall of 0.6 is 60 or above gives back 0.5 energy, not above the cap of
+// 100, in the body's step, before the finishing action takes effect.
 
 /** The run with the given nature energy and a body at 5 °C of the given satiety. */
 function withEnergy(run, natureEnergy, satiety = 100) {
@@ -656,7 +654,7 @@ test("the energy of a lighting is taken when it finishes, not while it goes on",
 });
 
 test("a mage with full nature energy who finishes a lighting has 90 after that minute", () => {
-  // Q10: the minute's 0.5 comes back before the lighting takes effect, so it is lost at the cap.
+  // D-71: the minute's 0.5 comes back before the lighting takes effect, so it is lost at the cap.
   const full = after(
     endingNext(withEnergy(at({ [stick]: 1 }), 100), LIGHT_ITEM),
     1,
@@ -694,10 +692,10 @@ test("empty nature energy takes no health", () => {
   assert.equal(next.death, null);
 });
 
-// The price of an action (task koszty-i-stan-ogniska, To do 1 to 4; D-63, D-145, D-175): what the
-// editor shows is what the simulation takes. The expected prices are written out by hand from the
-// data: crafting 6 sticks, lighting a campfire 2 sticks and 10 nature energy, lighting a stick 1
-// stick and 10, feeding 1 stick, eating 1 berry; „Czysty płomień” takes the 2 sticks off lighting.
+// The price of an action (D-63, D-145, D-175, D-363): what the editor shows is what the simulation
+// takes. The expected prices are written out by hand from the data: crafting 6 sticks, lighting a
+// campfire 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1 stick, eating
+// 1 berry; „Czysty płomień” takes the 2 sticks off lighting.
 const CLEAN_FLAME = { flameSpell: { practice: 0, ranks: { cleanFlame: 1 } } };
 
 test("the price of an action names the pieces it uses up and the nature energy it takes, nothing for what takes none", () => {
@@ -761,10 +759,10 @@ test("a finished action takes from the backpack and from the nature energy exact
   }
 });
 
-// A campfire going out is an event of the simulation (task kronika-z-filtrami, To do 7; spec D1,
-// D11): one `campfireExtinguished` for each campfire whose minutes of burning fall from above zero
-// to zero in the world's step of a minute, with the game minute and the campfire's tile. The
-// minute of a death gives none, the world not passing in it.
+// A campfire going out is an event of the simulation (D-344, D-348): one `campfireExtinguished` for
+// each campfire whose minutes of burning fall from above zero to zero in the world's step of a
+// minute, with the game minute and the campfire's tile. The minute of a death gives none, the
+// world not passing in it (D-71).
 
 const EXTINGUISHED = "campfireExtinguished";
 
