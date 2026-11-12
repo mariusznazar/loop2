@@ -29,7 +29,7 @@ export type TileListRow = {
   /**
    * The state of the tile's campfire, then of each item burning on it, in the map run's order:
    * „ognisko — płonie, zostało 42 min”, „ognisko — wygasłe”, „patyk — płonie, zostało 2 min”,
-   * names from the data (D-18; the campfire's text is D-70's, a burning item's D-383). Empty where
+   * names from the data (D-18; the campfire's text is D-70's, a burning item's D-385). Empty where
    * nothing stands there.
    */
   fire: string[];

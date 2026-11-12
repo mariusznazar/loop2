@@ -1,5 +1,5 @@
 // The area under the drawing of the screen of a map run, `RightArea` in right-area.tsx, in React
-// (D-311, D-343, D-344, D-346, D-380, D-381, D-147, D-276, D-130) on jsdom through
+// (D-311, D-343, D-344, D-346, D-382, D-383, D-147, D-276, D-130) on jsdom through
 // tests/view/page-document.mjs (D-264): the tabs „Kronika” and „Teren”, under „Kronika” the seven
 // filter buttons and the list of the chronicle, newest first, each row the game minute alone in a
 // column and the entry's text in the role of its kind, the paragraph of the last encounter at its
@@ -391,7 +391,7 @@ test("an empty chronicle and a filter that shows nothing say „Nic tu jeszcze n
   });
 });
 
-// D-147, D-339, D-380. Catches the paragraph missing from its place among the entries, standing
+// D-147, D-339, D-382. Catches the paragraph missing from its place among the entries, standing
 // at the end, its minute not the attack's, the paragraph kept when the state holds no record of an
 // encounter, and the paragraph not growing when the turns are resolved.
 test("the paragraph of the last encounter stands at its minute among the entries, under Walka alone, and grows when the turns are resolved", async () => {
@@ -472,7 +472,7 @@ function scrollTo(list, { top, height, client }) {
   return inAct(() => fire(list, "scroll"));
 }
 
-// D-380. Catches every entry drawn at once (the draw growing with the chronicle), a list
+// D-382. Catches every entry drawn at once (the draw growing with the chronicle), a list
 // that cannot reach its older entries, a window that grows on a scroll far from its end, and a
 // window that does not start anew with a filter picked.
 test("the list draws a bounded window of the newest entries, grows it on a scroll near its end until every entry is reachable, and starts it anew with a filter", async () => {
@@ -522,7 +522,7 @@ test("the list draws a bounded window of the newest entries, grows it on a scrol
   });
 });
 
-// D-380, D-381. Catches a window grown in one map run staying as large in the next one, started by
+// D-382, D-383. Catches a window grown in one map run staying as large in the next one, started by
 // a send or by „Restart” (the list would draw rows the player has not scrolled to), and a window that
 // starts anew whenever an entry arrives (the list would jump back while the player reads).
 test("the grown window starts anew at a send and at „Restart”, and stays where an entry only arrives", async () => {
@@ -576,7 +576,7 @@ test("the grown window starts anew at a send and at „Restart”, and stays whe
   });
 });
 
-// D-380. Catches the paragraph of the last encounter composed again whenever the list draws
+// D-382. Catches the paragraph of the last encounter composed again whenever the list draws
 // again (an entry recorded, a scroll), not only when the encounter changed. The encounter is a plain
 // record whose read of the creature is counted.
 test("the paragraph is composed once for an encounter however often the list draws again", async () => {
@@ -605,7 +605,7 @@ test("the paragraph is composed once for an encounter however often the list dra
   });
 });
 
-// D-380. Catches the window read again at each reading of the clock, which redraws every row of a
+// D-382. Catches the window read again at each reading of the clock, which redraws every row of a
 // long chronicle five times a second.
 test("a draw with nothing changed reads no window again, and a recorded entry reads it once", async () => {
   await withPage(async ({ document }) => {

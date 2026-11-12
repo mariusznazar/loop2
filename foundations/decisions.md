@@ -8972,7 +8972,7 @@ Whether the end-of-run window (D-368) is open is a memory of the page, kept by t
 *Rationale:* the window is a thing of the screen and not of the game, so a save holds nothing of it, and a reload opens it again as D-212 gives; a state in the save would come back closed after a reload, against its opening at every entry, and would change the shape of the save for a thing of the screen. The question stands where D-173 puts it, in the band of the program panel at the copy it concerns, since D-173 rejected the question in a window, so the question closes the window and the window does not come back of itself after „Wróć”, as D-173 gives, and the window needs no memory of why it was closed. „Koniec przejścia” stands only while the window is closed because the header is not shown while it stands, and before „Restart” so that the way back to the window comes before the buttons that end the map run. Accepted with it: the end is out of the player's sight while the question stands and after it, until the button opens it; a player who corrects the copy after „Wróć” has the window closed already, and one who wants to read the end again opens it with the button.
 *Rejected:* the question standing in the window, above its buttons — a second place of the question, far from the copy it concerns and against the rejection of D-173, with more to build and check, what D-324 gives while the question stands included; the state of the window in the game state or the save — it would come back closed after a reload, against its opening at every entry, and the save would change shape for a thing of the screen; the window opening itself again after „Wróć” — a state of its own, the window remembering that the question closed it (D-173); „Koniec przejścia” after „Zakończ”, or standing always — the button of the way back stands before the buttons that end the map run, and while the window stands the header is not shown.
 
-### D-372 — How short can an action shortened by bought branches be?
+### D-374 — How short can an action shortened by bought branches be?
 
 An action shortened by bought branches lasts at least one game minute.
 
@@ -8985,7 +8985,7 @@ An action shortened by bought branches lasts at least one game minute.
 *Rationale:* the branches shorten the time of an action by whole minutes, and the shortening of the exploration branch „Długi krok” alone takes two minutes from a step between tiles for each rank, so three ranks take six from a step of five. Without a floor the action would last no time or a negative time. The floor of one minute is one of the numbers of the old loop game's data that were accepted as requirements, so tests may expect it. Accepted with it: the numbers come from a game balanced otherwise, so loop2 may turn out easier or harder than that game, and tuning them later is a change of data and tests.
 *Rejected:* other numbers given by the human instead of the old loop game's data
 
-### D-373 — Where does „Wędruj” go, and how does it draw?
+### D-375 — Where does „Wędruj” go, and how does it draw?
 
 „Wędruj” takes the character onto a neighbouring tile of the map: onto one of the neighbours not yet revealed where the character's tile has any, and onto any neighbour otherwise. Choosing the tile takes one draw of the generator of wandering (D-22). „Wędruj” can be carried out while the character's tile has a neighbour on the map, and finding that out draws nothing.
 
@@ -9000,7 +9000,7 @@ An action shortened by bought branches lasts at least one game minute.
 *Rationale:* „Wędruj” is the move with no target, and the design of the game has it go in a random direction, onto a tile not yet revealed where it can. The old loop game's tests hold the same preference, the choice of any neighbour when all are revealed, „Wędruj” being possible while the tile has a neighbour, and a check of that which leaves the generator alone; the one draw for a choice of step is of the design of the game as well. Accepted with it: which neighbour a draw picks, by what formula, and the order in which the candidates are taken are left to the code, so a change of the picking that keeps the rules above is no change of this decision.
 *Rejected:* unknown
 
-### D-374 — What numbers does a condition on the body, the backpack, the campfire and the tile accept?
+### D-376 — What numbers does a condition on the body, the backpack, the campfire and the tile accept?
 
 A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it: „Temperatura poniżej” from 30.0 to 37.0 °C in steps of 0.1, with 36.5 at first; „Sytość poniżej” from 0 to 100 %, with 50; „Zapas poniżej” and „Tu leży mniej niż” from 0 to 50 pieces, with 8 and 1; „Zostało mniej niż — ognisko” from 0 to 120 minutes, with 20; „Energia natury poniżej” from 0 to 100 points, with 30; each of these but the first in steps of 1. The program check refuses a number that is no finite number, lies outside the range or off the step, and keeps a number on the step as the decimal with as many places as the step has, 36.6 and not 36.60000000000001. „Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives.
 
@@ -9015,7 +9015,7 @@ A condition that takes a number accepts it from a minimum to a maximum, both inc
 *Rationale:* the ranges, the steps and the numbers a condition starts with are those of the old loop game's data, the energy's included, whose range reaches the cap of nature energy (D-176). Each condition's numbers stand in its row of the game's data (D-18), so a new condition names its own, and the check of a program and the number field of the rule panel read the same range and step. The check keeps the number as the player reads it, so the program holds the number the player wrote.
 *Rejected:* the temperature held in the program as whole tenths, 365 for 36.5 — the check would stay a check of whole numbers, but the program would hold a number other than the one the player reads, and every reader would convert it; any finite number within the range — the simplest check, but it takes 36.55, which a number with tenths does not ask for, and lets the stored number drift from what the field shows
 
-### D-375 — How fast does a mage's nature energy come back?
+### D-377 — How fast does a mage's nature energy come back?
 
 In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5, up to its cap; in a game minute in which satiety after the fall is below 60 it comes back by nothing.
 
@@ -9030,7 +9030,7 @@ In a game minute outside combat in which the mage's satiety, taken after its fal
 *Rationale:* the rate of 0.5 a game minute and the satiety of 60 are those of the old loop game's data, and its tests compare the satiety with the threshold after the fall of the same game minute, as this decision does. The place of the game minute in which the energy comes back is D-71's, and the cap and the full start of a map run are D-176's.
 *Rejected:* unknown
 
-### D-376 — Can a program of the closed lists keep the mage alive on Las?
+### D-378 — Can a program of the closed lists keep the mage alive on Las?
 
 On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes, paying nature energy for its lightings as well as sticks, on at least one seed that a test of the simulation names, and the empty program dies there.
 
@@ -9045,7 +9045,7 @@ On Las a program built of the closed lists of conditions and actions keeps the m
 *Rationale:* the first map is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
 *Rejected:* unknown
 
-### D-377 — What are the curves of practice, and the effects and prices of the branches, of the eight character skills?
+### D-379 — What are the curves of practice, and the effects and prices of the branches, of the eight character skills?
 
 The eight character skills give a level and a point at each of these amounts of practice: „Zbieranie małych przedmiotów” at 30, 80, 160, 280 and 450; „Wytwarzanie ogniska” at 20, 55, 110 and 190; „Rzucanie czaru Płomyk” at 2, 6 and 14; „Eksploracja” at 15, 45, 100 and 200; „Walka bronią jednoręczną” at 30, 90 and 200; „Kopanie” at 20; „Unik przed ciosem” at 10 and 30; „Jedzenie” at 15, 40 and 80. Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order: „Wprawne oko” +5 percentage points of the chance of a gathering, prices 1 · 1 · 1; „Pełna garść” 2 pieces in place of 1 from a successful gathering, price 3; „Obchód” 40 minutes and 12 pieces, price 3; „Oszczędne dorzucanie” +5 minutes of burning from a piece fed to a campfire, prices 1 · 1 · 2; „Zgrabna konstrukcja” −5 minutes of making a campfire, prices 1 · 2 · 2; „Szybka ręka” −1 minute of lighting, prices 1 · 1 · 1; „Czysty płomień”, price 3; „Wprawny krok” −3 minutes of exploring, prices 1 · 1 · 1; „Długi krok” −2 minutes of each step between tiles, prices 1 · 1 · 2; „Zwiad”, price 3; „Mocniejszy cios” +2 damage of a blow with a stick, prices 1 · 1 · 1; „Cięższy kop” +1 damage of a kick, prices 1 · 1 · 1; „Zwinny odskok” 1 more taken from a blow by a dodge, prices 1 · 1; „Szybki posiłek” −1 minute of eating, prices 1 · 1 · 1. These numbers stand in the data of the character skills (D-18).
 
@@ -9057,10 +9057,10 @@ The eight character skills give a level and a point at each of these amounts of 
   - violates: a level reached below its threshold; a rank bought for a price other than the one listed; a branch whose rank gives another effect than the one listed
 - **Origin:** none
 
-*Rationale:* the curves, the effects and the prices are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; tuning the numbers later is a change of data and tests (D-18). The floor of one minute under an action shortened by branches is D-372's.
+*Rationale:* the curves, the effects and the prices are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; tuning the numbers later is a change of data and tests (D-18). The floor of one minute under an action shortened by branches is D-374's.
 *Rejected:* other numbers given by the human instead of the old loop game's data
 
-### D-378 — Which words name each refusal of an action?
+### D-380 — Which words name each refusal of an action?
 
 A program rule whose condition holds and whose action the game's check refuses names the reason of its row, {rzecz} being the name of the thing in lower case: „Eksploruj” on a revealed tile, „kafelek już odkryty”; „Wędruj” with no neighbouring tile, „nie ma dokąd iść”; „Idź — {rzecz}” where the player knows no place that holds the thing, „nie znasz miejsca, gdzie leży {rzecz}”, and where the thing lies on the character's tile, „{rzecz} leży już tutaj”; „Idź — ognisko” with no campfire, „nie ma ogniska”, and with the character at one, „już przy ognisku”; „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie on the tile, „tu nie leży {rzecz}”, and with a full backpack, „plecak pełny”. „Wytwórz — ognisko” and „Zapal — patyk” on a tile not revealed, „kafelek nieodkryty”; „Wytwórz — ognisko” where a campfire stands, „tu już stoi ognisko”; „Zapal — ognisko” where none stands, „tu nie stoi ognisko”, and where it burns, „ognisko już płonie”; „Zasil — ognisko” where none burns, „tu nie płonie ognisko”, and with no fuel in the backpack, „brak opału: patyk”. „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack, „brakuje {ile} × {rzecz}”, such as „brakuje 4 × patyk”; „Zapal — ognisko” and „Zapal — patyk” short of nature energy, „brak energii natury: {ma} z {trzeba}”.
 
@@ -9075,7 +9075,7 @@ A program rule whose condition holds and whose action the game's check refuses n
 *Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
 *Rejected:* the reasons written by the cycle itself and judged by the human at the merge — corrections are a round of remarks before the merge, which the tasks that follow wait for; a table with the rows the human chooses to correct — the human corrected no row.
 
-### D-379 — How does the page open, focus and close the login card, and what does the card do while a form waits?
+### D-381 — How does the page open, focus and close the login card, and what does the card do while a form waits?
 
 The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing. The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn. While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form.
 
@@ -9090,7 +9090,7 @@ The page opens the login card as an object it creates, focuses and closes: an el
 *Rationale:* the page around the card is built another way than the card, so the two meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
 *Rejected:* the card kept in the page and hidden — a typed password would stay in the page behind the game; one card kept for the life of the page and emptied at each closing — a reset of state to keep right, for nothing gained; drawing the card later than its creation — every caller then has to wait for the card, and an empty moment is possible.
 
-### D-380 — How does the list of the chronicle draw a chronicle that grows through a long map run?
+### D-382 — How does the list of the chronicle draw a chronicle that grows through a long map run?
 
 The list of the chronicle draws the entries of the filter picked, newest first, in a window of a fixed size, and grows the window by that size when the player scrolls near its end, so that every entry stays reachable and the rows drawn do not grow with the chronicle; picking a filter, a send and „Restart” start the window anew, and an entry arriving does not. The text of an entry is composed once, when the entry is recorded, so no later change of the game state, the rename of a rule group included, rewrites an entry, and a draw composes only the paragraph of the last encounter (D-147), and only when that encounter changed. A draw in which neither the chronicle, nor the filter, nor the window, nor the last encounter changed draws no row again, and a row already drawn is not drawn again when an entry is added above it.
 
@@ -9105,7 +9105,7 @@ The list of the chronicle draws the entries of the filter picked, newest first, 
 *Rationale:* the screen of a map run is drawn again at each reading of the clock, up to five times a second (D-03), and the chronicle only grows through a map run (D-339), so drawing every entry would make each draw cost more the longer the map run lasts, which is the risk D-347 names of a tab left overnight slowing down under a growing chronicle. A window bounds the rows drawn and leaves every entry reachable by a scroll; a row not drawn again keeps the list from jumping under a player who is reading. An entry is a record of what was said or done at its game minute, so it is composed then and kept; the band of a discovery follows a rename only while it stands (D-312), and the entry that remains after it does not. Accepted with it: a player who scrolls far reads the older entries in more steps, and the size of the window is a value of the code, tuned there.
 *Rejected:* every entry drawn at once — the cost of each draw grows with the chronicle, against the risk of D-347; a limit of entries at which the oldest go — D-339 rejects it, since the chronicle would lose part of what happened in the map run; a library of virtual lists — a new dependency of the product, and rows of varying height, as a discovery or a paragraph wrapping over lines gives, make exact virtualization the costliest way.
 
-### D-381 — How long does the pick of a filter of the chronicle hold on the screen of a map run?
+### D-383 — How long does the pick of a filter of the chronicle hold on the screen of a map run?
 
 The filter the player picks above the list of the chronicle stays picked through the whole map run, through leaving its screen and coming back, and through „Restart”, as the tab does (D-346); „Wszystko” stands picked again when the character is sent to the map (D-343).
 
@@ -9120,7 +9120,7 @@ The filter the player picks above the list of the chronicle stays picked through
 *Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives.
 *Rejected:* the filter picked again as „Wszystko” at „Restart” or at a return to the screen — the player picks it again each time, the cost D-346 names for the tab.
 
-### D-382 — Which program does the program panel show when the one it showed is gone?
+### D-384 — Which program does the program panel show when the one it showed is gone?
 
 Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list: after „Usuń” of the program shown; after „Zakończ” or „Otwarte: {mapa} →”, when the program the copy belonged to was deleted; and on Programy, when the address names a program the list does not hold (D-281).
 
@@ -9135,7 +9135,7 @@ Where the program the program panel shows is gone from the player's list, or the
 *Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
 *Rejected:* unknown.
 
-### D-383 — How does the list of revealed tiles show an item that burns on a tile?
+### D-385 — How does the list of revealed tiles show an item that burns on a tile?
 
 An item burning on a revealed tile, a lit stick today, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map, and its name comes from the game's data (D-18).
 
@@ -9150,7 +9150,7 @@ An item burning on a revealed tile, a lit stick today, stands in that tile's row
 *Rationale:* a burning stick is shown only in the row of its tile, not on the drawing, and its minutes of burning are a number, which stands in the row of the tile as the campfire's do (D-70). A stick lit on a revealed tile (D-72) then shows in the list after the campfire's text, in the same words.
 *Rejected:* unknown.
 
-### D-384 — Which game states does the load of a saved game state admit?
+### D-386 — Which game states does the load of a saved game state admit?
 
 The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards. A moment of real time that the game state stores, the save time and the moment a character's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time and the function that settles a death refuse a moment that is no safe integer with a RangeError, and the function that settles a death reads no moment where there is no death to settle.
 

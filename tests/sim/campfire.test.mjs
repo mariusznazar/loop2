@@ -548,7 +548,7 @@ test("the program check takes the six actions before sending and during a map ru
 });
 
 // The spell Płomyk: „Zapal — ognisko” and „Zapal — patyk” paid with nature energy besides their
-// sticks (D-63, D-71, D-175, D-176, D-177, D-375). Every number is written out by hand: each
+// sticks (D-63, D-71, D-175, D-176, D-177, D-377). Every number is written out by hand: each
 // lighting costs 10 nature energy, a campfire and a stick alike; energy equal to the price is
 // enough; the energy is taken when the lighting finishes, together with its sticks; a game minute
 // whose satiety after its fall of 0.6 is 60 or above gives back 0.5 energy, not above the cap of

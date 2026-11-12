@@ -17,8 +17,8 @@ import { conditionHolds } from "../../dist/browser/sim/program.js";
 import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
 
-// The conditions on the body, the backpack and the campfire (D-26, D-57, D-374). Every number below
-// is written out by hand from D-374: „Temperatura poniżej” takes 30.0 to 37.0 °C in steps of 0.1,
+// The conditions on the body, the backpack and the campfire (D-26, D-57, D-376). Every number below
+// is written out by hand from D-376: „Temperatura poniżej” takes 30.0 to 37.0 °C in steps of 0.1,
 // „Sytość poniżej” 0 to 100 %, „Zapas poniżej” 0 to 50 pieces, „Zostało mniej niż — ognisko” 0 to
 // 120 minutes and „Tu leży mniej niż” 0 to 50 pieces, each of these four in steps of 1;
 // „Z dala od — ognisko” takes no number.
@@ -112,7 +112,7 @@ test("„Sytość poniżej N %” holds below N and not at N", () => {
 });
 
 test("„Energia natury poniżej N” reads the mage's nature energy, holding below N and not at N", () => {
-  // D-374. The body is full: the energy alone decides.
+  // D-376. The body is full: the energy alone decides.
   const energy = (natureEnergy) => handMade({ natureEnergy });
   assert.equal(holds(energy(29.5), natureEnergyBelow(30)), true);
   assert.equal(holds(energy(30), natureEnergyBelow(30)), false);
@@ -295,7 +295,7 @@ test("the check takes the whole numbers of „Tu leży mniej niż” as before, 
 test("the check takes each new kind's numbers from its minimum to its maximum on its step", () => {
   const ranges = [
     [satietyBelow, 0, 100],
-    // D-374: from 0 to 100 by 1.
+    // D-376: from 0 to 100 by 1.
     [natureEnergyBelow, 0, 100],
     [healthBelow, 0, 100],
     [opponentHealthBelow, 0, 100],

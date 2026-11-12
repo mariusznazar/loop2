@@ -313,7 +313,7 @@ test("the body step names the cause of its loss from the same reading: cold, hun
   }
 });
 
-// Nature energy (D-176, D-375): the cap is 100 and every map run, a restart included, starts full;
+// Nature energy (D-176, D-377): the cap is 100 and every map run, a restart included, starts full;
 // outside combat a game minute whose satiety after its fall of 0.6 is 60 or above gives back 0.5,
 // not above the cap.
 

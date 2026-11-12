@@ -1106,7 +1106,7 @@ test("a number typed in the panel keeps its text and the focus while the game at
   });
 });
 
-// The range and the step of the number field of the panel (D-374). Catches a field drawn with another
+// The range and the step of the number field of the panel (D-376). Catches a field drawn with another
 // kind's range or step, so the browser would offer a temperature 0 to 100 or a count in tenths.
 test("the number field of the panel takes the range and the step of the condition kind", async () => {
   for (const [condition, range] of [

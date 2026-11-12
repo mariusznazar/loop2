@@ -1,5 +1,5 @@
 /**
- * The chronicle memory of a manual map run (D-338, D-339, D-346, D-147, D-380, D-381): the entries
+ * The chronicle memory of a manual map run (D-338, D-339, D-346, D-147, D-382, D-383): the entries
  * in the memory of the page, never in the game state or the save, the place of the paragraph of the
  * last encounter, whether the last start of an activity recorded was a wait, the tab and the filter
  * picked, the number of the map run, and a number that changes at every change of these, which a

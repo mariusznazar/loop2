@@ -1,4 +1,4 @@
-// Expectations: D-191, D-193, D-194, D-197, D-198, D-372 and D-377 in foundations/decisions.md.
+// Expectations: D-191, D-193, D-194, D-197, D-198, D-374 and D-379 in foundations/decisions.md.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -104,7 +104,7 @@ test("new characters own independent zero practice and empty ranks, with level o
   }
 });
 
-test("all cumulative thresholds of D-377 grant exactly one point and level each, then stop", () => {
+test("all cumulative thresholds of D-379 grant exactly one point and level each, then stop", () => {
   const expected = {
     smallItemGathering: [30, 80, 160, 280, 450],
     campfireCrafting: [20, 55, 110, 190],
@@ -190,7 +190,7 @@ test("unknown trees, unknown characters, no skill and every retained run refuse 
 });
 
 // invariant: action-duration-minimum
-// D-372: 5 - 3*2 is clamped to one minute.
+// D-374: 5 - 3*2 is clamped to one minute.
 test("every walking action with Długi krok rank three lasts at least one minute", () => {
   const skills = ranks("exploration", { longStep: 3 }, 200);
   const run = ready({ kind: "wander" }, skills);
@@ -252,7 +252,7 @@ test("numeric branches shorten exploration, crafting, both spells and eating at 
 });
 
 test("meal and walking bonuses apply to their own actions when both are bought", () => {
-  // D-377: Szybki posiłek 1 shortens eating 5 - 1 = 4;
+  // D-379: Szybki posiłek 1 shortens eating 5 - 1 = 4;
   // Długi krok 1 shortens walking 5 - 2 = 3, not both by their sum.
   const skills = {
     ...ranks("eating", { quickMeal: 1 }, 15),
@@ -498,7 +498,7 @@ test("combat practice counts damaging effects and effective dodges, not last or 
 });
 
 test("the combat resolution minute adds its successful strikes to the run's earlier practice", () => {
-  // D-377: 6 + 3*2 = 12 damage, so two strikes defeat the 24-health wolf.
+  // D-379: 6 + 3*2 = 12 damage, so two strikes defeat the 24-health wolf.
   // The two effects add to three earlier strikes, while seven gathers stay seven.
   const run = newMapRun(
     MAPS.forestDeep,

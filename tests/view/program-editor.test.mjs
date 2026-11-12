@@ -106,7 +106,7 @@ const CAMPFIRE_AND_BACKPACK = [
   "eat",
 ];
 
-/** The numbers the conditions take, written out from D-374. */
+/** The numbers the conditions take, written out from D-376. */
 const HERE_BELOW = { defaultValue: 1, min: 0, max: 50, step: 1 };
 const TEMPERATURE = { defaultValue: 36.5, min: 30, max: 37, step: 0.1 };
 const ITEMS_LISTED = Object.keys(ITEMS);
@@ -165,7 +165,7 @@ test("group conditions offer the same kinds and editable fields while preserving
     ["hereBelow", { kind: "hereBelow", resource: "stick", value: 1 }],
     ["temperatureBelow", { kind: "temperatureBelow", value: 36.5 }],
     ["satietyBelow", { kind: "satietyBelow", value: 50 }],
-    // D-374: „Energia natury poniżej” starts at 30.
+    // D-376: „Energia natury poniżej” starts at 30.
     ["natureEnergyBelow", { kind: "natureEnergyBelow", value: 30 }],
     ["itemBelow", { kind: "itemBelow", item: "stick", value: 8 }],
     ["campfireLeftBelow", { kind: "campfireLeftBelow", value: 20 }],

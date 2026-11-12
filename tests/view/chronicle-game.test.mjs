@@ -1,4 +1,4 @@
-// The chronicle in the game view (D-338, D-339, D-346, D-381, D-147, D-311) on jsdom through
+// The chronicle in the game view (D-338, D-339, D-346, D-383, D-147, D-311) on jsdom through
 // tests/view/page-document.mjs (D-264): the game view is built as the page builds it, and the map run's screen is driven through the buttons the
 // player presses and the address the page follows. What the cases hold is that the chronicle and the
 // tab and filter picked belong to the game view — they outlive a visit to Siedziba and „Restart”,
@@ -204,7 +204,7 @@ test("the chronicle and the tab picked are there after Przejście, Siedziba and 
   });
 });
 
-// D-343, D-346, D-381. Catches „Restart” that keeps the entries of the map run before it, or that
+// D-343, D-346, D-383. Catches „Restart” that keeps the entries of the map run before it, or that
 // brings back „Kronika” or „Wszystko”.
 test("„Restart” starts the chronicle anew and keeps the tab and the filter picked", async () => {
   await onPage(async (page) => {
@@ -230,7 +230,7 @@ test("„Restart” starts the chronicle anew and keeps the tab and the filter p
   });
 });
 
-// D-343, D-346, D-381. Catches the entries of an ended map run carried over to the next one, and
+// D-343, D-346, D-383. Catches the entries of an ended map run carried over to the next one, and
 // the tab and the filter of the ended one kept after a send.
 test("„Zakończ” clears the chronicle and a new send starts with Kronika and Wszystko picked", async () => {
   await onPage(async (page) => {

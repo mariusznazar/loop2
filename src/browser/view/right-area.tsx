@@ -1,6 +1,6 @@
 /**
  * The area under the drawing of the screen of a map run, in React (D-311, D-338, D-343, D-344, D-346,
- * D-147, D-276, D-130, D-46, D-380, D-381; the module and the component keep the name they had when
+ * D-147, D-276, D-130, D-46, D-382, D-383; the module and the component keep the name they had when
  * the area stood on the right): the tabs „Kronika” and „Teren” — shared buttons of the kind `tab` in
  * a container of the class `tabs` — and under the one picked either the chronicle or the table of
  * revealed tiles. The chronicle is a row of the seven filter buttons, shared buttons selected in
@@ -10,10 +10,10 @@
  * keeps for it, composed here from the `lastCombat` of the game state drawn, again only when that
  * changed (D-147). The list draws a window of the newest entries and grows it by a scroll near its
  * end, so the rows drawn do not grow with the chronicle, and a row is drawn again only when its own
- * entry changed (D-380).
+ * entry changed (D-382).
  *
  * The picked tab and filter are the chronicle memory's, not the area's: a click tells the memory, and
- * the area reads the memory as an external store, so the pick outlives the area (D-346, D-381). A
+ * the area reads the memory as an external store, so the pick outlives the area (D-346, D-383). A
  * rule panel opened in the program leaves the area as it is. Nothing runs when the module is
  * imported.
  */
@@ -53,7 +53,7 @@ const EMPTY = "Nic tu jeszcze nie ma.";
 /** How many of a filter's newest entries the list draws first, and by how many a scroll grows that. */
 const WINDOW_SIZE = 60;
 
-/** How near the end of the list, in pixels of scroll, a scroll grows the window (D-380). */
+/** How near the end of the list, in pixels of scroll, a scroll grows the window (D-382). */
 const NEAR_END = 160;
 
 /** What the screen gives the area; every render gives it whole. */
@@ -99,7 +99,7 @@ type ListProps = {
 /**
  * The list of the filter picked. Its window is its own state, and the chronicle keys it by the
  * filter and the number of the map run, so picking a filter and the start of a map run, by a send or
- * by „Restart”, start the window anew (D-380). The window is read from the memory only when the
+ * by „Restart”, start the window anew (D-382). The window is read from the memory only when the
  * memory, the filter or the window changed.
  */
 function ChronicleList({ chronicle, snapshot, combat }: ListProps) {

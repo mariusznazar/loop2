@@ -179,7 +179,7 @@ test("a program change during an explore does not interrupt it", () => {
 });
 
 test("Wędruj prefers an unrevealed neighbour", () => {
-  // D-373: a neighbour not yet revealed takes precedence.
+  // D-375: a neighbour not yet revealed takes precedence.
   // The six neighbours of axial (1, 1) are written independently of product helpers.
   const neighbours = [
     { q: 2, r: 1 },
@@ -219,7 +219,7 @@ test("Wędruj prefers an unrevealed neighbour", () => {
 });
 
 test("Wędruj goes to some neighbour when all are revealed", () => {
-  // D-373. Six allowed axial neighbours, independently enumerated; neither neighbours()
+  // D-375. Six allowed axial neighbours, independently enumerated; neither neighbours()
   // nor hexDistance() supplies the expected result of the product's selection.
   const neighbours = [
     { q: 2, r: 1 },
@@ -256,7 +256,7 @@ test("Wędruj goes to some neighbour when all are revealed", () => {
 });
 
 test("starting Wędruj consumes exactly one draw", () => {
-  // D-373: the choice of a step takes one draw of the generator of wandering.
+  // D-375: the choice of a step takes one draw of the generator of wandering.
   // Independent Mulberry32 fixture: state advances by 0x6d2b79f5 modulo 2^32, so
   // starting from 0 gives 0x6d2b79f5 after one draw. No product helper computes it.
   // Source: https://github.com/bryc/code/blob/master/jshash/PRNGs.md#mulberry32
@@ -267,7 +267,7 @@ test("starting Wędruj consumes exactly one draw", () => {
 });
 
 test("Wędruj is not feasible with no neighbour on the map", () => {
-  // D-373.
+  // D-375.
   const run = start().run;
   assert.equal(actionFeasible(run, map, WANDER), true);
   const alone = { ...run, tiles: [hereOf(run)] };

@@ -1059,7 +1059,7 @@ const CRAFTED = {
   "a key added to a character": (document) =>
     (document.game.team.characters[0].level = 9),
   // The generation is an identity from 1 up (D-190, D-220), the moment a safe integer of any sign
-  // (D-384).
+  // (D-386).
   "a character without its generation": (document) =>
     delete document.game.team.characters[0].generation,
   "a character without its moment of readiness": (document) =>
@@ -1664,7 +1664,7 @@ const CRAFTED = {
     document.game.run.tiles.push(tile(0, 5, -2, false, {})),
   "the tiles of Las on Las — głębiej": (document) =>
     (document.game.run.tiles = document.game.run.tiles.slice(0, 16)),
-  // The save time (D-248, D-384): a safe integer of any sign, so a document unstamped is refused.
+  // The save time (D-248, D-386): a safe integer of any sign, so a document unstamped is refused.
   "the game without its save time": (document) =>
     delete document.game.saveTimeMs,
   "a save time of none": (document) => (document.game.saveTimeMs = null),
@@ -2256,13 +2256,13 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
     );
 });
 
-// D-384. Catches a condition set one step too strict, each edge being a value the game
+// D-386. Catches a condition set one step too strict, each edge being a value the game
 // writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
 // the open game with no minutes, a second loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   const edges = {
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
-    // D-384: a safe integer of any sign, as `resurrectionReadyAtMs` is read, so the case is no
+    // D-386: a safe integer of any sign, as `resurrectionReadyAtMs` is read, so the case is no
     // crafted document.
     "a save time below 0": (document) => (document.game.saveTimeMs = -1),
     "an earning loop in its first map run, nothing gathered": (document) => {
@@ -2338,7 +2338,7 @@ test("a state with its save time is a copy holding the moment, the state passed 
   assert.equal(withSaveTime(stamped, 0).saveTimeMs, 0);
 });
 
-// D-384: as in `settleDeath`, so a broken clock never reaches a document.
+// D-386: as in `settleDeath`, so a broken clock never reaches a document.
 test("a moment that is no safe integer gives no save time", () => {
   for (const moment of [NaN, Infinity, 1.5, 2 ** 53, "1760000000000", null]) {
     assert.throws(
@@ -2349,7 +2349,7 @@ test("a moment that is no safe integer gives no save time", () => {
   }
 });
 
-// D-384; D-07, D-248. Catches a save the game writes and then refuses: a device clock set
+// D-386; D-07, D-248. Catches a save the game writes and then refuses: a device clock set
 // before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
   const state = newGame();

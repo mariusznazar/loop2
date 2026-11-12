@@ -211,7 +211,7 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
 });
 
 test("nature energy stands through the five combat minutes and comes back after them", () => {
-  // D-71, D-375: in the minutes of combat nature energy stands, as the needs and recovery do; the
+  // D-71, D-377: in the minutes of combat nature energy stands, as the needs and recovery do; the
   // next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
   let state = fighting(KICK, 235);
   state.run.body = { ...HEALTHY };

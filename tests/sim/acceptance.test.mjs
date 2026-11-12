@@ -13,7 +13,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 
-// D-376: on Las a program drawn from the closed lists passes 480 game minutes alive on a seed named
+// D-378: on Las a program drawn from the closed lists passes 480 game minutes alive on a seed named
 // here, and the empty program dies. The program below was found by trying seeds: the send with the
 // real time ALIVE_REAL_MS, which takes the seed ALIVE_SEED, is one on which it lives. The empty
 // program's death in minute 243, of cold, is worked out by hand: on Las the body cools by 0.024 °C

@@ -319,7 +319,7 @@ header .failure-line {
 
 /*
  * The list scrolls inside its own height, so the window of entries it draws grows by the scroll
- * (D-380); the height is a layout dimension. A row is the minute alone in a column on the left and
+ * (D-382); the height is a layout dimension. A row is the minute alone in a column on the left and
  * the entry's text beside it, which wraps.
  */
 .chronicle-list,

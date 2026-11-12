@@ -554,7 +554,7 @@ test("an answer that names no account and is not a refusal of the session shows 
 
 // --- the forms ------------------------------------------------------------------------------
 
-// D-379: one form stands, so the lock of the whole card holds its field, its button and the switch.
+// D-381: one form stands, so the lock of the whole card holds its field, its button and the switch.
 test("a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -620,7 +620,7 @@ test("a lost connection on registration leaves one warning under that form and f
   });
 });
 
-// D-379: no state outlives the card, so a typed password leaves with it; the next card opens with empty
+// D-381: no state outlives the card, so a typed password leaves with it; the next card opens with empty
 // fields.
 test("a created account enters the game at once, and the page keeps no password", async () => {
   await onPage(async ({ root, intervals }) => {
@@ -802,7 +802,7 @@ test("a request waits with its field and every button of the screen locked, and 
   });
 });
 
-// D-379: one form stands, so the button locks with it.
+// D-381: one form stands, so the button locks with it.
 test("while a login waits, the button „Nie pamiętam hasła” is locked with the form and opens nothing", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -960,7 +960,7 @@ async function signedInPage(held) {
   return logoutOf(pageDocument().body);
 }
 
-// The page calls focus() on the card here (D-379).
+// The page calls focus() on the card here (D-381).
 test("a confirmed logout or an expired session removes the game and its clock and brings back the card, with focus in its first field", async () => {
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
@@ -1544,7 +1544,7 @@ test("a password the server would refuse sends nothing, marks the field at fault
   });
 });
 
-// D-261, D-379: the card of the link closes and one new card opens on „Zaloguj się” with the sentence in
+// D-261, D-381: the card of the link closes and one new card opens on „Zaloguj się” with the sentence in
 // it, above its switch.
 test("a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks about no session and focuses the address field", async () => {
   await onPage(async ({ root, intervals }) => {
@@ -4893,7 +4893,7 @@ test("browserAddress goes to a fragment with a new entry, replaces one without, 
 });
 
 // --- the page around the card -------------------------------------------------------------------
-// D-261, D-262, D-379.
+// D-261, D-262, D-381.
 
 /** The page's own two parts, in the body beside the card. */
 function pageParts(root) {
@@ -4995,7 +4995,7 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
   });
 });
 
-// D-96, D-225, D-262, D-379 (on what closes a card). Catches a card left
+// D-96, D-225, D-262, D-381 (on what closes a card). Catches a card left
 // standing over a waiting screen, or under it the page still hidden.
 test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
   await onPage(async ({ root }) => {
@@ -5028,7 +5028,7 @@ test("the card of a reset link stands alone at once, and each way out of it show
   });
 });
 
-// D-96, D-213, D-379. Catches a failed load of the kept state that leaves the card
+// D-96, D-213, D-381. Catches a failed load of the kept state that leaves the card
 // standing, its sentence and „Spróbuj ponownie” out of sight, since no waiting screen comes first.
 test("an error of the code in the load of the kept state closes the card, so its warning and retry show", async () => {
   await onPage(async ({ root }) => {
@@ -5046,7 +5046,7 @@ test("an error of the code in the load of the kept state closes the card, so its
   });
 });
 
-// D-211, D-379. Catches a sign-in with a kept state, the one that shows the game with no
+// D-211, D-381. Catches a sign-in with a kept state, the one that shows the game with no
 // waiting screen before it, leaving the card over the game.
 test("a sign-in that goes straight back to the kept game closes the card", async () => {
   await onPage(async ({ root }) => {
@@ -5059,7 +5059,7 @@ test("a sign-in that goes straight back to the kept game closes the card", async
   });
 });
 
-// D-379: focus() is called after a confirmed logout and after a password was set, and no other
+// D-381: focus() is called after a confirmed logout and after a password was set, and no other
 // opening of the card moves focus. Catches a call of focus() added to `showForms` itself.
 test("a card opened by the session check or by an expired save takes no focus", async () => {
   await onPage(async () => {
@@ -5113,7 +5113,7 @@ test("the page's sentence stays in the card through a press of the switch, in wa
 });
 
 // --- the login card -----------------------------------------------------------------------------
-// D-96, D-222, D-225, D-259, D-260, D-261, D-379. These cases drive the card through createAccountCard alone, as the page does.
+// D-96, D-222, D-225, D-259, D-260, D-261, D-381. These cases drive the card through createAccountCard alone, as the page does.
 
 const GAME_NAME = "Loop";
 // The sentence about the game (D-96).
@@ -5446,7 +5446,7 @@ test("a press of the switch empties every field, removes every message, moves fo
   });
 });
 
-// D-379. Catches a press that clears what is typed although nothing was
+// D-381. Catches a press that clears what is typed although nothing was
 // switched, and one that takes focus.
 test("a press of the state already shown clears nothing and moves no focus", async () => {
   await onPage(async ({ root }) => {
@@ -5552,7 +5552,7 @@ test("the folded credits stand last in all four states, stay open across a chang
   });
 });
 
-// D-379: the page places the card and calls focus() at once. Catches an asynchronous
+// D-381: the page places the card and calls focus() at once. Catches an asynchronous
 // render, which leaves the element empty when the function returns.
 test("the card stands in its element when createAccountCard returns", async () => {
   await onPage(async () => {
@@ -5570,7 +5570,7 @@ test("the card stands in its element when createAccountCard returns", async () =
   });
 });
 
-// D-379: no opening of the card moves focus but a call of focus(). Catches an autofocus,
+// D-381: no opening of the card moves focus but a call of focus(). Catches an autofocus,
 // and a focus() that holds the first state's field after a change of state.
 test("the card takes no focus when it opens, and focus() moves it to the first field of the state it stands in", async () => {
   await onPage(async ({ root }) => {
@@ -5603,7 +5603,7 @@ test("the card takes no focus when it opens, and focus() moves it to the first f
   });
 });
 
-// D-379. Catches an element left in the page, a typed password left behind in it, and an
+// D-381. Catches an element left in the page, a typed password left behind in it, and an
 // answer that still signs in, ends the form or clears the link's fragment after the card has gone.
 test("dispose() takes the element out with what it holds, and an answer still awaited is ignored", async () => {
   await onPage(async ({ root }) => {
@@ -5630,7 +5630,7 @@ test("dispose() takes the element out with what it holds, and an answer still aw
   });
 });
 
-// D-379: the page closes the card from signedIn and finished. React reports a root
+// D-381: the page closes the card from signedIn and finished. React reports a root
 // unmounted while it renders, and the harness fails the case on that report; called from render or
 // an effect these would do so. Catches those two places.
 test("signedIn and finished may dispose the card, from the answer and from the click", async () => {
@@ -5666,7 +5666,7 @@ test("signedIn and finished may dispose the card, from the answer and from the c
   });
 });
 
-// D-44, D-379. Catches a page reloaded by the send, a trimmed password (D-98), a
+// D-44, D-381. Catches a page reloaded by the send, a trimmed password (D-98), a
 // control left open by the lock, a second request, a warning elsewhere, and focus lost at the
 // unlock: it may return only after the commit, since a disabled control cannot take it.
 test("a sent login locks the whole card, and a refusal leaves one warning under the form and focus where the player sent it from", async () => {
@@ -5710,7 +5710,7 @@ test("a sent login locks the whole card, and a refusal leaves one warning under 
   });
 });
 
-// D-379: state shows only after a commit. Catches the guard
+// D-381: state shows only after a commit. Catches the guard
 // held in state alone, which lets a second send through before the lock is drawn.
 test("two sends and a switch before the lock is drawn send once and change nothing", async () => {
   await onPage(async ({ root }) => {

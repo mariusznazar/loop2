@@ -951,7 +951,7 @@ An action shortened by bought branches lasts at least one game minute.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-372
+- **Derives from:** D-374
 - **Part:** simulation
 - **Violated:** no
 

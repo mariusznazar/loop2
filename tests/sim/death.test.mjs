@@ -1,7 +1,7 @@
 // A character's resurrection and when it is ready, and how its death is settled, once, on the
 // browser's clock. The expectations come from D-190 (what a death takes), D-219 (whose clock counts
 // the renewal), D-220 (a new character's resurrection is ready from the start), D-221 (when a death
-// is settled), D-384 (which moments the game state holds) and the invariants `resurrection-renewal` (a moment equal to the moment of readiness
+// is settled), D-386 (which moments the game state holds) and the invariants `resurrection-renewal` (a moment equal to the moment of readiness
 // counts as ready) and `death-settled-once`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -330,7 +330,7 @@ test("a settled death saved and loaded on its screen is left as it stood by a la
   }
 });
 
-// D-384: where there is nothing to settle the moment is not even looked at.
+// D-386: where there is nothing to settle the moment is not even looked at.
 test("with nothing to settle the very state comes back, whatever the moment", () => {
   const going = send(team(), SENT, T0).state;
   const completed = {
@@ -351,7 +351,7 @@ test("with nothing to settle the very state comes back, whatever the moment", ()
   }
 });
 
-// D-384: a moment the load would refuse never enters the game state.
+// D-386: a moment the load would refuse never enters the game state.
 test("a moment that is no safe integer is refused at a death to settle", () => {
   const state = fallen();
   for (const nowMs of [

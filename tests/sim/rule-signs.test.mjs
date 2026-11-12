@@ -1,6 +1,6 @@
 // What the pick judges of a program rule and rule group: the bar, the reason and the winner, from
-// the one function that picks the rule (D-308, D-309, D-310 and D-378). The reasons are those of
-// D-378 and D-309, the bars those of D-308.
+// the one function that picks the rule (D-308, D-309, D-310 and D-380). The reasons are those of
+// D-380 and D-309, the bars those of D-308.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -85,8 +85,8 @@ const campfireHere = (run, minutesLeft) => ({
 
 const refusalOf = (run, action) => actionRefusal(run, map, action);
 
-// What refuses the action, and the words of the reason (D-378). Each case writes the state out.
-test("each refusal of an action gives the reason of its row in D-378", () => {
+// What refuses the action, and the words of the reason (D-380). Each case writes the state out.
+test("each refusal of an action gives the reason of its row in D-380", () => {
   const here = revealedHere(freshRun(), { stick: 3 });
   const bare = revealedHere(freshRun());
   const alone = { ...freshRun(), tiles: [freshRun().tiles[0]] };
