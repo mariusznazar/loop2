@@ -7165,9 +7165,15 @@ outside the repertoire counts as one whose condition does not hold.
     an open row; a green bar at a rule that does not start now; a reason beside the dark bar of a rule
     in a rule group that does not hold; signs beside a saved program opened during a map run, on
     Programy or in an earning loop
-- **Origin:** stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 6, 8 and 10, Questions to settle, questions A, C, D, E, F, 5, 7 and 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, the entry „What state does a program rule show during a map run?”
+- **Origin:** none
 
-*Rationale:* the player does not know why rules the player expected to run do not run. The backgrounds
+*Rationale:* the player does not know why rules the player expected to run do not run. Loop showed the
+winning and the running rule and the state of every rule and rule group, and those signs were among the
+things that made the program legible there, so this is the minimum taken from loop, with the reason
+added; as in loop, the signs stand at the copy of the map run alone, not at a saved program opened
+during a map run, on Programy or in an earning loop. The signs come from the function that picks the
+rule, because an explanation counted apart from the engine that decides can say what the engine does
+not do, as a study of tools that explain the choice of a rule found. The backgrounds
 say which rule goes next and which one runs, the bar says at a glance what can start in the whole
 program, as the game counts it, so green always means that a rule can start now and a rule that never
 starts shows at once, also where its condition lies outside the repertoire, and a rule the game did not
@@ -7179,9 +7185,11 @@ check the repertoire before the condition, a rule below the winner can show ambe
 not reach it, amber keeps one exception, a rule outside the repertoire whose condition does not hold,
 and a rule group whose condition does not hold does not show which of its rules would start once it
 holds, unlike loop, a rule in a rule group that does not hold gives no warning of what will fail once
-the group holds, at the stopped minute after the end „wins now” names a rule that will not start, an
-open row shows no background of its state while it is open, and the pointer over a rule that wins or
-runs changes nothing in its look.
+the group holds, at the stopped minute after the end „wins now” names a rule that will not start, after
+a death from cold or hunger the rule whose action was under way stays on `rule-running`, counted on the
+stopped minute, while after a death in combat no rule stands on it, since an attack ends the action
+under way, an open row shows no background of its state while it is open, as in loop, and the pointer
+over a rule that wins or runs changes nothing in its look.
 *Rejected:* the count „0×” alone — it merges a rule not reached with a rule refused; four states with
 „not checked” below the winning rule — under the winning rule nothing shows what holds; the bar beside
 the word „nie sprawdzono” — two signs in one row, and a green bar beside that word reads as a
@@ -7214,10 +7222,14 @@ walce”.
     with „tylko w walce”
   - violates: „Eksploruj” carrying a green bar in the minutes of an attack; no rule on `rule-winning`
     in those minutes; a combat rule green outside combat
-- **Origin:** stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 3, and § Settlements to record, row 3
+- **Origin:** none
 
-*Rationale:* in a pause the player sees at once whether a rule just written would start the fight, and
-the words are those of loop. Accepted with it: the turns that follow may choose another rule, and
+*Rationale:* in the minutes of an attack the simulation chooses no ordinary action, and it resolves the
+turns together at the end of those minutes with the program as it stands then (D-141), so what the
+first turn would choose now is what the program does. Fixing it once keeps every sign that names the
+rule that wins now, „Potem” among them, from counting those minutes in its own way. In a pause the
+player sees at once whether a rule just written would start the fight, and the words are those of
+loop. Accepted with it: the turns that follow may choose another rule, and
 outside a fight every combat rule whose condition holds shows amber.
 *Rejected:* no rule on the background of the rule that wins during the minutes of an attack — it is not
 seen what the mage will start the fight with, and the approved sentence of D-308 gets an exception; the words
@@ -7242,10 +7254,14 @@ cell of the rule panel, or „jeszcze nieodkryte: {name}”.
     no revealed ground and with too little nature energy reading „kafelek nieodkryty”
   - violates: two reasons beside one rule; „Tu nie leży · Mech”; „brak energii natury” given while the
     tile is not revealed
-- **Origin:** stan_i_powod_przy_regule_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4 and 5, Questions to settle, question 4, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* a rule that cannot start says why in the words of the game, one reason at a time, and the
-order is that of loop. Accepted with it: every new action needs a reason of its own later.
+order is that of loop. The reasons cover every refusal of the game's check whether an action can be
+carried out; the refusals of combat are given by D-309, and a missing stick at „Uderz — patyk” in combat
+by the reason „brakuje”. Fixing the form and the order of the reasons now keeps later work that adds
+actions from writing their reasons in another form or order. Accepted with it: every new action needs a
+reason of its own later.
 *Rejected:* the reasons written by the cycle itself and judged by the human at the merge — corrections
 are a round of remarks before the merge, which the tasks that follow wait for; a table with the rows
 the human chooses to correct — the human corrected no row.
@@ -7289,13 +7305,25 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
     sentence of a resurrection standing in the world area or in the area with the tabs; „Restart” and
     „Zakończ” standing in the world area; the window covering the menu bar; the window standing while
     the question „Zapisać, odrzucić, wrócić?” stands
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P1 and P6 · rozpoznanie_projektant.md, parts A.2, B.1 and B.2 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, „How is the screen of a map run laid out?” · ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 5, Questions to settle, questions 3 and 4, and § Settlements to record, row 1 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 4 and 6, Questions to settle, questions 10, 11 and 13 · kronika_z_filtrami_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 8, Questions to settle, questions 5, 6 and 11, and Decisions in play · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 2, Questions to settle, questions 1, 2 and 6, and § Settlements to record, row 2 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 3 and 8, Questions to settle, questions 1, 2, 9 and 10, and § Settlements to record, rows 1, 2 and 4
+- **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
+The layout takes the division of the screen and the solutions of loop and departs from them only
+where the result is better, never worse. It was settled when the screen was one column, in which the
+status line, the discovery, the paragraph of the last encounter, the body row, the backpack, the
+drawing of the map and the table of revealed tiles stood one under another and nothing showed the
+world of the game but the drawing of the map; the complaint was that the game was far less legible
+than loop in the division into screens, the layout of elements, the interface for making a program
+and the animation of the mage.
 Needs and the goal stand high, because they stay readable at a fast pace when moments no longer do,
 and „Teraz” and „Potem” stand right under the scene. The program takes the whole right column,
 since the player reads and writes it for most of a map run: a rule and the buttons of the program
-wrap into fewer lines, and a rule opened in place (D-288) takes no column of its own. The chronicle
+wrap into fewer lines, and a rule opened in place (D-288) takes no column of its own. The program is
+to be as wide as in loop, where it takes the rest of the width between the column of the world and
+the column on the right; the aim is the width of the program, not the ratio of the scene to the
+program. In a layout of three columns with the scene at its size (D-349) the program was left with a
+narrow column, in which a rule and the buttons wrapped into several lines and the question „Zapisać,
+odrzucić, wrócić?” broke into three lines in a window 1280 px wide. The chronicle
 shares the area under the world with the table of revealed tiles under two tabs, so each keeps the
 whole area, and „Kronika” is picked first, since the chronicle is what the player is to read; the
 paragraph of the last encounter stands in the chronicle and, at the end, in the window (D-147), never in the world area. The
@@ -7304,13 +7332,19 @@ program and the player sees it beside the program. The header is where the playe
 run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
 the solving condition and three buttons may break in a narrower window; the table of revealed tiles
 one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
-tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to. The end
+tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; the
+hover over a tile of the drawing links with its row only while the table is picked. The end
 of the map run stands in a window over the screen, so no place of the screen moves for it and its
 buttons stand in sight, and the menu bar with the row of warnings stays above it, so a failed save
-(D-208) and a broken game (D-323) are seen while it stands. The question of „Zakończ” stands in the
-program panel, which the window covers, so the window closes while the question stands. Accepted with
-it: the window hides the scene and the program while it stands, and does not cover the whole screen as
-the end of loop does.
+(D-208) and a broken game (D-323) are seen while it stands. The window covers the header, so one set
+of the buttons „Restart” and „Zakończ” stands on the screen at a time, and „✕” uncovers the scene,
+which keeps under the window the light that D-132 gives a solved map. The question of „Zakończ”
+stands in the program panel, which the window covers, so the window closes while the question stands,
+and it stays closed after „Wróć”, which keeps the window from remembering that the question closed
+it. Accepted with it: the window hides the scene and the program while it stands, and does not cover
+the whole screen as the end of loop does; the end is out of sight while the question stands and after
+it, until the player opens it with „Koniec przejścia”; the keyboard handling, Escape and the return to
+the window are to build.
 *Rejected:* the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
 change their place at the moment of the end; the same buttons in both places at once, the header and
 a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to
@@ -7336,7 +7370,24 @@ joined column — the program and the chronicle are not seen together, while the
 together to check why the character did what it did, and to edit the player has to go back to
 „Program”; the end of the map run first in the area under the world — in a low window it stands
 under the lower edge, the kind of place the rejection of loop above names, and its place would be
-fixed before it is known what the end holds and how much room it takes.
+fixed before it is known what the end holds and how much room it takes; the end at the top of the
+program column, above the band of a discovery, with its own scrolling — the program moves down by the
+height of the end, the rules that did not fire are read above the program and not beside it, and in
+one column the end stands under the whole world, in the kind of place the rejection of loop above
+names; the same place from the width at which the screen has two columns and above the world in one
+column — in a narrow window the scene and the effect of a solving stand under the end, and the layout
+has one more place; the end in the left column under „Teraz” and „Potem” — in a low window, such as
+1280 × 720, only the top of the end shows and its buttons fall under the lower edge, and the body row,
+the backpack, the drawing of the map and the tabs move down; a third tab „Koniec” in the area under
+the world — the chronicle hides behind the tab when the player wants to read what happened; the end in
+the place of the scene — it hides the scene, in which the solving is shown; the window covering the
+menu bar too — to go to another screen the player must first close the window, and neither a failed
+save (D-208) nor a broken game (D-323) is seen while it stands; the window opening by itself again
+after „Wróć” — one state more, and a player who wanted to correct the copy has to close it again; the
+question „Zapisać, odrzucić, wrócić?” in the window above its buttons — a second place of the
+question, away from the copy it concerns and against the rejection of a window in D-173, and more to
+build and check; the scene shrunk to its size in loop with the split of the widths unchanged — it
+does not solve what the change is for, a program too narrow to write in (D-349).
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
@@ -7362,7 +7413,7 @@ the band leaves that sentence out.
     standing after the rule or its group was deleted while no other group holds „Zawsze →
     Eksploruj”; the sentence in the band of a discovery at which the game wrote no rule; „Gra dopisała
     regułę 1.1”; the group named from the saved program rather than from the copy
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, question 6, and § Settlements to record, row 5
+- **Origin:** none
 
 *Rationale:* the band stands above the program the map run carries out, the copy, so it names the
 copy's group in which the player finds the rule now — after a group dragged above it, a rename, or
@@ -7409,7 +7460,7 @@ stands in the end-of-run window where the window names a discovery of the game m
     filled the action; the button adding a rule group while the copy holds none; the window of a
     completion in the game minute of a discovery with the text of the discovery and no button, or with
     the button leaving the window open over the rule panel
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 5 and 10, and § Settlements to record, row 4 · koniec_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 9, Questions to settle, questions 1, 5 and 12, and § Settlements to record, row 6
+- **Origin:** none
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
 the discovery into the rule and opens the panel where the player goes on writing, and „Odkryto:
@@ -7425,7 +7476,10 @@ the window closes so that the rule panel it opens is seen under its row.
 for later — a departure from the approved wording; the target always the first of the grid,
 whatever was discovered — „Odkryto: Zbierz, Patyk.” could give „Zbierz — jagoda”; the window naming the
 discovery of the end without the button — after the end the player adds a rule from the discovery only
-with the ordinary editor.
+with the ordinary editor; the band of the discovery left standing beside the window, so that the same
+discovery stands on the screen twice (D-122); the band left standing under the window and the window
+silent on the discovery after a death — the player learns of the discovery only after closing the
+window, and the two ends behave differently.
 
 ### D-314 — What does the background of the scene show?
 
@@ -7439,7 +7493,7 @@ the pack Pixel Crawler that the predecessor game, loop, cut out.
   - complies: a background of pines, a tree and a sapling in their snow variants, composed from
     loop's cut pictures of Pixel Crawler
   - violates: a green forest; a background composed from pictures cut anew from the pack's sheets
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* the scene shows the same forest as the picture behind the login card, from pictures
 already cut. Accepted with it: frost shows worse on white, and snow lies also on a map of 25 °C.
@@ -7459,11 +7513,12 @@ over that picture, never darkness in the picture's file.
     scene showing it unchanged while no layer stands over it
   - violates: the file of the background darkened, as the picture behind the login card is; a night
     drawn by putting another file in place of the background
-- **Origin:** ekran_przejscia_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 2, and § Settlements to record, row 3
+- **Origin:** none
 
 *Rationale:* the night of the scene brightens with the streak and the solving of a map gives a full
 dawn, so the darkness changes while the background stays one picture, and the background in full
-light is that dawn.
+light is that dawn. The night is a layer over the picture, and the scene has no night until that layer
+is built.
 *Rejected:* a background darkened in its file — the night would have to replace the file.
 
 ### D-316 — What does the scene show, and from what does it draw?
@@ -7489,13 +7544,19 @@ the pace, with no loop of drawing.
     redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
     in the scene while the character's tile holds none; the place where the mage stands kept in the
     game state
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 4, 5 and 7, Questions to settle, question 3, and § Settlements to record, row 3 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F1, F3, F4, F6 and F9 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), parts 8 and 9 · koncepcja_projektowa.md in the vault (Notes/Projects/(P) Loop), §7
+- **Origin:** none
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
-figure legible at the fastest pace. The pictures stand in the game's data, as the rest of the
-game's content does, so the code of the view names no resource. The scene may thus show
-what the character's tile does not hold; the numbers of the stock are given by the table and the
-line under the map. An extinguished campfire is the picture of a
+figure legible at the fastest pace. The concept of the game has drawn the scene from the state of
+the run alone, with positions and animations in CSS and no loop of rendering. The clock of the view
+reads the time every 200 ms, so the smoothness of motion has to come from CSS, which divides time
+into equal steps for the frames of the sprite and needs no clock of its own; the risk that D-03 took
+with React, a rebuilt node restarting a CSS animation and the figure shaking, is one this scene meets,
+since the screen is redrawn five times a second. The pictures stand in the game's data, as the rest of
+the game's content does, so the code of the view names no resource. The scene may thus show
+what the character's tile does not hold, which can mislead the reading of a condition such as „Tu leży
+mniej niż”, as the scene of loop, which did not show the tile either, could; the numbers of the stock are
+given by the table and the line under the map. An extinguished campfire is the picture of a
 burning one without colour and without motion.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
 a prop standing only while its resource lies on the character's tile — a piece of a scene showing
@@ -7520,13 +7581,22 @@ and shows no flash of its whole area.
   - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
     that moves under the system's setting for reduced motion as it does without it; an effect of
     an ordinary event that lasts 500 ms; a flying icon with a number beside it
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 10 · zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), F2 and F5 · rozpoznanie_frajda.md in the vault (Notes/Projects/(P) Loop/rozpoznanie_mvp2), part 5
+- **Origin:** none
 
-*Rationale:* pictures scaled up can pass the area below which flashing is allowed, so no effect
-takes the whole area of the scene, and a player who asks the system for less motion gets less. An
-effect of an ordinary event is a short sign of one event, so it fits the fastest pace, where
-events follow one another quickly, and one whose turn has passed would show something
-that is no longer so.
+*Rationale:* pictures scaled up can pass the area below which flashing is allowed — the criterion
+2.3.1 of WCAG 2.2 forbids more than three flashes a second unless less than 87,296 pixels flash, and
+the scene at twice its picture, 672 × 304 px, has 204,288 — so no effect takes the whole area of the
+scene, and a player who asks the system for less motion gets less, though that setting alone does not
+answer the flashes. An effect of an ordinary event is a short sign of one event, so it fits the
+fastest pace, where events follow one another quickly: in a trial of the simulation read every 200 ms,
+as the clock of the view reads it, with one program written for the trial, the game changed the
+character's action about 1.8 times a second at 16×, a pace the eye can follow, while text and
+anything longer than half a second could no longer be read. One whose turn has passed would show
+something that is no longer so; that happens when the player steps down from 16× or returns to a tab
+left in the background, where the simulation gets a large stretch of time at once, and loop did the
+same. The
+moments in which time stands still, a discovery, a death and the solving of a map, are no ordinary
+events and have no such limit, since game minutes do not pass in them.
 *Rejected:* none considered
 
 ### D-318 — Where does the mage go for each action?
@@ -7549,12 +7619,13 @@ fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight �
   - violates: the mage walking to the campfire for „Zapal — patyk”; the place at the right edge
     differing between „Eksploruj” and „Idź”; the mage walking to the middle of the clearing for
     „Zjedz — jagoda”
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 3, Questions to settle, question 2, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
-fire it tends, the edge it sets out through. Accepted with it: the right edge does not say which way
-the character really walks on the map, and „Zapal — patyk” departs from loop, where the mage walked
-to the campfire.
+fire it tends, the edge it sets out through, as in loop. The place is fixed for every action, also
+for those that no earlier choice named, so that later work on the scene does not rearrange the
+places. Accepted with it: the right edge does not say which way the character really walks on the
+map, and „Zapal — patyk” departs from loop, where the mage walked to the campfire.
 *Rejected:* the sticks and the campfire alone, the mage standing at the rest — less than loop has,
 and „Eksploruj” gives no motion.
 
@@ -7576,10 +7647,13 @@ place at once, and under that setting the frames stand still.
   - violates: a walk shortened to 300 ms or to the time of the action; a walk whose length follows
     the pace or the distance; a mage that starts its walk from the edge of the scene after a load; a
     mage that walks under the system's setting for reduced motion
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 5 and 10, Questions to settle, question 4, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* the walk is a movement of the character, so the beat of the scene, apart from the
-pace, gives its length, and it lasts as long at the fastest pace as at the slowest. Accepted with
+pace, gives its length, and it lasts as long at the fastest pace as at the slowest, as in loop. The
+limit of 300 ms in D-317 is for an effect of an ordinary event and does not reach the walk, so a walk
+of 640 ms breaks nothing there. Under the system's setting for reduced motion the mage stands at its
+place at once and the frames stand still, as the scene follows that setting in D-317. Accepted with
 it: at the fastest pace the mage often still walks when its action ends.
 *Rejected:* the shorter of 640 ms and the time of the action — the length would follow the pace,
 and the beat is to be apart from it; 300 ms — the mage jumps across the scene; a time that depends
@@ -7604,13 +7678,20 @@ readings of the clock instead of filling smoothly between them.
   - violates: the icon over the head standing straight on the trees; the fill of the bar in
     `text-strong` or `warning`; a sign of waiting over the head; the icon of a stick over the head of
     the mage who gathers it
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 6 and 10, Questions to settle, questions 4, 5, 6, 12 and 13, and § Settlements to record, rows 5, 6 and 9
+- **Origin:** none
 
 *Rationale:* the badge sets the sign apart from the forest, where a light tree could hide an icon
-that no test would find. The icon is the one the action has in the row of a rule (D-291), so
-gathering a stick and gathering a berry look alike over the head and the walk tells them apart. In
+that no test would find. The bar takes `positive` in the meaning that role has in text, that
+something is active now (D-39), on a track in `highlight` in a badge on `panel`, and it fills
+smoothly between the readings of the clock, which come every 200 ms, by CSS, which under the system's
+setting for reduced motion gives way to a jump at each reading. The icon is the one the action has
+in the row of a rule (D-291), so gathering a stick and gathering a berry look alike over the head and the walk tells them apart. In
 `text-strong` it looks as the icon of the action does in a running row and as the icons of the drawing of
-the map do, which no text stands beside either. Waiting lasts a fraction of a second at the fastest
+the map do, which no text stands beside either. An icon drawn as a mask takes the colour of the text
+beside it (D-43) and none stands beside this one, so no rule gave its colour; every choice widened
+D-40, which lets the colours of text stand only as text, and the choices differed only in colour, so
+the icon is the lighter one, where in an unchosen cell of the rule picker the same icon stands by
+ordinary text in a darker colour. Waiting lasts a fraction of a second at the fastest
 pace, so a sign for it would only flicker. Accepted with it: the badge hides a piece of the forest
 over the head, and in combat the mage stands without a sign.
 *Rejected:* the icon of the target where the action has one — „Idź — patyk” and „Zbierz — patyk”
@@ -7632,7 +7713,7 @@ The scene is a picture, not a control: a click on it does nothing and no pause s
     to pause a map run by hand
   - violates: a click on the scene pausing the map run, as in loop; a pause sign standing on the
     scene
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 8, and § Settlements to record, row 7
+- **Origin:** none
 
 *Rationale:* a scene that takes a click is a new kind of control, and the controls of the screens
 are the shared ones (D-44). Accepted with it: the player loses the shortcut of loop, where a click
@@ -7661,12 +7742,12 @@ mage stands in colour.
   - violates: the fire moving at a stop at a discovery; the scene greyed at a stop at a discovery;
     the whole scene greyed as at a pause after a death; the badge standing over a mage who is dead;
     „Pauza” leaving the scene in colour
-- **Origin:** scena_z_ludzikiem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 8 and 9, Questions to settle, questions 1 and 7, and § Settlements to record, rows 1 and 8
+- **Origin:** none
 
 *Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
-avoided on purpose. The grey says that the game stands still, and a stop at a discovery stays in
-colour so that the moment of the reward is not dimmed. After a death the grey mage tells the end
-from a pause, and a completion shows in the scene as a stop does.
+avoided on purpose. The grey, the one loop gave a paused scene, says that the game stands still, and
+a stop at a discovery stays in colour so that the moment of the reward is not dimmed. After a death
+the grey mage tells the end from a pause, and a completion shows in the scene as a stop does.
 *Rejected:* the fire and the mage moving on at a stop at a discovery — the world would move while
 game time stands still, which loop avoided on purpose; the scene as at the player's pause after a
 death — the end of a game would look like a pause; a ready sheet of the mage's death — part of what
