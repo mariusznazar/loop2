@@ -1,14 +1,17 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import type { ArchetypeId } from "../sim/data/archetypes.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
+import type { CreatureId } from "../sim/data/creatures.js";
 import { MAPS } from "../sim/data/maps.js";
 import type { SolvingDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { ResourceId } from "../sim/data/resources.js";
 import {
   SCENE,
+  SCENE_CREATURES,
   SCENE_DUST,
   SCENE_EFFECTS,
+  SCENE_FIGHT,
   SCENE_FIRE,
   SCENE_FROST,
   SCENE_MAGES,
@@ -17,6 +20,7 @@ import {
   SCENE_TINT,
 } from "../sim/data/scene.js";
 import type {
+  SceneCreatureSheets,
   ScenePicture,
   ScenePropSpot,
   SceneSpeck,
@@ -68,6 +72,23 @@ export type SceneMoment =
   | { kind: "death"; key: string; cold: boolean }
   | { kind: "completion"; key: string; specks: readonly SceneSpeck[] };
 
+/**
+ * The creature that attacks, standing in the scene beside the mage: its sheets, the cloud of the
+ * scuffle between it and the mage, the key that tells one fight from the next, and whether it fights.
+ * Where it stands is the scene's to say from where the mage stands (`creaturePlace`).
+ */
+export type SceneCreature = {
+  /** The fight's key, from the game minute of its attack. */
+  key: string;
+  /** Whether it fights, a cloud of dust rising between it and the mage, or only stands. */
+  scuffling: boolean;
+  idle: SceneSprite;
+  run: SceneSprite;
+  bite: SceneSprite;
+  death: SceneSprite;
+  cloud: SceneSprite;
+};
+
 /** The scene of the map run as plain data for drawing; pure, no DOM, no URL built from a name. */
 export type SceneDrawing = {
   standing: SceneStanding;
@@ -93,6 +114,12 @@ export type SceneDrawing = {
    * fire's sprite is the full flame's, or the smaller flame's in the last minutes of its burning.
    */
   fire: (ScenePlacedSprite & { burning: boolean }) | null;
+  /**
+   * The creature that attacks: scuffling with the mage through the minutes of the combat, and standing
+   * beside it where the combat ended with the mage's death or the map run was solved in it; null where
+   * none stands (D-316).
+   */
+  creature: SceneCreature | null;
   /** The badge over the mage: its icon and the progress of the action from 0 to 1; null without one. */
   badge: { href: string; progress: number } | null;
   /**
@@ -118,6 +145,7 @@ const MAGES: Record<
     death: ScenePicture;
   }
 > = SCENE_MAGES;
+const CREATURES: Record<CreatureId, SceneCreatureSheets> = SCENE_CREATURES;
 
 function spriteOf(picture: ScenePicture): SceneSprite {
   return {
@@ -176,6 +204,98 @@ function standingOf(state: GameState, run: GameMapRun): SceneStanding {
   if (state.discovery !== null) return "discovery";
   if (state.paused) return "paused";
   return "going";
+}
+
+/**
+ * The creature that stands in the scene and how it stands, from the map run: it fights through the
+ * minutes of the combat; after the combat has ended with the character's death it stands beside the
+ * dead mage, and where the map run was solved in the minutes of a combat, a combat that has no result,
+ * it stands where it stood. Any other end of a combat leaves none.
+ */
+function creatureOf(
+  run: GameMapRun,
+): { id: CreatureId; key: string; scuffling: boolean } | null {
+  const { activeCombat, lastCombat } = run;
+  if (activeCombat !== null)
+    return {
+      id: activeCombat.creatureId,
+      key: `fight:${activeCombat.attackMinute}`,
+      scuffling: true,
+    };
+  if (lastCombat === null) return null;
+  const stays =
+    run.death?.cause === "combat" ||
+    (run.completion !== null && lastCombat.result === null);
+  return stays
+    ? {
+        id: lastCombat.creatureId,
+        key: `fight:${lastCombat.attackMinute}`,
+        scuffling: false,
+      }
+    : null;
+}
+
+/** The creature's drawing for its sheets and the key of its fight. */
+function drawnCreature(
+  creature: NonNullable<ReturnType<typeof creatureOf>>,
+): SceneCreature {
+  const sheets = CREATURES[creature.id];
+  return {
+    key: creature.key,
+    scuffling: creature.scuffling,
+    idle: spriteOf(sheets.idle),
+    run: spriteOf(sheets.run),
+    bite: spriteOf(sheets.bite),
+    death: spriteOf(sheets.death),
+    cloud: spriteOf(SCENE_DUST),
+  };
+}
+
+/** The side of the mage a creature stands on, and the left edge of its frame there; the gap's middle is where the cloud of a scuffle stands. */
+export type CreaturePlace = {
+  side: "right" | "left";
+  x: number;
+  middle: number;
+};
+
+/**
+ * Where a creature stands at the mage whose frame has its left edge at `mageX`: on the right where its
+ * frame, `creatureWidth` wide, then lies inside the scene `sceneWidth` wide, and on the left where it
+ * does not (D-316, `SCENE_FIGHT`). The mage's figure turns with it, so the figure of a mage that faces
+ * left is the mirror of the one that faces right about its frame's middle.
+ */
+export function creaturePlace(
+  mageX: number,
+  mageWidth: number,
+  creatureWidth: number,
+  sceneWidth: number,
+): CreaturePlace {
+  const { mageFigure, gap } = SCENE_FIGHT;
+  const afterFigure = mageX + mageFigure.right + 1;
+  if (afterFigure + gap + creatureWidth <= sceneWidth)
+    return {
+      side: "right",
+      x: afterFigure + gap,
+      middle: afterFigure + gap / 2,
+    };
+  const beforeFigure = mageX + (mageWidth - 1 - mageFigure.right);
+  return {
+    side: "left",
+    x: beforeFigure - gap - creatureWidth,
+    middle: beforeFigure - gap / 2,
+  };
+}
+
+/** The cloud of a scuffle, placed over the gap between the creature and the mage, in the scene's pixels. */
+export function scuffleCloud(
+  place: CreaturePlace,
+  cloud: SceneSprite,
+): ScenePlacedSprite {
+  return {
+    ...cloud,
+    x: place.middle - cloud.width / 2,
+    y: SCENE.groundLine - SCENE_FIGHT.cloudUp,
+  };
 }
 
 /** The url of an icon of the game, as the badge over the mage's head takes it. */
@@ -421,6 +541,7 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
     return spot === undefined ? [] : [{ resource, ...placedOf(spot) }];
   });
   const standing = standingOf(state, run);
+  const creature = creatureOf(run);
   return {
     standing,
     background: spriteOf(SCENE.background),
@@ -435,6 +556,7 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
     },
     props,
     fire: fireOf(run),
+    creature: creature === null ? null : drawnCreature(creature),
     badge: badgeOf(state, run),
     tint: tintOf(run),
     frost: frostOf(run),
@@ -459,6 +581,29 @@ const USES_BACKPACK: ReadonlySet<string> = new Set([
 export type SceneEffect =
   | { kind: "flight"; href: string; from: ScenePoint; to: ScenePoint }
   | { kind: "dust"; sprite: ScenePlacedSprite };
+
+/**
+ * The effect of an attack or of the end of a combat, an effect of an ordinary event (D-317): at an
+ * attack the creature, already standing where the state puts it, running in from the right edge of the
+ * frame; at the end of a combat the creature that was defeated falling and lying where it stood, or the
+ * one that departs running off to the right edge of the frame. A creature that runs off or falls is no
+ * longer in the state, so its effect carries its sheet placed, the way it faces, and how far it runs. It
+ * is kept apart from the effect of a gathering, since the two are made in the same minute and belong to
+ * different parts of the scene, so that each plays.
+ */
+export type SceneCreatureEffect =
+  | { kind: "creatureIn"; key: string }
+  | {
+      kind: "creatureDown";
+      sprite: ScenePlacedSprite;
+      faces: "right" | "left";
+    }
+  | {
+      kind: "creatureOut";
+      sprite: ScenePlacedSprite;
+      faces: "right" | "left";
+      run: number;
+    };
 
 /**
  * The effect the end of a gathering shows, from the game state of the previous reading, the state of
@@ -533,5 +678,63 @@ export function sceneEffect(
       x: mageX + SCENE_EFFECTS.body.x,
       y: SCENE.groundLine - SCENE_EFFECTS.body.up,
     },
+  };
+}
+
+/**
+ * The creature's effect of an attack or of the end of a combat, from the game state of the previous reading, the
+ * state of this one and the events the simulation returned with it (D-04), the mage standing with its
+ * frame, `mageWidth` wide, having its left edge at `mageX` in a scene `sceneWidth` wide; null where the reading shows none. The
+ * creature runs in at the reading whose events carry its attack, runs off at the one whose events carry
+ * a combat ended with its departure and falls at the one that carries its defeat; a combat ended with
+ * the mage's death leaves the creature standing and shows no effect. A reading that carries more than
+ * one of these, as after a tab left in the background, carries effects that are overdue, so it shows
+ * none (D-317), and nor does the reading of a map run started or the reading that has no previous one
+ * of it. The effect stands where the mage stood in the previous reading, the mage that fought.
+ */
+export function creatureEffect(
+  before: GameState,
+  after: GameState,
+  events: readonly GameEvent[],
+  mageX: number,
+  mageWidth: number,
+  sceneWidth: number,
+): SceneCreatureEffect | null {
+  const run = after.run;
+  const was = before.run;
+  if (run === null || was === null) return null;
+  if (events.some((e) => e.kind === "mapRunStarted")) return null;
+  if (run.character.id !== was.character.id) return null;
+  const marks = events.filter(
+    (e) => e.kind === "attacked" || e.kind === "combatEnded",
+  );
+  if (marks.length !== 1) return null;
+  const [mark] = marks;
+  if (mark.kind === "attacked") {
+    const fight = creatureOf(run);
+    return fight === null || !fight.scuffling
+      ? null
+      : { kind: "creatureIn", key: fight.key };
+  }
+  if (mark.kind !== "combatEnded" || was.activeCombat === null) return null;
+  if (mark.outcome === "characterDied") return null;
+  const sheets = CREATURES[was.activeCombat.creatureId];
+  const place = creaturePlace(mageX, mageWidth, sheets.bite.width, sceneWidth);
+  const faces = place.side === "right" ? "left" : "right";
+  if (mark.outcome === "creatureDefeated")
+    return {
+      kind: "creatureDown",
+      sprite: {
+        ...spriteOf(sheets.death),
+        x: place.x,
+        y: SCENE.groundLine,
+      },
+      faces,
+    };
+  return {
+    kind: "creatureOut",
+    sprite: { ...spriteOf(sheets.run), x: place.x, y: SCENE.groundLine },
+    faces: "right",
+    run: sceneWidth - place.x,
   };
 }

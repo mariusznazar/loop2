@@ -3054,17 +3054,17 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 
 ### D-148 — Where is an attacking creature pictured today?
 
-An attacking creature currently appears in the encounter’s text, and the terrain drawing currently has no picture of it.
+An attacking creature appears in the encounter's text and in the scene, and the terrain drawing has no picture of it.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-147
+- **Relations:** derives from D-147 · derives from D-316
 - **Verification:** an agent compares a change with the decision:
-  - complies: the wolf named in the encounter line while the terrain keeps its current tiles and character
+  - complies: the wolf named in the encounter line and standing in the scene beside the mage through the minutes of the combat, while the terrain keeps its current tiles and character
   - violates: a wolf icon added to the character’s tile while this decision stands
 - **Origin:** none
 
-*Rationale:* The text supplies the behaviour and result the player needs to write a counter; the terrain stays a picture of its existing contents.
+*Rationale:* The text supplies the behaviour and result the player needs to write a counter, and the scene shows who fights and how the fight ends, so that the combat is not minutes of an unchanged picture; the terrain stays a picture of its existing contents.
 *Rejected:* adding the wolf to the terrain drawing — adds a visual feature outside the accepted presentation.
 
 ### D-149 — When does the game offer a map opened by another map?
@@ -6152,12 +6152,13 @@ open while the screens move to React.
 
 ### D-271 — Where do the scene's pictures come from?
 
-The scene's pictures and the picture of the game behind the login card are sprites of the pack
-Pixel Crawler, and the dust of a miss is a sprite of the pack Smoke & Fire Animated Particle
-[16x16] recoloured to the scene's colours, all kept in `assets/sprites/` outside the directory the
-account and save server serves and copied into it when the application is built. A sprite file holds
-pixels alone, the game credits each pack whose licence asks for a credit, and the character of the
-scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light,
+The scene's pictures and the picture of the game behind the login card are sprites of the packs
+Pixel Crawler and LPC Wolf, and the dust of a miss and the cloud of a scuffle are sprites of the
+pack Smoke & Fire Animated Particle [16x16] recoloured to the scene's colours, all kept in
+`assets/sprites/` outside the directory the account and save server serves and copied into it when
+the application is built. A sprite file holds pixels alone, the game credits each pack whose licence
+asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, and the character of
+the scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light,
 the cold layer of a death of cold and the frost, and specks, and the frost and the specks are squares of one pixel of the scene on its
 grid in colours of the palettes of the packs, while the colours of the tint layer and of the cold layer have their source in
 the human's choice; whatever has a drawing — a character, a creature, a thing — comes from a pack,
@@ -6165,7 +6166,7 @@ and the colour of an effect stands out from the ground it stands on, the outline
 frost by at least 3:1 against the snow it lies on.
 
 - **Scope:** browser-view · build-tools · deployment
-- **Based on:** pixel-crawler-terms · smoke-fire-particle-licence · cc-by-3-adaptation-credit
+- **Based on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit
 - **Relations:** none
 - **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. An agent compares a
   change with the decision:
@@ -6173,7 +6174,11 @@ frost by at least 3:1 against the snow it lies on.
     PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
     the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
     a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
-    holds, with a credit line for the pack in the folded section of credits; the smaller flame of the
+    holds, which the cloud of a scuffle is too, with a credit line for the pack in the folded section
+    of credits; the wolf a set of sprite files made from the side views of the pack LPC Wolf, every
+    pixel of them moved unchanged into frames of one size with the wolf's feet on their bottom row,
+    and a credit line for that pack that names its author and its contributor, its page, its licence
+    CC BY 3.0 and that the frames were cut out; the smaller flame of the
     campfire a sprite file made from the frames of the pack's fire with the flame cut down by hand;
     the frost on the edges of the frame built by CSS of squares of one pixel of the scene on its grid
     in colours the pictures of the pack's trees hold, its outline or its fill 3:1 or more against the
@@ -6183,7 +6188,7 @@ frost by at least 3:1 against the snow it lies on.
     read from pixels of the pack's bonfire, standing out from the open snow they rise over
   - violates: a picture placed straight in the directory the server serves; a sprite file in
     another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
-    other than the two named; the cloud of dust in a colour that does not stand out from the
+    other than the three named; a wolf drawn from a pack under another licence than CC BY 3.0; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
     game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
     drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave
@@ -6191,6 +6196,10 @@ frost by at least 3:1 against the snow it lies on.
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
 fire and trees the game's pictures show; what they ask is the cutting of frames from their sheets.
+The wolf, which no pack the game used before holds, comes from LPC Wolf, whose sheets hold side views
+of it standing, running, biting and dying. Its page offers the pack under five licences, and the game
+takes it under CC BY 3.0: the terms of that licence the game already keeps for its icons, so the pack
+needs no new terms to read and the credits name one Creative Commons licence.
 The mage matches the game's only archetype and its frames are ready, but only for standing, running
 and dying: the clothed characters of the pack have no pose of gathering. Kept apart from what the
 server serves, as the icons and
@@ -6208,12 +6217,16 @@ and the one pixel style stays; a shape with a drawing, as a mage or a
 prop, would stand beside the pixels as a smooth shape. A colour that does not stand out from the
 ground it stands on is not seen, so the outline or the fill of the frost is measured against the snow, at 3:1,
 the threshold the badge's bar keeps (D-39); the frost chosen meets it by its outline, the fill reading
-on the snow weakly by its brightness. Accepted with it: credits for the pack of the dust, frames of a
+on the snow weakly by its brightness. Accepted with it: credits for the pack of the dust and for the pack of the wolf, frames of a
 bending mage made by hand or, where hand work comes out weak, generated for those few frames, a
 smaller flame cut down by hand from the frames of the pack's fire, pixel work whose look is judged
 only once it is made, and colours of the specks and of the frost that enter the game's palette with a
 source in the pixel of a named picture of a pack.
-*Rejected:* the hooded figure of loop — its sheet is the pack's rogue, though the game calls the
+*Rejected:* for the licence of the wolf: CC BY 4.0 — nothing the game needs beyond 3.0, its terms
+would have to be read and written down as a new fact, and two different Creative Commons licences would
+stand in the credits; OGA-BY 3.0 — the same cost, and few readers know the name; GPL 2.0 and GPL 3.0 —
+they put on distribution terms of copyleft that the other licences do not, and the game gets nothing
+for them; the hooded figure of loop — its sheet is the pack's rogue, though the game calls the
 character a mage; generated pictures as the main way — frames drift apart, which the makers of such
 tools name as their main problem, and the pixels need correcting by hand; any other new pack — a
 wider choice, but another palette and scale, new licences and more credits; for the dust of a miss:
@@ -7612,12 +7625,21 @@ tint — in the gold light it loses its icy colour and turns gold with the strea
 
 ### D-316 — What does the scene show, and from what does it draw?
 
-The scene draws the character and its campfire from the game state and holds no state of the game,
-the picture of each resource and archetype it shows standing in the game's data. Sticks, the berry
-bush and moss always stand in the scene, and the campfire only while it stands on the character's
-tile, burning with a fire that moves or extinguished, the same picture in `grayscale(1)
-brightness(0.55)` and without motion. Motion comes from CSS at a fixed beat that does not depend on
-the pace, with no loop of drawing. The tint of its light (D-315), never blue and never greying the
+The scene draws the character, its campfire, what attacks it and the moment of the map run from the game
+state, its previous reading and the events the simulation returned, and it holds no state of the game,
+the picture of each resource, creature and archetype it shows standing in the game's data. Sticks, the
+berry bush and moss always stand in the scene, and the campfire only while it stands on the
+character's tile, burning with a fire that moves or extinguished, the same picture in `grayscale(1)
+brightness(0.55)` and without motion. What attacks the character stands beside the mage through the
+minutes of the combat: it runs in from the right edge of the frame and stands on the right of the
+mage, facing it, or on its left where the mage stands at the right edge, and the mage turns toward it;
+a death of the character or the solving of the map within the run leaves it standing beside the mage.
+The two scuffle, the creature in the frames of its bite and the mage in those of its idle sheet, with a
+small cloud of dust between them and no flash. A defeated creature falls where it stood and is gone, a
+creature that departs runs off to the right edge it came from, and after the character's death in the
+combat the creature stays beside the mage, standing still, as it does where the map run is solved in
+the minutes of a combat. Motion comes from CSS at a fixed beat that does not depend on the pace, with
+no loop of drawing, and a fight shows as a scuffle that pictures no single blow. The tint of its light (D-315), never blue and never greying the
 scene as the pause does, follows the streak: it goes evenly from a cool grey-green at streak 0 to
 a trace of the cool tint, 20 %, at the streak the map's condition asks for, stays there while the
 streak grows on, and is full warm gold only at a completion, and it leaves the brightness of the
@@ -7639,8 +7661,16 @@ after „Restart” and after a load the tint stands at once where the streak, o
     sprite changing by a CSS animation at the same beat at 1× and at 16×; the tint at streak 240 of
     Las standing at 0.4 of the way to the gold, at streak 480 at 0.8, and at streak 700 still there;
     a loss of the streak taking the tint back over 2 s, and the same loss in the player's pause
-    or at a discovery showing nothing until the scene goes on
-  - violates: the picture of a resource named in the code of the browser view; a canvas or a timer
+    or at a discovery showing nothing until the scene goes on; an attack of the wolf at the clearing
+    showing it run in from the right edge and stand on the mage's right, the mage turned to it, a
+    cloud of dust between them for the five minutes of the combat, and then the wolf lying down and
+    gone where the mage won, running off to the right where it departed, and standing still beside the
+    dead mage where the mage lost; an attack at the right edge showing the wolf on the mage's left
+  - violates: the picture of a resource named in the code of the browser view; the picture or the file
+    of the wolf named in the code of the browser view; a wolf standing in the scene through the combat
+    without a mage that turns to it; a blow shown by a flash or a mark of its own; a dead wolf left
+    lying in the scene until the next attack; a wolf held part of the way across the frame by a death
+    of the mage within the 300 ms of its run; a canvas or a timer
     redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
     in the scene while the character's tile holds none; the place where the mage stands kept in the
     game state; a tint in full gold at the required streak of Las; a tint that darkens or greys the
@@ -7669,7 +7699,20 @@ says (D-322). A loss of the streak takes the tint back over 2 s because a change
 may last longer than an effect (D-317), and in the pause the return waits for „Wznów” so that the
 loss is seen going. Accepted with it: a change of hue is subtler than a change of brightness, and at
 16× the scene may still be turning cool when the streak grows again; at 16× the mage is often still
-walking when its action ends.
+walking when its action ends. The wolf has the creature's place in the data, as the props have, so
+that the code of the view names no creature. The combat lasts five game minutes, five seconds at 1×,
+and a fight with no picture was minutes of text alone: the creature runs in from the edge of the frame
+in the time of an effect, so that it is in place at every pace, and the two scuffle in a loop of frames
+at the beat of the scene, with a small cloud of dust between them that shows that they fight and not
+which blow falls. A cloud that hides both would hide the figures for the whole combat, and a flash in
+the cloud would picture a single blow and bring the flashes D-317 watches. The creature that is
+defeated, that departs, or that stays after the mage's death says in the picture how the combat
+ended, and nothing beyond it remains. The creature stands on the side of the mage where its frame lies
+inside the picture, which at every place the mage stands at but the right edge is the right. At 16× the
+combat is decided 312 ms after the attack, so a death can come within the 300 ms of the run, and a scene
+that then stands still for good would hold the creature on its way; it stands beside the mage instead. Accepted with it: at the right edge the creature runs in past
+the mage to its left; a mage that falls toward the middle of the frame can lie over the nose of the
+wolf that stands there.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
 a prop standing only while its resource lies on the character's tile — it would bring in a piece of a
 scene showing the character's tile, as a sketch of the scene does, and the scene would change at
@@ -7691,13 +7734,30 @@ or 35 % of it; the pair of tints from `#7d9078` to `#f2b33d` at the cover 0.50 a
 to the cool tint in one frame — the
 whole scene jumps at each loss; a return of up to 300 ms as an effect of an ordinary event — an
 effect on the whole scene against D-317; a return in 1 s; the
-tint at once cool at „Wznów” after a loss in the pause — the loss passes without a picture.
+tint at once cool at „Wznów” after a loss in the pause — the loss passes without a picture; a creature
+that stands at once beside the mage as in loop, with no run in — it does not meet the scope of the
+project, which says the wolf runs in; a cloud of the scuffle that covers both — at 1× neither the
+wolf nor the mage would be seen for five seconds; a cloud with flashes of the blows — a flash pictures
+a single blow, which a scuffle does not, and adds the risk of flashes that D-317 watches; a defeated
+wolf lying in its last frame until the next attack or the end of the map run — a dead wolf would lie
+in the scene for the rest of the map run, while the mage goes for sticks; no effect of the outcome, the
+wolf gone in the minute the combat is decided — the scene would not show how the combat ended.
 
 ### D-317 — How long do the scene's effects last?
 
-An effect of an ordinary event lasts at most 300 ms and shows no text at 8× and 16×, and an effect
-overdue when its turn comes is dropped. The scene follows the system's setting for reduced motion
-and shows no flash of its whole area.
+An effect of an ordinary event is a short sign of one event at the character or in a part of the
+scene — the flight of an icon, a cloud of dust, the run of a wolf, the outcome of a combat — and
+lasts at most 300 ms and shows no text at 8× and 16×, and an effect overdue when its turn comes is
+dropped. What the character does through an action, such as bending through a gathering or the
+scuffle through a combat, and a state of the whole scene, such as the tint, the cold layer and the
+frost, are no effect: the first lasts as long as the action, and the second changes at the rate set for
+it. The three moments in which time stands still — a discovery, a death and the solving of a map —
+have no such limit: the effect of each plays once, and then the scene stands on its last image until
+the moment ends with „Wznów”, „Restart” or „Zakończ”, and a scene drawn again on the same moment
+shows that image at once. The scene follows the system's setting for reduced motion: the frames stand
+still, every move from place to place and every change of its state shows its end at once, a short
+effect of an ordinary event appears still at its place for at most 300 ms and goes, and the effect of
+a moment shows its last image at once. The scene shows no flash of its whole area.
 
 - **Scope:** browser-view
 - **Based on:** wcag-three-flashes · https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § general flash and red flash thresholds — "the combined area of flashes occurring concurrently occupies no more than a total of .006 steradians within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing distance" · same glossary entry, Note 1 of the WCAG text — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
@@ -7707,10 +7767,17 @@ and shows no flash of its whole area.
     effect of the scene that changes a part of its area; the icon of a gathered resource flying to
     the mage in 300 ms and the cloud of dust of a miss gone in 300 ms, with no text on either; an
     effect of a reading that carries several ends of a gathering, as after a tab left in the
-    background, left out
+    background, left out; the wolf running in from the right edge in 300 ms at 1× and at 16×, and
+    standing at once beside the mage after a load in the minutes of a combat and under the system's
+    setting for reduced motion; a reading that carries the end of a gathering and an attack together showing the flight or the dust
+    and the wolf's run in; the scuffle lasting the five game minutes of the combat; a defeated
+    wolf falling in 300 ms and gone, and under the setting for reduced motion lying still for 300 ms
+    and gone
   - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
     that moves under the system's setting for reduced motion as it does without it; an effect of
-    an ordinary event that lasts 500 ms; a flying icon with a number beside it
+    an ordinary event that lasts 500 ms; a flying icon with a number beside it; a wolf that runs in
+    for 640 ms; a scuffle cut off at 300 ms; a run in that plays at the stop at a discovery or after a
+    load; an outcome of a combat that plays after its turn has passed
 - **Origin:** none
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed — the criterion
@@ -7727,13 +7794,34 @@ fastest pace, where events follow one another quickly: in a trial of the simulat
 as the clock of the view reads it, with one program written for the trial, which won Las in 10 of 20 tries, so
 that the figure is an example of an order of magnitude, the game changed the
 character's action about 1.8 times a second at 16×, a pace the eye can follow, while text and
-anything longer than half a second could no longer be read. One whose turn has passed would show
+anything longer than half a second could no longer be read. What the effect is, a sign of one event,
+leaves out what the character does through a whole action, which limited to 300 ms would leave the
+mage without a movement for the rest of a gathering that lasts ten seconds at 1×, and what a whole scene is in, which is no event but a state. The run of the
+wolf is an effect, since a combat lasts about 625 ms at 8× and 312 ms at 16×, so that a run of 640 ms
+would come after the combat it begins. Effects of different parts of the scene, such as the flight of an
+icon and the run of the wolf, play together where one reading carries both events, since a game minute
+can end a gathering and bring an attack. One whose turn has passed would show
 something that is no longer so; that happens when the player steps down from 16× or returns to a tab
 left in the background, where the simulation gets a large stretch of time at once, and loop did the
 same. The
 moments in which time stands still, a discovery, a death and the solving of a map, are no ordinary
-events and have no such limit, since game minutes do not pass in them.
-*Rejected:* none considered
+events and have no such limit, since game minutes do not pass in them. The scene under the system's
+setting for reduced motion shows the end of every move and of every change of state at once, as the
+walk of the mage does, a short effect of an ordinary event still at its place for as long as it would
+last, so that the player still sees what the event came to, and the effect of a moment its last image.
+The cloud of a scuffle and the frames of the wolf change a part of the scene alone: a frame of the
+wolf is 8,192 pixels at the scene's size and the cloud 1,024, both under the 21,824 pixels of the
+general flash threshold.
+*Rejected:* an effect that is everything the scene shows in answer to an event but the mage's walk —
+the simplest rule, but it loses the single bend at the end of a gathering, so that at 1× the mage
+stands ten seconds without a movement, and it changes D-317 for the darkening of the whole scene to
+300 ms; the moves of the character and the creatures of a fixed length like the walk of the mage — a
+second exception beside the walk, and a wolf that comes late at 8× and 16×, where the combat lasts
+about 625 ms and 312 ms; a classification made anew for each kind of effect — the classifications could exclude one
+another, and the decision would gather the exceptions one by one; under the system's setting for
+reduced motion no effect of an ordinary event at all, the wolf standing at once beside the mage and
+the outcome of a combat not shown by an effect — the fewest stimuli, but a player with the setting
+would read the outcome of a gathering and of a combat only from the numbers and from „Teraz”
 
 ### D-318 — Where does the mage go for each action?
 
@@ -7860,7 +7948,7 @@ alone — it says what the grey and „Wznów” already say.
 
 ### D-322 — What does the scene show while time stands still?
 
-While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
+While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. At the stop at a discovery that the first attack makes, the creature already stands beside the mage, with no run in, and the scuffle begins at „Wznów”. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -7875,7 +7963,7 @@ While the player's pause holds a map run, the scene is greyed with `grayscale(1)
     of hunger or in a fight, the mage falling and no layer; a completion of Las, the mage in colour in
     the full gold, specks of light rising over the clearing once and going out, and a scene drawn
     again showing no specks; a death in the game minute of a discovery, the fall alone and no plaque;
-    a scene under the system's setting for reduced motion showing the mage lying at once
+    a scene under the system's setting for reduced motion showing the mage lying at once; the stop at the first attack, the wolf standing beside the mage and still, and the scuffle going on after „Wznów”
   - violates: the fire moving at a stop at a discovery; the fire moving while the effect of a
     moment plays; the scene greyed at a stop at a discovery; the whole scene greyed as at a pause
     after a death; the badge standing over a mage who is dead; „Pauza” leaving the scene in colour;
@@ -7915,7 +8003,7 @@ fight comes near the red the game keeps for threats; the fall alone, with no col
 only the line „Teraz” would say what killed the mage; the specks together with the mage walking to a
 campfire — where no campfire stands on the character's tile the scene draws none and the mage has
 nowhere to go; no effect of its own for a completion, the full gold alone — the aim of an effect for
-each of the three moments would not be met; the plaques of a discovery and the effect of the end
+each of the three moments would not be met; a wolf that runs in at the stop at the first attack — the world would move while game time stands, as it does not at a stop; a wolf that waits at the edge of the frame and runs in at „Wznów” — it would stand motionless at the edge, away from the mage, for the whole discovery, and at 16× the run after „Wznów” would hardly fit in the combat; the plaques of a discovery and the effect of the end
 together in the game minute of both — two moments in one frame; the scene alive while the effect
 plays, the fire burning and the mage breathing — the world would move while game time stands, and the
 scene would stand out visibly when the effect ends.
@@ -9024,7 +9112,7 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 
 ### D-367 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect that comes while another still runs takes its place.
+The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
 
 - **Scope:** browser-view
 - **Based on:** none

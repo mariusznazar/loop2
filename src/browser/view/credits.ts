@@ -44,10 +44,14 @@ export type PackCredit = {
   changes: string;
 };
 
-/** The packs of the scene's pictures that ask for a credit; the cloud of dust is from the second. */
+/**
+ * The packs of the scene's pictures that ask for a credit: the cloud of dust of a miss and of a scuffle
+ * is from the first, the wolf from the second. The wolf's files are frames cut from the pack's sheet,
+ * its pixels moved unchanged, none mirrored.
+ */
 export const PACK_CREDITS: readonly PackCredit[] = [
   {
-    name: "Kurz",
+    name: "Kurz i obłok walki",
     title: "Smoke & Fire Animated Particle [16x16]",
     author: "KnoblePersona",
     sourceSite: "opengameart.org",
@@ -56,6 +60,17 @@ export const PACK_CREDITS: readonly PackCredit[] = [
     licenceName: "CC BY 3.0",
     licenceUrl: "http://creativecommons.org/licenses/by/3.0/",
     changes: "zmienione (przekolorowane)",
+  },
+  {
+    name: "Wilk",
+    title: "[LPC] Wolf Animation",
+    author:
+      "Stephen „Redshrike” Challener (grafika), William.Thompsonj (współtwórca)",
+    sourceSite: "opengameart.org",
+    sourceUrl: "https://opengameart.org/content/lpc-wolf-animation",
+    licenceName: "CC BY 3.0",
+    licenceUrl: "http://creativecommons.org/licenses/by/3.0/",
+    changes: "zmienione (wycięte klatki)",
   },
 ];
 

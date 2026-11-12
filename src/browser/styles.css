@@ -1805,7 +1805,8 @@ header .failure-line {
  * where it stands still. The scene's motion stands in the rules after the badge.
  *
  * The layers of the scene, from the bottom (D-315, D-316, D-320, D-322, D-372): the forest, the props,
- * the fire, the dust, the mage, the flying icon on its plaque, the tint of the light, the cold layer
+ * the fire, the dust, the creature that attacks, the mage, the cloud of the scuffle, the flying icon on
+ * its plaque, the tint of the light, the cold layer
  * after a death of cold, the frost, the specks of light after a completion, the plaques of a discovery
  * and the badge over the mage's head. The scene isolates its layers, so the tint and the cold layer
  * blend with what lies under them in the scene and with nothing else on the page.
@@ -1828,6 +1829,9 @@ header .failure-line {
 .scene-prop,
 .scene-fire,
 .scene-dust,
+.scene-creature,
+.scene-creature-effect,
+.scene-scuffle,
 .scene-mage,
 .scene-badge-carrier {
   position: absolute;
@@ -1895,6 +1899,43 @@ header .failure-line {
 .scene-mage[data-facing="left"][data-bend-facing="right"] .scene-mage-bend,
 .scene-mage[data-facing="right"][data-bend-facing="left"] .scene-mage-bend {
   transform: scaleX(-1);
+}
+
+/*
+ * The creature that attacks (D-316, D-271) holds its three sheets one over the other, as the mage
+ * does: the bite sheet while it fights, the idle sheet while it only stands, after the mage's death or
+ * a map run solved in the combat, and the run sheet, hidden, on its run in. Its sheets face left, so a
+ * creature on the left of the mage is mirrored, the figure alone. The cloud of the scuffle lies over the
+ * gap between the two. The creature that is defeated or departs is an effect of an ordinary event
+ * (D-317): it appears at the place it stood at, still, and is gone after 300 ms, and its motion is in
+ * the rules for motion below. A fallen creature shows its last frame, lying, in its style.
+ */
+.scene-creature-sprite,
+.scene-creature-sprite > .scene-sheet {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-creature[data-facing="right"] .scene-creature-sprite,
+.scene-creature-effect[data-facing="right"] .scene-creature-sprite {
+  transform: scaleX(-1);
+}
+
+.scene-creature-run {
+  visibility: hidden;
+}
+
+.scene-creature-idle,
+.scene-creature:not([data-scuffling]) .scene-creature-bite {
+  display: none;
+}
+
+.scene-creature:not([data-scuffling]) .scene-creature-idle {
+  display: block;
+}
+
+.scene-creature-effect[data-kind="down"] img {
+  translate: calc(100% * (1 - var(--frames)) / var(--frames));
 }
 
 /*
@@ -2352,6 +2393,69 @@ header .failure-line {
     animation-fill-mode: forwards;
   }
 
+  /*
+   * The creature's bite frames and the cloud of the scuffle change every 160 ms as long as the fight
+   * lasts. At the reading of its attack the creature runs in from the right edge in 300 ms, facing the
+   * way it runs, its run sheet shown over the bite sheet and its five frames played once through; the
+   * cloud stands when it has arrived. At the end of a combat the defeated creature plays the four frames
+   * of its death sheet through its 300 ms and lies, and the one that departs runs off to the right
+   * edge in the same time on its five run frames, facing right.
+   */
+  .scene-creature-bite img,
+  .scene-scuffle img {
+    animation-name: scene-frames;
+    animation-duration: calc(var(--frames) * 160ms);
+    animation-timing-function: steps(var(--frames));
+    animation-iteration-count: infinite;
+  }
+
+  .scene-creature[data-entering] {
+    animation-name: scene-creature-in;
+    animation-duration: 300ms;
+    animation-timing-function: linear;
+  }
+
+  .scene-creature[data-entering] .scene-creature-sprite {
+    transform: none;
+  }
+
+  .scene-creature[data-entering] .scene-creature-run {
+    animation-name: scene-shown;
+    animation-duration: 300ms;
+  }
+
+  .scene-creature[data-entering] .scene-creature-bite {
+    animation-name: scene-hidden;
+    animation-duration: 300ms;
+  }
+
+  .scene-creature[data-entering] .scene-creature-run img,
+  .scene-creature-effect[data-kind="out"] img {
+    animation-name: scene-frames;
+    animation-duration: 300ms;
+    animation-timing-function: steps(var(--frames));
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  .scene-creature[data-entering] ~ .scene-scuffle {
+    visibility: hidden;
+  }
+
+  .scene-creature-effect[data-kind="down"] img {
+    animation-name: scene-fall;
+    animation-duration: 300ms;
+    animation-timing-function: steps(var(--frames), jump-none);
+    animation-iteration-count: 1;
+  }
+
+  .scene-creature-effect[data-kind="out"] .scene-creature-sprite {
+    animation-name: scene-creature-out;
+    animation-duration: 300ms;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
   .scene-flight-across {
     animation-name: scene-flight-across;
     animation-duration: 300ms;
@@ -2516,6 +2620,20 @@ header .failure-line {
 @keyframes scene-walk {
   from {
     translate: var(--walk-start);
+  }
+}
+
+/* The creature runs in from the right edge of the frame to its place. */
+@keyframes scene-creature-in {
+  from {
+    translate: var(--from-x);
+  }
+}
+
+/* The creature that departs runs from its place to the right edge of the frame. */
+@keyframes scene-creature-out {
+  to {
+    translate: var(--run);
   }
 }
 
