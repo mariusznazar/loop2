@@ -3632,8 +3632,8 @@ After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzyn
 - **Verification:** none
 - **Origin:** none
 
-*Rationale:* The transfer remains readable with the final state, among what the map run gave rather than as the first word after a win. Before the end had a window of its own the line stood in the world area, between the scene and the body row, since the right area did not take over the end of a map run: the paragraph of the last encounter had moved from under the scene into the chronicle (D-147), and the line stood below the discovery line and that paragraph where they stood, so after a completion in the game minute of a discovery or after a fight it stood one row, or a long paragraph, lower than the status row „… rozwiązany”.
-*Rejected:* a line directly under the status row — a win opens with what did not come, and the discovery line and the paragraph of the last encounter, which then stood below the status row, would have gone lower; placing it under the backpack, in the place of the line „Wyniesie” — it changed the placement accepted below the status row; showing nothing — leaves the transfer unreported.
+*Rationale:* The transfer remains readable with the final state, among what the map run gave rather than as the first word after a win.
+*Rejected:* a line directly under the status row — a win opens with what did not come; showing nothing — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
 
@@ -4342,9 +4342,7 @@ solving, and a death with a ready resurrection leaves the skills of the characte
 the map run, so the practice of this map run is gone though the earlier wording said that practice
 stays. The first text names the span of the renewal
 rather than the time left, which after a load could be false, and the second stands in `danger`
-because D-39 gives that role to a possible loss of a character or of progress. Before the end had a
-window of its own the lines stood in the world area, where the line „Do skrzynki: …” stood (D-185),
-since the right area did not take over the end of a map run. Accepted with it: the
+because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
 game state remembers how each death was settled.
 *Rejected:* „wprawa i wykupione stopnie zostają” with no word of the practice of this map run — the
 player sees it gone and takes the game for a liar; the same in the status row, which the header then
