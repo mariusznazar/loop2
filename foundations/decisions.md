@@ -9044,3 +9044,33 @@ On Las a program built of the closed lists of conditions and actions keeps the m
 
 *Rationale:* the first map is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
 *Rejected:* unknown
+
+### D-377 — What are the curves of practice, and the effects and prices of the branches, of the eight character skills?
+
+The eight character skills give a level and a point at each of these amounts of practice: „Zbieranie małych przedmiotów” at 30, 80, 160, 280 and 450; „Wytwarzanie ogniska” at 20, 55, 110 and 190; „Rzucanie czaru Płomyk” at 2, 6 and 14; „Eksploracja” at 15, 45, 100 and 200; „Walka bronią jednoręczną” at 30, 90 and 200; „Kopanie” at 20; „Unik przed ciosem” at 10 and 30; „Jedzenie” at 15, 40 and 80. Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order: „Wprawne oko” +5 percentage points of the chance of a gathering, prices 1 · 1 · 1; „Pełna garść” 2 pieces in place of 1 from a successful gathering, price 3; „Obchód” 40 minutes and 12 pieces, price 3; „Oszczędne dorzucanie” +5 minutes of burning from a piece fed to a campfire, prices 1 · 1 · 2; „Zgrabna konstrukcja” −5 minutes of making a campfire, prices 1 · 2 · 2; „Szybka ręka” −1 minute of lighting, prices 1 · 1 · 1; „Czysty płomień”, price 3; „Wprawny krok” −3 minutes of exploring, prices 1 · 1 · 1; „Długi krok” −2 minutes of each step between tiles, prices 1 · 1 · 2; „Zwiad”, price 3; „Mocniejszy cios” +2 damage of a blow with a stick, prices 1 · 1 · 1; „Cięższy kop” +1 damage of a kick, prices 1 · 1 · 1; „Zwinny odskok” 1 more taken from a blow by a dodge, prices 1 · 1; „Szybki posiłek” −1 minute of eating, prices 1 · 1 · 1. These numbers stand in the data of the character skills (D-18).
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-191
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Zbieranie małych przedmiotów” at 449 practice on level 5 and at 450 on level 6; „Zgrabna konstrukcja” bought to its second rank for 1 and then 2 points, making a campfire take 10 minutes in place of 20; „Mocniejszy cios” at its third rank making a blow with a stick do 12 damage in place of 6
+  - violates: a level reached below its threshold; a rank bought for a price other than the one listed; a branch whose rank gives another effect than the one listed
+- **Origin:** none
+
+*Rationale:* the curves, the effects and the prices are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; tuning the numbers later is a change of data and tests (D-18). The floor of one minute under an action shortened by branches is D-372's.
+*Rejected:* other numbers given by the human instead of the old loop game's data
+
+### D-378 — Which words name each refusal of an action?
+
+A program rule whose condition holds and whose action the game's check refuses names the reason of its row, {rzecz} being the name of the thing in lower case: „Eksploruj” on a revealed tile, „kafelek już odkryty”; „Wędruj” with no neighbouring tile, „nie ma dokąd iść”; „Idź — {rzecz}” where the player knows no place that holds the thing, „nie znasz miejsca, gdzie leży {rzecz}”, and where the thing lies on the character's tile, „{rzecz} leży już tutaj”; „Idź — ognisko” with no campfire, „nie ma ogniska”, and with the character at one, „już przy ognisku”; „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie on the tile, „tu nie leży {rzecz}”, and with a full backpack, „plecak pełny”. „Wytwórz — ognisko” and „Zapal — patyk” on a tile not revealed, „kafelek nieodkryty”; „Wytwórz — ognisko” where a campfire stands, „tu już stoi ognisko”; „Zapal — ognisko” where none stands, „tu nie stoi ognisko”, and where it burns, „ognisko już płonie”; „Zasil — ognisko” where none burns, „tu nie płonie ognisko”, and with no fuel in the backpack, „brak opału: patyk”. „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack, „brakuje {ile} × {rzecz}”, such as „brakuje 4 × patyk”; „Zapal — ognisko” and „Zapal — patyk” short of nature energy, „brak energii natury: {ma} z {trzeba}”.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-308 · derives from D-310
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Idź — patyk” on a tile that holds a stick reading „patyk leży już tutaj”; „Zapal — ognisko” beside a campfire that burns reading „ognisko już płonie”; „Zasil — ognisko” with no stick in the backpack reading „brak opału: patyk”
+  - violates: „Idź — ognisko” beside a campfire reading „nie ma ogniska”; „Zbierz — mech” with a full backpack reading „tu nie leży mech”; a refusal of a row above reading in other words than the row's
+- **Origin:** none
+
+*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
+*Rejected:* the reasons written by the cycle itself and judged by the human at the merge — corrections are a round of remarks before the merge, which the tasks that follow wait for; a table with the rows the human chooses to correct — the human corrected no row.
