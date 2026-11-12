@@ -37,13 +37,12 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // the document of version 1 keeps its characters and its map run without them.
 //
 // The document of version 3 is that of version 2 with the four keys of the earning loops added and
-// a third character for them (task petla-zarobkowa, To do 10 with D-206; spec sections 1, 9, 11 and
+// a third character for them (D-206; spec sections 1, 9, 11 and
 // 13); the game refuses it as another version since version 4.
 //
 // The document of the current version, version 4, is that of version 3 with the three fields of the
 // record of a manual map run added to its map run: the longest streak, the game minutes by what the
-// character was doing, and what the character entered with (task koniec-przejscia, To do 5 and 10
-// with D-206, D-135 and D-368). It fills every optional branch of the game state: a map run with a
+// character was doing, and what the character entered with (D-206, D-135 and D-368). It fills every optional branch of the game state: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
@@ -725,7 +724,7 @@ test("the server's save of the current version loads into the game it holds, its
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // To do 10 with D-206: 4 is the current version since the raise, so 5 is another one.
+  // D-206: 4 is the current version since the raise, so 5 is another one.
   assert.deepEqual(loadSavedGame({ ...save, version: 5 }), {
     ok: false,
     reason: "version",
@@ -903,7 +902,7 @@ test("a moment of readiness below zero loads, as it is a safe integer of any sig
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
-  // To do 10 with D-206: 4 is the current version since the raise, so 5 stands in for another one.
+  // D-206: 4 is the current version since the raise, so 5 stands in for another one.
   for (const version of [0, 5, -1]) {
     assertRefused(
       `version ${version}`,
@@ -947,7 +946,7 @@ test("the document of version 2 is refused as version, whatever its game holds",
 });
 
 // invariant: save-version
-// To do 10 with D-206: a save of the version before the raise is discarded whole, whatever it holds,
+// D-206: a save of the version before the raise is discarded whole, whatever it holds,
 // the player's programs included, though its game state is sound but for the record it lacks.
 test("the document of version 3 is refused as version, whatever its game holds", () => {
   assert.equal(DOCUMENT_V3.version, 3);
@@ -1448,7 +1447,7 @@ const CRAFTED = {
     dead(document, { kind: "progressLost", generation: 3 });
     document.game.team.characters[1].generation = 5;
   },
-  // The record of the map run (task koniec-przejscia, To do 5 and 10): exactly its three keys, a
+  // The record of the map run (D-368): exactly its three keys, a
   // longest streak from the streak going on (16) to the game minute (212), a count of game minutes
   // for each kind of the closed list and none for another, summing to the game minute, and a list
   // of the items the character entered with as a trip list is read.
@@ -1956,7 +1955,7 @@ test("a crafted document of the current version is refused whole as shape", () =
 });
 
 // invariant: save-version
-// To do 10: the record comes back whole after a load, whichever way the map run stands.
+// D-368, D-212: the record comes back whole after a load, whichever way the map run stands.
 test("the record loads back whole from a map run that goes on, one that died and one that completed", () => {
   const going = changed((document) => {
     document.game.paused = false;
@@ -2349,7 +2348,7 @@ test("a moment that is no safe integer gives no save time", () => {
   }
 });
 
-// Spec section 13; Q8, D-07. Catches a save the game writes and then refuses: a device clock set
+// Spec section 13; D-07, D-248. Catches a save the game writes and then refuses: a device clock set
 // before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
   const state = newGame();
@@ -2389,7 +2388,7 @@ const FIGHTING = programFromRules(
 );
 // On this real time the wolf attacks in Las — głębiej and the kicking mage dies in that combat.
 const REAL_MS = 1760000000008;
-// To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+// D-248: a saved document carries the moment of its save, so the state is stamped first.
 const SAVE_MS = 1760000060000;
 
 /** Two characters and two programs; the first character in Las at 4×, 155 game minutes in. */

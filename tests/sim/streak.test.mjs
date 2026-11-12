@@ -91,8 +91,8 @@ test("a minute that leaves the character neither chilled nor starving grows the 
 });
 
 test("a streak of 479 grows to 480 in the next minute, where the map run completes and passes no minute after it", () => {
-  // Changed by the task "rozwiazanie-lasu": a streak at the solving number of Las (480) now ends
-  // the map run in a completion, so it no longer grows past 480.
+  // D-132, D-133: a streak at the solving number of Las (480) ends the map run in a completion,
+  // so it does not grow past 480.
   const state = withRun({ body: body(37, 100, 100), streak: 479 });
   assert.equal(advanceMinutes(state, 1).state.run.streak, 480);
   const two = advanceMinutes(state, 2).state;
@@ -117,7 +117,7 @@ test("a map run split into calls of one minute holds the same streak as one call
   assert.deepEqual(split.run, whole.run);
 });
 
-// The loss of the streak is an event of the simulation (task kronika-z-filtrami, To do 4; D-341):
+// The loss of the streak is an event of the simulation (D-341):
 // one `streakLost` where a streak above zero falls to zero, with the game minute, the streak before
 // the loss and the cause. The cause is cold where the body is chilled after the step, hunger where
 // it is starving, both where it is both (thresholds: 35.0 °C and satiety 30, as above).

@@ -40,7 +40,7 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
   return send(game.state, SENT, realMs);
 }
 
-// Task "programy-gracza", To do 1: the player's programs replace the game's one program, and a
+// D-91, D-164: the player's programs replace the game's one program, and a
 // new game holds one, „Program”, with no program rule.
 test("a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
   const state = newGame();
@@ -65,7 +65,7 @@ test("a send starts a map run at minute 0 with the seed mixed from the last seed
   assert.equal(state.run.character.id, SENT.characterId);
   assert.equal(state.paused, false);
   assert.equal(state.realMsCarry, 0);
-  // Task "programy-gracza", To do 6: the map run carries out a copy of the program sent with.
+  // D-164: the map run carries out a copy of the program sent with.
   assert.deepEqual(state.run.copy.program, EXPLORING);
   assert.deepEqual(
     events.map((event) => event.kind),
@@ -104,7 +104,7 @@ test("a program edit during a 20-minute exploration does not interrupt it and ap
   assert.equal(events.at(-1).kind, "activityStarted");
 });
 
-// Task "programy-gracza", To do 6: „Restart” goes on with the copy of the map run it replaces, its
+// D-164: „Restart” goes on with the copy of the map run it replaces, its
 // unsaved changes included.
 test("Restart starts a new map run at minute 0 with the same seed and tiles and the copy as it stands", () => {
   const start = sent().state;
@@ -136,7 +136,7 @@ test("Restart with the starting program gives back the sent map run", () => {
   assert.deepEqual(restart(later).state, start);
 });
 
-// Task "programy-gracza", To do 10: „Zakończ” drops the copy; the program sent with stays.
+// D-173: „Zakończ” drops the copy; the program sent with stays.
 test("Zakończ ends the map run, keeps the program and the last seed", () => {
   let state = advanceMinutes(sent().state, 30).state;
   state = passRealTime(state, 600).state;
@@ -171,7 +171,7 @@ test("Restart and Zakończ without a map run are refused", () => {
   assert.throws(() => end(state), Error);
 });
 
-// The pace the player picked stays until the player changes it: task "rozwiazanie-lasu", To do 2.
+// The pace the player picked stays until the player changes it (D-129).
 
 test("setPace sets the pace and nothing else, with a map run or without", () => {
   const running = sent().state;

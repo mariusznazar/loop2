@@ -11,7 +11,7 @@ import {
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
-// Every expected number below is worked out by hand from the task's numbers: on Las the body
+// Every expected number below is worked out by hand from the numbers of the game's data: on Las the body
 // cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire warms the character on its
 // tile by 0.5 °C a minute and a burning stick by 0.15 °C; the body stops at 37.0 °C. Sticks renew
 // one piece every 30 minutes and berries every 40, up to a stock of 12 sticks and 8 berries.

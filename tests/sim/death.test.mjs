@@ -1,9 +1,8 @@
 // A character's resurrection and when it is ready, and how its death is settled, once, on the
-// browser's clock. The expectations come from the task rozliczenie-przejsc, To do 8 and 10–17
-// (questions Q3, Q11 and W1), which bind the tests of loop at commit cdc7c0d: a new character's
-// resurrection is ready from the start (loop `sim.test.ts:2002`), a moment equal to the moment of
-// readiness counts as ready (loop `death.test.ts:77`-`81`), and the lines of `src/sim/death.test.ts`
-// stand beside the cases they bind.
+// browser's clock. The expectations come from D-190 (what a death takes), D-219 (whose clock counts
+// the renewal), D-220 (a new character's resurrection is ready from the start), D-221 (when a death
+// is settled) and the invariants `resurrection-renewal` (a moment equal to the moment of readiness
+// counts as ready) and `death-settled-once`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -27,7 +26,7 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 
 /** A real moment of the browser's clock, in ms. */
 const T0 = 1_760_000_000_000;
-/** The renewal of a resurrection, 480 real minutes (task, *Context*), in ms: 480 × 60 000. */
+/** The renewal of a resurrection, 480 real minutes (D-190: eight hours to start), in ms: 480 × 60 000. */
 const RENEWAL_MS = 28_800_000;
 /** The character sent, the first a game creates, to Las. */
 const SENT = { mapId: "forest", characterId: 1 };
@@ -121,7 +120,7 @@ test("a new character is of generation 1, and a created second one too", () => {
 });
 
 // invariant: resurrection-renewal
-// To do 10; loop `death.test.ts:34`-`47`: the skills and the generation stay, the moment moves.
+// D-190: the skills and the generation stay, the moment moves.
 test("a death with a resurrection ready uses it up: ready again 8 hours after the death, and practice, ranks and generation stay", () => {
   const state = fallen();
   const before = ala(state);
@@ -134,7 +133,7 @@ test("a death with a resurrection ready uses it up: ready again 8 hours after th
 });
 
 // invariant: resurrection-renewal
-// To do 11; loop `death.test.ts:48`-`59`: the moment stays, the generation grows, the skills go.
+// D-190: the moment stays, the generation grows, the skills go.
 test("a death with no resurrection ready takes all practice and ranks, the generation grows by one and the moment stays", () => {
   const state = fallen(T0 + 1);
   const before = ala(state);
@@ -156,7 +155,7 @@ test("a death with no resurrection ready takes all practice and ranks, the gener
   });
 });
 
-// To do 11, 18: the settlement holds the number this death gave, not always the second.
+// D-190: the settlement holds the number this death gave, not always the second.
 test("the settlement of a later death with no resurrection ready holds the number that death gave", () => {
   const state = fallen(T0 + 1);
   const [first, ...others] = state.team.characters;
@@ -175,7 +174,7 @@ test("the settlement of a later death with no resurrection ready holds the numbe
   });
 });
 
-// To do 11; loop `death.test.ts:61`-`75`, `:98`-`:111`: the character stays the same character.
+// D-190: the character stays the same character.
 test("a death that takes everything leaves the name, the archetype, the place in the team and the character behind it", () => {
   const state = fallen(T0 + 1);
   const before = state.team.characters;
@@ -191,7 +190,6 @@ test("a death that takes everything leaves the name, the archetype, the place in
 });
 
 // invariant: resurrection-renewal
-// To do 12; loop `death.test.ts:77`-`81`.
 test("a death at the very moment of readiness uses the resurrection, and a death a millisecond before takes everything", () => {
   const at = settleDeath(fallen(T0), T0).state;
   assert.equal(at.run.deathSettlement.kind, "resurrectionUsed");
@@ -200,7 +198,7 @@ test("a death at the very moment of readiness uses the resurrection, and a death
 });
 
 // invariant: resurrection-renewal
-// Q11, To do 13: the moment follows the clock, so the pace plays no part.
+// D-219: the moment follows the clock, so the pace plays no part.
 test("the renewal does not depend on the pace of the map run", () => {
   const fast = died(setPace(team(), 16).state);
   assert.equal(
@@ -210,10 +208,10 @@ test("the renewal does not depend on the pace of the map run", () => {
 });
 
 // invariant: resurrection-renewal
-// To do 13: the renewal runs while the game is closed, as the state holds a moment, not a countdown.
+// D-219: the renewal runs while the game is closed, as the state holds a moment, not a countdown.
 test("a resurrection used up is ready again at its moment after a save and a load, and the next death goes by it", () => {
   const settled = settleDeath(fallen(), T0).state;
-  // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+  // D-248: a saved document carries the moment of its save, so the state is stamped first.
   const loaded = loadSavedGame(savedGame(withSaveTime(end(settled).state, T0)));
   assert.equal(loaded.ok, true);
   const back = loaded.state;
@@ -229,7 +227,7 @@ test("a resurrection used up is ready again at its moment after a save and a loa
   assert.equal(ala(renewed).resurrectionReadyAtMs, T0 + 2 * RENEWAL_MS);
 });
 
-// D-07, Q11: a clock set back is the player's own; the moment is stored as the arithmetic gives it.
+// D-07, D-219: a clock set back is the player's own; the moment is stored as the arithmetic gives it.
 test("a moment below zero settles as any other", () => {
   const state = fallen(-20_000);
   const settled = settleDeath(state, -5_000).state;
@@ -240,7 +238,7 @@ test("a moment below zero settles as any other", () => {
 /** Las with `state`'s run marked as a run of a solved map. */
 const onSolvedMap = (state) => ({ ...state, solvedMaps: ["forest"] });
 
-// To do 14; D-61, D-190, D-194; Q1, Q3. A death pays nothing, and the map run stays ended in death.
+// D-61, D-190, D-194: a death pays nothing, and the map run stays ended in death.
 test("a death ends the map run, pays nothing and takes what it carried, a resurrection ready or not, on a solved map too", () => {
   for (const [name, start, kind] of [
     ["ready", team(), "resurrectionUsed"],
@@ -275,7 +273,7 @@ const PATROLLING = programFromRules(
   { condition: ALWAYS, action: { kind: "wander" } },
 );
 
-// To do 14: the practice a map run gathered goes with it.
+// D-190: the practice a map run gathered goes with it.
 test("the practice a dying character gathered reaches no skill, a resurrection ready or not", () => {
   const program = setProgram(team(), PATROLLING).state;
   const state = died(program);
@@ -291,7 +289,7 @@ test("the practice a dying character gathered reaches no skill, a resurrection r
   assert.equal(ala(lost).skills.exploration.practice, 0);
 });
 
-// To do 15; loop `death.test.ts:61`-`75`.
+// D-190: the programs, the chest, the Understanding and the solved maps survive every death.
 test("the programs, the chest, the Understanding and the solved maps survive every death", () => {
   for (const readyAtMs of [0, T0 + 1]) {
     const state = died(onSolvedMap(readyFrom(team(), readyAtMs)));
@@ -304,7 +302,7 @@ test("the programs, the chest, the Understanding and the solved maps survive eve
 });
 
 // invariant: death-settled-once
-// To do 16; loop `death.test.ts:83`-`87`: a later settling, however late, is the same state.
+// A later settling, however late, is the same state.
 test("a death settled is not settled again, however late", () => {
   for (const readyAtMs of [0, T0 + 1]) {
     const once = settleDeath(fallen(readyAtMs), T0).state;
@@ -317,11 +315,11 @@ test("a death settled is not settled again, however late", () => {
 });
 
 // invariant: death-settled-once
-// To do 16; spec, decision 10: a load on the screen after a death settles nothing.
+// A load on the screen after a death settles nothing.
 test("a settled death saved and loaded on its screen is left as it stood by a later settling", () => {
   for (const readyAtMs of [0, T0 + 1]) {
     const settled = settleDeath(fallen(readyAtMs), T0).state;
-    // To do 10 with D-206; row 13: every document is stamped, and the load refuses one that is not.
+    // D-248: a saved document carries the moment of its save, so the state is stamped first.
     const loaded = loadSavedGame(savedGame(withSaveTime(settled, T0)));
     assert.equal(loaded.ok, true);
     assert.deepEqual(loaded.state, { ...settled, saveTimeMs: T0 });
@@ -407,7 +405,7 @@ function actionsStarted(state) {
     .map((event) => event.activity.action.kind);
 }
 
-// To do 17; D-200: the run on the screen keeps what it started with, whatever the death took.
+// D-200: the run on the screen keeps what it started with, whatever the death took.
 test("a death that takes everything leaves the map run on the screen as it was", () => {
   const state = fallen(T0 + 1);
   const settled = settleDeath(state, T0).state;
@@ -416,7 +414,7 @@ test("a death that takes everything leaves the map run on the screen as it was",
   assert.deepEqual(settled.run.practice, state.run.practice);
 });
 
-// To do 17, spec decision 6; loop `death.test.ts:113`-`127`: what a character can do follows it, and
+// Spec, decision 6; D-190: what a character can do follows it, and
 // what the player knows stays. Catches a „Restart” giving the run back the ranks the death took.
 test("„Restart” after a death that took everything starts from the team: a branch action drops out of the run and stays in the Understanding and the copy", () => {
   const program = setProgram(team(), PATROLLING).state;
