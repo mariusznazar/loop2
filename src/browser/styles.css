@@ -1808,8 +1808,8 @@ header .failure-line {
  * stands in the rules after the badge.
  *
  * The layers of the scene, from the bottom (D-315, D-316, D-320; task swit-rosnacy-z-passa): the
- * forest, the props, the fire, the dust, the mage, the tint of the light, the frost, the plaque of the
- * flying icon and the badge over the mage's head. The scene isolates its layers, so the tint blends with
+ * forest, the props, the fire, the dust, the mage, the flying icon on its plaque, the tint of the light,
+ * the frost and the badge over the mage's head. The scene isolates its layers, so the tint blends with
  * what lies under it in the scene and with nothing else on the page.
  */
 .scene {
@@ -2002,8 +2002,8 @@ header .failure-line {
 
 /*
  * The tint of the scene's light (D-315, D-316; task swit-rosnacy-z-passa): a layer over everything the
- * scene draws but the frost, the plaque of the flying icon and the badge, which stay on their own
- * colours. `mix-blend-mode: color` lays the layer's hue and saturation over the picture and leaves the
+ * scene draws, the flying icon on its plaque included, but the frost and the badge, which stay on their
+ * own colours. `mix-blend-mode: color` lays the layer's hue and saturation over the picture and leaves the
  * picture's brightness, so the tint never darkens or greys the scene as the pause does (D-322). `--tint`,
  * from 0 to 1, comes from TypeScript as a number: the layer's colour is the mix of the cool tint and the
  * warm one by it, in `oklch`, and its opacity goes the same way from the cool tint's opacity to the warm

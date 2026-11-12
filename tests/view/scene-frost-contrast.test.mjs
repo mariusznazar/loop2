@@ -30,11 +30,14 @@ function contrast(a, b) {
 }
 
 // To do 5, the condition of the rule D of D-271 for the frost: its outline stands out from the snow it
-// lies on by 3:1. The snow is the scene's open snow as the real browser mixes it (the preview of the
-// task, table (a), measured on the real scene files, 2026-11-11): none, under the cool tint at
-// streak 0, at t = 0.4, at the required streak (t = 0.8) and under the full gold. Catches an outline
-// token changed to a colour that no longer reads on the snow of any streak, and the frost lying over a
-// tint that is not there, as the frost is over the tint.
+// lies on by 3:1. The snow colours are fixed literals, each with its source: `#bccae5` (today's snow
+// without a tint), `#bacfd0` (under the cool tint at streak 0) and `#ddc69e` (under the full gold) are
+// in the task document (question 10, carried question 4); `#c2cebe` (t = 0.4) and `#d4caa5` (t = 0.8)
+// are in table (a) of the preview of the values of appearance the task cites, and my measurement of the
+// scene as the browser draws it on 2026-11-12 gave `#c2cebe` and `#d4caa6`. What this test guards: the
+// token of the outline against those snow samples, measured once. It does not follow the tint tokens:
+// a change to `--scene-tint-*` that changes the snow under the frost passes unseen, and its author
+// measures the snow again.
 test("the frost's outline stands out from the snow at every tint, 3:1 at least", () => {
   const SNOW = {
     "no tint": "#bccae5",

@@ -26,10 +26,10 @@
  * state for it, and drops an effect that is overdue, one whose turn comes at a stop or in a reading
  * that carries several ends (D-317).
  *
- * Over the picture of the forest, its props, its fire, the dust and the mage lies the layer of the tint
- * of the scene's light, `mix-blend-mode: color`, and over that the frost on the edges of the frame; the
- * badge and the plaque of the flying icon, each on a solid `panel`, lie over both (task
- * swit-rosnacy-z-passa, D-315, D-316, D-320). The tint and the frost are drawn from the game state like
+ * Over the picture of the forest, its props, its fire, the dust, the mage and the flying icon on its
+ * plaque lies the layer of the tint of the scene's light, `mix-blend-mode: color`, and over that the
+ * frost on the edges of the frame; the badge over the mage's head, on its solid `panel`, lies over both
+ * (D-315, D-316, D-320). The tint and the frost are drawn from the game state like
  * the rest: the tint and the thickness of the frost come to the stylesheet as numbers, and the
  * stylesheet takes every colour from the design tokens (D-43). A loss of the streak takes the tint back
  * to the cool one over 2 s on a new element of the layer, started where the scene goes on (D-317).
@@ -463,6 +463,14 @@ export function Scene({
           <Sheet sprite={drawing.mage.bend} className="scene-mage-bend" />
         </div>
       </div>
+      {effect.shown === null || effect.shown.kind !== "flight" ? null : (
+        <Effect
+          key={`effect-${effect.serial}`}
+          effect={effect.shown}
+          frame={frame}
+          onEnd={effectEnded(effect.serial)}
+        />
+      )}
       <div
         key={`tint-${lit.serial}`}
         className="scene-tint"
@@ -472,14 +480,6 @@ export function Scene({
       />
       {drawing.frost === 0 ? null : (
         <Frost thickness={drawing.frost} frame={frame} />
-      )}
-      {effect.shown === null || effect.shown.kind !== "flight" ? null : (
-        <Effect
-          key={`effect-${effect.serial}`}
-          effect={effect.shown}
-          frame={frame}
-          onEnd={effectEnded(effect.serial)}
-        />
       )}
       <div
         key={`badge-${walk}`}

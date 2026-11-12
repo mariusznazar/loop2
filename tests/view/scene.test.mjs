@@ -1376,9 +1376,10 @@ const layersOf = (scene) =>
   [...scene.children].map((element) => element.className.split(" ")[0]);
 
 // To do 1, carried question 2, D-315. Catches a tint that lies under the mage or over the badge, a
-// frost under the tint, a plaque of the flying icon under the tint, and a badge still inside the mage's
-// element, which is under the tint.
-test("the layers: the tint over everything the scene draws, the frost over the tint, the plaque and the badge over both", async () => {
+// frost under the tint, a flying icon with its plaque over the tint (row 1 puts under the tint everything
+// the scene draws but the badge and the frost), and a badge still inside the mage's element, which is
+// under the tint.
+test("the layers: the tint over everything the scene draws, the flying icon and the dust included, the frost and the badge over it", async () => {
   await withPage(async (page) => {
     const state = withFire(42, lit({ streak: 100, temperature: 36 }));
     const scene = await drawn(page, state);
@@ -1425,11 +1426,12 @@ test("the layers: the tint over everything the scene draws, the frost over the t
     );
     const flying = layersOf(flight.scene());
     assert.ok(
-      flying.indexOf("scene-effect") > flying.indexOf("scene-tint"),
-      "the plaque of the icon over the tint",
+      flying.indexOf("scene-effect") < flying.indexOf("scene-tint"),
+      "the plaque of the icon under the tint",
     );
     assert.ok(
-      flying.indexOf("scene-effect") < flying.indexOf("scene-badge-carrier"),
+      flying.indexOf("scene-effect") > flying.indexOf("scene-mage"),
+      "and over the mage it flies to",
     );
   });
 });
@@ -1626,10 +1628,10 @@ test("the frost is none at 37 °C, 8 pixels at 36 °C, the whole 16 at 35 °C an
 // at its place with no change to run: its thickness is the state's, reading by reading.
 test("warming at the fire takes the frost back, reading by reading", async () => {
   await withPage(async (page) => {
-    const { draw, scene } = await mounted(page, lit({ temperature: 35.2 }));
+    const { draw, scene } = await mounted(page, lit({ temperature: 35.5 }));
     const thickness = () =>
       scene().querySelector(".scene-frost")?.style.getPropertyValue("--frost");
-    assert.equal(thickness(), "14");
+    assert.equal(thickness(), "12");
     await draw(lit({ temperature: 36 }));
     assert.equal(thickness(), "8");
     await draw(lit({ temperature: 37 }));
