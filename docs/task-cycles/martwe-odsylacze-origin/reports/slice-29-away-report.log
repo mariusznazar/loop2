@@ -1,0 +1,30 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/away-report.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ importing the report touches no DOM: Node has no document and the import succeeded (2.015ms)
+✔ the two titles and the sentence of a full chest are the wordings of D-246 (0.3393ms)
+✔ the title is „Pętle, które stanęły” only while every line is a stop in the open game (0.3857ms)
+✔ a loop that stopped in a catch-up reads „po {m} min” in danger, the name and the generation from the data (2.1735ms)
+✔ a loop that stopped in the open game reads without minutes, in danger (0.4608ms)
+✔ a line that holds minutes of an earlier return and stopped in the open game reads without minutes (0.3273ms)
+✔ another line reads minutes, then the chest's signed changes, then the practice, in text (0.5789ms)
+✔ items follow the order of the items' data whatever the order of the line's keys (0.3017ms)
+✔ empty parts are left out: no chest, no practice, or neither (0.6589ms)
+✔ a resurrection used in the catch-up adds „ · wskrzeszenie zużyte” at the end, also on a bare line (0.5363ms)
+✔ stopped lines come first and the others after them, each group in the team's order (0.3688ms)
+✔ two lines of one character, a stopped one and a later one, both stand (0.2291ms)
+✔ an empty report gives no entry (0.1795ms)
+✔ the chest is full from the capacity of the balance on, counting all items (0.2083ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.417

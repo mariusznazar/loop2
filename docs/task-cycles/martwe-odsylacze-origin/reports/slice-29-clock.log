@@ -1,0 +1,39 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/clock.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a running clock passes time to its game on every 200 ms tick (6.0985ms)
+✔ a disposed clock leaves no interval registered and passes no further time, however long (0.4885ms)
+✔ flush and send of a disposed clock no longer reach the game (0.3868ms)
+✔ games started and disposed one after another leave only the last clock running (1.7317ms)
+✔ the clock's send carries the program number to the simulation's send (4.5184ms)
+✔ a flush reads the date once, whether the tick or a caller asks for it (1.6356ms)
+✔ a send takes the one reading of its flush (0.8484ms)
+✔ a flush in which the character dies hands the store one result: the events of the passing of time with the death settled at that reading (23.3497ms)
+✔ a death is settled against the reading of its flush, not an earlier one (25.5517ms)
+✔ a death standing on the screen is settled once, at the first reading (11.6411ms)
+✔ a flush of an unchanged game hands the store the very state it holds, with no events (0.7065ms)
+✔ the clock gives the moment of its latest reading: the start's until the first flush, then each flush's (0.5059ms)
+✔ a send makes a reading, so the moment is the one the send took (0.6059ms)
+✔ a call follows each flush, after the store has the reading's result, and none follows dispose (0.8888ms)
+✔ a flush that changes nothing in the game is still followed by the call (0.7011ms)
+✔ a reading passes the manual run, then the loops, and hands the store one result with their events together (13.8989ms)
+✔ a loop's end is settled at the minute's own moment, not at the reading's (2.7434ms)
+✔ minutes of a loop are never passed twice when apply reads the clock again (2.7189ms)
+✔ a date turned back passes nothing and the loop clock then runs from the date read (2.1861ms)
+✔ a loop started by the clock gets a full first minute, and its first run is seeded by the reading it took (1.1876ms)
+✔ a loop started or a catch-up asked of a disposed clock reaches nothing (0.4374ms)
+✔ the catch-up spans from the save time to the date it reads, which is the clock's moment, and the rest waits (3.9134ms)
+✔ the catch-up of a game with no loop, or one never saved, leaves the very state (2.3487ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 298.9122

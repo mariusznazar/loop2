@@ -1,0 +1,32 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/team-lines.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ importing the team lines touches no DOM: Node has no document and the import succeeded (1.097ms)
+✔ an empty chest shows no line, so the headquarters marks it empty (0.7964ms)
+✔ a chest holding pieces shows a line per resource held, in the order of the resources' data (0.273ms)
+✔ the row of a character that has not gone shows the first program of the list (0.472ms)
+✔ the positions of a row's list are the programs' names in list order, valued by their numbers (0.2038ms)
+✔ the list shows the program given, whichever place it has on the list (0.1825ms)
+✔ 7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min (0.3653ms)
+✔ hours and minutes split after the rounding up: 60 min is 1 godz. 0 min, 61 min is 1 godz. 1 min, 2 h 1 s is 2 godz. 1 min (0.226ms)
+✔ below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min (0.1641ms)
+✔ the line turns ready at the moment of readiness itself and not a millisecond before, and a ready line is not danger (0.2493ms)
+✔ a character of a new game, whose moment is 0, reads ready at any real moment (0.1787ms)
+✔ a clock set back lengthens the time left: the moment an hour earlier reads 9 godz. 0 min for 8 hours of renewal (0.1274ms)
+✔ the label of a generation is „pokolenie {n}” from 2 up and nothing at 1 (0.1016ms)
+✔ the line of a character in a loop names the map, the run, its minute and the runs completed (0.1104ms)
+✔ the line after a stop lists the practice gathered in the skills' order, and is the bare words where none was (0.1718ms)
+✔ the sentence beside an inactive send names the run's map from the data and tells the player to finish the run (0.1439ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.2435

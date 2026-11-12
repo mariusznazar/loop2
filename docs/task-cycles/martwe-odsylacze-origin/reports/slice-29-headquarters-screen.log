@@ -1,0 +1,34 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/headquarters-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the screen holds its heading Siedziba, then the sections „Drużyna” and „Skrzynka {n}/{cap}” under it (96.2119ms)
+✔ the folded section „Autorzy grafiki” stands last on the screen, whatever the team and the chest hold, and stays as the player left it (56.2251ms)
+✔ each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype (31.7813ms)
+✔ an empty team says „Drużyna nie ma jeszcze postaci.” and still offers the creation of a character (27.3448ms)
+✔ the chest heading reads the pieces and the capacity, its lines follow the items, and an empty chest says so under „Skrzynka 0/60” (33.0834ms)
+✔ the resurrection line follows the clock's moment in the very same element, in danger until ready (36.3324ms)
+✔ a running loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped loop shows its line instead (38.4374ms)
+✔ a report stands above „Drużyna”, titled „Gdy cię nie było”, the loop that stopped first and in danger (38.1137ms)
+✔ only stops in the open game give the title „Pętle, które stanęły”, and a full chest adds „Skrzynka jest pełna.” (30.5271ms)
+✔ „Zamknij” asks the page to close the report; once the report is empty the section goes and the focus stands on „Drużyna” (134.7803ms)
+✔ „Zamknij” leaves the focus on its button when the report is still there (31.4056ms)
+✔ „Załóż” hands the page the trimmed name and empties the field; Enter in the field does the same (28.3792ms)
+✔ a name empty once trimmed creates nothing and says „Wpisz imię postaci.” under the field until the player types (26.0757ms)
+✔ the field keeps its element, its text and its focus, and the button its focus, through every refresh of the state and of the moment (65.6455ms)
+✔ nothing on the screen sends a character or leads to the screen Mapy (29.7991ms)
+✔ an update that changes nothing the screen shows draws nothing, so it needs no act (16.6327ms)
+✔ dispose takes the screen out of the page and later updates change nothing (36.1339ms)
+✔ focus puts the keyboard's focus on the screen's element (23.3631ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2116.8547
