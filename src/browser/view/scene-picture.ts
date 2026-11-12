@@ -1,5 +1,6 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import type { ArchetypeId } from "../sim/data/archetypes.js";
+import { CAMPFIRE } from "../sim/data/campfire.js";
 import { MAPS } from "../sim/data/maps.js";
 import type { SolvingDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -11,17 +12,19 @@ import {
   SCENE_FIRE,
   SCENE_FROST,
   SCENE_MAGES,
+  SCENE_MOMENTS,
   SCENE_PROPS,
   SCENE_TINT,
 } from "../sim/data/scene.js";
 import type {
   ScenePicture,
   ScenePropSpot,
+  SceneSpeck,
   SceneSpot,
 } from "../sim/data/scene.js";
 import type { GameEvent } from "../sim/game.js";
 import { sameHex } from "../sim/hex.js";
-import type { GameMapRun, GameState } from "../sim/types.js";
+import type { GameMapRun, GameState, Understanding } from "../sim/types.js";
 
 /** How the scene stands: going, stopped by the player's pause, at a discovery, after a death or after a completion. */
 export type SceneStanding =
@@ -42,6 +45,29 @@ export type ScenePlacedSprite = SceneSprite & { x: number; y: number };
 export type MageGoal =
   { kind: "stays" } | { kind: "at"; place: { x: number; y: number } };
 
+/** A point of the scene, in its pixels. */
+export type ScenePoint = { x: number; y: number };
+
+/** An icon of what a discovery revealed on its plaque: where the plaque stands and where it comes out of the forest. */
+export type ScenePlaque = {
+  href: string;
+  x: number;
+  y: number;
+  from: ScenePoint;
+};
+
+/**
+ * The moment in which time stands still that the scene shows (D-322), with the key that tells one
+ * moment from the next: a discovery, a death or a completion of the map run. A discovery shows the
+ * icons of what it revealed, a death the mage's fall and, after a death of cold, the cold layer over
+ * the whole scene, a completion the specks of light rising over the clearing. What each moment looks
+ * like when it has played is this same drawing, standing still.
+ */
+export type SceneMoment =
+  | { kind: "discovery"; key: string; plaques: ScenePlaque[] }
+  | { kind: "death"; key: string; cold: boolean }
+  | { kind: "completion"; key: string; specks: readonly SceneSpeck[] };
+
 /** The scene of the map run as plain data for drawing; pure, no DOM, no URL built from a name. */
 export type SceneDrawing = {
   standing: SceneStanding;
@@ -50,6 +76,7 @@ export type SceneDrawing = {
     idle: SceneSprite;
     run: SceneSprite;
     bend: SceneSprite;
+    death: SceneSprite;
     goal: MageGoal;
     /** Whether the mage is gathering, so it bends in a loop where it stands at its place. */
     bending: boolean;
@@ -76,13 +103,20 @@ export type SceneDrawing = {
   tint: number;
   /** The thickness of the frost on the frame's edges in the scene's pixels, a whole number from 0 up. */
   frost: number;
+  /** The moment in which time stands still that the scene shows; null while the map run goes on or is paused by the player. */
+  moment: SceneMoment | null;
 };
 
 const STAYS: MageGoal = { kind: "stays" };
 const PROPS: Partial<Record<ResourceId, ScenePropSpot>> = SCENE_PROPS;
 const MAGES: Record<
   ArchetypeId,
-  { idle: ScenePicture; run: ScenePicture; bend: ScenePicture }
+  {
+    idle: ScenePicture;
+    run: ScenePicture;
+    bend: ScenePicture;
+    death: ScenePicture;
+  }
 > = SCENE_MAGES;
 
 function spriteOf(picture: ScenePicture): SceneSprite {
@@ -144,6 +178,96 @@ function standingOf(state: GameState, run: GameMapRun): SceneStanding {
   return "going";
 }
 
+/** The url of an icon of the game, as the badge over the mage's head takes it. */
+function iconHref(icon: string): string {
+  return `/icons/${icon}.svg`;
+}
+
+/**
+ * The plaques of what a discovery revealed: the icon of each action and each item, the campfire's
+ * included, that the data gives one, each icon once however many things share it. What has no icon in
+ * the data, a condition, a creature or a skill tree, has no plaque; the band over the program names
+ * it (D-122). The plaques stand in rows over the clearing, each row centred (D-322).
+ */
+function plaquesOf(discovery: Understanding): ScenePlaque[] {
+  const icons = new Set([
+    ...discovery.actions.map((kind) => iconHref(ACTIONS[kind].icon)),
+    ...discovery.items.map((id) =>
+      iconHref(id === CAMPFIRE.id ? CAMPFIRE.icon : RESOURCES[id].icon),
+    ),
+  ]);
+  const { centreX, y, step, perRow, rowStep, from } = SCENE_MOMENTS.discovery;
+  return [...icons].map((href, index) => {
+    const row = Math.floor(index / perRow);
+    const inRow = Math.min(perRow, icons.size - row * perRow);
+    const x = centreX + (index - row * perRow - (inRow - 1) / 2) * step;
+    return {
+      href,
+      x,
+      y: y - row * rowStep,
+      from: x < centreX ? from.left : from.right,
+    };
+  });
+}
+
+/**
+ * The moment in which time stands still that the scene shows, from how it stands: the plaques of a
+ * discovery, the fall of a dead mage with the cold layer after a death of cold, and the specks of
+ * light after a completion (D-322). A death and a completion come before a discovery of the same game
+ * minute, so such a minute shows the effect of the end alone.
+ */
+function momentOf(
+  state: GameState,
+  run: GameMapRun,
+  standing: SceneStanding,
+): SceneMoment | null {
+  if (standing === "dead" && run.death !== null)
+    return {
+      kind: "death",
+      key: `death:${run.death.minute}`,
+      cold: run.death.cause === "cold",
+    };
+  if (standing === "completed" && run.completion !== null)
+    return {
+      kind: "completion",
+      key: `completion:${run.completion.minute}`,
+      specks: SCENE_MOMENTS.specks,
+    };
+  if (standing === "discovery" && state.discovery !== null)
+    return {
+      kind: "discovery",
+      key: `discovery:${run.minute}`,
+      plaques: plaquesOf(state.discovery),
+    };
+  return null;
+}
+
+/**
+ * Whether the events of a simulation call say that the moment of a standing has just begun: the
+ * discovery, the death or the completion of that call. A scene drawn again from the same state, after
+ * a return to the screen, a reload or a load, has none of them and shows the last image of the moment
+ * at once (D-322, D-04).
+ */
+export function momentBegins(
+  standing: SceneStanding,
+  events: readonly GameEvent[],
+): boolean {
+  const kind =
+    standing === "discovery"
+      ? "discovered"
+      : standing === "dead"
+        ? "characterDied"
+        : standing === "completed"
+          ? "mapRunCompleted"
+          : null;
+  return kind !== null && events.some((event) => event.kind === kind);
+}
+
+/** Whether the events of a simulation call carry the end of the map run that the scene shows as an effect, a death or a completion. */
+export function endEffectBegins(events: readonly GameEvent[]): boolean {
+  return momentBegins("dead", events) || momentBegins("completed", events);
+}
+
 /**
  * The badge of the current action: its icon as the rule's row shows it, and its progress, the game
  * minutes since its start with the fraction of a minute the carry holds, over its length.
@@ -163,7 +287,7 @@ function badgeOf(
   const length = current.endMinute - current.startMinute;
   const passed = run.minute - current.startMinute + state.realMsCarry / 1000;
   return {
-    href: `/icons/${ACTIONS[current.activity.action.kind].icon}.svg`,
+    href: iconHref(ACTIONS[current.activity.action.kind].icon),
     progress: Math.min(1, Math.max(0, passed / length)),
   };
 }
@@ -296,13 +420,15 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
     const spot = PROPS[resource];
     return spot === undefined ? [] : [{ resource, ...placedOf(spot) }];
   });
+  const standing = standingOf(state, run);
   return {
-    standing: standingOf(state, run),
+    standing,
     background: spriteOf(SCENE.background),
     mage: {
       idle: spriteOf(sheets.idle),
       run: spriteOf(sheets.run),
       bend: spriteOf(sheets.bend),
+      death: spriteOf(sheets.death),
       goal: goalOf(run),
       bending: bendingOf(run),
       bendFacing: bendFacingOf(run),
@@ -312,6 +438,7 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
     badge: badgeOf(state, run),
     tint: tintOf(run),
     frost: frostOf(run),
+    moment: momentOf(state, run, standing),
   };
 }
 
@@ -323,9 +450,6 @@ const USES_BACKPACK: ReadonlySet<string> = new Set([
   "feedCampfire",
   "eat",
 ]);
-
-/** A point of the scene, in its pixels. */
-export type ScenePoint = { x: number; y: number };
 
 /**
  * The effect of the end of a gathering, an effect of an ordinary event (D-317): the icon of the

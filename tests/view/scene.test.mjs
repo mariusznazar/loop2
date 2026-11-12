@@ -1686,3 +1686,484 @@ test("the pause greys the tint and the frost with the whole scene, because they 
     assert.equal(filterOf(tintOf(scene)), "", "no second grey of its own");
   });
 });
+
+// --- the three moments in which time stands still (task trzy-chwile-gdy-czas-stoi; D-322) ---------
+
+const dyingOf = (cause) =>
+  withRun(
+    { ...doing(GATHER_STICK), paused: false, discovery: null },
+    { death: { minute: 4, cause } },
+  );
+const solved = () =>
+  withRun(
+    { ...doing(GATHER_STICK), paused: false, discovery: null },
+    { completion: { minute: 4 } },
+  );
+const discoveredOf = (found) => ({
+  ...doing({ kind: "explore" }),
+  paused: true,
+  discovery: { ...NO_UNDERSTANDING_ITEMS, ...found },
+});
+const going = () => doing({ kind: "explore" });
+const DIED = { kind: "characterDied", minute: 4, cause: "cold" };
+const SOLVED = { kind: "mapRunCompleted", minute: 4 };
+const FOUND = (found) => ({
+  kind: "discovered",
+  minute: 4,
+  ...NO_UNDERSTANDING_ITEMS,
+  ...found,
+});
+const playing = (scene) => scene.hasAttribute("data-moment-playing");
+
+/** A scene mounted on `from` and drawn again on `to` with the events of the call that led there. */
+async function moment(page, from, to, events, onEffectEnd) {
+  const container = page.document.createElement("div");
+  page.document.body.append(container);
+  const root = createRoot(container);
+  const draw = (state, nextEvents = []) =>
+    inAct(() =>
+      root.render(
+        createElement(Scene, {
+          state,
+          width: 672,
+          height: 304,
+          events: nextEvents,
+          onEffectEnd,
+        }),
+      ),
+    );
+  await draw(from);
+  await draw(to, events);
+  return { draw, scene: () => one(container, ".scene") };
+}
+
+/** The element whose animation tells the scene that its moment's effect has ended. */
+const master = (scene) => one(scene, ".scene-moment-master[data-moment-key]");
+
+/** Fires `animationcancel`, which a browser fires on an animation whose element is hidden. */
+function cancelAnimation(element) {
+  const { Event } = element.ownerDocument.defaultView;
+  element.dispatchEvent(new Event("animationcancel", { bubbles: true }));
+}
+
+// D-322, task To do 5. Catches a moment whose effect plays at the first draw of the scene, which is
+// where a return to the screen, a reload and a load draw it: the scene must stand on the last image.
+test("a scene drawn on a moment, as after a return to the screen, a reload or a load, plays no effect and stands on its last image", async () => {
+  await withPage(async (page) => {
+    for (const [name, state] of [
+      ["a discovery", discoveredOf({ actions: ["explore"] })],
+      ["a death", dyingOf("cold")],
+      ["a completion", solved()],
+    ]) {
+      const scene = await drawn(page, state);
+      assert.ok(scene.hasAttribute("data-moment"), name);
+      assert.equal(playing(scene), false, name);
+    }
+    const none = await drawn(page, solved());
+    assert.equal(none.querySelectorAll(".scene-speck").length, 0, "no specks");
+  });
+});
+
+// D-322, D-04, task To do 1 to 4. Catches an effect that does not play in the reading that brings the
+// moment, one that plays at a reading with another call's events, and one that plays again at a redraw
+// of the same state.
+test("the effect plays in the reading whose events carry its moment, and not at a redraw of the same state", async () => {
+  await withPage(async (page) => {
+    for (const [name, to, events, wrong] of [
+      [
+        "a discovery",
+        discoveredOf({ actions: ["explore"] }),
+        [FOUND({ actions: ["explore"] })],
+        [DIED, SOLVED],
+      ],
+      ["a death", dyingOf("cold"), [DIED], [FOUND({}), SOLVED]],
+      ["a completion", solved(), [SOLVED], [FOUND({}), DIED]],
+    ]) {
+      const read = await moment(page, going(), to, events);
+      assert.ok(playing(read.scene()), `${name}: plays at its reading`);
+      await read.draw(to, []);
+      assert.ok(playing(read.scene()), `${name}: a redraw does not stop it`);
+      const other = await moment(page, going(), to, wrong);
+      assert.equal(
+        playing(other.scene()),
+        false,
+        `${name}: the events of another moment start none`,
+      );
+    }
+  });
+});
+
+// D-322. Catches an effect that never ends, which would keep the window shut, one that tells the end
+// more than once, one that ends on the end of a part of it and not of its whole, and a scene hidden
+// while the effect runs, which a browser cancels and fires no end for.
+test("the end of an effect's own animation stands the scene on its last image and tells the screen once, as does the cancel of a hidden scene", async () => {
+  await withPage(async (page) => {
+    for (const [name, to, events, ended] of [
+      [
+        "a discovery",
+        discoveredOf({ actions: ["explore"] }),
+        [FOUND({ actions: ["explore"] })],
+        endAnimation,
+      ],
+      ["a death", dyingOf("cold"), [DIED], endAnimation],
+      ["a completion", solved(), [SOLVED], endAnimation],
+      [
+        "a hidden discovery",
+        discoveredOf({ actions: ["explore"] }),
+        [FOUND({ actions: ["explore"] })],
+        cancelAnimation,
+      ],
+      ["a hidden death", dyingOf("cold"), [DIED], cancelAnimation],
+      ["a hidden completion", solved(), [SOLVED], cancelAnimation],
+    ]) {
+      let told = 0;
+      const read = await moment(page, going(), to, events, () => (told += 1));
+      assert.ok(playing(read.scene()), `${name}: precondition`);
+      const parts = [...read.scene().querySelectorAll(".scene-moment-part")];
+      const inner = parts.find((part) => !part.matches(".scene-moment-master"));
+      if (inner !== undefined && ended === endAnimation) {
+        await inAct(() => endAnimation(inner));
+        assert.ok(
+          playing(read.scene()),
+          `${name}: a part's end is not the end`,
+        );
+        assert.equal(told, 0);
+      }
+      await inAct(() => ended(master(read.scene())));
+      assert.equal(playing(read.scene()), false, `${name}: last image`);
+      assert.equal(told, 1, `${name}: told the screen once`);
+      const again = read
+        .scene()
+        .querySelector(".scene-moment-master[data-moment-key]");
+      if (again !== null) await inAct(() => ended(again));
+      assert.equal(told, 1, `${name}: told once, however often it ends`);
+      await read.draw(to, []);
+      assert.equal(playing(read.scene()), false, `${name}: not played afresh`);
+    }
+  });
+});
+
+// D-322. Catches a moment that plays again because the same state was drawn after its end, and one that
+// does not play when the next moment of the same kind comes after the scene went on.
+test("a moment that has played does not play again, and the next one after the scene went on does", async () => {
+  await withPage(async (page) => {
+    const read = await moment(page, going(), dyingOf("cold"), [DIED]);
+    await inAct(() => endAnimation(master(read.scene())));
+    assert.equal(playing(read.scene()), false);
+    await read.draw(going(), []);
+    assert.equal(read.scene().hasAttribute("data-moment"), false, "gone");
+    await read.draw(dyingOf("hunger"), [{ ...DIED, cause: "hunger" }]);
+    assert.ok(playing(read.scene()), "the next death plays");
+  });
+});
+
+// D-322, D-122, task To do 1 and 4. Catches a plaque for a thing with no icon, a plaque in another
+// place than the data's, a frame-sized layer that does not carry the offsets the effect comes in from,
+// and a plaque that outlasts „Wznów”.
+test("a discovery shows a plaque for each icon on the clearing, each coming from the forest, and „Wznów” takes them away", async () => {
+  await withPage(async (page) => {
+    const found = {
+      actions: ["explore", "wander"],
+      items: ["stick"],
+      conditions: ["always"],
+    };
+    const read = await moment(page, going(), discoveredOf(found), [
+      FOUND(found),
+    ]);
+    const scene = read.scene();
+    const items = [...scene.querySelectorAll(".scene-discovery-item")];
+    assert.equal(items.length, 3, "none for the condition");
+    const expected = [
+      ["/icons/binoculars.svg", 154, -34, -14],
+      ["/icons/hiking.svg", 176, 89, -14],
+      ["/icons/wood-stick.svg", 198, 67, -14],
+    ];
+    items.forEach((item, index) => {
+      const [icon, x, dx, dy] = expected[index];
+      const plaque = one(item, ".scene-discovery-plaque");
+      near(plaque.style.left, (x / 336) * 100, `${icon} left`);
+      near(plaque.style.top, (64 / 152) * 100, `${icon} top`);
+      assert.equal(item.style.getPropertyValue("--index"), String(index));
+      near(
+        item.style.getPropertyValue("--from-x"),
+        (dx / 336) * 100,
+        `${icon} from x`,
+      );
+      near(
+        item.style.getPropertyValue("--from-y"),
+        (dy / 152) * 100,
+        `${icon} from y`,
+      );
+      assert.equal(
+        one(plaque, ".icon-mask").style.getPropertyValue("--icon"),
+        `url("${icon}")`,
+      );
+    });
+    assert.equal(
+      one(scene, ".scene-discovery").style.getPropertyValue("--count"),
+      "3",
+    );
+    // „Wznów” goes on: the state holds no discovery and the plaques are gone.
+    await read.draw(going(), []);
+    assert.equal(read.scene().querySelectorAll(".scene-discovery").length, 0);
+  });
+});
+
+// D-322, D-122. Catches a discovery of conditions alone that stands a layer of plaques of nothing.
+test("a discovery whose things have no icon shows no plaque, and the scene stays in colour", async () => {
+  await withPage(async (page) => {
+    const found = { conditions: ["always"], creatures: ["wolf"] };
+    const scene = await drawn(page, discoveredOf(found));
+    assert.equal(scene.querySelectorAll(".scene-discovery-plaque").length, 0);
+    assert.equal(filterOf(scene), "");
+  });
+});
+
+// D-322, task To do 8. Catches the plaques of a discovery over the effect of an end in the game minute
+// of that discovery: the end shows alone.
+test("a death or a completion in the game minute of a discovery shows no plaque", async () => {
+  await withPage(async (page) => {
+    const held = { ...NO_UNDERSTANDING_ITEMS, actions: ["explore"] };
+    for (const [name, state] of [
+      [
+        "a death",
+        withRun(
+          { ...going(), paused: true, discovery: held },
+          { death: { minute: 4, cause: "hunger" } },
+        ),
+      ],
+      [
+        "a completion",
+        withRun(
+          { ...going(), paused: false, discovery: held },
+          { completion: { minute: 4 } },
+        ),
+      ],
+    ]) {
+      const read = await moment(page, going(), state, [
+        FOUND(held),
+        DIED,
+        SOLVED,
+      ]);
+      assert.equal(
+        read.scene().querySelectorAll(".scene-discovery").length,
+        0,
+        name,
+      );
+    }
+  });
+});
+
+// D-322, task To do 2. Catches a dead mage drawn in the idle sheet, a death sheet that stands for a mage
+// who lives, and the data's file not read from the drawing. The stylesheet decides which sheet shows.
+test("after a death the mage shows its death sheet from the data in place of the other three, and a living mage never does", async () => {
+  await withPage(async (page) => {
+    const dead = await drawn(page, dyingOf("hunger"));
+    const sheet = one(dead, ".scene-mage-death");
+    assert.deepEqual(sheetOf(sheet), {
+      src: "/sprites/mage-death.png",
+      alt: "",
+      frames: "6",
+    });
+    assert.equal(computed(sheet, "display"), "block");
+    for (const other of ["idle", "run", "bend"])
+      assert.equal(
+        computed(one(dead, `.scene-mage-${other}`), "display"),
+        "none",
+        other,
+      );
+    for (const state of [
+      going(),
+      solved(),
+      discoveredOf({ actions: ["explore"] }),
+    ]) {
+      const scene = await drawn(page, state);
+      assert.equal(
+        computed(one(scene, ".scene-mage-death"), "display"),
+        "none",
+      );
+    }
+  });
+});
+
+// D-322. Catches a mage that falls off the picture or under the frost on its edge: the death sheet
+// reaches the whole width of the frame and falls to the right, so a mage in the right half is turned to
+// fall to the left, and one in the left half falls to the right.
+test("a dead mage falls toward the middle of the frame, whichever way it faced", async () => {
+  await withPage(async (page) => {
+    for (const [action, facing] of [
+      [{ kind: "explore" }, "left"],
+      [{ kind: "gather", resource: "stick" }, "right"],
+      [{ kind: "gather", resource: "berry" }, "left"],
+    ]) {
+      const state = withRun(
+        { ...doing(action), paused: false },
+        { death: { minute: 4, cause: "cold" } },
+      );
+      const read = await moment(page, doing(action), state, [DIED]);
+      assert.equal(
+        one(read.scene(), ".scene-mage").getAttribute("data-facing"),
+        facing,
+        `${action.kind} ${action.resource ?? ""}`,
+      );
+    }
+  });
+});
+
+// D-322, D-315, D-317, task To do 2 and 9. Catches a cold layer after a death of hunger or in a fight,
+// one before a death, one under the tint or over the frost, and one that carries a colour in its style.
+test("the cold layer stands after a death of cold alone, over the tint and under the frost, with no colour in its style", async () => {
+  await withPage(async (page) => {
+    for (const cause of ["hunger", "combat"])
+      assert.equal(
+        (await drawn(page, dyingOf(cause))).querySelectorAll(".scene-chill")
+          .length,
+        0,
+        cause,
+      );
+    assert.equal(
+      (await drawn(page, going())).querySelectorAll(".scene-chill").length,
+      0,
+    );
+    const cold = await drawn(
+      page,
+      withRun(dyingOf("cold"), {
+        body: { ...sent().run.body, temperature: 34 },
+      }),
+    );
+    const layers = layersOf(cold);
+    assert.deepEqual(
+      layers.filter((name) =>
+        ["scene-tint", "scene-chill", "scene-frost"].includes(name),
+      ),
+      ["scene-tint", "scene-chill", "scene-frost"],
+    );
+    assert.doesNotMatch(
+      one(cold, ".scene-chill").getAttribute("style"),
+      /#|rgb|hsl|oklch|color/i,
+    );
+  });
+});
+
+// D-322, task To do 3. Catches specks that stand at a completion's last image, specks drawn in a colour
+// of their own in the style instead of the token, a count other than the data's, and specks under
+// the tint, whose gold would take their colour.
+test("the specks of a completion stand only while the effect plays, over the tint, each a pixel of the scene on its grid", async () => {
+  await withPage(async (page) => {
+    const read = await moment(page, going(), solved(), [SOLVED]);
+    const scene = read.scene();
+    const specks = [...scene.querySelectorAll(".scene-speck")];
+    assert.equal(specks.length, 24);
+    const layers = layersOf(scene);
+    assert.ok(layers.indexOf("scene-specks") > layers.indexOf("scene-tint"));
+    const first = specks[0];
+    near(first.style.left, (104 / 336) * 100, "left");
+    near(first.style.top, (112 / 152) * 100, "top");
+    assert.equal(first.getAttribute("data-shade"), "ember");
+    assert.equal(first.style.getPropertyValue("--rise"), "12");
+    assert.equal(first.style.getPropertyValue("--delay"), "0");
+    assert.doesNotMatch(
+      one(scene, ".scene-specks").getAttribute("style"),
+      /#|rgb|hsl|oklch|color/i,
+    );
+    near(
+      one(scene, ".scene-specks").style.getPropertyValue("--pixel-x"),
+      100 / 336,
+      "a pixel's width",
+    );
+    await inAct(() => endAnimation(master(scene)));
+    assert.equal(read.scene().querySelectorAll(".scene-speck").length, 0);
+  });
+});
+
+// D-322, D-316. Catches a completion that changes the mage's colour or the full gold the tint stands at.
+test("a completion's last image is the mage in colour in the full gold, with no speck", async () => {
+  await withPage(async (page) => {
+    const scene = await drawn(page, solved());
+    assert.equal(filterOf(one(scene, ".scene-mage-sprite")), "");
+    assert.equal(tintOf(scene).style.getPropertyValue("--tint"), "1");
+  });
+});
+
+// D-322, task To do 4. Catches a stop that holds the effect of its own moment, the effect then standing
+// frozen at its first frame, and a moment that lets the rest of the scene move while it plays.
+test("at its stop only the effect of a moment runs, and every other animation of the scene stands", async () => {
+  await withPage(async (page) => {
+    for (const [name, state, events, parts] of [
+      [
+        "a death",
+        dyingOf("cold"),
+        [DIED],
+        [".scene-mage-death", ".scene-mage-death img", ".scene-chill"],
+      ],
+      [
+        "a discovery",
+        discoveredOf({ actions: ["explore"] }),
+        [FOUND({ actions: ["explore"] })],
+        [".scene-discovery", ".scene-discovery-item"],
+      ],
+      ["a completion", solved(), [SOLVED], [".scene-specks", ".scene-speck"]],
+    ]) {
+      const scene = (
+        await moment(page, going(), withFire(42, state), events)
+      ).scene();
+      for (const selector of parts) {
+        const element = scene.querySelector(selector);
+        if (element === null) continue;
+        assert.notEqual(
+          computed(element, "animation-play-state"),
+          "paused",
+          `${name}: ${selector} runs`,
+        );
+      }
+      for (const selector of [".scene-mage", ".scene-fire img", ".scene-tint"])
+        assert.equal(
+          computed(one(scene, selector), "animation-play-state"),
+          "paused",
+          `${name}: ${selector} stands`,
+        );
+    }
+  });
+});
+
+// D-322, D-317, task To do 9. The one layer of a moment that spans the whole scene, the cold layer,
+// blends by `color`, which lays its hue on the picture and leaves the picture's brightness as it is, so
+// it never lights or darkens the whole area, whatever its opacity. Catches a change of the blend to a
+// mode that moves the brightness (`normal`, `multiply`, `screen`), which would be a flash of the whole
+// scene against D-317 as the layer comes in.
+test("the cold layer blends by colour, so it keeps the brightness of what it lies over", () => {
+  const match = /\.scene-chill\s*\{([^}]*)\}/.exec(STYLES);
+  assert.ok(match, "the rule of the cold layer stands in the stylesheet");
+  assert.match(match[1], /mix-blend-mode:\s*color\s*;/);
+});
+
+// D-322, D-311, task To do 7. Catches a screen that does not pass the scene's end of an effect on to the
+// game view, which opens the window only then.
+test("the screen of a map run tells the game view when the scene's effect has ended", async () => {
+  await withPage(async ({ document, root }) => {
+    const told = [];
+    const controls = {
+      togglePause: () => {},
+      setPace: () => {},
+      restart: () => {},
+      end: () => {},
+      effectEnded: () => told.push("effectEnded"),
+    };
+    const panel = {
+      element: document.createElement("div"),
+      update: () => {},
+      addDiscoveredRule: () => {},
+    };
+    const before = going();
+    const after = dyingOf("cold");
+    const screen = await inAct(() =>
+      createRunScreen(panel, controls, createChronicle(before)),
+    );
+    root.append(screen.element);
+    await inAct(() => screen.update(before, before.run, []));
+    await inAct(() => screen.update(after, after.run, [DIED]));
+    assert.deepEqual(told, []);
+    await inAct(() => endAnimation(master(one(screen.element, ".scene"))));
+    assert.deepEqual(told, ["effectEnded"]);
+  });
+});

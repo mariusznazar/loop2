@@ -86,6 +86,12 @@
   --scene-frost-fill: #f3fbff; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant FA of the frost: its fill (question 10 of that task) */
   --scene-frost-outline: #3c7289; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant FA of the frost: its inner outline of one pixel of the scene (question 10 of that task) */
   --scene-frost-crystal: #c5dfed; /* Source: Mariusz's choice from the preview of the values of appearance of the task swit-rosnacy-z-passa, 2026-11-11, variant FA of the frost: its crystals (question 10 of that task) */
+
+  /* Cold layer after a death of cold, and specks of light after a completion */
+  --scene-chill: #2f5fd0; /* Source: proposed by the cycle of the task trzy-chwile-gdy-czas-stoi, pending Mariusz's choice at its request (question 9 of that task): no source fixes it; the blue cold layer laid over the scene after a death of cold, on a hue far from the cool grey-green of the tint at streak 0 */
+  --scene-chill-opacity: 0.5; /* Source: proposed by the cycle of the task trzy-chwile-gdy-czas-stoi, pending Mariusz's choice at its request (question 9 of that task): no source fixes it; the opacity of the cold layer */
+  --scene-speck-ember: #b21818; /* Source: pixel (14, 14) of Environment/Structures/Stations/Bonfire/Bonfire_03-Sheet.png of the pack Pixel Crawler (loop, commit cdc7c0d), proposed by the cycle of the task trzy-chwile-gdy-czas-stoi, pending Mariusz's choice at its request (question 9 of that task): a speck of light, 4.2:1 against the snow of the scene's open ground */
+  --scene-speck-bronze: #985a3b; /* Source: pixel (2, 15) of Environment/Structures/Stations/Bonfire/Bonfire_03-Sheet.png of the pack Pixel Crawler (loop, commit cdc7c0d), proposed by the cycle of the task trzy-chwile-gdy-czas-stoi, pending Mariusz's choice at its request (question 9 of that task): a speck of light, 3.3:1 against the snow of the scene's open ground */
 }
 
 @font-face {

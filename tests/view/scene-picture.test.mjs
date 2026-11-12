@@ -11,6 +11,7 @@ import {
   SCENE_DUST,
   SCENE_FIRE,
   SCENE_MAGES,
+  SCENE_MOMENTS,
   SCENE_PROPS,
 } from "../../dist/browser/sim/data/scene.js";
 import {
@@ -20,6 +21,8 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import {
+  endEffectBegins,
+  momentBegins,
   sceneDrawing,
   sceneEffect,
   tintShown,
@@ -464,6 +467,7 @@ test("every file the scene's data names stands directly in assets/sprites/ as a 
       sheets.idle.file,
       sheets.run.file,
       sheets.bend.file,
+      sheets.death.file,
     ]),
     ...Object.values(SCENE_PROPS).map((prop) => prop.picture.file),
   ];
@@ -725,7 +729,10 @@ test("a burning fire draws the smaller flame with 20 minutes of burning left or 
   );
 });
 
-/** Pixels of a PNG file of 8-bit RGBA, rows of [r, g, b, a] by the chunks of its text, no library. */
+/**
+ * Pixels of a PNG file of 8-bit RGBA or RGB, rows of [r, g, b, a] (a is 255 for RGB) by the chunks of
+ * its text, no library.
+ */
 function decodePng(file) {
   const bytes = readFileSync(join(SPRITES, file));
   assert.deepEqual(
@@ -745,11 +752,12 @@ function decodePng(file) {
   const width = header.readUInt32BE(0);
   const height = header.readUInt32BE(4);
   assert.equal(header[8], 8, "8 bits");
-  assert.equal(header[9], 6, "RGBA");
+  assert.ok(header[9] === 6 || header[9] === 2, "RGBA or RGB");
+  const bytesPerPixel = header[9] === 6 ? 4 : 3;
   const raw = inflateSync(
     Buffer.concat(chunks.filter((c) => c.type === "IDAT").map((c) => c.data)),
   );
-  const stride = width * 4;
+  const stride = width * bytesPerPixel;
   const rows = [];
   for (let y = 0; y < height; y++) {
     const filter = raw[y * (stride + 1)];
@@ -758,9 +766,9 @@ function decodePng(file) {
     );
     const above = y === 0 ? Buffer.alloc(stride) : rows[y - 1];
     for (let i = 0; i < stride; i++) {
-      const left = i < 4 ? 0 : line[i - 4];
+      const left = i < bytesPerPixel ? 0 : line[i - bytesPerPixel];
       const up = above[i];
-      const upLeft = i < 4 ? 0 : above[i - 4];
+      const upLeft = i < bytesPerPixel ? 0 : above[i - bytesPerPixel];
       const predictor = [
         0,
         left,
@@ -782,7 +790,8 @@ function decodePng(file) {
   }
   const pixels = rows.map((line) =>
     Array.from({ length: width }, (_, x) => [
-      ...line.subarray(x * 4, x * 4 + 4),
+      ...line.subarray(x * bytesPerPixel, x * bytesPerPixel + bytesPerPixel),
+      ...(bytesPerPixel === 3 ? [255] : []),
     ]),
   );
   return { types: chunks.map((c) => c.type), width, height, pixels };
@@ -967,4 +976,265 @@ test("at a death and at a completion the tint stands at once where the streak or
   );
   const stood = SHOWN(1);
   assert.equal(tintShown(stood, 1, "completed", false), stood);
+});
+
+// --- the three moments in which time stands still (task trzy-chwile-gdy-czas-stoi; D-322) ---------
+
+const NOTHING = NO_UNDERSTANDING_ITEMS;
+/** The state at a stop at a discovery of what `found` lists, the rest of the Understanding empty. */
+const discovering = (found) => ({
+  ...doing({ kind: "explore" }),
+  paused: true,
+  discovery: { ...NOTHING, ...found },
+});
+const dying = (cause) =>
+  withRun({ ...sent(), paused: false }, { death: { minute: 4, cause } });
+const completing = () =>
+  withRun({ ...sent(), paused: false }, { completion: { minute: 4 } });
+const momentOf = (state) => sceneDrawing(state).moment;
+
+// Catches a scene that shows an effect of a moment while the map run goes on or the player pauses it.
+test("the scene shows a moment only at a discovery, after a death and after a completion", () => {
+  assert.equal(momentOf({ ...doing(ACT_EXPLORE), paused: false }), null);
+  assert.equal(momentOf({ ...doing(ACT_EXPLORE), paused: true }), null);
+  assert.equal(
+    momentOf(discovering({ actions: ["explore"] })).kind,
+    "discovery",
+  );
+  assert.equal(momentOf(dying("hunger")).kind, "death");
+  assert.equal(momentOf(completing()).kind, "completion");
+});
+
+const ACT_EXPLORE = { kind: "explore" };
+
+// D-322, task To do 1, 3 and 8. Catches a scene that begins a moment from anything but the events of a
+// simulation call: a scene drawn again has none, and the events must be those of its own moment.
+test("a moment has just begun where the events of the call carry its discovery, death or completion", () => {
+  const discovered = { kind: "discovered", minute: 3, ...NOTHING };
+  const died = { kind: "characterDied", minute: 3, cause: "cold" };
+  const solved = { kind: "mapRunCompleted", minute: 3 };
+  const other = { kind: "moved", minute: 3, from: {}, to: {} };
+  assert.equal(momentBegins("discovery", [other, discovered]), true);
+  assert.equal(momentBegins("dead", [other, died]), true);
+  assert.equal(momentBegins("completed", [solved]), true);
+  assert.equal(momentBegins("discovery", []), false, "a scene drawn again");
+  assert.equal(momentBegins("dead", [discovered, solved]), false);
+  assert.equal(momentBegins("completed", [died]), false);
+  assert.equal(momentBegins("going", [discovered, died, solved]), false);
+  assert.equal(momentBegins("paused", [discovered, died, solved]), false);
+});
+
+// D-322, task To do 7. The game view waits for the effect of an end only where the scene plays one.
+test("the end effect begins at the game minute of a death or a completion, not at a discovery", () => {
+  assert.equal(
+    endEffectBegins([{ kind: "characterDied", minute: 1, cause: "cold" }]),
+    true,
+  );
+  assert.equal(endEffectBegins([{ kind: "mapRunCompleted", minute: 1 }]), true);
+  assert.equal(
+    endEffectBegins([{ kind: "discovered", minute: 1, ...NOTHING }]),
+    false,
+  );
+  assert.equal(endEffectBegins([]), false);
+});
+
+// D-322, task To do 1. The icons are the files of the game's data: a discovered action's, a discovered
+// item's and the campfire's, in the order of the band's text, each on a plaque in a row over the
+// clearing centred on the mage's middle, 144 + 32 = 176, the line 64, a step of 22. Catches a plaque for
+// a thing with no icon, a missing icon, a row that is not centred and a plaque that comes out of the
+// wrong pine: the left half of a row from the left pine, the right half from the right one.
+test("a discovery shows the icon of each thing it revealed that has one, in a centred row over the clearing", () => {
+  const moment = momentOf(
+    discovering({
+      actions: ["explore", "wander"],
+      items: ["stick", "campfire"],
+      conditions: ["always"],
+      creatures: ["wolf"],
+    }),
+  );
+  const left = { x: 120, y: 50 };
+  const right = { x: 265, y: 50 };
+  assert.deepEqual(
+    moment.plaques.map((p) => [p.href, p.x, p.y, p.from]),
+    [
+      ["/icons/binoculars.svg", 143, 64, left],
+      ["/icons/hiking.svg", 165, 64, left],
+      ["/icons/wood-stick.svg", 187, 64, right],
+      ["/icons/campfire.svg", 209, 64, right],
+    ],
+  );
+  assert.equal(moment.key, "discovery:" + sent().run.minute);
+});
+
+// Catches two plaques of one icon: „Idź” and „Idź — ognisko” share the direction sign, „Zbierz” and
+// „Obchód” the grab; one discovery shows each picture once.
+test("a discovery shows an icon once, however many of the things it revealed share it", () => {
+  const moment = momentOf(
+    discovering({
+      actions: ["walkTo", "walkToCampfire", "gather", "patrol"],
+    }),
+  );
+  assert.deepEqual(
+    moment.plaques.map((p) => [p.href, p.x]),
+    [
+      ["/icons/direction-sign.svg", 165],
+      ["/icons/grab.svg", 187],
+    ],
+  );
+});
+
+// Catches a plaque, or a band, for what the data gives no icon: conditions, creatures and skill trees
+// are named by the band over the program alone (D-122).
+test("a discovery of conditions and creatures alone shows no plaque", () => {
+  const moment = momentOf(
+    discovering({
+      conditions: ["always", "temperatureBelow"],
+      creatures: ["wolf"],
+    }),
+  );
+  assert.equal(moment.kind, "discovery");
+  assert.deepEqual(moment.plaques, []);
+});
+
+// Catches a row that runs out of the frame: eight to a row, the ninth in a second row 22 above the
+// first, centred alone.
+test("nine plaques stand in two rows, eight and one, each row centred", () => {
+  const moment = momentOf(
+    discovering({
+      actions: [
+        "explore",
+        "wander",
+        "walkTo",
+        "gather",
+        "craftCampfire",
+        "lightCampfire",
+        "feedCampfire",
+        "eat",
+        "kick",
+      ],
+    }),
+  );
+  assert.equal(moment.plaques.length, 9);
+  assert.deepEqual(
+    moment.plaques.map((p) => [p.x, p.y]),
+    [
+      [99, 64],
+      [121, 64],
+      [143, 64],
+      [165, 64],
+      [187, 64],
+      [209, 64],
+      [231, 64],
+      [253, 64],
+      [176, 42],
+    ],
+  );
+});
+
+// D-322, task To do 2. Catches a cold layer after a death of hunger or in a fight, which the scene
+// does not show, and a death of cold with none.
+test("after a death the scene shows the fall, and the cold layer after a death of cold alone", () => {
+  assert.deepEqual(momentOf(dying("cold")), {
+    kind: "death",
+    key: "death:4",
+    cold: true,
+  });
+  assert.equal(momentOf(dying("hunger")).cold, false);
+  assert.equal(momentOf(dying("combat")).cold, false);
+});
+
+// D-322, task To do 8. Catches plaques of a discovery over a death or a completion in the game minute
+// of that discovery: the scene shows the effect of the end alone.
+test("a death or a completion in the game minute of a discovery shows the effect of the end alone", () => {
+  const held = { ...NOTHING, actions: ["explore"] };
+  const died = withRun(
+    { ...sent(), paused: true, discovery: held },
+    { death: { minute: 4, cause: "hunger" } },
+  );
+  assert.equal(momentOf(died).kind, "death");
+  const done = withRun(
+    { ...sent(), paused: false, discovery: held },
+    { completion: { minute: 4 } },
+  );
+  assert.equal(momentOf(done).kind, "completion");
+});
+
+// D-322, D-271, task To do 3. The specks lie in a part of the frame, not over the whole scene, each a
+// whole pixel of the scene on its grid rising by whole pixels, over the snow of the open ground the
+// forest picture holds there: a speck that rose over a tree would be a colour on a ground it does not
+// stand out from.
+test("the specks of a completion rise over a part of the frame, on the scene's grid, over the open snow alone", () => {
+  const { specks } = momentOf(completing());
+  assert.ok(specks.length >= 12, "enough of them to be a shower");
+  const frame = decodePng(SCENE.background.file);
+  const luminance = ([r, g, b]) => {
+    const linear = (v) => ((v / 255 + 0.055) / 1.055) ** 2.4;
+    return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+  };
+  for (const { x, y, rise, delay, shade } of specks) {
+    for (const value of [x, y, rise, delay / 100])
+      assert.ok(Number.isInteger(value), `${x},${y}: a whole number`);
+    assert.ok(rise >= 1 && delay >= 0 && delay <= 900);
+    assert.ok(["ember", "bronze"].includes(shade));
+    for (let row = y - rise; row <= y; row++)
+      assert.ok(
+        luminance(frame.pixels[row][x]) > 0.5,
+        `speck ${x},${y} passes over ${row} where the picture is no snow`,
+      );
+  }
+  const xs = specks.map((speck) => speck.x);
+  const tops = specks.map((speck) => speck.y - speck.rise);
+  const area =
+    ((Math.max(...xs) - Math.min(...xs)) *
+      (SCENE.groundLine - Math.min(...tops))) /
+    (frame.width * frame.height);
+  assert.ok(area < 0.25, "a part of the frame, not the whole scene");
+});
+
+// Catches a plaque row that would stand over the mage's badge or outside the frame, and a death sheet
+// that is not the mage's own size: the places the data gives are inside the frame of 336 × 152.
+test("the places of the moments in the data lie inside the frame", () => {
+  const { centreX, y, step, perRow, rowStep, from } = SCENE_MOMENTS.discovery;
+  assert.equal(centreX, SCENE.clearingX + SCENE.mageMiddle);
+  assert.ok(centreX - (perRow / 2) * step > 0);
+  assert.ok(centreX + (perRow / 2) * step < SCENE.background.width);
+  assert.ok(y - rowStep > 0, "a second row stands in the frame");
+  for (const point of Object.values(from)) {
+    assert.ok(point.x > 0 && point.x < SCENE.background.width);
+    assert.ok(point.y > 0 && point.y < SCENE.background.height);
+  }
+});
+
+// D-322, D-271, D-273, task To do 2. The death sheet holds pixels alone and six frames of 64 × 64 pixels;
+// in the first the mage stands, taller than wide, in the last it lies, wider than tall, and in every one
+// its lowest pixel is the frame's bottom row, the ground line, so the fall does not float. Catches a file
+// with a chunk of text or a profile, a sheet of another size, a frame whose mage hangs above the ground
+// and a last frame in which the mage still stands. Where the pixels come from is not tested: the sheet is
+// the pack's death sheet of the mage moved into the frames of the scene, which only the source can show.
+test("the death sheet holds pixels alone, six frames of the mage's size, the first standing and the last lying on the ground line", () => {
+  const sheet = decodePng("mage-death.png");
+  assert.deepEqual(sheet.types, ["IHDR", "IDAT", "IEND"], "pixels alone");
+  assert.deepEqual([sheet.width, sheet.height], [384, 64]);
+  assert.deepEqual(
+    [
+      SCENE_MAGES.elementalMage.death.width,
+      SCENE_MAGES.elementalMage.death.height,
+      SCENE_MAGES.elementalMage.death.frames,
+    ],
+    [64, 64, 6],
+  );
+  const boxes = [];
+  for (let frame = 0; frame < 6; frame++) {
+    let [left, top, right, bottom] = [64, 64, -1, -1];
+    for (let y = 0; y < 64; y++)
+      for (let x = 0; x < 64; x++)
+        if (sheet.pixels[y][frame * 64 + x][3] > 0) {
+          [left, top] = [Math.min(left, x), Math.min(top, y)];
+          [right, bottom] = [Math.max(right, x), Math.max(bottom, y)];
+        }
+    boxes.push({ width: right - left + 1, height: bottom - top + 1, bottom });
+  }
+  for (const box of boxes) assert.equal(box.bottom, 63, "on the ground line");
+  assert.ok(boxes[0].height > boxes[0].width, "the first frame stands");
+  assert.ok(boxes[5].width > boxes[5].height, "the last frame lies");
 });

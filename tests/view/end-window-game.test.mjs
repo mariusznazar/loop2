@@ -1,5 +1,6 @@
-// The end-of-run window in the game view (task koniec-przejscia, To do 1, 2, 8 and 9; D-368,
-// D-311, D-62, D-132, D-173, D-122, D-313, D-212, D-53, D-323, D-324) on jsdom through
+// The end-of-run window in the game view (task koniec-przejscia, To do 1, 2, 8 and 9, and task
+// trzy-chwile-gdy-czas-stoi, To do 7; D-368, D-311, D-62, D-132, D-173, D-122, D-313, D-212, D-53,
+// D-323, D-324, D-322) on jsdom through
 // tests/view/page-document.mjs (D-264): the game view is built as the page builds it, as in
 // tests/view/end-question.test.mjs, and the window is driven through the buttons the player presses
 // and the addresses the page follows. What the cases hold is when the window opens and closes, what
@@ -302,8 +303,37 @@ function freezing() {
   return send(createCharacter(program, "Ala").state, SENT, 0).state;
 }
 
-/** A running map run whose character dies by the clock: real time passes, the clock reads it. */
-async function dieOnTheScreen({ pass, reading }, start = freezing()) {
+/**
+ * Fires the end of an animation on an element, as a browser does when it has run out; React reads the
+ * name its own style object prefixes, which on jsdom is `webkitAnimationEnd`, so the page gets both.
+ */
+function endAnimation(element) {
+  const { Event } = globalThis.window;
+  for (const name of ["animationend", "webkitAnimationEnd"])
+    element.dispatchEvent(new Event(name, { bubbles: true }));
+}
+
+/** The element whose animation tells the scene that the effect of its moment has ended. */
+const effectMaster = (root) =>
+  byClass(runScreenOf(root), "scene-moment-master").find((element) =>
+    element.hasAttribute("data-moment-key"),
+  );
+
+/**
+ * The scene's effect of the end plays out, as a browser plays it: its last animation ends, the scene
+ * tells the game view, which opens the window that waited for it (D-322).
+ */
+async function playTheEffect(root) {
+  const master = effectMaster(root);
+  assert.ok(master, "precondition: the scene has an effect that plays");
+  await inAct(() => endAnimation(master));
+}
+
+/**
+ * A running map run whose character dies by the clock: real time passes, the clock reads it, and the
+ * scene's effect of the death is still playing, the window waiting for it.
+ */
+async function dieDuringTheEffect({ pass, reading }, start = freezing()) {
   const built = await viewOf(start);
   pass(400_000);
   await reading();
@@ -311,8 +341,15 @@ async function dieOnTheScreen({ pass, reading }, start = freezing()) {
   return built;
 }
 
-/** A map run of `oneShort` completed on the screen by the clock. */
-async function completeOnTheScreen({ pass, reading }) {
+/** A running map run whose character dies by the clock, and whose effect has played: the window stands. */
+async function dieOnTheScreen(page, start = freezing()) {
+  const built = await dieDuringTheEffect(page, start);
+  await playTheEffect(page.root);
+  return built;
+}
+
+/** A map run of `oneShort` completed on the screen by the clock, its effect still playing. */
+async function completeDuringTheEffect({ pass, reading }) {
   const built = await viewOf(oneShort());
   pass(2_000);
   await reading();
@@ -321,6 +358,32 @@ async function completeOnTheScreen({ pass, reading }) {
     "precondition: completed",
   );
   return built;
+}
+
+/** A map run of `oneShort` completed on the screen by the clock, its effect played: the window stands. */
+async function completeOnTheScreen(page) {
+  const built = await completeDuringTheEffect(page);
+  await playTheEffect(page.root);
+  return built;
+}
+
+/**
+ * Runs `body` with the system's setting for reduced motion on or off, which jsdom does not hold: the
+ * page's `matchMedia` answers the one query the game view asks.
+ */
+async function withReducedMotion(reduced, body) {
+  const { window } = globalThis;
+  const had = Object.getOwnPropertyDescriptor(window, "matchMedia");
+  window.matchMedia = (query) => ({
+    matches: reduced && query.includes("prefers-reduced-motion: reduce"),
+    media: query,
+  });
+  try {
+    await body();
+  } finally {
+    if (had) Object.defineProperty(window, "matchMedia", had);
+    else delete window.matchMedia;
+  }
 }
 
 // --- opening ------------------------------------------------------------------------------------
@@ -342,6 +405,7 @@ test("the window opens at the game minute a character's death ends the map run w
     await page.reading();
     const state = await heldState(view);
     assert.ok(state.run.death, "precondition: the character died");
+    await playTheEffect(root);
     const opened = windowOf(root);
     assert.ok(opened, "the window stands");
     assert.match(
@@ -373,6 +437,108 @@ test("the window opens at a completion too, titled by the completion text, with 
     assert.ok(covered(root));
     for (const text of ["Restart", "Zakończ", "Otwarte: Las — głębiej →"])
       assert.ok(windowButton(root, text), `${text} stands in the window`);
+    await inAct(() => view.dispose());
+  });
+});
+
+// task trzy-chwile-gdy-czas-stoi, To do 7, D-311, D-322. Catches a window that opens at the game minute
+// of the end and hides the scene before its effect can be seen, a window that never opens because it
+// waits for an effect no one ends, and a window that opens before the effect ends.
+test("at a death and at a completion the window waits for the scene's effect and stands once the scene tells it has ended", async () => {
+  await onPage(async (page) => {
+    const { root } = page;
+    for (const [name, build, moment] of [
+      ["a death", dieDuringTheEffect, "death"],
+      ["a completion", completeDuringTheEffect, "completion"],
+    ]) {
+      const { view } = await build(page);
+      const scene = byClass(runScreenOf(root), "scene")[0];
+      assert.equal(scene.getAttribute("data-moment"), moment, name);
+      assert.ok(
+        scene.hasAttribute("data-moment-playing"),
+        `${name}: the effect plays`,
+      );
+      assert.equal(windowOf(root), undefined, `${name}: no window yet`);
+      assert.ok(uncovered(root), `${name}: the scene stands uncovered`);
+      await playTheEffect(root);
+      assert.ok(windowOf(root), `${name}: the window stands after the effect`);
+      assert.ok(covered(root));
+      assert.ok(
+        !byClass(runScreenOf(root), "scene")[0].hasAttribute(
+          "data-moment-playing",
+        ),
+        `${name}: the scene stands on its last image`,
+      );
+      await inAct(() => view.dispose());
+      pageDocument().body.replaceChildren();
+    }
+  });
+});
+
+// task trzy-chwile-gdy-czas-stoi, To do 7 and 6, D-322. Catches a window that waits for an effect the
+// scene does not play under the system's setting for reduced motion, where the last image stands at
+// once and there is nothing to wait for.
+test("under the system's setting for reduced motion the window opens at once at a death and at a completion", async () => {
+  await onPage(async (page) => {
+    const { root } = page;
+    await withReducedMotion(true, async () => {
+      const died = await dieDuringTheEffect(page);
+      assert.ok(windowOf(root), "at a death");
+      await inAct(() => died.view.dispose());
+      pageDocument().body.replaceChildren();
+      const done = await completeDuringTheEffect(page);
+      assert.ok(windowOf(root), "at a completion");
+      await inAct(() => done.view.dispose());
+    });
+  });
+});
+
+// task trzy-chwile-gdy-czas-stoi, To do 7, D-322. Catches a window the player cannot call while the
+// effect plays, and a late end of the effect that opens a window the player has closed.
+test("„Koniec przejścia” opens the window at once while it waits for the effect, and the effect's end later opens nothing the player closed", async () => {
+  await onPage(async (page) => {
+    const { root } = page;
+    const { view } = await dieDuringTheEffect(page);
+    assert.equal(windowOf(root), undefined, "precondition: the window waits");
+    await press(headerButton(root, "Koniec przejścia"));
+    assert.ok(windowOf(root), "the player's own opening does not wait");
+    await press(windowButton(root, "✕"));
+    assert.equal(windowOf(root), undefined);
+    await inAct(() => endAnimation(effectMaster(root)));
+    assert.equal(windowOf(root), undefined, "the late end opens nothing");
+    await inAct(() => view.dispose());
+  });
+});
+
+// task trzy-chwile-gdy-czas-stoi, To do 7, D-368, D-322. Catches a window that stays shut after the
+// player left the screen while the effect played and came back, where the scene shows the last image
+// at once and the window has nothing to wait for.
+test("a return to the screen while the effect played opens the window at once", async () => {
+  await onPage(async (page) => {
+    const { root } = page;
+    const { view, address } = await dieDuringTheEffect(page);
+    assert.equal(windowOf(root), undefined, "precondition: the window waits");
+    await follow(address, "#/");
+    assert.equal(shownScreen(root), "headquarters");
+    await follow(address, RUN_ADDRESS);
+    assert.ok(windowOf(root), "the window opens at the return, no end awaited");
+    await inAct(() => view.dispose());
+  });
+});
+
+// task trzy-chwile-gdy-czas-stoi, To do 7, D-322. Catches a window that waits for ever when the scene
+// is hidden while its effect runs, a browser then cancelling the animation and firing no end.
+test("a scene hidden while its effect runs tells the game view, and the window stands", async () => {
+  await onPage(async (page) => {
+    const { root } = page;
+    const { view } = await dieDuringTheEffect(page);
+    const { Event } = globalThis.window;
+    await inAct(() =>
+      effectMaster(root).dispatchEvent(
+        new Event("animationcancel", { bubbles: true }),
+      ),
+    );
+    assert.ok(windowOf(root), "the window stands after the cancel");
     await inAct(() => view.dispose());
   });
 });

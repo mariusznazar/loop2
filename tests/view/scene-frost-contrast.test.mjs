@@ -59,3 +59,16 @@ test("the contrast helper reads the preview's measured 3.21:1 of the outline on 
   assert.ok(Math.abs(contrast("#3c7289", "#bccae5") - 3.21) < 0.01);
   assert.equal(contrast("#000000", "#ffffff"), 21);
 });
+
+// To do 3, the condition of the rule D of D-271 for the specks of light: each colour stands out from the
+// snow it rises over by 3:1. The specks stand only at a completion, where the light is full gold and the
+// snow `#ddc69e` (the same sample as above, from the task document of swit-rosnacy-z-passa); a speck
+// that rose over snow of another tint would need its own sample. What this test guards: the two tokens
+// against that one measurement. It does not follow the tint tokens, as the test above does not.
+test("the specks of light stand out from the snow under the full gold, 3:1 at least", () => {
+  for (const name of ["--scene-speck-ember", "--scene-speck-bronze"])
+    assert.ok(
+      contrast(token(name), "#ddc69e") >= 3,
+      `${name}: ${contrast(token(name), "#ddc69e")}`,
+    );
+});

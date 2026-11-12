@@ -55,6 +55,7 @@ import {
 } from "./program-panel.js";
 import { readResetToken } from "./password-reset.js";
 import { createRunScreen } from "./run-screen.js";
+import { endEffectBegins } from "./scene-picture.js";
 import {
   readScreenAddress,
   resolveScreen,
@@ -141,6 +142,14 @@ function landing(state: GameState): Screen {
     : { kind: "run", characterId: state.run.character.id };
 }
 
+/** Whether the system's setting asks for less motion, which leaves the scene's effects out (D-317). */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 function sameScreen(one: Screen, other: Screen): boolean {
   return screenAddress(one) === screenAddress(other);
 }
@@ -196,7 +205,10 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * on one, and closes at „✕” and Escape, when the question stands and when the map run ends or
  * starts again; „Koniec przejścia” in the header opens it. The view tells the screen of the map run
  * whether the window stands, which is while it is open, the player is on that screen and no
- * question stands.
+ * question stands. At the game minute of a death or a completion the window waits for the scene's
+ * effect of that end, so that the effect is seen, and stands once the scene tells that the effect has
+ * ended; at once where the scene shows no effect, as under the system's setting for reduced motion and
+ * at an entering of the screen, where it shows the last image (D-311, D-322).
  *
  * Every act of the player whose result changed the state, every game minute that ends the map run
  * in a death or a completion and every result in which a loop's map run ended is a moment of saving
@@ -229,6 +241,13 @@ export function createGameView(options: GameViewOptions): GameView {
    * player is on the screen of an ended map run and no question stands.
    */
   let endWindowOpen = state.run !== null && mapRunEnded(state.run);
+  /**
+   * Whether the window waits for the scene's effect of the end that has just come: set at the game
+   * minute of a death or a completion that the scene plays as an effect, and ended by the scene, by
+   * the player's own opening or closing of the window and by any change of screen (D-322). A memory
+   * of the page alone, like the window's.
+   */
+  let effectPending = false;
   /**
    * The window opened before the page placed the game, where focus cannot go to it: the first
    * reading of the clock after the game stands in the page moves it there, where focus is lost.
@@ -324,9 +343,18 @@ export function createGameView(options: GameViewOptions): GameView {
       (event) => event.kind === "loopRunEnded",
     );
     state = result.state;
-    // The window opens at the game minute a map run ends. The end and the restart of the map run
-    // leave no ended map run, which is where it stands no more (D-368).
-    if (ended) endWindowOpen = true;
+    // The window opens at the game minute a map run ends, once the scene's effect of the end has
+    // played where it plays one. The end and the restart of the map run leave no ended map run, which
+    // is where it stands no more (D-368, D-322).
+    if (ended) {
+      endWindowOpen = true;
+      effectPending =
+        current.kind === "run" &&
+        endEffectBegins(result.events) &&
+        !prefersReducedMotion();
+    } else if (state.run === null || !mapRunEnded(state.run)) {
+      effectPending = false;
+    }
     chronicle.record(result, before, copyAct);
     // The question has no sense once the copy holds no unsaved changes; it does not come back.
     if (question !== null && !copyHasUnsavedChanges(state)) question = null;
@@ -458,6 +486,7 @@ export function createGameView(options: GameViewOptions): GameView {
   function windowShown(): boolean {
     return (
       endWindowOpen &&
+      !effectPending &&
       current.kind === "run" &&
       question === null &&
       state.run !== null &&
@@ -522,6 +551,7 @@ export function createGameView(options: GameViewOptions): GameView {
     // The window covers the program panel, where the question stands, so it closes and stays closed
     // after „Wróć” (D-173, D-311).
     endWindowOpen = false;
+    effectPending = false;
     if (resume) act(setPaused(state, true));
     runScreen.setQuestion(true);
     syncWindow();
@@ -566,12 +596,21 @@ export function createGameView(options: GameViewOptions): GameView {
         if (halted || state.run === null || !mapRunEnded(state.run)) return;
         closeQuestion();
         endWindowOpen = true;
+        effectPending = false;
         syncWindow();
       },
       // „✕” and Escape of the window; the screen moves the focus to „Koniec przejścia” (D-368).
       closeWindow() {
         if (halted) return;
         endWindowOpen = false;
+        effectPending = false;
+        syncWindow();
+      },
+      // The scene's effect of a death or a completion has ended, or the scene was hidden while it ran:
+      // the window that waited for it stands now (D-322).
+      effectEnded() {
+        if (halted || !effectPending) return;
+        effectPending = false;
         syncWindow();
       },
       // „Zapisz”: the copy goes into its program, or, its program gone, into a new program under the
@@ -826,6 +865,7 @@ export function createGameView(options: GameViewOptions): GameView {
     if (current.kind === "run" && next.kind !== "run") {
       closeQuestion();
       pauseOnLeaving();
+      effectPending = false;
     }
     // The window opens at every entering of the screen of an ended map run (D-368).
     if (
