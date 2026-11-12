@@ -6689,12 +6689,13 @@ rule group.
     them or in a column of its own on either screen; „↑” and „↓” in the header of a rule group; a
     discovered action the player may not pick left out of the pick rather than greyed with its
     reason
-- **Origin:** research_edytor_programu_wow.md, „Pisanie”
+- **Origin:** none
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
 opens in place on the list rather than over it or in a column of its own, which would take width
-from the program; a row is for reading while the panel is for changing. In Factorio and Gladiabots
-the writing and the watching of the state happen in one place. When the panel was settled to open in
+from the program; a row is for reading while the panel is for changing. In Factorio, since its 2.0
+edition, and in Gladiabots the writing and the watching of the state happen in one place, not on
+separate screens. When the panel was settled to open in
 place, with the panel in a column of its own the program had 174 px in a window 1280 px wide and
 270 px at the full content width of 1344 px, and each new line at a rule wrapped further; joining the
 columns of the program and the right area and opening the panel under a row gives the program 526 px
@@ -6703,12 +6704,19 @@ narrow window the panel stood under the whole program on the screen of a map run
 editor on Programy, and an edit in place on the list, as loop has it in a narrower window, serves a
 wide window and a narrow one at once and the later layout for a phone as well. Writing a program
 without grimacing is what the project is judged by, and the complaints of players about the program
-editors of other games concern the mechanics of editing, not the model of rules. Dragging a rule
+editors of other games concern the mechanics of editing, such as an editor worked by mouse alone,
+not the model of rules. Dragging a rule
 already worked, between groups too, but the player could not see it, for there was no handle and no
-sign of where the rule would land. Each pick moving on to the next field costs a rule such as „Zapas
-poniżej 8 · Patyk → Zbierz — Patyk” six actions, against about eight by the estimate made when this
-was settled. What may not be picked stands greyed with its reason, as in loop and in line with a
-lesson from the 2.0 edition of Factorio. Cells give a condition one click and keep one control for
+sign of where the rule would land; Outlook gives three ways to move a rule at once, a handle,
+arrows and a move to the top or the bottom, and dragging needs a preview of where the rule drops.
+Each pick moving on to the next field costs a rule such as „Zapas poniżej 8 · Patyk → Zbierz —
+Patyk” six actions, against about eight interactions in the old editor, an estimate and not a
+measurement. What may not be picked stands greyed with its reason, as in loop; Factorio 2.0 keeps
+its controls and greys them instead of hiding them, since its old interface had things popping out
+of thin air, and users of Unreal who found nodes missing from a filtered menu asked for those that
+do not fit to be greyed rather than hidden. The reasons from other games are carried over to this
+one by inference: no source measured how long a rule takes to write or how many clicks it costs in
+any game. Cells give a condition one click and keep one control for
 every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
 Accepted with it: the pickers need keyboard handling that native lists gave for free, long names of
 conditions wrap into two lines, rule groups cannot be moved from the keyboard, which the
