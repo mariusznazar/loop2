@@ -1,5 +1,4 @@
-// The program panel in React (task edytor-programu, To do 1, 3, 6, 8, 11; D-36, D-166 to D-174, D-180,
-// D-264, D-282, D-288, D-295, D-302) on jsdom through tests/view/page-document.mjs. It proves which
+// The program panel in React (D-36, D-166 to D-174, D-180, D-264, D-282, D-288, D-295, D-302) on jsdom through tests/view/page-document.mjs. It proves which
 // elements the panel draws, which program it shows and what each control hands the game; real events,
 // focus rings and the look are checked in the browser (D-88). Every comparison is of plain data
 // (D-268).
@@ -204,7 +203,7 @@ const counts = (root) =>
 const groupCount = (program) => program.groups.length;
 
 // --- the trip plan: Programy holds it between the name and the rules, a map run's screen none -------
-// Task edytor-programu, To do 11; D-180, rows E14 and E36, question 11. Catches the section missing
+// D-180. Catches the section missing
 // from Programy, standing under the rules or above the name, and standing on the screen of a map run.
 test("Programy holds the trip plan between the program's name and its rules; the screen of a map run holds none", async () => {
   await withPage(async (page) => {
@@ -249,7 +248,7 @@ test("Programy holds the trip plan between the program's name and its rules; the
   });
 });
 
-// Row E14, D-180, question 11: the trip plan of the saved program shown, also while a map run waits,
+// D-180: the trip plan of the saved program shown, also while a map run waits,
 // is an edit of that program. Catches an edit of the plan reaching the copy or another program, and a
 // section carried from one program to the next with its folding.
 test("an edit of the trip plan on Programy goes to the program shown, and another program's section stands folded", async () => {
@@ -293,10 +292,9 @@ test("an edit of the trip plan on Programy goes to the program shown, and anothe
 });
 
 // --- the rule panel under its row or header ------------------------------------------------------
-// To do 3 and 8, D-282, D-288; task proporcje-sceny-i-programu, To do 1 and 3. Catches the panel
-// standing anywhere but under its row or header, at the end of the list or nowhere, a row that holds its own panel, a
-// header that opens no panel, the focus left outside the panel on opening, and a closed panel that
-// takes no focus back to the row.
+// D-282, D-288. Catches the panel standing anywhere but under its row or header, at the end of the
+// list or nowhere, a row that holds its own panel, a header that opens no panel, the focus left
+// outside the panel on opening, and a closed panel that takes no focus back to the row.
 for (const mode of ["programs", "run"]) {
   test(`the rule panel opens from a row and from a header under it (${mode}), takes the focus, and „✕” and Escape give it back to the row`, async () => {
     await withPage(async (page) => {
@@ -367,7 +365,7 @@ for (const mode of ["programs", "run"]) {
   });
 }
 
-// Task proporcje-sceny-i-programu, To do 1; D-288. A rule open in a group that is then folded has no
+// D-288. A rule open in a group that is then folded has no
 // row drawn. Catches the panel vanishing with the row, and one left at the end of the list.
 test("a rule open in a group that gets folded keeps its panel under that group's header, and under its row again once unfolded", async () => {
   await withPage(async (page) => {
@@ -392,7 +390,7 @@ test("a rule open in a group that gets folded keeps its panel under that group's
   });
 });
 
-// To do 10, D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
+// D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
 // panel, as the old editor left it.
 test("„+ reguła” adds the rule and opens its panel on the condition", async () => {
   await withPage(async (page) => {
@@ -427,7 +425,7 @@ test("the open rule stays through the game's minutes and goes when the program s
   });
 });
 
-// Row E31, D-302, To do 8. Catches the sentence missing from the panel of the copy, standing in the
+// D-302. Catches the sentence missing from the panel of the copy, standing in the
 // panel of a saved program or on Programy, and a word of the counter in it.
 test("the rule panel of the copy says „Zmiana zeruje passę tego przejścia.”; that of a saved program and of Programy does not", async () => {
   await withPage(async (page) => {
@@ -453,7 +451,7 @@ test("the rule panel of the copy says „Zmiana zeruje passę tego przejścia.�
 });
 
 // --- the folding of rule groups: one memory of the page ------------------------------------------
-// Row E23, D-295. Catches a fold on one screen that the other does not show, a fold of the copy that
+// D-295. Catches a fold on one screen that the other does not show, a fold of the copy that
 // folds the saved program, a memory that outlives its page, and a fold that hides a group of another
 // program.
 test("a group folded on one screen stays folded on the other for the same program, the copy's folding is its own, and a new memory forgets", async () => {
@@ -524,7 +522,7 @@ test("a fold made on one panel redraws the other at once, with no update of its 
 
 // --- the panel's states, carried over from the hand-made model -----------------------------------
 
-// Task programy-gracza, To do 2–3; D-166, D-167. Catches a list missing its program or the last
+// D-166, D-167. Catches a list missing its program or the last
 // program left deletable.
 test("a new game's panel lists „Program”, shows it, and „Usuń” is disabled", async () => {
   await withPage(async (page) => {
@@ -540,7 +538,7 @@ test("a new game's panel lists „Program”, shows it, and „Usuń” is disab
   });
 });
 
-// To do 3–4; spec decision 7, „Nowy program” shows the new program. Catches the panel staying on
+// D-167, D-169: „Nowy program” shows the new program. Catches the panel staying on
 // the old program and an editor edit landing in a program other than the one shown.
 test("„Nowy program” shows „Program 2”, makes „Usuń” active, and the editor edits program 2", async () => {
   await withPage(async (page) => {
@@ -558,7 +556,7 @@ test("„Nowy program” shows „Program 2”, makes „Usuń” active, and th
   });
 });
 
-// To do 4; D-169 and spec decision 7, the name field. Catches a missing or wrong message, a
+// D-169, the name field. Catches a missing or wrong message, a
 // program's own name in another letter case refused, and a refused name saved.
 test("„Zmień nazwę” fills the field with the name, warns of an empty or taken name, and saves a trimmed one", async () => {
   await withPage(async (page) => {
@@ -598,8 +596,8 @@ test("„Zmień nazwę” fills the field with the name, warns of an empty or ta
   });
 });
 
-// To do 4; spec decision 7, how the name field leaves without saving (left to the maker: the same
-// action again, or another program shown). Catches a field that saves or stays open.
+// The name field leaves without saving at the same action again, or when another program is shown.
+// Catches a field that saves or stays open.
 test("the name field leaves without saving at „Zmień nazwę” again and at another program shown", async () => {
   await withPage(async (page) => {
     const game = await wiredPanel(page);
@@ -624,7 +622,7 @@ test("the name field leaves without saving at „Zmień nazwę” again and at a
   });
 });
 
-// To do 3; D-167 and spec decision 7, „Usuń” of the shown program shows the first of the list.
+// D-167: „Usuń” of the shown program shows the first of the list.
 // Catches the panel left on a deleted program and the last program deleted.
 test("„Usuń” of the shown program shows the first program of the list, and is disabled with one left", async () => {
   await withPage(async (page) => {
@@ -655,7 +653,7 @@ test("„Usuń” of the shown program shows the first program of the list, and 
   });
 });
 
-// To do 2, 7 and 9; D-166, D-93 and spec decisions 6–7. Catches the copy missing from the top of
+// D-166, D-93. Catches the copy missing from the top of
 // the list, rename or delete offered for the copy, counts beside a saved program during a map run,
 // a pick changing the game state, and an edit reaching the wrong program.
 test("during a map run the copy stands first and is shown with counts; a saved program picked shows none and takes its own edits", async () => {
@@ -710,7 +708,7 @@ function drag(target, type) {
   return inAct(() => target.dispatchEvent(event));
 }
 
-// Task kronika-z-filtrami, To do 5; spec D4. The hint of a move, which rule or group the player moved,
+// D-348. The hint of a move, which rule or group the player moved,
 // travels from the list through the panel's edit to `editCopy`, since the copies before and after a
 // swap cannot tell it. Catches a panel that drops the hint on the way, one that names a neighbour,
 // a hint attached to an edit that moves nothing, and one that reaches the edit of a saved program.
@@ -766,7 +764,7 @@ test("an edit of a saved program, a move included, carries no hint", async () =>
   });
 });
 
-// Task zapis-stanu-na-serwerze, To do 6; D-212, a loaded map run's copy open to editing. Catches a
+// D-212, a loaded map run's copy open to editing. Catches a
 // game built on a state with a map run showing a saved program instead of the copy.
 test("a panel whose first state holds a map run shows the copy, as after a load", async () => {
   await withPage(async (page) => {
@@ -780,7 +778,7 @@ test("a panel whose first state holds a map run shows the copy, as after a load"
   });
 });
 
-// To do 10; D-93, D-173 and spec decision 7, which program the panel shows. Catches „Restart”
+// D-93, D-173, which program the panel shows. Catches „Restart”
 // leaving a saved program shown, the copy lost after a death, and „Zakończ” showing another
 // program, dropping the counts or putting them beside another program.
 test("„Restart” and a death show the copy with counts; „Zakończ” shows the copy's program with them", async () => {
@@ -817,7 +815,7 @@ test("„Restart” and a death show the copy with counts; „Zakończ” shows 
   });
 });
 
-// To do 10 and 3; D-168 and spec decision 7. Catches „Zakończ” after the copy's program was
+// D-168, D-173. Catches „Zakończ” after the copy's program was
 // deleted showing a program that is gone, or a count beside the first program.
 test("„Zakończ” after the copy's program was deleted shows the first program of the list, without counts", async () => {
   await withPage(async (page) => {
@@ -856,7 +854,7 @@ async function typeInFocused(input, text) {
   await typeInto(input, text);
 }
 
-// D-36 and spec decision 7: the controls are updated in place. Catches time passing rewriting the
+// D-03, D-36: the controls are updated in place. Catches time passing rewriting the
 // name field or an editor field the player is typing into, or moving focus.
 test("time passing keeps what is typed in the name field and in an editor field, and the focus", async () => {
   await withPage(async (page) => {
@@ -896,9 +894,9 @@ function runWithNumber() {
   return send(state, SENT, REAL_MS).state;
 }
 
-// Task edytor-programu, Acceptance criteria 1; D-03: „the screen of a map run changes up to five times
-// a second beside fields in which the player types”. Catches a number typed into the panel of the
-// copy that the redraws of the screen rewrite or take the focus from.
+// D-03: the screen of a map run changes up to five times a second beside fields in which the player
+// types. Catches a number typed into the panel of the copy that the redraws of the screen rewrite or
+// take the focus from.
 test("a number typed into the panel on the screen of a map run at 16× keeps its text, its cursor field and the focus over three seconds of redraws", async () => {
   await withPage(async (page) => {
     const game = await wiredPanel(page, runWithNumber());
@@ -933,11 +931,10 @@ test("a number typed into the panel on the screen of a map run at 16× keeps its
   });
 });
 
-// Task edytor-programu, Acceptance criteria 3, found in the browser: on Enter the panel moves the focus
-// to a cell of the next pick during the key's own event, and a browser then delivers the same Enter to
-// that cell and picks it, so a field the player must see is skipped. jsdom does not deliver that
-// second press, so the case holds the cause: the keydown of Enter is consumed. Catches the number's
-// Enter left to the browser.
+// D-306: on Enter the panel moves the focus to a cell of the next pick during the key's own event,
+// and a browser then delivers the same Enter to that cell and picks it, so a field the player must
+// see is skipped. jsdom does not deliver that second press, so the case holds the cause: the keydown
+// of Enter is consumed. Catches the number's Enter left to the browser.
 test("Enter in the number field is consumed, so the press cannot reach the cell the focus moves to", async () => {
   await withPage(async (page) => {
     const game = await wiredPanel(page, runWithNumber());
@@ -966,7 +963,7 @@ test("Enter in the number field is consumed, so the press cannot reach the cell 
 });
 
 // --- „Dodaj regułę z tym”: the panel adds the discovered rule --------------------------------------
-// Task ekran-przejscia, To do 7, questions 5 and 10; D-313, D-124, D-131, D-166, D-306. Which rule a
+// D-313, D-124, D-131, D-166, D-306. Which rule a
 // discovery writes is the case of tests/view/discovery-rule.test.mjs; these cases hold what the panel
 // does with it: the act it hands the game, the program it shows and where the rule panel opens.
 
@@ -1142,7 +1139,7 @@ const SAVE_BUTTONS = [
 const copyButton = (root, text) =>
   buttonNamed(root.querySelector(".copy-section") ?? root, text);
 
-// Task programy-gracza, To do 8; spec decision 7, „When the copy is shown”. Catches the line
+// D-171. Catches the line
 // missing or standing without a change, and the three buttons active when the copy equals its
 // program or inactive when it differs.
 test("the copy shows its heading; an edit of the copy brings „Niezapisane zmiany w kopii.” and activates the three buttons", async () => {
@@ -1163,7 +1160,7 @@ test("the copy shows its heading; an edit of the copy brings „Niezapisane zmia
   });
 });
 
-// Slice 6's observed problem (the report of that slice): text typed into an editor field and not
+// Text typed into an editor field and not
 // yet committed, while the panel shows another program without focus moving, must land in the
 // program it was typed into. Catches the removed focused field committing into the newly shown
 // program.
@@ -1190,7 +1187,7 @@ async function editedCopyGame(page) {
   return game;
 }
 
-// To do 8; spec decision 7. Catches the save writing something other than the copy into the
+// D-171. Catches the save writing something other than the copy into the
 // program, the line staying after the save, and the buttons staying active.
 test("„Zapisz w programie” writes the copy into its program, and the line and the activity go", async () => {
   await withPage(async (page) => {
@@ -1206,7 +1203,7 @@ test("„Zapisz w programie” writes the copy into its program, and the line an
   });
 });
 
-// To do 9; D-172 and spec decision 7. Catches the line missing when the program changed and the
+// D-172. Catches the line missing when the program changed and the
 // copy has no changes, the line staying after the save, and a wrong program name in it.
 test("the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie”", async () => {
   await withPage(async (page) => {
@@ -1236,7 +1233,7 @@ test("the line of a changed program stands with and without unsaved changes, and
   });
 });
 
-// To do 8; D-171 and spec decision 7. Catches an empty or wrong first value of the field, a
+// D-171, D-169. Catches an empty or wrong first value of the field, a
 // refused name saved, and the panel leaving the copy or keeping the old program number.
 test("„Zapisz jako nowy program” offers the first free name, refuses a taken one, and the copy then belongs to the new program", async () => {
   await withPage(async (page) => {
@@ -1268,7 +1265,7 @@ test("„Zapisz jako nowy program” offers the first free name, refuses a taken
   });
 });
 
-// To do 8; spec decision 7. Catches the suggestion ignoring the names taken, the field staying
+// D-171, D-169. Catches the suggestion ignoring the names taken, the field staying
 // open after the copy lost its changes, and the same action not leaving the field.
 test("„Zapisz jako nowy program” suggests „Program 3” beside „Program 2”, and its field leaves at the same action again", async () => {
   await withPage(async (page) => {
@@ -1286,7 +1283,7 @@ test("„Zapisz jako nowy program” suggests „Program 3” beside „Program 
   });
 });
 
-// To do 8; spec decision 7. Catches the discard leaving the copy's edit, the line staying, and
+// D-171. Catches the discard leaving the copy's edit, the line staying, and
 // the discard not going to the simulation.
 test("„Porzuć zmiany” restores the copy's program and the line goes", async () => {
   await withPage(async (page) => {
@@ -1300,7 +1297,7 @@ test("„Porzuć zmiany” restores the copy's program and the line goes", async
   });
 });
 
-// To do 3 and 8; D-168 and spec decision 7. Catches the heading losing the name of a deleted
+// D-168. Catches the heading losing the name of a deleted
 // program, „Zapisz w programie” and „Porzuć zmiany” offered for a program that is gone, and
 // „Zapisz jako nowy program” withdrawn.
 test("a copy whose program was deleted keeps its heading, offers only „Zapisz jako nowy program”, and it is active", async () => {
@@ -1329,7 +1326,7 @@ test("a copy whose program was deleted keeps its heading, offers only „Zapisz 
 
 const SWITCH = "Przełącz postać na ten program";
 
-// To do 12; D-174 and spec decision 7. Catches the button missing beside another program, shown
+// D-174. Catches the button missing beside another program, shown
 // beside the copy's own program or the copy, and a click that does not switch and show the copy.
 test("„Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the copy", async () => {
   await withPage(async (page) => {
@@ -1359,7 +1356,7 @@ test("„Przełącz postać na ten program” stands beside another saved progra
   });
 });
 
-// To do 12; D-174 and spec decision 7. Catches the button standing beside the new program after
+// D-174. Catches the button standing beside the new program after
 // „Zapisz jako nowy program”, and not beside the program the copy was taken from.
 test("after „Zapisz jako nowy program” the switch button stands beside the first program and not beside the new one", async () => {
   await withPage(async (page) => {
@@ -1373,7 +1370,7 @@ test("after „Zapisz jako nowy program” the switch button stands beside the f
   });
 });
 
-// To do 10 and 12; spec decision 7. Catches the switch button standing on the screen after a death
+// D-173, D-174. Catches the switch button standing on the screen after a death
 // and the copy's buttons not working there.
 test("on the screen after a death the copy's buttons work and there is no switch button", async () => {
   await withPage(async (page) => {
@@ -1395,7 +1392,7 @@ test("on the screen after a death the copy's buttons work and there is no switch
   });
 });
 
-// To do 10; spec decision 7. Catches the copy's section staying after „Zakończ”, when a saved
+// D-173. Catches the copy's section staying after „Zakończ”, when a saved
 // program is shown.
 test("after „Zakończ” with unsaved changes the copy's section is gone", async () => {
   await withPage(async (page) => {
@@ -1407,8 +1404,7 @@ test("after „Zakończ” with unsaved changes the copy's section is gone", asy
 });
 
 // --- the panel on Programy -----------------------------------------------------------------------
-// Task ekrany-i-menu, To do 3 and 5, questions 5, 15 and 17, settlement row 11; D-166, D-196; task
-// edytor-programu, row E5. The list of programs on the left is the list of the screen
+// D-166, D-196. The list of programs on the left is the list of the screen
 // (tests/view/program-list.test.mjs); the panel beside it has the mode of its own.
 
 const NOTE = "Zmiany tutaj nie dotykają przejścia na mapie Las.";
@@ -1540,7 +1536,7 @@ test("showProgram shows the saved program asked for and takes its edits; one gon
   });
 });
 
-// Slice 6's observed problem again, in the mode of Programy: text typed into an editor field and not
+// The same, in the mode of Programy: text typed into an editor field and not
 // yet committed must land in the program it was typed into when another is shown with focus left
 // where it was; and showing the same program again, or time passing, must not take the focus.
 test("uncommitted text lands in the program it was typed into when Programy shows another, and showing the same one keeps the field", async () => {
@@ -1595,7 +1591,7 @@ function patrolOffered(root) {
     : cell.getAttribute("aria-disabled") === null;
 }
 
-// Settlement row 11, questions 15 and 17; D-196. Catches the editor of Programy turning to the
+// D-196. Catches the editor of Programy turning to the
 // archetype's offer when the map run is paused or has ended and waits for „Restart” or „Zakończ”,
 // the offer following the player's choice of a saved program instead of the map run's character,
 // and a branch of a teammate who is not in the map run opening an action.
@@ -1641,7 +1637,7 @@ test("dispose() takes the panel out of the page", async () => {
 });
 
 // --- the open rule panel across a fold and a move of its rule ------------------------------------
-// Task proporcje-sceny-i-programu, finding I-1 of the review; D-288, D-295. The panel stands under its
+// D-288, D-295. The panel stands under its
 // row, or under the header of a folded group; where it stands changes with a fold, and that is no
 // opening: the focus stays where the player put it and the panel keeps the field the player moved to.
 // A move of the open rule across a group border is the case of tests/view/rule-editor.test.mjs, since
