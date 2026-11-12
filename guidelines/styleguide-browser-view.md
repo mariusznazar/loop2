@@ -346,10 +346,10 @@ później:
   pod formularzem i linii wybranej zakładki, z podglądu wariantów karty
   z 2026-11-02 — wybór Mariusza z tego podglądu z datą wyboru;
 - dla wartości, których loop nie pokazała, a które Mariusz wybrał z podglądu wartości wyglądu
-  zadania „swit-rosnacy-z-passa” — chłodny i ciepły odcień światła sceny z ich kryciami oraz
-  wypełnienie, obrys i kryształki szronu — wybór Mariusza z podglądu wartości wyglądu tego zadania,
-  wariant A odcieni i wariant FA szronu, z nazwą zadania i datą wyboru, 2026-11-11; te same
-  nazwę i datę niesie komentarz przy regule powrotu odcienia, której wartość nie jest tokenem;
+  sceny — chłodny i ciepły odcień światła sceny z ich kryciami oraz wypełnienie, obrys
+  i kryształki szronu — wybór Mariusza z tego podglądu, wariant A odcieni i wariant FA szronu,
+  z datą wyboru, 2026-11-11; tę samą datę niesie komentarz przy regule powrotu odcienia, której
+  wartość nie jest tokenem;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — wybór Mariusza z 2026-10-20;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,

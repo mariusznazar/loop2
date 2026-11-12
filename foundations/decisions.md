@@ -9052,7 +9052,7 @@ thickness it is the outline alone, the fill coming with the next pixels. The fro
 - **Origin:** none
 
 *Rationale:* the frost warns before the character starts losing health, which comes below 35 °C, and
-it fills the first minutes of a map run, as the reconnaissance wanted; a frost that is full while the
+it fills the first minutes of a map run; a frost that is full while the
 character is chilled and goes with the warming at a fire shows the race of the fire with the cold,
 which a number in the row of the body leaves unseen. Half of the thickness is half, since the
 colours of the frost keep their opacity. Accepted with it: frost shows worse on white (D-314), and
