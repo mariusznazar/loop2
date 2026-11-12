@@ -6845,10 +6845,10 @@ program rule the number of its group and its own number in that group, such as �
     order after a rule moves
   - violates: rules numbered through the whole program as „1”, „2”, „3” across their groups; a
     rule group with no number
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, question 6, and § Settlements to record, row 4
+- **Origin:** none
 
 *Rationale:* a number gives a reference to a rule something to point at, such as „reguła 2.1”
-beside „Teraz”.
+beside „Teraz”, the row under the scene of a map run.
 *Rejected:* rules with no numbers — „reguła 2.1” beside „Teraz” would refer to nothing.
 
 ### D-293 — What time of an action does the program editor show?
@@ -6864,7 +6864,7 @@ run the time of a step on that map, and nothing for a movement outside a map run
   - complies: „Zbierz — Patyk” with its time in its row and beside „Zbierz” in the rule panel;
     „Kopnij” with „tura”; „Idź” on Programy with no map run in the game showing no time
   - violates: a time in the row and none in the panel; a time beside „Idź” outside a map run
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, Questions to settle, questions 6 and 17, and § Settlements to record, row 5
+- **Origin:** none
 
 *Rationale:* with the time the player compares actions without playing them, also in the panel,
 where the action is picked. Outside a map run no map gives a movement its step.
@@ -6884,12 +6884,13 @@ does not hold it.
   - complies: a group folded on Programy still folded after a visit to Siedziba, and unfolded after
     a reload; a save of the game state carrying nothing of folding
   - violates: folding kept in the browser's storage; a field of folding in the saved game state
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 17, and § Settlements to record, row 6
+- **Origin:** none
 
 *Rationale:* folding arranges the player's view of a program and changes nothing the program does,
-so it takes no new storage and no new version of the saved game state.
+so it takes no new storage and leaves the shape of the saved game state, and so its version, as it
+was. At the start of a game, as after a reload, every rule group stands unfolded.
 *Rejected:* folding kept in the browser — a new storage; folding kept in the saved game state — a
-new version of the save.
+new version of the save; the groups folded at the start — a new player does not see their rules.
 
 ### D-295 — What does a folded rule group show, and where does a rule dropped on it land?
 
@@ -6903,7 +6904,7 @@ program rule dropped on it lands at its end while the group stays folded.
   - complies: a folded group of three rules showing its name, its condition and the number three; a
     rule dropped on it becoming its fourth while it stays folded
   - violates: the group unfolding at the drop; the rule landing at the group's start
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, question 6, and § Settlements to record, row 7
+- **Origin:** none
 
 *Rationale:* a group that stays folded keeps the list where it stood under the pointer.
 *Rejected:* the group unfolding at the drop — the list runs from under the pointer.
@@ -6921,7 +6922,7 @@ the group's „✕” stands in its header.
     „✕” of the group in that header
   - violates: a select list of conditions or a text field of the name in the header of a rule
     group
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 8
+- **Origin:** none
 
 *Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
 row does (D-288).
@@ -6941,7 +6942,7 @@ first rule and „↓” only on its last.
     last rule of group 1
   - violates: „↓” disabled on the last rule of a group that has a next group; the rule landing at the
     end of the next group
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 7, Questions to settle, questions 6 and 17, and § Settlements to record, row 9
+- **Origin:** none
 
 *Rationale:* arrows suit moving a single rule (D-288), and across the edge of a group the rule lands
 next to where it stood, so arrows move a rule between groups as the mouse does.
@@ -6960,11 +6961,13 @@ Beside the rule groups of a program that holds more than one rule group stands a
   - complies: the button made with the shared button beside a program of two groups, and absent
     beside a program of one
   - violates: „zwiń wszystkie” drawn as underlined text; the button beside a program of one group
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 6, Questions to settle, questions 6 and 17, and § Settlements to record, row 10
+- **Origin:** none
 
-*Rationale:* folding five groups one by one takes five clicks. The button opens and leaves no state
-of a form, so it keeps the button D-44 gives it (D-275).
-*Rejected:* no such button — five clicks at five groups; the button standing beside every program.
+*Rationale:* folding five groups one by one takes five clicks. The button neither opens nor leaves a
+state of a form, and the rest of the game keeps plain buttons, so it keeps the button D-44 gives it
+(D-275).
+*Rejected:* no such button — five clicks at five groups; the button standing beside every program —
+no cost was kept beside it.
 
 ### D-299 — Does the pick of the rule panel hold a search or a row of recent picks?
 
@@ -6976,11 +6979,11 @@ The pick of the rule panel holds no search field and no row of recent picks.
 - **Verification:** an agent compares a change with the decision:
   - complies: the pick of a game with every action discovered standing whole without scrolling
   - violates: a search field above the cells; a row „ostatnio” above the grid
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 11
+- **Origin:** none
 
-*Rationale:* every cell fits without scrolling, so neither a search nor a row of recent picks
-spares the player anything. Accepted with it: both come back once the game's content outgrows the
-pick.
+*Rationale:* when this was settled every cell of the pick fitted without scrolling, so neither a
+search nor a row of recent picks would have spared the player anything. Accepted with it: both come
+back with the content of a later project, once that content outgrows the pick.
 *Rejected:* a search field — it takes the keyboard from the grid; a row of recent picks — three
 cells above the grid.
 
@@ -6994,12 +6997,13 @@ The program editor shows no current value beside a condition, such as „teraz 3
 - **Verification:** an agent compares a change with the decision:
   - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run
   - violates: „teraz 3” beside a condition in a rule's row or in the rule panel
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 12
+- **Origin:** none
 
 *Rationale:* a current value takes another reading of the game state and an answer to what to show
 outside a map run.
-*Rejected:* the current value beside a condition, as in the designer's sketch — another reading and
-the question of what to show outside a map run.
+*Rejected:* the current value beside a condition, such as „teraz 3”, which only a design sketch of
+the editor shows and loop's editor does not — another reading and the question of what to show
+outside a map run.
 
 ### D-301 — What does an empty rule group say?
 
@@ -7011,7 +7015,7 @@ A rule group that holds no program rule shows „Pusta grupa — przepuszcza dal
 - **Verification:** an agent compares a change with the decision:
   - complies: the rule group „Program” of a new game showing „Pusta grupa — przepuszcza dalej.”
   - violates: an empty rule group with nothing under its header
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 13
+- **Origin:** none
 
 *Rationale:* the sentence says what the character does with such a group: it passes on to the next.
 *Rejected:* an empty group with no sentence — it says nothing.
@@ -7029,7 +7033,7 @@ it says nothing of the firing counts.
     rule panel of a saved program on Programy
   - violates: the sentence speaking of the counts too; the sentence in the rule panel of a saved
     program
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 14
+- **Origin:** none
 
 *Rationale:* a change of the copy's rules sets the streak to zero (D-131), so the panel says so
 before the streak goes.
@@ -7045,7 +7049,7 @@ A program rule and a rule group are deleted at once, at the click, with no quest
 - **Verification:** an agent compares a change with the decision:
   - complies: „✕” of a rule group removing the group at the click
   - violates: a window asking whether to delete a program rule
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 15
+- **Origin:** none
 
 *Rationale:* a question costs a click more at every deletion.
 *Rejected:* a question before a deletion — a click more.
@@ -7061,7 +7065,7 @@ the list.
 - **Verification:** an agent compares a change with the decision:
   - complies: „+ dodaj grupę” at the foot of the list, under the last rule group
   - violates: „Dodaj grupę” at the foot of the list
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 6, and § Settlements to record, row 16; the human's decision at the request of the task that wrote this entry, 2026-11-05, on where the button stands
+- **Origin:** none
 
 *Rationale:* the two buttons that add are written in one notation; „+ dodaj grupę” stands once under
 all the groups.
@@ -7080,11 +7084,12 @@ rule or a rule group.
   - complies: a rule that has not fired in the map run showing „Wykonano 0×” as any count does
   - violates: „⊘” beside a rule; „2 reguły nie zadziała” in the header of a rule group; „0×” in
     `warning`
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 6, and § Settlements to record, row 17
+- **Origin:** none
 
-*Rationale:* these marks would double the state a program rule shows during a map run.
+*Rationale:* the state a program rule shows during a map run is given by its backgrounds and its bar
+(D-308), and these marks would double it.
 *Rejected:* „⊘”, „N reguł nie zadziała” and an amber „0×”, as in loop — they double the state a
-program rule shows during a map run.
+program rule shows during a map run, which D-308 gives.
 
 ### D-306 — How does the rule panel take the player through a rule?
 
@@ -7106,13 +7111,14 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
   - violates: the panel closing by itself after the target of the action; a pick waiting for a
     button that confirms it; Enter on a greyed cell changing the rule; a number field standing for
     „Zawsze”
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Acceptance criteria, Questions to settle, questions 7 and 17, and § Settlements to record, row 18
+- **Origin:** none
 
-*Rationale:* each pick moves on to the next field (D-288), so a rule is written in a few acts, and
-the panel stays open after the last field, so a fix takes no new opening. A greyed cell stays
-within the keyboard's reach so that its reason can be read.
+*Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 ·
+Patyk → Zbierz — Patyk” is written from a click on its row in six acts, and the panel stays open
+after the last field, so a fix takes no new opening. A greyed cell stays within the keyboard's reach
+so that its reason can be read.
 *Rejected:* the panel closing by itself after the last field — a fix takes opening it again; greyed
-cells out of the keyboard's reach.
+cells out of the keyboard's reach — no cost was kept beside it.
 
 ### D-307 — What does the line of an empty trip plan say?
 
@@ -7125,7 +7131,7 @@ pusty”.
 - **Verification:** an agent compares a change with the decision:
   - complies: a new program showing „Plan wyprawy: pusty” between its name and its rules
   - violates: the heading „Plan wyprawy” alone above an empty plan
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 11, Questions to settle, question 11, and § Settlements to record, row 19
+- **Origin:** none
 
 *Rationale:* an empty plan shown as its heading alone looks as though it has not loaded.
 *Rejected:* the heading alone — an empty plan looks as though it has not loaded.
