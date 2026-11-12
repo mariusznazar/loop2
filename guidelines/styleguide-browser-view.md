@@ -125,9 +125,11 @@ wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w T
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
 kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
 przy jednym rozmiarze sceny (D-349). Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
-ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony i kurzu) oraz dwóch
+ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony, kurzu i powrotu odcienia) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
-sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach. D-43 ich też
+sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach; geometria szronu stoi w
+TypeScripcie jako grubość w pikselach obrazu sceny i jako procenty kadru, a okresy jego zębów i
+kryształków w regułach szronu. D-43 ich też
 nie liczy; czy staną się tokenami, ten przewodnik nie rozstrzyga.
 
 ### Visible focus
@@ -345,6 +347,11 @@ Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki
   pod formularzem i linii wybranej zakładki, z podglądu wariantów karty
   z 2026-11-02 w zadaniu „przyciski-i-zakladki” (To do 7) — wybór Mariusza
   z tego podglądu, z nazwą zadania i datą wyboru;
+- dla wartości, których loop nie pokazała, a które Mariusz wybrał z podglądu wartości wyglądu
+  zadania „swit-rosnacy-z-passa” — chłodny i ciepły odcień światła sceny z ich kryciami oraz
+  wypełnienie, obrys i kryształki szronu — wybór Mariusza z podglądu wartości wyglądu tego zadania,
+  wariant A odcieni i wariant FA szronu, z nazwą zadania i datą wyboru, 2026-11-11; te same
+  nazwę i datę niesie komentarz przy regule powrotu odcienia, której wartość nie jest tokenem;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — ustalenie zadania;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
@@ -595,10 +602,10 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-271 · D-272 · D-291 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-39 · D-40 · D-43
+- **Decision:** D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-43
 - **Invariant:** none
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
-- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę.
+- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu.
 
 Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem i magiem. Stoi
 w `src/browser/view/scene.tsx` i `src/browser/view/scene-picture.ts`, a jej
@@ -616,6 +623,51 @@ wobec tła, na którym stoi (D-39, D-40). Pasek ma grubość `--bar-width` podwo
 `calc(var(--bar-width) * 2)`; cała scena jest rysowana w dwukrotności swojego obrazu (D-349).
 Plakietki nie ma przy czekaniu, w walce,
 po śmierci i po rozwiązaniu mapy (D-320, D-322).
+
+Światło sceny ma odcień (D-315, D-316): warstwa `scene-tint` leży nad wszystkim, co scena rysuje —
+lasem, rekwizytami, ogniskiem płonącym i wygasłym, magiem, wilkiem, kurzem i lecącą ikoną na jej
+plakietce — i pod szronem oraz plakietką nad głową maga, które zostają na własnych kolorach (D-320).
+Plakietka lecącej ikony (D-365) leży więc pod odcieniem i przyjmuje jego barwę, a ikona na niej zostaje
+jasna na ciemnej plakietce. Elementy leżą w tej kolejności od dołu: las, rekwizyty, ognisko, kurz, mag,
+lot ikony, odcień, szron, plakietka nad głową. Plakietka nad głową nie siedzi więc w elemencie maga,
+który leży pod odcieniem: jej nośnik to osobny element o tym samym polu i tym samym chodzie co mag.
+Warstwa miesza się ze sceną trybem `mix-blend-mode: color`, więc przenosi na scenę barwę i nasycenie,
+a jasność obrazu zostawia; jej kolor to mieszanka chłodnego i ciepłego odcienia w `oklch` w proporcji
+`t`, a jej krycie idzie liniowo z `t` od krycia chłodnego odcienia do krycia ciepłego. Oba odcienie
+i oba krycia to tokeny `--scene-tint-*`, a `t` (`--tint`, od 0 do 1) przychodzi z TypeScriptu jako liczba
+w stylu warstwy: żaden kolor nie jest składany z liczb w kodzie (D-43). Jak `t` idzie za passą, kiedy
+stoi w pełnym złocie i jak wraca po utracie passy, mówi D-316; długość powrotu stoi w regule powrotu
+w `src/browser/styles.css`. Utrata passy w toku przejścia daje warstwie nowy element, który startuje od
+odcienia, jaki stał, a animacja CSS prowadzi `--tint` do nowej wartości; pod ustawieniem ograniczenia
+ruchu odcień pokazuje od razu swój koniec. W pauzie gracza i przy odkryciu odcień stoi, a powrót po
+utracie passy w tym czasie zaczyna się dopiero, gdy scena rusza dalej. Przy śmierci, rozwiązaniu, na
+starcie przejścia, po „Restart” i po wczytaniu odcień stoi od razu tam, gdzie stawia go passa albo
+rozwiązanie. Odcień i szron leżą w scenie, więc filtr pauzy szarzy je razem z nią, a po rozwiązaniu
+scena stoi w pełnym złocie także pod oknem końca przejścia, które „✕” odsłania (D-132).
+
+Płonące ognisko ma dwa stopnie płomienia (D-373): pełny płomień i, w ostatnich minutach palenia,
+mniejszy — ten sam płomień na tych samych kamieniach, zmniejszony ręcznie z klatek pełnego w kolorach
+paczki Pixel Crawler, w tylu samych klatkach i tym samym takcie. Plik mniejszego płomienia i próg
+w minutach palenia stoją w danych sceny; wygasłe ognisko zostaje takie, jakie jest.
+
+Na brzegach kadru leży szron (D-372), nad odcieniem, więc jego kolor nie zmienia się z passą, i pod
+plakietką nad głową, nigdy na całym obszarze sceny. Jego grubość w pikselach obrazu sceny, liczba
+całkowita, przychodzi z TypeScriptu i idzie za temperaturą ciała tak, jak mówi D-372, a ogrzanie przy
+ogniu ją cofa; przychodzi też wielkość jednego piksela obrazu sceny jako część szerokości i część
+wysokości kadru. CSS buduje szron z kwadratów jednego piksela obrazu sceny na jego siatce (D-271),
+z masek na czterech elementach: kolor obrysu, kolor wypełnienia i kolory kryształków to tokeny
+`--scene-frost-*`. Kształt postrzępionego brzegu stoi w regułach szronu w `src/browser/styles.css`:
+wzdłuż każdej krawędzi pas pełny nieco cieńszy od szronu, nad nim dwa rzędy zębów o różnych okresach,
+na bokach w innych okresach; kryształki to pojedyncze piksele w dwóch kratach o różnych okresach, tylko
+w wypełnieniu. Pełna grubość szronu stoi więc tylko na najgłębszych zębach. Obrys, jeden piksel obrazu
+sceny, to piksel, który wypełnienie, cieńsze o jeden piksel, zostawia pod wewnętrznym brzegiem każdej
+kolumny; przy pierwszym pikselu grubości, tuż po tym, jak ciało odejdzie od 37 °C, stoi
+więc sam obrys, w jego ciemnym kolorze, a wypełnienie dochodzi z kolejnymi pikselami. Obrys odcina się
+od śniegu, na którym szron leży, kontrastem co najmniej 3:1 (D-271). Test
+`tests/view/scene-frost-contrast.test.mjs` pilnuje tokenu obrysu wobec próbek śniegu zmierzonych raz,
+pod chłodnym odcieniem, pod pełnym złotem i pomiędzy; zmiana tokenów odcienia, która zmienia śnieg pod
+szronem, wymaga nowego pomiaru. Szron nie ma ruchu, więc pod ustawieniem ograniczenia ruchu nie ma
+czego wyłączać: każda jego zmiana pokazuje od razu swój koniec.
 
 Ruch daje CSS, bez pętli rysowania: klatki maga i ognia zmieniają się w stałym
 takcie, dojście maga na miejsce trwa zawsze tyle samo, niezależnie od tempa gry,
@@ -642,7 +694,7 @@ mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem
 a nowy zajmuje jego miejsce (D-367).
 
 Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
-także ogień, mag, lot ikony i kurz, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
+także ogień, mag, lot ikony, kurz i powrót odcienia, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
 klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
 (D-317, D-319, D-320); mag, który zbiera, stoi w jednej klatce schylenia, a ikona i kurz
 pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają

@@ -26,6 +26,14 @@
  * state for it, and drops an effect that is overdue, one whose turn comes at a stop or in a reading
  * that carries several ends (D-317).
  *
+ * Over the picture of the forest, its props, its fire, the dust, the mage and the flying icon on its
+ * plaque lies the layer of the tint of the scene's light, `mix-blend-mode: color`, and over that the
+ * frost on the edges of the frame; the badge over the mage's head, on its solid `panel`, lies over both
+ * (D-315, D-316, D-320). The tint and the frost are drawn from the game state like
+ * the rest: the tint and the thickness of the frost come to the stylesheet as numbers, and the
+ * stylesheet takes every colour from the design tokens (D-43). A loss of the streak takes the tint back
+ * to the cool one over 2 s on a new element of the layer, started where the scene goes on (D-317).
+ *
  * The scene is a picture: no element of it takes the keyboard or a click, it is hidden from assistive
  * technology and no text or sign stands on it (D-321, D-272, D-44). Nothing runs when the module is
  * imported.
@@ -35,12 +43,13 @@ import type { AnimationEvent, CSSProperties } from "react";
 import type { GameEvent } from "../sim/game.js";
 import { SCENE, SCENE_EFFECTS } from "../sim/data/scene.js";
 import type { GameState } from "../sim/types.js";
-import { sceneDrawing, sceneEffect } from "./scene-picture.js";
+import { sceneDrawing, sceneEffect, tintShown } from "./scene-picture.js";
 import type {
   SceneDrawing,
   SceneEffect,
   SceneSprite,
   ScenePlacedSprite,
+  TintShown,
 } from "./scene-picture.js";
 
 export type SceneProps = {
@@ -77,6 +86,14 @@ type Shown = {
  * element of its own, and the number tells the effect that has ended from a newer one.
  */
 type Effects = { serial: number; shown: SceneEffect | null };
+
+/**
+ * One scene pixel as a percentage of the frame's width and of its height, with six decimals, so that
+ * the frost built of whole pixels keeps to the scene's grid at the scene's one size (D-349).
+ */
+function pixel(frame: number): string {
+  return `${Number((100 / frame).toFixed(6))}%`;
+}
 
 /** Events of no simulation call, one value, so a scene drawn without events sees no new ones. */
 const NO_EVENTS: readonly GameEvent[] = [];
@@ -130,6 +147,33 @@ function Badge({ badge }: { badge: NonNullable<SceneDrawing["badge"]> }) {
           style={{ "--progress": badge.progress } as CSSProperties}
         />
       </span>
+    </div>
+  );
+}
+
+/**
+ * The frost on the edges of the frame: its thickness in the scene's pixels and the size of one pixel as
+ * a part of the frame, which the stylesheet builds the frost of, square by square on the scene's grid.
+ * The body shows the frost's fill and the rim along its inner edge, and the crystals lie in the fill.
+ */
+function Frost({
+  thickness,
+  frame,
+}: {
+  thickness: number;
+  frame: SceneSprite;
+}) {
+  const style = {
+    "--frost": thickness,
+    "--pixel-x": pixel(frame.width),
+    "--pixel-y": pixel(frame.height),
+  } as CSSProperties;
+  return (
+    <div className="scene-frost" style={style}>
+      <div className="scene-frost-rim" />
+      <div className="scene-frost-body">
+        <div className="scene-frost-crystals" />
+      </div>
     </div>
   );
 }
@@ -238,6 +282,7 @@ export function Scene({
   const [seenEvents, setSeenEvents] = useState(events);
   const [lastState, setLastState] = useState(state);
   const [effects, setEffects] = useState<Effects>({ serial: 0, shown: null });
+  const [tint, setTint] = useState<TintShown | null>(null);
   const mageRef = useRef<HTMLDivElement>(null);
 
   // Adjusted while rendering, as the props change: a first draw, and a map run started among new
@@ -281,6 +326,19 @@ export function Scene({
     }
   }
   if (state !== lastState) setLastState(state);
+
+  // The tint of the light, from the streak and the completion of the reading: it stands at once at a
+  // first draw and at a map run started, and otherwise follows the reading as `tintShown` gives.
+  let lit = tint;
+  if (drawing === null) {
+    if (lit !== null) {
+      lit = null;
+      setTint(lit);
+    }
+  } else {
+    lit = tintShown(tint, drawing.tint, drawing.standing, started);
+    if (lit !== tint) setTint(lit);
+  }
   const pending = current !== null && next !== current.x ? next : null;
 
   // A new place starts a walk from where the mage stands now, which only the browser knows on the
@@ -302,7 +360,7 @@ export function Scene({
     );
   }, [pending, shown, frameWidth]);
 
-  if (drawing === null || current === null) return null;
+  if (drawing === null || current === null || lit === null) return null;
   const frame = drawing.background;
   const mage: ScenePlacedSprite = {
     ...drawing.mage.idle,
@@ -334,6 +392,21 @@ export function Scene({
         now.serial === serial ? { ...now, shown: null } : now,
       );
     };
+  // A return to the cool tint that has run to its end is over: the layer stands where it is from now
+  // on, so a scene hidden and shown again, which starts its animations anew, does not run it again.
+  const tintSerial = lit.serial;
+  const tintReturned = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    setTint((now) =>
+      now !== null && now.serial === tintSerial && now.from !== null
+        ? { ...now, from: null }
+        : now,
+    );
+  };
+  const tintStyle = {
+    "--tint": lit.shown,
+    ...(lit.from === null ? {} : { "--tint-start": lit.from }),
+  } as CSSProperties;
   // The badge of one action is one element from reading to reading, so its bar fills on; a new action,
   // which starts at a later minute, gets one of its own, which starts empty.
   const action = state.run?.current?.startMinute;
@@ -389,9 +462,6 @@ export function Scene({
           <Sheet sprite={drawing.mage.run} className="scene-mage-run" />
           <Sheet sprite={drawing.mage.bend} className="scene-mage-bend" />
         </div>
-        {drawing.badge === null ? null : (
-          <Badge key={action} badge={drawing.badge} />
-        )}
       </div>
       {effect.shown === null || effect.shown.kind !== "flight" ? null : (
         <Effect
@@ -401,6 +471,26 @@ export function Scene({
           onEnd={effectEnded(effect.serial)}
         />
       )}
+      <div
+        key={`tint-${lit.serial}`}
+        className="scene-tint"
+        data-returning={lit.from === null ? undefined : ""}
+        style={tintStyle}
+        onAnimationEnd={tintReturned}
+      />
+      {drawing.frost === 0 ? null : (
+        <Frost thickness={drawing.frost} frame={frame} />
+      )}
+      <div
+        key={`badge-${walk}`}
+        className="scene-badge-carrier"
+        data-walking={walking ? "" : undefined}
+        style={mageStyle}
+      >
+        {drawing.badge === null ? null : (
+          <Badge key={action} badge={drawing.badge} />
+        )}
+      </div>
     </div>
   );
 }

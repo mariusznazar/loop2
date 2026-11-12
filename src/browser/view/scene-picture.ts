@@ -1,5 +1,7 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import type { ArchetypeId } from "../sim/data/archetypes.js";
+import { MAPS } from "../sim/data/maps.js";
+import type { SolvingDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { ResourceId } from "../sim/data/resources.js";
 import {
@@ -7,8 +9,10 @@ import {
   SCENE_DUST,
   SCENE_EFFECTS,
   SCENE_FIRE,
+  SCENE_FROST,
   SCENE_MAGES,
   SCENE_PROPS,
+  SCENE_TINT,
 } from "../sim/data/scene.js";
 import type {
   ScenePicture,
@@ -57,10 +61,21 @@ export type SceneDrawing = {
   };
   /** The props, always, each with the resource it shows. */
   props: (ScenePlacedSprite & { resource: ResourceId })[];
-  /** The campfire on the character's tile, burning or extinguished; null where none stands. */
+  /**
+   * The campfire on the character's tile, burning or extinguished; null where none stands. A burning
+   * fire's sprite is the full flame's, or the smaller flame's in the last minutes of its burning.
+   */
   fire: (ScenePlacedSprite & { burning: boolean }) | null;
   /** The badge over the mage: its icon and the progress of the action from 0 to 1; null without one. */
   badge: { href: string; progress: number } | null;
+  /**
+   * How far the tint of the scene's light has gone from its cool end to its warm one, from 0 to 1:
+   * the streak over the one the map's condition asks for up to `SCENE_TINT.requiredShare`, and 1 only
+   * at a completion.
+   */
+  tint: number;
+  /** The thickness of the frost on the frame's edges in the scene's pixels, a whole number from 0 up. */
+  frost: number;
 };
 
 const STAYS: MageGoal = { kind: "stays" };
@@ -153,13 +168,56 @@ function badgeOf(
   };
 }
 
-/** The campfire on the character's tile, burning while it has minutes left; null without one. */
+/**
+ * The campfire on the character's tile, burning while it has minutes left; null without one. The
+ * burning fire shows the smaller flame while its minutes left are the last ones, and the extinguished
+ * fire is always the full sheet (D-316).
+ */
 function fireOf(
   run: GameMapRun,
 ): (ScenePlacedSprite & { burning: boolean }) | null {
   const campfire = run.campfires.find((c) => sameHex(c.at, run.character.at));
   if (campfire === undefined) return null;
-  return { ...placedOf(SCENE_FIRE), burning: campfire.minutesLeft > 0 };
+  const burning = campfire.minutesLeft > 0;
+  const low = burning && campfire.minutesLeft <= SCENE_FIRE.low.lastMinutes;
+  const picture: ScenePicture = low
+    ? SCENE_FIRE.low.picture
+    : SCENE_FIRE.picture;
+  return {
+    ...spriteOf(picture),
+    x: SCENE_FIRE.place.x,
+    y: SCENE_FIRE.place.y,
+    burning,
+  };
+}
+
+/**
+ * The tint of the scene's light, from 0, the cool tint, to 1, the warm one (D-315, D-316). It goes up
+ * evenly with the streak to `SCENE_TINT.requiredShare` at the streak the map's solving condition asks
+ * for and stays there when the streak goes on growing, and only a completion makes it 1. No map asks for
+ * no streak today; the tint of one that does is for the task that adds it to settle, and until then it
+ * stays at 0, the cool tint, before a completion. It is given
+ * with four decimals, which is finer than a step of tone the eye tells apart.
+ */
+function tintOf(run: GameMapRun): number {
+  if (run.completion !== null) return 1;
+  const solving: SolvingDef = MAPS[run.mapId].solving;
+  const required = solving.streak;
+  if (required === undefined) return 0;
+  const reached =
+    (Math.min(run.streak, required) / required) * SCENE_TINT.requiredShare;
+  return Number(reached.toFixed(4));
+}
+
+/**
+ * The thickness of the frost on the frame's edges, in the scene's pixels (D-316): none at the
+ * temperature the body starts at, growing evenly to its greatest at the chill and staying there below
+ * it, a whole number of pixels so that it grows by squares of the scene's grid.
+ */
+function frostOf(run: GameMapRun): number {
+  const { none, full, thickness } = SCENE_FROST;
+  const cold = (none - run.body.temperature) / (none - full);
+  return Math.round(Math.min(1, Math.max(0, cold)) * thickness);
 }
 
 /**
@@ -187,6 +245,41 @@ function bendFacingOf(run: GameMapRun): "right" | "left" | null {
   const { action } = activity;
   if (action.kind !== "gather" && action.kind !== "patrol") return null;
   return PROPS[action.resource]?.mageFaces ?? null;
+}
+
+/**
+ * How the scene shows the tint of its light, kept from reading to reading: the tint shown, from 0 to 1;
+ * the tint a return to a cooler one started from, or null while none runs; and the number that tells
+ * one return, or one standing at once, from the next.
+ */
+export type TintShown = { shown: number; from: number | null; serial: number };
+
+/**
+ * The tint the scene shows after a reading that puts it at `target`, from the tint it showed before
+ * (null at a first draw). It stands at once where the target puts it at a first draw, at the start of a
+ * map run (`placed`), at a death and at a completion. While the scene goes on, a fall of the target,
+ * the loss of the streak, starts a return from the tint shown, which CSS runs over 2 s, and the tint
+ * follows a rise of the target and keeps a return that is running; while the scene stands still, in
+ * the player's pause and at a discovery, it keeps the tint it shows, so that a fall in that time
+ * starts its return where the scene goes on (D-322, D-316).
+ */
+export function tintShown(
+  before: TintShown | null,
+  target: number,
+  standing: SceneStanding,
+  placed: boolean,
+): TintShown {
+  if (before === null || placed)
+    return { shown: target, from: null, serial: (before?.serial ?? 0) + 1 };
+  if (standing === "paused" || standing === "discovery") return before;
+  if (standing === "going") {
+    if (target === before.shown) return before;
+    if (target < before.shown && before.from === null)
+      return { shown: target, from: before.shown, serial: before.serial + 1 };
+    return { ...before, shown: target };
+  }
+  if (target === before.shown && before.from === null) return before;
+  return { shown: target, from: null, serial: before.serial + 1 };
 }
 
 /** The scene of the state's map run; null where no map run stands. */
@@ -217,6 +310,8 @@ export function sceneDrawing(state: GameState): SceneDrawing | null {
     props,
     fire: fireOf(run),
     badge: badgeOf(state, run),
+    tint: tintOf(run),
+    frost: frostOf(run),
   };
 }
 
