@@ -58,6 +58,11 @@ export type RunScreenControls = RunHeaderControls &
     openWindow(): void;
     closeWindow(): void;
     openMap(mapId: MapId): void;
+    /**
+     * The scene's effect of a death or a completion has ended, or the scene was hidden while it ran:
+     * the game view then opens the window that waited for it (D-322, D-311).
+     */
+    effectEnded(): void;
   };
 
 export type RunScreen = {
@@ -170,6 +175,7 @@ function RunScreenView({
               hovered={hovered}
               onHover={setHovered}
               onShowRule={onShowRule}
+              onEffectEnd={() => controls.effectEnded()}
             />
           )}
         </section>

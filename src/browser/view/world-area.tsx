@@ -42,6 +42,8 @@ export type WorldAreaProps = {
   onHover: (key: string | null) => void;
   /** Called with the number of the rule a click on „Teraz” or „Potem” names (D-336). */
   onShowRule: (ruleId: RuleId) => void;
+  /** Called when the scene's effect of a discovery, a death or a completion has ended (D-322). */
+  onEffectEnd: () => void;
 };
 
 /**
@@ -59,6 +61,7 @@ export function WorldArea({
   hovered,
   onHover,
   onShowRule,
+  onEffectEnd,
 }: WorldAreaProps) {
   const run = state.run;
   if (run === null) return null;
@@ -73,6 +76,7 @@ export function WorldArea({
         width={SCENE_WIDTH}
         height={SCENE_HEIGHT}
         events={events}
+        onEffectEnd={onEffectEnd}
       />
       <NowRows state={state} onShowRule={onShowRule} />
       <div className="body-row">

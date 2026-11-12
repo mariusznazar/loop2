@@ -55,21 +55,29 @@ export const SCENE = {
 } as const;
 
 /**
- * The mage's sheets, by the archetype of the character: idle, run and bend, each in its frame size. The
- * bend sheet is the mage of Pixel Crawler bending to the ground, made by hand from its idle frame
- * (D-271): the frames are the full bend, the half bend, the standing frame and the half bend again, so
- * that a loop of them bends and rises, and the sheet stands on its first frame, a bend, where the
- * system's setting asks for no motion.
+ * The mage's sheets, by the archetype of the character: idle, run, bend and death, each in its frame
+ * size. The bend sheet is the mage of Pixel Crawler bending to the ground, made by hand from its idle
+ * frame (D-271): the frames are the full bend, the half bend, the standing frame and the half bend again,
+ * so that a loop of them bends and rises, and the sheet stands on its first frame, a bend, where the
+ * system's setting asks for no motion. The death sheet is the pack's own death sheet of the mage: six
+ * frames in which it falls and lies, the last frame the mage lying down, which is where the sheet stands
+ * once it has played and wherever the scene shows the last image of a death at once (D-322).
  */
 export const SCENE_MAGES = {
   elementalMage: {
     idle: { file: "mage-idle.png", width: 64, height: 64, frames: 4 },
     run: { file: "mage-run.png", width: 64, height: 64, frames: 6 },
     bend: { file: "mage-bend.png", width: 64, height: 64, frames: 4 },
+    death: { file: "mage-death.png", width: 64, height: 64, frames: 6 },
   },
 } as const satisfies Record<
   ArchetypeId,
-  { idle: ScenePicture; run: ScenePicture; bend: ScenePicture }
+  {
+    idle: ScenePicture;
+    run: ScenePicture;
+    bend: ScenePicture;
+    death: ScenePicture;
+  }
 >;
 
 /**
@@ -147,6 +155,80 @@ export const SCENE_FROST = {
   full: BALANCE.body.chilledBelow,
   thickness: 16,
 } as const;
+
+/** The shade of a speck of light: the name of a colour of the scene's palette, which the stylesheet reads. */
+export type SceneSpeckShade = "ember" | "bronze";
+
+/**
+ * A speck of light after a completion (D-322): a square of one pixel of the scene that starts at `x`
+ * and `y`, its place on the scene's grid, rises `rise` pixels in as many steps and goes out where it
+ * ends, `delay` milliseconds after the effect begins.
+ */
+export type SceneSpeck = {
+  x: number;
+  y: number;
+  rise: number;
+  delay: number;
+  shade: SceneSpeckShade;
+};
+
+/**
+ * Where the three moments in which time stands still stand in the scene, in the scene's pixels (D-322).
+ * At a discovery the icons of what was discovered stand each on a plaque in a row over the clearing,
+ * the middle of the first row at `centreX` and the middle of its plaques on the line `y`, `perRow` to a
+ * row, the next row `rowStep` higher; a plaque is 18 pixels wide, so `step` leaves 4 between two. A
+ * plaque comes out of the forest from the crown of the nearer of the two tall pines, `from`, in whose
+ * place the left half of a row and the right half stand. After a completion the specks of light rise
+ * over the open snow of the clearing, where the ground is the snow alone and a speck stands out from it,
+ * from 104 to 248 across and from 134 up to 100 high, the lowest row the forest's trunks reach; they
+ * are placed on a fixed pattern, the same at every completion, so that the effect is one picture.
+ */
+export const SCENE_MOMENTS = {
+  discovery: {
+    centreX: SCENE.clearingX + SCENE.mageMiddle,
+    y: 56,
+    step: 22,
+    perRow: 8,
+    rowStep: 22,
+    from: { left: { x: 120, y: 50 }, right: { x: 265, y: 50 } },
+  },
+  specks: [
+    { x: 104, y: 112, rise: 12, delay: 0, shade: "ember" },
+    { x: 110, y: 123, rise: 17, delay: 700, shade: "bronze" },
+    { x: 116, y: 134, rise: 22, delay: 400, shade: "ember" },
+    { x: 122, y: 122, rise: 22, delay: 100, shade: "bronze" },
+    { x: 128, y: 133, rise: 13, delay: 800, shade: "ember" },
+    { x: 134, y: 121, rise: 18, delay: 500, shade: "bronze" },
+    { x: 140, y: 132, rise: 23, delay: 200, shade: "ember" },
+    { x: 146, y: 120, rise: 20, delay: 900, shade: "bronze" },
+    { x: 152, y: 131, rise: 14, delay: 600, shade: "ember" },
+    { x: 158, y: 119, rise: 19, delay: 300, shade: "bronze" },
+    { x: 164, y: 130, rise: 24, delay: 0, shade: "ember" },
+    { x: 170, y: 118, rise: 18, delay: 700, shade: "bronze" },
+    { x: 176, y: 129, rise: 15, delay: 400, shade: "ember" },
+    { x: 182, y: 117, rise: 17, delay: 100, shade: "bronze" },
+    { x: 188, y: 128, rise: 25, delay: 800, shade: "ember" },
+    { x: 194, y: 116, rise: 16, delay: 500, shade: "bronze" },
+    { x: 200, y: 127, rise: 16, delay: 200, shade: "ember" },
+    { x: 206, y: 115, rise: 15, delay: 900, shade: "bronze" },
+    { x: 212, y: 126, rise: 26, delay: 600, shade: "ember" },
+    { x: 218, y: 114, rise: 12, delay: 300, shade: "bronze" },
+    { x: 224, y: 125, rise: 17, delay: 0, shade: "ember" },
+    { x: 230, y: 113, rise: 13, delay: 700, shade: "bronze" },
+    { x: 236, y: 124, rise: 24, delay: 400, shade: "ember" },
+    { x: 242, y: 112, rise: 12, delay: 100, shade: "bronze" },
+  ],
+} as const satisfies {
+  discovery: {
+    centreX: number;
+    y: number;
+    step: number;
+    perRow: number;
+    rowStep: number;
+    from: Record<"left" | "right", { x: number; y: number }>;
+  };
+  specks: readonly SceneSpeck[];
+};
 
 /** The props of the scene, by the resource each shows; a resource with no prop has none here. */
 export const SCENE_PROPS = {

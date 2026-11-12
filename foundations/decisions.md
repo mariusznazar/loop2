@@ -960,17 +960,17 @@ Loop2 adopts the styleguide template of its pinned the-way, with no departure, f
 
 ### D-39 — What do the signal colours of the browser view mean?
 
-In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar. `positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on.
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar. `positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on. `discovery` also stands as the frame of the plaque of a discovery in the scene, which is a solid `panel` like the badge over the mage's head, with a contrast ratio of at least 3:1 against `panel`.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the fill of the bar of „Passa 480/480” in the header in `positive` on a track in `highlight`;
-  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the bar of a met requirement of the solving condition filled in `warning`.
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the fill of the bar of „Passa 480/480” in the header in `positive` on a track in `highlight`; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the bar of a met requirement of the solving condition filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge.
 - **Origin:** none
 
-*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own, though at the start it may share the value of the yellow of `discovery`. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision, and as it is not yet known what will change in the interface, the meanings stay as they are for now. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row; the 4.5:1 those two roles already keep on every background is more than the 3:1 the bar needs, so the bar adds no pair to check. D-279 has a frame or a bar at a text take the colour of that text; the bar of a rule speaks of the state of the rule and not of the text beside it, and whichever colour it takes differs from the colour of that text, so it is no such bar. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on. The bar of a requirement of the solving condition turns `positive` once the requirement is met, as in loop, since the requirement is then in order.
+*Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own, though at the start it may share the value of the yellow of `discovery`. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision, and as it is not yet known what will change in the interface, the meanings stay as they are for now. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row; the 4.5:1 those two roles already keep on every background is more than the 3:1 the bar needs, so the bar adds no pair to check. D-279 has a frame or a bar at a text take the colour of that text; the bar of a rule speaks of the state of the rule and not of the text beside it, and whichever colour it takes differs from the colour of that text, so it is no such bar. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on. The bar of a requirement of the solving condition turns `positive` once the requirement is met, as in loop, since the requirement is then in order. The plaque of a discovery takes the colour that says in text that something new was discovered, as a frame, so that what comes out of the forest at a discovery tells from the badge of an action by its colour and keeps the threshold of a part that is no text, against the `panel` it stands on.
 *Rejected:* a wrong value in a field marked in `danger` — nothing is lost by it, and `danger` is kept for a possible loss; a role of its own for each colour of the bar, two of them equal to colours of text — pairs of roles with equal values that drift apart when one of them changes; the fill of the progress bar over the mage's head in `text-strong` — the bar would not tell from the icon above it; the fill of the bar of a requirement of the solving condition always in `positive`, like the bar over the mage's head — on a map with two requirements it would not show which one is already met, which is worse than in loop.
 
 ### D-40 — What do the neutral roles of the browser view mean?
@@ -1005,17 +1005,17 @@ In the browser view `character` means that here is the character and here it is 
 
 ### D-42 — Which accessibility requirements does the browser view keep?
 
-For now every screen of the browser view keeps three success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so has `tile-revealed` against `tile-hidden`; `condition-unmet` has no threshold.
+For now every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
 
 - **Scope:** browser-view
-- **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-focus-visible
+- **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-three-flashes · wcag-focus-visible
 - **Relations:** none
 - **Verification:** invariants: design-token-contrast · browser-view-focus-outline. An agent compares a change with the decision:
-  - complies: a review that judges a new screen's contrast and focus by the three criteria and nothing more of WCAG;
-  - violates: a review that holds a change back for a success criterion of WCAG other than the three, without a change of this decision.
+  - complies: a review that judges a new screen's contrast, flashing and focus by the four criteria and nothing more of WCAG; a scene whose effects change a part of its area, or a layer over all of it that blends by `color` and keeps the picture's brightness, with no light or dark flash of the whole area;
+  - violates: a review that holds a change back for a success criterion of WCAG other than the four, without a change of this decision; an effect that lights and darkens the whole area of the scene, or a large part of it, more than three times in a second.
 - **Origin:** none
 
-*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. Three criteria are taken for now, and it is not known when the rest will be taken up. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component. The dark bar of a program rule says that nothing is going on, so it is held to no threshold, while the green and the amber bar keep the threshold of the text roles they share a colour with.
+*Rationale:* No law or contract binds the accessibility of loop2's user interface; basic accessibility is the product's own choice where it adds little work, and it stays cheap when kept from the start. Four criteria are taken for now, and it is not known when the rest will be taken up. The contrast check knows nothing of the size of the text on a pair, so it holds every pair to the threshold of normal text, and disabled text falls under the criterion's exception for an inactive component. The dark bar of a program rule says that nothing is going on, so it is held to no threshold, while the green and the amber bar keep the threshold of the text roles they share a colour with. A scene scaled up passes the area below which flashing is allowed, and the setting for reduced motion does not answer that, so the criterion on flashing is kept as its own. The frame of a discovery's plaque is a part of a graphic that identifies what the plaque shows, so it takes the threshold of 3:1, which `discovery` has with room on `panel`.
 *Rejected:* the whole of WCAG 2.2 at level AA — about fifty requirements, more than the product takes on for now.
 
 ### D-43 — What counts in the browser view as a value written in place of a design token?
@@ -6157,9 +6157,9 @@ Pixel Crawler, and the dust of a miss is a sprite of the pack Smoke & Fire Anima
 [16x16] recoloured to the scene's colours, all kept in `assets/sprites/` outside the directory the
 account and save server serves and copied into it when the application is built. A sprite file holds
 pixels alone, the game credits each pack whose licence asks for a credit, and the character of the
-scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light
-and the frost, and specks, and the frost and the specks are squares of one pixel of the scene on its
-grid in colours of the palettes of the packs, while the colours of the tint layer have their source in
+scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light,
+the cold layer of a death of cold and the frost, and specks, and the frost and the specks are squares of one pixel of the scene on its
+grid in colours of the palettes of the packs, while the colours of the tint layer and of the cold layer have their source in
 the human's choice; whatever has a drawing — a character, a creature, a thing — comes from a pack,
 and the colour of an effect stands out from the ground it stands on, the outline or the fill of the
 frost by at least 3:1 against the snow it lies on.
@@ -6177,13 +6177,16 @@ frost by at least 3:1 against the snow it lies on.
     campfire a sprite file made from the frames of the pack's fire with the flame cut down by hand;
     the frost on the edges of the frame built by CSS of squares of one pixel of the scene on its grid
     in colours the pictures of the pack's trees hold, its outline or its fill 3:1 or more against the
-    snow under every tint of the light
+    snow under every tint of the light; the fall of the mage a sprite file made from the pack's death
+    sheet of the mage, every pixel of it moved unchanged into frames of the mage's size; the specks of
+    light after a completion built by CSS of squares of one pixel of the scene on its grid in colours
+    read from pixels of the pack's bonfire, standing out from the open snow they rise over
   - violates: a picture placed straight in the directory the server serves; a sprite file in
     another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
     other than the two named; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
     game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
-    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1
+    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
@@ -7346,7 +7349,7 @@ name, the map's name, the clock, a bar of the solving condition with its numbers
 map run „Koniec przejścia”, which opens the end-of-run window. After a character's death or a
 completion that window (D-368) stands over this screen, its header included, under the menu bar and
 the row of warnings below it, and holds the lines of the end (D-185, D-216), which the world area
-does not; „✕” in it and Escape pressed in it (D-370) close it and uncover the screen, it opens again at every entry on the screen of an ended map run, and it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 stands.
+does not; „✕” in it and Escape pressed in it (D-370) close it and uncover the screen, it opens again at every entry on the screen of an ended map run, and it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 stands. It opens of itself at the end of the map run once the scene's effect of the death or the completion has played, so that the effect is seen, and at once where the scene shows the last image of that effect at once (D-322): at an entry on the screen, after a reload or a load, and under the system's setting for reduced motion.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -7361,7 +7364,7 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
     under that row in the program, the tabs and the tab picked staying where they were, and no third
     column appearing; after a completion the window over the screen holding the line „Do skrzynki: …”,
     the menu bar standing above it and the world area keeping „Teraz” and „Potem” under the scene;
-    „✕” uncovering the screen with „Koniec przejścia” in its header
+    „✕” uncovering the screen with „Koniec przejścia” in its header; a death of cold on the screen, the mage falling in the scene with no window over it until the effect has played and the window standing then, and after a reload on that screen the window standing at once over a scene in its last image
   - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
     body row; the rule panel opened over the program, beside the rows or in a column of its own; the
     tabs standing in the column of the program; the table of revealed tiles standing in the world
@@ -7369,7 +7372,7 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
     the chronicle and the table standing one under the other; the line „Do skrzynki: …” or the
     sentence of a resurrection standing in the world area or in the area with the tabs; „Restart” and
     „Zakończ” standing in the world area; the window covering the menu bar; the window standing while
-    the question „Zapisać, odrzucić, wrócić?” stands
+    the question „Zapisać, odrzucić, wrócić?” stands; the window covering the scene in the game minute of a death before the effect of the death has played; the window waiting for an effect the scene does not play
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
@@ -7405,10 +7408,10 @@ buttons stand in sight, and the menu bar with the row of warnings stays above it
 of the buttons „Restart” and „Zakończ” stands on the screen at a time, and „✕” uncovers the screen. The question of „Zakończ”
 stands in the program panel, which the window covers, so the window closes while the question stands,
 and it stays closed after „Wróć”, which keeps the window from remembering that the question closed
-it. Accepted with it: the window hides the scene and the program while it stands, and does not cover
+it. The window covers the scene, so it opens after the scene's effect of the end, which it would otherwise hide at its first frame, and at once where there is no effect to wait for. Accepted with it: the window hides the scene and the program while it stands, and does not cover
 the whole page as the end of loop does; the end is out of sight while the question stands and after
 it, until the player opens it with „Koniec przejścia”; the window needs keyboard handling of its own,
-Escape included, and a way back to it (D-370, D-371).
+Escape included, and a way back to it (D-370, D-371); the window stands some seconds after the end, longer after a completion than after a death.
 *Rejected:* the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
 change their place at the moment of the end; the same buttons in both places at once, the header and
 a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to
@@ -7575,9 +7578,11 @@ from the pack's sheets.
 The background picture of the scene is in full light and with no tint, and the tint of the scene's
 light is a layer over that picture, never a tint or a darkness in the picture's file. The layer lies
 over everything the scene draws — the background, the props, the campfire burning or extinguished,
-the mage, the wolf, the dust and the flying icon on its plaque — but the badge over the mage's head, which stays on its solid
-`panel` background (D-320), and the frost on the edges of the frame, which lies over the layer and
-does not change its colour with the streak.
+the mage, the wolf, the dust and the flying icon on its plaque — but the badge over the mage's head
+and the plaques of a discovery, which stay on their solid `panel` background (D-320, D-322), the
+specks of light after a completion, which stay in their own colours (D-322), and the
+frost on the edges of the frame, which lies over the layer and does not change its colour with the
+streak; the cold layer after a death of cold (D-322) lies over the layer of the tint, under the frost.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -7589,7 +7594,7 @@ does not change its colour with the streak.
     badge over the mage's head over it
   - violates: the file of the background darkened, as the picture behind the login card is, or
     tinted; a tint drawn by putting another file in place of the background; the mage or the
-    flying icon with its plaque left out of the layer, or the badge or the frost under it
+    flying icon with its plaque left out of the layer, or the badge, a plaque of a discovery, a speck of light or the frost under it
 - **Origin:** none
 
 *Rationale:* the tint of the scene's light follows the streak and turns full gold at a completion, so
@@ -7695,7 +7700,7 @@ overdue when its turn comes is dropped. The scene follows the system's setting f
 and shows no flash of its whole area.
 
 - **Scope:** browser-view
-- **Based on:** https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § 2.3.1 Three Flashes or Below Threshold — "Web pages do not contain anything that flashes more than three times in any one second period, or the flash is below the general flash and red flash thresholds" · § general flash and red flash thresholds — "the combined area of flashes occurring concurrently occupies no more than a total of .006 steradians within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing distance" · same glossary entry, Note 1 of the WCAG text — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
+- **Based on:** wcag-three-flashes · https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § general flash and red flash thresholds — "the combined area of flashes occurring concurrently occupies no more than a total of .006 steradians within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing distance" · same glossary entry, Note 1 of the WCAG text — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the scene under the system's setting for reduced motion keeping its frames still; an
@@ -7855,34 +7860,65 @@ alone — it says what the grey and „Wznów” already say.
 
 ### D-322 — What does the scene show while time stands still?
 
-While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)`
-and all its motion, the fire and the mage together, stands still. At a stop at a discovery the scene
-keeps its colours (D-122) and its motion stands still too. After a death the motion of the scene
-stands still, no badge stands over the head and the mage is grey with `grayscale(1)
-brightness(0.55)`, and after a completion the motion stands still, no badge stands there and the
-mage stands in colour.
+While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-62 · derives from D-122 · derives from D-132 · derives from D-316
+- **Relations:** derives from D-04 · derives from D-62 · derives from D-122 · derives from D-132 · derives from D-316 · derives from D-317 · derives from D-271
 - **Verification:** an agent compares a change with the decision:
   - complies: „Pauza” pressed, the scene grey and the fire and the mage still; the stop at the
-    first discovery, the scene in colour and the fire and the mage still; after a death of cold the
-    mage grey, the motion still and no badge; after a completion of Las the mage in colour, the
-    motion still and no badge
-  - violates: the fire moving at a stop at a discovery; the scene greyed at a stop at a discovery;
-    the whole scene greyed as at a pause after a death; the badge standing over a mage who is dead;
-    „Pauza” leaving the scene in colour
+    first discovery, the scene in colour, the fire and the mage still and the icons of what was
+    discovered coming out of the forest on plaques framed in `discovery` and standing over the
+    clearing until „Wznów”, which takes them away; a death of cold, the mage falling in six frames and
+    lying grey, no badge, the blue layer over the whole scene until „Restart” or „Zakończ”, a mage that died in the right half of the frame falling to the left, and the
+    same scene drawn after a reload with the mage already lying and the layer already there; a death
+    of hunger or in a fight, the mage falling and no layer; a completion of Las, the mage in colour in
+    the full gold, specks of light rising over the clearing once and going out, and a scene drawn
+    again showing no specks; a death in the game minute of a discovery, the fall alone and no plaque;
+    a scene under the system's setting for reduced motion showing the mage lying at once
+  - violates: the fire moving at a stop at a discovery; the fire moving while the effect of a
+    moment plays; the scene greyed at a stop at a discovery; the whole scene greyed as at a pause
+    after a death; the badge standing over a mage who is dead; „Pauza” leaving the scene in colour;
+    an effect that plays again at each redraw of the scene, after a return to the screen or after a
+    reload; an effect that loops until the moment ends; a layer over the whole scene after a death
+    of hunger; the plaques of a discovery over the fall of the mage; an effect that lights or darkens
+    the whole scene for a moment (D-317)
 - **Origin:** none
 
 *Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
 avoided on purpose. The grey, the one loop gave a paused scene, says that the game stands still, and
 a stop at a discovery stays in colour so that the moment of the reward is not dimmed. After a death
-the grey mage tells the end from a pause, and a completion shows in the scene as a stop does.
+the grey mage tells the end from a pause, and a completion shows in the scene as a stop does. The effect of each of the three moments plays once and the scene then stands on its last image, so the player who looks sees the moment arrive and the player who comes back to the screen, reloads or loads sees where it ended up, as the mage stands at once at its place (D-319), and no reload repeats a reward or kills the mage a second time. The plaques put what was discovered into the scene, where the band over the program names
+all of it, and take the badge's solid `panel` so that no icon stands straight on the trees (D-320);
+their frame in `discovery` tells a discovery from the badge of an action. The cause of a death of cold shows in the colour of the scene, a blue
+that the tint of the light never has (D-316), while hunger does not grey the scene so that the end
+does not look like a pause. The layer is a state of the scene, which stands until the moment ends,
+and not an effect, and it keeps the picture's brightness, so no effect lights or darkens the whole
+scene for a moment. After a completion the specks go out and leave the scene in the full gold, which
+the tint already gives. Accepted with it: a player who misses the effect does not see it again at that
+moment; the fire stands still for seconds beside the moving effect; the first discovery of a map
+stands several plaques at once, and a discovery of conditions or of a creature alone has no plaque,
+the band naming it; in the game minute of a discovery a death or a completion hides the reward of
+that discovery from the scene, the window of the end naming it; the colours of the cold layer and of
+the specks and the lengths of the effects come from a choice of the human made on screenshots.
 *Rejected:* the fire and the mage moving on at a stop at a discovery — the world would move while
 game time stands still, which loop avoided on purpose; the scene as at the player's pause after a
-death — the end of a game would look like a pause; a ready sheet of the mage's death — part of what
-the effects of a death are to bring would come into the scene.
+death — the end of a game would look like a pause; the effect in a loop for as long as the moment lasts — the world would move while game
+time stands, the end of a game would live for ever and a loop would have to be kept below the limit of
+flashing for its whole length; the effect repeated at every redraw of the scene — a return to the
+screen after a death would kill the mage again and a reload would repeat the reward; one sign of a
+discovery over the mage that names nothing — the scene would not say what was discovered, and
+`discovery` would stand in the scene as it does in the band; the icons on plaques with no frame in
+`discovery` — a discovery would hardly tell from the plaque of an action; a layer of its own for
+each cause of death, cold, hunger and fight — three colours to choose, and a reddish layer after a
+fight comes near the red the game keeps for threats; the fall alone, with no colour of the cause —
+only the line „Teraz” would say what killed the mage; the specks together with the mage walking to a
+campfire — where no campfire stands on the character's tile the scene draws none and the mage has
+nowhere to go; no effect of its own for a completion, the full gold alone — the aim of an effect for
+each of the three moments would not be met; the plaques of a discovery and the effect of the end
+together in the game minute of both — two moments in one frame; the scene alive while the effect
+plays, the fire burning and the mage breathing — the world would move while game time stands, and the
+scene would stand out visibly when the effect ends.
 
 ### D-323 — What does the game do, and what does the player read, after an error that no code of the game handled?
 
@@ -9048,7 +9084,7 @@ While the end-of-run window (D-368) stands, the header and the three areas of th
 
 ### D-371 — Who remembers whether the end-of-run window is open, and where does „Koniec przejścia” stand?
 
-Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run, and „✕”, Escape and the question „Zapisać, odrzucić, wrócić?” (D-173) close it, and the window stands only while it is open, the player is on that screen and no question stands. „Koniec przejścia” stands in the header before „Restart”, only while the map run has ended and the window is closed.
+Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run, and „✕”, Escape and the question „Zapisać, odrzucić, wrócić?” (D-173) close it, and the window stands only while it is open, the player is on that screen and no question stands. „Koniec przejścia” stands in the header before „Restart”, only while the map run has ended and the window does not stand, which includes the wait of the window for the scene's effect of the end (D-322), when it opens the window at once.
 
 - **Scope:** browser-view
 - **Based on:** none

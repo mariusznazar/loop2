@@ -14,7 +14,7 @@ bez odstępstw zgodnie z D-38.
 | Role              | Kind       | Meaning for the user                                                                                                                                                                                                                                                                                          | Text on it | Decision |
 | ----------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------- |
 | `page`            | background | Tu jest gra.                                                                                                                                                                                                                                                                                                  | `text`     | D-40     |
-| `panel`           | background | To osobny, wydzielony blok, także plakietka nad głową postaci i plakietka lecącej ikony zasobu.                                                                                                                                                                                                               | `text`     | D-40     |
+| `panel`           | background | To osobny, wydzielony blok, także plakietka nad głową postaci, plakietka lecącej ikony zasobu i plakietka odkrycia w scenie.                                                                                                                                                                                  | `text`     | D-40     |
 | `highlight`       | background | Ten wiersz albo tor, także tor paska nad głową postaci i tor paska wymagania warunku mapy w nagłówku, jest zaznaczony albo ta kontrolka jest pod kursorem.                                                                                                                                                    | `text`     | D-40     |
 | `rule-winning`    | background | Ta reguła programu wygrywa teraz.                                                                                                                                                                                                                                                                             | `text`     | D-40     |
 | `rule-running`    | background | Czynność tej reguły programu trwa teraz.                                                                                                                                                                                                                                                                      | `text`     | D-40     |
@@ -30,7 +30,7 @@ bez odstępstw zgodnie z D-38.
 | `positive`        | text       | To działa, jest w porządku albo jest teraz aktywne; stoi też jako pasek stanu reguły programu, której warunek jest spełniony i która może ruszyć, oraz jako wypełnienie paska postępu nad głową postaci; spełnione wymaganie warunku mapy w nagłówku ma w tej roli nazwę, liczby i wypełnienie swojego paska. | —          | D-39     |
 | `warning`         | text       | Uwaga: coś się nie wykona albo nie jest zapisane, także błędny wpis w polu i „żadna reguła nie pasuje — postać stanie” w wierszu „Potem”; stoi też jako pasek stanu reguły programu, której warunek jest spełniony, ale która nie może ruszyć.                                                                | —          | D-39     |
 | `danger`          | text       | Grozi utrata postaci, postępu albo danych, także „marznie” i „głoduje” pod temperaturą i pod sytością w wierszu ciała.                                                                                                                                                                                        | —          | D-39     |
-| `discovery`       | text       | Odkryto coś nowego.                                                                                                                                                                                                                                                                                           | —          | D-39     |
+| `discovery`       | text       | Odkryto coś nowego; stoi też jako ramka plakietki odkrycia w scenie.                                                                                                                                                                                                                                          | —          | D-39     |
 | `player-change`   | text       | To zrobił gracz.                                                                                                                                                                                                                                                                                              | —          | D-39     |
 | `character`       | other      | Tu jest postać i tu właśnie idzie; cel kroku odróżnia kształt — cienka linia przerywana zamiast grubej ciągłej — nigdy kolor.                                                                                                                                                                                 | —          | D-41     |
 | `tile-hidden`     | other      | Tego miejsca jeszcze nie znasz.                                                                                                                                                                                                                                                                               | —          | D-41     |
@@ -125,7 +125,7 @@ wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w T
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
 kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
 przy jednym rozmiarze sceny (D-349). Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
-ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony, kurzu i powrotu odcienia) oraz dwóch
+ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony, kurzu, powrotu odcienia i efektów odkrycia, śmierci i rozwiązania) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
 sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach; geometria szronu stoi w
 TypeScripcie jako grubość w pikselach obrazu sceny i jako procenty kadru, a okresy jego zębów i
@@ -151,7 +151,7 @@ regułę z drugim selektorem, dla próbki stanu z fokusem.
 Nowa kontrolka albo nowy link pokazuje fokus bez żadnego dodatku. Kontrolka,
 która potrzebowałaby innej obwódki, wymaga zmiany D-47. Obwódkę wyłączoną
 w nietypowy sposób łapie dopiero przegląd. Reguła trzyma kryterium WCAG 2.2
-2.4.7 Focus Visible, jedno z trzech, które interfejs przyjmuje (D-42).
+2.4.7 Focus Visible, jedno z czterech, które interfejs przyjmuje (D-42).
 
 ### Contrast of every pair
 
@@ -170,6 +170,9 @@ współczynnika kontrastu z WCAG 2.2 (D-42):
   nie dokłada pary ani progu: reguła sceny wymaga dla niego co najmniej 3:1
   wobec toru (D-39), a `positive` ma już 4,5:1 na `highlight` z pierwszego
   punktu;
+- ramka plakietki odkrycia w scenie, `discovery` na `panel`, nie dokłada pary
+  ani progu: reguła sceny wymaga dla niej co najmniej 3:1 wobec `panel` (D-39,
+  D-42), a `discovery` ma już 4,5:1 na `panel` z pierwszego punktu;
 - `text-disabled` nie ma progu;
 - `control-border` i `focus` mają co najmniej 3:1 na tych samych pięciu
   tłach;
@@ -351,6 +354,11 @@ później: grubością belki i linii zakładki (2026-11-02) oraz wyglądem sceny
   i kryształki szronu — wybór Mariusza z tego podglądu, wariant A odcieni i wariant FA szronu,
   z datą wyboru, 2026-11-11; tę samą datę niesie komentarz przy regule powrotu odcienia, której
   wartość nie jest tokenem;
+- dla wartości, których żadne źródło nie ustala, a które zaproponowano na zrzutach sceny trzech chwil,
+  gdy czas stoi, a Mariusz wybrał, przyjmując propozycję bez zmian — chłodna warstwa po śmierci
+  z zimna z jej kryciem oraz dwa kolory drobinek światła — komentarz `Source:` niesie wybór Mariusza
+  z datą, 2026-11-12, a przy kolorze drobinki podaje też piksel nazwanego obrazka paczki Pixel Crawler,
+  z którego kolor odczytano;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — wybór Mariusza z 2026-10-20;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
@@ -601,10 +609,10 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 ### The scene of a map run
 
-- **Decision:** D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-43
+- **Decision:** D-271 · D-272 · D-291 · D-315 · D-316 · D-317 · D-319 · D-320 · D-321 · D-322 · D-349 · D-364 · D-365 · D-366 · D-367 · D-372 · D-373 · D-132 · D-39 · D-40 · D-42 · D-43
 - **Invariant:** none
 - **Good:** Plakietka nad głową maga na `panel` z ikoną czynności w `text-strong`, bez tekstu obok, i pod nią paskiem postępu: wypełnienie w `positive` na torze w `highlight`; pauza szarzy całą scenę, a jej ruch stoi.
-- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu.
+- **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili.
 
 Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem i magiem. Stoi
 w `src/browser/view/scene.tsx` i `src/browser/view/scene-picture.ts`, a jej
@@ -625,10 +633,11 @@ po śmierci i po rozwiązaniu mapy (D-320, D-322).
 
 Światło sceny ma odcień (D-315, D-316): warstwa `scene-tint` leży nad wszystkim, co scena rysuje —
 lasem, rekwizytami, ogniskiem płonącym i wygasłym, magiem, wilkiem, kurzem i lecącą ikoną na jej
-plakietce — i pod szronem oraz plakietką nad głową maga, które zostają na własnych kolorach (D-320).
+plakietce — i pod szronem, plakietkami odkrycia i plakietką nad głową maga, które zostają na własnych kolorach (D-320, D-322).
 Plakietka lecącej ikony (D-365) leży więc pod odcieniem i przyjmuje jego barwę, a ikona na niej zostaje
 jasna na ciemnej plakietce. Elementy leżą w tej kolejności od dołu: las, rekwizyty, ognisko, kurz, mag,
-lot ikony, odcień, szron, plakietka nad głową. Plakietka nad głową nie siedzi więc w elemencie maga,
+lot ikony, odcień, chłodna warstwa po śmierci z zimna, szron, drobinki światła po rozwiązaniu,
+plakietki odkrycia, plakietka nad głową. Plakietka nad głową nie siedzi więc w elemencie maga,
 który leży pod odcieniem: jej nośnik to osobny element o tym samym polu i tym samym chodzie co mag.
 Warstwa miesza się ze sceną trybem `mix-blend-mode: color`, więc przenosi na scenę barwę i nasycenie,
 a jasność obrazu zostawia; jej kolor to mieszanka chłodnego i ciepłego odcienia w `oklch` w proporcji
@@ -692,12 +701,50 @@ w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zacz
 mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
 a nowy zajmuje jego miejsce (D-367).
 
-Przy zatrzymaniu — pauzie, odkryciu, śmierci i ukończeniu — cały ruch sceny,
-także ogień, mag, lot ikony, kurz i powrót odcienia, stoi (D-322). Pod systemowym ustawieniem ograniczenia ruchu
+W pauzie gracza cały ruch sceny, także ogień, mag, lot ikony, kurz i powrót odcienia, stoi (D-322);
+przy odkryciu, śmierci i ukończeniu stoi cały ruch poza efektem tej chwili (niżej). Pod systemowym ustawieniem ograniczenia ruchu
 klatki nie chodzą, mag staje na miejscu od razu, a pasek skacze przy odczytach
 (D-317, D-319, D-320); mag, który zbiera, stoi w jednej klatce schylenia, a ikona i kurz
 pojawiają się nieruchomo na swoim miejscu, ikona tam, gdzie ląduje, najwyżej na 300 ms, i znikają
 (D-317).
+
+Trzy chwile, gdy czas stoi — odkrycie, śmierć i rozwiązanie mapy — mają w scenie każda swój efekt (D-322).
+Efekt gra raz, w odczycie, który niesie tę chwilę, i nie ma limitu 300 ms zwykłego efektu; potem scena
+stoi na jego ostatnim obrazie, aż chwila się skończy („Wznów”, „Restart” albo „Zakończ”), a „Wznów” w trakcie
+efektu odkrycia ucina go. Ruszają się tylko elementy efektu; ogień i mag stoją jak przy każdym
+zatrzymaniu, więc reguła zatrzymania wyłącza z wstrzymania animacji tylko elementy oznaczone jako część
+efektu. Ostatni obraz to styl elementu bez animacji, a efekt jest animacją dodawaną do elementu, póki
+na scenie stoi `data-moment-playing`: dlatego scena narysowana ponownie na tej samej chwili — po powrocie
+na ekran, po odświeżeniu strony, po wczytaniu zapisu — i scena pod systemowym ustawieniem ograniczenia
+ruchu pokazują od razu ostatni obraz, bez ruchu. Odczyt tego, że chwila właśnie nastała, bierze się ze
+zdarzeń wywołania symulacji (D-04), nie ze stanu gry; ostatnia animacja efektu mówi scenie, że efekt
+się skończył, a scena schowana w czasie efektu, której przeglądarka animacje anuluje, stoi na ostatnim
+obrazie. Okno końca przejścia czeka na koniec efektu śmierci albo rozwiązania i otwiera się od razu
+tam, gdzie scena pokazuje ostatni obraz od razu (D-311). Żaden efekt nie rozjaśnia ani nie przyciemnia
+na chwilę całego obszaru sceny (D-317, D-42): efekty są małe albo, jak chłodna warstwa, mieszają się
+trybem `color`, który zostawia jasność obrazu.
+
+- Odkrycie: scena zostaje kolorowa, a ikona każdej odkrytej rzeczy, która ma ikonę w danych gry
+  (czynności, zasoby i ognisko), wychodzi z lasu na plakietce na tle `panel` z ramką w `discovery`
+  o grubości `--bar-width`, jak plakietka nad głową maga (D-320, D-39), i stoi w rzędzie nad polaną
+  do „Wznów”; ta sama ikona stoi raz, a rzecz bez ikony — warunek, stworzenie, drzewo umiejętności —
+  jest nazwana tylko przez pas nad programem (D-122). Plakietki leżą nad odcieniem światła, więc ramka
+  ma kolor roli. Miejsca wyjścia i ułożenie stoją w danych sceny, jako piksele obrazu sceny, a czasy
+  w regułach sceny w `src/browser/styles.css`.
+- Śmierć: mag upada w sześciu klatkach arkusza śmierci z danych sceny i leży na ostatniej, szary jak
+  dotąd; upada w stronę środka kadru, więc leży w obrazie, a nie za jego brzegiem ani pod szronem.
+  Po śmierci z zimna nad całą sceną leży chłodna, niebieska warstwa, nad odcieniem światła i pod
+  szronem, jako stan sceny do „Restart” albo „Zakończ”; wchodzi razem z upadkiem i odróżnia się od
+  chłodnego szarozielonego odcienia przy passie 0. Po śmierci z głodu i w walce warstwy nie ma.
+- Rozwiązanie: mag stoi w kolorze, a nad polaną, w części kadru, unoszą się raz drobinki światła —
+  kwadraty jednego piksela sceny na jej siatce, rosnące o całe piksele — i gasną; leżą nad odcieniem
+  światła, żeby jego złoto nie zmieniało ich koloru, i odróżniają się od śniegu, nad którym się
+  unoszą (D-271). Ostatni obraz nie ma drobinek: to scena w pełnym złocie odcienia.
+- Przy śmierci albo rozwiązaniu w minucie gry odkrycia scena pokazuje tylko efekt końca, bez plakietek
+  odkrycia; odkrycie nazywa okno końca przejścia.
+
+Kolory chłodnej warstwy i drobinek są wartościami, których żadne źródło nie ustala; cykl je zaproponował,
+a Mariusz wybrał je przy prośbie o scalenie, przyjmując propozycję (reguła Every value with its source).
 
 Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę filtrem
 `grayscale(1) brightness(0.5)` (D-322). Martwy mag i wygasłe ognisko mają jedną
@@ -740,14 +787,15 @@ w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
 
 ### The end-of-run window
 
-- **Decision:** D-368 · D-311 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
+- **Decision:** D-368 · D-311 · D-322 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
 - **Invariant:** none
 - **Good:** Okno po śmierci z tytułem „Mag zamarzł” w `text-strong` na `panel`, nad nim pasek menu i wiersz ostrzeżeń, pod nim przyciski „Restart”, „Zakończ” i „Otwarte: …” stojące w polu widzenia, gdy sekcje się przewijają; Escape zamyka okno, a nagłówek ekranu ma wtedy „Koniec przejścia”.
 - **Bad:** Okno przykrywające pasek menu; okno z zasłoną za sobą; przycisk zrobiony w oknie osobnym `<button>` albo z czcionką Geist Mono; pasek czasu w roli, której nie ma w tabeli Roles; Escape czytany na dokumencie.
 
 Okno końca przejścia, `src/browser/view/end-window.tsx`, jest pierwszym oknem
 nad ekranem gry. Otwiera się samo, gdy przejście ręczne kończy się śmiercią
-postaci albo ukończeniem mapy, i otwiera się znowu przy każdym wejściu na ekran
+postaci albo ukończeniem mapy — po efekcie tego końca w scenie, żeby go było widać, a od razu tam,
+gdzie scena pokazuje ostatni obraz od razu (D-311, D-322) — i otwiera się znowu przy każdym wejściu na ekran
 zakończonego przejścia (D-368). Jego treść i kolejność podaje D-368, jego
 teksty — `src/browser/view/end-window-lines.ts`; ta reguła podaje, jak okno
 wygląda, jak przykrywa ekran, jak się zamyka i jak bierze fokus. Reguły okna

@@ -1804,10 +1804,11 @@ header .failure-line {
  * of a picture side by side; `--frames` is their number, and the sheet shows one of them, the first
  * where it stands still. The scene's motion stands in the rules after the badge.
  *
- * The layers of the scene, from the bottom (D-315, D-316, D-320, D-372): the
- * forest, the props, the fire, the dust, the mage, the flying icon on its plaque, the tint of the light,
- * the frost and the badge over the mage's head. The scene isolates its layers, so the tint blends with
- * what lies under it in the scene and with nothing else on the page.
+ * The layers of the scene, from the bottom (D-315, D-316, D-320, D-322, D-372): the forest, the props,
+ * the fire, the dust, the mage, the flying icon on its plaque, the tint of the light, the cold layer
+ * after a death of cold, the frost, the specks of light after a completion, the plaques of a discovery
+ * and the badge over the mage's head. The scene isolates its layers, so the tint and the cold layer
+ * blend with what lies under them in the scene and with nothing else on the page.
  */
 .scene {
   position: relative;
@@ -1914,6 +1915,37 @@ header .failure-line {
 }
 
 /*
+ * The moments in which time stands still (D-322): a discovery, a death
+ * and a completion each have an effect that plays once, and the scene then stands on its last image
+ * until the moment ends. The rules of an element give that last image, with no animation, so it is also
+ * what the scene shows when it is drawn again on the same moment and under the system's setting for
+ * reduced motion; the effect is an animation added to the element while `data-moment-playing` stands on
+ * the scene, in the rules for motion below, and goes out where the setting asks for no motion.
+ *
+ * After a death the mage shows its death sheet, six frames in which it falls and lies; the sheet's
+ * picture is laid so that it shows its last frame, the mage lying down, and the sheet of a mage that
+ * does not stand dead is not shown. The other three sheets are hidden after a death.
+ */
+.scene-mage-death {
+  display: none;
+}
+
+.scene[data-standing="dead"] .scene-mage-death {
+  display: block;
+}
+
+.scene[data-standing="dead"] .scene-mage-idle,
+.scene[data-standing="dead"] .scene-mage-run,
+.scene[data-standing="dead"] .scene-mage-bend {
+  display: none;
+}
+
+.scene-mage-sprite .scene-mage-death img {
+  translate: calc(100% * (1 - var(--frames)) / var(--frames));
+  animation-name: none;
+}
+
+/*
  * The badge over the mage's head (D-320): a solid `panel` with the icon of the action drawn as the
  * mask of `.icon-mask` in `text-strong`, though no text stands beside it, and under it the bar of
  * the progress, the fill in `positive` on a track in `highlight`. It is no part of the mage's element,
@@ -1976,7 +2008,8 @@ header .failure-line {
   inset: 0;
 }
 
-.scene-flight-plaque {
+.scene-flight-plaque,
+.scene-discovery-plaque {
   position: absolute;
   padding: var(--space-xs);
   background: var(--panel);
@@ -1984,7 +2017,8 @@ header .failure-line {
   transform: translate(-50%, -50%);
 }
 
-.scene-flight-plaque .icon-mask {
+.scene-flight-plaque .icon-mask,
+.scene-discovery-plaque .icon-mask {
   display: block;
   height: 24px;
 }
@@ -2179,6 +2213,71 @@ header .failure-line {
 }
 
 /*
+ * The cold layer after a death of cold (D-322, D-315): a layer over
+ * everything the scene draws, the tint of the light included, under the frost and the badge, which
+ * stay on their own colours. It blends as the tint does, `mix-blend-mode: color`, so it lays its hue on
+ * the picture and leaves the picture's brightness, never lighting or darkening the scene for a moment
+ * (D-317), and it is blue where the tint of the light is never blue (D-316), so it tells from the cool
+ * grey-green of streak 0. It is a state of the scene that stands until „Restart” or „Zakończ”, not an
+ * effect. Its colour and opacity are the design tokens `--scene-chill*`, which Mariusz chose on
+ * 2026-11-12, accepting the proposal shown to him on screenshots of the scene.
+ */
+.scene-chill {
+  position: absolute;
+  inset: 0;
+  background: var(--scene-chill);
+  opacity: var(--scene-chill-opacity);
+  mix-blend-mode: color;
+}
+
+/*
+ * The plaques of a discovery (D-322, D-39, D-320): the icon of each thing
+ * the discovery revealed that the game's data gives an icon, each on a solid `panel` like the badge over
+ * the mage's head, with a frame in `discovery` of the bar's thickness, one pixel of the scene at its one
+ * size (D-349), which is at least 3:1 against `panel` as the role has 4.5:1 on it. They lie over the
+ * tint of the light, like the badge, so the frame keeps the role's colour. Each item is laid over the
+ * whole frame so that its percentages are parts of the frame, as the flight of an icon is; the plaque
+ * stands at its place over the clearing, where TypeScript gives it.
+ */
+.scene-discovery,
+.scene-discovery-item {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-discovery-plaque {
+  border: var(--bar-width) solid var(--discovery);
+}
+
+/*
+ * The specks of light after a completion (D-322, D-271, D-43): squares of
+ * one pixel of the scene, `--pixel-x` by `--pixel-y` as parts of the frame, each at the place TypeScript
+ * gives on the scene's grid. They lie over the tint of the light, so the golden light does not change
+ * their colour, and have no place of their own once their effect has played: the last image has none, so
+ * a speck is hidden where no animation shows it. The colours are tokens, each with the pixel of a picture
+ * of the pack Pixel Crawler it was read from, and stand out from the open snow they rise over.
+ */
+.scene-specks {
+  position: absolute;
+  inset: 0;
+}
+
+.scene-speck {
+  position: absolute;
+  width: var(--pixel-x);
+  height: var(--pixel-y);
+  visibility: hidden;
+}
+
+.scene-speck[data-shade="ember"] {
+  background: var(--scene-speck-ember);
+}
+
+.scene-speck[data-shade="bronze"] {
+  background: var(--scene-speck-bronze);
+}
+
+/*
  * The scene's motion (D-316, D-319, D-320), from CSS at a beat apart from the pace, and only where
  * the system's setting asks for no less motion (D-317); under that setting the frames stand on the
  * first, the mage stands at its place at once and the bar jumps at each reading. The animations are
@@ -2200,6 +2299,17 @@ header .failure-line {
  *   a change of the scene's state and not an effect of an ordinary event, so the 300 ms of D-317 does
  *   not limit it. A tint that stands at once, at a death, a completion, the start of a map run and a
  *   first draw, has no return, and under the system's setting for reduced motion none has.
+ * - The three moments in which time stands still (D-322) play once each
+ *   while `data-moment-playing` stands on the scene, and are no effects of an ordinary event, so the
+ *   300 ms of D-317 does not limit them; their durations were chosen by viewing the game and let through by
+ *   Mariusz on 2026-11-12, and each stands in one rule: the fall of the mage lasts the
+ *   six frames of its death sheet at the beat of the frames, 160 ms, 960 ms, and the cold layer comes
+ *   in over the same time with the fall, a rise of its opacity from 0 that lights or darkens nothing,
+ *   since the layer keeps the picture's brightness (D-317); a plaque of a discovery comes out of the
+ *   forest in 600 ms, each 150 ms after the one before it, and fades in as it does; a speck of light
+ *   rises its whole height in 1800 ms and goes out, each starting at its own delay up to 900 ms, which
+ *   TypeScript gives from the data. The first animation of each moment has the whole duration of the
+ *   moment and animates nothing, so that its end tells the scene the effect is over.
  */
 @media (prefers-reduced-motion: no-preference) {
   .scene-mage-sprite img,
@@ -2253,6 +2363,49 @@ header .failure-line {
     animation-duration: 300ms;
   }
 
+  .scene[data-moment-playing] .scene-mage-death {
+    animation-name: scene-moment-life;
+    animation-duration: calc(var(--frames) * 160ms);
+  }
+
+  .scene[data-moment-playing] .scene-mage-sprite .scene-mage-death img {
+    animation-name: scene-fall;
+    animation-duration: calc(var(--frames) * 160ms);
+    animation-timing-function: steps(var(--frames), jump-none);
+    animation-iteration-count: 1;
+  }
+
+  .scene[data-moment-playing] .scene-chill {
+    animation-name: scene-chill-in;
+    animation-duration: calc(var(--frames) * 160ms);
+    animation-timing-function: linear;
+  }
+
+  .scene[data-moment-playing] .scene-discovery {
+    animation-name: scene-moment-life;
+    animation-duration: calc(600ms + (var(--count) - 1) * 150ms);
+  }
+
+  .scene[data-moment-playing] .scene-discovery-item {
+    animation-name: scene-discovery-in;
+    animation-duration: 600ms;
+    animation-delay: calc(var(--index) * 150ms);
+    animation-timing-function: ease-out;
+    animation-fill-mode: backwards;
+  }
+
+  .scene[data-moment-playing] .scene-specks {
+    animation-name: scene-moment-life;
+    animation-duration: calc(var(--latest) * 1ms + 1800ms);
+  }
+
+  .scene[data-moment-playing] .scene-speck {
+    animation-name: scene-speck;
+    animation-duration: 1800ms;
+    animation-delay: calc(var(--delay) * 1ms);
+    animation-timing-function: steps(var(--rise));
+  }
+
   .scene[data-standing="going"] .scene-badge-fill {
     transition: width 200ms linear;
   }
@@ -2268,9 +2421,11 @@ header .failure-line {
  * Every stop — the player's pause, a discovery, a death and a completion — holds every animation of
  * the scene where it is: the frames, the fire, the mage on its way and a return of the tint (D-322).
  * Going on again goes on from there. The pause's grey comes with no animation, and nothing lights or darkens the whole scene
- * (D-317).
+ * (D-317). Only the effect of the moment itself runs at its stop, its elements and what they hold
+ * marked `scene-moment-part`, so that nothing else of the scene moves while it plays (D-322).
  */
-.scene:not([data-standing="going"]) * {
+.scene:not([data-standing="going"])
+  *:not(.scene-moment-part, .scene-moment-part *) {
   animation-play-state: paused;
 }
 
@@ -2278,6 +2433,49 @@ header .failure-line {
 @keyframes scene-effect-life {
   to {
     visibility: hidden;
+  }
+}
+
+/*
+ * The first animation of a moment: it animates nothing, and its end tells that the effect is over. */
+@keyframes scene-moment-life {
+  to {
+    visibility: visible;
+  }
+}
+
+/* The mage falls: from its first frame to the last, which its rule gives as its style. */
+@keyframes scene-fall {
+  from {
+    translate: 0;
+  }
+}
+
+/* The cold layer comes in with the fall, to its opacity. */
+@keyframes scene-chill-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A plaque comes out of the forest, from where TypeScript gives, to its place, fading in. */
+@keyframes scene-discovery-in {
+  from {
+    translate: var(--from-x) var(--from-y);
+    opacity: 0;
+  }
+}
+
+/* A speck rises its whole height in whole pixels, and is hidden again at the end. */
+@keyframes scene-speck {
+  from {
+    visibility: visible;
+    translate: 0 0;
+  }
+
+  to {
+    visibility: visible;
+    translate: 0 calc(var(--rise) * -100%);
   }
 }
 

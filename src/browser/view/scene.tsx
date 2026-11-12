@@ -27,12 +27,26 @@
  * (D-317, D-365, D-366, D-367).
  *
  * Over the picture of the forest, its props, its fire, the dust, the mage and the flying icon on its
- * plaque lies the layer of the tint of the scene's light, `mix-blend-mode: color`, and over that the
- * frost on the edges of the frame; the badge over the mage's head, on its solid `panel`, lies over both
- * (D-315, D-316, D-320). The tint and the frost are drawn from the game state like
+ * plaque lies the layer of the tint of the scene's light, `mix-blend-mode: color`, over that the cold
+ * layer after a death of cold, and over that the frost on the edges of the frame, the specks of light
+ * after a completion and the plaques of a discovery; the badge over the mage's head, on its solid
+ * `panel`, lies over all of them (D-315, D-316, D-320, D-322). The tint and the frost are drawn from the game state like
  * the rest: the tint and the thickness of the frost come to the stylesheet as numbers, and the
  * stylesheet takes every colour from the design tokens (D-43). A loss of the streak takes the tint back
  * to the cool one over 2 s on a new element of the layer, started where the scene goes on (D-317).
+ *
+ * In the three moments in which time stands still, a discovery, a death and a completion, the scene
+ * shows an effect that plays once and then stands on its last image until the moment ends (D-322): the
+ * icons of what was discovered come out of the forest on plaques, the
+ * mage falls in the frames of its death sheet, with the cold layer over the whole scene after a death of
+ * cold, and specks of light rise over the clearing. The scene tells a moment that has just begun from one
+ * drawn again by the events of the simulation call (D-04), as it tells a map run started: only the reading
+ * whose events carry the discovery, the death or the completion plays the effect, and a scene drawn again
+ * on the same moment, after a return to the screen, a reload or a load, stands on its last image at once,
+ * which is the style of the elements with no animation, as it does under the system's setting for reduced
+ * motion. The effect's own animation ends in the end of the effect, and the scene tells the screen, which
+ * tells the game view, so that the end-of-run window opens only after it. A scene hidden while the effect
+ * runs, which a browser cancels the animations of, stands on the last image too.
  *
  * The scene is a picture: no element of it takes the keyboard or a click, it is hidden from assistive
  * technology and no text or sign stands on it (D-321, D-272, D-44). Nothing runs when the module is
@@ -43,10 +57,16 @@ import type { AnimationEvent, CSSProperties } from "react";
 import type { GameEvent } from "../sim/game.js";
 import { SCENE, SCENE_EFFECTS } from "../sim/data/scene.js";
 import type { GameState } from "../sim/types.js";
-import { sceneDrawing, sceneEffect, tintShown } from "./scene-picture.js";
+import {
+  momentBegins,
+  sceneDrawing,
+  sceneEffect,
+  tintShown,
+} from "./scene-picture.js";
 import type {
   SceneDrawing,
   SceneEffect,
+  SceneMoment,
   SceneSprite,
   ScenePlacedSprite,
   TintShown,
@@ -63,6 +83,12 @@ export type SceneProps = {
    * mage at once. None where the scene is drawn again from the same call.
    */
   events?: readonly GameEvent[];
+  /**
+   * Called when the effect of a moment in which time stands still has ended: its last animation has run
+   * out, or the scene was hidden while it ran, so that the scene stands on the moment's last image. The
+   * screen tells the game view, which opens the end-of-run window only then (D-322, D-311).
+   */
+  onEffectEnd?: () => void;
 };
 
 /** The way the mage faces; its sheets face right. */
@@ -86,6 +112,14 @@ type Shown = {
  * element of its own, and the number tells the effect that has ended from a newer one.
  */
 type Effects = { serial: number; shown: SceneEffect | null };
+
+/**
+ * The moment in which time stands still that the scene shows, kept from reading to reading: its key,
+ * and whether its effect plays. It plays only in the reading in which the moment begins; a scene drawn
+ * again on the same moment, or on one that has played, stands on its last image, which is the style of
+ * the elements with no animation, so that nothing but the effect is ever an animation (D-322).
+ */
+type MomentShown = { key: string; playing: boolean };
 
 /**
  * One scene pixel as a percentage of the frame's width and of its height, with six decimals, so that
@@ -117,16 +151,23 @@ function boxOf(sprite: ScenePlacedSprite, frame: SceneSprite): CSSProperties {
 function Sheet({
   sprite,
   className,
+  momentKey,
+  onAnimationEnd,
 }: {
   sprite: SceneSprite;
   className?: string;
+  /** The key of the moment the sheet's life animation tells the end of, where it does. */
+  momentKey?: string;
+  onAnimationEnd?: (event: AnimationEvent<HTMLDivElement>) => void;
 }) {
   return (
     <div
       className={
         className === undefined ? "scene-sheet" : `scene-sheet ${className}`
       }
+      data-moment-key={momentKey}
       style={{ "--frames": sprite.frames } as CSSProperties}
+      onAnimationEnd={onAnimationEnd}
     >
       <img src={sprite.href} alt="" draggable={false} />
     </div>
@@ -174,6 +215,111 @@ function Frost({
       <div className="scene-frost-body">
         <div className="scene-frost-crystals" />
       </div>
+    </div>
+  );
+}
+
+/**
+ * The icons of what a discovery revealed, each on a plaque on `panel` with a frame in `discovery`
+ * (D-322), over the whole frame so that a percentage is a part of it. Each plaque stands at its place
+ * over the clearing, which is its style where no animation runs, and comes out of the forest, from
+ * where the data gives, when its effect plays: its layer carries it from there, and `--index` delays
+ * each by its turn in the row. The container's own animation, as long as the last plaque's, tells the
+ * end of the effect.
+ */
+function Plaques({
+  moment,
+  frame,
+  onEnd,
+}: {
+  moment: Extract<SceneMoment, { kind: "discovery" }>;
+  frame: SceneSprite;
+  onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
+}) {
+  return (
+    <div
+      key={moment.key}
+      className="scene-discovery scene-moment-part scene-moment-master"
+      data-moment-key={moment.key}
+      style={{ "--count": moment.plaques.length } as CSSProperties}
+      onAnimationEnd={onEnd}
+    >
+      {moment.plaques.map((plaque, index) => (
+        <div
+          key={plaque.href}
+          className="scene-discovery-item scene-moment-part"
+          style={
+            {
+              "--index": index,
+              "--from-x": percent(plaque.from.x - plaque.x, frame.width),
+              "--from-y": percent(plaque.from.y - plaque.y, frame.height),
+            } as CSSProperties
+          }
+        >
+          <div
+            className="scene-discovery-plaque"
+            style={{
+              left: percent(plaque.x, frame.width),
+              top: percent(plaque.y, frame.height),
+            }}
+          >
+            <span
+              className="icon-mask"
+              aria-hidden="true"
+              style={{ "--icon": `url("${plaque.href}")` } as CSSProperties}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The specks of light after a completion (D-322): squares of one pixel of the scene on its grid, each
+ * at its place, rising by whole pixels and going out, the last of them `--latest` milliseconds after the
+ * first starts. They stand only while the effect plays; the last image has none. The container's own
+ * animation tells the end of the effect.
+ */
+function Specks({
+  moment,
+  frame,
+  onEnd,
+}: {
+  moment: Extract<SceneMoment, { kind: "completion" }>;
+  frame: SceneSprite;
+  onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
+}) {
+  const latest = Math.max(...moment.specks.map((speck) => speck.delay));
+  return (
+    <div
+      key={moment.key}
+      className="scene-specks scene-moment-part scene-moment-master"
+      data-moment-key={moment.key}
+      style={
+        {
+          "--latest": latest,
+          "--pixel-x": pixel(frame.width),
+          "--pixel-y": pixel(frame.height),
+        } as CSSProperties
+      }
+      onAnimationEnd={onEnd}
+    >
+      {moment.specks.map((speck, index) => (
+        <span
+          key={index}
+          className="scene-speck scene-moment-part"
+          data-shade={speck.shade}
+          style={
+            {
+              left: percent(speck.x, frame.width),
+              top: percent(speck.y, frame.height),
+              "--rise": speck.rise,
+              "--delay": speck.delay,
+            } as CSSProperties
+          }
+        />
+      ))}
     </div>
   );
 }
@@ -238,6 +384,15 @@ function Effect({
   );
 }
 
+/**
+ * The way a dead mage lies: it falls toward the middle of the frame, so that the fallen mage, whose
+ * sheet reaches the full width of its frame, lies inside the picture and not past its edge or under the
+ * frost on it, whichever way it faced when it died (D-322). The sheet falls to the right.
+ */
+function fallFacing(mageX: number, frame: SceneSprite): Facing {
+  return mageX + SCENE.mageMiddle > frame.width / 2 ? "left" : "right";
+}
+
 /** Where the drawing leads the mage: the place of its goal, or `kept` where its goal is to stay. */
 function placeOf(drawing: SceneDrawing, kept: number): number {
   const { goal } = drawing.mage;
@@ -276,6 +431,7 @@ export function Scene({
   width,
   height,
   events = NO_EVENTS,
+  onEffectEnd,
 }: SceneProps) {
   const drawing = sceneDrawing(state);
   const [shown, setShown] = useState<Shown | null>(null);
@@ -283,6 +439,7 @@ export function Scene({
   const [lastState, setLastState] = useState(state);
   const [effects, setEffects] = useState<Effects>({ serial: 0, shown: null });
   const [tint, setTint] = useState<TintShown | null>(null);
+  const [moment, setMoment] = useState<MomentShown | null>(null);
   const mageRef = useRef<HTMLDivElement>(null);
 
   // Adjusted while rendering, as the props change: a first draw, and a map run started among new
@@ -339,6 +496,22 @@ export function Scene({
     lit = tintShown(tint, drawing.tint, drawing.standing, started);
     if (lit !== tint) setTint(lit);
   }
+  // The moment in which time stands still, a discovery, a death or a completion: its effect plays in
+  // the reading whose events carry it and, as the first draw of a scene has no such events, not at a
+  // redraw, after a return to the screen or a load, where the scene stands on its last image at once.
+  let held = moment;
+  if (drawing === null || drawing.moment === null) {
+    if (moment !== null) {
+      held = null;
+      setMoment(held);
+    }
+  } else if (moment === null || moment.key !== drawing.moment.key) {
+    held = {
+      key: drawing.moment.key,
+      playing: fresh && momentBegins(drawing.standing, events),
+    };
+    setMoment(held);
+  }
   const pending = current !== null && next !== current.x ? next : null;
 
   // A new place starts a walk from where the mage stands now, which only the browser knows on the
@@ -362,6 +535,7 @@ export function Scene({
 
   if (drawing === null || current === null || lit === null) return null;
   const frame = drawing.background;
+  const playing = held?.playing === true;
   const mage: ScenePlacedSprite = {
     ...drawing.mage.idle,
     x: current.x,
@@ -403,6 +577,28 @@ export function Scene({
         : now,
     );
   };
+  // The effect of a moment has ended where its last animation has run out, or where the scene was
+  // hidden while it ran, which cancels the animations: from then on the scene stands on the last image,
+  // so a scene hidden and shown again does not play it afresh, and the game view is told.
+  const settle = (key: string) => {
+    if (held === null || held.key !== key || !held.playing) return;
+    setMoment({ ...held, playing: false });
+    onEffectEnd?.();
+  };
+  const momentEnded = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    settle(event.currentTarget.getAttribute("data-moment-key") ?? "");
+  };
+  const watchCancel = (scene: HTMLDivElement | null) => {
+    if (scene === null) return;
+    const cancelled = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Element && target.matches(".scene-moment-master"))
+        settle(target.getAttribute("data-moment-key") ?? "");
+    };
+    scene.addEventListener("animationcancel", cancelled);
+    return () => scene.removeEventListener("animationcancel", cancelled);
+  };
   const tintStyle = {
     "--tint": lit.shown,
     ...(lit.from === null ? {} : { "--tint-start": lit.from }),
@@ -411,7 +607,14 @@ export function Scene({
   // which starts at a later minute, gets one of its own, which starts empty.
   const action = state.run?.current?.startMinute;
   return (
-    <div className="scene" aria-hidden="true" data-standing={drawing.standing}>
+    <div
+      ref={watchCancel}
+      className="scene"
+      aria-hidden="true"
+      data-standing={drawing.standing}
+      data-moment={drawing.moment?.kind}
+      data-moment-playing={playing ? "" : undefined}
+    >
       <img
         className="scene-background"
         src={frame.href}
@@ -453,7 +656,11 @@ export function Scene({
         data-walking={walking ? "" : undefined}
         data-bending={drawing.mage.bending ? "" : undefined}
         data-bend-facing={drawing.mage.bendFacing ?? undefined}
-        data-facing={current.facing}
+        data-facing={
+          drawing.moment?.kind === "death"
+            ? fallFacing(current.x, frame)
+            : current.facing
+        }
         style={mageStyle}
         onAnimationEnd={onAnimationEnd}
       >
@@ -461,6 +668,14 @@ export function Scene({
           <Sheet sprite={drawing.mage.idle} className="scene-mage-idle" />
           <Sheet sprite={drawing.mage.run} className="scene-mage-run" />
           <Sheet sprite={drawing.mage.bend} className="scene-mage-bend" />
+          <Sheet
+            sprite={drawing.mage.death}
+            className="scene-mage-death scene-moment-part scene-moment-master"
+            momentKey={
+              drawing.moment?.kind === "death" ? drawing.moment.key : undefined
+            }
+            onAnimationEnd={momentEnded}
+          />
         </div>
       </div>
       {effect.shown === null || effect.shown.kind !== "flight" ? null : (
@@ -478,9 +693,21 @@ export function Scene({
         style={tintStyle}
         onAnimationEnd={tintReturned}
       />
+      {drawing.moment?.kind === "death" && drawing.moment.cold ? (
+        <div
+          className="scene-chill scene-moment-part"
+          style={{ "--frames": drawing.mage.death.frames } as CSSProperties}
+        />
+      ) : null}
       {drawing.frost === 0 ? null : (
         <Frost thickness={drawing.frost} frame={frame} />
       )}
+      {drawing.moment?.kind === "completion" && playing ? (
+        <Specks moment={drawing.moment} frame={frame} onEnd={momentEnded} />
+      ) : null}
+      {drawing.moment?.kind === "discovery" ? (
+        <Plaques moment={drawing.moment} frame={frame} onEnd={momentEnded} />
+      ) : null}
       <div
         key={`badge-${walk}`}
         className="scene-badge-carrier"
