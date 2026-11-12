@@ -2223,8 +2223,8 @@ header .failure-line {
  * the picture and leaves the picture's brightness, never lighting or darkening the scene for a moment
  * (D-317), and it is blue where the tint of the light is never blue (D-316), so it tells from the cool
  * grey-green of streak 0. It is a state of the scene that stands until „Restart” or „Zakończ”, not an
- * effect. Its colour and opacity are the design tokens `--scene-chill*`, which the cycle proposes and
- * the human chooses at its request.
+ * effect. Its colour and opacity are the design tokens `--scene-chill*`, which the human chose at the
+ * request of the task, accepting the cycle's proposal.
  */
 .scene-chill {
   position: absolute;

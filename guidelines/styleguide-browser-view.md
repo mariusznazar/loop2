@@ -356,11 +356,10 @@ Q9–Q11 i Q19), z jednym rodzajem dołożonym w zadaniu „przyciski-i-zakladki
   wariant A odcieni i wariant FA szronu, z nazwą zadania i datą wyboru, 2026-11-11; te same
   nazwę i datę niesie komentarz przy regule powrotu odcienia, której wartość nie jest tokenem;
 - dla wartości, których żadne źródło nie ustala, a które cykl zadania „trzy-chwile-gdy-czas-stoi”
-  proponuje, żeby Mariusz wybrał je przy prośbie o scalenie na zrzutach — chłodna warstwa po
-  śmierci z zimna z jej kryciem oraz dwa kolory drobinek światła — komentarz `Source:` mówi, że
-  wartość jest propozycją cyklu, do wyboru przez Mariusza, a przy kolorze drobinki podaje też piksel
-  nazwanego obrazka paczki Pixel Crawler, z którego kolor odczytano; po wyborze Mariusza komentarz
-  niesie jego wybór, z nazwą zadania i datą;
+  zaproponował na zrzutach, a Mariusz wybrał przy prośbie o scalenie, przyjmując propozycję bez zmian
+  — chłodna warstwa po śmierci z zimna z jej kryciem oraz dwa kolory drobinek światła — komentarz
+  `Source:` niesie wybór Mariusza z nazwą zadania i datą, 2026-11-12, a przy kolorze drobinki podaje też
+  piksel nazwanego obrazka paczki Pixel Crawler, z którego kolor odczytano;
 - dla skali odstępów, grubości ramek i belek, stosów czcionek, wag czcionek
   i grubości linii siatki — ustalenie zadania;
 - dla deskryptorów `@font-face` — wydanie github.com/vercel/geist-font,
@@ -745,8 +744,8 @@ trybem `color`, który zostawia jasność obrazu.
 - Przy śmierci albo rozwiązaniu w minucie gry odkrycia scena pokazuje tylko efekt końca, bez plakietek
   odkrycia; odkrycie nazywa okno końca przejścia.
 
-Kolory chłodnej warstwy i drobinek są wartościami, których żadne źródło nie ustala; cykl je proponuje, a
-wybiera je Mariusz przy prośbie o scalenie (reguła Every value with its source).
+Kolory chłodnej warstwy i drobinek są wartościami, których żadne źródło nie ustala; cykl je zaproponował,
+a Mariusz wybrał je przy prośbie o scalenie, przyjmując propozycję (reguła Every value with its source).
 
 Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę tą samą
 wartością co stara Loop (D-322). Martwy mag i wygasłe ognisko mają jedną wspólną
