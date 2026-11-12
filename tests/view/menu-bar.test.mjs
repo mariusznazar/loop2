@@ -1,5 +1,4 @@
-// The menu bar (task ekrany-i-menu, To do 1, 7 and 9; questions 2, 7, 9 and 11; D-97, D-157, D-277,
-// D-280, D-285) on jsdom through tests/view/page-document.mjs (D-264): which elements the bar
+// The menu bar (D-97, D-157, D-277, D-280, D-285) on jsdom through tests/view/page-document.mjs (D-264): which elements the bar
 // builds, what it does with the events a case fires and with the client's answers, never real
 // keyboard handling, focus order or rendering, which the browser check covers (D-88). Enter and
 // Space on „Konto” are the browser's own click of a native button; here a click stands for them.

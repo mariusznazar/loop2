@@ -50,8 +50,8 @@ Reading of the sentence:
   read — never comments, identifiers or other code; the code inside `${...}` is code, and its own
   literals are read in their turn. In that text, a colour as above: a hexadecimal colour, a
   colour function, or a named, system or deprecated system colour as a whole word, never
-  `transparent` or `currentColor`; the names of the 23 roles (Q18 of the task, the styleguide's
-  table Roles) are no colour there, so the role `highlight` is not read as the system colour
+  `transparent` or `currentColor`; the names of the roles in `ROLE_NAMES` (the styleguide's
+  table Roles; D-39, D-40, D-41) are no colour there, so the role `highlight` is not read as the system colour
   Highlight;
 - in an HTML file, nothing outside `<style>` elements and `style` attributes is read.
 
@@ -127,7 +127,7 @@ GENERIC_FAMILIES = ("serif", "sans-serif", "cursive", "fantasy", "monospace", "s
 # CSS Cascade 5 § 7.3, https://www.w3.org/TR/2022/CR-css-cascade-5-20220113/, read 2026-10-23.
 CSS_WIDE_KEYWORDS = ("initial", "inherit", "unset", "revert", "revert-layer")
 
-# The roles of Q18 of the task, as the styleguide's table Roles names them.
+# Role names, as the styleguide's table Roles names them (D-39, D-40, D-41).
 ROLE_NAMES = frozenset((
     "page", "panel", "highlight", "divider", "control-border", "selected", "text-strong", "text",
     "text-secondary", "text-label", "text-disabled", "positive", "warning", "danger", "discovery",
