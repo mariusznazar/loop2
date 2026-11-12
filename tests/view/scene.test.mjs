@@ -347,7 +347,7 @@ function filterOf(element) {
 
 // Catches a pause that leaves the scene in colour, a discovery that greys it, a death that greys the
 // whole scene instead of the mage, a completion that greys the mage, and an extinguished fire left
-// in colour. The two values are the old Loop's (D-322, D-316).
+// in colour. The two values are those D-322 and D-316 give.
 test("the greys: the whole scene at the player's pause, the mage after a death, the extinguished fire; every other stop in colour", async () => {
   await withPage(async (page) => {
     const PAUSE = "grayscale(1) brightness(0.5)";

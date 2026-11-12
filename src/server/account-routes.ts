@@ -469,8 +469,8 @@ export function accountRoutes(
 
   // The checks come in this order: the guards, the fields, the session, the
   // size of the stored text, then one write that checks the block, the version
-  // and the revision (D-104 for the guards, the fields and the size, D-112 and
-  // D-210 for the write).
+  // and the revision (D-104 for the guards, the fields and the size, D-112,
+  // D-209 and D-210 for the write).
   router.put(paths.savedGame, (request, response) => {
     const fields = saveFields(request.body);
     if (!fields) {

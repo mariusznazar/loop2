@@ -1,6 +1,6 @@
 // The numbers the card of a map shows (D-327, D-333 and D-142 in foundations/decisions.md). Each
-// expected value is written out here with the arithmetic that gives it from the data's
-// temperatures, densities, cooldowns and chances, never from the functions under test.
+// expected value is written out here with the arithmetic that gives it from the temperatures,
+// densities, cooldowns and chances of D-388 and D-142, never from the functions under test.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";

@@ -1897,9 +1897,8 @@ header .failure-line {
 }
 
 /*
- * The player's pause greys the whole scene with the value the old Loop gave a paused scene,
- * `grayscale(1) brightness(0.5)` (D-322). At a discovery, after a completion and after a death the
- * scene itself keeps its colours.
+ * The player's pause greys the whole scene with `grayscale(1) brightness(0.5)` (D-322). At a
+ * discovery, after a completion and after a death the scene itself keeps its colours.
  */
 .scene[data-standing="paused"] {
   filter: grayscale(1) brightness(0.5);

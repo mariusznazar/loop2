@@ -19,11 +19,12 @@ import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 
 // The campfire, the burning stick and eating (D-26, D-63, D-68, D-69, D-71, D-72). Every number
-// below is written out by hand: crafting lasts 20 game minutes and uses 6 sticks, lighting a campfire 5 minutes and 2 sticks and gives it 60 minutes of
-// burning, lighting a stick 5 minutes and the stick, which burns 3 minutes, feeding 5 minutes and
-// one stick, which adds 20 minutes, eating 5 minutes and one berry, which gives 25 satiety, not
-// above 100. On Las the body cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire
-// warms the character on its tile by 0.5 °C and a burning stick by 0.15 °C a minute.
+// below is written out by hand from the numbers of D-387: crafting lasts 20 game minutes and uses
+// 6 sticks, lighting a campfire 5 minutes and 2 sticks and gives it 60 minutes of burning,
+// lighting a stick 5 minutes and the stick, which burns 3 minutes, feeding 5 minutes and one
+// stick, which adds 20 minutes, eating 5 minutes and one berry, which gives 25 satiety, not above
+// 100. On Las the body cools by 0.002 × (37 − 25) = 0.024 °C a minute; a burning campfire warms
+// the character on its tile by 0.5 °C and a burning stick by 0.15 °C a minute.
 
 const [mapId, forest] = Object.entries(MAPS)[0];
 // The first character a new game creates takes the id 1.
@@ -693,9 +694,9 @@ test("empty nature energy takes no health", () => {
 });
 
 // The price of an action (D-63, D-145, D-175, D-363): what the editor shows is what the simulation
-// takes. The expected prices are written out by hand from the data: crafting 6 sticks, lighting a
-// campfire 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1 stick, eating
-// 1 berry; „Czysty płomień” takes the 2 sticks off lighting.
+// takes. The expected prices are written out by hand from D-387 and D-177: crafting 6 sticks,
+// lighting a campfire 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1
+// stick, eating 1 berry; „Czysty płomień” takes the 2 sticks off lighting.
 const CLEAN_FLAME = { flameSpell: { practice: 0, ranks: { cleanFlame: 1 } } };
 
 test("the price of an action names the pieces it uses up and the nature energy it takes, nothing for what takes none", () => {

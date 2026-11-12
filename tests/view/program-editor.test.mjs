@@ -1421,8 +1421,9 @@ test("the time of one execution: minutes from the data, „tura” in combat, a 
   assert.equal(actionTime(bought, "gather"), "10 min");
 });
 
-// The prices below (D-363) are written out by hand from the data of the game: crafting a campfire uses 6 sticks, lighting it
-// 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1 stick, eating 1 berry.
+// The prices below (D-363) are written out by hand from D-387 and D-177: crafting a campfire uses 6
+// sticks, lighting it 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1
+// stick, eating 1 berry.
 test("the price of an action: the pieces it uses up, then nature energy, each name in the form its count takes", () => {
   const outside = newKnowingGame();
   assert.equal(actionPriceText(outside, "craftCampfire"), "6 patyków");

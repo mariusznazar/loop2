@@ -19,7 +19,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 
-// Every expected number below is worked out by hand from the numbers written here: on Las the body
+// Every expected number below is worked out by hand from the numbers of D-387: on Las the body
 // cools by 0.002 × (37 − 25) = 0.024 °C a minute, satiety falls by 0.6 a minute, health falls by
 // 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and rises by 0.05 otherwise.
 
@@ -433,8 +433,8 @@ test("nature energy stays between 0 and its cap of 100 at every game minute", ()
   });
 });
 
-// The minutes each need lasts (D-337). Each expected number is worked out by hand from the data:
-// Las cools the body by 0.002 × (37 − 25) = 0.024 °C a minute, Las — głębiej by
+// The minutes each need lasts (D-337). Each expected number is worked out by hand from the numbers
+// of D-387 and D-388: Las cools the body by 0.002 × (37 − 25) = 0.024 °C a minute, Las — głębiej by
 // 0.002 × (37 − 7) = 0.06 °C, satiety falls by 0.6 a minute, chilled is below 35.0 °C and starving
 // below 30.
 

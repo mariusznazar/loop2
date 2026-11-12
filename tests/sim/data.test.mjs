@@ -13,7 +13,7 @@ import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
 import { TRAITS } from "../../dist/browser/sim/data/traits.js";
 import { programFromRules, programWithRules } from "./program-fixture.mjs";
 
-test("the map Las has its size, entrance, step and resources", () => {
+test("the map Las has the size, entrance, step and resources of D-388", () => {
   const forest = MAPS.forest;
   assert.equal(forest.name, "Las");
   assert.equal(forest.width, 4);
@@ -28,7 +28,7 @@ test("the map Las has its size, entrance, step and resources", () => {
   ]);
 });
 
-test("Las — głębiej has its map data, attacker, solving requirements and opening map", () => {
+test("Las — głębiej has the map data, attacker, solving requirements and opening map of D-388", () => {
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,
@@ -244,7 +244,7 @@ test("Las has an ambient temperature of 25 degrees in its map data", () => {
   }
 });
 
-test("the body starts at its caps, with the rates and thresholds written here", () => {
+test("the body starts at its caps, with the rates and thresholds of D-387", () => {
   assert.deepEqual(BALANCE.body, {
     startTemperature: 37.0,
     startSatiety: 100,
@@ -274,6 +274,8 @@ test("a new character's traits hold carrying capacity 15, apart from the archety
   }
 });
 
+// The minutes a stick adds as fuel and burns when lit, its warmth and the satiety of a berry are
+// those of D-387.
 test("the items are the four resources of Las, with their uses", () => {
   assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
   assert.deepEqual(ITEMS.stick, {
@@ -297,6 +299,8 @@ test("the items are the four resources of Las, with their uses", () => {
   });
 });
 
+// The sticks to craft and to light a campfire, its minutes of burning and its warmth are those of
+// D-387.
 test("the campfire holds its name, costs, burning minutes, warmth and icon", () => {
   assert.deepEqual(CAMPFIRE, {
     id: "campfire",

@@ -16,11 +16,11 @@ import {
 // D-378: on Las a program drawn from the closed lists passes 480 game minutes alive on a seed named
 // here, and the empty program dies. The program below was found by trying seeds: the send with the
 // real time ALIVE_REAL_MS, which takes the seed ALIVE_SEED, is one on which it lives. The empty
-// program's death in minute 243, of cold, is worked out by hand: on Las the body cools by 0.024 °C
-// a minute, so it is chilled from minute 84 (37 − 0.024 × 84 = 34.984), and starving from minute
-// 117 (100 − 0.6 × 117 = 29.8); health, full at 100, falls by 0.35 a minute from 84 to 116 (33
-// minutes, 11.55) and by 0.7 from 117 on, so 88.45 − 0.7 × 126 = 0.25 at minute 242 and below zero
-// in minute 243, while chilled.
+// program's death in minute 243, of cold, is worked out by hand from the numbers of D-387: on Las
+// the body cools by 0.024 °C a minute, so it is chilled from minute 84 (37 − 0.024 × 84 = 34.984),
+// and starving from minute 117 (100 − 0.6 × 117 = 29.8); health, full at 100, falls by 0.35 a
+// minute from 84 to 116 (33 minutes, 11.55) and by 0.7 from 117 on, so 88.45 − 0.7 × 126 = 0.25 at
+// minute 242 and below zero in minute 243, while chilled.
 //
 // With „Zapal” the spell Płomyk of D-63, paid with 10 nature energy besides its sticks (D-177), the
 // same program passes the 480 game minutes alive on the same seed, paying for its lightings.
