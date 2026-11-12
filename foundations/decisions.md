@@ -6435,24 +6435,35 @@ at most three clicks: the choice of a map, the map's row and „Wejdź”.
     „Wróć do przejścia” gone after a death before „Zakończ”; an item marked on the screen of a map
     run; the clock of „Wróć do przejścia” written as „03:32”; content wider on Programy than on
     Siedziba
-- **Origin:** zakres_mvp2_loop2.md and rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), parts A.3 and A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, questions 2, 7, 9 and 11, and § Settlements to record, rows 2, 3, 4, 6 and 9 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "Which screens does the game have, and how does the player move between them?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 1, and Questions to settle, question 7
+- **Origin:** none
 
 *Rationale:* the player reads the game by where things stand: one page holding the program, the
 character, the map, the trees and the chest is what makes the game unreadable. The division follows
 the predecessor game, loop, which the player already finds readable, and improves on it where it was
-weak. A player who leaves a map run keeps one way back to it, and a map run that has ended stays
-until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć do
-przejścia” stands still, since the map run waits in its pause, and it reads as the clock in the
+weak. The name of a character on its card leads to the screen Postać, on which the menu bar marks
+Siedziba, as in loop. The first of the three clicks to a first map run is the item Mapy of the menu
+bar, so no button leading to the maps stands at a character; the cost accepted is that a player on
+Siedziba goes from a character to the maps through the menu. On the screen of a map run no item of
+the menu bar names the place the player is at, and D-277 has the bar mark that place, so it marks no
+item there. A player who leaves a map run keeps one way back to it, and a map run that has ended
+stays until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć
+do przejścia” stands still, since the map run waits in its pause, and it reads as the clock in the
 header of the screen of the map run does.
 *Rejected:* one page holding everything — unreadable; the width of the content changing between
 screens, as in loop — the logo and the menu jump; another largest width — it changes that one
-dimension alone; the skill trees shown on two screens, as in loop; Mapy and Wiedza standing on the
-menu bar at once, inactive — two items with no content; „Wróć do przejścia” on the screen of a map
-run too — a link to the place the player already stands in; a menu that stops working after the end
-of a map run — a new state of the bar, while the copy can be fixed on the screen after the end
-anyway; „Wróć do przejścia” only while the map run goes on — after leaving an ended map run only the
-browser's back button leads back to it; the clock of „Wróć do przejścia” written as „03:32” — a
-notation of time the game does not have.
+dimension alone; the skill trees shown on two screens, as in loop; two buttons „Wejdź” on the way to
+a first map run, as in loop, the first opening a window to choose the character and the second
+standing in that window; a bar that sets whose eyes the screens look through, as in loop — the
+player has to discover it before entering a map; a second way to the maps, a button „Wybierz mapę”
+at each character on Siedziba leading to the screen Mapy — a new button at each character, and it
+stays open whether the section „Kto idzie” would then show that character alone, a state of the
+screen that no address carries and in which the section stops listing the characters of the team;
+the gain was a straight way from the character; Mapy and Wiedza standing on the menu bar at once, inactive — two
+items with no content; „Wróć do przejścia” on the screen of a map run too — a link to the place the
+player already stands in; a menu that stops working after the end of a map run — a new state of the
+bar, while the copy can be fixed on the screen after the end anyway; „Wróć do przejścia” only while
+the map run goes on — after leaving an ended map run only the browser's back button leads back to
+it; the clock of „Wróć do przejścia” written as „03:32” — a notation of time the game does not have.
 
 ### D-281 — How does an address name a screen?
 
@@ -6479,16 +6490,25 @@ apart from these, and after them the page opens Siedziba.
   - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
     screen of a map run reading the map run from the game state rather than from its parameter; the
     address of a map off the list of open maps opening `#/mapy`
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part A.4 · ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 8 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "How does an address name a screen?" · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 2, and Questions to settle, questions 9 and 10
+- **Origin:** none
 
 *Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
 the fragments of emailed links keep prefixes of their own. A number in the address and a map run as
 a parameter cost a decision now, while a map run for each character and looking into an earning
-loop's map run become additions rather than rebuilds.
+loop's map run become additions rather than rebuilds. An address of a map that is not on the list of
+open maps, whether the map does not exist or has not been opened yet, names no screen of its own, and
+the rule that an address leading nowhere opens the nearest screen names only the two addresses above
+as falling back to a nearer one, so the address of such a map falls under „any other” and opens
+Siedziba; a map shown locked with an inactive send would reveal the map before it opens. Accepted
+with it: a player with an old link to a map lands on Siedziba and not at the list of maps, though
+`#/programy/{n}` with no such program opens `#/programy`. What {map} stands for is D-332.
 *Rejected:* addresses in the path — a refresh of a screen ends in an error from the server, which
 hands out files alone; an address of a map run without the character's number — a rebuild once each
 character has its own map run; a screen „Nie ma takiego miejsca” — the back button lands on it after
-„Zakończ”.
+„Zakończ”; `#/mapy` for the address of a map that is not on the list, reading „the nearest one” as
+the screen Mapy, as `#/programy/{n}` with no program opens `#/programy` and as loop goes back to the
+list of maps for a map it does not know — the player would stay by the maps, but the address of a
+map would become a case of its own, apart from „any other”, which opens Siedziba.
 
 ### D-282 — What do the screens leave room for from the start?
 
@@ -6510,10 +6530,16 @@ and its target after it.
   - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
     the characters of Siedziba as a bare list with no heading; one flat pick holding „Zbierz —
     patyk” and „Zbierz — jagoda” as cells of their own
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), „Decyzje o układzie” · rozpoznanie_projektant.md, part D.1 · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "What do the screens leave room for from the start?" · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 2 and 3, and Decisions in play
+- **Origin:** none
 
 *Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
-and these three shapes make each of them an addition. They cost a decision and no code.
+and these three shapes make each of them an addition. In a review of what the game was to grow into,
+only the scene forced a screen to be rebuilt with no condition; the layout for a phone, several
+teams, a look into an earning loop's map run, a map run for each character, and crafting and targets
+of actions were additions on condition of decisions taken at the start: areas in place of rigid
+columns, the team as a section with a heading, a number of the character in the address of a map run
+and the map run as a parameter of its screen (D-281), and a pick in steps. Those conditions cost a
+decision and no code.
 *Rejected:* rigid columns, a plain list of characters and one flat pick — each of the three later
 additions becomes a rebuild of a screen.
 
@@ -6529,11 +6555,12 @@ Leaving the screen of a manual map run pauses it as „Pauza” does.
     same game minute, while the earning loop of another character passes its game minutes
   - violates: a manual map run passing its game minutes while the player stands on Programy; leaving
     the screen holding the map run in a state of its own other than the pause of „Pauza”
-- **Origin:** rozpoznanie_projektant.md in the vault (Notes/Projects/(P) Loop), part A.4
+- **Origin:** none
 
 *Rationale:* an earning loop goes on as D-250 gives. The player fast-forwards a map run in order to
 watch the program act, so a map run does not pass on a screen the player has left, and an earning
-loop passes apart from it.
+loop passes apart from it. The pause the game already has does it, so leaving a screen adds no state
+of its own.
 *Rejected:* none considered
 
 ### D-284 — Does a return to the screen of a manual map run resume it?
@@ -6549,10 +6576,12 @@ player presses „Wznów”, whether or not it went on before the player left.
     same game minute when the player comes back to it, and going on only after „Wznów”
   - violates: the map run going on by itself on the return because it went on before the player
     left
-- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 10, and § Settlements to record, row 14
+- **Origin:** none
 
-*Rationale:* one pause gives the player one way to hold a map run and one way to go on, so a map run
-that leaving its screen paused waits as one after „Pauza” does.
+*Rationale:* one pause gives the player one way to hold a map run and one way to go on (D-122), so a
+map run that leaving its screen paused waits as one after „Pauza” does. No sentence says directly
+what a return does; the answer follows from the sentence on leaving, which pauses the map run, and
+the sentence on one pause, in which the player goes on with „Wznów”.
 *Rejected:* the map run resuming by itself on the return where it went on before the player left —
 the game would have to remember who paused it, and a reload loses that memory.
 
@@ -6572,7 +6601,7 @@ sentence of the outcome can be read.
     answer to „Wyślij ponownie”, until the player clicks outside it
   - violates: the menu closing at the click on „Wyloguj” or „Wyślij ponownie”; the menu closing by
     itself after the server's answer; focus left on the page after Escape rather than on „Konto”
-- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 11, points 2 and 3, and § Settlements to record, rows 7 and 8
+- **Origin:** none
 
 *Rationale:* the player reads the outcome of what the menu sent without opening it again. Accepted
 with it: the accessibility requirements of the browser view (D-42) do not ask for the keyboard
@@ -6594,9 +6623,11 @@ change of screen.
   - complies: „Adres e-mail potwierdzony.” above Siedziba after a confirmation link, gone once the
     player opens Programy and not back on the return to Siedziba
   - violates: that sentence standing above Programy and Postać until a reload
-- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), Questions to settle, question 12, and § Settlements to record, row 10
+- **Origin:** none
 
-*Rationale:* the sentence speaks of the moment the game opened, so it stands with the first screen.
+*Rationale:* the sentence speaks of the moment the game opened, so it stands with the first screen
+(D-156 places it above the game for a signed-in player whatever screen the game opens on, and D-96
+has the sentence of a discarded saved game state stand once above the new game).
 Accepted with it: a player who clicks in the menu at once may not read it.
 *Rejected:* the sentence standing above every screen until a reload — a sentence from the moment of
 entry hangs above Programy and Postać.
@@ -6621,10 +6652,14 @@ kupisz po jego zakończeniu.”
     wysłać postać.”
   - violates: „Wejdź” or „Kup” inactive with no sentence by it; „Puść w pętlę” of another
     character inactive while a manual map run waits
-- **Origin:** ekrany_i_menu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 8, Questions to settle, question 3, and § Settlements to record, row 1 · karty_i_katalog_map_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, and Questions to settle, question 3
+- **Origin:** none
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
-do not act and what the player does to free them, and what the simulation allows stays open.
+do not act and what the player does to free them, and what the simulation allows stays open. The
+simulation refuses to send a character and to buy a rank while the game state holds a map run, one
+that has ended included (D-200), and refuses an earning loop only to the character of that map run,
+so the rest stays active. Accepted with it: the sentence repeats under the buttons of each character
+in „Kto idzie”.
 *Rejected:* the same with no sentences — inactive buttons with no reason; Siedziba, the screen
 Postać and the screen Mapy for viewing alone — the player could not start the earning loop of
 another character, and the code would have to block what the simulation allows.
@@ -6654,26 +6689,42 @@ rule group.
     them or in a column of its own on either screen; „↑” and „↓” in the header of a rule group; a
     discovered action the player may not pick left out of the pick rather than greyed with its
     reason
-- **Origin:** zakres_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), P2 · rozpoznanie_projektant.md, part B.3 · research_edytor_programu_wow.md, „Pisanie” · definicja_mvp2_loop2.md in the vault (Notes/Projects/(P) Loop), Projected foundation changes, "How does the player write a program rule?" · edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 to 8 · zadanie_proporcje_sceny_i_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, items 1 and 3, Questions to settle, questions 1 and 3, and § Settlements to record, row 1
+- **Origin:** research_edytor_programu_wow.md, „Pisanie”
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
 opens in place on the list rather than over it or in a column of its own, which would take width
-from the program; a row is for reading while the panel is for changing. Writing a program without
-grimacing is what the project is judged by. Cells give a condition one click and keep one control
-for every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
+from the program; a row is for reading while the panel is for changing. In Factorio and Gladiabots
+the writing and the watching of the state happen in one place. When the panel was settled to open in
+place, with the panel in a column of its own the program had 174 px in a window 1280 px wide and
+270 px at the full content width of 1344 px, and each new line at a rule wrapped further; joining the
+columns of the program and the right area and opening the panel under a row gives the program 526 px
+and 622 px (the world area 706 px and a gap of 16 px; computed from the layout, not measured). In a
+narrow window the panel stood under the whole program on the screen of a map run and under the whole
+editor on Programy, and an edit in place on the list, as loop has it in a narrower window, serves a
+wide window and a narrow one at once and the later layout for a phone as well. Writing a program
+without grimacing is what the project is judged by, and the complaints of players about the program
+editors of other games concern the mechanics of editing, not the model of rules. Dragging a rule
+already worked, between groups too, but the player could not see it, for there was no handle and no
+sign of where the rule would land. Each pick moving on to the next field costs a rule such as „Zapas
+poniżej 8 · Patyk → Zbierz — Patyk” six actions, against about eight by the estimate made when this
+was settled. What may not be picked stands greyed with its reason, as in loop and in line with a
+lesson from the 2.0 edition of Factorio. Cells give a condition one click and keep one control for
+every pick. Arrows suit moving a single rule up or down, and they do not suit reordering groups.
 Accepted with it: the pickers need keyboard handling that native lists gave for free, long names of
-conditions wrap into two lines, rule groups cannot be moved from the keyboard, and on Programy,
-where width is not wanting, the panel opens in place all the same, so the editor has one way of
-opening it on both screens.
+conditions wrap into two lines, rule groups cannot be moved from the keyboard, which the
+accessibility requirements (D-42) do not ask for, and on Programy, where width is not wanting, the
+panel opens in place all the same, so the editor has one way of opening it on both screens.
 *Rejected:* native select lists in each row — a form, the source of the game's look of paperwork;
-the pick in a window in the middle, as in loop — it covers the world and the program; hiding what
-may not be picked — the player asks where it went; a select list for conditions in the panel — two
+lists in the header of a rule group — the form stays; the pick in a window in the middle, as in loop
+— it covers the world and the program; hiding what may not be picked — the player asks where it
+went; a select list for conditions in the panel — two
 clicks and the look of a form; a list of conditions of its own, as in loop — a second control and a
 second keyboard handling; rule groups moved by arrows alone — reordering by arrows does not work; a
 way from the keyboard for rule groups with no arrows in the header, such as keys on the handle —
 keyboard handling of its own in the largest task; the panel in a column beside the rows on the
 screen of a map run, with the split of widths unchanged — the program stays narrow, and each new
-line at a rule wraps further; the panel beside the editor on Programy alone — the editor has two
+line at a rule wraps further; a smaller scene with the split of widths unchanged (D-349) — what was
+wanted was the width of the program as in loop, not a smaller scene; the panel beside the editor on Programy alone — the editor has two
 ways of opening the panel by screen, the player sees the same rule edited beside it once and on the
 list another time, and in a narrow window of Programy the panel still lands under the whole editor;
 the right column wrapped under the world in a narrower window, with the panel opening under the
@@ -6704,12 +6755,16 @@ above fits and with none otherwise, and the player can change it.
   - violates: „Kopnij” in the pick before the first attack revealed it; a greyed cell with no
     reason where one of the listed reasons fits; „Zbierz” left out of the pick while no target is
     known; a rule's value outside the pick shown as if nothing were picked
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 5, Questions to settle, questions 1 and 16, and § Settlements to record, row 1; the human's decision at the request of the task that wrote this entry, 2026-11-05, on the held value that no listed reason fits
+- **Origin:** none
 
 *Rationale:* the pick holds as many choices as the player has found, so it never starts
-overwhelming and the growing list is visible progress (D-118). What has been found and cannot be
+overwhelming and the growing list is visible progress (D-118), which names a program editor listing
+every condition from the first game minute as a violation. What has been found and cannot be
 picked now stays in sight with its reason, since a choice that vanishes without a word leaves the
-player asking where it went; a branch not bought stands greyed as in the predecessor game, loop. A
+player asking where it went; a branch not bought stands greyed as in the predecessor game, loop.
+„Obchód” with no target to point at stands greyed with „nie znasz jeszcze celu” like the four other
+names, since what may not be picked stands greyed with its reason (D-288). An action the archetype
+does not teach has no case here: when this was settled the only archetype taught every action. A
 held value that none of the listed reasons fits shows with none, since no reason sentence for it has
 been set, and only a state composed by hand or an old save reaches it.
 *Rejected:* only branch actions greyed and everything else that may not be picked left out — the
@@ -6735,7 +6790,7 @@ niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej.
     the conditions, a line below it
   - violates: the conditions in one column; „Kopnij” in a group of its own; a name above a section
     of conditions
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 4, Questions to settle, question 2, and § Settlements to record, row 2
+- **Origin:** none
 
 *Rationale:* cells give a condition one click and keep one control for every pick (D-288).
 Accepted with it: long names of conditions wrap into two lines.
@@ -6758,15 +6813,20 @@ shows the icon of the action, never one of its target.
     and „Idź — ognisko” sharing one icon
   - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
     while a cell that may be picked has one; cells drawn as text alone while the rows show icons
-- **Origin:** edytor_programu_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), To do, item 15, Questions to settle, question 5, and § Settlements to record, row 3 · teraz_i_potem_loop2.md in the vault (Notes/Projects/(P) Loop/_zadania), § Settlements to record, rows 1 and 2
+- **Origin:** none
 
 *Rationale:* the sign of the action tells „Idź — patyk” from „Zbierz — patyk”, which a sign of the
 target would draw alike, and cells with icons give the pick what the pick of the predecessor game,
-loop, has. A greyed cell keeps its icon and so looks like the cell it would be.
+loop, has. The icons are assigned to the actions as loop assigns them, so „Idź” and „Idź — ognisko”,
+„Zbierz” and „Obchód”, and both „Zapal” share one icon, and the rows „Teraz” and „Potem” write the
+action as the row of a rule does, with its icon, as loop does. Drawn as a mask, an icon takes the
+colour of the text beside it and fades with a greyed cell, which keeps its icon and so looks like the
+cell it would be. Accepted with it: each new icon needs its credit line and the title its page gives.
 *Rejected:* icons in the rows alone, the cells as text — a pick poorer than loop's; icons in the
 cells that may be picked alone, a greyed cell with none — a greyed cell looks other than one that
-may be picked; over the mage's head the icon of the target where the action has one — „Idź —
-patyk” and „Zbierz — patyk” look alike.
+may be picked; the images that stood then, dimmed by opacity in a greyed cell — a new value for the
+look to settle, and a second way of drawing icons beside the mask; over the mage's head the icon of
+the target where the action has one — „Idź — patyk” and „Zbierz — patyk” look alike.
 
 ### D-292 — How does the program editor number rule groups and program rules?
 
