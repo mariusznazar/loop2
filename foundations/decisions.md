@@ -8986,3 +8986,63 @@ An action shortened by bought branches lasts at least one game minute.
 
 *Rationale:* the branches shorten the time of an action by whole minutes, and the shortening of the exploration branch „Długi krok” alone takes two minutes from a step between tiles for each rank, so three ranks take six from a step of five. Without a floor the action would last no time or a negative time. The floor of one minute is one of the numbers of the old loop game's data that were accepted as requirements, so tests may expect it. Accepted with it: the numbers come from a game balanced otherwise, so loop2 may turn out easier or harder than that game, and tuning them later is a change of data and tests.
 *Rejected:* other numbers given by the human instead of the old loop game's data
+
+### D-373 — Where does „Wędruj” go, and how does it draw?
+
+„Wędruj” takes the character onto a neighbouring tile of the map: onto one of the neighbours not yet revealed where the character's tile has any, and onto any neighbour otherwise. Choosing the tile takes one draw of the generator of wandering (D-22). „Wędruj” can be carried out while the character's tile has a neighbour on the map, and finding that out draws nothing.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-22 · derives from D-25
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Wędruj” from a tile with one neighbour not yet revealed going onto that neighbour whatever the draw gives; „Wędruj” from a tile whose neighbours are all revealed going onto one of them; starting „Wędruj” moving the generator of wandering by one draw; „Wędruj” passed over on a tile with no neighbour on the map, the generator left where it stood
+  - violates: „Wędruj” going onto a revealed neighbour while a neighbour not yet revealed stands beside it; a choice of the tile that takes two draws; a check that „Wędruj” can be carried out that moves the generator
+- **Origin:** none
+
+*Rationale:* „Wędruj” is the move with no target, and the design of the game has it go in a random direction, onto a tile not yet revealed where it can. The old loop game's tests hold the same preference, the choice of any neighbour when all are revealed, „Wędruj” being possible while the tile has a neighbour, and a check of that which leaves the generator alone; the one draw for a choice of step is of the design of the game as well. Accepted with it: which neighbour a draw picks, by what formula, and the order in which the candidates are taken are left to the code, so a change of the picking that keeps the rules above is no change of this decision.
+*Rejected:* unknown
+
+### D-374 — What numbers does a condition on the body, the backpack, the campfire and the tile accept?
+
+A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it: „Temperatura poniżej” from 30.0 to 37.0 °C in steps of 0.1, with 36.5 at first; „Sytość poniżej” from 0 to 100 %, with 50; „Zapas poniżej” and „Tu leży mniej niż” from 0 to 50 pieces, with 8 and 1; „Zostało mniej niż — ognisko” from 0 to 120 minutes, with 20; „Energia natury poniżej” from 0 to 100 points, with 30; each of these but the first in steps of 1. The program check refuses a number that is no finite number, lies outside the range or off the step, and keeps a number on the step as the decimal with as many places as the step has, 36.6 and not 36.60000000000001. „Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-23 · derives from D-175
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Temperatura poniżej” taking 36.6 and refusing 36.55, 29.9 and 37.1; „Energia natury poniżej” taking 0 and 100 and refusing −1, 101 and 0.5; „Energia natury poniżej 30” holding with 29.5 nature energy and not with 30
+  - violates: „Zostało mniej niż — ognisko” taking 121; „Sytość poniżej” taking 50.5; „Energia natury poniżej 0” holding with 0 nature energy
+- **Origin:** none
+
+*Rationale:* the ranges, the steps and the numbers a condition starts with are those of the old loop game's data, the energy's included, whose range reaches the cap of nature energy (D-176). Each condition's numbers stand in its row of the game's data (D-18), so a new condition names its own, and the check of a program and the number field of the rule panel read the same range and step. The check keeps the number as the player reads it, so the program holds the number the player wrote.
+*Rejected:* the temperature held in the program as whole tenths, 365 for 36.5 — the check would stay a check of whole numbers, but the program would hold a number other than the one the player reads, and every reader would convert it; any finite number within the range — the simplest check, but it takes 36.55, which a number with tenths does not ask for, and lets the stored number drift from what the field shows
+
+### D-375 — How fast does a mage's nature energy come back?
+
+In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5, up to its cap; in a game minute in which satiety after the fall is below 60 it comes back by nothing.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-175 · derives from D-176
+- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
+  - complies: satiety 60.6 falling to 60 in a game minute giving back 0.5, so that 40 nature energy becomes 40.5; satiety 60.5 falling to 59.9 giving back nothing; 99.75 nature energy becoming 100 and 100 staying 100
+  - violates: nature energy coming back in a game minute whose satiety is 60 or above before the fall and below 60 after it; nature energy rising above its cap
+- **Origin:** none
+
+*Rationale:* the rate of 0.5 a game minute and the satiety of 60 are those of the old loop game's data, and its tests compare the satiety with the threshold after the fall of the same game minute, as this decision does. The place of the game minute in which the energy comes back is D-71's, and the cap and the full start of a map run are D-176's.
+*Rejected:* unknown
+
+### D-376 — Can a program of the closed lists keep the mage alive on Las?
+
+On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes, paying nature energy for its lightings as well as sticks, on at least one seed that a test of the simulation names, and the empty program dies there.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-63 · derives from D-80
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test of the simulation that runs a program which eats, keeps a campfire and keeps berries and sticks at hand through 480 game minutes alive on a seed it names, each lighting taking its price in nature energy, and the empty program on that seed dying
+  - violates: a price of lighting, a rate of coming back or a number of the body left in the data under which no program built of the closed lists passes Las; a program made to pass by a rule outside the closed lists
+- **Origin:** none
+
+*Rationale:* the first map is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
+*Rejected:* unknown
