@@ -5161,9 +5161,8 @@ currently inactive, and the player stops the earning loop first.
 
 *Rationale:* a character goes to earn from the place it is sent from, on the program it already
 shows, so a tuned program goes out with one click. Stopping first keeps the backpack of the map run
-going on from being lost by a click on another button. Accepted with it: one more button in a long
-row of buttons, and one click more where the predecessor game stopped the earning loop when a
-character was sent.
+going on from being lost by a click on another button. Accepted with it: one click more where the
+predecessor game stopped the earning loop when a character was sent.
 *Rejected:* a section „Pętle” with a pick of character, map and program — a second place for sending
 characters and several times more to draw; „Wejdź” stopping the earning loop by itself, as sending a
 character did in the predecessor game — one click silently loses the backpack.
@@ -5310,11 +5309,8 @@ with it: after many months the page stands for some seconds per character, longe
 on longer map runs, and a clock moved by years gives progress in the player's own game, which D-07
 accepts. The seconds rest on one measurement, made on short map runs ended by death: about 0.0068 ms
 for a game minute of one character, a lower estimate, since the cost of a game minute grows with the
-length of a map run. A bound can be added later, when the game has matured and the approved project
-definition has to change for another reason.
-*Rejected:* a bound of 7 days with the rest lost — a change of the approved project definition, with
-its readiness gate and the plan checked again, and no task going ahead until they end; another
-number — the same cost.
+length of a map run. A bound can be added later, once the game has matured.
+*Rejected:* a bound of 7 days, the rest lost; a bound of another number.
 
 ### D-248 — What is the save time?
 
