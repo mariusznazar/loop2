@@ -1,15 +1,13 @@
 /**
  * The header of the screen of a map run in React (D-311, D-130, D-132, D-62, D-188, D-122, D-44,
- * D-46, D-133, D-368; task ekran-przejscia, To do 1 and 8; task teraz-i-potem, To do 3; task
- * koniec-przejscia, To do 2): the character's name, the map's name and after them the clock, the
- * bar of the solving condition, „Pauza” or „Wznów”, the five pace buttons, after the end of the map
- * run „Koniec przejścia”, then „Restart”, the warning of a cut trip plan and „Zakończ”, in this
- * order. It is a component with no boundary
- * of its own: the screen of a map run renders it from the game state it was given and from the
- * controls of the header, which ask the game for each act. It imports the pure functions of the DOM
- * modules (`clockText`, `requirementText`, `pauseLabel`, `tripWarning`) and builds no element after their pattern
- * (D-265). The program, the band and the areas are not its. Nothing runs when the module is
- * imported.
+ * D-46, D-133, D-368): the character's name, the map's name and after them the clock, the bar of
+ * the solving condition, „Pauza” or „Wznów”, the five pace buttons, after the end of the map run
+ * „Koniec przejścia”, then „Restart”, the warning of a cut trip plan and „Zakończ”, in this order.
+ * It is a component with no boundary of its own: the screen of a map run renders it from the game
+ * state it was given and from the controls of the header, which ask the game for each act. It
+ * imports the pure functions of the DOM modules (`clockText`, `requirementText`, `pauseLabel`,
+ * `tripWarning`) and builds no element after their pattern (D-265). The program, the band and the
+ * areas are not its. Nothing runs when the module is imported.
  */
 import type { CSSProperties } from "react";
 import { BALANCE } from "../sim/data/balance.js";

@@ -1,7 +1,7 @@
 /**
  * The rule panel of the program editor in React (D-288, D-289, D-290, D-293, D-296, D-299, D-300,
- * D-302, D-306; task edytor-programu, To do 3 to 5 and 8). It stands in the rule list, under the row or
- * header it changes, and changes one program rule, or one rule group: for a rule its fields condition, number, target of the
+ * D-302, D-306). It stands in the rule list, under the row or header it changes, and changes one
+ * program rule, or one rule group: for a rule its fields condition, number, target of the
  * condition, action and target of the action, each standing only where the rule has it; for a group
  * its name and its condition with the condition's number and target. One field at a time shows its
  * pick, a grid of pick cells in the groups and sections of the data, the others their value, so the
@@ -95,7 +95,7 @@ export type RulePanel = {
   dispose(): void;
 };
 
-/** The words of each field above its value or its pick, as the task names the fields. */
+/** The words of each field above its value or its pick; the fields and their order are D-306's. */
 const FIELD_LABELS: Record<RuleField, string> = {
   condition: "Warunek",
   number: "Liczba",

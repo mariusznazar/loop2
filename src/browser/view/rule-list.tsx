@@ -1,15 +1,15 @@
 /**
- * The list of a program's rule groups and rules in React (D-288, D-292, D-293, D-295, D-297; task
- * edytor-programu, To do 1, 2, 6 to 10). It draws under the heading „sprawdzane od góry” the groups,
- * each with a header and its rules, each rule as a row read as a sentence, and it never writes the
- * game state: each edit is a whole new program handed to `onCommit`, which the page puts into the
- * game, and a click on a row or a header, or a rule just added, is a request to open the panel,
- * handed to `onOpen`. Which groups are folded comes in the props and a change goes out through
- * `onFoldedChange`, so the list holds no memory of its own about it (D-295). Rules move by „↑” and
- * „↓”, across the border of a group too, and rules and whole groups by their handle on the browser's
- * own drag (D-270), a drop line showing where they would land. The page holds the list behind
- * `createRuleList`, as the program list does, calling it from an event handler or the continuation
- * of an answer, never from render or an effect. Nothing runs when the module is imported.
+ * The list of a program's rule groups and rules in React (D-288, D-292, D-293, D-295, D-297). It
+ * draws under the heading „sprawdzane od góry” the groups, each with a header and its rules, each
+ * rule as a row read as a sentence, and it never writes the game state: each edit is a whole new
+ * program handed to `onCommit`, which the page puts into the game, and a click on a row or a
+ * header, or a rule just added, is a request to open the panel, handed to `onOpen`. Which groups are
+ * folded comes in the props and a change goes out through `onFoldedChange`, so the list holds no
+ * memory of its own about it (D-295). Rules move by „↑” and „↓”, across the border of a group too,
+ * and rules and whole groups by their handle on the browser's own drag (D-270), a drop line showing
+ * where they would land. The page holds the list behind `createRuleList`, as the program list does,
+ * calling it from an event handler or the continuation of an answer, never from render or an
+ * effect. Nothing runs when the module is imported.
  *
  * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
  * rule it changes or under the header of the group it changes, so the player edits a rule where it
@@ -18,9 +18,9 @@
  * leaves the panel on the field the player chose and the focus where the player put it.
  *
  * Where the page gives it the signs of the copy of a map run (`signs`, from `ruleSigns` of the
- * simulation; task stan-i-powod-przy-regule) a row stands on the background `rule-winning` when it
- * wins now and on `rule-running` when its action is being carried out and another rule wins, and
- * every row and header carries the bar of its condition and, in a row, the reason it cannot start.
+ * simulation; D-308, D-309, D-310) a row stands on the background `rule-winning` when it wins now
+ * and on `rule-running` when its action is being carried out and another rule wins, and every row
+ * and header carries the bar of its condition and, in a row, the reason it cannot start.
  */
 import {
   useCallback,

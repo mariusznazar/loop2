@@ -9119,3 +9119,18 @@ The filter the player picks above the list of the chronicle stays picked through
 
 *Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives.
 *Rejected:* the filter picked again as „Wszystko” at „Restart” or at a return to the screen — the player picks it again each time, the cost D-346 names for the tab.
+
+### D-382 — Which program does the program panel show when the one it showed is gone?
+
+Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list: after „Usuń” of the program shown; after „Zakończ” or „Otwarte: {mapa} →”, when the program the copy belonged to was deleted; and on Programy, when the address names a program the list does not hold (D-281).
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-166 · derives from D-167 · derives from D-173 · derives from D-281
+- **Verification:** an agent compares a change with the decision:
+  - complies: „Usuń” of the shown „Program 2” showing „Program”, the first program of the list, during a map run and on Programy; „Zakończ” after the copy's program „Program 2” was deleted showing „Program” with no count of the copy beside its rules (D-93); `#/programy/9` with no program 9 showing `#/programy` with „Program”
+  - violates: the panel left on a program that is gone from the list; „Program 3” shown in place of the deleted „Program 2” because it stood next to it; a count of the copy standing beside the rules of the first program after „Zakończ” with the copy's program deleted
+- **Origin:** none
+
+*Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
+*Rejected:* unknown.
