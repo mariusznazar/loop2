@@ -2445,7 +2445,7 @@ header .failure-line {
  * The first animation of a moment: it animates nothing, and its end tells that the effect is over. */
 @keyframes scene-moment-life {
   to {
-    opacity: 1;
+    visibility: visible;
   }
 }
 
