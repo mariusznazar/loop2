@@ -3118,7 +3118,7 @@ Players register and sign in with an email address and password. They can start 
 - **Verification:** invariants: player-password-login · email-verification-nonblocking · password-reset-verified-email.
 - **Origin:** none
 
-*Rationale:* a player can enter without waiting for a message, yet can later recover the account without asking the operator. The recovery link goes only to an address whose control was confirmed earlier. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation and reset; a player who loses the password before confirming the address cannot use this recovery route.
+*Rationale:* a player can enter without waiting for a message, yet can later recover the account without asking the operator. The recovery link goes only to an address whose control was confirmed earlier. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation and reset; a player who loses the password before confirming the address cannot use this recovery route. The choice is to be looked at again if email delivery repeatedly prevents account recovery or the password method no longer fits the player base.
 *Rejected:* password with operator-assisted recovery — requires human identity checks for public accounts; password with no recovery — loses access and saved progress after a forgotten password; email code at every login — depends on message delivery every time; WebAuthn passkeys — add key enrolment and loss recovery while the game's final domain is unsettled; external OpenID Connect — adds a login provider and account linking to its identity.
 
 ### D-153 — Which service delivers account emails?
@@ -3133,7 +3133,7 @@ The account server sends email confirmation and password-reset messages from an 
   - violates: recovery is enabled after only SMTP connection or relay acceptance succeeds
 - **Origin:** none
 
-*Rationale:* Mariusz can use Outsider with his existing Mikrus account and owns `mariusznazar.com`; this keeps the game with the domain and provider he already has. Outsider still requires a mailbox, mail DNS records, credentials and monitoring. The website's DNS records do not need to be moved for mail-only use. Acceptance by an SMTP relay does not establish that an account holder can receive the link needed to recover access.
+*Rationale:* Mariusz can use Outsider with his existing Mikrus account and owns `mariusznazar.com`; this keeps the game with the domain and provider he already has. Outsider still requires a mailbox, mail DNS records, credentials and monitoring. The website's DNS records do not need to be moved for mail-only use. Acceptance by an SMTP relay does not establish that an account holder can receive the link needed to recover access. The choice is to be looked at again if Outsider delivery from the intended container fails, its limits prevent account recovery, or the service stops being available on the current Mikrus plan.
 *Rejected:* Resend or Brevo with the same domain — each adds a separate provider account to maintain, and Brevo Free brands the messages; Cloudflare Email Sending — adds a paid sending service for arbitrary recipients; no email delivery — would leave self-service password reset unusable.
 
 ### D-154 — How does the account server send email through Outsider?
@@ -3146,7 +3146,7 @@ The account server composes and sends email confirmation and password-reset mess
 - **Verification:** invariants: account-email-nodemailer-starttls.
 - **Origin:** none
 
-*Rationale:* Nodemailer supplies a typed SMTP client and message composition in the same Node.js process, without another service. Its documented `requireTLS` setting refuses to send when a STARTTLS upgrade is unavailable. The package and its configuration must be maintained; SMTP credentials stay outside the definition. `verify()` can check connectivity and authentication, but only a real message test can establish that the sender is accepted and mail reaches an inbox.
+*Rationale:* Nodemailer supplies a typed SMTP client and message composition in the same Node.js process, without another service. Its documented `requireTLS` setting refuses to send when a STARTTLS upgrade is unavailable. The package and its configuration must be maintained; SMTP credentials stay outside the repository (D-13). `verify()` can check connectivity and authentication, but only a real message test can establish that the sender is accepted and mail reaches an inbox. The choice is to be looked at again if Outsider cannot establish STARTTLS from the intended container or Nodemailer no longer supports the chosen Node.js line.
 *Rejected:* `emailjs` 5 — also a typed SMTP client, but its documentation does not state an equally clear failure rule for a refused STARTTLS upgrade; its implementation suggests a possible error-handling gap that would need separate testing, not a proven Outsider failure; own SMTP code on Node sockets — adds protocol, message-format and TLS handling to this project; `smtp-connection` 4.0.2 — lacks explicit types and current versioned documentation.
 
 ### D-155 — How long and how often does an emailed link work?
@@ -3327,8 +3327,8 @@ The screen Programy holds on the left the list of the player's programs and on t
     panel standing beside Siedziba
 - **Origin:** none
 
-*Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens.
-*Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits; the panel of a rule beside the editor on Programy — the editor would have two ways of opening the panel, by screen, the player would see the same rule edited once beside and once on the list, and in a narrow window the panel would still land under the whole editor.
+*Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the panel in place there gains it no width.
+*Rejected:* a panel standing beside every screen — the program mixes with everything else; a list during a map run on which the copy stands below the saved programs; „Kopia w przejściu” on the list of Programy — the list and the address would have to handle the copy, though a fix would then work from every place; „Programy” leading to the screen of a waiting map run — the player could not write a saved program while a map run waits; the panel of a rule beside the editor on Programy — the editor would have two ways of opening the panel, by screen, the player would see the same rule edited once beside and once on the list, and in a narrow window the panel would still land under the whole editor.
 
 ### D-167 — What can the player do with the list of programs?
 
@@ -3432,8 +3432,8 @@ On the screens after a character's death and after a completion, editing the cop
   - violates: the save buttons gone after a completion; „Zakończ” ending the map run at once while the copy holds unsaved changes; the question asked where the copy holds none; „Zapisz” opening a field for a name; „Odrzuć” reaching the program with the copy's unsaved changes; „Wróć” leaving the map run ended; the question standing in the window; the window open again of itself after „Wróć”; „Otwarte: {mapa} →” ending the map run with unsaved changes with no question, or after „Zapisz” opening the screen Postać
 - **Origin:** none
 
-*Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Unsaved changes can be the very rule that won the map, and their silent loss costs far more than one click, so „Zakończ” asks wherever there is something to lose. The question stands just above the heading of the copy it concerns, under the band of a discovery, so it stays at that copy through the map run and after its end, wherever the end buttons stand, and nothing already standing moves but the copy and its rules. The window covers that panel, so it closes while the question stands and stays closed after „Wróć”, and the question remembers which button asked it, since the player lands where that button leads. „Zapisz” keeps the player's work in one click, also where the program was deleted, so a name is no second step, and where the program changed since the copy was taken from it, the line of D-172 says what the save replaces. „Odrzuć” loses work, so it is a destructive button, as every button that can drop work is (D-44). Accepted with it: one more click at every end of a map run holding unsaved changes; a program saved under a name the game chose, which the player changes on Programy with „Zmień nazwę”; the eye going from „Zakończ” to the band in the program panel and, at a pause on a discovery, two bands standing at once, the question one band farther from „Zakończ”; the end out of the player's sight while the question stands and after it, until „Koniec przejścia” in the header opens it.
-*Rejected:* „Zakończ” acting at once with unsaved changes, the line „Niezapisane zmiany w kopii.” alone warning of it — a winning program lost without a word; the copy closed to saving once the map run ends — a fix found after a death would be made anew in the program; „Zapisz” opening a field for a name, as „Zapisz jako nowy program” does, the map run ending after that name is saved — a second step in the question, the field, the refusal of a taken name and „Zapisz”, so more to build and check, though the player names the program at once; no „Zapisz” in the question where the program was deleted, only „Odrzuć” and „Wróć” — the question would have two answers in one case and three in another, and the player would have to find where to save; „Zapisz” replacing the changes of the program with no word in the question — a player who does not see the panel of the copy loses, without warning, changes made in the program; two ways of saving in the question, „Zapisz w programie” and „Zapisz jako nowy program” — more to build, and the question would have four answers; the question in the place of „Zakończ” in the header, three buttons instead of the one while it stands — the row of the header is long already and the bar of the solving condition joins it, so in a narrower window the row may break, and the question would have to follow „Zakończ” wherever the end of a map run moves it, though the answer would stand where the player clicked; the question in a window over the screen, or in the end-of-run window above its buttons — a second place of the question, far from the copy it concerns, to build and check with what D-324 gives while the question stands; the window opening again of itself after „Wróć” — one more state, the window remembering that the question closed it, and a player who wanted to correct the copy after „Wróć” has to close the window again; a link to the card of the opened map that ends no map run — the map run stands and waits for „Restart” or „Zakończ”, so „Wejdź” on the card of the new map is inactive (D-55) and the player has to go back and end the map run; the question above the band of a discovery — the band of a discovery moves down by the height of the question while it stands, though the question would stand nearer the header with „Zakończ”.
+*Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Unsaved changes can be the very rule that won the map, and their silent loss costs far more than one click, so „Zakończ” asks wherever there is something to lose. The question stands just above the heading of the copy it concerns, under the band of a discovery, so it stays at that copy through the map run and after its end, wherever the end buttons stand, and nothing already standing moves but the copy and its rules. The window covers that panel, so it closes while the question stands and stays closed after „Wróć”, and the question remembers which button asked it, since the player lands where that button leads. „Zapisz” keeps the player's work in one click, also where the program was deleted, so a name is no second step, and where the program changed since the copy was taken from it, the line of D-172 says what the save replaces. „Odrzuć” loses work, so it is a destructive button, as every button that can drop work is (D-44). Accepted with it: one more click at every end of a map run holding unsaved changes; a program saved under a name the game chose, which the player changes on Programy with „Zmień nazwę”; the eye going from „Zakończ” to the band in the program panel and, at a pause on a discovery, two bands standing at once, the question one band farther from „Zakończ”; the end out of the player's sight while the question stands and after it, until „Koniec przejścia” in the header opens it; one sentence more in the question in the rare case where the program the copy belongs to holds changes the copy lacks.
+*Rejected:* „Zakończ” acting at once with unsaved changes, the line „Niezapisane zmiany w kopii.” alone warning of it — a winning program lost without a word; the copy closed to saving once the map run ends — a fix found after a death would be made anew in the program; „Zapisz” opening a field for a name, as „Zapisz jako nowy program” does, the map run ending after that name is saved — a second step in the question, the field, the refusal of a taken name and „Zapisz”, so more to build and check, though the player names the program at once; no „Zapisz” in the question where the program was deleted, only „Odrzuć” and „Wróć” — the question would have two answers in one case and three in another, and the player would have to find where to save; „Zapisz” replacing the changes of the program with no word in the question — a player who does not see the panel of the copy loses, without warning, changes made in the program; two ways of saving in the question, „Zapisz w programie” and „Zapisz jako nowy program” — more to build, and the question would have four answers; the question in the place of „Zakończ” in the header, three buttons instead of the one while it stands — the row of the header is long already and the bar of the solving condition joins it, so in a narrower window the row may break, and the question would have to follow „Zakończ” wherever the end of a map run moves it, though the answer would stand where the player clicked; the question in a window over the screen, or in the end-of-run window above its buttons — it hides the screen, the copy included, and is a second place of the question, far from the copy it concerns, to build and check with what D-324 gives while the question stands; the window opening again of itself after „Wróć” — one more state, the window remembering that the question closed it, and a player who wanted to correct the copy after „Wróć” has to close the window again; a link to the card of the opened map that ends no map run — the map run stands and waits for „Restart” or „Zakończ”, so „Wejdź” on the card of the new map is inactive (D-55) and the player has to go back and end the map run; the question above the band of a discovery — the band of a discovery moves down by the height of the question while it stands, though the question would stand nearer the header with „Zakończ”.
 
 ### D-174 — How does the player switch the character to another program during a map run?
 
@@ -3490,8 +3490,8 @@ the same state, and a „Restart” repeats its map run from game minute zero on
 energy included (D-62). The cap of 100 and the full start of a map run are those of the data and
 tests of the predecessor game, taken together with its other numbers of nature energy; that the
 start after a „Restart” is full too was not checked there, and is settled by this decision.
-*Rejected:* other numbers, or other answers to the points of the question about the numbers of
-nature energy, given point by point instead of the predecessor game's numbers taken together.
+*Rejected:* a cap, a start, a price, a rate or a threshold of nature energy other than the
+predecessor game's, chosen one by one instead of its numbers taken together.
 
 ### D-177 — What does too little nature energy do to Płomyk?
 
@@ -3520,8 +3520,8 @@ there, and is settled by this decision. Accepted with it: a campfire burns 60 mi
 lighting one once an hour spends 10 energy an hour while a well-fed one regains 30, and the energy
 limits only a program that lets satiety fall below 60 or lights very often; the predecessor game
 did not take these numbers for final either.
-*Rejected:* other numbers, or other answers to the points of the question about the numbers of
-nature energy, given point by point instead of the predecessor game's numbers taken together.
+*Rejected:* a cap, a start, a price, a rate or a threshold of nature energy other than the
+predecessor game's, chosen one by one instead of its numbers taken together.
 
 ### D-178 — What does the body row show of a mage's nature energy?
 
@@ -3559,7 +3559,7 @@ The trip plan is a field of the program, both its lists are bound at the start o
   - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
 - **Origin:** none
 
-*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it. The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in because carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is no longer a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
+*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it. The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
 *Rejected:* a choice made by a click before each start — the earning loop could not carry it out without the player.
 
 ### D-180 — Where does the player arrange the trip plan?
@@ -3575,7 +3575,7 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
 - **Origin:** none
 
 *Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. The card of a map shows at each character what of the plan enters, and shows it always, also when the whole plan enters, so that a player with a full chest sees what will enter. Accepted with it: the plan of the copy is not changed during a map run, and one more line „Wejdzie: …” at each character on the card.
-*Rejected:* the section under the rule groups, and on the screen of a map run — it takes the space of what the player watches, and with a long program the plan is reached only by scrolling; the plan in the headquarters character row — when the same editor was to serve the copy in a map run and the saved program, a plan there could not be corrected in the copy during a map run; the line „Wejdzie: …” on the card only when less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters.
+*Rejected:* the section under the rule groups, and on the screen of a map run — it takes the space of what the player watches, and with a long program the plan is reached only by scrolling; the plan in the headquarters character row; the line „Wejdzie: …” on the card only when less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters.
 
 ### D-181 — Which entries does a trip list accept?
 
@@ -3640,7 +3640,7 @@ After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzyn
 - **Origin:** none
 
 *Rationale:* The transfer remains readable with the final state, among what the map run gave rather than as the first word after a win.
-*Rejected:* a line directly under the status row — a win opens with what did not come; showing nothing — leaves the transfer unreported.
+*Rejected:* the line standing first, ahead of the other lines of the end — a win opens with what did not come; showing nothing — leaves the transfer unreported.
 
 ### D-186 — What does the running map show of the frozen bring plan?
 
@@ -3652,7 +3652,7 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 - **Verification:** none
 - **Origin:** none
 
-*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives early a part of what a clear showing of the trip plan in force in the map run going on asks for. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the plan is edited, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
+*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives a part of what a panel showing clearly which trip plan is in force in the map run going on would give. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the plan is edited, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
 *Rejected:* a completion line alone — the running snapshot stays hidden; nothing beyond what stood on the screen; a line hidden for an empty snapshot — an item added during the first map run looks as though it could leave, the player does not see that it will not come out of that map run; a line from minute zero for every empty plan — persistent empty information, a constant line with no content at an empty plan; the line not counting the map's exit cap — on a map with an exit cap it would promise more than completion deposits; keeping the preview after the run ends, in the wording of the last minute, until „Restart” or „Zakończ”; the role `text`.
 
 ### D-187 — How does a map cap equipment and loot?
@@ -3693,7 +3693,7 @@ A manual map run that first solves its map pays practice and loot once per map f
   - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
 - **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-129). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the earning loop need not be closed to take the day's pay. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then.
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then.
 *Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it.
 
 ### D-190 — What does a character's death take?
@@ -3708,7 +3708,7 @@ A character's death takes what it carried and pays nothing of its map run; when 
   - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills
 - **Origin:** none
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. Accepted with it: the game has no sweeping over many seeds, which the design gives as the place where a program is lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; the design points to a later direction, not built, in which a death brings a character of other predispositions, and the reset is then a new run and no penalty for the same one.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. Accepted with it: the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
 *Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths, and the characters of a team would fight over the one; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one.
 
 ### D-191 — How does a character skill grow?
@@ -3723,7 +3723,7 @@ A character skill grows by practice, which counts only its actions that ended in
   - violates: a shop selling a level of a character skill; a missed gathering that adds practice; a second counter inside one character skill
 - **Origin:** none
 
-*Rationale:* buying is shallow — one easy map run nearly pays for a character skill, which makes learning a coupon. Practice ties growth to what the program actually does, so choosing a program is choosing what grows, and the program is no longer only the solution of a map but an investment in a character. Prices differ between branches, or an extra piece gathered would always beat a percentage of chance. Two counters inside one character skill would quietly speed up the whole economy, so a finer split makes a new character skill. Accepted with it: practice grows only what the program uses, and a program uses what is already best, so the weaker character skills stay at the first level, and the finer character skills are split, the more of them stand so; only places where the stronger option is absent, or does not count toward the goal, can answer that, and where there are none, a finer split makes empty trees.
+*Rationale:* buying is shallow — one easy map run nearly pays for a character skill, which makes learning a coupon. Practice ties growth to what the program actually does, so choosing a program is choosing what grows, and the program is not only the solution of a map but an investment in a character. Prices differ between branches, or an extra piece gathered would always beat a percentage of chance. Two counters inside one character skill would quietly speed up the whole economy, so a finer split makes a new character skill. Accepted with it: practice grows only what the program uses, and a program uses what is already best, so the weaker character skills tend to stay at the first level, and the finer character skills are split, the more of them stand so; only places where the stronger option is absent, or does not count toward the goal, can answer that, and where there are none, a finer split makes empty trees.
 *Rejected:* buying character skills with experience — shallow; practice counted from attempts instead of effects — rewards program rules that grind an action changing nothing; a separate counter for traits — a second economy to balance where one is enough.
 
 ### D-192 — What describes a character?
@@ -3768,8 +3768,8 @@ A manual map run holds the practice it gathers separately by character skill and
   - violates: practice reaching the character during an unfinished run; a second character's manual completion of a solved map paying practice; „Zakończ” paying a completed run a second time
 - **Origin:** none
 
-*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189). Accepted with it, for the time before the earning loop entered the game: repeating Las no longer raised a character, the whole team had at most two payments of practice and two of loot, a new character had nowhere to get practice, and nobody had measured whether Las — głębiej could be completed with a single payment.
-*Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — the player could complete Las again and again and farm practice, while a manual run of a solved map is to pay nothing (D-189); it is also a change of the goal of the work and of its plan, `solved-map-manual-run` broken on practice for that time, and this decision changed twice; the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
+*Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189).
+*Rejected:* practice for a repeat of a solved map paid on until the earning loop comes — the player could complete Las again and again and farm practice, while a manual run of a solved map is to pay nothing (D-189); the payment of the first completion and the earning loop entering the game in one push — a finished change waits for the next, and a longer branch brings more conflicts.
 
 ### D-195 — When does a character skill tree become known?
 
@@ -4346,14 +4346,13 @@ Teraz to pokolenie {n}.” in `danger` when no resurrection was ready.
 with what the player reads afterwards at the character: the practice of this map run is gone and the
 earlier practice stays, and the hours are real ones. A manual map run pays practice only at a
 solving, and a death with a ready resurrection leaves the skills of the character as they were before
-the map run, so the practice of this map run is gone though the earlier wording said that practice
-stays. The first text names the span of the renewal
+the map run, so the practice of this map run is gone and the earlier practice stays. The first text names the span of the renewal
 rather than the time left, which after a load could be false, and the second stands in `danger`
 because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
 game state remembers how each death was settled.
 *Rejected:* „wprawa i wykupione stopnie zostają” with no word of the practice of this map run — the
-player sees it gone and takes the game for a liar; the same in the status row, which the header then
-held — a very long row and a change of its accepted wording; nothing on this screen, the telling left
+player sees it gone and takes the game for a liar; the same in the header —
+a very long row and a change of its accepted wording; nothing on this screen, the telling left
 to another one — the player may press „Restart” unaware of the lost progress.
 
 ### D-217 — What does the game show of a character's resurrection?
@@ -4487,7 +4486,7 @@ or during a failure of the mail service waits for a message that does not come, 
 sentence's condition explains why, the failure showing in the log alone; a process stopped between
 the answer and the recording sends nothing, which the sentence's ending also covers; a player who
 asks again types the address anew, and the second request stops the link of the first message; a
-calm sentence stands where only refusals stood; and the commit that records a link stops the server
+calm sentence stands where only refusals stood; an address badly written is an exception to the one answer, and its condition is held in the form and on the server alike; and the commit that records a link stops the server
 for its few milliseconds, so a client timing a request sent right after could in principle see it,
 which D-105 bounds to three samples an hour for one account and 30 in all, each mailing the
 account's owner.
@@ -4655,9 +4654,9 @@ się nie zmieni.”. After a change of password the player gets no message about
     set
 - **Origin:** none
 
-*Rationale:* the message has the sender and form of the confirmation message and goes out with the
-same mail settings and the same SMTP password, so it reads as coming from the same place, and says
-what to do if it was not asked for. Accepted with it, as a departure
+*Rationale:* the message has the sender and form of the confirmation message, so it reads as coming
+from the same place, and says what to do if it was not asked for; it goes out with the same mail
+settings and the same SMTP password as that message (D-111, D-13). Accepted with it, as a departure
 from the OWASP advice this entry cites: a player whose password someone else changed learns of it
 only at a failed login, though that someone needed access to the same mailbox such a message would
 go to.
@@ -4841,10 +4840,10 @@ or the weekday files.
 *Rejected:* no encryption, only access by an SSH key to one's own place on Strych — after the public
 launch of accounts the addresses and password hashes of all players would lie in plain form on a shared server whose protection
 nobody knows, though the backup and the restore would be simpler and there would be no key to lose;
-an `age` key pair with the public half on the server and the private half only in the note —
+an `age` key pair with the public half on the server and the private half only off it —
 stronger against a thief of the server, who however reads the live database anyway, while D-13 keeps
-the key as a secret lying on the server with a private copy, and this way would leave the note
-holding the only one; `gpg --symmetric` with a passphrase file — needs no installation on the
+the key as a secret lying on the server with a private copy, and this way would leave that one copy
+holding the only private half; `gpg --symmetric` with a passphrase file — needs no installation on the
 owner's computer, but wants several flags to run without a person, keeps a home directory and may
 start a background agent on a host with no swap; `openssl enc` — authenticates nothing, so a changed
 file decrypts to rubbish without an error; Node's `crypto` inside the command — nothing to install
@@ -5128,9 +5127,7 @@ program, so deleting or editing a program, or a rule written at a discovery, rea
 and each map run binds the same lists anew. An end dealt with where it is reached leaves a load
 nothing to settle. The practice gathered from completions stays with the earning loop, outside the
 character's skills, until the loop stops, and a death with no resurrection ready takes it with the
-rest. Before earning loops the game state held one map run, with characters not going in parallel,
-a cost accepted on the ground that map runs would be rebuilt per character, and D-56 has a map run
-name its character by number. Accepted with it: a later preview of an earning loop's map run needs
+rest. D-56 has a map run name its character by number. Accepted with it: a later preview of an earning loop's map run needs
 more of the copy, which is a change of the shape and of its version.
 *Rejected:* map runs held by character in place of the one manual map run — everything that reads the
 manual map run changes, and D-55 keeps one manual map run anyway; an earning loop holding the whole
@@ -5310,8 +5307,7 @@ at the death that stops its earning loop keeps both a right {m} and the return o
 loop. {m} in the line of an earning loop that a death stopped after a return is what the earning
 loop did in the catch-up before it stopped, not the time since the save. An earning loop a death
 stopped opens the section at any number of game minutes, so the player learns of one that stopped in
-the first game minute. When this was settled, Siedziba was not on view while a map run stood in the
-game state, and a player returning to a manual map run reads the report on reaching it. Accepted
+the first game minute. Accepted
 with it: a new
 section and a new piece of the game state, a section that shows after a short reload too, one line
 closed along with the others, which the predecessor game did not do, a stop in the open game that
@@ -5321,7 +5317,7 @@ game.
 *Rejected:* closing at each character, as the predecessor game did — as many clicks as characters; one
 line for the whole team — the player does not know which character it was about; all the minutes of
 the earning loop from its start in a line of a stop in the open game — a number that can exceed the
-last absence, and {m} means two things in the section, which also departs from the predecessor game;
+last absence, and {m} means two things in the section, which also looks like a departure from the predecessor game;
 the minutes from the last catch-up there — a further counter in the game state, for a number that
 says little; „Gdy cię nie było” kept as the title of stops in the open game —
 the title says what is untrue to a player who sat at the game.
@@ -5416,8 +5412,7 @@ manual map run, and a catch-up that leaves the Understanding and the programs as
 `catch-up-state` true. With nothing discovered, nothing stops game time, which D-118 stops at a
 discovery, and the game writes no program rule of D-123. Accepted with it: a character meets hunger
 and the game records nothing of it.
-*Rejected:* a discovery entering at once, the report naming it — `catch-up-state` stops being true, so
-the project definition changes with its gate; discoveries waiting in the report and entering when it
+*Rejected:* a discovery entering at once, the report naming it — `catch-up-state` stops being true; discoveries waiting in the report and entering when it
 closes — one more piece of the game state.
 
 ### D-250 — What does a pause or an end screen hold?
@@ -5464,12 +5459,10 @@ program, clipped by carrying capacity and the map's entry cap, exceeds the stock
 
 *Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
 where an earning loop, bound to the chest, goes cut, and the mark names that one price before the
-player starts. It stands where the line of D-188 stands, in the same role. The mark comes with the
-earning loop, whose name it can then use on the screen, since before the loop the game would speak of
-a loop it does not have. Accepted with it: until the loop came, a trial took stock without a word,
-though there was nothing yet to foresee.
+player starts. It stands where the line of D-188 stands, in the same role. The mark uses the name of the
+earning loop on the screen.
 *Rejected:* the mark brought in before the earning loop — the game speaks of a loop it does not have
-yet; another text, given by the human — its cost was not named.
+yet; another text, given by the human.
 
 ### D-252 — How does loop2 write its failures to its logs, and what does it log?
 
@@ -5614,7 +5607,8 @@ Playwright, a session with no window closes by itself after an hour, the text of
 motion, and images cost tokens. Risks taken, each a hypothesis: a drag may catch a select list
 instead of a handle; an agent judging motion from a few frames may report that a scene works while a
 person sees it jerk at 16×.
-*Rejected:* Playwright MCP as the first way — more tokens and a command sent at each tab where the
+*Rejected:* Playwright MCP as the first way — more tokens, a part of which the loading of the tool
+descriptions on demand takes away, and a command sent at each tab where the
 CLI reads one file of the repository, a version that changes with no question because it runs the
 latest release and is not pinned in the repository, a setting for a certificate that lies in a
 plugin and not in the repository, and a stream of frames only through its tool that runs any code;
@@ -5623,9 +5617,12 @@ browser version, and kept in the repository the script is a permanent test again
 with a new dependency for the audit and the lock file and files that must each belong to a part;
 Chrome DevTools MCP and agent-browser — no clock found in their descriptions, which only a return
 after an absence needs, and a stream of frames never shown to arrive as images, the first also
-sending usage statistics to Google by default and the second being a young project; Puppeteer,
+sending usage statistics to Google by default, though it has ready tools for measuring performance,
+useful were a screen to be measured at 16×, and the second being a young project; Puppeteer,
 Selenium, WebdriverIO, Cypress and Stagehand — nothing above Playwright, Puppeteer and Selenium
-having no skeleton of a project, Selenium wanting a newer Node than the computer had and types
+having no skeleton of a project, Puppeteer and Cypress downloading a browser or a program at their
+install, as a development dependency also at the install of the server image, Selenium wanting a
+newer Node than the computer had and types
 apart, Cypress being tests only and its dragging made of events a browser does not trust, and
 Stagehand needing a key and a bill for a model; Claude in Chrome — it waits for a person at a
 login, gives a moving image of which the model sees the first frame alone, and whether it is
@@ -5676,9 +5673,10 @@ certificate.
 refusals of a save (a conflict, a save too large, an expired session), so it suits screens and not
 saving, as a rule of testing would not replace the mechanism whose failure is checked, and its
 answers must keep the shape of the server's or the check notices nothing when the server changes;
-writing straight into the database — it passes over the way of a save and the checks of the server,
+writing straight into the database — though it reaches any state of the database, also one the
+route of a save cannot, it passes over the way of a save and the checks of the server,
 the database taking a version number that the server then refused in the game's saves, and it puts
-the knowledge of the table in a second place; ready files of saves — every change of version renews them, all at once, a
+the knowledge of the table in a second place; ready files of saves — a state that can be read and reviewed, but every change of version renews them, all at once, a
 file written by hand has to be rewritten, and the game checks nothing until it loads them, while the
 rule that a program's result today is no proof of correctness covers the files too; a developer
 screen like the old probe — the most work among the local ways, a screen to write and keep, a page
@@ -5693,7 +5691,7 @@ lost at each new version, and the dearest to change later, though it alone check
 through the tunnel; the test server itself — it rests on how D-12 reads, which does not speak of the
 game through a public address, and it brings real mail at registration and limits on messages, the
 agent's data beside the owner's and saves lost as the owner's are, a loss accepted for the owner
-alone; playing from a new game with no prepared data alone — time and tokens at each check, and
+alone, and the owner, who did not play when this was weighed, has a save without these states; playing from a new game with no prepared data alone — time and tokens at each check, and
 every state after a solved map needs a tuned program that the repository lacks; a service worker
 answering from inside the page — a new dependency, a file served by the application and a change of
 the page's start, and the gaps of swapping the answer; a library for assembling states — an addition
@@ -5923,9 +5921,8 @@ is a ready-made imitation of a document, jsdom. React cannot draw on a hand-made
 plain Node, React drew a row of the account screen on both ready-made imitations of a document,
 jsdom and happy-dom, and failed on that screen's hand-made model. A ready-made imitation carries the whole page with the product's own
 calls left as they are, which the tests need, because when the choice was made the hand-made model
-took the first part of the account screen's tests, and of the cases there, counted over their blocks
-and so only approximately, 37 of 67 read the inside of the model directly, 44 fired events through
-its own `.fire`, 41 walked the whole page and 13 did none of these; the cases that walk the page also
+took the first part of the account screen's tests, and most of the cases there read the inside of
+the model directly, fired events through its own `.fire` or walked the whole page; the cases that walk the page also
 build the screens still in DOM, so what stands in for the model has to carry those too. Other tests
 had stand-ins of their own for the document, among them those that draw the section of credits, and
 only the files of screens built with React leave theirs. Each rule of the harness answers what
@@ -6113,7 +6110,7 @@ build step and never of its lines that serve files.
 import, so a module that reaches React leaves a blank page while its build passes. The page took a
 single constant, the sentence of the answer to a request for a password-reset link, from the module
 of the account screen, which draws with React; moving that constant to a module with no React lets
-the page stand as it is, a way that had not been tried when the question was put. The page needs no
+the page stand as it is. The page needs no
 React: a test keeps the two forms of a control alike and the look stands in one stylesheet, so the
 DOM form shows what the React form looks like. Accepted with it: the page shows the React forms only
 through that likeness, and nothing fails when a module lets React in, so review keeps this decision.
@@ -6269,7 +6266,7 @@ files holding pixels alone, and only into what `npm run build` writes.
 - **Origin:** none
 
 *Rationale:* the boundary of the pictures is kept as the fonts and the preview server are, by review
-until a change of its principle, so the tasks that add the scene's pictures bring no test files. The
+until a change of its principle, so a further picture of the scene brings no test file. The
 rule on trust boundaries in the testing guidelines asks a permanent refusal test of each boundary,
 and `assets/sprites/` is a new one, but the invariant sprite-file-content has the method review. The
 deferral ends only with a change of the boundary's principle — another kind of file, another way in,
@@ -6278,11 +6275,9 @@ copied the static files for the build of the application and for the build of th
 alike, so a sprite file added to it would have reached the preview server too, and that new
 recipient is what ends the deferral. Accepted with it: further files are kept by review alone, so
 the deferral may in practice last for good, and absence of a test proves no refusal.
-*Rejected:* a permanent refusal test, as the rule „Trust boundaries” of the testing guidelines asks
-— the plan records neither its cost nor the human's reason for it; every change of the files of the
-boundary ending the deferral — a test at the task that first adds a picture, a change of the answer
-that the tasks bring no test files, and a change of the plan; new files ending it, and a change of
-the build not — the same costs.
+*Rejected:* a permanent refusal test, as the rule „Trust boundaries” of the testing guidelines asks;
+every change of the files of the boundary ending the deferral — a test with the first picture added;
+new files ending it, and a change of the build not.
 
 ### D-274 — What does a main button look like, and which buttons have it?
 
@@ -6313,18 +6308,17 @@ group. At rest the button lies on the card's background, under the pointer on `h
 and text unchanged, and while the form waits for the server it looks as every disabled button does,
 its text in `text-disabled` and its frame in `control-border`. The submit mark the shared button
 already carries tells which button is the main one, so the main button is no new control. „Wejdź”
-takes the same look because entering a map is the main action of the screen Mapy, as a design review
-of the screens of loop names it, and loop showed it in a green frame beside the grey frame of the
+takes the same look because entering a map is the main action of the screen Mapy, and loop showed it in a green frame beside the grey frame of the
 button of the earning loop. Accepted with it: the difference from a plain button is smaller than a
 fill would give, the main look reaches beyond forms to „Wejdź”, with several characters several
 buttons in the main look stand on a screen at once, and any other main action outside a form takes
-its look in the task of its screen.
+its look from the decision of its screen.
 *Rejected:* leaving every button as it is — four alike buttons, and the next screens repeat the
 layout; „Wejdź” as a plain button — the rules would stay as they are, but „Wejdź” and „Puść w pętlę”
 would look alike; the main button unchanged and only the secondary actions as text — the form
 „Załóż konto” holds no secondary action, so nothing would change there; a light fill with dark text —
 the strongest difference, but three new colour entries, a change of the rules of colour and of the
-contrast test and a divergence from the project definition's entries, with GOV.UK alone as a model,
+contrast test, with GOV.UK alone as a model,
 on a dark part of a light page; a green fill with dark text — the cost of the light fill, green
 coming to mean two things, and a colour under the pointer the game does not hold; a frame in
 `selected` — `selected` means only the one chosen in its group.
@@ -6385,19 +6379,19 @@ stand without frames: the chosen one in `text-strong` over a thick line in `sele
 while the form waits for the server, with the line of the choice staying, and a thin line in
 `divider` runs under all of them. A tab
 here names a look, not the tabs of WAI-ARIA: the requirements of accessibility the browser view
-keeps ask for no arrow keys, and a task that needs them adds them. Accepted with it: a reader who
+keeps ask for no arrow keys, and a screen that needs them adds them. Accepted with it: a reader who
 knows the tabs of WAI-ARIA finds pressed buttons under that name.
 *Rejected:* a green underline, as the current place of loop's menu has — green is a colour of text
 that means that something works or is active, not that it is chosen; a tab grown into the form — a
 frame inside a card that is a frame already, less room for the fields and another background for
-the tab not chosen; no tabs, with „Załóż konto” as text under the form — changes of D-96, D-259 and
-of the project definition's entry, a heading and a way back for the state „Załóż konto”, no tabs in
+the tab not chosen; no tabs, with „Załóż konto” as text under the form — changes of D-96 and
+D-259, a heading and a way back for the state „Załóż konto”, no tabs in
 the styleguide, and the visitor no longer sees the two ways side by side at once; leaving it — two
 „Zaloguj się” one above the other in one look; real tabs with arrow keys and activation by Enter —
 keyboard handling written by hand in both forms of the control (D-265) and its tests, which D-42
 does not ask for, while W3C and Carbon advise switching at once on an arrow for a quick panel,
 which here would empty what was typed; the nouns „Logowanie” and „Nowe konto” as the tabs' labels
-— changes of D-96, D-259 and of the project definition's entry, and „Logowanie” collides with the
+— changes of D-96 and D-259, and „Logowanie” collides with the
 waiting text „Logowanie…”.
 
 ### D-277 — How does the menu bar show where the player is?
@@ -6417,8 +6411,7 @@ The menu bar marks the place the player is at as the chosen tab is marked (D-276
 *Rationale:* one mark says where the player is, among tabs and on the menu bar alike, so the bar
 takes no look of its own for it. Accepted with it: the menu bar and the tabs look alike, though NN/g
 advises telling navigation from tabs by their look.
-*Rejected:* the task that builds the menu bar settling the mark once the bar can be seen — a second
-conversation about the look, and that task losing its main reason to wait for this one.
+*Rejected:* the mark settled later, once the menu bar can be seen — a second conversation about the look.
 
 ### D-278 — Where does the login card stand in the height of the window?
 
@@ -6468,8 +6461,7 @@ gives none a new meaning, and the sentence of D-40 that each of its five roles o
 stays true. The bar of the answer takes the colour of its sentence and not `text-secondary`. The text
 of a secondary action in `text-secondary` is a note, as „Autorzy grafiki” on the same card is.
 *Rejected:* recording nothing — the question comes up in the review of the change and can stop it;
-a change of D-40 — D-40 joins the divergence from the project definition, and the plan gains one
-more entry the task that writes that decision has to keep in mind.
+a change of D-40.
 
 ### D-280 — Which screens does the game have, and how does the player move between them?
 
@@ -6517,8 +6509,10 @@ stays until „Restart” or „Zakończ”, so the way back stays after its end
 do przejścia” stands still, since the map run waits in its pause, and it reads as the clock in the
 header of the screen of the map run does.
 *Rejected:* one page holding everything — unreadable; the width of the content changing between
-screens, as in loop — the logo and the menu jump; another largest width — it changes that one
-dimension alone; the skill trees shown on two screens, as in loop; two buttons „Wejdź” on the way to
+screens, as in loop — the logo and the menu jump by about 190 px between Siedziba and Programy;
+another largest width — it changes that one
+dimension alone; the skill trees shown on two screens, as in loop — the same rows on Postać and in
+Wiedza; two buttons „Wejdź” on the way to
 a first map run, as in loop, the first opening a window to choose the character and the second
 standing in that window; a bar that sets whose eyes the screens look through, as in loop — the
 player has to discover it before entering a map; a second way to the maps, a button „Wybierz mapę”
@@ -6600,7 +6594,7 @@ and its target after it.
 - **Origin:** none
 
 *Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
-and these three shapes make each of them an addition. In a review of what the game was to grow into,
+and these three shapes make each of them an addition. In a review of the sketched screens against what the game was to grow into,
 only the scene forced a screen to be rebuilt with no condition; the layout for a phone, several
 teams, a look into an earning loop's map run, a map run for each character, and crafting and targets
 of actions were additions on condition of decisions taken at the start: areas in place of rigid
@@ -6646,9 +6640,9 @@ player presses „Wznów”, whether or not it went on before the player left.
 - **Origin:** none
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on (D-122), so a
-map run that leaving its screen paused waits as one after „Pauza” does. No sentence says directly
-what a return does; the answer follows from the sentence on leaving, which pauses the map run, and
-the sentence on one pause, in which the player goes on with „Wznów”.
+map run that leaving its screen paused waits as one after „Pauza” does. A return finds
+the map run in the pause that leaving put it in (D-283), and from that pause the player goes on with
+„Wznów” (D-122).
 *Rejected:* the map run resuming by itself on the return where it went on before the player left —
 the game would have to remember who paused it, and a reload loses that memory.
 
@@ -6769,9 +6763,8 @@ columns of the program and the right area and opening the panel under a row give
 and 622 px (the world area 706 px and a gap of 16 px; computed from the layout, not measured). In a
 narrow window the panel stood under the whole program on the screen of a map run and under the whole
 editor on Programy, and an edit in place on the list, as loop has it in a narrower window, serves a
-wide window and a narrow one at once and the later layout for a phone as well. Writing a program
-without grimacing is what the project is judged by, and the complaints of players about the program
-editors of other games concern the mechanics of editing, such as an editor worked by mouse alone,
+wide window and a narrow one at once and the later layout for a phone as well. The complaints of
+players about the program editors of other games concern the mechanics of editing, such as an editor worked by mouse alone,
 not the model of rules. Dragging a rule
 already worked, between groups too, but the player could not see it, for there was no handle and no
 sign of where the rule would land; Outlook gives three ways to move a rule at once, a handle,
@@ -6796,7 +6789,7 @@ went; a select list for conditions in the panel — two
 clicks and the look of a form; a list of conditions of its own, as in loop — a second control and a
 second keyboard handling; rule groups moved by arrows alone — reordering by arrows does not work; a
 way from the keyboard for rule groups with no arrows in the header, such as keys on the handle —
-keyboard handling of its own in the largest task; the panel in a column beside the rows on the
+keyboard handling of its own and one sentence more in the decision; the panel in a column beside the rows on the
 screen of a map run, with the split of widths unchanged — the program stays narrow, and each new
 line at a rule wraps further; a smaller scene with the split of widths unchanged (D-349) — what was
 wanted was the width of the program as in loop, not a smaller scene; the panel beside the editor on Programy alone — the editor has two
@@ -7053,8 +7046,8 @@ The pick of the rule panel holds no search field and no row of recent picks.
 - **Origin:** none
 
 *Rationale:* when this was settled every cell of the pick fitted without scrolling, so neither a
-search nor a row of recent picks would have spared the player anything. Accepted with it: both come
-back with the content of a later project, once that content outgrows the pick.
+search nor a row of recent picks would have spared the player anything. Accepted with it: should the
+game's content outgrow the pick, both may be called for again.
 *Rejected:* a search field — it takes the keyboard from the grid; a row of recent picks — three
 cells above the grid.
 
@@ -7303,7 +7296,7 @@ player sees at once whether a rule just written would start the fight, and the w
 loop. Accepted with it: the turns that follow may choose another rule, and
 outside a fight every combat rule whose condition holds shows amber.
 *Rejected:* no rule on the background of the rule that wins during the minutes of an attack — it is not
-seen what the mage will start the fight with, and the approved sentence of D-308 gets an exception; the words
+seen what the mage will start the fight with, and D-308 would need an exception; the words
 „czynność walki — tylko przy napaści” and „trwa walka — działają tylko reguły walki” — a longer text in
 a narrow column.
 
@@ -7412,9 +7405,9 @@ of the buttons „Restart” and „Zakończ” stands on the screen at a time, 
 stands in the program panel, which the window covers, so the window closes while the question stands,
 and it stays closed after „Wróć”, which keeps the window from remembering that the question closed
 it. Accepted with it: the window hides the scene and the program while it stands, and does not cover
-the whole screen as the end of loop does; the end is out of sight while the question stands and after
+the whole page as the end of loop does; the end is out of sight while the question stands and after
 it, until the player opens it with „Koniec przejścia”; the window needs keyboard handling of its own,
-Escape included, and a way back to it (D-370).
+Escape included, and a way back to it (D-370, D-371).
 *Rejected:* the buttons „Restart” and „Zakończ” only in the end and none in the header after it — they
 change their place at the moment of the end; the same buttons in both places at once, the header and
 a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to
@@ -7424,7 +7417,7 @@ character needs; the end of a map run below an open editor of a rule, as in loop
 under the edge of the window; the needs below two drawings of one place, as in loop — there the
 scene and the grid took about 320 px before the first number, and the needs began about 590 px down
 and the streak about 650 px, in small print with a 4 px bar; the trip plan under the editor during a
-map run — it took about 150 px of what the player watches (D-180); the clock written as „03:32” — a new notation of time;
+map run — in this game it took about 150 px of what the player watches (D-180), where loop keeps the plan on Programy; the clock written as „03:32” — a new notation of time;
 „Wróć do przejścia” on the screen of a map run too — a link to the place the player already stands
 in; „Restart”, the warning of a cut trip plan and „Zakończ” in the program column, in a row over the
 heading of the copy — the player looks for them in a new place, and the question at „Zakończ”
@@ -7445,23 +7438,24 @@ under the lower edge, the kind of place the rejection of loop above names, and i
 fixed before it is known what the end holds and how much room it takes; the end at the top of the
 program column, above the band of a discovery, with its own scrolling — the program moves down by the
 height of the end, the rules that did not fire are read above the program and not beside it, and in
-one column the end stands under the whole world, in the kind of place the rejection of loop above
-names; the same place from the width at which the screen has two columns and above the world in one
+one column (a window narrower than 1074 px) the end stands under the whole world, in the kind of
+place the rejection of loop above names; the same place from the width at which the screen has two columns and above the world in one
 column — in a narrow window the scene and the effect of a solving stand under the end, and the layout
 has one more place; the end in the left column under „Teraz” and „Potem” — in a low window, such as
 1280 × 720, only the top of the end shows and its buttons fall under the lower edge, and the body row,
 the backpack, the drawing of the map and the tabs move down; a third tab „Koniec” in the area under
-the world — the chronicle hides behind the tab when the player wants to read what happened; the end in
+the world — in a low window it stands under the lower edge, and the chronicle hides behind the tab
+when the player wants to read what happened; the end in
 the place of the scene — it hides the scene, in which the solving is shown; the window covering the
 menu bar too — to go to another screen the player must first close the window, and neither a failed
 save (D-208) nor a broken game (D-323) is seen while it stands; the window opening by itself again
 after „Wróć” — one state more, and a player who wanted to correct the copy has to close it again; the
 question „Zapisać, odrzucić, wrócić?” in the window above its buttons — a second place of the
 question, away from the copy it concerns and against the rejection of a window in D-173, and more to
-build and check; the scene shrunk to its size in loop with the split of the widths unchanged — it
-would give the program about as much width (510 px in a window 1280 px wide, 606 px at 1344 px;
-computed from the layout, not measured) only by halving the scene, while the aim was a program as
-wide as in loop with the scene kept at its size (D-349).
+build and check; the scene shrunk to its size in loop with the split of the widths of three columns
+unchanged — it would give the program 510 px in a window 1280 px wide and 606 px at 1344 px, about
+the 526 px and 622 px of this layout (computed from the layout, not measured), only by halving the
+scene, while the aim is a program as wide as in loop with the scene kept at its size (D-349).
 
 ### D-312 — How does the band of a discovery name the program rule the game wrote?
 
@@ -7671,8 +7665,8 @@ loss is seen going. Accepted with it: a change of hue is subtler than a change o
 16× the scene may still be turning cool when the streak grows again; at 16× the mage is often still
 walking when its action ends.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
-a prop standing only while its resource lies on the character's tile — a piece of a scene showing
-the character's tile, left out of the project, would enter it, and the scene would change at
+a prop standing only while its resource lies on the character's tile — it would bring in a piece of a
+scene showing the character's tile, as a sketch of the scene does, and the scene would change at
 „Eksploruj” with no transition; no props — the mage would have nothing to walk to; a walk as long
 as the shorter of 640 ms and the time of the action — its length would follow the pace, while the
 rhythm is to be apart from it; a walk of 300 ms — the mage jumps across the frame; a walk whose time
@@ -7699,7 +7693,7 @@ overdue when its turn comes is dropped. The scene follows the system's setting f
 and shows no flash of its whole area.
 
 - **Scope:** browser-view
-- **Based on:** none
+- **Based on:** https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § 2.3.1 Three Flashes or Below Threshold — "Web pages do not contain anything that flashes more than three times in any one second period" · § General flash and red flash thresholds — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: the scene under the system's setting for reduced motion keeping its frames still; an
@@ -7713,12 +7707,13 @@ and shows no flash of its whole area.
 - **Origin:** none
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed — the criterion
-2.3.1 of WCAG 2.2 forbids more than three flashes a second unless less than 87,296 pixels flash, and
+2.3.1 of WCAG 2.2 forbids more than three flashes a second unless the flash stays below the general flash threshold, which it estimates for a screen of 1024 × 768 pixels as a rectangle of 341 × 256, 87,296 pixels, and
 the scene at twice its picture, 672 × 304 px, has 204,288 — so no effect takes the whole area of the
 scene, and a player who asks the system for less motion gets less, though that setting alone does not
 answer the flashes. An effect of an ordinary event is a short sign of one event, so it fits the
 fastest pace, where events follow one another quickly: in a trial of the simulation read every 200 ms,
-as the clock of the view reads it, with one program written for the trial, the game changed the
+as the clock of the view reads it, with one program written for the trial, which won Las in 10 of 20 tries, so
+that the figure is an example of an order of magnitude, the game changed the
 character's action about 1.8 times a second at 16×, a pace the eye can follow, while text and
 anything longer than half a second could no longer be read. One whose turn has passed would show
 something that is no longer so; that happens when the player steps down from 16× or returns to a tab
@@ -7820,12 +7815,12 @@ the map do, which no text stands beside either. An icon drawn as a mask takes th
 beside it (D-43) and none stands beside this one, so no rule gave its colour; every choice widened
 D-40, which lets the colours of text stand only as text, and the choices differed only in colour, so
 the icon is the lighter one, where in an unchosen cell of the rule picker the same icon stands by
-ordinary text in a darker colour. Waiting lasts a fraction of a second at the fastest
-pace, so a sign for it would only flicker. Accepted with it: the badge hides a piece of the forest
+ordinary text in a darker colour. Waiting lasts 0.06 s at the fastest
+pace (16×), so a sign for it would only flicker. Accepted with it: the badge hides a piece of the forest
 over the head, and in combat the mage stands without a sign.
 *Rejected:* the icon of the target where the action has one — „Idź — patyk” and „Zbierz — patyk”
-look alike; an icon of combat with a bar to the minute the fight is decided — an icon that the
-work on combat may not leave; the bar in `text-strong` — it does not tell from the icon; the icon
+look alike; an icon of combat with a bar to the minute the fight is decided — an icon that later
+work on combat may drop; the bar in `text-strong` — it does not tell from the icon; the icon
 and the bar straight on the picture — on a light tree the icon can vanish and no test finds it; the
 icon in `text` — darker than the icon in the row of a rule and than the icons on the map, though
 both values read well.
@@ -8535,8 +8530,8 @@ size of the chronicle was measured when this was weighed, on 30 seeds of one cha
 a ready program of 17 rules: a map run gave a median of 48 entries of the kinds the chronicle holds
 and 102 at most, as raw JSON 8.0 KB on average and 13.4 KB at most, beside a save of about 9.5 KB;
 the count leaves out the player's changes and the losses of the streak, which the game's events did
-not then carry, so a real map run holds more entries. The chronicle of one map run fits the limit
-of 64 KiB (D-207), while the game already accepts that with several earning loops a save can stand
+not then carry, so a map run with such changes or losses holds more entries. By that measurement the
+chronicle of one map run fits the limit of 64 KiB (D-207), while the game already accepts that with several earning loops a save can stand
 at that limit (D-208). Risks
 taken, each a hypothesis: the sentence may show with no fault or blink; logs of the console kept on
 disk may hold a real password-reset token; an agent may learn to ignore a console in which the
