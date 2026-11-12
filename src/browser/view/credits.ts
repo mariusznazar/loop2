@@ -51,7 +51,7 @@ export type PackCredit = {
  */
 export const PACK_CREDITS: readonly PackCredit[] = [
   {
-    name: "Kurz i obłók walki",
+    name: "Kurz i obłok walki",
     title: "Smoke & Fire Animated Particle [16x16]",
     author: "KnoblePersona",
     sourceSite: "opengameart.org",

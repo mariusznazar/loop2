@@ -208,7 +208,7 @@ const NAMED = [
 // dust is the pack Smoke & Fire Animated Particle [16x16] and the wolf the pack LPC Wolf, whose files
 // are frames cut from its sheet.
 const PACK_LINES = [
-  "Kurz i obłók walki: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)",
+  "Kurz i obłok walki: „Smoke & Fire Animated Particle [16x16]”, KnoblePersona, opengameart.org, CC BY 3.0, zmienione (przekolorowane)",
   "Wilk: „[LPC] Wolf Animation”, Stephen „Redshrike” Challener (grafika), William.Thompsonj (współtwórca), opengameart.org, CC BY 3.0, zmienione (wycięte klatki)",
 ];
 const PACK_PAGES = [
