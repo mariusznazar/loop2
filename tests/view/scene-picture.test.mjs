@@ -1306,7 +1306,7 @@ test("through the minutes of a combat the scene draws the wolf scuffling, from t
   });
 });
 
-// D-316, Q4. Catches a wolf left in the scene after any end of a combat but the mage's death and a
+// D-316. Catches a wolf left in the scene after any end of a combat but the mage's death and a
 // map run solved in the combat, and one that disappears at those two.
 test("the wolf stays after the mage's death in the fight and after a map run solved in a combat, and after no other end", () => {
   assert.equal(creatureOf(sent()), null, "no combat yet");
@@ -1337,33 +1337,42 @@ test("the wolf stays after the mage's death in the fight and after a map run sol
   );
 });
 
-// D-316, Q2. Catches a wolf on the wrong side, one that overlaps the figure of the mage or leaves the
-// picture, and a gap that differs from the data's. The mage's figure is columns 20 to 44 of its frame:
-// at 144 it ends at 189, so the wolf starts at 191; at the right edge, 275, the figure faces left and
-// starts at column 19, 294, so the wolf's frame of 64 ends at 292 and starts at 228.
-test("the wolf stands on the right of the mage, 2 pixels from its figure, and on the left where the right would leave the picture", () => {
-  assert.equal(SCENE_FIGHT.gap, 2);
-  assert.deepEqual(creaturePlace(144, MAGE_WIDTH, 64, SCENE_WIDTH), {
-    side: "right",
-    x: 191,
-    middle: 190,
-  });
-  assert.deepEqual(creaturePlace(275, MAGE_WIDTH, 64, SCENE_WIDTH), {
-    side: "left",
-    x: 228,
-    middle: 293,
-  });
-  // Every place the mage stands at but the right edge has the wolf on its right, inside the picture:
-  // at the berry bush, 224, its frame ends at 335 of 336.
-  for (const x of [32, 42, 80, 144, 224]) {
+// D-316. Catches a wolf on the wrong side, one that overlaps the figure of the mage, leaves a different
+// gap from the data's or leaves the picture, at each place the mage stands at as the data of the scene
+// holds them: the props' places, the fire's, the clearing and the right edge. The mage's figure is the
+// columns of the data from its frame's left edge, and when it faces left, the mirror of them about the
+// frame's middle, so the figure of the mage at the right edge starts 19 columns in.
+test("the wolf stands on the right of the mage at each place the data gives but the right edge, and on its left there, the gap of the data from its figure and inside the picture", () => {
+  const { gap, mageFigure } = SCENE_FIGHT;
+  const right = [
+    ...Object.values(SCENE_PROPS).map((prop) => prop.mageAt),
+    SCENE_FIRE.mageAt,
+    SCENE.clearingX,
+  ];
+  for (const x of right) {
     const place = creaturePlace(x, MAGE_WIDTH, 64, SCENE_WIDTH);
     assert.equal(place.side, "right", `mage at ${x}`);
-    assert.ok(place.x + 64 <= SCENE_WIDTH, `mage at ${x}`);
+    assert.equal(
+      place.x,
+      x + mageFigure.right + 1 + gap,
+      `mage at ${x}: the gap`,
+    );
+    assert.ok(place.x + 64 <= SCENE_WIDTH, `mage at ${x}: inside the picture`);
   }
-  assert.equal(creaturePlace(224, MAGE_WIDTH, 64, SCENE_WIDTH).x, 271);
+  const edge = creaturePlace(SCENE.rightEdgeX, MAGE_WIDTH, 64, SCENE_WIDTH);
+  assert.equal(edge.side, "left");
+  const figureLeft = SCENE.rightEdgeX + (MAGE_WIDTH - 1 - mageFigure.right);
+  assert.equal(edge.x + 64 + gap, figureLeft, "the gap, the figure mirrored");
+  assert.ok(edge.x >= 0, "inside the picture");
+  // The gap of the cloud's middle lies between the figure and the wolf on either side.
+  assert.equal(
+    creaturePlace(144, MAGE_WIDTH, 64, SCENE_WIDTH).middle,
+    144 + mageFigure.right + 1 + gap / 2,
+  );
+  assert.equal(edge.middle, figureLeft - gap / 2);
 });
 
-// D-316, Q3. Catches a cloud of the scuffle that stands off the gap or in the air, and a size other
+// D-316. Catches a cloud of the scuffle that stands off the gap or in the air, and a size other
 // than the dust's.
 test("the cloud of the scuffle stands over the middle of the gap, its bottom 3 above the ground line", () => {
   const cloud = creatureOf(fighting()).cloud;
@@ -1412,7 +1421,7 @@ test("the wolf runs in at the reading whose events carry its attack, and at none
   );
 });
 
-// D-317, Q4. Catches an end that shows the wrong effect, one that is made for the mage's death, where
+// D-317. Catches an end that shows the wrong effect, one that is made for the mage's death, where
 // the wolf stands, one for a reading whose previous state held no combat, and a run off that does not
 // reach the right edge of the frame.
 test("the wolf falls where it stood when defeated and runs off to the right edge when it departs, and the mage's death shows no effect", () => {

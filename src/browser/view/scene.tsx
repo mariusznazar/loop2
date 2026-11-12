@@ -69,6 +69,7 @@ import {
 import type {
   CreaturePlace,
   SceneCreature,
+  SceneCreatureEffect,
   SceneDrawing,
   SceneEffect,
   SceneMoment,
@@ -116,7 +117,7 @@ type Shown = {
  * The effect the scene shows, with the number that keys its element: each new effect starts on an
  * element of its own, and the number tells the effect that has ended from a newer one.
  */
-type Effects = { serial: number; shown: SceneEffect | null };
+type Effects<Kind> = { serial: number; shown: Kind | null };
 
 /**
  * The moment in which time stands still that the scene shows, kept from reading to reading: its key,
@@ -476,7 +477,10 @@ function CreatureEffect({
   frame,
   onEnd,
 }: {
-  effect: Extract<SceneEffect, { kind: "creatureDown" | "creatureOut" }>;
+  effect: Extract<
+    SceneCreatureEffect,
+    { kind: "creatureDown" | "creatureOut" }
+  >;
   frame: SceneSprite;
   onEnd: (event: AnimationEvent<HTMLDivElement>) => void;
 }) {
@@ -554,7 +558,13 @@ export function Scene({
   const [shown, setShown] = useState<Shown | null>(null);
   const [seenEvents, setSeenEvents] = useState(events);
   const [lastState, setLastState] = useState(state);
-  const [effects, setEffects] = useState<Effects>({ serial: 0, shown: null });
+  const [effects, setEffects] = useState<Effects<SceneEffect>>({
+    serial: 0,
+    shown: null,
+  });
+  const [creatureEffects, setCreatureEffects] = useState<
+    Effects<SceneCreatureEffect>
+  >({ serial: 0, shown: null });
   const [tint, setTint] = useState<TintShown | null>(null);
   const [moment, setMoment] = useState<MomentShown | null>(null);
   const mageRef = useRef<HTMLDivElement>(null);
@@ -604,28 +614,38 @@ export function Scene({
   // where the scene goes on: an effect whose turn comes at a stop is overdue and dropped (D-317). A
   // map run started, or no map run, leaves none.
   let effect = effects;
+  let creatureFx = creatureEffects;
   if (drawing === null || started) {
     if (effect.shown !== null) {
       effect = { ...effect, shown: null };
       setEffects(effect);
     }
+    if (creatureFx.shown !== null) {
+      creatureFx = { ...creatureFx, shown: null };
+      setCreatureEffects(creatureFx);
+    }
   } else if (state !== lastState) {
     if (fresh && drawing.standing === "going" && current !== null) {
       // The effect belongs to the mage that gathered, at the place it stands or walks to at the previous
       // reading, and not at where the action that starts in this reading leads it.
-      const made =
-        sceneEffect(lastState, state, events, current.x) ??
-        creatureEffect(
-          lastState,
-          state,
-          events,
-          current.x,
-          frameWidth,
-          drawing.background.width,
-        );
+      const made = sceneEffect(lastState, state, events, current.x);
       if (made !== null) {
         effect = { serial: effect.serial + 1, shown: made };
         setEffects(effect);
+      }
+      // The creature's effect of the same reading is kept apart: the minute that ends a gathering can
+      // also bring the attack, and each effect belongs to its own part of the scene.
+      const madeCreature = creatureEffect(
+        lastState,
+        state,
+        events,
+        current.x,
+        frameWidth,
+        drawing.background.width,
+      );
+      if (madeCreature !== null) {
+        creatureFx = { serial: creatureFx.serial + 1, shown: madeCreature };
+        setCreatureEffects(creatureFx);
       }
     }
   }
@@ -710,6 +730,13 @@ export function Scene({
     (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
       setEffects((now) =>
+        now.serial === serial ? { ...now, shown: null } : now,
+      );
+    };
+  const creatureEnded =
+    (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
+      if (event.target !== event.currentTarget) return;
+      setCreatureEffects((now) =>
         now.serial === serial ? { ...now, shown: null } : now,
       );
     };
@@ -803,20 +830,21 @@ export function Scene({
           place={place}
           frame={frame}
           entering={
-            effect.shown?.kind === "creatureIn" &&
-            effect.shown.key === drawing.creature.key
+            creatureFx.shown?.kind === "creatureIn" &&
+            creatureFx.shown.key === drawing.creature.key &&
+            (drawing.standing === "going" || drawing.standing === "paused")
           }
-          onEnd={effectEnded(effect.serial)}
+          onEnd={creatureEnded(creatureFx.serial)}
         />
       )}
-      {effect.shown === null ||
-      (effect.shown.kind !== "creatureDown" &&
-        effect.shown.kind !== "creatureOut") ? null : (
+      {creatureFx.shown === null ||
+      (creatureFx.shown.kind !== "creatureDown" &&
+        creatureFx.shown.kind !== "creatureOut") ? null : (
         <CreatureEffect
-          key={`effect-${effect.serial}`}
-          effect={effect.shown}
+          key={`creature-effect-${creatureFx.serial}`}
+          effect={creatureFx.shown}
           frame={frame}
-          onEnd={effectEnded(effect.serial)}
+          onEnd={creatureEnded(creatureFx.serial)}
         />
       )}
       <div

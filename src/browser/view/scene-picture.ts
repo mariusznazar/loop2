@@ -574,17 +574,24 @@ const USES_BACKPACK: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * The effect of an ordinary event (D-317): at the end of a gathering the icon of the resource gathered
- * flying from the prop, or from the mage's feet where the resource has none, to the mage's body, or the
- * cloud of dust of a miss, standing at the prop or at the feet; at an attack the creature, already
- * standing where the state puts it, running in from the right edge of the frame; and at the end of a
- * combat the creature that was defeated falling and lying where it stood, or the one that departs
- * running off to the right edge of the frame. A creature that runs off or falls is no longer in the
- * state, so its effect carries its sheet placed, the way it faces, and how far it runs.
+ * The effect of the end of a gathering, an effect of an ordinary event (D-317): the icon of the
+ * resource gathered flying from the prop, or from the mage's feet where the resource has none, to the
+ * mage's body, or the cloud of dust of a miss, standing at the prop or at the feet.
  */
 export type SceneEffect =
   | { kind: "flight"; href: string; from: ScenePoint; to: ScenePoint }
-  | { kind: "dust"; sprite: ScenePlacedSprite }
+  | { kind: "dust"; sprite: ScenePlacedSprite };
+
+/**
+ * The effect of an attack or of the end of a combat, an effect of an ordinary event (D-317): at an
+ * attack the creature, already standing where the state puts it, running in from the right edge of the
+ * frame; at the end of a combat the creature that was defeated falling and lying where it stood, or the
+ * one that departs running off to the right edge of the frame. A creature that runs off or falls is no
+ * longer in the state, so its effect carries its sheet placed, the way it faces, and how far it runs. It
+ * is kept apart from the effect of a gathering, since the two are made in the same minute and belong to
+ * different parts of the scene, so that each plays.
+ */
+export type SceneCreatureEffect =
   | { kind: "creatureIn"; key: string }
   | {
       kind: "creatureDown";
@@ -675,7 +682,7 @@ export function sceneEffect(
 }
 
 /**
- * The effect of an attack or of the end of a combat, from the game state of the previous reading, the
+ * The creature's effect of an attack or of the end of a combat, from the game state of the previous reading, the
  * state of this one and the events the simulation returned with it (D-04), the mage standing with its
  * frame, `mageWidth` wide, having its left edge at `mageX` in a scene `sceneWidth` wide; null where the reading shows none. The
  * creature runs in at the reading whose events carry its attack, runs off at the one whose events carry
@@ -692,7 +699,7 @@ export function creatureEffect(
   mageX: number,
   mageWidth: number,
   sceneWidth: number,
-): SceneEffect | null {
+): SceneCreatureEffect | null {
   const run = after.run;
   const was = before.run;
   if (run === null || was === null) return null;

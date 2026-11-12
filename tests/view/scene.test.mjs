@@ -2253,7 +2253,7 @@ test("in the minutes of a combat the wolf stands beside the mage, on its right, 
   });
 });
 
-// D-316, Q2. Catches a wolf that stands on the right at the right edge, where its frame would leave the
+// D-316. Catches a wolf that stands on the right at the right edge, where its frame would leave the
 // picture, and a mage that does not turn to it: the mage there, 275, faces left, so its figure starts at
 // 294 and the wolf's frame ends at 292.
 test("where the mage stands at the right edge the wolf stands on its left, mirrored, and the mage turns toward it", async () => {
@@ -2331,7 +2331,7 @@ test("the wolf runs in from the right edge at the reading whose events carry the
   });
 });
 
-// D-322, Q5. Catches a wolf that runs in at the stop of the first attack, where time stands still, and a
+// D-322. Catches a wolf that runs in at the stop of the first attack, where time stands still, and a
 // scuffle that moves at a stop.
 test("at the stop at a discovery the wolf stands beside the mage with no run in, and every stop holds its frames and the cloud's", async () => {
   await withPage(async (page) => {
@@ -2362,7 +2362,7 @@ test("at the stop at a discovery the wolf stands beside the mage with no run in,
   });
 });
 
-// D-316, Q4. Catches a wolf that fights on after the mage's death, one that stands in the bite frames
+// D-316. Catches a wolf that fights on after the mage's death, one that stands in the bite frames
 // where it should stand, and one with a cloud of a scuffle; and one that is gone with the mage's death.
 test("the wolf stands still in its idle frame, with no cloud, beside the mage that died in the fight and after a map run solved in the combat", async () => {
   await withPage(async (page) => {
@@ -2406,7 +2406,7 @@ test("the wolf stands still in its idle frame, with no cloud, beside the mage th
   });
 });
 
-// D-317, Q4. Catches an end of a combat that leaves the wolf in the scene, one that shows no effect, an
+// D-317. Catches an end of a combat that leaves the wolf in the scene, one that shows no effect, an
 // effect of the mage's death, an effect longer than 300 ms or that stays after its animation, a wolf that
 // runs off the wrong way, and an effect at a reading with several ends.
 test("a defeated wolf falls and a departing one runs off to the right, each an effect of 300 ms at the place the wolf stood, and the mage's death shows none", async () => {
@@ -2518,5 +2518,93 @@ test("the mage keeps the way it turned after the fight, and the wolf and its clo
       at("scene-scuffle") < at("scene-tint"),
       "the cloud under the tint",
     );
+  });
+});
+
+// D-317, D-316. Catches a wolf that appears at once, with no run in, because the reading of its attack
+// also carries the end of a gathering, whose flight or dust takes the scene's one effect: by D-71 a minute
+// lets the action that ends in it take effect and then tries the attack, so one reading carries both. The
+// two effects belong to different parts of the scene and both play.
+test("a reading that carries the attack together with the end of a gathering shows the flight or the dust and the wolf's run in", async () => {
+  await withPage(async (page) => {
+    for (const [name, before, after, selector] of [
+      ["a hit", 0, 1, ".scene-flight"],
+      ["a miss", 2, 2, ".scene-dust"],
+    ]) {
+      const { draw, scene } = await mounted(
+        page,
+        carrying(doingFrom(GATHER_STICK, 0, 9), "stick", before),
+      );
+      await draw(carrying(inCombat(), "stick", after), [
+        ended(GATHER_STICK, 10),
+        ATTACK,
+      ]);
+      assert.equal(
+        scene().querySelectorAll(selector).length,
+        1,
+        `${name}: the effect of the gathering`,
+      );
+      assert.ok(
+        one(scene(), ".scene-creature").hasAttribute("data-entering"),
+        `${name}: the wolf runs in`,
+      );
+      assert.equal(scene().querySelectorAll(".scene-scuffle").length, 1);
+      // The run's end does not take the gathering's effect with it, and the effect's end does not
+      // stop the run.
+      await inAct(() => endAnimation(one(scene(), ".scene-creature")));
+      assert.equal(
+        one(scene(), ".scene-creature").hasAttribute("data-entering"),
+        false,
+      );
+      assert.equal(
+        scene().querySelectorAll(selector).length,
+        1,
+        `${name}: still there`,
+      );
+      await inAct(() =>
+        endAnimation(
+          one(
+            scene(),
+            selector.startsWith(".scene-flight")
+              ? ".scene-flight"
+              : ".scene-dust",
+          ),
+        ),
+      );
+      assert.equal(
+        scene().querySelectorAll(selector).length,
+        0,
+        `${name}: gone after its own animation`,
+      );
+    }
+  });
+});
+
+// D-322, D-316. Catches a wolf frozen part of the way through its run in where the mage dies or the map run is
+// solved within the 300 ms of the run, as at 16×, where the combat is decided 312 ms after the attack: the run
+// is then overdue, the scene stands still for good and the wolf stands beside the mage.
+test("a death or a completion in the 300 ms of the run in leaves the wolf standing beside the mage, not held on its way", async () => {
+  await withPage(async (page) => {
+    for (const patch of [
+      { death: { minute: 182, cause: "cold" } },
+      { completion: { minute: 182 } },
+    ]) {
+      const { draw, scene } = await mounted(
+        page,
+        withRun(sent(), { current: WAITING }),
+      );
+      await draw(inCombat(), [ATTACK]);
+      assert.ok(
+        one(scene(), ".scene-creature").hasAttribute("data-entering"),
+        "precondition",
+      );
+      const ended = inCombat();
+      await draw({ ...ended, run: { ...ended.run, ...patch } }, []);
+      assert.notEqual(scene().getAttribute("data-standing"), "going");
+      assert.equal(
+        one(scene(), ".scene-creature").hasAttribute("data-entering"),
+        false,
+      );
+    }
   });
 });
