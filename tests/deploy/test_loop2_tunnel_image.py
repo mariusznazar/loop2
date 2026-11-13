@@ -14,6 +14,7 @@ import unittest
 import uuid
 
 import deploy_script_support as support
+from scripts import docker_gate
 
 
 class ConnectorImage(unittest.TestCase):
@@ -24,15 +25,8 @@ class ConnectorImage(unittest.TestCase):
                               errors="replace", timeout=timeout)
 
     def test_nonroot_connector_can_run_the_disconnected_readiness_check(self):
+        docker_gate.require_daemon(self, "connector image capabilities stay unchecked")
         self.docker = shutil.which("docker")
-        if self.docker is None:
-            self.skipTest("Docker unavailable; connector image capabilities stay unchecked")
-        try:
-            daemon = self.command("version", "--format", "{{.Server.Version}}")
-        except (OSError, subprocess.TimeoutExpired):
-            self.skipTest("Docker daemon unavailable; connector image capabilities stay unchecked")
-        if daemon.returncode != 0 or not daemon.stdout.strip():
-            self.skipTest("Docker daemon unavailable; connector image capabilities stay unchecked")
 
         config = self.command("compose", "--project-name", "loop2", "-f", "compose.yaml",
                               "config", "--format", "json")

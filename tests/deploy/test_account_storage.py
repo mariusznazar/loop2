@@ -34,8 +34,8 @@ import uuid
 
 from tests.invariants import account_container_support as support
 from tests.invariants import loop2_invariant_support as compose
+from scripts import docker_gate
 
-DAEMON_TIMEOUT = 30     # seconds for `docker version` to answer
 BUILD_TIMEOUT = 1200    # seconds for the image build
 COMMAND_TIMEOUT = 120   # seconds for any other docker command
 SERVE_WAIT = 60         # seconds for a started container to answer GET /
@@ -86,17 +86,6 @@ def docker():
     return shutil.which("docker")
 
 
-def docker_answers():
-    if docker() is None:
-        return False
-    try:
-        result = subprocess.run([docker(), "version", "--format", "{{.Server.Version}}"],
-                                capture_output=True, timeout=DAEMON_TIMEOUT)
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-    return result.returncode == 0 and result.stdout.strip() != b""
-
-
 def docker_run(*arguments, timeout=COMMAND_TIMEOUT):
     result = subprocess.run([docker(), *arguments], cwd=support.ROOT, stdin=subprocess.DEVNULL,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
@@ -107,9 +96,8 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
 
     def test_replaced_container_keeps_accounts_and_sessions(self):
         # invariant: account-schema-lifecycle
-        if not docker_answers():
-            self.skipTest("no Docker daemon answers; whether accounts and sessions outlive a "
-                          "container replacement stays unchecked")
+        docker_gate.require_daemon(self, "whether accounts and sessions outlive a container "
+                                         "replacement stays unchecked")
         suffix = uuid.uuid4().hex[:12]
         tag = "loop2-account-storage-check:" + suffix
         self.addCleanup(docker_run, "image", "rm", "-f", tag)

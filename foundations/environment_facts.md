@@ -789,6 +789,12 @@ The page of the pack [LPC] Wolf Animation on OpenGameArt gives William.Thompsonj
 
 - **Source:** https://opengameart.org/content/lpc-wolf-animation (archived: https://web.archive.org/web/20261030052334/https://opengameart.org/content/lpc-wolf-animation, 2026-10-30) § Author — "William.Thompsonj" · § Collaborators — "Redshrike" · § License(s) — "CC-BY 4.0" · "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/ · "GPL 3.0" · "GPL 2.0" · "OGA-BY 3.0" · § Attribution Instructions — "Attribute Stephen "Redshrike" Challener as graphic artist and William.Thompsonj as contributor. If reasonable link back to this page or the OGA homepage."; read 2026-11-12
 
+## docker-desktop-start-detach
+
+`docker desktop start` starts Docker Desktop, and with the option `--detach` it does not synchronously wait for the requested operation to complete.
+
+- **Source:** https://docs.docker.com/reference/cli/docker/desktop/start/ (archived: https://web.archive.org/web/20261101133739/https://docs.docker.com/reference/cli/docker/desktop/start/, 2026-11-01) § Description — "Start Docker Desktop" · § Options, `--detach` — "Do not synchronously wait for the requested operation to complete."; read 2026-11-13
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
