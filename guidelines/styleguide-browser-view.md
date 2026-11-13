@@ -260,6 +260,13 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   wygląda jak każdy wyłączony przycisk — tekst w `text-disabled` o wadze
   `--font-weight-body`, ramka w `control-border`.
 - `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+  — przycisk w `positive` (D-44, D-39), czyli zwykły przycisk z tekstem w `positive`,
+  dziś „Odbierz” przy wierszu raportu z nieobecności (D-246): error i empty nie dotyczą, jak
+  przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk, który wysyła formularz.
+  Spoczynek: tekst w `positive`, ramka w `control-border`, bez wypełnienia; pod kursorem tło
+  `highlight`, a ramka i tekst bez zmiany; wyłączony — tekst w `text-disabled`, jak każdy
+  wyłączony przycisk. Fokus rysuje reguła Visible focus.
+- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
   — akcja poboczna (D-275): error
   i empty nie dotyczą, jak przycisku; loading nie dotyczy, bo na serwer czeka
   tylko przycisk, który wysyła formularz, a akcja poboczna jest wtedy
@@ -381,9 +388,9 @@ produktu, nie część tekstu styleguide'u. Buduje ją i otwiera lokalnie osobna
 komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
 w jej postaci DOM (D-269), w każdym stanie albo z powodem, dla którego stan
-nie dotyczy — przycisk także w głównym wyglądzie (D-274) i jako zakładkę
-wybraną i niewybraną (D-276), przycisk niszczący w spoczynku, pod kursorem
-i przy fokusie (D-44) — formularze
+nie dotyczy — przycisk także w głównym wyglądzie (D-274), jako zakładkę
+wybraną i niewybraną (D-276), w `positive` (D-44, D-39), przycisk niszczący
+w spoczynku, pod kursorem i przy fokusie (D-44) — formularze
 logowania i zakładania konta, „Nie pamiętam hasła” i „Ustaw nowe hasło”
 czekające na serwer i ze zdaniem odmowy pod nimi oraz formularz „Nie pamiętam
 hasła” ze zdaniem odpowiedzi na prośbę w `text` z belką (D-44),
@@ -402,13 +409,13 @@ tylko jej zostaje w tym module, bo w `src/browser/view/` trafiłby do wyniku
 
 ### Main button, secondary action and tab
 
-- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311
+- **Decision:** D-274 · D-275 · D-276 · D-277 · D-287 · D-311 · D-44 · D-39
 - **Invariant:** none
-- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym.
+- **Good:** „Wróć do logowania” pod formularzem „Nie pamiętam hasła” zrobione wspólną akcją poboczną, a „Wyloguj” w menu „Konto” — zwykłym wspólnym przyciskiem; „Wejdź” przy postaci w „Kto idzie” w głównym wyglądzie, a „Puść w pętlę” obok — zwykłym; „Odbierz” przy wierszu raportu w Siedzibie przyciskiem w `positive`, nie w głównym wyglądzie.
 - **Bad:** „Usuń” reguły programu narysowane jako podkreślony tekst albo formularz z dwoma przyciskami w głównym wyglądzie.
 
-Główny wygląd, akcja poboczna i zakładka to wyglądy wspólnego przycisku,
-każdy na swoim miejscu, które podaje ta reguła; ich stany podaje reguła
+Główny wygląd, akcja poboczna, zakładka i przycisk w `positive` to wyglądy wspólnego
+przycisku, każdy na swoim miejscu, które podaje ta reguła; ich stany podaje reguła
 States of shared controls.
 
 - Główny wygląd ma przycisk, który wysyła formularz, jeden na
@@ -422,6 +429,11 @@ States of shared controls.
   każdy wyłączony przycisk (reguła States of shared controls), a „Puść w
   pętlę” obok zostaje zwykłym przyciskiem. Działanie poza formularzem i poza
   „Wejdź” zostaje przy przycisku, który daje mu D-44.
+- Przycisk w `positive` (`kind: "positive"`) to zwykły przycisk z tekstem w `positive`;
+  jest nim tylko „Odbierz” przy wierszu raportu z nieobecności w Siedzibie, który wypłaca
+  czekającą wprawę (D-44, D-39, D-246). Nie jest głównym wyglądem, bo nie wysyła formularza
+  i nie jest „Wejdź” (D-274), a `positive` stoi na nim tylko jako tekst. Każde inne działanie
+  zostaje przy przycisku, który daje mu D-44.
 - Akcją poboczną (`kind: "secondary"`) jest tylko działanie, które otwiera
   albo opuszcza stan formularza i stoi pod tym formularzem — dziś „Nie
   pamiętam hasła”, „Wróć do logowania” i „Anuluj” karty logowania (D-275).
