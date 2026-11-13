@@ -142,7 +142,6 @@ const line = (characterId, over = {}) => ({
   characterId,
   minutes: 0,
   chest: {},
-  practice: {},
   resurrectionUsed: false,
   stop: null,
   ...over,
@@ -507,12 +506,8 @@ test("with room in the chest for one, the open game gives it to whoever complete
   assert.deepEqual(caught.team.chest.pieces, { moss: 57, stick: 3 });
   // Ala's own change is hers; Ola's turn found the chest full.
   assert.deepEqual(caught.awayReport, [
-    line(1, {
-      minutes: 2,
-      chest: { stick: 3 },
-      practice: { exploration: 1 },
-    }),
-    line(2, { minutes: 2, practice: { exploration: 1 } }),
+    line(1, { minutes: 2, chest: { stick: 3 } }),
+    line(2, { minutes: 2 }),
   ]);
   // The open game writes nothing for completions.
   assert.deepEqual(open.awayReport, []);
@@ -521,8 +516,8 @@ test("with room in the chest for one, the open game gives it to whoever complete
 // invariant: trip-transfer
 // invariant: trip-run-end
 // D-246: each character's own
-// change of the chest and the practice its loop gathered from completions in this catch-up.
-test("each character's line holds its own change of the chest and its own practice gain, with no zero kept", () => {
+// change of the chest; the practice its loop gathered stands at the loop and in no line (D-189).
+test("each character's line holds its own change of the chest with no zero kept, and the practice stays at the loop", () => {
   let state = looping({ moss: 57 });
   state = shortBy(state, 1, 1, { stick: 5 }, { smallItemGathering: 9 });
   state = shortBy(state, 2, 1, {}, {});
@@ -534,14 +529,10 @@ test("each character's line holds its own change of the chest and its own practi
   // and its next map run takes 2 of the sticks.
   assert.deepEqual(result.state.team.chest.pieces, { moss: 57, stick: 1 });
   assert.deepEqual(result.state.awayReport, [
-    line(1, {
-      minutes: 1,
-      chest: { stick: 3 },
-      practice: { smallItemGathering: 9, exploration: 1 },
-    }),
-    line(2, { minutes: 1, chest: { stick: -2 }, practice: { exploration: 1 } }),
+    line(1, { minutes: 1, chest: { stick: 3 } }),
+    line(2, { minutes: 1, chest: { stick: -2 } }),
   ]);
-  // The loop's earlier practice (eating 3) is not a gain of this catch-up.
+  // What the loop waits to pay is the practice it held before and what the completion added.
   assert.deepEqual(result.state.loops[1].practice, {
     eating: 3,
     smallItemGathering: 9,
@@ -572,7 +563,7 @@ test("a covered death in the catch-up gives the loop its next map run with nothi
 });
 
 // D-240, D-246: a loop a death stopped opens its line at any number of game minutes.
-test("a loop that stops in the catch-up writes its line with the minutes it worked, no practice and the generation, and the others go on", () => {
+test("a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the others go on", () => {
   let state = notReadyUntil(looping(), 1, S + 10_000 * MIN);
   state = changingLoop(state, 1, { practice: { eating: 3 } });
   const result = catchUp(state, S + 300 * MIN);
@@ -619,7 +610,6 @@ test("a further return adds to the line of a loop still going, and its chest cha
       line(2, {
         minutes: 4,
         chest: { stick: -2, berry: 1 },
-        practice: { exploration: 1 },
         resurrectionUsed: true,
       }),
     ],
@@ -627,12 +617,11 @@ test("a further return adds to the line of a loop still going, and its chest cha
   state = shortBy(state, 2, 1, { stick: 2 }, { eating: 1 });
   state = withProgram(state, 2, withTrip(EMPTY, [], [entry("stick", 2)]));
   const result = catchUp(state, S + MIN);
-  // Ola completes: +2 sticks, which with the earlier −2 leaves none; the practice adds up.
+  // Ola completes: +2 sticks, which with the earlier −2 leaves none.
   assert.deepEqual(result.state.awayReport, [
     line(2, {
       minutes: 5,
       chest: { berry: 1 },
-      practice: { exploration: 2, eating: 1 },
       resurrectionUsed: true,
     }),
     line(1, { minutes: 1 }),
@@ -678,11 +667,10 @@ test("a loop that stops in the open game writes a line of 0 minutes, and a cover
   assert.equal(completed.state.loops[1].completed, 1);
 });
 
-test("a loop that stops in the open game closes the line of an earlier return, which then reads without minutes and keeps no practice", () => {
+test("a loop that stops in the open game closes the line of an earlier return, which then reads without minutes", () => {
   const earlier = line(1, {
     minutes: 10,
     chest: { stick: 2 },
-    practice: { eating: 1 },
     resurrectionUsed: true,
   });
   const state = {
@@ -693,7 +681,6 @@ test("a loop that stops in the open game closes the line of an earlier return, w
   assert.deepEqual(result.state.awayReport, [
     {
       ...earlier,
-      practice: {},
       stop: { generation: 2, away: false },
     },
     line(2, { minutes: 3 }),
@@ -702,7 +689,7 @@ test("a loop that stops in the open game closes the line of an earlier return, w
 });
 
 test("a stop in the catch-up closes the line of an earlier return with the minutes added", () => {
-  const earlier = line(1, { minutes: 10, practice: { eating: 1 } });
+  const earlier = line(1, { minutes: 10, chest: { stick: 2 } });
   const state = {
     ...notReadyUntil(looping(), 1, S + 9_999 * MIN),
     awayReport: [earlier],
@@ -711,7 +698,6 @@ test("a stop in the catch-up closes the line of an earlier return with the minut
   assert.deepEqual(result.state.awayReport[0], {
     ...earlier,
     minutes: 10 + COLD_DEATH_MINUTE,
-    practice: {},
     stop: { generation: 2, away: true },
   });
   assertLoadsBack(result.state, "a stop added to an earlier line");

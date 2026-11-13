@@ -1724,7 +1724,7 @@ const OTHER_ACCOUNT = {
 };
 
 /** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 4;
+const VERSION = 5;
 /** A version older than `VERSION`, which D-206 makes another version. */
 const OLDER_VERSION = 2;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
@@ -3468,7 +3468,6 @@ function reported(rest = {}) {
         characterId: 1,
         minutes: 5,
         chest: { stick: 3 },
-        practice: {},
         resurrectionUsed: false,
         stop: null,
       },
@@ -3476,7 +3475,6 @@ function reported(rest = {}) {
         characterId: 2,
         minutes: 2,
         chest: {},
-        practice: {},
         resurrectionUsed: false,
         stop: { generation: 2, away: true },
       },
@@ -3531,7 +3529,6 @@ test("only stops in the open game give „Pętle, które stanęły”, and a ful
           characterId: 2,
           minutes: 0,
           chest: {},
-          practice: {},
           resurrectionUsed: false,
           stop: { generation: 3, away: false },
         },
@@ -3585,6 +3582,58 @@ test("„Zamknij” closes the whole section at once, saves, and focus stays on 
     );
     assert.ok(shown(focused), "focus is on something on the screen");
     assert.ok(byClass(root, "headquarters")[0].contains(focused));
+    await inAct(() => view.dispose());
+  });
+});
+
+// D-207, D-189, D-246: „Odbierz” pays the practice waiting at once and the game saves it, the loop
+// and its map run going on stay, and the line stays with its minutes while the part about practice
+// and the button are gone.
+test("„Odbierz” pays the practice waiting, saves at once, leaves the loop and the line, and the button goes", async () => {
+  await onPage(async ({ root }) => {
+    const base = alaLoopingOlaFree();
+    const state = {
+      ...base,
+      loops: { 1: { ...base.loops[1], practice: { eating: 4 } } },
+      awayReport: [
+        {
+          characterId: 1,
+          minutes: 5,
+          chest: {},
+          resurrectionUsed: false,
+          stop: null,
+        },
+      ],
+    };
+    const eatingBefore = state.team.characters[0].skills.eating.practice;
+    const { view, held } = await viewOf(state);
+    const [line] = byClass(reportSection(root), "away-report-text");
+    assert.equal(
+      line.textContent,
+      "Ala: 5 min · wprawa do odebrania: Jedzenie +4",
+    );
+    await press(buttonLabelled(reportSection(root), "Odbierz: Ala"));
+    assert.deepEqual(waitingCalls(held), ["saveGame"]);
+    const saved = argsOf(held, "saveGame")[0].game;
+    assert.equal(
+      saved.team.characters[0].skills.eating.practice,
+      eatingBefore + 4,
+    );
+    assert.deepEqual(saved.loops[1].practice, {});
+    assert.deepEqual(saved.loops[1].run.minute, state.loops[1].run.minute);
+    assert.equal(saved.awayReport.length, 1);
+    assert.equal(
+      byClass(reportSection(root), "away-report-text")[0].textContent,
+      "Ala: 5 min",
+    );
+    assert.ok(
+      !all(reportSection(root)).some(
+        (element) =>
+          element.localName === "button" && element.textContent === "Odbierz",
+      ),
+      "no button „Odbierz” stands",
+    );
+    assert.ok(shown(byClass(reportSection(root), "away-report-line")[0]));
     await inAct(() => view.dispose());
   });
 });

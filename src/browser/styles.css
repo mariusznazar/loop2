@@ -382,9 +382,10 @@ header .failure-line {
  * under the pointer the background `highlight` with frame and text role unchanged; focus by the
  * one :focus-visible rule above; disabled text in `text-disabled`. Loading is the state of a
  * control that waits for a server: the button disabled under a changed text and the fields of its
- * form disabled, which the disabled rules below draw (D-44). The button has four looks beside the
- * plain one: the destructive button, the button selected in its group, the secondary action and
- * the tab, each below, and the main look of the button that sends a form or is of the kind `main`.
+ * form disabled, which the disabled rules below draw (D-44). The button has five looks beside the
+ * plain one: the destructive button, the button in `positive`, the button selected in its group,
+ * the secondary action and the tab, each below, and the main look of the button that sends a form
+ * or is of the kind `main`.
  */
 .button,
 .select-list,
@@ -414,6 +415,16 @@ header .failure-line {
 .button.destructive:hover:not(:disabled),
 .button.destructive:focus-visible {
   color: var(--danger);
+}
+
+/*
+ * The button in `positive`: „Odbierz” in the report on earning loops, which pays the practice
+ * waiting (D-44, D-39). The plain button with its text in `positive` at rest and under the
+ * pointer, which adds only the background `highlight` from the rule below; disabled, it looks as
+ * every disabled button does, which the disabled rule below draws.
+ */
+.button.positive {
+  color: var(--positive);
 }
 
 /* The button selected in its group (D-40). */
@@ -1359,6 +1370,10 @@ header .failure-line {
 }
 
 .away-report-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
   margin-bottom: var(--space-xs);
 }
 

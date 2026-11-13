@@ -22,6 +22,8 @@ import {
   passLoops,
   startLoop,
   stopLoop,
+  takeLoopPractice,
+  waitingPractice,
 } from "../../dist/browser/sim/loop.js";
 import { deleteProgram, editProgram } from "../../dist/browser/sim/programs.js";
 import { mixSeed, nextSeed } from "../../dist/browser/sim/random.js";
@@ -871,6 +873,170 @@ test("stopping a loop whose map run ended in death pays only the loop's own prac
   );
   assert.equal(stopLoop(stopped, 1).state, stopped);
   assert.equal(stopLoop(stopped, 2).state, stopped);
+});
+
+// invariant: loop-practice-payment
+// D-189, D-246: „Odbierz” pays all the practice waiting, the map run going on included, and leaves
+// the map run, its backpack, the loop and the chest as they were.
+test("taking the practice pays what the loop and its map run going on gathered, empties both and changes nothing else", () => {
+  const program = withTrip(EMPTY, [], [entry("stick", 3)]);
+  let state = holding(looping(program, { berry: 1 }), {
+    smallItemGathering: 40,
+    exploration: 2,
+  });
+  state = changingRun(state, 1, {
+    practice: { smallItemGathering: 5, eating: 1 },
+    character: {
+      ...state.loops[1].run.character,
+      backpack: { ...state.loops[1].run.character.backpack, stick: 3 },
+    },
+  });
+  assert.deepEqual(waitingPractice(state.loops[1]), {
+    smallItemGathering: 45,
+    exploration: 2,
+    eating: 1,
+  });
+  const before = ala(state).skills;
+  const result = takeLoopPractice(state, 1);
+  const after = result.state;
+  assert.deepEqual(result.events, []);
+  const skills = ala(after).skills;
+  assert.equal(
+    skills.smallItemGathering.practice,
+    before.smallItemGathering.practice + 45,
+  );
+  assert.equal(skills.exploration.practice, before.exploration.practice + 2);
+  assert.equal(skills.eating.practice, before.eating.practice + 1);
+  const loop = after.loops[1];
+  assert.deepEqual(loop.practice, {});
+  assert.deepEqual(loop.run.practice, {});
+  assert.deepEqual(waitingPractice(loop), {});
+  // The map run, its backpack, the counts, the program, the chest and the seed stay as they were.
+  assert.deepEqual(loop.run, { ...state.loops[1].run, practice: {} });
+  assert.deepEqual(loop.program, state.loops[1].program);
+  assert.equal(loop.runNumber, state.loops[1].runNumber);
+  assert.equal(loop.completed, state.loops[1].completed);
+  assert.deepEqual(after.team.chest, state.team.chest);
+  assert.equal(after.lastSeed, state.lastSeed);
+  assert.deepEqual(after.stoppedLoops, {});
+});
+
+// invariant: loop-practice-payment
+// D-246: „Odbierz” never pays the same practice twice, not at the completion of the map run it was
+// taken in the middle of, nor at the stop after it.
+test("practice taken is paid once: the completion of the map run it was taken in adds only what came after, and so does the stop", () => {
+  let state = holding(oneShort(looping(), {}, { smallItemGathering: 9 }), {
+    smallItemGathering: 40,
+  });
+  const start = ala(state).skills;
+  state = takeLoopPractice(state, 1).state;
+  assert.equal(
+    ala(state).skills.smallItemGathering.practice,
+    start.smallItemGathering.practice + 49,
+  );
+  // The map run completes in its next game minute, whose exploration is the one practice after.
+  const completed = passedAndEnded(state).state;
+  assert.equal(completed.loops[1].completed, 1);
+  assert.deepEqual(completed.loops[1].practice, { exploration: 1 });
+  assert.deepEqual(waitingPractice(completed.loops[1]), { exploration: 1 });
+  const stopped = stopLoop(completed, 1).state;
+  assert.deepEqual(stopped.stoppedLoops, { 1: { exploration: 1 } });
+  const end = ala(stopped).skills;
+  assert.equal(
+    end.smallItemGathering.practice,
+    start.smallItemGathering.practice + 49,
+  );
+  assert.equal(end.exploration.practice, start.exploration.practice + 1);
+});
+
+// invariant: loop-practice-payment
+test("taking the practice twice in a row pays it once, and a loop with nothing waiting or a character with no loop leaves the very state", () => {
+  const state = holding(looping(), { eating: 2 });
+  const taken = takeLoopPractice(state, 1).state;
+  assert.equal(ala(taken).skills.eating.practice, 2);
+  const idle = looping();
+  // Nothing waiting (twice in a row, an idle loop) and no loop (a character with none, one not in
+  // the team) give the very state and no event: „Odbierz” that pays nothing is no event.
+  for (const [name, before, id] of [
+    ["a second take", taken, 1],
+    ["a loop with nothing waiting", idle, 1],
+    ["a character with no loop", idle, 2],
+    ["a character not in the team", idle, 9],
+  ]) {
+    const result = takeLoopPractice(before, id);
+    assert.equal(result.state, before, name);
+    assert.deepEqual(result.events, [], name);
+  }
+});
+
+test("taking the practice while the map run has ended in death pays only the loop's own practice and leaves that map run as it ended", () => {
+  const state = holding(
+    changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
+    { smallItemGathering: 40 },
+  );
+  const dead = advanceLoopRun(state, 1, 1).state;
+  const taken = takeLoopPractice(dead, 1).state;
+  assert.equal(
+    ala(taken).skills.smallItemGathering.practice,
+    ala(dead).skills.smallItemGathering.practice + 40,
+  );
+  assert.equal(
+    ala(taken).skills.eating.practice,
+    ala(dead).skills.eating.practice,
+  );
+  assert.deepEqual(taken.loops[1].practice, {});
+  assert.equal(taken.loops[1].run, dead.loops[1].run);
+});
+
+test("taking the practice of one character leaves the loop and the skills of another as they were", () => {
+  let state = startLoop(
+    looping(),
+    { mapId: "forest", characterId: 2 },
+    T0 + 1,
+  ).state;
+  state = holding(state, { eating: 4 });
+  state = {
+    ...state,
+    loops: {
+      ...state.loops,
+      2: { ...state.loops[2], practice: { exploration: 6 } },
+    },
+  };
+  const taken = takeLoopPractice(state, 1).state;
+  assert.equal(taken.loops[2], state.loops[2]);
+  assert.deepEqual(taken.team.characters[1], state.team.characters[1]);
+  assert.equal(ala(taken).skills.eating.practice, 4);
+});
+
+// invariant: death-settled-once
+// D-190: practice taken is the character's practice, so a death with no resurrection ready takes it
+// with the rest, and a death a resurrection covers leaves it.
+test("practice taken stays through a death a resurrection covers and goes with a death with none ready", () => {
+  let state = holding(looping(), { smallItemGathering: 30 });
+  state = takeLoopPractice(state, 1).state;
+  const taken = ala(state).skills.smallItemGathering.practice;
+  assert.equal(taken, 30);
+  const covered = passedAndEnded(dyingNext(state)).state;
+  assert.equal(ala(covered).skills.smallItemGathering.practice, 30);
+  assert.equal(ala(covered).generation, 1);
+  const uncovered = passedAndEnded(
+    changing(dyingNext(state), 1, { resurrectionReadyAtMs: T0 + 1 }),
+  ).state;
+  assert.equal(ala(uncovered).skills.smallItemGathering.practice, 0);
+  assert.equal(ala(uncovered).generation, 2);
+});
+
+test("after a death a resurrection covers the loop waits for none of the practice the dead map run gathered", () => {
+  let state = holding(
+    changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
+    { smallItemGathering: 40 },
+  );
+  assert.deepEqual(waitingPractice(state.loops[1]), {
+    smallItemGathering: 40,
+    eating: 7,
+  });
+  state = passedAndEnded(state).state;
+  assert.deepEqual(waitingPractice(state.loops[1]), { smallItemGathering: 40 });
 });
 
 // Ola (2) is the second character of the team and her loop stops at its death, with no resurrection

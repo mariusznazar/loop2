@@ -25,7 +25,7 @@ import {
   suggestedProgramName,
   switchProgram,
 } from "../sim/programs.js";
-import { closeAwayReport, stopLoop } from "../sim/loop.js";
+import { closeAwayReport, stopLoop, takeLoopPractice } from "../sim/loop.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { CharacterId, GameState, MapId, ProgramId } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
@@ -444,7 +444,7 @@ export function createGameView(options: GameViewOptions): GameView {
     return { state, nowMs: clock.moment() };
   }
 
-  // What Siedziba asks for: the three acts of its screen. Each goes to the simulation, which checks
+  // What Siedziba asks for: the acts of its screen. Each goes to the simulation, which checks
   // it; the reading of the clock is made first where the act depends on real time.
   const headquarters = createHeadquarters({
     controls: {
@@ -458,6 +458,10 @@ export function createGameView(options: GameViewOptions): GameView {
       closeReport() {
         clock.flush();
         act(closeAwayReport(state));
+      },
+      takePractice(characterId) {
+        clock.flush();
+        act(takeLoopPractice(state, characterId));
       },
     },
     props: headquartersProps(),

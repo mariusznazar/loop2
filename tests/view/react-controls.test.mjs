@@ -263,6 +263,23 @@ test("a destructive button with an accessible name is the same element in both f
   });
 });
 
+// The kind `positive` (D-44, D-39): „Odbierz”, the plain button with its text in `positive`, draws
+// the class `positive` beside `button`, in both forms.
+test("a button in positive is the same element in both forms, of the type button with the class positive", async () => {
+  await withPage(async ({ document }) => {
+    const drawing = await drawn(
+      document,
+      createElement(ReactButton, { text: "Odbierz", kind: "positive" }),
+    );
+    const { firstElementChild: button } = drawing.container;
+    assert.equal(button.getAttribute("type"), "button");
+    assert.equal(button.getAttribute("class"), "button positive");
+    const expected = createButton("Odbierz", { kind: "positive" });
+    assert.equal(expected.getAttribute("class"), "button positive");
+    assert.deepEqual(drawnTree(drawing), domTree(document, expected));
+  });
+});
+
 // The kind `main` (D-274): the main look of a button that sends no form, such as „Wejdź” at a
 // character in the card of a map. It is a button of the type `button`, never `submit`, with the
 // class `main`, which styles.css draws as it draws a form's submit button.

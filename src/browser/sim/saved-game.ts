@@ -75,7 +75,7 @@ import type {
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
  * `GameState` or a type it reaches, and of the items of the data, which `Backpack` enumerates.
  */
-export const SAVED_GAME_VERSION = 4;
+export const SAVED_GAME_VERSION = 5;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -1144,7 +1144,6 @@ function reportLine(value: unknown, records: Records): AwayReportLine {
     "characterId",
     "minutes",
     "chest",
-    "practice",
     "resurrectionUsed",
     "stop",
   ]);
@@ -1158,7 +1157,6 @@ function reportLine(value: unknown, records: Records): AwayReportLine {
     characterId,
     minutes,
     chest: chestChange(read.chest),
-    practice: practice(read.practice),
     resurrectionUsed: flag(read.resurrectionUsed),
     stop,
   };
