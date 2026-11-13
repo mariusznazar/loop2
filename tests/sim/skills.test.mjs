@@ -110,9 +110,9 @@ test("all cumulative thresholds of D-379 grant exactly one point and level each,
     campfireCrafting: [20, 55, 110, 190],
     flameSpell: [2, 6, 14],
     exploration: [15, 45, 100, 200],
-    oneHandedCombat: [30, 90, 200],
-    kicking: [20],
-    dodging: [10, 30],
+    oneHandedCombat: [15, 40, 100, 300],
+    kicking: [10, 30],
+    dodging: [4, 15],
     eating: [15, 40, 80],
   };
   for (const [id, thresholds] of Object.entries(expected)) {
@@ -156,10 +156,27 @@ test("purchases charge successive costs in one skill, cannot overspend or exceed
   );
   assert.deepEqual(state.team.characters[1], original.team.characters[1]);
   let kicking = buyBranch(headquarters(), 1, "heavierKick").state;
+  kicking = buyBranch(kicking, 1, "heavierKick").state;
+  assert.equal(branchRank(kicking.team.characters[0].skills, "heavierKick"), 2);
   assert.equal(buyBranch(kicking, 1, "heavierKick").state, kicking);
   let flame = buyBranch(headquarters(), 1, "cleanFlame").state;
   assert.equal(buyBranch(flame, 1, "cleanFlame").state, flame);
   assert.deepEqual(input, original);
+});
+
+test("Mocniejszy cios has four ranks at one point each, and its fifth purchase is refused", () => {
+  let state = headquarters();
+  for (let count = 0; count < 4; count++)
+    state = buyBranch(state, 1, "strongerStrike").state;
+  assert.equal(
+    branchRank(state.team.characters[0].skills, "strongerStrike"),
+    4,
+  );
+  assert.equal(
+    skillProgress(state.team.characters[0].skills, "oneHandedCombat").points,
+    0,
+  );
+  assert.equal(buyBranch(state, 1, "strongerStrike").state, state);
 });
 
 test("unknown trees, unknown characters, no skill and every retained run refuse purchase", () => {
@@ -459,9 +476,9 @@ test("crafting, feeding, item lighting and eating grant one only when their effe
 
 test("combat practice counts damaging effects and effective dodges, not last or unused dodge requests", () => {
   const stick = {
-    ...base(ranks("oneHandedCombat", { strongerStrike: 3 })),
+    ...base(ranks("oneHandedCombat", { strongerStrike: 4 })),
     character: {
-      ...base(ranks("oneHandedCombat", { strongerStrike: 3 })).character,
+      ...base(ranks("oneHandedCombat", { strongerStrike: 4 })).character,
       backpack: { stick: 1, berry: 0, moss: 0, fiber: 0 },
     },
   };
@@ -471,7 +488,7 @@ test("combat practice counts damaging effects and effective dodges, not last or 
     "wolf",
     program({ kind: "strikeWithStick" }),
   );
-  assert.equal(hit.exchanges[0].characterAction.damage, 12);
+  assert.equal(hit.exchanges[0].characterAction.damage, 14);
   assert.deepEqual(hit.practice, { oneHandedCombat: 2 });
   const kick = resolveCombat(
     base(ranks("kicking", { heavierKick: 1 }, 20)),
@@ -498,7 +515,7 @@ test("combat practice counts damaging effects and effective dodges, not last or 
 });
 
 test("the combat resolution minute adds its successful strikes to the run's earlier practice", () => {
-  // D-379: 6 + 3*2 = 12 damage, so two strikes defeat the 24-health wolf.
+  // D-379: 6 + 4*2 = 14 damage, so two strikes defeat the 24-health wolf.
   // The two effects add to three earlier strikes, while seven gathers stay seven.
   const run = newMapRun(
     MAPS.forestDeep,
@@ -506,7 +523,7 @@ test("the combat resolution minute adds its successful strikes to the run's earl
     empty,
     { ...ids, mapId: "forestDeep" },
     undefined,
-    ranks("oneHandedCombat", { strongerStrike: 3 }, 200),
+    ranks("oneHandedCombat", { strongerStrike: 4 }, 300),
   ).run;
   const fixture = {
     ...run,
