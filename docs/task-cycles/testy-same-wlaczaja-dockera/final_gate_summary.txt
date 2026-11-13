@@ -1,0 +1,20 @@
+start 21:12:09
+...
+start 21:12:09
+{"failure":"request","kind":"Error","code":"none","place":"app.errors"}
+✔ each distinct line goes to the account client once per page load, after its console line, for errors and rejections alike (19.985ms)
+== tests/agent_workflow
+Ran 14 tests in 2.223s
+OK
+== tests/deploy
+Ran 231 tests in 954.984s
+OK
+== tests/invariants
+Ran 257 tests in 1310.371s
+OK
+== tests/quality
+Ran 51 tests in 123.654s
+OK
+553 tests in 4 directories; every directory passed
+0 errors
+EXIT 0 21:53:17
