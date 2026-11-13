@@ -1,4 +1,8 @@
-"""Run the complete gate, or exactly one Node or Python test file (D-77)."""
+"""Run the complete gate, or exactly one Node or Python test file (D-77).
+
+A run gives the Python tests one state file of `docker_gate`, so that a test that needs Docker
+starts Docker Desktop when no daemon answers, and a start that did not finish is awaited once.
+"""
 
 import importlib.util
 import os
@@ -6,6 +10,8 @@ from pathlib import Path
 import subprocess
 import sys
 import unittest
+
+import docker_gate
 
 ROOT = Path(__file__).resolve().parents[1]
 NODE_TESTS = ["tests/*.test.mjs", "tests/sim/*.test.mjs", "tests/view/*.test.mjs"]
@@ -67,4 +73,6 @@ def main(arguments):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    with docker_gate.shared_state():
+        status = main(sys.argv[1:])
+    sys.exit(status)

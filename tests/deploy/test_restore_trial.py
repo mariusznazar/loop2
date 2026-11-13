@@ -35,6 +35,7 @@ import uuid
 from tests.deploy import test_account_storage as storage
 from tests.invariants import account_container_support as support
 from tests.invariants import loop2_invariant_support as compose
+from scripts import docker_gate
 
 LAUNCHER = os.path.join(support.ROOT, "scripts", "restore-trial.mjs")
 DOCKER_STANDIN = pathlib.Path(__file__).with_name("restore-trial-docker-standin.mjs").as_uri()
@@ -364,9 +365,8 @@ class RunOnARealBackup(unittest.TestCase):
         self.assertEqual(leftovers(), [], "the launcher left a container or a volume")
 
     def test_pass_fail_on_wrong_password_fail_on_absent_marker_and_interruption(self):
-        if not storage.docker_answers():
-            self.skipTest("no Docker daemon answers; whether the launcher restores a backup, "
-                          "judges it and removes its container and volumes stays unchecked")
+        docker_gate.require_daemon(self, "whether the launcher restores a backup, judges it and "
+                                         "removes its container and volumes stays unchecked")
         tag = "loop2-restore-trial-check:" + uuid.uuid4().hex[:12]
         self.addCleanup(storage.docker_run, "image", "rm", "-f", tag)
         self.addCleanup(remove_leftovers)

@@ -27,6 +27,7 @@ import uuid
 
 from tests.invariants import account_container_support as support
 from tests.deploy import test_account_storage as storage
+from scripts import docker_gate
 
 WORD = "--to-standard-output"
 EMAIL = "backup-stream-check@example.com"
@@ -51,9 +52,8 @@ LIST_TEMPORARY = "console.log(JSON.stringify(require('node:fs').readdirSync('/tm
 class BackupBytesThroughDockerExec(unittest.TestCase):
 
     def test_bytes_of_docker_exec_without_a_terminal_open_as_the_database(self):
-        if not storage.docker_answers():
-            self.skipTest("no Docker daemon answers; whether the bytes of `docker exec` open as "
-                          "the database stays unchecked")
+        docker_gate.require_daemon(self, "whether the bytes of `docker exec` open as the database "
+                                         "stays unchecked")
         suffix = uuid.uuid4().hex[:12]
         tag = "loop2-backup-stream-check:" + suffix
         self.addCleanup(storage.docker_run, "image", "rm", "-f", tag)
