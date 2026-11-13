@@ -1516,3 +1516,34 @@ test("the wolf's files hold pixels alone, in frames of 64 × 32 with the feet on
   assert.ok(first.height > 25, "the first frame stands");
   assert.ok(last.width > last.height * 2, "the last frame lies");
 });
+
+// D-271, D-273, D-389. The camp's two files hold pixels alone and are the pictures of the data in size: the
+// clearing 672 × 48, which at twice its pixels is the widest content of 1344 px and a band of 96 px (D-280,
+// D-349, D-389), with no clear pixel, the chest only fully opaque or fully clear pixels (the pack's own).
+// Catches a file re-exported with a chunk that carries text or a colour profile, and a file of another size.
+// Where the pixels come from is not tested: they are the pack's own pixels, which only the source sheet shows.
+test("the camp's files hold pixels alone, in the size of the data", () => {
+  const clearing = decodePng(CAMP.background.file);
+  const chest = decodePng(CAMP.chest.file);
+  for (const [name, image] of [
+    ["the clearing", clearing],
+    ["the chest", chest],
+  ])
+    assert.deepEqual(
+      image.types,
+      ["IHDR", "IDAT", "IEND"],
+      `${name}: pixels alone`,
+    );
+  assert.deepEqual([clearing.width, clearing.height], [672, 48]);
+  assert.deepEqual([chest.width, chest.height], [26, 21]);
+  assert.equal(
+    clearing.pixels.flat().every((pixel) => pixel[3] === 255),
+    true,
+    "the clearing has no clear pixel",
+  );
+  assert.equal(
+    chest.pixels.flat().every((pixel) => pixel[3] === 0 || pixel[3] === 255),
+    true,
+    "the chest has no half-clear pixel",
+  );
+});
