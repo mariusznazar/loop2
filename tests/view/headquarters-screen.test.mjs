@@ -1,4 +1,4 @@
-// The screen Siedziba in React (D-282, D-246, D-217, D-218, D-244, D-245, D-184, D-51, D-330) on
+// The screen Siedziba in React (D-282, D-246, D-217, D-218, D-244, D-245, D-184, D-51, D-330, D-389) on
 // jsdom through tests/view/page-document.mjs (D-264): which elements the screen builds, what it
 // shows of the game state and of the clock's moment, what its acts hand the page, and that
 // nothing on it sends a character. Real focus order, Enter in a field and rendering are the browser
@@ -9,7 +9,8 @@ import {
   ARCHETYPES,
   CREATED_ARCHETYPE,
 } from "../../dist/browser/sim/data/archetypes.js";
-import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import { createHeadquarters } from "../../dist/browser/view/headquarters.js";
 
 // --- the page ------------------------------------------------------------------------------
@@ -612,6 +613,143 @@ test("the field keeps its element, its text and its focus, and the button its fo
     await inAct(() => screen.update(propsOf(newGame(), NOW + 2 * HOUR)));
     assert.equal(buttonNamed(page.root, "Załóż"), button, "the same button");
     assert.equal(globalThis.document.activeElement, button);
+  });
+});
+
+// --- the camp --------------------------------------------------------------------------------
+
+/** The elements of the characters the camp draws. */
+const campMembers = (root) => all(root, ".camp .camp-member");
+
+/** `state` with its character `id` sent into a map run, going. */
+const sentInto = (state, id) =>
+  send(state, { mapId: Object.keys(MAPS)[0], characterId: id }, NOW).state;
+
+// Catches the band standing inside the screen's panel (narrower than the content, with its padding), under
+// the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the
+// text of the screen is the text of its panel, so the band adds none.
+test("the camp stands over the panel of the screen, the heading under it, and adds no text", async () => {
+  await withPage(async (page) => {
+    const { screen } = await mount(page, propsOf(teamOf(2)));
+    const camp = screen.element.firstElementChild;
+    assert.ok(camp.classList.contains("camp"));
+    assert.equal(
+      camp.nextElementSibling,
+      page.root.querySelector(".headquarters"),
+    );
+    assert.equal(camp.querySelector("h2, h3"), null);
+    assert.equal(
+      screen.element.textContent,
+      page.root.querySelector(".headquarters").textContent,
+    );
+    assert.equal(camp.textContent, "");
+  });
+});
+
+// Catches the camp made a control: a link, a button or a field in it, a stop in the keyboard's order, a name
+// for a reader, or a picture a reader would announce (D-272, D-321): the screen's names in „Drużyna” lead
+// to the character (D-280), the camp leads nowhere.
+test("the camp is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
+  await withPage(async (page) => {
+    const { screen, calls } = await mount(page, propsOf(teamOf(3)));
+    const camp = page.root.querySelector(".camp");
+    assert.equal(camp.getAttribute("aria-hidden"), "true");
+    assert.equal(
+      camp.querySelectorAll(
+        "a, button, input, select, textarea, [tabindex], [role]",
+      ).length,
+      0,
+    );
+    const pictures = all(camp, "img");
+    assert.ok(
+      pictures.length >= 1 + 1 + 1 + 3,
+      "the clearing, the fire, the chest, three characters",
+    );
+    for (const picture of pictures)
+      assert.equal(picture.getAttribute("alt"), "");
+    const before = camp.innerHTML;
+    for (const part of [
+      ".camp-member",
+      ".camp-fire",
+      ".camp-chest",
+      ".camp-background",
+    ])
+      await press(camp.querySelector(part));
+    assert.deepEqual(calls, []);
+    assert.equal(camp.innerHTML, before);
+    assert.equal(screen.element.querySelector(".camp"), camp);
+  });
+});
+
+// Catches a camp drawn at the size of its picture, or at a fraction of twice it, where the pixels of the
+// picture would come out unequal and shake in motion (D-349): the band is 96 px high, its clearing 672 × 48
+// pixels of picture drawn at 1344 × 96, the fire of 32 × 32 at 64 × 64, a character's cell 32 wide at 64.
+test("the camp is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
+  await withPage(async (page) => {
+    await mount(page, propsOf(teamOf(1)));
+    const camp = page.root.querySelector(".camp");
+    assert.equal(camp.style.height, "96px");
+    const clearing = camp.querySelector(".camp-background");
+    assert.equal(clearing.getAttribute("width"), "1344");
+    assert.equal(clearing.getAttribute("height"), "96");
+    const box = (selector) => {
+      const { width, height } = camp.querySelector(selector).style;
+      return [width, height];
+    };
+    assert.deepEqual(box(".camp-fire"), ["64px", "64px"]);
+    assert.deepEqual(box(".camp-chest"), ["52px", "42px"]);
+    assert.deepEqual(box(".camp-member"), ["64px", "96px"]);
+    assert.deepEqual(box(".camp-member-sprite"), ["128px", "128px"]);
+  });
+});
+
+// Catches a screen that does not read the manual map run, which the camp needs: with it the picture would
+// change only at a change of the team or of a loop, and not at „Wejdź” and „Zakończ”. Every change of the
+// four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the camp at once, and „Drużyna” still lists all.
+test("the camp follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
+  await withPage(async (page) => {
+    const state = teamOf(3);
+    const { screen } = await mount(page, propsOf(state));
+    const names = () =>
+      all(page.root, ".team-member-name").map((n) => n.textContent);
+    const standing = () => campMembers(page.root).length;
+    assert.equal(standing(), 3);
+    const first = campMembers(page.root)[0];
+
+    // „Wejdź” for Ola: a map run begins, and the character goes out of the camp.
+    const entered = sentInto(state, 2);
+    await inAct(() => screen.update(propsOf(entered)));
+    assert.equal(standing(), 2);
+    assert.deepEqual(names(), ["Ala", "Ola", "Ela"]);
+    assert.equal(
+      campMembers(page.root)[0],
+      first,
+      "the character that stays is the same element",
+    );
+
+    // The run goes on: a game minute changes nothing the camp shows.
+    await inAct(() =>
+      screen.update(
+        propsOf({
+          ...entered,
+          run: { ...entered.run, minute: entered.run.minute + 1 },
+        }),
+      ),
+    );
+    assert.equal(standing(), 2);
+
+    // „Zakończ”: the run is gone, the character is back.
+    await inAct(() => screen.update(propsOf({ ...entered, run: null })));
+    assert.equal(standing(), 3);
+
+    // „Puść w pętlę” for Ela, then „Zatrzymaj”.
+    await inAct(() => screen.update(propsOf({ ...state, loops: { 3: LOOP } })));
+    assert.equal(standing(), 2);
+    assert.deepEqual(names(), ["Ala", "Ola", "Ela"]);
+    await inAct(() =>
+      screen.update(propsOf({ ...state, stoppedLoops: { 3: { eating: 4 } } })),
+    );
+    assert.equal(standing(), 3);
   });
 });
 

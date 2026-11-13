@@ -1,13 +1,15 @@
 /**
- * The screen Siedziba (D-282, D-51, D-54, D-246, D-217, D-218, D-244, D-245, D-184, D-330): under
- * its heading the report on earning loops „Gdy cię nie było” or „Pętle, które stanęły” while it
- * holds a line, with „Zamknij”; the section „Drużyna” with its heading, at each character in the
- * order of creation its name as a link to its screen Postać, its generation „pokolenie {n}” from 2
- * up, its archetype, its resurrection line, the line of its earning loop with „Zatrzymaj” or the
- * line of a stopped loop, and the creation of a character; the section „Skrzynka {n}/{cap}”
- * with the team's chest; and, last on the screen, the folded section of credits of the game's
- * icons „Autorzy grafiki” (D-27). The screen sends nobody and leads to no map: a character is sent from the
- * card of a map on the screen Mapy, which the bar's „Mapy” opens (D-53, D-330).
+ * The screen Siedziba (D-282, D-51, D-54, D-246, D-217, D-218, D-244, D-245, D-184, D-330, D-389): at
+ * the top, over the screen's panel, the camp, a picture of the campfire, the chest and the characters
+ * that are in Siedziba (`camp.tsx`); in the panel, under its heading the report on earning loops
+ * „Gdy cię nie było” or „Pętle, które stanęły” while it holds a line, with „Zamknij”; the section
+ * „Drużyna” with its heading, at each character in the order of creation its name as a link to its
+ * screen Postać, its generation „pokolenie {n}” from 2 up, its archetype, its resurrection line, the
+ * line of its earning loop with „Zatrzymaj” or the line of a stopped loop, and the creation of a
+ * character; the section „Skrzynka {n}/{cap}” with the team's chest; and, last on the screen, the
+ * folded section of credits of the game's icons „Autorzy grafiki” (D-27). The screen sends nobody and
+ * leads to no map: a character is sent from the card of a map on the screen Mapy, which the bar's
+ * „Mapy” opens (D-53, D-330). It reads the manual map run, whose character is not in the camp.
  *
  * The page holds the screen behind one boundary, `createHeadquarters` (D-36), as it holds the
  * screen Postać: an element of its own for the page to place, a first render that is synchronous,
@@ -34,6 +36,7 @@ import {
 } from "./away-report.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactTextField } from "./controls/react-text-field.js";
+import { Camp } from "./camp.js";
 import { CreditsSection } from "./credits-section.js";
 import { screenAddress } from "./screen-address.js";
 import {
@@ -258,8 +261,8 @@ function CharacterCreation({ onCreate }: { onCreate: (name: string) => void }) {
 }
 
 /**
- * The screen: the report, the team with the creation of a character, the chest, and the folded
- * section of credits last.
+ * The screen: the camp over the panel, and in the panel the report, the team with the creation of a
+ * character, the chest, and the folded section of credits last.
  */
 function HeadquartersView({
   controls,
@@ -291,56 +294,63 @@ function HeadquartersView({
   const chest = state.team.chest;
   const lines = chestLines(chest);
   return (
-    <div className="headquarters screen-area">
-      <h2>Siedziba</h2>
-      <AwayReport
-        state={state}
-        onClose={closeReport}
-        onTake={takePractice}
-        sectionRef={reportSection}
-        closeRef={closeButton}
-      />
-      <section className="headquarters-section">
-        <h3 ref={teamHeading} tabIndex={-1}>
-          Drużyna
-        </h3>
-        {state.team.characters.length === 0 ? (
-          <p className="headquarters-empty">Drużyna nie ma jeszcze postaci.</p>
-        ) : (
-          <ul className="team-list">
-            {state.team.characters.map((character) => (
-              <TeamMember
-                key={character.id}
-                character={character}
-                state={state}
-                nowMs={nowMs}
-                onStop={controls.stop}
-              />
-            ))}
-          </ul>
-        )}
-        <CharacterCreation onCreate={controls.create} />
-      </section>
-      <section className="headquarters-section">
-        <h3>{`Skrzynka ${pieceCount(chest.pieces)}/${BALANCE.chestCapacity}`}</h3>
-        {lines.length === 0 ? (
-          <p className="headquarters-empty">Skrzynka jest pusta.</p>
-        ) : (
-          <ul className="chest-list">
-            {lines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        )}
-      </section>
-      <CreditsSection />
-    </div>
+    <>
+      <Camp state={state} />
+      <div className="headquarters screen-area">
+        <h2>Siedziba</h2>
+        <AwayReport
+          state={state}
+          onClose={closeReport}
+          onTake={takePractice}
+          sectionRef={reportSection}
+          closeRef={closeButton}
+        />
+        <section className="headquarters-section">
+          <h3 ref={teamHeading} tabIndex={-1}>
+            Drużyna
+          </h3>
+          {state.team.characters.length === 0 ? (
+            <p className="headquarters-empty">
+              Drużyna nie ma jeszcze postaci.
+            </p>
+          ) : (
+            <ul className="team-list">
+              {state.team.characters.map((character) => (
+                <TeamMember
+                  key={character.id}
+                  character={character}
+                  state={state}
+                  nowMs={nowMs}
+                  onStop={controls.stop}
+                />
+              ))}
+            </ul>
+          )}
+          <CharacterCreation onCreate={controls.create} />
+        </section>
+        <section className="headquarters-section">
+          <h3>{`Skrzynka ${pieceCount(chest.pieces)}/${BALANCE.chestCapacity}`}</h3>
+          {lines.length === 0 ? (
+            <p className="headquarters-empty">Skrzynka jest pusta.</p>
+          ) : (
+            <ul className="chest-list">
+              {lines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <CreditsSection />
+      </div>
+    </>
   );
 }
 
 /** Everything the screen draws, as the parts of the state it reads and the lines of the moment. */
 type Drawn = {
   team: Team;
+  /** The character of the manual map run, going, paused or ended, or null: it is not in the camp (D-389). */
+  runCharacter: CharacterId | null;
   loops: GameState["loops"];
   stoppedLoops: GameState["stoppedLoops"];
   awayReport: GameState["awayReport"];
@@ -350,6 +360,7 @@ type Drawn = {
 function drawnOf({ state, nowMs }: HeadquartersProps): Drawn {
   return {
     team: state.team,
+    runCharacter: state.run?.character.id ?? null,
     loops: state.loops,
     stoppedLoops: state.stoppedLoops,
     awayReport: state.awayReport,
@@ -364,6 +375,7 @@ function drawnOf({ state, nowMs }: HeadquartersProps): Drawn {
 function sameDrawn(one: Drawn, other: Drawn): boolean {
   return (
     one.team === other.team &&
+    one.runCharacter === other.runCharacter &&
     one.loops === other.loops &&
     one.stoppedLoops === other.stoppedLoops &&
     one.awayReport === other.awayReport &&

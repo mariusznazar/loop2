@@ -1207,11 +1207,11 @@ Every file the build copies from `assets/sprites/` is a PNG image.
 
 ## loop2-container-sprites
 
-The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing asks for.
+The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing or the camp's drawing asks for.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-271 · D-316
+- **Derives from:** D-271 · D-316 · D-389
 - **Part:** browser-view · simulation · build-tools · account-server · deployment
 - **Violated:** no
 

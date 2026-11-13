@@ -1267,6 +1267,81 @@ header .failure-line {
   width: 100%;
 }
 
+/*
+ * The camp at the top of Siedziba (D-272, D-349): a band over the screen's panel, the width of the content
+ * with the height of its picture at twice its pixels, which TypeScript gives. The clearing is as wide as
+ * the widest content and lies centred behind the rest, so a narrower band crops it at the sides with the
+ * campfire in the middle and never scales it down. Under the clearing in the middle stands the fire, to
+ * its right the chest and to its left the row of characters; the two sides share what is left of the
+ * band equally, so the fire stays in the middle. The row of characters is a line of cells that wraps from
+ * the fire outward, in a box of one line's height with its overflow hidden: the cells that do not fit
+ * wrap to a line below that is never seen, so the band shows whole characters, the first in the order of
+ * creation, as many as fit. Every size and every gap is a number of pixels of the picture times
+ * `PICTURE_PIXEL`, which TypeScript puts in the elements' styles, so the stylesheet holds none. A
+ * character's frame is wider than its cell and the cell's overflow is the frame's transparent edges.
+ * The camp is a picture and takes no click; its motion is in the rules for motion of the scene.
+ */
+.camp {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: var(--space-l);
+  overflow: hidden;
+}
+
+.camp-background {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  max-width: none;
+  translate: -50% 0;
+  image-rendering: pixelated;
+}
+
+.camp-team,
+.camp-fire,
+.camp-stores {
+  position: relative;
+}
+
+.camp-team,
+.camp-stores {
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.camp-team {
+  flex-flow: row-reverse wrap;
+  align-content: flex-start;
+}
+
+.camp-stores {
+  align-items: flex-end;
+}
+
+.camp-fire {
+  flex: none;
+  align-self: flex-end;
+}
+
+.camp-chest {
+  flex: none;
+}
+
+.camp-member {
+  position: relative;
+  flex: none;
+}
+
+.camp-member-sprite {
+  position: absolute;
+}
+
 .headquarters h2 {
   margin: 0 0 var(--space-s);
   font-size: var(--font-size-heading);
@@ -2341,7 +2416,8 @@ header .failure-line {
  *
  * - The frames of the mage's sheets and of the burning fire change every 160 ms: the picture of all
  *   frames moves its own width in as many steps as it holds frames, one frame a step. An extinguished
- *   fire and the props, one frame each, stand still.
+ *   fire and the props, one frame each, stand still. The camp's fire and the idle sheet of each character
+ *   in it run at this beat too, always, since the camp's fire has no state; its chest is one frame.
  * - A walk lasts 640 ms at every pace: the mage's element starts it at the offset it walks from,
  *   `--walk-start`, which TypeScript gives as a percentage of the mage's own frame, and ends it at its
  *   place, linear, at the speed of a run. For the same 640 ms the run sheet shows in place of the idle
@@ -2369,7 +2445,9 @@ header .failure-line {
  */
 @media (prefers-reduced-motion: no-preference) {
   .scene-mage-sprite img,
-  .scene-fire[data-burning="true"] img {
+  .scene-fire[data-burning="true"] img,
+  .camp-member img,
+  .camp-fire img {
     animation-name: scene-frames;
     animation-duration: calc(var(--frames) * 160ms);
     animation-timing-function: steps(var(--frames));
