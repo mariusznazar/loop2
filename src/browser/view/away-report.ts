@@ -6,13 +6,16 @@
 import { BALANCE } from "../sim/data/balance.js";
 import { ITEMS } from "../sim/data/items.js";
 import { SKILLS, type SkillId } from "../sim/data/skills.js";
+import { waitingPractice } from "../sim/loop.js";
 import { pieceCount } from "../sim/trip.js";
 import type {
   AwayReportLine,
   Character,
+  CharacterId,
   Chest,
   GameState,
   ItemId,
+  Practice,
 } from "../sim/types.js";
 
 /** The title while the report holds a line of a return (D-246). */
@@ -26,8 +29,15 @@ const DEATH_TEXT =
   "śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie.";
 const MINUS = "−";
 
-/** One line of the report as drawn: its text and whether it stands in `danger`. */
-export type ReportEntry = { text: string; danger: boolean };
+/**
+ * One line of the report as drawn: its text, whether it stands in `danger`, and, where practice
+ * waits at the earning loop of its character, the character whose „Odbierz” stands beside it (D-246).
+ */
+export type ReportEntry = {
+  text: string;
+  danger: boolean;
+  takeFor: CharacterId | null;
+};
 
 /**
  * The section's title: „Gdy cię nie było” while some line is open or stopped in a catch-up, else
@@ -53,17 +63,25 @@ function stoppedText(
   return `${name}: pętla stanęła${after} — ${DEATH_TEXT} Teraz to pokolenie ${generation}.`;
 }
 
-/** The text of a line that went on: minutes, chest, practice, as data orders them, empty parts out. */
-function goingText(name: string, line: AwayReportLine): string {
+/**
+ * The text of a line that went on: minutes, chest, the practice waiting, as data orders them, empty
+ * parts out. The minutes and the chest are those of the return, the practice is that of now.
+ */
+function goingText(
+  name: string,
+  line: AwayReportLine,
+  waiting: Practice,
+): string {
   const chest = (Object.keys(ITEMS) as ItemId[])
     .filter((id) => (line.chest[id] ?? 0) !== 0)
     .map((id) => signed(ITEMS[id].name, line.chest[id]!));
   const practice = (Object.keys(SKILLS) as SkillId[])
-    .filter((id) => (line.practice[id] ?? 0) > 0)
-    .map((id) => `${SKILLS[id].name} +${line.practice[id]}`);
+    .filter((id) => (waiting[id] ?? 0) > 0)
+    .map((id) => `${SKILLS[id].name} +${waiting[id]}`);
   const parts = [`${line.minutes} min`];
   if (chest.length > 0) parts.push(`skrzynka: ${chest.join(", ")}`);
-  if (practice.length > 0) parts.push(`wprawa: ${practice.join(", ")}`);
+  if (practice.length > 0)
+    parts.push(`wprawa do odebrania: ${practice.join(", ")}`);
   if (line.resurrectionUsed) parts.push("wskrzeszenie zużyte");
   return `${name}: ${parts.join(" · ")}`;
 }
@@ -71,23 +89,34 @@ function goingText(name: string, line: AwayReportLine): string {
 /**
  * The lines of the report as drawn: the loops that stopped first, in `danger`, then the others, in
  * `text`, each group in the team's order, a character's lines in the order of the report. Names
- * come from the team and the data. Pure.
+ * come from the team and the data; the practice of a line that went on is read from the earning loop
+ * of its character as it stands now, and `takeFor` names that character where some waits. Pure.
  */
 export function reportEntries(
-  state: Pick<GameState, "awayReport" | "team">,
+  state: Pick<GameState, "awayReport" | "team" | "loops">,
 ): ReportEntry[] {
   const characters = state.team.characters;
   const placed = state.awayReport.flatMap((line, index) => {
     const at = characters.findIndex(({ id }) => id === line.characterId);
     return at < 0 ? [] : [{ line, index, at, character: characters[at] }];
   });
-  const entry = (line: AwayReportLine, character: Character): ReportEntry =>
-    line.stop === null
-      ? { text: goingText(character.name, line), danger: false }
-      : {
-          text: stoppedText(character.name, line, line.stop.generation),
-          danger: true,
-        };
+  const entry = (line: AwayReportLine, character: Character): ReportEntry => {
+    if (line.stop !== null)
+      return {
+        text: stoppedText(character.name, line, line.stop.generation),
+        danger: true,
+        takeFor: null,
+      };
+    const loop = Object.hasOwn(state.loops, character.id)
+      ? state.loops[character.id]
+      : undefined;
+    const waiting = loop === undefined ? {} : waitingPractice(loop);
+    return {
+      text: goingText(character.name, line, waiting),
+      danger: false,
+      takeFor: Object.keys(waiting).length > 0 ? character.id : null,
+    };
+  };
   const byTeam = (
     left: { at: number; index: number },
     right: { at: number; index: number },

@@ -13,7 +13,7 @@
  * screen Postać: an element of its own for the page to place, a first render that is synchronous,
  * `update(props)`, `focus()` and `dispose()`. The page calls them from an event handler or the
  * continuation of an answer, never from render or an effect. The screen performs nothing itself:
- * its three acts go to the page through `controls`, which turns them into the simulation's calls.
+ * its acts go to the page through `controls`, which turns them into the simulation's calls.
  * The texts come from the pure functions of `team-lines.ts` and `away-report.ts`, and every name
  * of the game's content from the data. Nothing runs when the module is imported.
  */
@@ -63,6 +63,8 @@ export type HeadquartersControls = {
   stop: (characterId: CharacterId) => void;
   /** Closes the whole report on earning loops (D-246). */
   closeReport: () => void;
+  /** Takes the practice waiting at a character's earning loop with „Odbierz” (D-189). */
+  takePractice: (characterId: CharacterId) => void;
 };
 
 export type HeadquartersOptions = {
@@ -84,19 +86,35 @@ export type Headquarters = {
   dispose(): void;
 };
 
+function characterNameOf(
+  state: Pick<GameState, "team">,
+  characterId: CharacterId,
+): string {
+  return state.team.characters.find(({ id }) => id === characterId)?.name ?? "";
+}
+
 type ReportProps = {
-  state: Pick<GameState, "awayReport" | "team">;
+  state: Pick<GameState, "awayReport" | "team" | "loops">;
   onClose: () => void;
+  onTake: (characterId: CharacterId) => void;
   sectionRef: RefObject<HTMLElement | null>;
+  closeRef: RefObject<HTMLButtonElement | null>;
 };
 
 /**
  * The section of the report on earning loops (D-246): its title, one line for each entry with the
- * loops that stopped in `danger`, „Skrzynka jest pełna.” in `warning` where the chest is full, and
- * one button „Zamknij” that closes the whole report. The section stays in the page, hidden and
+ * loops that stopped in `danger` and „Odbierz” in `positive` at a line whose loop has practice
+ * waiting, „Skrzynka jest pełna.” in `warning` where the chest is full, and one button „Zamknij”
+ * that closes the whole report. The section stays in the page, hidden and
  * empty, while the report holds no line.
  */
-function AwayReport({ state, onClose, sectionRef }: ReportProps) {
+function AwayReport({
+  state,
+  onClose,
+  onTake,
+  sectionRef,
+  closeRef,
+}: ReportProps) {
   const entries = reportEntries(state);
   return (
     <section
@@ -108,21 +126,29 @@ function AwayReport({ state, onClose, sectionRef }: ReportProps) {
         <>
           <h3>{reportTitle(state.awayReport)}</h3>
           <ul className="away-report-list">
-            {entries.map(({ text, danger }, index) => (
+            {entries.map(({ text, danger, takeFor }, index) => (
               <li
                 key={index}
                 className={
                   danger ? "away-report-line danger" : "away-report-line"
                 }
               >
-                {text}
+                <span className="away-report-text">{text}</span>
+                {takeFor === null ? null : (
+                  <ReactButton
+                    text="Odbierz"
+                    kind="positive"
+                    label={`Odbierz: ${characterNameOf(state, takeFor)}`}
+                    onClick={() => onTake(takeFor)}
+                  />
+                )}
               </li>
             ))}
           </ul>
           {reportChestFull(state.team.chest) ? (
             <p className="away-report-full">{CHEST_FULL_TEXT}</p>
           ) : null}
-          <ReactButton text="Zamknij" onClick={onClose} />
+          <ReactButton text="Zamknij" onClick={onClose} buttonRef={closeRef} />
         </>
       )}
     </section>
@@ -245,12 +271,21 @@ function HeadquartersView({
   const { state, nowMs } = props;
   const reportSection = useRef<HTMLElement>(null);
   const teamHeading = useRef<HTMLHeadingElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
 
   // „Zamknij” leaves the page with the report, and the focus goes to the heading of the section that
   // takes its place, so the next key press reaches the team's first control, not the page's body.
   function closeReport(): void {
     controls.closeReport();
     if (reportSection.current?.hidden === true) teamHeading.current?.focus();
+  }
+
+  // „Odbierz” leaves the page with the practice it paid, and the focus goes to „Zamknij” of the
+  // section, so the next key press stays in the report, not in the page's body.
+  function takePractice(characterId: CharacterId): void {
+    controls.takePractice(characterId);
+    if (!reportSection.current?.contains(document.activeElement))
+      closeButton.current?.focus();
   }
 
   const chest = state.team.chest;
@@ -261,7 +296,9 @@ function HeadquartersView({
       <AwayReport
         state={state}
         onClose={closeReport}
+        onTake={takePractice}
         sectionRef={reportSection}
+        closeRef={closeButton}
       />
       <section className="headquarters-section">
         <h3 ref={teamHeading} tabIndex={-1}>

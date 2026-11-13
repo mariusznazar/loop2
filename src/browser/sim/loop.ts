@@ -1,6 +1,5 @@
 import { BALANCE } from "./data/balance.js";
 import { MAPS } from "./data/maps.js";
-import type { SkillId } from "./data/skills.js";
 import {
   characterAfterDeath,
   programOf,
@@ -167,11 +166,22 @@ export function startLoop(
 }
 
 /**
- * Stops the earning loop of a character at once (D-245): the practice the loop gathered and that of
- * the map run going on are paid into the character's skills, the loop is dropped, and the sum paid
- * is written into `stoppedLoops`, `{}` where the loop gathered none. The items the map run carries
- * are lost and its loot does not reach the chest. A map run that ended in death pays nothing. With
- * no loop of that character, returns the very state.
+ * The practice waiting at an earning loop (D-189): what the loop gathered from completions and what
+ * the map run going on has gathered, both since the player last took it with „Odbierz”. A map run
+ * that ended in death pays nothing. This is exactly what `takeLoopPractice` and `stopLoop` pay.
+ */
+export function waitingPractice(loop: EarningLoop): Practice {
+  return sumPractice(
+    loop.practice,
+    loop.run.death === null ? loop.run.practice : {},
+  );
+}
+
+/**
+ * Stops the earning loop of a character at once (D-245): the practice waiting at the loop is paid
+ * into the character's skills, the loop is dropped, and the sum paid is written into
+ * `stoppedLoops`, `{}` where none waited. The items the map run carries are lost and its loot does
+ * not reach the chest. With no loop of that character, returns the very state.
  */
 export function stopLoop(
   state: GameState,
@@ -180,10 +190,7 @@ export function stopLoop(
   const found = loopOf(state, characterId);
   if (!found) return { state, events: [] };
   const { loop, character } = found;
-  const paid = sumPractice(
-    loop.practice,
-    loop.run.death === null ? loop.run.practice : {},
-  );
+  const paid = waitingPractice(loop);
   const stopped: Character = {
     ...character,
     skills: paidPractice(character.skills, paid),
@@ -197,6 +204,36 @@ export function stopLoop(
       characterId,
       null,
     ),
+    events: [],
+  };
+}
+
+/**
+ * Takes the practice waiting at the earning loop of a character with „Odbierz” (D-189): all of it,
+ * the map run going on included, is paid into the character's skills and the practice the loop and
+ * that map run hold is emptied, so no later completion or stop pays it again. The map run, the
+ * backpack, the loop and the chest stay as they were. With no loop of that character, or none
+ * practice waiting, returns the very state.
+ */
+export function takeLoopPractice(
+  state: GameState,
+  characterId: CharacterId,
+): GameResult {
+  const found = loopOf(state, characterId);
+  if (!found) return { state, events: [] };
+  const { loop, character } = found;
+  const paid = waitingPractice(loop);
+  if (Object.keys(paid).length === 0) return { state, events: [] };
+  const taken: Character = {
+    ...character,
+    skills: paidPractice(character.skills, paid),
+  };
+  return {
+    state: withLoop(withCharacter(state, character, taken), characterId, {
+      ...loop,
+      run: loop.run.death === null ? { ...loop.run, practice: {} } : loop.run,
+      practice: {},
+    }),
     events: [],
   };
 }
@@ -251,7 +288,7 @@ export function advanceLoopRun(
  * Takes the end a character's loop run reached, at the real moment `nowMs`, and starts the next map
  * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
  * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
- * to the loop's, and counts it. A death is settled at `nowMs` as a manual one is: with a
+ * to the loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is settled at `nowMs` as a manual one is: with a
  * resurrection ready it is used up, the run pays nothing, the loop keeps what it gathered and goes
  * on; without one the character loses its practice and ranks and the loop is dropped with what it
  * gathered. The carried items go with the run and the chest stays as it stood. One `loopRunEnded`
@@ -414,7 +451,6 @@ const emptyLine = (characterId: CharacterId): AwayReportLine => ({
   characterId,
   minutes: 0,
   chest: {},
-  practice: {},
   resurrectionUsed: false,
   stop: null,
 });
@@ -463,23 +499,13 @@ function chestChange(before: Chest, after: Chest): AwayReportLine["chest"] {
   return change;
 }
 
-/** The practice `after` holds beyond `before`, only the skills it grew in. */
-function practiceGain(before: Practice, after: Practice): Practice {
-  const gain: Practice = {};
-  for (const skill of Object.keys(after) as SkillId[]) {
-    const grown = after[skill]! - (before[skill] ?? 0);
-    if (grown > 0) gain[skill] = grown;
-  }
-  return gain;
-}
-
-/** A line closed by the stop of its loop: no practice stays, the loop's being gone. */
+/** A line closed by the stop of its loop. */
 function stoppedLine(
   line: AwayReportLine,
   generation: number,
   away: boolean,
 ): AwayReportLine {
-  return { ...line, practice: {}, stop: { generation, away } };
+  return { ...line, stop: { generation, away } };
 }
 
 /**
@@ -525,8 +551,8 @@ export function passLoops(
  * The catch-up (D-240, D-247): the whole minutes from the save time to `nowMs`, one character at a
  * time in the team's order, each through the whole span and the chest as the one before left it. It
  * reads neither the manual map run nor the pause, and a loop that stops does not stop the others.
- * Each character's turn is written into the report: its minutes, its own change of the chest and
- * the practice its loop gained, and a covered death or a stop. With no loop, no whole minute or no
+ * Each character's turn is written into the report: its minutes, its own change of the chest, and
+ * a covered death or a stop; the practice its loop gathered is read from the loop (D-246). With no loop, no whole minute or no
  * save time, the very state is returned.
  */
 export function catchUp(state: GameState, nowMs: number): LoopPass {
@@ -542,7 +568,6 @@ export function catchUp(state: GameState, nowMs: number): LoopPass {
     const found = loopOf(current, id);
     if (!found) continue;
     const chestBefore = current.team.chest;
-    const practiceBefore = found.loop.practice;
     let passed = 0;
     let covered = false;
     let stopped = false;
@@ -561,9 +586,6 @@ export function catchUp(state: GameState, nowMs: number): LoopPass {
       stopped = taken.kind === "stopped";
     }
     const change = chestChange(chestBefore, current.team.chest);
-    const gain = stopped
-      ? {}
-      : practiceGain(practiceBefore, current.loops[id]!.practice);
     const generation = generationOf(current, id);
     current = {
       ...current,
@@ -572,7 +594,6 @@ export function catchUp(state: GameState, nowMs: number): LoopPass {
           ...line,
           minutes: line.minutes + passed,
           chest: addedChange(line.chest, change),
-          practice: sumPractice(line.practice, gain),
           resurrectionUsed: line.resurrectionUsed || covered,
         };
         return stopped ? stoppedLine(grown, generation, true) : grown;
