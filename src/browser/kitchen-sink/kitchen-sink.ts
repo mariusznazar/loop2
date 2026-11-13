@@ -236,6 +236,10 @@ const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
     ),
   ],
   [
+    "Przycisk w zieleni",
+    buttonSample("Odbierz", { kind: "positive" }, NOT_APPLYING.buttonLoading),
+  ],
+  [
     "Przycisk wybrany w grupie",
     buttonSample("Wybrany", { kind: "selected" }, NOT_APPLYING.buttonLoading),
   ],

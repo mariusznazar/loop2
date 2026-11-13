@@ -1,6 +1,7 @@
 /**
  * The shared button (D-44): the button, the destructive button, the button selected in its group,
- * the secondary action, the tab and the main button outside a form are one `<button>` of six kinds,
+ * the secondary action, the tab, the main button outside a form and the button in `positive` are
+ * one `<button>` of seven kinds,
  * which `styles.css` draws from the class this module sets. The button that sends a form has the
  * main look on top of its kind, which `styles.css` draws from its `type="submit"`; the kind `main`
  * gives the same look to a button that sends no form (D-274).
@@ -10,14 +11,22 @@
 
 /**
  * „plain” — the button; „destructive” — neutral at rest, its text in `danger` under the pointer and
- * at the focus; „selected” — chosen in its group;
- * „secondary” — an underlined text without a frame, for an action that opens or leaves the state
- * of a form and stands under it; „tab” — a button of a group drawn as a tab, whose group sets
- * which one is selected with `setButtonSelected`; „main” — the main look of a button that sends
- * no form, such as „Wejdź” at a character in the card of a map, which stays of the type `button`.
+ * at the focus; „selected” — chosen in its group; „secondary” — an underlined text without a frame,
+ * for an action that opens or leaves the state of a form and stands under it; „tab” — a button of a
+ * group drawn as a tab, whose group sets which one is selected with `setButtonSelected`; „main” —
+ * the main look of a button that sends no form, such as „Wejdź” at a character in the card of a
+ * map, which stays of the type `button`; „positive” — the plain button with its text in `positive`
+ * at rest and under the pointer, the look of „Odbierz” in the report on earning loops, which pays
+ * the practice waiting.
  */
 export type ButtonKind =
-  "plain" | "destructive" | "selected" | "secondary" | "tab" | "main";
+  | "plain"
+  | "destructive"
+  | "selected"
+  | "secondary"
+  | "tab"
+  | "main"
+  | "positive";
 
 export type ButtonOptions = {
   kind?: ButtonKind;
@@ -50,6 +59,7 @@ export function createButton(
   if (options.kind === "secondary") element.classList.add("secondary");
   if (options.kind === "tab") element.classList.add("tab");
   if (options.kind === "main") element.classList.add("main");
+  if (options.kind === "positive") element.classList.add("positive");
   if (options.kind === "selected") setButtonSelected(element, true);
   if (options.expanded !== undefined)
     setButtonExpanded(element, options.expanded);

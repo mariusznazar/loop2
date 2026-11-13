@@ -288,7 +288,9 @@ przez `input.disabled`, a zdanie odmowy albo braku połączenia pokazuje
 `createFormNote` z tego samego pliku. Pole hasła to `createPasswordField`,
 a przycisk, który wysyła formularz, dostaje `submit: true`. Rodzaj przycisku
 ustawia `kind` w obu postaciach, a akcja poboczna, zakładka i główny wygląd poza
-formularzem („Wejdź” w „Kto idzie”) to rodzaje `secondary`, `tab` i `main`.
+formularzem („Wejdź” w „Kto idzie”) to rodzaje `secondary`, `tab` i `main`, a zwykły
+przycisk z tekstem w `positive` („Odbierz” w raporcie Siedziby) to rodzaj `positive`
+(D-44).
 Postacie Reacta to `ReactButton` (`kind`, `waitingText`, `selected`,
 `submit`) oraz `ReactTextField`, `ReactPasswordField`, `ReactFormWarning`,
 `ReactFormNote`, `ReactSelectList`, `ReactNumberField` i `ReactPickCell`.
