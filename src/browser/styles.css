@@ -383,8 +383,9 @@ header .failure-line {
  * one :focus-visible rule above; disabled text in `text-disabled`. Loading is the state of a
  * control that waits for a server: the button disabled under a changed text and the fields of its
  * form disabled, which the disabled rules below draw (D-44). The button has five looks beside the
- * plain one: the destructive button, the button in `positive`, the button selected in its group, the
- * secondary action and the tab, each below, and the main look of the button that sends a form or is of the kind `main`.
+ * plain one: the destructive button, the button in `positive`, the button selected in its group,
+ * the secondary action and the tab, each below, and the main look of the button that sends a form
+ * or is of the kind `main`.
  */
 .button,
 .select-list,

@@ -5109,8 +5109,9 @@ open; characters meeting inside map runs — needs a schedule and loses the chea
 The game state holds its earning loops beside the one manual map run, by character number, so a
 character has at most one, each with the content of the program taken at its start, its map run
 going on, the number of that map run, the count of its completions and the practice gathered from
-those completions since the player last took the practice waiting with „Odbierz”. In every game state the browser view holds or a saved game state admits, the map
-run of an earning loop is going on: the function that reaches its end deals with that end at once.
+those completions since the player last took the practice waiting with „Odbierz”. In every game
+state the browser view holds or a saved game state admits, the map run of an earning loop is going
+on: the function that reaches its end deals with that end at once.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -5131,8 +5132,9 @@ and each map run binds the same lists anew. An end dealt with where it is reache
 nothing to settle. The practice gathered from completions stays with the earning loop, outside the
 character's skills, until the player takes it with „Odbierz” or the loop stops; „Odbierz” empties it
 together with the practice of the map run going on, so the loop and that map run hold exactly the
-practice that waits, and a death with no resurrection ready takes what waits with the rest. D-56 has a map run name its character by number. Accepted with it: a later preview of an earning loop's map run needs
-more of the copy, which is a change of the shape and of its version.
+practice that waits, and a death with no resurrection ready takes what waits with the rest. D-56 has
+a map run name its character by number. Accepted with it: a later preview of an earning loop's map
+run needs more of the copy, which is a change of the shape and of its version.
 *Rejected:* map runs held by character in place of the one manual map run — everything that reads the
 manual map run changes, and D-55 keeps one manual map run anyway; an earning loop holding the whole
 map run and copy of a manual map run — it reuses the load's reading of a map run whole, but carries what an earning

@@ -8,9 +8,9 @@ import type { MouseEventHandler, Ref } from "react";
 
 /**
  * „destructive” — neutral at rest, its text in `danger` under the pointer and at the focus;
- * „secondary” — the secondary action; „tab” — a button of a group drawn as a tab; „main” — the
- * main look of a button that sends no form, which stays of the type `button` (D-274);
- * „positive” — the plain button with its text in `positive`, the look of „Odbierz”.
+ * „secondary” — the secondary action; „tab” — a button of a group drawn as a tab; „main” — the main
+ * look of a button that sends no form, which stays of the type `button` (D-274); „positive” — the
+ * plain button with its text in `positive`, the look of „Odbierz”.
  */
 export type ReactButtonKind =
   "destructive" | "secondary" | "tab" | "main" | "positive";

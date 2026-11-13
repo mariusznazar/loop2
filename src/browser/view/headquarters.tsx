@@ -105,8 +105,8 @@ type ReportProps = {
  * The section of the report on earning loops (D-246): its title, one line for each entry with the
  * loops that stopped in `danger` and „Odbierz” in `positive` at a line whose loop has practice
  * waiting, „Skrzynka jest pełna.” in `warning` where the chest is full, and one button „Zamknij”
- * that closes the whole report. The section stays in the page, hidden and
- * empty, while the report holds no line.
+ * that closes the whole report. The section stays in the page, hidden and empty, while the report
+ * holds no line.
  */
 function AwayReport({
   state,
@@ -280,8 +280,8 @@ function HeadquartersView({
     if (reportSection.current?.hidden === true) teamHeading.current?.focus();
   }
 
-  // „Odbierz” leaves the page with the practice it paid, and the focus goes to „Zamknij” of the
-  // section, so the next key press stays in the report, not in the page's body.
+  // „Odbierz” leaves the page with the practice it paid, and the focus goes to „Zamknij” of
+  // the section, so the next key press stays in the report, not in the page's body.
   function takePractice(characterId: CharacterId): void {
     controls.takePractice(characterId);
     if (!reportSection.current?.contains(document.activeElement))

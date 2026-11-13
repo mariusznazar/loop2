@@ -166,9 +166,10 @@ export function startLoop(
 }
 
 /**
- * The practice waiting at an earning loop (D-189): what the loop gathered from completions and what
- * the map run going on has gathered, both since the player last took it with „Odbierz”. A map run
- * that ended in death pays nothing. This is exactly what `takeLoopPractice` and `stopLoop` pay.
+ * The practice waiting at an earning loop (D-189): what the loop gathered from completions and
+ * what the map run going on has gathered, both since the player last took it with „Odbierz”. A
+ * map run that ended in death pays nothing. This is exactly what `takeLoopPractice` and `stopLoop`
+ * pay.
  */
 export function waitingPractice(loop: EarningLoop): Practice {
   return sumPractice(
@@ -209,11 +210,11 @@ export function stopLoop(
 }
 
 /**
- * Takes the practice waiting at the earning loop of a character with „Odbierz” (D-189): all of it,
- * the map run going on included, is paid into the character's skills and the practice the loop and
- * that map run hold is emptied, so no later completion or stop pays it again. The map run, the
- * backpack, the loop and the chest stay as they were. With no loop of that character, or none
- * practice waiting, returns the very state.
+ * Takes the practice waiting at the earning loop of a character with „Odbierz” (D-189): all of
+ * it, the map run going on included, is paid into the character's skills and the practice the
+ * loop and that map run hold is emptied, so no later completion or stop pays it again. The map
+ * run, the backpack, the loop and the chest stay as they were. With no loop of that character,
+ * or no practice waiting, returns the very state.
  */
 export function takeLoopPractice(
   state: GameState,
@@ -288,12 +289,13 @@ export function advanceLoopRun(
  * Takes the end a character's loop run reached, at the real moment `nowMs`, and starts the next map
  * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
  * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
- * to the loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is settled at `nowMs` as a manual one is: with a
- * resurrection ready it is used up, the run pays nothing, the loop keeps what it gathered and goes
- * on; without one the character loses its practice and ranks and the loop is dropped with what it
- * gathered. The carried items go with the run and the chest stays as it stood. One `loopRunEnded`
- * event follows for the end. With no loop or a map run that goes on, returns the very state without
- * reading `nowMs`; otherwise a `nowMs` that is no safe integer is a RangeError.
+ * to the loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
+ * settled at `nowMs` as a manual one is: with a resurrection ready it is used up, the run pays
+ * nothing, the loop keeps what it gathered and goes on; without one the character loses its
+ * practice and ranks and the loop is dropped with what it gathered. The carried items go with the
+ * run and the chest stays as it stood. One `loopRunEnded` event follows for the end. With no loop
+ * or a map run that goes on, returns the very state without reading `nowMs`; otherwise a `nowMs`
+ * that is no safe integer is a RangeError.
  */
 export function endLoopRun(
   state: GameState,
@@ -552,8 +554,8 @@ export function passLoops(
  * time in the team's order, each through the whole span and the chest as the one before left it. It
  * reads neither the manual map run nor the pause, and a loop that stops does not stop the others.
  * Each character's turn is written into the report: its minutes, its own change of the chest, and
- * a covered death or a stop; the practice its loop gathered is read from the loop (D-246). With no loop, no whole minute or no
- * save time, the very state is returned.
+ * a covered death or a stop; the practice its loop gathered is read from the loop (D-246). With
+ * no loop, no whole minute or no save time, the very state is returned.
  */
 export function catchUp(state: GameState, nowMs: number): LoopPass {
   assertMoment("catchUp", nowMs);

@@ -953,11 +953,38 @@ test("taking the practice twice in a row pays it once, and a loop with nothing w
   const state = holding(looping(), { eating: 2 });
   const taken = takeLoopPractice(state, 1).state;
   assert.equal(ala(taken).skills.eating.practice, 2);
-  assert.equal(takeLoopPractice(taken, 1).state, taken);
   const idle = looping();
-  assert.equal(takeLoopPractice(idle, 1).state, idle);
-  assert.equal(takeLoopPractice(idle, 2).state, idle);
-  assert.equal(takeLoopPractice(idle, 9).state, idle);
+  // Nothing waiting (twice in a row, an idle loop) and no loop (a character with none, one not in
+  // the team) give the very state and no event: „Odbierz” that pays nothing is no event.
+  for (const [name, before, id] of [
+    ["a second take", taken, 1],
+    ["a loop with nothing waiting", idle, 1],
+    ["a character with no loop", idle, 2],
+    ["a character not in the team", idle, 9],
+  ]) {
+    const result = takeLoopPractice(before, id);
+    assert.equal(result.state, before, name);
+    assert.deepEqual(result.events, [], name);
+  }
+});
+
+test("taking the practice while the map run has ended in death pays only the loop's own practice and leaves that map run as it ended", () => {
+  const state = holding(
+    changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
+    { smallItemGathering: 40 },
+  );
+  const dead = advanceLoopRun(state, 1, 1).state;
+  const taken = takeLoopPractice(dead, 1).state;
+  assert.equal(
+    ala(taken).skills.smallItemGathering.practice,
+    ala(dead).skills.smallItemGathering.practice + 40,
+  );
+  assert.equal(
+    ala(taken).skills.eating.practice,
+    ala(dead).skills.eating.practice,
+  );
+  assert.deepEqual(taken.loops[1].practice, {});
+  assert.equal(taken.loops[1].run, dead.loops[1].run);
 });
 
 test("taking the practice of one character leaves the loop and the skills of another as they were", () => {

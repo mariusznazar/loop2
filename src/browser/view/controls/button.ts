@@ -11,13 +11,13 @@
 
 /**
  * „plain” — the button; „destructive” — neutral at rest, its text in `danger` under the pointer and
- * at the focus; „selected” — chosen in its group;
- * „secondary” — an underlined text without a frame, for an action that opens or leaves the state
- * of a form and stands under it; „tab” — a button of a group drawn as a tab, whose group sets
- * which one is selected with `setButtonSelected`; „main” — the main look of a button that sends
- * no form, such as „Wejdź” at a character in the card of a map, which stays of the type `button`;
- * „positive” — the plain button with its text in `positive` at rest and under the pointer, the look
- * of „Odbierz” in the report on earning loops, which pays the practice waiting.
+ * at the focus; „selected” — chosen in its group; „secondary” — an underlined text without a frame,
+ * for an action that opens or leaves the state of a form and stands under it; „tab” — a button of a
+ * group drawn as a tab, whose group sets which one is selected with `setButtonSelected`; „main” —
+ * the main look of a button that sends no form, such as „Wejdź” at a character in the card of a
+ * map, which stays of the type `button`; „positive” — the plain button with its text in `positive`
+ * at rest and under the pointer, the look of „Odbierz” in the report on earning loops, which pays
+ * the practice waiting.
  */
 export type ButtonKind =
   | "plain"

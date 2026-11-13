@@ -31,7 +31,8 @@ const MINUS = "−";
 
 /**
  * One line of the report as drawn: its text, whether it stands in `danger`, and, where practice
- * waits at the earning loop of its character, the character whose „Odbierz” stands beside it (D-246).
+ * waits at the earning loop of its character, the character whose „Odbierz” stands beside it
+ * (D-246).
  */
 export type ReportEntry = {
   text: string;
@@ -89,8 +90,9 @@ function goingText(
 /**
  * The lines of the report as drawn: the loops that stopped first, in `danger`, then the others, in
  * `text`, each group in the team's order, a character's lines in the order of the report. Names
- * come from the team and the data; the practice of a line that went on is read from the earning loop
- * of its character as it stands now, and `takeFor` names that character where some waits. Pure.
+ * come from the team and the data; the practice of a line that went on is read from the earning
+ * loop of its character as it stands now, and `takeFor` names that character where some waits.
+ * Pure.
  */
 export function reportEntries(
   state: Pick<GameState, "awayReport" | "team" | "loops">,
