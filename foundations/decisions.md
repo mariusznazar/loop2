@@ -3692,7 +3692,7 @@ A manual map run that first solves its map pays practice and loot once per map f
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · derives from D-239
-- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. An agent compares a change with the decision:
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. An agent compares a change with the decision:
   - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
   - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
 - **Origin:** none

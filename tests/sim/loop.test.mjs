@@ -921,7 +921,7 @@ test("taking the practice pays what the loop and its map run going on gathered, 
   assert.deepEqual(after.stoppedLoops, {});
 });
 
-// invariant: trip-run-end
+// invariant: loop-practice-payment
 // D-246: „Odbierz” never pays the same practice twice, not at the completion of the map run it was
 // taken in the middle of, nor at the stop after it.
 test("practice taken is paid once: the completion of the map run it was taken in adds only what came after, and so does the stop", () => {
@@ -949,6 +949,7 @@ test("practice taken is paid once: the completion of the map run it was taken in
   assert.equal(end.exploration.practice, start.exploration.practice + 1);
 });
 
+// invariant: loop-practice-payment
 test("taking the practice twice in a row pays it once, and a loop with nothing waiting or a character with no loop leaves the very state", () => {
   const state = holding(looping(), { eating: 2 });
   const taken = takeLoopPractice(state, 1).state;

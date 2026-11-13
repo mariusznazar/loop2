@@ -1305,6 +1305,16 @@ The game's credits hold, for every pack of pictures under `assets/sprites/` whos
 - **Part:** browser-view
 - **Violated:** no
 
+## loop-practice-payment
+
+The practice an earning loop gathers is added to its character's skills once, whichever of „Odbierz”, the completion of the map run it was gathered in and the stop of the loop pays it.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-189
+- **Part:** simulation
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
