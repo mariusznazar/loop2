@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
+  CAMP,
   SCENE,
   SCENE_CREATURES,
   SCENE_DUST,
@@ -32,6 +33,7 @@ import {
   scuffleCloud,
   tintShown,
 } from "../../dist/browser/view/scene-picture.js";
+import { campDrawing } from "../../dist/browser/view/camp-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
@@ -463,8 +465,20 @@ test("a completion stops the scene in colour", () => {
 });
 
 // invariant: loop2-container-sprites
-test("every file the scene's data names stands directly in assets/sprites/ as a .png file", () => {
+test("every file the scene's and the camp's data name stands directly in assets/sprites/ as a .png file", () => {
+  // What the camp's drawing asks for, as it asks: the address of each picture of a team of one in Siedziba.
+  const camp = campDrawing(createCharacter(newGame(), "Ala").state);
+  const asked = [
+    camp.background,
+    camp.fire,
+    camp.chest,
+    ...camp.members.map((m) => m.idle),
+  ];
+  assert.equal(camp.members.length, 1);
   const names = [
+    ...asked.map((sprite) => sprite.href.replace(/^\/sprites\//, "")),
+    CAMP.background.file,
+    CAMP.chest.file,
     SCENE.background.file,
     SCENE_FIRE.picture.file,
     SCENE_FIRE.low.picture.file,
