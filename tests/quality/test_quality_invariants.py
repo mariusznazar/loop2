@@ -18,6 +18,8 @@ PRETTIER_PATTERNS = [f"src/browser/**/*.{WEB}", f"src/server/**/*.{SCRIPT}",
                      f"scripts/**/*.{SCRIPT}", f"tests/{{sim,view,quality}}/**/*.{SCRIPT}",
                      f"tests/{{sim,view}}/**/*.{WEB}", "tests/{http,startup}.test.mjs",
                      "{eslint,prettier}.config.mjs"]
+# The flags of the Prettier check; the scope test runs the same check on made-up files (D-32).
+PRETTIER_FLAGS = ["--check", "--no-config", "--no-editorconfig", "--ignore-path", ".gitignore"]
 # Named one by one: review keeps a new standalone Bash script from going unnamed (D-31).
 BASH_SCRIPTS = ["deploy/loop2-deploy", "deploy/loop2-backup", "deploy/loop2-watch"]
 
@@ -61,8 +63,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_prettier_source_format(self):
         # invariant: prettier-source-format
-        self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", "--check",
-                           "--no-config", "--no-editorconfig", "--ignore-path", ".gitignore",
+        self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", *PRETTIER_FLAGS,
                            *PRETTIER_PATTERNS)
 
     def test_introduced_npm_vulnerabilities(self):
