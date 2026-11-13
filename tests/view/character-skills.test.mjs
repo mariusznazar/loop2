@@ -51,6 +51,35 @@ test("numeric branch shows its current and next effect and price, while maximum 
   );
 });
 
+test("the combat branches show their ranks from the data: Mocniejszy cios has four and Cięższy kop two, and a full branch ends at its last effect", () => {
+  const skilled = (id, practice, ranks) => ({
+    ...createCharacter(newGame(), "Ala").state.team.characters[0],
+    skills: { [id]: { practice, ranks } },
+  });
+  assert.equal(
+    branchText(
+      skilled("oneHandedCombat", 300, { strongerStrike: 3 }),
+      "strongerStrike",
+    ),
+    "Mocniejszy cios 3/4 — Większe obrażenia patykiem · teraz 12 obrażeń → po kupnie 14 obrażeń · cena 1",
+  );
+  assert.equal(
+    branchText(
+      skilled("oneHandedCombat", 300, { strongerStrike: 4 }),
+      "strongerStrike",
+    ),
+    "Mocniejszy cios 4/4 — Większe obrażenia patykiem · teraz 14 obrażeń",
+  );
+  assert.equal(
+    branchText(skilled("kicking", 30, { heavierKick: 1 }), "heavierKick"),
+    "Cięższy kop 1/2 — Większe obrażenia kopnięciem · teraz 4 obrażeń → po kupnie 5 obrażeń · cena 1",
+  );
+  assert.equal(
+    branchText(skilled("kicking", 30, { heavierKick: 2 }), "heavierKick"),
+    "Cięższy kop 2/2 — Większe obrażenia kopnięciem · teraz 5 obrażeń",
+  );
+});
+
 test("run practice omits zero values and disappears when nothing accrued", () => {
   assert.equal(practiceText({}), "");
   assert.equal(practiceText({ exploration: 0 }), "");

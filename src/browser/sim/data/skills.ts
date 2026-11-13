@@ -37,13 +37,13 @@ const skills = {
   oneHandedCombat: {
     name: "Walka bronią jednoręczną",
     actions: ["strikeWithStick"],
-    thresholds: [30, 90, 200],
+    thresholds: [15, 40, 100, 300],
   },
-  kicking: { name: "Kopanie", actions: ["kick"], thresholds: [20] },
+  kicking: { name: "Kopanie", actions: ["kick"], thresholds: [10, 30] },
   dodging: {
     name: "Unik przed ciosem",
     actions: ["dodge"],
-    thresholds: [10, 30],
+    thresholds: [4, 15],
   },
 } as const;
 
@@ -160,7 +160,7 @@ export const BRANCHES = {
     skill: "oneHandedCombat",
     name: "Mocniejszy cios",
     description: "Większe obrażenia patykiem",
-    costs: [1, 1, 1],
+    costs: [1, 1, 1, 1],
     effect: { kind: "damage", actions: ["strikeWithStick"], amount: 2 },
     preview: { base: 6, step: 2, unit: "obrażeń" },
   },
@@ -168,7 +168,7 @@ export const BRANCHES = {
     skill: "kicking",
     name: "Cięższy kop",
     description: "Większe obrażenia kopnięciem",
-    costs: [1, 1, 1],
+    costs: [1, 1],
     effect: { kind: "damage", actions: ["kick"], amount: 1 },
     preview: { base: 3, step: 1, unit: "obrażeń" },
   },
