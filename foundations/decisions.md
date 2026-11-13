@@ -5322,10 +5322,7 @@ with it: a new
 section and a new piece of the game state, a section that shows after a short reload too, one line
 closed along with the others, which the predecessor game did not do, a stop in the open game that
 does not say how long the earning loop went, a second title and one more condition in the view, and the chest and practice of an earlier return
-leaving the screen when that line stops in the open game. Accepted with it too: a line that changes
-while the player reads it, a button that returns a moment after a payment, which may look as if the
-payment did not work, and one line that joins the moment of the return, its minutes and its chest,
-with the present, the practice waiting.
+leaving the screen when that line stops in the open game.
 *Rejected:* a report counting completed map runs alone — after eight hours it shows no practice although the game earned some; the payment behind the destructive „Zatrzymaj” alone, which drops the backpack; closing at each character, as the predecessor game did — as many clicks as characters; one
 line for the whole team — the player does not know which character it was about; all the minutes of
 the earning loop from its start in a line of a stop in the open game — a number that can exceed the
