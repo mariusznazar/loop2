@@ -34,6 +34,13 @@ export type SceneSpot = {
  */
 export type ScenePropSpot = SceneSpot & { mageFaces: "right" | "left" };
 
+/**
+ * The size of one pixel of a picture of the game on the screen, in CSS pixels: every picture is drawn at
+ * twice its size, the scene's 336 × 152 forest as 672 × 304 and the camp's 672 × 48 clearing as 1344 × 96,
+ * so that every pixel stays equal in size and nothing shakes in motion (D-349).
+ */
+export const PICTURE_PIXEL = 2;
+
 /** The scene's frame and the lines and edges its places are given by, in its pixels. */
 export const SCENE = {
   /** The forest in snow of D-314, the frame's whole picture. */
@@ -296,3 +303,34 @@ export const SCENE_PROPS = {
     mageFaces: "left",
   },
 } as const satisfies Partial<Record<ResourceId, ScenePropSpot>>;
+
+/**
+ * The camp at the top of Siedziba, in the pixels of its picture: a band of one picture, the snow
+ * clearing, with the campfire in the middle of it, the chest to the right of the fire and, to its left,
+ * the characters that are in Siedziba, standing in a row away from the fire in the order of creation
+ * (D-54). The clearing is the pack Pixel Crawler's snow ground composed with its pines and saplings,
+ * as the forest of the scene is (D-314), in full light and with no tint (D-315), and as wide as the
+ * widest content, 1344 px at twice its pixels: a narrower band shows its middle. The chest is one still
+ * picture, the rectangle 26 × 21 at 179, 75 of the pack's sheet of interior props with every pixel moved
+ * unchanged, the same at every count of what it holds (D-271). The fire is
+ * the burning fire of the scene (`SCENE_FIRE`), always burning, and a character stands in its idle sheet
+ * (`SCENE_MAGES`), so the camp names no archetype of its own.
+ *
+ * A character takes `cell` pixels of the row, its frame reaching beyond the cell on both sides, where the
+ * frame is transparent. The row, the fire and the chest are `gap` pixels apart. `lift` is how far above
+ * the bottom edge of the band each kind of picture stands, its bottom edge: the fire and the chest a little
+ * higher than the characters, as the fire of the scene stands above the mage's line (`SCENE_FIRE.place`).
+ */
+export const CAMP = {
+  background: { file: "camp-clearing.png", width: 672, height: 48, frames: 1 },
+  chest: { file: "chest.png", width: 26, height: 21, frames: 1 },
+  cell: 32,
+  gap: 6,
+  lift: { character: 3, fire: 6, chest: 5 },
+} as const satisfies {
+  background: ScenePicture;
+  chest: ScenePicture;
+  cell: number;
+  gap: number;
+  lift: { character: number; fire: number; chest: number };
+};

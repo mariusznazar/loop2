@@ -154,7 +154,7 @@ function boxOf(sprite: ScenePlacedSprite, frame: SceneSprite): CSSProperties {
 }
 
 /** A sheet: its picture laid at the width of all its frames, clipped to one, which CSS steps through. */
-function Sheet({
+export function Sheet({
   sprite,
   className,
   momentKey,
