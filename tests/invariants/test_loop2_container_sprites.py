@@ -47,6 +47,7 @@ import uuid
 
 import loop2_invariant_support as support
 from tests.invariants.account_container_support import start_production_container
+from scripts import docker_gate
 
 DOCKERFILE = "Dockerfile"
 SPRITES_DIRECTORY = "assets/sprites"
@@ -54,7 +55,6 @@ SPRITE_SUFFIX = ".png"
 URL_PREFIX = "/sprites/"
 EXPECTED_STATUS = 200
 
-DAEMON_TIMEOUT = 30     # seconds for `docker version` to answer
 BUILD_TIMEOUT = 1200    # seconds for the image build
 LISTEN_WAIT = 60        # seconds for the started container to hold a listening socket
 
@@ -89,17 +89,6 @@ Promise.all(paths.map(async (path) => {
 
 def docker():
     return shutil.which("docker")
-
-
-def docker_answers():
-    if docker() is None:
-        return False
-    try:
-        result = subprocess.run([docker(), "version", "--format", "{{.Server.Version}}"],
-                                capture_output=True, timeout=DAEMON_TIMEOUT)
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-    return result.returncode == 0 and result.stdout.strip() != b""
 
 
 def docker_run(*arguments, timeout=support.COMMAND_TIMEOUT):
@@ -138,9 +127,9 @@ class ContainerServesSprites(unittest.TestCase):
         support.read_required(DOCKERFILE)
         sprites = working_tree_sprites()
         self.assertTrue(sprites, f"{SPRITES_DIRECTORY}/ holds no file ending in {SPRITE_SUFFIX}")
-        if not docker_answers():
-            self.skipTest("no Docker daemon answers; whether the loop2 container serves the "
-                          "sprites of assets/sprites/ (loop2-container-sprites) stays unchecked")
+        docker_gate.require_daemon(self, "whether the loop2 container serves the sprites of "
+                                         "assets/sprites/ (loop2-container-sprites) stays "
+                                         "unchecked")
         tag = "loop2-invariant-check:" + uuid.uuid4().hex[:12]
         name = "loop2-invariant-check-" + uuid.uuid4().hex[:12]
         self.addCleanup(docker_run, "image", "rm", "-f", tag)

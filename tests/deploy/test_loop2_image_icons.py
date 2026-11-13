@@ -35,11 +35,11 @@ import unittest
 import uuid
 
 from tests.invariants.account_container_support import start_production_container
+from scripts import docker_gate
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ICONS = os.path.join(ROOT, "assets", "icons")
 
-DAEMON_TIMEOUT = 30     # seconds for `docker version` to answer
 BUILD_TIMEOUT = 1200    # seconds for the image build
 COMMAND_TIMEOUT = 120   # seconds for any other docker command
 SERVE_WAIT = 60         # seconds for the started container to answer GET /
@@ -67,17 +67,6 @@ def docker():
     return shutil.which("docker")
 
 
-def docker_answers():
-    if docker() is None:
-        return False
-    try:
-        result = subprocess.run([docker(), "version", "--format", "{{.Server.Version}}"],
-                                capture_output=True, timeout=DAEMON_TIMEOUT)
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-    return result.returncode == 0 and result.stdout.strip() != b""
-
-
 def docker_run(*arguments, timeout=COMMAND_TIMEOUT):
     """(exit code, combined output) of a docker command run from the repository root."""
     result = subprocess.run([docker(), *arguments], cwd=ROOT, stdin=subprocess.DEVNULL,
@@ -101,9 +90,7 @@ class ImageServesIcons(unittest.TestCase):
     def test_built_image_serves_every_icon_and_the_page(self):
         icons = icon_files()
         self.assertTrue(icons, "assets/icons/ holds no SVG file; nothing to look for in the image")
-        if not docker_answers():
-            self.skipTest("no Docker daemon answers; the image's build and the icons it serves "
-                          "stay unchecked")
+        docker_gate.require_daemon(self, "the image's build and the icons it serves stay unchecked")
         tag = "loop2-image-icons-check:" + uuid.uuid4().hex[:12]
         name = "loop2-image-icons-check-" + uuid.uuid4().hex[:12]
 
