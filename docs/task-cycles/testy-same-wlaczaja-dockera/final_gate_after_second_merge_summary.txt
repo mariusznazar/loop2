@@ -1,0 +1,18 @@
+start 23:07:11
+...
+start 23:07:11
+== tests/agent_workflow
+Ran 14 tests in 2.163s
+OK
+== tests/deploy
+Ran 231 tests in 1195.784s
+OK
+== tests/invariants
+Ran 257 tests in 1502.989s
+OK
+== tests/quality
+Ran 52 tests in 129.498s
+OK
+554 tests in 4 directories; every directory passed
+0 errors
+EXIT 0 23:55:50
