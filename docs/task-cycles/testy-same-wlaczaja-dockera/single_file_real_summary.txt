@@ -1,3 +1,0 @@
-command: npm test -- tests/deploy/test_loop2_tunnel_image.py, Docker Desktop stopped beforehand
-Ran 1 test in 15.348s
-OK
