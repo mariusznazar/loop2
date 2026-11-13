@@ -1305,6 +1305,16 @@ The game's credits hold, for every pack of pictures under `assets/sprites/` whos
 - **Part:** browser-view
 - **Violated:** no
 
+## gate-docker-start-waits-once
+
+In one run of the gate, a start of Docker Desktop that has not finished in its time limit is waited for once: every later test of that run that needs a Docker daemon is skipped at once, with no new start.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-390
+- **Part:** build-tools · deployment
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

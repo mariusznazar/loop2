@@ -9559,3 +9559,48 @@ mage; a camp that stands still, one frame of the fire and one of each character 
 screen that is to stop looking like a form; a click on a character that opens its screen Postać — a new kind
 of control outside the shared ones (D-44): a picture as a link, with focus, a name for readers and a look
 under the pointer, and, where not every character stands in the picture, a link for some of them alone.
+
+### D-390 — Who starts Docker Desktop when a test of the gate needs a Docker daemon that does not answer?
+
+A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers, for at most 3 minutes, in a run of the whole gate and in a run of one test file alike. The test is skipped only when no daemon has answered by then, and its message says that the start was tried and did not finish and what stays unchecked; once a start has not finished in its limit, every later test of that run that needs a daemon is skipped at once, with no new start. On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once, with a message that says what stays unchecked.
+
+- **Scope:** build-tools, deployment
+- **Based on:** docker-desktop-start-detach
+- **Relations:** derives from D-77
+- **Verification:** invariants: gate-docker-start-waits-once. An agent compares a change with the decision:
+  - complies: a new test that needs a container asks the gate for a daemon before it builds anything, and is skipped through that request alone; a test of the gate's start that runs against a stand-in `docker` and so proves the gate's reaction, not a real start
+  - violates: a test that keeps its own check of the daemon and is skipped on it, so that a stopped Docker Desktop is never started for it; a wait for the daemon with no time limit
+- **Origin:** none
+
+*Rationale:* the gate starts Docker every time, whatever an agent remembers, and today only the game uses Docker; a start left to an agent's memory leaves a forgotten Docker as an unchecked test in a request. A run of one test file starts it too, since agents run one file when they look for a cause, and a file that needs Docker fails without it. Three minutes is a margin of over three times the estimated start of half a minute to a minute (not measured), and costs a run those three minutes once where Docker does not rise. Only an answer of the daemon counts as Docker being up, because the status that Docker Desktop reports can say that it is stopped while the daemon answers. A computer with no Docker Desktop keeps the skip it had, at once. The tests of a run stand in several processes, one for each directory of Python tests, so a start that did not finish is recorded outside any one process; otherwise each of those processes would wait the whole limit again.
+*Rejected:* a rule of the way that lets an agent start a local service its checks need — depends on whether the agent remembers it, and only the game uses Docker today; nothing — each forgetting still ends as an unchecked test in the request; 2 minutes — a smaller margin, and a slow start, after an update of Windows for one, ends in a skip as it does today; 5 minutes — a run lengthens by 5 minutes where Docker does not rise; a start only in a run of the whole gate — one file still fails as it does today, and an agent or the human starts Docker by hand.
+
+### D-391 — What becomes of the Docker Desktop that the gate started, once the run is over?
+
+The Docker Desktop that the gate started stays running after the run; the gate does not stop it.
+
+- **Scope:** build-tools, deployment
+- **Based on:** none
+- **Relations:** derives from D-390
+- **Verification:** an agent compares a change with the decision:
+  - complies: a run that started Docker Desktop ends with it running, the gate having issued no command that stops or restarts it
+  - violates: a gate, or a test of it, that stops or restarts Docker Desktop at the end of a run or after a test
+- **Origin:** none
+
+*Rationale:* Docker Desktop left running is the state that follows starting it by hand, and the next runs of the same work do not wait for a start. Accepted with it: the memory it takes stays taken until its owner closes it.
+*Rejected:* the gate stops it — the memory returns, but each of several runs in one piece of work waits for a start again.
+
+### D-392 — Does the gate start Docker Desktop only where the free memory of the computer allows?
+
+The gate starts Docker Desktop whatever the free memory of the computer is; it keeps no threshold of memory below which it does not start it.
+
+- **Scope:** build-tools, deployment
+- **Based on:** none
+- **Relations:** derives from D-390
+- **Verification:** an agent compares a change with the decision:
+  - complies: a start that asks the computer nothing about its memory
+  - violates: a start that is skipped, or a test that is skipped, because the free memory is below a number written for the purpose
+- **Origin:** none
+
+*Rationale:* the start puts no new load on the computer, it changes only who starts Docker, and a gate with Docker running is the state in which these tests are meant to run anyway.
+*Rejected:* no start where the free memory is below a threshold — the number has to be settled, and a new reason appears for which a test is skipped.
