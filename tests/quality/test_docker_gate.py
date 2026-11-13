@@ -11,6 +11,7 @@ three minutes itself is not exercised.
 
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import time
 import unittest
@@ -75,6 +76,30 @@ class DaemonGap(unittest.TestCase):
         self.assertIsNotNone(gap)
         self.assertGreaterEqual(waited, 2)
         self.assertLess(waited, 20)
+        self.assertEqual(len(docker.starts()), 1)
+
+    def test_a_daemon_that_hangs_instead_of_refusing_is_waited_for_within_the_limit_alone(self):
+        # A daemon that neither answers nor refuses holds every ask of `docker version` until
+        # the ask's own time limit; the real `docker` is not hung for the test, the ask is
+        # cut at the limit it was given, as the helper's own limit cuts it.
+        docker = DockerStandIn(self)
+        self.use(docker, limit="6")
+        run = subprocess.run
+        asked = []
+
+        def hang_on_version(command, *arguments, **options):
+            if command[1:2] != ["version"]:
+                return run(command, *arguments, **options)
+            asked.append(options["timeout"])
+            time.sleep(options["timeout"])
+            raise subprocess.TimeoutExpired(command, options["timeout"])
+
+        began = time.monotonic()
+        with mock.patch.object(subprocess, "run", hang_on_version):
+            gap = docker_gate.daemon_gap()
+        waited = time.monotonic() - began
+        self.assertIsNotNone(gap)
+        self.assertLess(waited, 6 + 6, f"asks of the daemon were given the time limits {asked}")
         self.assertEqual(len(docker.starts()), 1)
 
     def test_after_a_start_that_did_not_finish_the_next_ask_gives_the_gap_at_once(self):

@@ -52,12 +52,12 @@ def daemon_answers(timeout=ANSWER_LIMIT):
     return result.returncode == 0 and result.stdout.strip() != b""
 
 
-def desktop_present():
+def desktop_present(timeout=ANSWER_LIMIT):
     """True when this computer's `docker` has the `desktop` command, which Docker Desktop installs."""
     try:
         result = subprocess.run([docker_command(), "desktop", "--help"],
                                 stdin=subprocess.DEVNULL, capture_output=True,
-                                timeout=ANSWER_LIMIT)
+                                timeout=timeout)
     except (OSError, subprocess.TimeoutExpired):
         return False
     return result.returncode == 0
@@ -108,32 +108,38 @@ def shared_state():
                 os.environ[STATE_VARIABLE] = previous
 
 
-def start_desktop():
+def start_desktop(timeout=START_COMMAND_LIMIT):
     """Asks Docker Desktop to start, without waiting for it and without keeping its output."""
     with contextlib.suppress(OSError, subprocess.TimeoutExpired):
         subprocess.run([docker_command(), "desktop", "start", "--detach"],
                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL, timeout=START_COMMAND_LIMIT)
+                       stderr=subprocess.DEVNULL, timeout=timeout)
+
+
+def within(deadline, cap):
+    """The time limit of one call of `docker`: its own cap, or what remains until the deadline
+    where that is less, and never under a second."""
+    return max(1, min(cap, deadline - time.monotonic()))
 
 
 def daemon_gap():
     """None when a Docker daemon answers, after starting Docker Desktop if that was needed and
-    possible; otherwise the sentence that says why no daemon answers."""
+    possible; otherwise the sentence that says why no daemon answers. The limit is counted from
+    the first ask, and every call of `docker` here is held to what remains of it."""
     gap = recorded_gap()
     if gap:
         return gap
-    if daemon_answers():
+    limit = start_limit()
+    deadline = time.monotonic() + limit
+    if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
         return None
     if docker_command() is None:
         return "no Docker daemon answers: `docker` is not on PATH"
-    if not desktop_present():
+    if not desktop_present(timeout=within(deadline, ANSWER_LIMIT)):
         return "no Docker daemon answers, and this computer has no Docker Desktop to start"
-    limit = start_limit()
-    deadline = time.monotonic() + limit
-    start_desktop()
+    start_desktop(timeout=within(deadline, START_COMMAND_LIMIT))
     while True:
-        remaining = deadline - time.monotonic()
-        if daemon_answers(timeout=max(1, min(ANSWER_LIMIT, remaining))):
+        if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
             return None
         if time.monotonic() >= deadline:
             break
