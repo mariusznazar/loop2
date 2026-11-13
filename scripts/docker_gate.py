@@ -40,8 +40,7 @@ def docker_command():
 
 
 def daemon_answers(timeout=ANSWER_LIMIT):
-    """True when `docker version` names a server version. Only an answer of the daemon counts:
-    `docker desktop status` can say `stopped` while the daemon answers."""
+    """True when `docker version` names a server version. Only an answer of the daemon counts."""
     docker = docker_command()
     if docker is None:
         return False
@@ -139,8 +138,8 @@ def daemon_gap():
         if time.monotonic() >= deadline:
             break
         time.sleep(min(POLL_INTERVAL, max(0, deadline - time.monotonic())))
-    gap = (f"no Docker daemon answers: the gate started Docker Desktop and it did not answer "
-           f"within {limit:g} seconds")
+    gap = (f"no Docker daemon answers: the gate tried to start Docker Desktop and no daemon "
+           f"answered within {limit:g} seconds")
     record_gap(gap)
     return gap
 

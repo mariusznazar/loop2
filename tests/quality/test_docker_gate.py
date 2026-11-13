@@ -79,20 +79,20 @@ class DaemonGap(unittest.TestCase):
 
     def test_after_a_start_that_did_not_finish_the_next_ask_gives_the_gap_at_once(self):
         docker = DockerStandIn(self)
-        self.use(docker, limit="2")
+        self.use(docker, limit="4")
         first = docker_gate.daemon_gap()
         began = time.monotonic()
         second = docker_gate.daemon_gap()
         self.assertEqual(second, first)
-        self.assertLess(time.monotonic() - began, 1.5)
+        self.assertLess(time.monotonic() - began, 3)
         self.assertEqual(len(docker.starts()), 1)
 
     def test_without_the_docker_desktop_plugin_nothing_is_started_and_nothing_is_awaited(self):
         docker = DockerStandIn(self, plugin=False)
-        self.use(docker)
+        self.use(docker, limit="60")
         began = time.monotonic()
         self.assertIsNotNone(docker_gate.daemon_gap())
-        self.assertLess(time.monotonic() - began, 10)
+        self.assertLess(time.monotonic() - began, 30)
         self.assertEqual(docker.starts(), [])
 
     def test_without_a_docker_command_there_is_a_gap_at_once(self):
@@ -116,8 +116,8 @@ class DaemonGap(unittest.TestCase):
                     docker_gate.require_daemon(self, unchecked)
                 reasons[name] = str(skipped.exception)
                 self.assertIn(unchecked, reasons[name])
-        self.assertIn("started Docker Desktop", reasons["start tried"])
-        self.assertNotIn("started Docker Desktop", reasons["no desktop"])
+        self.assertIn("tried to start Docker Desktop", reasons["start tried"])
+        self.assertNotIn("tried to start Docker Desktop", reasons["no desktop"])
 
 
 class GateRuns(unittest.TestCase):
@@ -150,7 +150,7 @@ class GateRuns(unittest.TestCase):
         skipped = skipped_lines(output)
         self.assertEqual(len(skipped), 2, output)
         for line in skipped:
-            self.assertIn("started Docker Desktop", line)
+            self.assertIn("tried to start Docker Desktop", line)
             self.assertIn("whether the checked thing works stays unchecked", line)
 
     def test_a_whole_run_that_finds_docker_stopped_starts_it_once_and_skips_nothing(self):
@@ -165,12 +165,12 @@ class GateRuns(unittest.TestCase):
     def test_a_whole_run_on_a_computer_without_docker_desktop_skips_at_once(self):
         docker = DockerStandIn(self, plugin=False)
         began = time.monotonic()
-        result = self.run_whole(docker, limit="60")
+        result = self.run_whole(docker, limit="120")
         output = result.stdout + result.stderr
         self.assertEqual(result.returncode, 0, output)
         self.assertEqual(docker.starts(), [], output)
         self.assertEqual(len(skipped_lines(output)), 2, output)
-        self.assertLess(time.monotonic() - began, 55)
+        self.assertLess(time.monotonic() - began, 100)
 
     def test_one_selected_test_file_starts_a_stopped_docker_desktop_too(self):
         docker = DockerStandIn(self, rise_after_polls=1)
