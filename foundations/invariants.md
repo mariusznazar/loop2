@@ -1307,11 +1307,11 @@ The game's credits hold, for every pack of pictures under `assets/sprites/` whos
 
 ## loop-practice-payment
 
-The practice an earning loop gathers is added to its character's skills once, whichever of „Odbierz”, the completion of the map run it was gathered in and the stop of the loop pays it.
+The practice an earning loop gathers is never added to its character's skills twice, whichever of „Odbierz” and the stop of the loop pays it and whether the completion of the map run it was gathered in came between.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-189
+- **Derives from:** D-189 · D-241 · D-245 · D-246
 - **Part:** simulation
 - **Violated:** no
 

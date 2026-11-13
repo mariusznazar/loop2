@@ -5116,7 +5116,7 @@ on: the function that reaches its end deals with that end at once.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-56 · derives from D-164
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
   - complies: a game state holding the manual map run of one character and the earning loops of two
     others; each next map run binding its lists anew from the program content the earning loop holds;
     deleting a program leaving an earning loop on that program's content as it was
@@ -5246,7 +5246,7 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-183 · derives from D-189
-- **Verification:** invariants: trip-run-end. An agent compares a change with the decision:
+- **Verification:** invariants: trip-run-end · loop-practice-payment. An agent compares a change with the decision:
   - complies: a stop in the middle of a map run leaving the chest as it stood and the character's
     skills grown by what the earning loop and that map run gathered; „Pętla zatrzymana” after a stop
     with nothing gathered, standing after a reload and gone at the next send; „Zatrzymaj” neutral
@@ -5294,7 +5294,7 @@ manual map run reads the report on reaching Siedziba.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-240
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
   - complies: an earning loop a death stopped standing above one that went on; a line of an earning
     loop a death stopped naming no practice, since the death took it; a character's own change in the
     chest on its line, with the practice waiting at its earning loop, the map run going on included,

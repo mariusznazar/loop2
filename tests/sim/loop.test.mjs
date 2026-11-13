@@ -875,7 +875,7 @@ test("stopping a loop whose map run ended in death pays only the loop's own prac
   assert.equal(stopLoop(stopped, 2).state, stopped);
 });
 
-// invariant: trip-run-end
+// invariant: loop-practice-payment
 // D-189, D-246: „Odbierz” pays all the practice waiting, the map run going on included, and leaves
 // the map run, its backpack, the loop and the chest as they were.
 test("taking the practice pays what the loop and its map run going on gathered, empties both and changes nothing else", () => {
