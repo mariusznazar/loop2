@@ -6156,9 +6156,11 @@ The scene's pictures and the picture of the game behind the login card are sprit
 Pixel Crawler and LPC Wolf, and the dust of a miss and the cloud of a scuffle are sprites of the
 pack Smoke & Fire Animated Particle [16x16] recoloured to the scene's colours, all kept in
 `assets/sprites/` outside the directory the account and save server serves and copied into it when
-the application is built. A sprite file holds pixels alone, the game credits each pack whose licence
-asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, and the character of
-the scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light,
+the application is built. The pictures of the camp at the top of Siedziba, its clearing, fire, chest
+and characters, are sprites of the pack Pixel Crawler kept there in the same way, and the chest is
+one still picture whatever it holds. A sprite file holds pixels alone, the game credits each pack
+whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, and
+the character of the scene is the mage of Pixel Crawler. CSS may draw in the scene layers, such as the tint of its light,
 the cold layer of a death of cold and the frost, and specks, and the frost and the specks are squares of one pixel of the scene on its
 grid in colours of the palettes of the packs, while the colours of the tint layer and of the cold layer have their source in
 the human's choice; whatever has a drawing — a character, a creature, a thing — comes from a pack,
@@ -6172,6 +6174,9 @@ frost by at least 3:1 against the snow it lies on.
   change with the decision:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
     PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
+    the clearing of the camp composed from the pack's snow ground and trees, and its chest cut from
+    the pack's sheet with every pixel moved unchanged, each a PNG file of that kind, the camp's
+    characters and fire the files of the scene's mage and fire;
     the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
     a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
     holds, which the cloud of a scuffle is too, with a credit line for the pack in the folded section
@@ -6191,7 +6196,7 @@ frost by at least 3:1 against the snow it lies on.
     other than the three named; a wolf drawn from a pack under another licence than CC BY 3.0; the cloud of dust in a colour that does not stand out from the
     ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
     game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
-    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave
+    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave; a chest of the camp drawn from an icon file as a mask, or in one picture when it is empty and in another when it is full
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
@@ -6221,8 +6226,14 @@ on the snow weakly by its brightness. Accepted with it: credits for the pack of 
 bending mage made by hand or, where hand work comes out weak, generated for those few frames, a
 smaller flame cut down by hand from the frames of the pack's fire, pixel work whose look is judged
 only once it is made, and colours of the specks and of the frost that enter the game's palette with a
-source in the pixel of a named picture of a pack.
-*Rejected:* for the licence of the wolf: CC BY 4.0 — nothing the game needs beyond 3.0, its terms
+source in the pixel of a named picture of a pack. The camp at the top of Siedziba needs no pack beyond the one
+the scene stands on: Pixel Crawler holds a chest with fittings in the same style, so the chest is cut out of its
+sheet as the trees were, the clearing is composed of the same pictures as the forest, and the pack asks for no
+credit, so the game's credits stay as they are. The chest is one picture because how much it holds is said by
+the heading of the chest's section, not by the picture; accepted with it: one more cut from the pack's sheet.
+*Rejected:* for the chest of the camp: an icon of game-icons.net drawn by a mask, as the icons over the mage's
+head are — a smooth drawing beside pixels, the reason this decision gives for refusing shapes the browser draws in
+the scene, and a new row in the game's credits; for the licence of the wolf: CC BY 4.0 — nothing the game needs beyond 3.0, its terms
 would have to be read and written down as a new fact, and two different Creative Commons licences would
 stand in the credits; OGA-BY 3.0 — the same cost, and few readers know the name; GPL 2.0 and GPL 3.0 —
 they put on distribution terms of copyleft that the other licences do not, and the game gets nothing
@@ -6241,8 +6252,8 @@ the scene would wait.
 
 ### D-272 — Where may a picture of the game stand?
 
-A picture of the game stands behind the login card and as the scene, and text stands on a solid
-background, never on a picture.
+A picture of the game stands behind the login card, in a band at the top of Siedziba and as the
+scene, and text stands on a solid background, never on a picture.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9480,3 +9491,71 @@ Las is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an amb
 
 *Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-80, D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the second map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
 *Rejected:* other numbers for Las than those of the old loop game's data.
+
+### D-389 — What does the camp at the top of Siedziba show, and how does it stand and move?
+
+The camp at the top of Siedziba is a band across the content, about 96 px high, under the row of
+warnings below the menu bar and over the heading „Siedziba”, drawn at twice the pixels of its picture:
+a snow clearing in full light and with no tint, composed of the pictures of the pack Pixel Crawler from
+which the forest of the scene is composed, with a burning campfire in the middle, the chest and the
+characters that are in Siedziba, and a window narrower than the picture crops it at the sides around the
+campfire and never scales it down. The characters that stand in it are those that are neither in a
+manual map run, going, paused or ended and waiting for „Restart” or „Zakończ”, nor in an earning loop,
+the first of them in the order of creation that the band holds at the width of the window, the rest
+standing in the picture nowhere while the section „Drużyna” lists them all, and a camp with none shows
+the fire and the chest alone. The camp moves as the scene does, the fire in the frames of its flame and
+each character in the frames of its idle sheet, at the scene's fixed beat with no loop of drawing, and
+stands still under the system's setting for reduced motion; its campfire burns always and is no campfire
+of the game state; and it is a picture, not a control, taking no click and no key, hidden from readers of
+the screen, with no text on it or over it.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-54 · derives from D-272 · derives from D-280 · derives from D-314 · derives from D-315 · derives from D-316 · derives from D-317 · derives from D-321 · derives from D-349
+- **Verification:** invariants: loop2-container-sprites. An agent compares a change with the decision:
+  - complies: the camp 96 px high between the row of warnings and the heading „Siedziba”, with the sentence
+    of the page above the screen still above it; the fire in the middle at every width of the window, the
+    chest and the characters of Siedziba beside it, the first in the order of creation; in
+    a window 400 px wide the clearing cropped at the sides around the fire and as many whole characters
+    as the band holds, „Drużyna” listing all of them; a team whose only character is in a manual map run,
+    or in an earning loop, with the fire and the chest alone; the camp drawn again at „Wejdź”, „Puść w
+    pętlę”, „Zatrzymaj” and „Zakończ”; the frames of the fire and of the characters standing still under
+    the setting for reduced motion; no link, button, field, text or name for a reader in the camp
+  - violates: the camp under the heading „Siedziba”; the clearing drawn at a fraction of twice its
+    picture; a character of a map run or of an earning loop standing at the fire; a character cut in half
+    at the edge of the band; a campfire of the camp that goes out with the campfire of the game state; a
+    picture of the chest that changes with what it holds; a click on a character that opens its screen; a
+    name or a count written on the picture; a camp that shows the same at the same width after a character
+    has gone to a map
+- **Origin:** none
+
+*Rationale:* without it Siedziba is a page of text that looks like a form, and a picture of the camp at its
+top gives the game a place to be seen where nothing is to be read; the band stands over the screen's panel,
+outside its text, so the contrast of the text and the order in which the screen is read stay as they
+are (D-272). The picture says what the text under it does not: a character in a manual map run is a
+thing Siedziba otherwise says nowhere, since „Drużyna” speaks of earning loops alone, so the camp shows
+the characters that are at the fire and the screen is drawn again at every change of the map run. A team
+has no limit of characters and the content is at most 1344 px wide, so the band holds as many whole
+characters from the first as fit and the list under it holds all. The band crops the clearing at the
+sides because a pixel picture at a fractional scale has unequal pixels and shakes in motion, as the
+scene's would (D-349). The fire and the characters move at the beat of the scene so that Siedziba is not a
+still page, by CSS alone and standing still where the system asks for less motion; only small parts of the
+band change, so nothing flashes (D-317); the camp has no campfire of the game state to follow, so its fire
+always burns. The camp is a picture so that no new kind of control joins the shared ones (D-44), and the
+way to a character stays its name in „Drużyna” (D-280). Accepted with it: the heading „Siedziba” stands
+lower by the height of the band; one more picture to compose; the number of characters in the picture
+follows the width of the window; motion beside the text of Siedziba; no shortcut from the picture to a
+character.
+*Rejected:* the band under the heading „Siedziba”, over the report „Gdy cię nie było” — the picture is not
+the first thing of the screen, the heading standing over it; the band with no clearing, the fire, the chest
+and the characters straight on the page — nothing to compose, but pixel pictures with an outline look like
+stickers on a flat background; every character of the team, always, in the order of creation, those on a
+map and in a loop too — a character of a manual map run sits at the fire and nothing on Siedziba says it is
+on the map, a character in a loop sits at the fire though the line under it says it walks in a loop, and the
+picture has no meaning; every character, those away drawn differently, dimmed — a new look whose meaning
+nothing settles, and grey means stopped time and death in the game (D-322), so a dimmed character would read
+as dead; every character, always, closer and closer until they overlap — a crowd in which a mage hides a
+mage; a camp that stands still, one frame of the fire and one of each character — a dead picture on the
+screen that is to stop looking like a form; a click on a character that opens its screen Postać — a new kind
+of control outside the shared ones (D-44): a picture as a link, with focus, a name for readers and a look
+under the pointer, and, where not every character stands in the picture, a link for some of them alone.

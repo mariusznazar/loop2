@@ -1,18 +1,18 @@
 """Invariant loop2-container-sprites: The loop2 container built from the repository serves, at the
 path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file
-the scene's drawing asks for.
+the scene's drawing or the camp's drawing asks for.
 
 Reading of the sentence:
 - the loop2 container built from the repository: the image `docker build` builds from the working
   tree's `Dockerfile`, with the working tree as the build context and only read, run as a
   container with `docker run`;
-- every file the scene's drawing asks for: here, the set this check reads is every file standing
-  directly in `assets/sprites/` of the working tree whose name ends in `.png`; subdirectories and
-  their files are not counted. The set must not be empty: an empty directory fails the check
-  instead of passing it vacuously. That the scene's drawing asks for exactly these files is not
-  checked here; the case "every file the scene's data names stands directly in assets/sprites/ as
-  a .png file" of `tests/view/scene-picture.test.mjs` ties the files the drawing asks for to these
-  files;
+- every file the scene's drawing or the camp's drawing asks for: here, the set this check reads is
+  every file standing directly in `assets/sprites/` of the working tree whose name ends in `.png`;
+  subdirectories and their files are not counted. The set must not be empty: an empty directory
+  fails the check instead of passing it vacuously. That the two drawings ask for exactly these
+  files is not checked here; the case "every file the scene's and the camp's data name stands
+  directly in assets/sprites/ as a .png file" of `tests/view/scene-picture.test.mjs` ties the
+  files the drawings ask for to these files;
 - serves ... at `/sprites/<file name>`: from inside the running container, a GET of
   `/sprites/<file name>` (the name percent-encoded as a URL path segment) on the one TCP port the
   container listens on answers with status 200;
@@ -32,7 +32,7 @@ stays unchecked, never passed.
 
 Does NOT cover: the container on the server; requests other than GET; headers of the answer
 (media type, caching); paths under `/sprites/` that name no file of `assets/sprites/`; files of
-`assets/sprites/` that are not PNG; that the scene's drawing asks for each file of the set.
+`assets/sprites/` that are not PNG; that the scene's drawing or the camp's drawing asks for each file of the set.
 """
 
 import base64
