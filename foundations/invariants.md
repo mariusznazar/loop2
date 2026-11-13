@@ -1315,6 +1315,16 @@ In one run of the gate, a start of Docker Desktop that has not finished in its t
 - **Part:** build-tools · deployment
 - **Violated:** no
 
+## loop-practice-payment
+
+The practice an earning loop gathers is never added to its character's skills twice, whichever of „Odbierz” and the stop of the loop pays it and whether the completion of the map run it was gathered in came between.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-189 · D-241 · D-245 · D-246
+- **Part:** simulation
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

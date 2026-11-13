@@ -40,9 +40,14 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // a third character for them (D-206, D-241, D-245, D-246 and D-248); the game refuses it as
 // another version since version 4.
 //
-// The document of the current version, version 4, is that of version 3 with the three fields of the
-// record of a manual map run added to its map run: the longest streak, the game minutes by what the
-// character was doing, and what the character entered with (D-206, D-135 and D-368). It fills every optional branch of the game state: a map run with a
+// The document of version 4 is that of version 3 with the three fields of the record of a manual
+// map run added to its map run: the longest streak, the game minutes by what the character was
+// doing, and what the character entered with (D-206, D-135 and D-368); the game refuses it as
+// another version since version 5.
+//
+// The document of the current version, version 5, is that of version 4 with the practice taken out
+// of the lines of the report, which the game reads from the earning loops instead (D-206, D-246 and
+// D-189). It fills every optional branch of the game state: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
@@ -629,12 +634,25 @@ const RUN_RECORD = {
   enteredWith: [{ item: "stick", count: 4 }],
 };
 
-/** The document of the current version: version 3 with the record in its map run. */
-const DOCUMENT = {
+/** The document of version 4: version 3 with the record in its map run; the game refuses it as another version. */
+const DOCUMENT_V4 = {
   version: 4,
   game: {
     ...DOCUMENT_V3.game,
     run: { ...DOCUMENT_V3.game.run, ...RUN_RECORD },
+  },
+};
+
+/** The document of the current version: version 4 with no practice in the lines of its report. */
+const DOCUMENT = {
+  version: 5,
+  game: {
+    ...DOCUMENT_V4.game,
+    awayReport: DOCUMENT_V4.game.awayReport.map((line) =>
+      Object.fromEntries(
+        Object.entries(line).filter(([key]) => key !== "practice"),
+      ),
+    ),
   },
 };
 
@@ -643,7 +661,7 @@ const DOCUMENT = {
  * earning loop whose map run is in a combat going on.
  */
 const HEADQUARTERS = {
-  version: 4,
+  version: 5,
   game: {
     programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
     nextProgramId: 2,
@@ -719,13 +737,13 @@ test("the current version is the one the document of the current version is writ
 // The `save` the server hands back: exactly `version`, `revision` and `game` (D-204).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
   const save = {
-    version: 4,
+    version: 5,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // D-206: 4 is the current version since the raise, so 5 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 5 }), {
+  // D-206: 5 is the current version since the raise, so 6 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 6 }), {
     ok: false,
     reason: "version",
   });
@@ -902,8 +920,8 @@ test("a moment of readiness below zero loads, as it is a safe integer of any sig
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
-  // D-206: 4 is the current version since the raise, so 5 stands in for another one.
-  for (const version of [0, 5, -1]) {
+  // D-206: 5 is the current version since the raise, so 6 stands in for another one.
+  for (const version of [0, 6, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -911,14 +929,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 5 of another shape",
-    { version: 5, game: "Las" },
+    "version 6 of another shape",
+    { version: 6, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 5 with an archetype absent from the data",
+    "version 6 with an archetype absent from the data",
     changed((document) => {
-      document.version = 5;
+      document.version = 6;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -960,6 +978,19 @@ test("the document of version 3 is refused as version, whatever its game holds",
     { ...structuredClone(DOCUMENT), version: 3 },
     "version",
   );
+});
+
+// invariant: save-version
+// D-206: a save of the version before the raise is discarded whole, whatever it holds, though its
+// game state is sound but for the practice its report lines still hold.
+test("the document of version 4 is refused as version, whatever its game holds", () => {
+  assert.equal(DOCUMENT_V4.version, 4);
+  assertRefused(
+    "the document of version 4",
+    structuredClone(DOCUMENT_V4),
+    "version",
+  );
+  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V4.version + 1);
 });
 
 // invariant: save-version
@@ -1811,6 +1842,26 @@ const CRAFTED = {
     (olaLoop(document).practice.kicking = 0),
   "an earning loop's practice fractional": (document) =>
     (olaLoop(document).practice.exploration = 2.5),
+  // The practice waiting at a loop is what „Odbierz” pays, so no value that could pay more than the
+  // loop gathered is admitted: a negative one, one beyond the safe integers, one as text.
+  "an earning loop's practice below 0": (document) =>
+    (olaLoop(document).practice.exploration = -1),
+  "an earning loop's practice beyond the safe integers": (document) =>
+    (olaLoop(document).practice.exploration = 2 ** 53),
+  "an earning loop's practice as text": (document) =>
+    (olaLoop(document).practice.exploration = "12"),
+  "the practice of an earning loop's map run without it": (document) =>
+    delete olaLoop(document).run.practice,
+  "the practice of an earning loop's map run below 0": (document) =>
+    (olaLoop(document).run.practice = { exploration: -3 }),
+  "the practice of an earning loop's map run fractional": (document) =>
+    (olaLoop(document).run.practice = { exploration: 1.5 }),
+  "the practice of an earning loop's map run beyond the safe integers": (
+    document,
+  ) => (olaLoop(document).run.practice = { exploration: 2 ** 53 }),
+  "the practice of an earning loop's map run of a skill absent from the data": (
+    document,
+  ) => (olaLoop(document).run.practice = { swimming: 1 }),
   "an earning loop's practice by the key __proto__": (document) =>
     (olaLoop(document).practice = JSON.parse('{"__proto__":1}')),
   // The stopped loops (D-245, D-241): a character of the team, with no earning loop and not the
@@ -1852,8 +1903,11 @@ const CRAFTED = {
     delete openLine(document).characterId,
   "a line without its minutes": (document) => delete openLine(document).minutes,
   "a line without its chest": (document) => delete openLine(document).chest,
-  "a line without its practice": (document) =>
-    delete openLine(document).practice,
+  // The practice waiting stands at the earning loop, so a line that still holds it is no line.
+  "a line still holding its practice": (document) =>
+    (openLine(document).practice = { exploration: 14 }),
+  "a line still holding an empty practice": (document) =>
+    (openLine(document).practice = {}),
   "a line without its flag of a resurrection used": (document) =>
     delete openLine(document).resurrectionUsed,
   "a line without its stop": (document) => delete openLine(document).stop,
@@ -1892,13 +1946,6 @@ const CRAFTED = {
     (openLine(document).chest.stick = 2 ** 53),
   "a line's chest below the safe integers": (document) =>
     (openLine(document).chest.berry = -(2 ** 53)),
-  // Its practice, by `practice`.
-  "a line's practice of a skill absent from the data": (document) =>
-    (openLine(document).practice.swimming = 1),
-  "a line's practice at 0": (document) =>
-    (openLine(document).practice.kicking = 0),
-  "a line's practice fractional": (document) =>
-    (openLine(document).practice.exploration = 2.5),
   // Its flag of a resurrection used.
   "a line's flag of a resurrection as text": (document) =>
     (openLine(document).resurrectionUsed = "true"),
@@ -2312,7 +2359,6 @@ test("the load shares none of the earning loops, the stopped loops or the report
   olaLoop(passed).practice.exploration = 1;
   passed.game.stoppedLoops[3].exploration = 1;
   openLine(passed).chest.stick = 1;
-  openLine(passed).practice.exploration = 1;
   stoppedLine(passed).stop.generation = 2;
   assert.deepEqual(state, DOCUMENT.game);
 });

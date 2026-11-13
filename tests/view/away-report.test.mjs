@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createCharacter, newGame } from "../../dist/browser/sim/game.js";
+import { startLoop } from "../../dist/browser/sim/loop.js";
 import {
   AWAY_TITLE,
   CHEST_FULL_TEXT,
@@ -13,19 +14,43 @@ import {
   reportTitle,
 } from "../../dist/browser/view/away-report.js";
 
-/** A team of Ala (1), Ola (2) and Ela (3), in the order they were created. */
-function team() {
+/** A game of Ala (1), Ola (2) and Ela (3), in the order they were created, Las solved. */
+function game() {
   let state = newGame();
   for (const name of ["Ala", "Ola", "Ela"])
     state = createCharacter(state, name).state;
-  return state.team;
+  return { ...state, solvedMaps: ["forest"] };
+}
+
+/** A team of Ala (1), Ola (2) and Ela (3), in the order they were created. */
+const team = () => game().team;
+
+/**
+ * The earning loops of the characters named in `waiting`, each on Las, holding the practice
+ * gathered from completions `{ loop }` and the practice of the map run going on `{ run }`.
+ */
+function loopsOf(waiting) {
+  let state = game();
+  for (const id of Object.keys(waiting))
+    state = startLoop(
+      state,
+      { mapId: "forest", characterId: Number(id) },
+      1,
+    ).state;
+  const loops = {};
+  for (const [id, { loop = {}, run = {} }] of Object.entries(waiting))
+    loops[id] = {
+      ...state.loops[id],
+      practice: loop,
+      run: { ...state.loops[id].run, practice: run },
+    };
+  return loops;
 }
 
 const line = (characterId, rest = {}) => ({
   characterId,
   minutes: 0,
   chest: {},
-  practice: {},
   resurrectionUsed: false,
   stop: null,
   ...rest,
@@ -36,7 +61,8 @@ const stoppedAway = (characterId, minutes, generation) =>
 const stoppedOpen = (characterId, generation) =>
   line(characterId, { stop: { generation, away: false } });
 
-const entriesOf = (awayReport) => reportEntries({ team: team(), awayReport });
+const entriesOf = (awayReport, waiting = {}) =>
+  reportEntries({ team: team(), awayReport, loops: loopsOf(waiting) });
 
 test("importing the report touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
@@ -69,6 +95,7 @@ test("a loop that stopped in a catch-up reads „po {m} min” in danger, the na
     {
       text: "Ola: pętla stanęła po 7 min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 4.",
       danger: true,
+      takeFor: null,
     },
   ]);
 });
@@ -78,6 +105,7 @@ test("a loop that stopped in the open game reads without minutes, in danger", ()
     {
       text: "Ela: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to pokolenie 2.",
       danger: true,
+      takeFor: null,
     },
   ]);
 });
@@ -93,21 +121,58 @@ test("a line that holds minutes of an earlier return and stopped in the open gam
   );
 });
 
-test("another line reads minutes, then the chest's signed changes, then the practice, in text", () => {
+test("another line reads minutes, then the chest's signed changes, then the practice waiting, in text, and names the character whose „Odbierz” stands beside it", () => {
   assert.deepEqual(
-    entriesOf([
-      away({
-        chest: { stick: 3, moss: -2 },
-        practice: { eating: 4, exploration: 12 },
-      }),
-    ]),
+    entriesOf([away({ chest: { stick: 3, moss: -2 } })], {
+      1: { loop: { eating: 4, exploration: 12 } },
+    }),
     [
       {
-        text: "Ala: 5 min · skrzynka: patyk +3, mech −2 · wprawa: Eksploracja +12, Jedzenie +4",
+        text: "Ala: 5 min · skrzynka: patyk +3, mech −2 · wprawa do odebrania: Eksploracja +12, Jedzenie +4",
         danger: false,
+        takeFor: 1,
       },
     ],
   );
+});
+
+// D-246, D-189: the practice waiting is all of it, the map run going on included, and it is read
+// from the loop of the line's own character, not from the line.
+test("the practice waiting adds the loop's and the map run's, and is read from the loop of the line's own character", () => {
+  const entries = entriesOf([away({ minutes: 5 }), line(2, { minutes: 7 })], {
+    1: { loop: { eating: 4 }, run: { eating: 1, exploration: 2 } },
+    2: { run: { exploration: 3 } },
+  });
+  assert.deepEqual(
+    entries.map(({ text }) => text),
+    [
+      "Ala: 5 min · wprawa do odebrania: Eksploracja +2, Jedzenie +5",
+      "Ola: 7 min · wprawa do odebrania: Eksploracja +3",
+    ],
+  );
+  assert.deepEqual(
+    entries.map(({ takeFor }) => takeFor),
+    [1, 2],
+  );
+});
+
+// D-246: with what is empty left out, so a line with nothing waiting reads as before and has no
+// „Odbierz”, a line with no loop too.
+test("a line whose loop holds no practice, or that has no loop, reads without the practice and with no „Odbierz”", () => {
+  for (const waiting of [{ 1: {} }, {}, { 2: { loop: { eating: 3 } } }]) {
+    assert.deepEqual(entriesOf([away({ chest: { stick: 1 } })], waiting), [
+      { text: "Ala: 5 min · skrzynka: patyk +1", danger: false, takeFor: null },
+    ]);
+  }
+});
+
+// D-246: a loop a death stopped has no loop and its practice went with the death.
+test("a line of a loop a death stopped names no practice and has no „Odbierz”, whatever another loop of the character holds", () => {
+  const [entry] = entriesOf([stoppedAway(1, 3, 2)], {
+    1: { loop: { eating: 3 } },
+  });
+  assert.equal(entry.takeFor, null);
+  assert.equal(entry.text.includes("wprawa"), false);
 });
 
 test("items follow the order of the items' data whatever the order of the line's keys", () => {
@@ -122,8 +187,8 @@ test("items follow the order of the items' data whatever the order of the line's
 
 test("empty parts are left out: no chest, no practice, or neither", () => {
   assert.equal(
-    entriesOf([away({ practice: { eating: 1 } })])[0].text,
-    "Ala: 5 min · wprawa: Jedzenie +1",
+    entriesOf([away()], { 1: { loop: { eating: 1 } } })[0].text,
+    "Ala: 5 min · wprawa do odebrania: Jedzenie +1",
   );
   assert.equal(
     entriesOf([away({ chest: { stick: -1 } })])[0].text,
@@ -134,14 +199,10 @@ test("empty parts are left out: no chest, no practice, or neither", () => {
 
 test("a resurrection used in the catch-up adds „ · wskrzeszenie zużyte” at the end, also on a bare line", () => {
   assert.equal(
-    entriesOf([
-      away({
-        chest: { stick: 3 },
-        practice: { eating: 2 },
-        resurrectionUsed: true,
-      }),
-    ])[0].text,
-    "Ala: 5 min · skrzynka: patyk +3 · wprawa: Jedzenie +2 · wskrzeszenie zużyte",
+    entriesOf([away({ chest: { stick: 3 }, resurrectionUsed: true })], {
+      1: { loop: { eating: 2 } },
+    })[0].text,
+    "Ala: 5 min · skrzynka: patyk +3 · wprawa do odebrania: Jedzenie +2 · wskrzeszenie zużyte",
   );
   assert.equal(
     entriesOf([away({ resurrectionUsed: true })])[0].text,

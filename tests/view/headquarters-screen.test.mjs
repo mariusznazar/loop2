@@ -1,6 +1,6 @@
 // The screen Siedziba in React (D-282, D-246, D-217, D-218, D-244, D-245, D-184, D-51, D-330, D-389) on
 // jsdom through tests/view/page-document.mjs (D-264): which elements the screen builds, what it
-// shows of the game state and of the clock's moment, what its three acts hand the page, and that
+// shows of the game state and of the clock's moment, what its acts hand the page, and that
 // nothing on it sends a character. Real focus order, Enter in a field and rendering are the browser
 // check's (D-88), so a focus case here holds only what jsdom shows.
 import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
@@ -57,7 +57,6 @@ const reportLine = (characterId, rest = {}) => ({
   characterId,
   minutes: 0,
   chest: {},
-  practice: {},
   resurrectionUsed: false,
   stop: null,
   ...rest,
@@ -75,6 +74,8 @@ async function mount({ root }, props) {
         create: (name) => calls.push(["create", name]),
         stop: (characterId) => calls.push(["stop", characterId]),
         closeReport: () => calls.push(["closeReport"]),
+        takePractice: (characterId) =>
+          calls.push(["takePractice", characterId]),
       },
       props,
     });
@@ -393,6 +394,7 @@ test("„Zamknij” asks the page to close the report; once the report is empty 
             calls.push("closeReport");
             screen.update(propsOf({ ...open, awayReport: [] }));
           },
+          takePractice: () => calls.push("takePractice"),
         },
         props: propsOf(open),
       });
@@ -418,6 +420,125 @@ test("„Zamknij” leaves the focus on its button when the report is still ther
     await press(close);
     assert.deepEqual(calls, [["closeReport"]]);
     assert.equal(globalThis.document.activeElement, close);
+  });
+});
+
+// D-246, D-189: practice waits at the earning loop of a line that went on, and „Odbierz” stands beside
+// that line alone.
+const waiting = (practice, runPractice = {}) => ({
+  ...teamOf(2),
+  loops: {
+    1: {
+      ...LOOP,
+      practice,
+      run: { ...LOOP.run, practice: runPractice, death: null },
+    },
+  },
+  awayReport: [reportLine(1, { minutes: 5 }), reportLine(2, { minutes: 3 })],
+});
+
+// Catches the practice of the loop and the map run going on not both in the line, a button on a
+// line with nothing waiting and a button that does not carry the name of its character.
+test("practice waiting at a loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
+  await withPage(async (page) => {
+    await mount(
+      page,
+      propsOf(waiting({ eating: 4 }, { eating: 1, exploration: 2 })),
+    );
+    const section = page.root.querySelector(".away-report");
+    const lines = all(section, ".away-report-line");
+    assert.deepEqual(
+      lines.map((line) => text(line, ".away-report-text")),
+      [
+        "Ala: 5 min · wprawa do odebrania: Eksploracja +2, Jedzenie +5",
+        "Ola: 3 min",
+      ],
+    );
+    assert.deepEqual(
+      lines.map((line) =>
+        all(line, "button").map((button) => button.textContent),
+      ),
+      [["Odbierz"], []],
+    );
+    const take = buttonLabelled(page.root, "Odbierz: Ala");
+    assert.equal(take.getAttribute("class"), "button positive");
+    assert.equal(take.getAttribute("type"), "button");
+  });
+});
+
+// Catches an „Odbierz” that does not reach the page with its character, and a focus left on the
+// body once the button is gone with the practice it paid (D-246).
+test("„Odbierz” hands the page its character; once nothing waits the button goes and the focus stands on „Zamknij”", async () => {
+  await withPage(async (page) => {
+    const before = waiting({ eating: 4 });
+    let screen = null;
+    const calls = [];
+    await inAct(() => {
+      screen = createHeadquarters({
+        controls: {
+          create: () => calls.push("create"),
+          stop: () => calls.push("stop"),
+          closeReport: () => calls.push("closeReport"),
+          takePractice: (characterId) => {
+            calls.push(["takePractice", characterId]);
+            // The page pays the practice and gives the screen the state at once.
+            screen.update(
+              propsOf({
+                ...before,
+                loops: { 1: { ...before.loops[1], practice: {} } },
+              }),
+            );
+          },
+        },
+        props: propsOf(before),
+      });
+      page.root.append(screen.element);
+    });
+    const take = buttonLabelled(page.root, "Odbierz: Ala");
+    take.focus();
+    await press(take);
+    assert.deepEqual(calls, [["takePractice", 1]]);
+    assert.equal(buttonNamed(page.root, "Odbierz"), undefined);
+    // The line stays with its minutes, only the part about practice has gone.
+    assert.deepEqual(
+      all(page.root.querySelector(".away-report"), ".away-report-text").map(
+        (line) => line.textContent,
+      ),
+      ["Ala: 5 min", "Ola: 3 min"],
+    );
+    assert.equal(
+      globalThis.document.activeElement,
+      buttonNamed(page.root, "Zamknij"),
+    );
+  });
+});
+
+// Catches practice that is back after a redraw with the loop gathering more (D-246): the button
+// returns at the next change of the loop.
+test("the part about practice and „Odbierz” come back when the loop gathers more", async () => {
+  await withPage(async (page) => {
+    const { screen } = await mount(page, propsOf(waiting({})));
+    assert.equal(buttonNamed(page.root, "Odbierz"), undefined);
+    await inAct(() => screen.update(propsOf(waiting({ eating: 1 }))));
+    assert.equal(
+      text(page.root, ".away-report-text"),
+      "Ala: 5 min · wprawa do odebrania: Jedzenie +1",
+    );
+    assert.ok(buttonLabelled(page.root, "Odbierz: Ala"));
+  });
+});
+
+// D-246: a line of a loop a death stopped has no practice waiting, so it has no button either.
+test("a line of a loop a death stopped has no „Odbierz”", async () => {
+  await withPage(async (page) => {
+    const state = {
+      ...waiting({ eating: 4 }),
+      awayReport: [
+        reportLine(1, { minutes: 5, stop: { generation: 2, away: true } }),
+      ],
+    };
+    await mount(page, propsOf(state));
+    assert.equal(buttonNamed(page.root, "Odbierz"), undefined);
   });
 });
 

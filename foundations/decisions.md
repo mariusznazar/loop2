@@ -960,7 +960,7 @@ Loop2 adopts the styleguide template of its pinned the-way, with no departure, f
 
 ### D-39 — What do the signal colours of the browser view mean?
 
-In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar. `positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on. `discovery` also stands as the frame of the plaque of a discovery in the scene, which is a solid `panel` like the badge over the mage's head, with a contrast ratio of at least 3:1 against `panel`.
+In the browser view the role `positive` means that something works, is in order or is active now; `warning` means caution, that something is not carried out or is not saved, a wrong value typed into a field included; `danger` means that a character, progress or data may be lost; `discovery` means that something new was discovered; and `player-change` means that the player did it. Each of the five is a role of the kind text and stands as text on the backgrounds `page`, `panel`, `highlight`, `rule-winning` and `rule-running`. `positive` and `warning` also stand as the state bar of a program rule and of a rule group, which says the state of the rule, is no frame or bar at a text in the sense of D-279 and takes no colour from the text beside it. `positive` also stands as the fill of the progress bar over the mage's head, on a track in `highlight` in a badge on `panel`, with a contrast ratio of at least 3:1 against what it stands on; `warning` stands in no progress bar. `positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on. `positive` also stands as the text of the button „Odbierz”, which pays the practice waiting at an earning loop, at rest and under the pointer. `discovery` also stands as the frame of the plaque of a discovery in the scene, which is a solid `panel` like the badge over the mage's head, with a contrast ratio of at least 3:1 against `panel`.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1035,7 +1035,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj”, and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`. A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program” and „Zatrzymaj”, and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39). A control awaiting a server response is disabled with text in `text-disabled`; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”. A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -1045,8 +1045,8 @@ The screens of the browser view build every button, select list, number field, t
   - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” made as a plain button; a destructive button in `danger` at rest; a cell of a pick drawn as a button of its own; that answer written in `warning`, as if it refused something, or in `positive`, as if the message had left.
 - **Origin:** none
 
-*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. Red that stands on every button that may drop something is the loudest thing on the screen and speaks louder than the state of the character, so a destructive button shows what it is when the player reaches for it, and red at rest means a threat to a character. A button that ends a map run, deletes a program rule, resets progress on a map or discards the unsaved changes of the copy is destructive, in every place it stands. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new.
-*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; red at rest on every destructive button — it drowns out the state of the character, and in the editor a red sign would stand in every row, which is worse than in loop; the button in a rule's row alone neutral at rest — two looks of one control; text in place of a button for every action that is secondary — which actions are secondary would be judged by each agent, so screens would diverge, and „Usuń” or „Zakończ” could look like an innocent link; an interrupted run of an earning loop kept to be looked at, as in loop — a third kind of the end of a run, taking the place of the only manual run; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” as a plain button — a button that loses the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed; for the form „Nie pamiętam hasła” after the sending, the form gone and only the sentence and „Wróć do logowania” left — one more state of the screen and its tests, and a new request needs a step back to the sign-in, while its gain is that a second click would not invalidate a fresh link by mistake.
+*Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. Red that stands on every button that may drop something is the loudest thing on the screen and speaks louder than the state of the character, so a destructive button shows what it is when the player reaches for it, and red at rest means a threat to a character. A button that ends a map run, deletes a program rule, resets progress on a map or discards the unsaved changes of the copy is destructive, in every place it stands. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new. Accepted with it: one look more of the shared button to keep and two decisions changed, this one and the one that gives `positive` its meaning.
+*Rejected:* controls each screen makes for itself — sizes and states drift from screen to screen; red at rest on every destructive button — it drowns out the state of the character, and in the editor a red sign would stand in every row, which is worse than in loop; the button in a rule's row alone neutral at rest — two looks of one control; text in place of a button for every action that is secondary — which actions are secondary would be judged by each agent, so screens would diverge, and „Usuń” or „Zakończ” could look like an innocent link; an interrupted run of an earning loop kept to be looked at, as in loop — a third kind of the end of a run, taking the place of the only manual run; „Przełącz postać na ten program” as a plain button — a button that sets the streak to zero and can drop the copy's unsaved changes would look like a safe one; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” as a plain button — a button that loses the copy's unsaved changes would look like a safe one; a destructive look for it where something would be lost and a plain one elsewhere — the same button would change its look with the state of the map run; for the answer to a request for a password-reset link, grey text with a bar — the cheapest way, but the text stays grey; lighter text alone — it stands out only against the grey around it; the brightest text with a bar — a colour the game keeps for names and headings, for two whole sentences; a dark field with a bar — the page's background comes to mean more, and the block looks like a field to type into; a colour of its own — a sixth signal colour, a new decision, a value to find, new contrast thresholds and a test; green — it would betray nothing of the account, but it would claim that the message left; orange — it would say that something failed; for the form „Nie pamiętam hasła” after the sending, the form gone and only the sentence and „Wróć do logowania” left — one more state of the screen and its tests, and a new request needs a step back to the sign-in, while its gain is that a second click would not invalidate a fresh link by mistake; „Odbierz” in the main look, its frame and text in `positive`, as the old Loop showed „Wejdź” in a green frame (D-274) — against D-274: „Odbierz” sends no form and is no „Wejdź”, and an act of the headquarters takes the plain button; it would change D-274, D-44 and D-39; „Odbierz” as a plain grey button with only the part „wprawa do odebrania: …” in green — no new look, but contrary to „Odbierz” in `positive`, which D-246 gives.
 
 ### D-45 — Where does the browser view's kitchen-sink page stand?
 
@@ -3687,18 +3687,18 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 
 ### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · derives from D-239
-- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. An agent compares a change with the decision:
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. An agent compares a change with the decision:
   - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
   - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
 - **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then.
-*Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it.
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
+*Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it; „Odbierz” paying completed map runs alone — after eight hours there is usually nothing to take.
 
 ### D-190 — What does a character's death take?
 
@@ -4013,7 +4013,7 @@ they did every evening when this was decided.
 
 The game saves the game state on the server by itself right after each change of it the player
 makes — an edit of a program or of the copy, an act on the list of programs, creating a character,
-sending one, „Puść w pętlę”, „Zatrzymaj”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of
+sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of
 the report, a pause and a pace — right after a manual map run ends in a completion or in the
 character's death, right after a reading of the clock or a catch-up whose result ended map runs of
 earning loops, with one save for that result, every 30 real seconds while a manual map run passes,
@@ -5109,13 +5109,14 @@ open; characters meeting inside map runs — needs a schedule and loses the chea
 The game state holds its earning loops beside the one manual map run, by character number, so a
 character has at most one, each with the content of the program taken at its start, its map run
 going on, the number of that map run, the count of its completions and the practice gathered from
-those completions. In every game state the browser view holds or a saved game state admits, the map
-run of an earning loop is going on: the function that reaches its end deals with that end at once.
+those completions since the player last took the practice waiting with „Odbierz”. In every game
+state the browser view holds or a saved game state admits, the map run of an earning loop is going
+on: the function that reaches its end deals with that end at once.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-56 · derives from D-164
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
   - complies: a game state holding the manual map run of one character and the earning loops of two
     others; each next map run binding its lists anew from the program content the earning loop holds;
     deleting a program leaving an earning loop on that program's content as it was
@@ -5129,9 +5130,11 @@ D-55 keeps it, so what reads it goes on reading it. Content that never changes n
 program, so deleting or editing a program, or a rule written at a discovery, reaches no earning loop,
 and each map run binds the same lists anew. An end dealt with where it is reached leaves a load
 nothing to settle. The practice gathered from completions stays with the earning loop, outside the
-character's skills, until the loop stops, and a death with no resurrection ready takes it with the
-rest. D-56 has a map run name its character by number. Accepted with it: a later preview of an earning loop's map run needs
-more of the copy, which is a change of the shape and of its version.
+character's skills, until the player takes it with „Odbierz” or the loop stops; „Odbierz” empties it
+together with the practice of the map run going on, so the loop and that map run hold exactly the
+practice that waits, and a death with no resurrection ready takes what waits with the rest. D-56 has
+a map run name its character by number. Accepted with it: a later preview of an earning loop's map
+run needs more of the copy, which is a change of the shape and of its version.
 *Rejected:* map runs held by character in place of the one manual map run — everything that reads the
 manual map run changes, and D-55 keeps one manual map run anyway; an earning loop holding the whole
 map run and copy of a manual map run — it reuses the load's reading of a map run whole, but carries what an earning
@@ -5243,7 +5246,7 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-183 · derives from D-189
-- **Verification:** invariants: trip-run-end. An agent compares a change with the decision:
+- **Verification:** invariants: trip-run-end · loop-practice-payment. An agent compares a change with the decision:
   - complies: a stop in the middle of a map run leaving the chest as it stood and the character's
     skills grown by what the earning loop and that map run gathered; „Pętla zatrzymana” after a stop
     with nothing gathered, standing after a reload and gone at the next send; „Zatrzymaj” neutral
@@ -5253,7 +5256,7 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
 - **Origin:** none
 
 *Rationale:* a stop is the player's own act on a character it can see, so it acts at once, and the
-line says what the stop paid; the button is destructive for the backpack it drops. The stop ends
+line says what the stop paid; the button is destructive for the backpack it drops, and „Odbierz” pays without that price. The stop ends
 the map run going on as „Zakończ” and „Restart” do, so what it carries is lost (D-183), while its
 practice is paid: loot leaves a map in the character's backpack, so a map run that did not complete
 brought nothing out, and paying the practice at the stop keeps the player fixing the program rather
@@ -5267,16 +5270,20 @@ wprawa: nic” — the line speaks of practice that was not there.
 
 ### D-246 — What does the player read after being away?
 
-After being away the player currently reads a report in the section „Gdy cię nie było” of the
-headquarters, above „Drużyna”, one line for each character that had an earning loop, a later earning
+After being away the player currently reads a report in the section „Gdy cię nie było” of
+Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning
 loop of a character whose earning loop a death stopped opening a line of its own, and one button
 „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}:
 pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz
 to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n},
-{przedmiot} −{n} · wprawa: {umiejętność} +{n}”, with what is empty left out, with „ · wskrzeszenie
+{przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where
+practice waits, with what is empty left out, with „ · wskrzeszenie
 zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the
-chest is full, {m} in both lines being the game minutes the catch-up passed. The report lies in the
-game state, so it survives a reload; a further return before „Zamknij” adds to it; the section shows
+chest is full, {m} in both lines being the game minutes the catch-up passed. The practice waiting in
+a line is read from that character's earning loop whenever the section is drawn, so it always equals
+what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the
+earning loop gathers more; the rest of the report lies in the game state, so it survives a reload,
+and a further return before „Zamknij” adds to it; the section shows
 from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number
 of game minutes. An earning loop a death stops in the open game enters the same section as „{imię}:
 pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie. Teraz to
@@ -5287,10 +5294,12 @@ manual map run reads the report on reaching Siedziba.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-240
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
   - complies: an earning loop a death stopped standing above one that went on; a line of an earning
     loop a death stopped naming no practice, since the death took it; a character's own change in the
-    chest on its line, with the practice its earning loop gathered from completions in this catch-up;
+    chest on its line, with the practice waiting at its earning loop, the map run going on included,
+    read from the loop whenever the section is drawn and gone after „Odbierz” until the loop gathers
+    more, and „Odbierz” beside the line only where practice waits;
     a resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
     adding no line; a stop in the open game on a line that holds minutes of an earlier return reading
     with no minutes; „Skrzynka jest pełna.” following the chest as the section is drawn; „Zatrzymaj”
@@ -5303,7 +5312,7 @@ manual map run reads the report on reaching Siedziba.
 - **Origin:** none
 
 *Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
-line for each character says which of them it was, and one button closes the section in one click.
+line for each character says which of them it was, and one button closes the section in one click. The first night decides whether a player comes back, so the report shows all the practice waiting, the map run going on included, beside a button that pays it.
 In the game state the report outlives a reload between the return and the reading. Each character
 counts its own change, which the catch-up taking characters one at a time gives. A line that closes
 at the death that stops its earning loop keeps both a right {m} and the return of a later earning
@@ -5314,10 +5323,9 @@ the first game minute. Accepted
 with it: a new
 section and a new piece of the game state, a section that shows after a short reload too, one line
 closed along with the others, which the predecessor game did not do, a stop in the open game that
-does not say how long the earning loop went, a second title and one more condition in the view, and
-the chest and practice of an earlier return leaving the screen when that line stops in the open
-game.
-*Rejected:* closing at each character, as the predecessor game did — as many clicks as characters; one
+does not say how long the earning loop went, a second title and one more condition in the view, and the chest and practice of an earlier return
+leaving the screen when that line stops in the open game.
+*Rejected:* a report counting completed map runs alone — after eight hours it shows no practice although the game earned some; the payment behind the destructive „Zatrzymaj” alone, which drops the backpack; closing at each character, as the predecessor game did — as many clicks as characters; one
 line for the whole team — the player does not know which character it was about; all the minutes of
 the earning loop from its start in a line of a stop in the open game — a number that can exceed the
 last absence, and {m} means two things in the section, which also looks like a departure from the predecessor game;
