@@ -34,11 +34,10 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 - **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
-Wzorce plików `eslint.config.mjs` obejmują każdy plik TS/JS części browser-view,
-simulation, account-server, build-tools i deployment. Tego pilnuje test
-`tests/quality/test_source_tool_scope.py` według D-29: plik, który nie dostaje
-zestawów reguł, zatrzymuje bramkę, więc nowy katalog z kodem dopisz do
-konfiguracji w tej samej zmianie.
+Wzorce plików `eslint.config.mjs` obejmują każdy plik TS/JS części z zakresu
+D-29. Tego pilnuje test `tests/quality/test_source_tool_scope.py`: plik, który
+nie dostaje zestawów reguł, zatrzymuje bramkę, więc nowy katalog z kodem dopisz
+do konfiguracji w tej samej zmianie.
 
 Test `shellcheck-source-rules` wymienia skrypty po nazwie: nowy skrypt Bash
 dopisz do listy w `tests/quality/test_quality_invariants.py`. Dyrektywa
@@ -93,7 +92,7 @@ printf '%s\n' $1
 
 Nie dodawaj opcji do `prettier.config.mjs`. Wzorce kontroli Prettiera w
 `tests/quality/test_quality_invariants.py` i reguły LF w `.gitattributes`
-obejmują każdy plik TS/JS tych samych części; pilnuje ich ten sam test według D-32.
+obejmują każdy plik TS/JS części z zakresu D-32; pilnuje ich ten sam test.
 
 ```good prettier-source-format tests/quality/guideline-format.mjs
 export const values = [1, 2];

@@ -59,14 +59,15 @@ def plain_output():
 
 
 def git_attributes(paths):
-    """The `eol` attribute git gives each path, as a dict from path to its value."""
-    result = subprocess.run(["git", "check-attr", "-z", "eol", "--stdin"], cwd=support.ROOT,
-                            input="\0".join(paths) + "\0", capture_output=True, text=True,
-                            encoding="utf-8", timeout=60, check=False)
+    """The attributes `text` and `eol` git gives each path, as a dict from (path, attribute) to
+    the value."""
+    result = subprocess.run(["git", "check-attr", "-z", "text", "eol", "--stdin"],
+                            cwd=support.ROOT, input="\0".join(paths) + "\0", capture_output=True,
+                            text=True, encoding="utf-8", timeout=60, check=False)
     if result.returncode:
         raise AssertionError("git check-attr failed: " + result.stderr)
     fields = result.stdout.split("\0")
-    return {fields[i]: fields[i + 2] for i in range(0, len(fields) - 2, 3)}
+    return {(fields[i], fields[i + 1]): fields[i + 2] for i in range(0, len(fields) - 2, 3)}
 
 
 class SourceToolScope(unittest.TestCase):
@@ -143,8 +144,10 @@ class SourceToolScope(unittest.TestCase):
         # data: .gitattributes
         paths = scope_files()
         self.assertTrue(paths, "no TypeScript or JavaScript file found in the scope")
-        eol = git_attributes(paths)
-        without_lf = [path for path in paths if eol[path] != "lf"]
+        attributes = git_attributes(paths)
+        # `-text` stops git's line-ending conversion whatever `eol` says, so `text` must be on.
+        without_lf = [path for path in paths if attributes[(path, "eol")] != "lf"
+                      or attributes[(path, "text")] not in ("set", "auto")]
         if without_lf:
             self.fail("files that .gitattributes does not keep at LF:\n" + "\n".join(without_lf))
 
