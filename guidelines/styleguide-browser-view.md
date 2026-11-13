@@ -800,7 +800,7 @@ jeden nieruchomy obrazek i postacie w pozie bezczynności: tylko te, które są 
 założenia, tyle całych, ile mieści pas. W wąskim oknie przycinaj polanę po bokach wokół ogniska i nie
 zmniejszaj jej; sekcja „Drużyna” pod pasem wymienia wszystkie postacie. Poruszaj ogień i postacie z CSS, w
 stałym takcie klatek sceny, bez pętli rysowania, a pod ograniczeniem ruchu zostaw klatki w miejscu. Nie daj
-obozowi tekstu, kontrolki, reakcji na kliknięcie ani nazwy dla czytników ekranu i nie rób w nim błysku;
+obozowi tekstu, kontrolki ani reakcji na kliknięcie, ukryj go przed czytnikami ekranu i nie rób w nim błysku;
 do postaci prowadzą imiona w „Drużyna” (D-280). Nazwy plików i liczby bierz z danych gry, a rozmiary wpisuj
 w style z TypeScriptu. Obóz nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
 
