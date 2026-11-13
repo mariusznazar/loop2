@@ -9515,7 +9515,7 @@ the screen, with no text on it or over it.
 - **Verification:** invariants: loop2-container-sprites. An agent compares a change with the decision:
   - complies: the camp 96 px high between the row of warnings and the heading „Siedziba”, with the sentence
     of the page above the screen still above it; the fire in the middle at every width of the window, the
-    chest to its right and the characters of Siedziba to its left, the first in the order of creation; in
+    chest and the characters of Siedziba beside it, the first in the order of creation; in
     a window 400 px wide the clearing cropped at the sides around the fire and as many whole characters
     as the band holds, „Drużyna” listing all of them; a team whose only character is in a manual map run,
     or in an earning loop, with the fire and the chest alone; the camp drawn again at „Wejdź”, „Puść w
