@@ -81,7 +81,7 @@ D-133). Ta reguła nie mówi, czy któryś z tych torów potrzebuje roli tekstu.
 
 ### No value in place of a design token
 
-- **Decision:** D-43 · D-46 · D-48 · D-349
+- **Decision:** D-43 · D-46 · D-48 · D-349 · D-389
 - **Invariant:** browser-view-token-values
 - **Good:** Odstęp w arkuszu stylów zapisany przez `var()` z tokenu skali odstępów.
 - **Bad:** Moduł TypeScript wpisuje do stylu elementu kolor zapisany szesnastkowo.
@@ -103,8 +103,8 @@ W plikach części poza plikiem tokenów wartością wpisaną zamiast tokenu jes
 
 Nie jest nią: `0`, procent, rozmiar w `fr`, `vw` albo `vh`, słowo kluczowe
 (`transparent`, `currentColor`, `inherit`, `none`), próg szerokości ekranu
-w regule `@media`, geometria rysunku siatki i sceny liczona w TypeScripcie,
-klatki i położenia obrazków postaci i zasobów sceny, atrybuty
+w regule `@media`, geometria rysunku siatki, sceny i obozu liczona w TypeScripcie,
+klatki i położenia obrazków postaci i zasobów sceny oraz obozu, atrybuty
 `width` i `height` obrazka, wymiar układu — szerokość albo wysokość z jej
 minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
 w `assets/icons/`. Ikona z `assets/icons/` jest rysowana jednym sposobem,
@@ -124,7 +124,11 @@ nie jest kolorem, nazwą czcionki ani wartością w `px`, `rem` lub `em` spoza
 wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w TypeScripcie
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
 kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
-przy jednym rozmiarze sceny (D-349). Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
+przy jednym rozmiarze sceny (D-349). Geometria obozu w Siedzibie — rozmiary jego obrazków, odstępy i położenia —
+stoi w TypeScripcie (`src/browser/view/camp.tsx`, `src/browser/view/camp-picture.ts`) jako liczby pikseli
+obrazka razy rozmiar piksela obrazka, wpisane w style elementów, a jej liczby w danych gry, w
+`src/browser/sim/data/scene.ts`; arkusz stylów obozu nie wpisuje żadnej długości obrazka (D-349, D-389).
+Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
 ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony, kurzu, powrotu odcienia i efektów odkrycia, śmierci i rozwiązania) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
 sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach; geometria szronu stoi w
@@ -780,6 +784,42 @@ w kolorze; po śmierci mag jest szary (D-322). Wygasłe ognisko to ten sam obraz
 bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).
 Lista wartości tego przewodnika ich nie nazywa (zob. „No value in place of a
 design token”).
+
+### The camp of Siedziba
+
+- **Decision:** D-389 · D-272 · D-271 · D-314 · D-315 · D-316 · D-317 · D-321 · D-349 · D-42 · D-43
+- **Invariant:** none
+- **Good:** Pas obozu między wierszem ostrzeżeń a nagłówkiem „Siedziba”, z ogniskiem pośrodku, skrzynką po jego prawej i po lewej postaciami, które są w Siedzibie, w kolejności założenia, tyle całych, ile mieści pas; w wąskim oknie polana przycięta po bokach wokół ogniska; pod ograniczeniem ruchu klatki stoją.
+- **Bad:** Tekst, przycisk albo reakcja na kliknięcie na obozie; obóz zmniejszony w wąskim oknie; postać przejścia ręcznego albo pętli zarobkowej przy ognisku; postać ucięta w połowie brzegiem pasa; ognisko obozu wygaszone razem z ogniskiem ze stanu gry; błysk całego pasa.
+
+Obóz to obraz u góry ekranu Siedziba: pas na całą szerokość treści, pod wierszem ostrzeżeń pod paskiem
+menu i nad nagłówkiem „Siedziba”, w wysokości swojego obrazka w dwukrotności pikseli, około 96 px. Zdanie,
+które strona stawia nad grą, stoi nad nim (D-286). Pas leży nad panelem ekranu, nie w nim, więc ma całą
+szerokość treści, a tekst stoi na panelu, nie na obrazku (D-272). Obóz stoi w `src/browser/view/camp.tsx` i
+`src/browser/view/camp-picture.ts`, jego układ i ruch w `src/browser/styles.css`; pliki obrazków, ich
+rozmiary i odstępy leżą w danych gry, w `src/browser/sim/data/scene.ts`, a kod widoku żadnego nie nazywa
+(D-316).
+
+Obóz składa się z czterech rzeczy, wszystkich z paczki Pixel Crawler (D-271): polany, czyli śniegu i
+drzew z tych samych obrazków co las sceny, w pełnym świetle i bez odcienia (D-314, D-315); płonącego ogniska
+pośrodku, które jest ogniskiem sceny, zawsze płonie i nie zależy od ogniska ze stanu gry; skrzynki po jego
+prawej, jednego nieruchomego obrazka, takiego samego, ile by w niej nie było, bo to mówi sekcja „Skrzynka
+{n}/{cap}”; postaci po jego lewej, każdej w arkuszu bezczynności swojego archetypu, od ogniska ku brzegowi w
+kolejności założenia. Stoją w nim tylko postacie, które są w Siedzibie: nie ta z przejścia ręcznego — trwającego, w pauzie albo skończonego i czekającego na „Restart”
+lub „Zakończ” — i nie ta w pętli zarobkowej, więc obrazek zmienia się przy każdym „Wejdź”, „Puść w pętlę”,
+„Zatrzymaj” i „Zakończ”. Bez żadnej takiej postaci pas pokazuje samo ognisko i skrzynkę.
+
+Pas przycina polanę po bokach wokół ogniska i nigdy jej nie zmniejsza (D-349). Wiersz postaci zawija się
+od ogniska ku brzegowi w polu o wysokości jednej linii z ukrytym przepełnieniem, więc pas pokazuje całe
+postacie, pierwsze w kolejności założenia, tyle, ile się mieści przy szerokości okna, a reszty w obrazku
+nie ma; nie mierzy się okna i nie ucina się postaci w połowie. Sekcja „Drużyna” pod pasem wymienia wszystkie.
+
+Ruch obozu to klatki płomienia i klatki bezczynności każdej postaci w stałym takcie klatek sceny, z CSS, bez
+pętli rysowania; pod systemowym ustawieniem ograniczenia ruchu klatki stoją na pierwszej (D-316, D-317).
+Zmienia się tylko część pasa naraz i nic w nim nie błyska (D-42). Obóz nie ma na sobie ani nad sobą tekstu,
+kontrolki ani reakcji na kliknięcie, a jego element jest ukryty przed czytnikami ekranu; do postaci
+prowadzą imiona w sekcji „Drużyna” (D-321, D-280). Obóz nie dostaje nowej roli, wartości tokenu ani
+znaczenia roli.
 
 ### The chronicle of a map run
 
