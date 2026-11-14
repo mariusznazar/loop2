@@ -257,6 +257,7 @@ class GateRuns(unittest.TestCase):
 
     def test_one_run_of_the_whole_gate_waits_for_a_docker_that_does_not_rise_once(self):
         # invariant: gate-docker-start-waits-once
+        # decision: D-406 "A run of the gate with the directories at the same time starts Docker Desktop at most once and waits for it at most once"
         # Breaking it: forget the failed start between the two directories' processes and the
         # second directory starts Docker Desktop and waits again, the stand-in seeing two starts.
         docker = DockerStandIn(self)
@@ -272,6 +273,7 @@ class GateRuns(unittest.TestCase):
 
     def test_a_whole_run_that_finds_docker_stopped_starts_it_once_and_skips_nothing(self):
         # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once"
+        # decision: D-406 "A run of the gate with the directories at the same time starts Docker Desktop at most once and waits for it at most once"
         # Breaking it: let the directories' processes, running at the same time, each find no
         # daemon and no record and start Docker Desktop, the stand-in seeing two starts.
         docker = DockerStandIn(self, rise_after_polls=1)
