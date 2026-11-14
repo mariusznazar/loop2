@@ -228,7 +228,7 @@ test("every walking action with Długi krok rank three lasts at least one minute
       })),
       campfires: [{ at: elsewhere.at, minutesLeft: 0 }],
     };
-    const picked = pickActivity(fixture, MAPS.forest, program(action)).run;
+    const picked = pickActivity(fixture, program(action)).run;
     assert.equal(picked.current.activity.action.kind, action.kind);
     assert.equal(picked.current.endMinute - picked.current.startMinute, 1);
   }
@@ -263,7 +263,7 @@ test("numeric branches shorten exploration, crafting, both spells and eating at 
           ? [{ at: run.character.at, minutesLeft: 0 }]
           : [],
     };
-    const picked = pickActivity(fixture, MAPS.forest, program(action)).run;
+    const picked = pickActivity(fixture, program(action)).run;
     assert.equal(picked.current.endMinute, expected);
   }
 });
@@ -288,7 +288,7 @@ test("meal and walking bonuses apply to their own actions when both are bought",
     ["eat", 4],
     ["wander", 3],
   ]) {
-    const started = pickActivity(fixture, MAPS.forest, program({ kind })).run;
+    const started = pickActivity(fixture, program({ kind })).run;
     assert.equal(started.current.activity.action.kind, kind);
     assert.equal(
       started.current.endMinute - started.current.startMinute,
@@ -320,11 +320,7 @@ test("send and restart take independent rank snapshots and a restart discards ru
 
 test("practice appears at the effect minute, once for all tiles of Zwiad, and never on an already revealed tile", () => {
   const run = base(ranks("exploration", { scout: 1 }));
-  const started = pickActivity(
-    run,
-    MAPS.forest,
-    program({ kind: "explore" }),
-  ).run;
+  const started = pickActivity(run, program({ kind: "explore" })).run;
   let current = started;
   for (let minute = 0; minute < 19; minute++) current = landed(current);
   assert.deepEqual(current.practice, {});
@@ -334,10 +330,7 @@ test("practice appears at the effect minute, once for all tiles of Zwiad, and ne
     finished.events.filter((event) => event.kind === "tileRevealed").length,
     7,
   );
-  assert.equal(
-    actionFeasible(finished.run, MAPS.forest, { kind: "explore" }),
-    false,
-  );
+  assert.equal(actionFeasible(finished.run, { kind: "explore" }), false);
 });
 
 test("gather miss grants none, an improved chance hits, and full hand respects stock and backpack limits", () => {
@@ -403,11 +396,11 @@ test("Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock
       result.practice,
       expected ? { smallItemGathering: 1 } : {},
     );
-    const picked = pickActivity(fixture, MAPS.forest, program(action)).run;
+    const picked = pickActivity(fixture, program(action)).run;
     assert.equal(picked.current.activity.kind, expected ? "rule" : "wait");
     if (expected) assert.equal(picked.current.endMinute, 40);
   }
-  assert.equal(actionFeasible(ready(action), MAPS.forest, action), false);
+  assert.equal(actionFeasible(ready(action), action), false);
 });
 
 test("clean flame needs no stick but still costs ten energy; item lighting still needs its piece", () => {
@@ -419,20 +412,14 @@ test("clean flame needs no stick but still costs ten energy; item lighting still
     body: { ...run.body, satiety: 30 },
     campfires: [{ at: run.character.at, minutesLeft: 0 }],
   };
-  assert.equal(actionFeasible(fixture, MAPS.forest, action), true);
-  assert.equal(
-    actionFeasible({ ...fixture, natureEnergy: 9 }, MAPS.forest, action),
-    false,
-  );
+  assert.equal(actionFeasible(fixture, action), true);
+  assert.equal(actionFeasible({ ...fixture, natureEnergy: 9 }, action), false);
   const result = landed(fixture);
   assert.equal(result.natureEnergy, 0);
   assert.equal(result.campfires[0].minutesLeft, 60);
   assert.equal(result.character.backpack.stick, 0);
   assert.deepEqual(result.practice, { flameSpell: 1 });
-  assert.equal(
-    actionFeasible(fixture, MAPS.forest, { kind: "lightItem" }),
-    false,
-  );
+  assert.equal(actionFeasible(fixture, { kind: "lightItem" }), false);
   assert.deepEqual(landed({ ...fixture, natureEnergy: 9 }).practice, {});
 });
 
@@ -484,7 +471,6 @@ test("combat practice counts damaging effects and effective dodges, not last or 
   };
   const hit = resolveCombat(
     stick,
-    MAPS.forestDeep,
     "wolf",
     program({ kind: "strikeWithStick" }),
   );
@@ -492,14 +478,12 @@ test("combat practice counts damaging effects and effective dodges, not last or 
   assert.deepEqual(hit.practice, { oneHandedCombat: 2 });
   const kick = resolveCombat(
     base(ranks("kicking", { heavierKick: 1 }, 20)),
-    MAPS.forestDeep,
     "wolf",
     program({ kind: "kick" }),
   );
   assert.equal(kick.exchanges[0].characterAction.damage, 4);
   const dodged = resolveCombat(
     base(ranks("dodging", { agileDodge: 2 }, 30)),
-    MAPS.forestDeep,
     "wolf",
     program({ kind: "dodge" }),
   );
@@ -507,7 +491,6 @@ test("combat practice counts damaging effects and effective dodges, not last or 
   assert.deepEqual(dodged.practice, { dodging: 39 });
   const dead = resolveCombat(
     { ...base(), body: { temperature: 37, satiety: 100, health: 7 } },
-    MAPS.forestDeep,
     "wolf",
     program({ kind: "dodge" }),
   );

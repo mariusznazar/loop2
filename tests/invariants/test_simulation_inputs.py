@@ -361,17 +361,17 @@ const combatRun = {
   current: null,
   activeCombat: { creatureId: "wolf", attackMinute: 1, resolveMinute: 5 },
 };
-call("combat.js", "resolveCombat", [combatRun, combatMap, "wolf", clone(combatProgram)]);
-call("program.js", "chooseCombatRule", [combatRun, combatMap, clone(combatProgram), 100, 20]);
+call("combat.js", "resolveCombat", [combatRun, "wolf", clone(combatProgram)]);
+call("program.js", "chooseCombatRule", [combatRun, clone(combatProgram), 100, 20]);
 call("run.js", "finishMinute", [{ run: combatRun, events: [], picks: false }, combatMap,
   clone(combatProgram)]);
 for (const run of sample(runs, 60)) {
   for (const p of I.programs) {
     call('run.js', 'stepMinute', [run, MAP, clone(p)]);
-    call('program.js', 'chooseActivity', [run, MAP, clone(p)]);
+    call('program.js', 'chooseActivity', [run, clone(p)]);
   }
-  for (const c of I.conditions) call('program.js', 'conditionHolds', [run, MAP, clone(c)]);
-  for (const a of I.actions) call('program.js', 'actionFeasible', [run, MAP, clone(a)]);
+  for (const c of I.conditions) call('program.js', 'conditionHolds', [run, clone(c)]);
+  for (const a of I.actions) call('program.js', 'actionFeasible', [run, clone(a)]);
   for (const r of I.resources) call('program.js', 'walkTarget', [run, r]);
 }
 // body.js, character.js, world.js and the program's helpers

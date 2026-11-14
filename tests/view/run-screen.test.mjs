@@ -7,7 +7,7 @@
 // screen is built here as the game view builds it, with a program panel of its own and controls
 // that make the real simulation calls. Real events, focus and the look are checked in the browser
 // (D-88). Every comparison is of plain data or of a handful of words (D-268).
-import { assert, inAct, withPage } from "./page-document.mjs";
+import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
@@ -60,19 +60,6 @@ function buttonLabelled(root, label) {
       element.localName === "button" &&
       element.getAttribute("aria-label") === label,
   );
-}
-
-function fire(window, target, type, init = {}) {
-  const Kind = type === "pointerout" ? window.MouseEvent : window.Event;
-  target.dispatchEvent(
-    new Kind(type, { bubbles: true, cancelable: true, ...init }),
-  );
-}
-
-/** Clicks `target` inside act, as a browser clicks it. */
-function press(window, target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(window, target, "click"));
 }
 
 /**
@@ -367,9 +354,9 @@ test("an open rule panel stands in the program under its header, the tabs and th
     assert.equal(byClass(element, "rule-panel").length, 0);
 
     for (const picked of ["Kronika", "Teren"]) {
-      await press(page.window, buttonNamed(tabs(), picked));
+      await press(buttonNamed(tabs(), picked));
       const header = byClass(program, "rule-list-header").find(shown);
-      await press(page.window, header);
+      await press(header);
       const panels = byClass(element, "rule-panel");
       assert.equal(panels.length, 1, `${picked}: the panel is open`);
       assert.ok(
@@ -396,7 +383,7 @@ test("an open rule panel stands in the program under its header, the tabs and th
       assert.equal(Boolean(chronicle()), picked === "Kronika");
       assert.ok(drawing() && shown(drawing()), "the drawing stays");
 
-      await press(page.window, buttonLabelled(program, "Zamknij panel"));
+      await press(buttonLabelled(program, "Zamknij panel"));
       assert.equal(byClass(element, "rule-panel").length, 0);
       assert.ok(tabs(), `${picked}: the tabs stand`);
       assert.equal(
@@ -437,7 +424,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
       run: { ...chilled.run, streak: 40 },
     });
     const [, program, area] = areasOf(game.screen.element);
-    await press(page.window, buttonNamed(program, "Dodaj regułę z tym"));
+    await press(buttonNamed(program, "Dodaj regułę z tym"));
 
     assert.deepEqual(game.acts, ["editCopy"]);
     const group = game.state.run.copy.program.groups[0];
@@ -481,10 +468,7 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
   await withPage(async (page) => {
     const game = await wiredScreen(page, firstChill());
     const [, program] = areasOf(game.screen.element);
-    await press(
-      page.window,
-      buttonNamed(byClass(program, "discovery-band")[0], "Wznów"),
-    );
+    await press(buttonNamed(byClass(program, "discovery-band")[0], "Wznów"));
     assert.deepEqual(game.acts, ["togglePause"]);
     assert.equal(game.state.paused, false);
     assert.equal(byClass(game.screen.element, "discovery-band").length, 0);
@@ -498,7 +482,7 @@ test("a hovered tile of the drawing marks its row in the table of the area under
     const { screen } = await wiredScreen(page, withTiles());
     const [world, , area] = areasOf(screen.element);
     // The table stands under „Teren”; under „Kronika” there is no row to link.
-    await press(page.window, buttonNamed(area, "Teren"));
+    await press(buttonNamed(area, "Teren"));
     const markedRows = () =>
       [...area.querySelectorAll("tbody tr.hovered")].map((row) =>
         row.getAttribute("data-tile"),
@@ -514,13 +498,13 @@ test("a hovered tile of the drawing marks its row in the table of the area under
     const polygon = world.querySelector(
       '.terrain-drawing [data-tile="1,0"] polygon',
     );
-    await inAct(() => fire(page.window, polygon, "pointerover"));
+    await inAct(() => fire(polygon, "pointerover"));
     assert.deepEqual(markedRows(), ["1,0"], "its row in the table");
     assert.deepEqual(markedTiles(), ["1,0"]);
     assert.equal(line(), "(1, 0): patyk 12 · jagoda — · mech 6 · włókno —");
 
     const cell = area.querySelector('tbody tr[data-tile="0,1"] td');
-    await inAct(() => fire(page.window, cell, "pointerover"));
+    await inAct(() => fire(cell, "pointerover"));
     assert.deepEqual(markedTiles(), ["0,1"], "a row marks its tile");
     assert.deepEqual(markedRows(), ["0,1"]);
   });
@@ -641,8 +625,8 @@ test("a click on Teraz and on Potem, and Enter and Space on them, scroll the row
     );
     assert.equal(scrolls.length, 0, "nothing scrolls by itself");
 
-    await press(page.window, now);
-    await press(page.window, next);
+    await press(now);
+    await press(next);
     await key(page.window, now, "Enter");
     await key(page.window, next, " ");
     const middle = { block: "center" };
@@ -673,14 +657,14 @@ test("for a rule of a folded group Teraz and Potem scroll the header of that gro
       ...program.querySelectorAll('button[aria-label="Zwiń grupę"]'),
     ];
     assert.equal(foldButtons.length, 2, "precondition: two groups");
-    await press(page.window, foldButtons[1]);
+    await press(foldButtons[1]);
     assert.equal(
       program.querySelector('[data-rule="2"]'),
       null,
       "precondition: the row of rule 2.1 is not drawn",
     );
 
-    await press(page.window, rowsOf(screen).next);
+    await press(rowsOf(screen).next);
     assert.equal(scrolls.length, 1);
     assert.deepEqual(scrolledTo(scrolls[0]), {
       header: "2",
@@ -688,7 +672,7 @@ test("for a rule of a folded group Teraz and Potem scroll the header of that gro
     });
     assert.ok(scrolls[0].element.classList.contains("rule-list-header"));
 
-    await press(page.window, rowsOf(screen).now);
+    await press(rowsOf(screen).now);
     assert.deepEqual(scrolledTo(scrolls[1]), {
       rule: "1",
       options: { block: "center" },
@@ -702,7 +686,7 @@ test("the program scrolls once per click and does not follow the rule when the g
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const game = await wiredScreen(page, diverged());
-    await press(page.window, rowsOf(game.screen).now);
+    await press(rowsOf(game.screen).now);
     assert.equal(scrolls.length, 1);
     const later = advanceMinutes(diverged(), 3).state;
     await inAct(() => game.screen.update(later, later.run, []));
@@ -758,7 +742,7 @@ test("a row that names no rule is no control: the keyboard does not reach it and
         const element = rowsOf(screen)[row];
         assert.equal(element.tabIndex, -1, `${name}: ${row} is no tab stop`);
         assert.equal(element.hasAttribute("tabindex"), false, name);
-        await press(page.window, element);
+        await press(element);
         await key(page.window, element, "Enter");
         await key(page.window, element, " ");
       }
@@ -784,7 +768,7 @@ test("while the program panel shows a saved program a click on Teraz scrolls not
       0,
       "precondition: the copy is not shown",
     );
-    await press(page.window, rowsOf(game.screen).now);
+    await press(rowsOf(game.screen).now);
     await key(page.window, rowsOf(game.screen).next, "Enter");
     assert.equal(scrolls.length, 0);
   });
@@ -852,7 +836,7 @@ test("what the window covers stays in the tree and keeps its state: the tab pick
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     const [, program, tabs] = areasOf(game.screen.element);
-    await press(page.window, buttonNamed(tabs, "Teren"));
+    await press(buttonNamed(tabs, "Teren"));
     const panel = byClass(program, "program-panel")[0];
     await inAct(() => game.screen.setWindow(true));
     assert.ok(panel.isConnected, "the panel's element stays in the screen");
@@ -877,16 +861,13 @@ test("„✕” asks the game view to close the window and the focus goes to „
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     await inAct(() => game.screen.setWindow(true));
-    await press(
-      page.window,
-      buttonLabelled(expectWindowIn(game.screen), "Zamknij okno"),
-    );
+    await press(buttonLabelled(expectWindowIn(game.screen), "Zamknij okno"));
     assert.deepEqual(game.acts, ["closeWindow"]);
     assert.equal(windowIn(game.screen), undefined);
     const opener = buttonNamed(headerIn(game.screen), "Koniec przejścia");
     assert.ok(opener && shown(opener), "the header holds the button");
     assert.ok(page.document.activeElement === opener, "focus is on it");
-    await press(page.window, opener);
+    await press(opener);
     assert.deepEqual(game.acts, ["closeWindow", "openWindow"]);
     assert.ok(windowIn(game.screen), "the window stands again");
   });
@@ -897,12 +878,8 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     await inAct(() => game.screen.setWindow(true));
+    await press(buttonNamed(expectWindowIn(game.screen), "Zakończ"));
     await press(
-      page.window,
-      buttonNamed(expectWindowIn(game.screen), "Zakończ"),
-    );
-    await press(
-      page.window,
       buttonNamed(expectWindowIn(game.screen), "Otwarte: Las — głębiej →"),
     );
     assert.deepEqual(game.acts, ["end", "openMap forestDeep"]);
@@ -911,10 +888,7 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
     // drawn again for „Restart”.
     const again = await wiredScreen(page, completedRun(pausedRun()));
     await inAct(() => again.screen.setWindow(true));
-    await press(
-      page.window,
-      buttonNamed(expectWindowIn(again.screen), "Restart"),
-    );
+    await press(buttonNamed(expectWindowIn(again.screen), "Restart"));
     assert.deepEqual(again.acts, ["restart"]);
   });
 });
@@ -931,7 +905,7 @@ test("„Dodaj regułę z tym” of the window closes the window and then does w
       "end-window-discovery",
     )[0];
     assert.ok(discovery, "precondition: the window names the discovery");
-    await press(page.window, buttonNamed(discovery, "Dodaj regułę z tym"));
+    await press(buttonNamed(discovery, "Dodaj regułę z tym"));
     assert.deepEqual(game.acts, ["closeWindow", "editCopy"], "in this order");
     assert.equal(windowIn(game.screen), undefined);
     assert.equal(coveredState(game.screen), false);

@@ -3,7 +3,6 @@
 // move, are the browser check's (D-88): nothing here computes a layout.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import {
   campCapacity,
@@ -11,7 +10,7 @@ import {
 } from "../../dist/browser/view/camp-picture.js";
 
 const NOW = 1_800_000_000_000;
-const MAP = Object.keys(MAPS)[0];
+const MAP = "forest";
 const LOOP = {
   runNumber: 3,
   completed: 2,

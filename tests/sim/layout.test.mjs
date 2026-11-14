@@ -9,7 +9,7 @@ import {
   streamState,
 } from "../../dist/browser/sim/random.js";
 
-const map = Object.values(MAPS)[0];
+const map = MAPS.forest;
 const resourceIds = map.resources.map((resource) => resource.id);
 
 test("tiles are row-major, unrevealed, with the map step cost", () => {

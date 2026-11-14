@@ -28,7 +28,7 @@ import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
 import { newKnowingGame } from "../sim/understanding-fixture.mjs";
 
 const SENT = {
-  mapId: Object.keys(MAPS)[0],
+  mapId: "forest",
   // The first character a new game creates takes the id 1.
   characterId: 1,
 };

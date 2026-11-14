@@ -843,7 +843,7 @@ ma zakładki „Kronika” i „Teren”, a na starcie przejścia wybrana jest �
   `text-secondary`, jak „Wybierz mapę z listy.” na ekranie Mapy (D-343, D-331).
 
 Żadna z tych części nie dostaje nowej roli, barwy ani wartości; wartości stoją
-w pliku tokenów, a kod kroniki w `src/browser/view/right-area.tsx`.
+w pliku tokenów, a kod kroniki w `src/browser/view/tabs-area.tsx`.
 
 ### The end-of-run window
 

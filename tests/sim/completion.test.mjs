@@ -26,7 +26,7 @@ import {
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-const [mapId] = Object.keys(MAPS);
+const mapId = "forest";
 const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 const EXPLORING = programFromRules({

@@ -15,7 +15,8 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-const [mapId, map] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const map = MAPS[mapId];
 const [stick, berry] = map.resources.map((resource) => resource.id);
 // The first character a new game creates takes the id 1.
 const SENT = { mapId, characterId: 1 };

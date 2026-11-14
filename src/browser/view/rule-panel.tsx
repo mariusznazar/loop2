@@ -11,14 +11,10 @@
  * read, Enter picks and does nothing on a greyed cell, and only one cell of the grid is in the order
  * of Tab, so Tab leaves the grid. „✕” and Escape ask the page to close the panel through `onClose`;
  * opening another rule is the page's, by `open`. The rule list draws the panel in place, through
- * `RulePanelView`; `createRulePanel` builds it in an element of its own for a caller that places that
- * element itself. Each is called from an event handler or the continuation of an answer, never from
- * render or an effect. Nothing runs when the module is imported.
+ * `RulePanelView`. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent } from "react";
-import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
 import { ACTIONS } from "../sim/data/actions.js";
 import { conditionNumber } from "../sim/program.js";
 import type {
@@ -45,6 +41,7 @@ import {
   groupNumber,
   offeredItems,
   offeredResources,
+  readNumberField,
   renameGroup,
   ruleFields,
   ruleNumber,
@@ -78,21 +75,11 @@ export type RulePanelProps = {
   copy: boolean;
 };
 
-export type RulePanelOptions = {
+export type RulePanelHandlers = {
   /** Called with the whole new program after each change. */
   onCommit: (program: Program) => void;
   /** Called when the player asks to close the panel, by „✕” or Escape. */
   onClose: () => void;
-  props: RulePanelProps;
-};
-
-export type RulePanel = {
-  /** The panel with its place, for the page to put in. */
-  element: HTMLElement;
-  /** Draws the panel anew from what the page gives. */
-  update(props: RulePanelProps): void;
-  /** Unmounts the panel and takes it out of the page. */
-  dispose(): void;
 };
 
 /** The words of each field above its value or its pick; the fields and their order are D-306's. */
@@ -203,7 +190,7 @@ function cellsOf(grid: HTMLElement | null): HTMLElement[] {
     : [...grid.querySelectorAll<HTMLElement>(".pick-cell")];
 }
 
-type RulePanelViewProps = Omit<RulePanelOptions, "props"> & RulePanelProps;
+type RulePanelViewProps = RulePanelHandlers & RulePanelProps;
 
 /** The rule panel of the rule or group `open` names; nothing where none is open or it is gone. */
 export function RulePanelView({
@@ -497,6 +484,7 @@ export function RulePanelView({
               label={label}
               number={number}
               value={condition.value}
+              rule={(text, held) => readNumberField(text, held, number)}
               onCommit={commitNumber}
               inputRef={numberInput}
             />
@@ -583,39 +571,4 @@ export function RulePanelView({
       {fields.map(renderField)}
     </section>
   );
-}
-
-/**
- * Builds the panel in an element of its own, for the page to place. The render is synchronous, so the
- * panel stands in the element when this returns. Each panel is a new root: nothing it holds outlives
- * `dispose()`.
- */
-export function createRulePanel(options: RulePanelOptions): RulePanel {
-  const element = document.createElement("div");
-  element.className = "rule-panel-host";
-  const root = createRoot(element);
-  let disposed = false;
-  function draw(props: RulePanelProps): void {
-    flushSync(() => {
-      root.render(
-        <RulePanelView
-          {...props}
-          onCommit={options.onCommit}
-          onClose={options.onClose}
-        />,
-      );
-    });
-  }
-  draw(options.props);
-  return {
-    element,
-    update(props: RulePanelProps): void {
-      if (!disposed) draw(props);
-    },
-    dispose(): void {
-      disposed = true;
-      root.unmount();
-      element.remove();
-    },
-  };
 }

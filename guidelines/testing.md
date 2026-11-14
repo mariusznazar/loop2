@@ -108,7 +108,7 @@ niepowodzenie źródła we wpisie nie potrzebują.
 - **Decision:** D-73 · D-74
 - **Invariant:** none
 - **Good:** Przypadek podaje zawartość plecaka i niezależnie zapisaną sumę.
-- **Bad:** Obie strony porównania używają funkcji produktu wyliczającej punkty sześciokąta.
+- **Bad:** Obie strony porównania używają funkcji produktu wyliczającej punkty sześciokąta. Przypadek bierze pierwszą mapę z danych gry przez `Object.entries(MAPS)[0]` i nazywa ją `forest`.
 
 Zapisuj jawnie dane, których dotyczy sprawdzenie, i oczekiwaną wartość tam,
 gdzie inaczej wyliczałby je kod produktu. Z uruchomienia produktu pochodzi
@@ -117,7 +117,10 @@ Jeżeli przyszłe zadanie przyjmie dane generowane (D-74), pochodzą one
 z generatora biblioteki testowej; oczekiwanie nadal wynika z niezależnej
 zależności — odwrócenia operacji, niezmiennika lub prostszego rozwiązania
 napisanego z wymagania, nie skopiowanego z kodu. Znaleziony kontrprzykład
-zostaje zwykłym testem z wartościami wypisanymi wprost.
+zostaje zwykłym testem z wartościami wypisanymi wprost. Dane gry, których dotyczy
+test — mapę, przedmiot, stworzenie — wybieraj po identyfikatorze, nigdy po
+miejscu w danych gry, bo nowy wpis w danych nie może zmienić tego, czego test
+dotyczy.
 
 ### Changing an existing test
 

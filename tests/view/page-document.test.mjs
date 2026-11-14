@@ -1,6 +1,14 @@
 // The harness's own cases (D-264, D-268). Its import stands first, as in every
 // test file on jsdom: the limit and the window stand before react-dom loads.
-import { assert, inAct, settle, typeInto, withPage } from "./page-document.mjs";
+import {
+  assert,
+  fire,
+  inAct,
+  press,
+  settle,
+  typeInto,
+  withPage,
+} from "./page-document.mjs";
 import { spawnSync } from "node:child_process";
 import { mock, test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -388,6 +396,63 @@ test("typing reaches a listener of a field outside React, by a bubbling input ev
     await typeInto(field, "Ala");
 
     assert.deepEqual(heard, ["Ala"]);
+  });
+});
+
+function Counter() {
+  const [clicks, setClicks] = useState(0);
+  return createElement(
+    "button",
+    { onClick: () => setClicks(clicks + 1) },
+    `clicked ${clicks}`,
+  );
+}
+
+test("a press clicks the control inside act, so what its handler changed stands when the press returns", async () => {
+  await withPage(async ({ document }) => {
+    const { container } = await drawn(document, createElement(Counter));
+    const button = container.querySelector("button");
+
+    await press(button);
+    await press(button);
+
+    assert.equal(button.textContent, "clicked 2");
+  });
+});
+
+test("a press of something that does not stand fails the case in the harness's own words", async () => {
+  const error = await failureOf(() =>
+    withPage(async () => {
+      await press(null);
+    }),
+  );
+  assertShortAndPlain(error);
+  assert.match(error.message, /what the case presses stands/);
+});
+
+test("fire sends a bubbling event of the window of its target, a pointerout as a mouse event with the fields given", async () => {
+  await withPage(async ({ document, root, window }) => {
+    const field = document.createElement("input");
+    root.append(field);
+    const heard = [];
+    root.addEventListener("change", (event) =>
+      heard.push(["change", event instanceof window.Event]),
+    );
+    root.addEventListener("pointerout", (event) =>
+      heard.push([
+        "pointerout",
+        event instanceof window.MouseEvent,
+        event.clientX,
+      ]),
+    );
+
+    fire(field, "change");
+    fire(field, "pointerout", { clientX: 7 });
+
+    assert.deepEqual(heard, [
+      ["change", true],
+      ["pointerout", true, 7],
+    ]);
   });
 });
 

@@ -1,4 +1,4 @@
-// The area under the drawing of the screen of a map run, `RightArea` in right-area.tsx, in React
+// The area under the drawing of the screen of a map run, `TabsArea` in tabs-area.tsx, in React
 // (D-311, D-343, D-344, D-346, D-382, D-383, D-147, D-276, D-130) on jsdom through
 // tests/view/page-document.mjs (D-264): the tabs „Kronika” and „Teren”, under „Kronika” the seven
 // filter buttons and the list of the chronicle, newest first, each row the game minute alone in a
@@ -8,7 +8,7 @@
 // with events written out by hand where the case is about words, so each case states the words it
 // expects (D-73). Real events, the look and scrolling are checked in the browser (D-88). Every
 // comparison is of plain data or of a handful of words (D-268).
-import { assert, inAct, withPage } from "./page-document.mjs";
+import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
@@ -20,7 +20,7 @@ import {
   send,
 } from "../../dist/browser/sim/game.js";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
-import { RightArea } from "../../dist/browser/view/right-area.js";
+import { TabsArea } from "../../dist/browser/view/tabs-area.js";
 
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000003;
@@ -72,16 +72,6 @@ const buttonNamed = (root, text) =>
     (element) => element.localName === "button" && element.textContent === text,
   );
 
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
-
 /** A new game with one character, not yet sent, and the game after the send. */
 const readyGame = () => createCharacter(newGame(), "Ala").state;
 const sentGame = () => send(readyGame(), SENT, REAL_MS).state;
@@ -119,7 +109,7 @@ async function draw(document, chronicle, state, extra = {}) {
   const show = (next) =>
     inAct(() =>
       root.render(
-        createElement(RightArea, {
+        createElement(TabsArea, {
           state: next,
           chronicle,
           hovered: extra.hovered ?? null,

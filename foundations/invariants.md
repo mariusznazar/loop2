@@ -219,7 +219,7 @@ Node.js adds to those of the JavaScript language.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-04
+- **Derives from:** D-04 · D-393
 - **Part:** simulation
 - **Violated:** no
 
@@ -1323,6 +1323,16 @@ The practice an earning loop gathers is never added to its character's skills tw
 - **Rests on:** none
 - **Derives from:** D-189 · D-241 · D-245 · D-246
 - **Part:** simulation
+- **Violated:** no
+
+## simulation-type-check
+
+The simulation's TypeScript files are type-checked under a configuration of their own that covers every file under `src/browser/sim/`, holds the library of the JavaScript language alone and no ambient types, and that `npm run typecheck` and `npm run build` both run.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-393
+- **Part:** simulation · build-tools
 - **Violated:** no
 
 ## Withdrawn identifiers

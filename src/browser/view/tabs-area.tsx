@@ -1,9 +1,8 @@
 /**
  * The area under the drawing of the screen of a map run, in React (D-311, D-338, D-343, D-344, D-346,
- * D-147, D-276, D-130, D-46, D-382, D-383; the module and the component keep the name they had when
- * the area stood on the right): the tabs „Kronika” and „Teren” — shared buttons of the kind `tab` in
- * a container of the class `tabs` — and under the one picked either the chronicle or the table of
- * revealed tiles. The chronicle is a row of the seven filter buttons, shared buttons selected in
+ * D-147, D-276, D-130, D-46, D-382, D-383): the tabs „Kronika” and „Teren” — shared buttons of the
+ * kind `tab` in a container of the class `tabs` — and under the one picked either the chronicle or
+ * the table of revealed tiles. The chronicle is a row of the seven filter buttons, shared buttons selected in
  * their group as the pace buttons are, and under it the list of the entries of the filter, newest
  * first, each row the game minute alone in a column and the entry's text in the role of its kind.
  * The paragraph of the last encounter stands among the entries at the place the chronicle memory
@@ -57,7 +56,7 @@ const WINDOW_SIZE = 60;
 const NEAR_END = 160;
 
 /** What the screen gives the area; every render gives it whole. */
-export type RightAreaProps = {
+export type TabsAreaProps = {
   /** The game state the area draws; the table lists its map run, the paragraph is its `lastCombat`. */
   state: GameState;
   /** The chronicle memory of the map run, which holds the entries, the tab and the filter picked. */
@@ -183,12 +182,12 @@ const ChronicleView = memo(function ChronicleView({
 });
 
 /** The area under the drawing: the tabs, and under the one picked the chronicle or the table of revealed tiles. */
-export function RightArea({
+export function TabsArea({
   state,
   chronicle,
   hovered,
   onHover,
-}: RightAreaProps) {
+}: TabsAreaProps) {
   const snapshot = useSyncExternalStore(
     chronicle.subscribe,
     chronicle.snapshot,

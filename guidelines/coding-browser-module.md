@@ -56,7 +56,6 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/program-editor.ts`               | do not copy | —        |
 | `src/browser/view/program-list.tsx`                | copy        | —        |
 | `src/browser/view/program-panel.tsx`               | copy        | —        |
-| `src/browser/view/right-area.tsx`                  | copy        | —        |
 | `src/browser/view/rule-list.tsx`                   | copy        | —        |
 | `src/browser/view/rule-panel.tsx`                  | copy        | —        |
 | `src/browser/view/run-header.tsx`                  | copy        | —        |
@@ -65,6 +64,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/scene.tsx`                       | copy        | —        |
 | `src/browser/view/screen-address.ts`               | copy        | —        |
 | `src/browser/view/status-row.ts`                   | do not copy | —        |
+| `src/browser/view/tabs-area.tsx`                   | copy        | —        |
 | `src/browser/view/team-lines.ts`                   | copy        | —        |
 | `src/browser/view/terrain-drawing.tsx`             | copy        | —        |
 | `src/browser/view/terrain-picture.ts`              | copy        | —        |

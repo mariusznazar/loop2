@@ -23,11 +23,13 @@ import { programFromRules, programRules } from "./program-fixture.mjs";
 // 120 minutes and „Tu leży mniej niż” 0 to 50 pieces, each of these four in steps of 1;
 // „Z dala od — ognisko” takes no number.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const [resource] = forest.resources.map((each) => each.id);
-const [firstItem, secondItem] = Object.keys(ITEMS);
+const firstItem = "stick";
+const secondItem = "berry";
 const entrance = offsetToAxial(forest.entrance.col, forest.entrance.row);
 const SENT = { mapId, characterId };
 const REAL_MS = 1760000000000;
@@ -69,25 +71,22 @@ function carrying(pieces) {
   };
 }
 
-const holds = (run, condition) => conditionHolds(run, forest, condition);
+const holds = (run, condition) => conditionHolds(run, condition);
 
 test("health conditions compare the acting side and its opponent in health points", () => {
   const woundedWolf = { health: 6, opponentHealth: 100 };
+  assert.equal(conditionHolds(handMade(), healthBelow(8), woundedWolf), true);
   assert.equal(
-    conditionHolds(handMade(), forest, healthBelow(8), woundedWolf),
-    true,
-  );
-  assert.equal(
-    conditionHolds(handMade(), forest, healthBelow(6), woundedWolf),
+    conditionHolds(handMade(), healthBelow(6), woundedWolf),
     false,
     "the threshold is strict",
   );
   assert.equal(
-    conditionHolds(handMade(), forest, opponentHealthBelow(101), woundedWolf),
+    conditionHolds(handMade(), opponentHealthBelow(101), woundedWolf),
     true,
   );
   assert.equal(
-    conditionHolds(handMade(), forest, opponentHealthBelow(100), woundedWolf),
+    conditionHolds(handMade(), opponentHealthBelow(100), woundedWolf),
     false,
     "the opponent threshold is strict",
   );

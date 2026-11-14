@@ -171,7 +171,7 @@ export function ruleSigns(state: GameState): RuleSigns | null {
         opponentHealth: CREATURES[run.activeCombat.creatureId].health,
       }
     : undefined;
-  const judgement = judgeProgram(run, mapOf(run.mapId), run.copy.program, {
+  const judgement = judgeProgram(run, run.copy.program, {
     reach: {
       repertoire: editorRepertoire(state),
       known: knownRepertoire(state),
