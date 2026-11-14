@@ -5,7 +5,7 @@
  * while it has the focus, and takes a new value from its props only without the focus, so a screen
  * that redraws often leaves the typed text and the cursor in place. A number is committed on Enter
  * and on leaving the field, through the rule the screen that uses the field gives it (`rule`): the
- * field knows no rule of any screen, so a screen with a rule of its own adds none here (D-265).
+ * field knows no rule of any screen, so a screen with a rule of its own adds none here (D-395).
  * Nothing here runs when the module is imported.
  */
 import { useId, useRef, useState } from "react";
@@ -62,7 +62,7 @@ export function ReactNumberField({
 }: ReactNumberFieldProps) {
   const id = useId();
   const messageId = `${id}-message`;
-  // The text shown while the field has the focus, or while a rejected trip count stays in it; null
+  // The text shown while the field has the focus, or while a rejected text stays in it; null
   // otherwise.
   const [draft, setDraft] = useState<string | null>(null);
   // Whether the text was typed in this focus: leaving the field without typing commits nothing,
