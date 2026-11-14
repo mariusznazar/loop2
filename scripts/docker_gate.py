@@ -18,7 +18,8 @@ holds beside the state file, from before it asks Docker Desktop to start until i
 A process that finds no daemon and the lock held waits for the lock instead of starting, and then
 goes by what the start left: a gap recorded, a daemon answering, or, where the process that
 started died, neither, and then it starts itself. The operating system releases the lock of a
-process that died, so a dead start holds no one. The wait for the lock ends at the limit of the
+process that died, on Windows after a time that depends on available system resources, so a dead
+start holds the others for that time at most. The wait for the lock ends at the limit of the
 process that waits, counted from its first ask: the process then gives, and records for the run,
 the gap of a start that did not finish, and starts none of its own.
 
@@ -148,7 +149,8 @@ def start_lock(deadline):
     """Held by the one process of a run that is starting Docker Desktop. Yields whether the
     process had to wait for another to let go, and raises `StartWaitExpired` where the lock is
     not let go of by `deadline`. The lock is the operating system's, on a file beside the state
-    file, and is let go of when its holder ends, however it ends."""
+    file, and is let go of by the operating system when its holder ends, however it ends, on
+    Windows after a time that depends on available system resources."""
     descriptor = os.open(state_file() + ".lock", os.O_RDWR | os.O_CREAT)
     try:
         waited = False
