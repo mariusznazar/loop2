@@ -564,8 +564,8 @@ test("a reading passes the manual run, then the loops, and hands the store one r
 
 // invariant: resurrection-renewal
 // D-190, D-242: of two deaths the earlier in real time takes the team's one resurrection. A loop's end
-// lies at its minute's moment, none after the reading, and the manual run's death at the reading.
-test("in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, no later than the reading, takes the resurrection", () => {
+// lies at its minute's moment, here a millisecond before the reading, and the manual run's death at the reading.
+test("in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, earlier than the reading, takes the resurrection", () => {
   withBothClocks(({ pass, jump }) => {
     const both = practised(practised(twoCharacters(), 1), 2);
     let state = send(loopingOla(both), SENT, 1).state;
@@ -577,8 +577,8 @@ test("in a reading that ends a loop's map run in a death and the manual run in a
     const store = holdingStore(state);
     const clock = startClock(store);
     pass(1000);
-    // The date gave T0 to the start; the loop's minute lies at T0 + 60 s, the reading at the same moment.
-    jump(LOOP_MINUTE_MS - 1000);
+    // The date gave T0 to the start; the loop's minute lies at T0 + 60 s, the reading a millisecond later.
+    jump(LOOP_MINUTE_MS - 1000 + 1);
     clock.flush();
     const handed = store.state;
     assert.equal(

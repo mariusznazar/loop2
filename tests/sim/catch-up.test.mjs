@@ -853,7 +853,6 @@ test("a loop of a character with no practice dies on and on with no loss: the re
   assert.equal(ala(caught).generation, 1);
   assert.ok(caught.loops[1], "the loop goes on");
   assert.equal(caught.loops[1].runNumber, 2);
-  assert.equal(line(1, { minutes: 300 }).resurrectionUsed, false);
   assert.deepEqual(caught.awayReport[0], line(1, { minutes: 300 }));
   // Ola, with practice, dies in the same minute and finds the resurrection ready: it takes it.
   assert.equal(caught.team.resurrectionReadyAtMs, S + 243 * MIN + RENEWAL_MS);

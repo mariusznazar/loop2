@@ -532,6 +532,7 @@ test("the first completion of a map leaves a ready resurrection as it was, ready
 });
 
 // D-190: once per map, for a success.
+// invariant: resurrection-renewal
 test("the completion of a map the account had solved before renews nothing, whatever the resurrection", () => {
   const solved = {
     ...withEdgeSolved(newKnowingGame()),
