@@ -6,7 +6,7 @@
 // sent. The page's part of the reset (D-400) runs through `startApp` with a client that holds every
 // call until the case answers it. Every expected value is written out here. Real events, the look and the focus ring are the
 // browser check's (D-88).
-import { assert, inAct, settle, withPage } from "./page-document.mjs";
+import { assert, inAct, press, settle, withPage } from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
   createCharacter,
@@ -65,17 +65,6 @@ async function onPage(body) {
 
 const all = (root) => [root, ...root.querySelectorAll("*")];
 const pageDocument = () => globalThis.document;
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks `target` inside act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
 
 /** The address of the page with a history of its own, as the page's tests build it. */
 function fakeAddress(hash) {
