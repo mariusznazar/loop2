@@ -460,7 +460,6 @@ class TheState(WithFixture):
             T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES, "failures": T0 - 7 * HOUR},
             messages=[T0 - HOUR, T0 + FIVE_MINUTES]))
 
-
     def test_a_last_backup_line_is_read_as_state_and_the_next_run_writes_it(self):
         # The break: the backup kind missing from the strict reading, so that a state the run
         # itself wrote counts as damaged and the next run, which only records, reports nothing.
@@ -496,6 +495,17 @@ class TheBackupKind(WithFixture):
                 fixture = self.stated()
                 arrange(fixture)
                 self.assert_sent(fixture.run_at(NOW), "backup")
+
+    def test_a_log_that_never_gives_its_lines_is_cut_off_and_counts_as_no_send(self):
+        # The break: the reading with no time limit, which would hold the watcher's own lock for
+        # good, so that every later run ended as "another run holds the lock" and nothing was sent.
+        fixture = self.stated()
+        fixture.write_copy(BACKUP_LOG_WAIT_SECONDS="1", KILL_WAIT_SECONDS="1")
+        fixture.make_backup_log_a_pipe_with_no_writer()
+        result = fixture.run_at(NOW)
+        self.assert_sent(result, "backup")
+        self.assertIn("backup_log=unreadable", result.log, result)
+        self.assertNotIn("another run holds", fixture.run_at(NOW + FIVE_MINUTES).log)
 
     def test_the_kind_is_sent_once_and_then_held_for_24_hours(self):
         # The break: the six hours of the other kinds, which would bring four mails a day.

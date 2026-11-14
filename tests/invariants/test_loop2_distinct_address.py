@@ -7,8 +7,9 @@ variable of the deployment workflow `.github/workflows/deploy.yml` — and runs 
 
 Reading of the sentence:
 - the public address of loop2 the workflow declares: the value of the one variable of the
-  workflow whose name holds `LOOP2` (in any case) and whose value is an absolute `http://` or `https://` address — set as
-  a YAML key (`LOOP2_URL: https://…`) or as a shell assignment (`LOOP2_URL=https://…`). Exactly
+  workflow whose name holds `LOOP2` (in any case) and whose value is an absolute `http://` or
+  `https://` address — set as a YAML key (`LOOP2_URL: https://…`) or as a shell assignment
+  (`LOOP2_URL=https://…`). Exactly
   one such declaration must exist: none means the address is not declared in the repository (a
   value taken from a GitHub variable or secret is not), and two mean it is not declared once;
 - differs from `kantarion.bieda.it`: the address's host name, compared without case and without

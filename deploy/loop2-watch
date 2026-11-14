@@ -35,12 +35,12 @@
 # program name of the backup script and `end: sent` with one of its seven file names; the script
 # reads a bounded number of the last lines, each cut to a bounded width, and keeps nothing of a
 # line: not its content, its time or its file name. A missing, empty or unreadable log counts as
-# no send.
+# no send, and so does one whose reading does not end within a time limit.
 #
 # The log holds one line per run that skipped, found something or had a trouble of its own, and an
 # exit line at an abnormal end; a line that found something names the state of the backup log by
-# one word (fresh, stale or unreadable). This script never calls pusher about itself: a failing watcher that
-# did would flood.
+# one word (fresh, stale or unreadable). This script never calls pusher about itself: a failing
+# watcher that did would flood.
 #
 # Exit codes: 0 done or skipped · 2 input · 3 own lock · 4 state directory · 5 clock · 6 state file
 #             129, 130, 138, 140, 141, 142, 143 a signal
@@ -52,8 +52,8 @@ shopt -s lastpipe
 
 # The constants of the messages, the names, the paths and the limits stand in this block; the
 # patterns of the state and of Docker's answer, the two anchored prefixes of the game's log lines
-# and the pattern of the backup log's line stand outside it. No environment variable and no argument changes one. The tests of deploy/ replace
-# only the lines between the two markers.
+# and the pattern of the backup log's line stand outside it. No environment variable and no
+# argument changes one. The tests of deploy/ replace only the lines between the two markers.
 # >>> constants >>>
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 umask 027
@@ -67,6 +67,7 @@ readonly GAME_CONTAINER=loop2
 readonly TUNNEL_CONTAINER=loop2-cloudflared
 readonly INSPECT_FORMAT='{{.Id}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} {{.State.StartedAt}}'
 readonly DOCKER_WAIT_SECONDS=60
+readonly BACKUP_LOG_WAIT_SECONDS=60
 readonly PUSHER_WAIT_SECONDS=60
 readonly KILL_WAIT_SECONDS=10
 readonly MAX_WINDOW_SECONDS=86400
@@ -457,7 +458,8 @@ find_send() {
 read_backup_log() {
   # A NUL byte is turned into a visible one first, because `read` drops it silently and a line with
   # one could then pass for an exact line; a line over the width is cut, and the cut line is longer
-  # than any line that counts, so it never matches. A log that cannot be read is no send.
+  # than any line that counts, so it never matches. A log that cannot be read, or not within the
+  # time limit, is no send.
   local oldest newest
   BACKUP_LOG_STATE=skipped
   if [[ -z $STATE_OK ]]; then
@@ -466,8 +468,9 @@ read_backup_log() {
   printf -v oldest '%(%Y-%m-%dT%H:%M:%SZ)T' "$((NOW - BACKUP_FRESH_SECONDS))"
   printf -v newest '%(%Y-%m-%dT%H:%M:%SZ)T' "$NOW"
   BACKUP_LOG_STATE=stale
-  tail -n "$BACKUP_LOG_LINE_LIMIT" -- "$BACKUP_LOG_FILE" 2>/dev/null 7>&- \
-    | tr '\0' '?' | cut -c "1-$BACKUP_LOG_LINE_WIDTH" | find_send "$oldest" "$newest"
+  timeout --kill-after="$KILL_WAIT_SECONDS" "$BACKUP_LOG_WAIT_SECONDS" \
+    tail -n "$BACKUP_LOG_LINE_LIMIT" -- "$BACKUP_LOG_FILE" 2>/dev/null 7>&- \
+    | tr '\0' '?' 7>&- | cut -c "1-$BACKUP_LOG_LINE_WIDTH" 7>&- | find_send "$oldest" "$newest"
   if (( PIPESTATUS[0] != 0 )); then
     BACKUP_LOG_STATE=unreadable
   fi

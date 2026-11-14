@@ -268,6 +268,12 @@ class WatchFixture(backup_support.BackupFixture):
         self.remove_backup_log()
         os.makedirs(self.backup_log)
 
+    def make_backup_log_a_pipe_with_no_writer(self):
+        """A named pipe where the log should be: a read of it blocks until the time limit ends it."""
+        self.remove_backup_log()
+        subprocess.run([self.bash, "-c", 'mkfifo -- "$1"', "bash",
+                        deploy_support.shell_path(self.backup_log)], check=True, timeout=30)
+
     def set_container(self, name, container_id, status="running", health="none", started=STARTED):
         """The line `docker inspect` prints for a container, in the shape the watcher's format
         gives: the full id, the status, the health status or `none`, the start time."""
