@@ -1,23 +1,28 @@
-"""Invariant loop2-container-isolation: The loop2 instance runs in a container separate from
-the existing loop instance.
+"""Invariant loop2-container-isolation: The Compose file of loop2 names its own project and
+containers, mounts only the account volume of loop2, includes or extends no other file and shares
+no namespace, link, device, external network or external volume with another container, and
+neither that file nor the Dockerfile mounts the Docker socket or names the old loop instance.
 
 The check reads the repository's `compose.yaml` and `Dockerfile` as they stand and runs nothing;
 no Docker is needed.
 
 Reading of the sentence:
-- the loop2 instance runs in a container of its own: `compose.yaml` names its own Compose project
-  `loop2`, application `app`/`loop2` and connector `cloudflared`/`loop2-cloudflared`;
-- separate from the existing loop instance: nothing in `compose.yaml` or the Dockerfile reaches
-  into the old instance or shares with another container — the only volume is loop2's own
-  account database, mounted only by app at /app/data under D-17; no other mount or external
-  network or volume, no network, PID, IPC, UTS or user namespace set to share (`network_mode`, `pid`, `ipc`,
-  `uts`, `userns_mode`, `cgroup`), no link to another container, no device, no Docker socket,
-  and no name of the old instance (`loop`, `loop-…`, `loop_…`, `/srv/loop`).
+- its own project and containers: `compose.yaml` names its own Compose project `loop2`,
+  application `app`/`loop2` and connector `cloudflared`/`loop2-cloudflared`;
+- mounts only the account volume of loop2: the only volume is loop2's own account database,
+  mounted only by app at /app/data under D-17, and no other mount;
+- shares nothing with another container: no external network or volume, no network, PID, IPC,
+  UTS or user namespace set to share (`network_mode`, `pid`, `ipc`, `uts`, `userns_mode`,
+  `cgroup`), no link to another container, no device, no top-level `include` or `extends` and
+  no service `extends`;
+- no Docker socket and no name of the old instance in either file (`loop`, `loop-…`, `loop_…`,
+  `/srv/loop`).
 
-Does NOT cover: what really runs on the server (the check runs nothing there); what a deployment
-does to other containers, images, networks or volumes, and the privileges the service asks the
-host for — loop2-host-sharing's, checked in `test_loop2_host_sharing.py`; whether the old game
-still answers (the workflow's probe of it, after a deployment).
+Does NOT cover: that the old game runs as a container of its own on the server, which the fact
+mikrus-host-docker-workloads carries, and what runs there at all (the check runs nothing there);
+what a deployment does to other containers, images, networks or volumes, and the privileges the
+service asks the host for — loop2-host-sharing's, checked in `test_loop2_host_sharing.py`;
+whether the old game still answers (the workflow's probe of it, after a deployment).
 
 A file this check reads that does not exist makes its test fail.
 """

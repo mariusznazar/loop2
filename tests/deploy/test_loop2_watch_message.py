@@ -7,21 +7,23 @@ The check drives the repository's script `deploy/loop2-watch` as a black box thr
 is replaced, with stand-ins for its tools.
 
 Reading of the sentence:
-- every message: one for each of the five kinds (down, unhealthy, restarted, failures, browser),
-  made to happen in turn, and all five in one run;
+- every message: one for each of the six kinds (down, unhealthy, restarted, failures, backup,
+  browser), made to happen in turn, and all six in one run;
 - a fixed subject and a fixed text: the subject is the call's only argument, ASCII and made of the
   characters a URL path takes without escaping; the text is the one line `pusher` reads from its
   standard input; both are the same bytes whatever the stand-in tools printed (the same notice as
-  a run with no marker at all), the five kinds differ from each other and from the backup's;
+  a run with no marker at all), the six kinds differ from each other and from the backup script's;
 - nothing of a player and nothing of a tool's output: a marker, made to look like a player's
   address, stands in the lines of the stand-in log (the lines the watcher counts, and a line it
   does not), in the standard output and the standard error of the stand-in `docker` for `inspect`
   (an answer of the right shape on the standard error; an answer off the shape that exits 0; a
-  failed command) and for `logs`, and in a damaged state file; it
+  failed command) and for `logs`, in the lines of the log of the backup (lines that look like the
+  end of a sent night and are not, and one that is) and in a damaged state file; it
   reaches no argument and no standard input of `pusher`, nor the watcher's standard output, its
-  standard error, its log, its state file or any other file of the machine the run used. A
-  precondition shows that the marker was really put before the watcher: the stand-in `docker` was
-  asked for the reading that holds it.
+  standard error, its log, its state file, the log of the backup, which the watcher only reads, or
+  any other file of the machine the run used. A precondition shows that the marker was really put
+  before the watcher: the stand-in `docker` was asked for the reading that holds it, and the
+  watcher's decision about the backup changes with the exact line that stands beside the marker.
 
 A positive control runs a quiet night and asserts no call of `pusher`, so a call above answers
 the trouble, not the run.
@@ -52,6 +54,19 @@ BROWSER_LINE = (f'{{"failure":"browser","kind":"{MARKER}","code":"{MARKER}",'
 FAILURE_LINE = (f'{{"failure":"database","kind":"SqliteError","code":"{MARKER}","place":"open",'
                 f'"accountId":"{MARKER}"}}\n')
 UNCOUNTED_LINE = f"{MARKER} wrote a line that begins with no failure object\n"
+SENT_AGO = LATER - 3600
+# Lines of the log of the backup that hold the marker where a line of the real log never does (the
+# error text of a tool, a file name, a stage); none is the end of a sent night as the script writes it.
+BACKUP_LOOK_ALIKES = (
+    f"{support.stamp(SENT_AGO)} loop2-backup: end: sent {MARKER}\n"
+    f"{support.stamp(SENT_AGO)} loop2-backup: end: sent loop2-accounts-1.sqlite.age {MARKER}\n"
+    f"{support.stamp(SENT_AGO)} loop2-backup: {MARKER}: end: sent loop2-accounts-1.sqlite.age\n"
+    f"{MARKER} {support.stamp(SENT_AGO)} loop2-backup: end: sent loop2-accounts-1.sqlite.age\n"
+    f"{support.stamp(SENT_AGO)} loop2-backup: stage stream: docker exit 1, age exit 1 "
+    f"(exit 6) {MARKER}\n"
+    f"{MARKER}\n"
+)
+EXACT_BACKUP_LINE = support.sent_line(SENT_AGO)
 
 
 def healthy_line(container_id, health="none", status="running", started=support.STARTED):
@@ -78,13 +93,17 @@ def arrange_failures(fixture):
     fixture.set_log(FAILURE_LINE + UNCOUNTED_LINE, errors=MARKER + "\n")
 
 
+def arrange_backup(fixture):
+    fixture.write_backup_log(BACKUP_LOOK_ALIKES)
+
+
 def arrange_browser(fixture):
     fixture.set_log(BROWSER_LINE * 3 + UNCOUNTED_LINE, errors=MARKER + "\n")
 
 
 ARRANGEMENTS = {"down": arrange_down, "unhealthy": arrange_unhealthy,
                 "restarted": arrange_restarted, "failures": arrange_failures,
-                "browser": arrange_browser}
+                "backup": arrange_backup, "browser": arrange_browser}
 
 
 def noise(fixture):
@@ -106,8 +125,8 @@ class FixedMessages(unittest.TestCase):
 
     def everywhere(self, fixture, result):
         """Every text and every file the run could have put the marker in, but the stand-ins' own
-        directory, whose files hold what the test told them to print."""
-        files = fixture.every_file(outside=(fixture.stubs,))
+        directory and the one of the backup log, whose files hold what the test put there."""
+        files = fixture.every_file(outside=(fixture.stubs, os.path.dirname(fixture.backup_log)))
         texts = [result.stdout, result.stderr, result.log, str(result.calls),
                  str(result.pusher_inputs), str(result.messages())]
         texts += [data.decode("utf-8", "replace") for data in files.values()]
@@ -129,8 +148,12 @@ class FixedMessages(unittest.TestCase):
                 fixture = self.fixture()
                 arrange(fixture)
                 noise(fixture)
-                result = fixture.run_at(LATER)
+                fixture.set_clock(LATER)
+                backup_log = support.deploy_support.read_bytes(fixture.backup_log)
+                result = fixture.run()
                 self.assert_one_fixed_notice(result, kind)
+                self.assertEqual(support.deploy_support.read_bytes(fixture.backup_log),
+                                 backup_log, "the watcher wrote into the log of the backup")
                 texts, files = self.everywhere(fixture, result)
                 for text in texts:
                     self.assertNotIn(MARKER, text)
@@ -158,10 +181,26 @@ class FixedMessages(unittest.TestCase):
         rule = os.path.join(fixture.stubs, "answers", "docker", "000", "stdout")
         self.assertIn(MARKER, support.deploy_support.read_bytes(rule).decode())
 
-    def test_all_five_kinds_in_one_run_send_five_fixed_notices_and_nothing_else(self):
+    def test_the_log_of_the_backup_is_read_and_a_marker_beside_the_exact_line_reaches_nothing(self):
+        # invariant: failure-watcher-message
+        # The marker stands in lines that look like the end of a sent night; where one line is
+        # exact the watcher has no trouble to report, and the marker reaches nothing it writes.
+        fixture = self.fixture()
+        fixture.write_backup_log(BACKUP_LOOK_ALIKES + EXACT_BACKUP_LINE)
+        self.assertIn(MARKER, support.deploy_support.read_bytes(fixture.backup_log).decode())
+        result = fixture.run_at(LATER)
+        self.assertEqual(result.code, 0, result)
+        self.assertEqual(result.of("pusher"), [], result)
+        texts, files = self.everywhere(fixture, result)
+        for text in texts:
+            self.assertNotIn(MARKER, text)
+        self.assertTrue(files, "precondition: the run left files to read")
+
+    def test_all_six_kinds_in_one_run_send_six_fixed_notices_and_nothing_else(self):
         # invariant: failure-watcher-message
         fixture = self.fixture()
         arrange_down(fixture)
+        arrange_backup(fixture)
         fixture.answer("docker", stdout=healthy_line(support.GAME_ID, health="unhealthy").encode(),
                        stderr=(MARKER + "\n").encode(), match="inspect * loop2")
         fixture.set_log(FAILURE_LINE + BROWSER_LINE + UNCOUNTED_LINE, errors=MARKER + "\n")
@@ -193,8 +232,8 @@ class FixedMessages(unittest.TestCase):
                 self.assertEqual(len(result.pusher_inputs[0].decode("utf-8").splitlines()), 1)
                 subjects.append(arguments[0])
                 texts.append(result.pusher_inputs[0])
-        self.assertEqual(len(set(subjects)), 5, subjects)
-        self.assertEqual(len(set(texts)), 5, texts)
+        self.assertEqual(len(set(subjects)), 6, subjects)
+        self.assertEqual(len(set(texts)), 6, texts)
 
     def test_a_damaged_state_file_with_the_marker_reaches_nothing_the_run_writes(self):
         # invariant: failure-watcher-message

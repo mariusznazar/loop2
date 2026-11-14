@@ -22,12 +22,16 @@ What a run gets:
   second later at each further ask of the same run, so a script that reads the time again for the
   end of its window shows it;
 - a `flock` that, besides the answers by pattern, refuses a shared lock from the Nth look at the
-  deployment's lock on (`hold_deploy_lock_from`), so a deployment that begins between the two looks
-  of one run can be made;
+  deployment's lock on (`hold_deploy_lock_from`), with a chosen status, so a deployment that begins
+  between the two looks of one run can be made, and a `flock` that breaks at the second look too;
 - a `pusher` that keeps what it read from each call, one record per call;
 - `timeout`, `mkdir`, `mv` and `rm` of the machine, so a time limit and a missing directory are real;
 - the state directory, the log, the watcher's own lock and the deployment's lock under the
   temporary directory, the deployment's lock file present and empty as a deployment leaves it;
+- a log of the nightly backup of its own, in a directory of its own, which holds by default a
+  successful night dated an hour before whatever clock a test sets (`set_clock` writes it again,
+  until a test writes a log of its own with `write_backup_log`), so that every test is about its own
+  kinds; the `tail`, `cut` and `tr` that read it are the machine's own, not stand-ins;
 - standard output and standard error written to files, so a process left behind cannot hold a pipe
   of the test open; a run past RUN_TIMEOUT has its whole process tree stopped and fails the test.
 
@@ -37,6 +41,7 @@ A machine without Git or Git's bash skips the test, so it reports itself uncheck
 import os
 import shutil
 import subprocess
+import time
 
 import backup_script_support as backup_support
 
@@ -49,7 +54,7 @@ SCHEDULE = os.path.join(ROOT, "deploy", "loop2-watch.cron")
 
 GAME = "loop2"
 TUNNEL = "loop2-cloudflared"
-KINDS = ("down", "unhealthy", "restarted", "failures", "browser")
+KINDS = ("down", "unhealthy", "restarted", "failures", "backup", "browser")
 RECORD_SEPARATOR = b"\x1e"
 
 # 2026-11-09T00:00:00Z as seconds since the epoch, by hand: from 1970-01-01 to 2026-01-01 are
@@ -79,6 +84,9 @@ NOTICES = {
                   "Co dalej: skill loop2-deploy."),
     "failures": ("loop2_awarie_serwera",
                  "Serwer gry loop2 zapisał awarie w logu. Co dalej: skill loop2-deploy."),
+    "backup": ("loop2_brak_kopii_bazy",
+               "Brak udanej kopii bazy loop2 od ponad doby: nocna kopia nie została wysłana. "
+               "Co dalej: skill loop2-deploy."),
     "browser": ("loop2_awarie_przegladarek",
                 "Przeglądarki graczy zgłosiły awarie gry loop2. "
                 "Co dalej: skill loop2-deploy."),
@@ -93,7 +101,7 @@ BEFORE = {
   looks=$(( $(cat "$stubs/calls/shared-looks" 2>/dev/null || echo 0) + 1 ))
   printf '%s' "$looks" >"$stubs/calls/shared-looks"
   if [[ -f $stubs/hold-shared-from ]] && (( looks >= $(<"$stubs/hold-shared-from") )); then
-    exit 1
+    exit "$(<"$stubs/hold-shared-status")"
   fi
 fi""",
 }
@@ -121,6 +129,23 @@ else
   printf '%s\\n' '2026-11-09T00:00:00Z'
 fi""",
 }
+
+
+def stamp(epoch):
+    """The time as the backup script writes it at the start of a log line: UTC, to the second."""
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(epoch))
+
+
+def sent_line(epoch, day="1"):
+    """The line the backup script writes at the end of a night whose backup was sent."""
+    return f"{stamp(epoch)} loop2-backup: end: sent loop2-accounts-{day}.sqlite.age\n"
+
+
+def night(epoch, day="1"):
+    """The lines of a whole night's backup that was sent, the last one the one that counts."""
+    return (f"{stamp(epoch - 40)} loop2-backup: start\n"
+            f"{stamp(epoch - 5)} loop2-backup: made: loop2-accounts-{day}.sqlite.age, 1024 bytes\n"
+            + sent_line(epoch, day))
 
 
 class WatchResult:
@@ -158,6 +183,9 @@ class WatchFixture(backup_support.BackupFixture):
 
     def _build(self):
         shell_path = deploy_support.shell_path
+        self.backup_log = self.path("backup", "loop2-backup.log")
+        os.makedirs(os.path.dirname(self.backup_log))
+        self.backup_log_is_default = True
         self.stubs = self.path("stubs")
         for tool in backup_support.STUBBED_TOOLS:
             stub = backup_support.STUB.format(
@@ -205,6 +233,7 @@ class WatchFixture(backup_support.BackupFixture):
             "STATE_DIRECTORY": shell_path(self.state_directory),
             "OWN_LOCK_FILE": shell_path(self.own_lock),
             "DEPLOY_LOCK_FILE": shell_path(self.deploy_lock),
+            "BACKUP_LOG_FILE": shell_path(self.backup_log),
         }
         overrides.update(extra)
         deploy_support.write_bytes(self.copy, deploy_support.replace_block(source, overrides))
@@ -220,6 +249,30 @@ class WatchFixture(backup_support.BackupFixture):
 
     def set_clock(self, epoch):
         deploy_support.write_bytes(os.path.join(self.stubs, "clock"), f"{epoch}\n".encode())
+        if self.backup_log_is_default:
+            deploy_support.write_bytes(self.backup_log, night(epoch - 3600).encode())
+
+    def write_backup_log(self, data):
+        """Put the text or the bytes a test chose into the backup log, which the clock no longer
+        rewrites."""
+        self.backup_log_is_default = False
+        deploy_support.write_bytes(self.backup_log,
+                                   data if isinstance(data, bytes) else data.encode())
+
+    def remove_backup_log(self):
+        self.backup_log_is_default = False
+        os.remove(self.backup_log)
+
+    def make_backup_log_a_directory(self):
+        """A path that cannot be read as a file: a directory where the log should be."""
+        self.remove_backup_log()
+        os.makedirs(self.backup_log)
+
+    def make_backup_log_a_pipe_with_no_writer(self):
+        """A named pipe where the log should be: a read of it blocks until the time limit ends it."""
+        self.remove_backup_log()
+        subprocess.run([self.bash, "-c", 'mkfifo -- "$1"', "bash",
+                        deploy_support.shell_path(self.backup_log)], check=True, timeout=30)
 
     def set_container(self, name, container_id, status="running", health="none", started=STARTED):
         """The line `docker inspect` prints for a container, in the shape the watcher's format
@@ -242,9 +295,12 @@ class WatchFixture(backup_support.BackupFixture):
         deploy_support.write_bytes(os.path.join(self.stubs, "log-output"), text.encode())
         deploy_support.write_bytes(os.path.join(self.stubs, "log-error"), errors.encode())
 
-    def hold_deploy_lock_from(self, look):
-        """From the `look`-th ask for a shared lock of one run on, the lock is held: 1 is held at
+    def hold_deploy_lock_from(self, look, status=1):
+        """From the `look`-th ask for a shared lock of one run on, `flock` answers `status` (1, a
+        held lock, by default; 2 or 127, a broken `flock`, to test the other case): 1 is held at
         the first look, 2 is free at the first and held at the second."""
+        deploy_support.write_bytes(os.path.join(self.stubs, "hold-shared-status"),
+                                   f"{status}\n".encode())
         deploy_support.write_bytes(os.path.join(self.stubs, "hold-shared-from"),
                                    f"{look}\n".encode())
 
