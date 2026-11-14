@@ -7555,8 +7555,7 @@ dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”, {nazw
 first rule group of the copy, in the order of the program editor, that holds a program rule „Zawsze
 → Eksploruj”, and it gives the rule no number. Where no rule group of the copy holds such a rule,
 or where the record of the map run holds a minute of exploring, which a rule „Eksploruj” of the
-player's own has been carried out to give and so the game wrote none (D-123), the band leaves that
-sentence out.
+player's own has been carried out to give (D-123), the band leaves that sentence out.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -9889,9 +9888,8 @@ when the balance is worked on.
 - **Based on:** none
 - **Relations:** derives from D-80 · derives from D-121 · derives from D-397 · derives from D-398
 - **Verification:** invariants: new-account-first-pass. An agent compares a change with the decision:
-  - complies: the program of the test solving Skraj lasu on 289 of the 300 seeds from a game of an
-    account with nothing discovered, where the same program solves it on 290 from a game whose
-    Understanding holds everything
+  - complies: the program of the test solving Skraj lasu on at least 289 of the 300 seeds from a
+    game of an account with nothing discovered
   - violates: the program of the test solving Skraj lasu on fewer than 289 of the 300 seeds from a
     game of an account with nothing discovered; the figure 289 kept after the balance has been
     worked on and the measurement has moved

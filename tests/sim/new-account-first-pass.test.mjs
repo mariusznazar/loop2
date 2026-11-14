@@ -142,7 +142,7 @@ test("precondition: the new account knows „Eksploruj” and none of the other 
 });
 
 // invariant: new-account-first-pass
-test("on Skraj lasu the best program solves the first pass of an account with nothing discovered on at least 289 of the 300 named seeds", () => {
+test("on Skraj lasu the best program solves the first pass of an account with nothing discovered on at least the accepted number of the 300 named seeds", () => {
   const knowing = solvedSeeds(newKnowingGame(), BEST_PROGRAM);
   const fresh = solvedSeeds(newGame(), BEST_PROGRAM);
   assert.ok(
