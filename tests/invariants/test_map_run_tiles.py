@@ -39,7 +39,7 @@ draw of one tile and a resource placed after a draw of none look alike there, so
 the starts reach that outcome, not which path gave it; over the starts, each resource of the list
 stands on some tile with its stock and is missing from some tile, so a layout giving every tile
 everything or nothing would show, except on Skraj lasu, whose resources lie on every tile (density
-1, D-396), where each resource stands on every tile with its stock; and the comparison flags made-up tiles holding, of each
+1, D-397), where each resource stands on every tile with its stock; and the comparison flags made-up tiles holding, of each
 resource of the list, a stock one more, one less or half the stock written out, and a resource
 off the list.
 

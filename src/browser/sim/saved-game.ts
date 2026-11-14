@@ -73,7 +73,9 @@ import type {
 
 /**
  * The version of the shape of the saved game state. Raise it with every change of the shape: of
- * `GameState` or a type it reaches, and of the items of the data, which `Backpack` enumerates.
+ * `GameState` or a type it reaches, of the items of the data, which `Backpack` enumerates, and
+ * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
+ * record of a manual map run: a new action or a removed one changes those keys.
  */
 export const SAVED_GAME_VERSION = 6;
 

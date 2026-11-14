@@ -29,7 +29,7 @@ test("the map Las has the size, entrance, step and resources of D-388", () => {
   ]);
 });
 
-test("Skraj lasu has the map data of D-397, no opening map, and opens Las", () => {
+test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () => {
   assert.deepEqual(MAPS.forestEdge, {
     name: "Skraj lasu",
     width: 4,
