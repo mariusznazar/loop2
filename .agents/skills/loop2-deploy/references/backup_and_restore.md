@@ -87,8 +87,9 @@ Reading a log:
   one of them then 14 days old. "Which is the newest" is answered by the file's time on Strych
   (step 1 of "Restoring over the server's database" reads it), or by the log while one exists.
 - **A cron that did not start writes nothing.** Silence in the log at 03:17 is not a success. The
-  notice comes only from a run that started. Whether the host's cron starts the file is shown only
-  by finding a run at 03:17 in the log the next morning.
+  notice comes only from a run that started. The watcher reports a night without a successful send
+  after 26 hours, which covers the case where no run started. Whether the host's cron starts the
+  file is shown only by finding a run at 03:17 in the log the next morning.
 - **After a rollback to a commit from before the backup command**, the nightly run fails at the
   stream stage and a notice comes each night. That is a true alarm: no backup is made until a
   commit with the command is deployed again. The deployment's warnings about the installed
@@ -278,7 +279,9 @@ the earlier version, and the players of those saves start a new game at the firs
 
 ### Trying a backup on the owner's computer
 
-This proves a backup restores in the built image without touching the server. Run on the
+This proves a backup restores in the built image without touching the server. The owner repeats
+it every month and after each change of the database's schema version or of the saved game's
+version; a trial made before such a change does not cover it. Run on the
 owner's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
 the owner's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
 server's opened the backup. The zip only unpacks `age.exe` into a folder, which is not on the
@@ -384,7 +387,9 @@ and blocked no account since the backup, so nothing was redone. In step 7 the ow
 public page, the login of the test account and the saved game as in order, and said no more.
 Not tried: the way back, a second attempt after a failed one, the old key of step 2, the move of
 `-wal` and `-shm` in step 4, a password reset or a block redone in step 8, `rsync` exit 23, a
-backup of a newer schema than the running code, and the path "With no server".
+backup of a newer schema than the running code, the `( umask 077; … )` subshells of step 2, of
+step 2 for the old key, and of the secrets file in step 3 of "With no server", and the path "With
+no server". These paths stay untried as an accepted cost (D-234).
 
 The private directory of step 1 is `/root/loop2-restore`. It lies outside `/srv/loop2` on purpose:
 the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase anything left
