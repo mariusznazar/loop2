@@ -3713,18 +3713,18 @@ A manual map run that first solves its map pays practice and loot once per map f
 
 ### D-190 — What does a character's death take?
 
-A character's death takes what it carried and pays nothing of its map run; when the character has no resurrection ready, it also takes all its practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it. Each character has one resurrection, used up by a death and renewed after a span of real time set in the balance data, eight hours to start, and a death without one stops the character's earning loop.
+A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop. The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it. The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death with none ready stops the character's earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · narrows D-189
 - **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once · catch-up-death-moment. An agent compares a change with the decision:
-  - complies: a character dying without a resurrection coming back with empty trees, its archetype and its place in the team unchanged; a death with a resurrection ready in an earning loop using it up, the map run paying nothing, the practice gathered at the earning loop staying and the next map run starting at once; a death with none stopping the earning loop and taking the practice gathered at it
-  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills
+  - complies: a character dying without a resurrection ready coming back with empty trees, its archetype and its place in the team unchanged; a death with a resurrection ready in an earning loop using it up, the map run paying nothing, the practice gathered at the earning loop staying and the next map run starting at once; a death with none stopping the earning loop and taking the practice gathered at it; a character created while the resurrection is used up finding it used up; the death of a second character while the first one's death has used it up taking everything of the second; a character with no practice and no practice gathered at its earning loop dying with the resurrection ready, or not, and leaving the resurrection, its generation number and its earning loop as they were; the first completion of Las making a used-up resurrection ready and its second completion by a restart making none
+  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills; a new character bringing a ready resurrection of its own; the death of a character with no practice using the resurrection up, raising the generation number or stopping its earning loop; a completion of a map the account has solved renewing the resurrection
 - **Origin:** none
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. Accepted with it: the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
-*Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths, and the characters of a team would fight over the one; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice leaves every character without it until it is renewed. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would leave the whole team without the resurrection for the span of its renewal, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death without a resurrection ready takes it, so a new character that has gathered practice at its loop is guarded. The renewal at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map renews the resurrection at most once, and a ready resurrection gains nothing from it. Accepted with it: each new map gives the account one protection for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes it from the others; the catch-up gives it to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
+*Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection of each character — a character made for one risky try would escape the stake of death; a resurrection as an item carried in the backpack — not made; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one; a shared resurrection renewed by the span of real time alone — the player waits for the whole span even after a success; practice counted in the skills alone — a new character that has gathered practice at its earning loop through a night would lose with its death the practice the resurrection should guard; the death of a character with no practice changing everything but the use of a ready resurrection — a new character that lost nothing would read as generation 2, be told it lost all its practice and have its earning loop stopped.
 
 ### D-191 — How does a character skill grow?
 
@@ -4364,14 +4364,20 @@ już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.” 
 the attempt earns nothing. Accepted with it: one more line on the screen.
 *Rejected:* no such line — the player may tune a program believing that it earns.
 
-### D-216 — Where does the player read what a character's death took?
+### D-216 — Where does the player read what a death took and what a completion renewed?
 
 After a character's death, in the section of the end-of-run window (D-368) saying what it cost,
 until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego
-przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach
-czasu realnego.” in `text-secondary` when the death used up a resurrection, the hours coming from the
-balance data, and „Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie.
-Teraz to pokolenie {n}.” in `danger` when no resurrection was ready.
+przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla
+całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.” in
+`text-secondary` when the death used up the resurrection, the hours coming from the balance data,
+„Wskrzeszenie nie było gotowe: postać straciła całą wprawę i wykupione stopnie. Teraz to pokolenie
+{n}.” in `danger` when no resurrection was ready, and „Postać nie miała jeszcze wprawy, więc śmierć nie
+zużyła wskrzeszenia drużyny.” in `text-secondary` when the character had no practice yet, in place
+of the two lines above. After the first completion of a map that made a used-up resurrection ready,
+in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and
+after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in
+`text-secondary`; a completion that finds the resurrection ready shows none.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -4386,15 +4392,24 @@ solving, and a death with a ready resurrection leaves the skills of the characte
 the map run, so the practice of this map run is gone and the earlier practice stays. The first text names the span of the renewal
 rather than the time left, which after a load could be false, and the second stands in `danger`
 because D-39 gives that role to a possible loss of a character or of progress. Accepted with it: the
-game state remembers how each death was settled.
+game state remembers how each death was settled, and how the first completion of a map was.
+The first text says that the next resurrection is the whole team's and that a new map brings it, so
+the player reads the sharing and the renewal at the moment the wait begins. The line of a character with no
+practice yet tells that the death spared the resurrection, so the player need not open a character
+to know whether it went. The renewal line stands where the completion's other line stands and is
+told only where the renewal was needed, so that a success that changed nothing says nothing.
+Accepted with it: one text more; the word „drużyny” is to be thought over once a player may hold more than one team.
 *Rejected:* „wprawa i wykupione stopnie zostają” with no word of the practice of this map run — the
 player sees it gone and takes the game for a liar; the same in the header —
 a very long row and a change of its accepted wording; nothing on this screen, the telling left
-to another one — the player may press „Restart” unaware of the lost progress.
+to another one — the player may press „Restart” unaware of the lost progress; no line after the
+death of a character with no practice yet — the player does not know whether the resurrection went
+until looking at a character; the first text with no word of the sharing — the player learns that
+the resurrection is the whole team's only from the lines at the characters.
 
 ### D-217 — What does the game show of a character's resurrection?
 
-The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
+The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour. The minutes are rounded up to a whole minute before the split into hours and minutes.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -4402,8 +4417,8 @@ The card and the screen of a character, and that character in the section „Kto
 - **Verification:** none
 - **Origin:** none
 
-*Rationale:* the player sees the stake before paying it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „za 8 godz. 0 min”, 59 min 30 s reads „za 1 godz. 0 min”, and exactly 59 min reads „za 59 min”.
-*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; a bare ready or not ready — the player does not know how long to wait, and the code hardly shrinks; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes; at the character in „Kto idzie” only a row in `danger` when the resurrection is not ready — the same row shown two ways in two places, for less text when all are ready; no row at the character in „Kto idzie” — a player sending the character would not see the risk that the player saw beside „Wyślij” when this was decided, so sending would get worse than it was.
+*Rationale:* the player sees the stake before paying it, that the resurrection is the whole team's before a death shows it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „za 8 godz. 0 min”, 59 min 30 s reads „za 1 godz. 0 min”, and exactly 59 min reads „za 59 min”; and the word „drużyny” to be thought over once a player may hold more than one team.
+*Rejected:* the line appearing after the first death — the player learns the stake once it has paid it; the lines at the characters unchanged, with the sharing told only by the window of the end — the player learns of it only after a first death, as with the line after the first death; the lines unchanged and the sharing read only from the characters counting down together; a bare ready or not ready — the player does not know how long to wait, and the code hardly shrinks; the split first and the rounding of the minutes after it — „za 7 godz. 60 min” looks like a fault; hours with no word that they are real — a player cannot tell them from game minutes; at the character in „Kto idzie” only a row in `danger` when the resurrection is not ready — the same row shown two ways in two places, for less text when all are ready; no row at the character in „Kto idzie” — a player sending the character would not see the risk that the player saw beside „Wyślij” when this was decided, so sending would get worse than it was.
 
 ### D-218 — How does the headquarters show a character's generation number?
 
@@ -4443,7 +4458,7 @@ game would hold two clocks.
 
 ### D-220 — What generation number and resurrection does a new character have?
 
-A new character has generation number 1 and a ready resurrection.
+A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection ready.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -4451,10 +4466,12 @@ A new character has generation number 1 and a ready resurrection.
 - **Verification:** none
 - **Origin:** none
 
-*Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1
-with its resurrection ready. Accepted with it: behaviours of those tests that nobody chose knowingly
-come in too.
-*Rejected:* the tests of loop taken as material.
+*Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1.
+The resurrection is the account's, one for all the characters (D-190), so a character made later does
+not bring a ready one, and a new game starts with the resurrection ready, as the first character of
+the tests of loop did. Accepted with it: behaviours of those tests that nobody chose knowingly come in too.
+*Rejected:* the tests of loop taken as material; a ready resurrection for each new character — a
+character made for one risky try would escape the stake of death.
 
 ### D-221 — When is a character's death settled?
 
@@ -5142,9 +5159,12 @@ than the player's first completion establishes.
 
 The catch-up takes place when the player returns and advances the missed game minutes, taking the
 characters one at a time, each to the end, in the order of the player's list of characters.
-Characters meet only at the borders of map runs: an item reaches the chest when a map
-run completes, and the next map run takes what it finds there; when the chest has room for one
-character's loot only, the character earlier on the list takes it.
+Characters meet only at the borders of map runs and at the account's resurrection: an item
+reaches the chest when a map run completes, and the next map run takes what it finds there; when the
+chest has room for one character's loot only, the character earlier on the list takes it; the death
+of each character finds the resurrection as the characters earlier on the list left it, so with one
+resurrection for two deaths the character earlier on the list takes it, even when it died later in
+real time.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -5152,18 +5172,26 @@ character's loot only, the character earlier on the list takes it.
 - **Verification:** invariants: catch-up-state. For the order of characters and the borders, an agent
   compares a change with the decision:
   - complies: two characters of one team caught up one after the other in the list's order, the
-    first taking its loot into a chest with room for one
+    first taking its loot into a chest with room for one; two characters dying in the catch-up, the
+    one lower on the list in an earlier game minute, finding the resurrection used by the one
+    above it and losing everything
   - violates: characters caught up together, game minute by game minute; a map run that takes from
-    the chest in the middle of another character's map run
+    the chest in the middle of another character's map run; the character that died first in real
+    time taking the resurrection in the catch-up
 - **Origin:** none
 
 *Rationale:* nothing has to run while no browser is open, so the catch-up needs no server of its own.
 Characters that meet only at the borders of map runs make several characters several independent
 computations rather than a schedule, so the catch-up stays cheap arithmetic, and the order of the
-player's list of characters becomes a contract; a handover between map runs going on at once would need a schedule
-and lose that.
+player's list of characters becomes a contract, at the resurrection as at the chest; a handover between map runs going on at once would need a schedule
+and lose that. Accepted with it: the report may show a character lower on the list losing everything
+earlier in real time than a character higher on it died with the resurrection, and a character whose
+resurrection another's turn reaches is outside `catch-up-state`.
 *Rejected:* the simulation running on a server — there is nothing to compute while no browser is
-open; characters meeting inside map runs — needs a schedule and loses the cheap catch-up.
+open; characters meeting inside map runs — needs a schedule and loses the cheap catch-up; the
+resurrection going to the character that died first in real time — it needs the characters passed
+game minute by game minute together, the chest divided in the order of time and a longer catch-up
+after a long absence, the way this decision refuses.
 
 ### D-241 — How does the game state hold earning loops?
 
@@ -5240,8 +5268,9 @@ absence renews from that death's own moment and can cover a further death the sa
 time passed in as an argument (D-04) keeping the earning loop, the catch-up and the renewal of a
 resurrection on one footing. Passing the open game minute by minute keeps
 `minute-span-split` true for every split, two earning loops reaching one chest included. Accepted
-with it: a character reaching the chest in the open game can differ from the catch-up, where the
-characters go one at a time (D-240), which `catch-up-state` leaves outside its words.
+with it: a character reaching the chest or the resurrection in the open game can differ from the
+catch-up, where the characters go one at a time (D-240), which `catch-up-state` leaves outside its
+words.
 *Rejected:* the elapsed measure of a manual map run for earning loops — it would need a claim about
 sleep; a carry of milliseconds in the game state — a new game state at each reading, against D-04
 and D-207; the clock's value in the game state, written at each whole game minute — it duplicates the
@@ -5424,7 +5453,7 @@ on longer map runs, and a clock moved by years gives progress in the player's ow
 accepts. The seconds rest on a measurement of one character in an earning loop over a window of 30
 days, the median of 5 repeats: from 0.001 ms for a game minute, on short map runs ended by death,
 to 0.011 ms on „Las — głębiej” with fights with the wolf. No earning loop in it ran the whole 30 days, since
-the catch-up of an earning loop ends at a death that a resurrection does not cover, so the seconds after many
+the catch-up of an earning loop ends at a death that takes the character's practice, so the seconds after many
 months are those of an earning loop that does not die, which no earning loop measured was. A bound can be added later, once the game has matured.
 *Rejected:* a bound of 7 days, the rest lost; a bound of another number.
 
@@ -8153,7 +8182,7 @@ At each character in the section „Kto idzie” stand, from the top, the name a
 - **Based on:** none
 - **Relations:** derives from D-54 · derives from D-170 · derives from D-180 · derives from D-325
 - **Verification:** an agent compares a change with the decision:
-  - complies: a character at a solved Las whose program picked takes patyk 6 and jagoda 4 showing from the top its name as a link, „Wskrzeszenie gotowe”, „Program:”, „Wejdzie: patyk 6, jagoda 4”, „Wejdź” and „Puść w pętlę”; the same character with an empty take list showing „Wejdzie: nic”; a click on „Puść w pętlę” leaving the player on the card; a team with no character reading „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.” in the section
+  - complies: a character at a solved Las whose program picked takes patyk 6 and jagoda 4 showing from the top its name as a link, „Wskrzeszenie drużyny gotowe”, „Program:”, „Wejdzie: patyk 6, jagoda 4”, „Wejdź” and „Puść w pętlę”; the same character with an empty take list showing „Wejdzie: nic”; a click on „Puść w pętlę” leaving the player on the card; a team with no character reading „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.” in the section
   - violates: „Wejdzie: …” standing only where the plan enters clipped; a section with its heading alone for a team with no character; „Puść w pętlę” taking the player to the screen of a map run
 - **Origin:** none
 
@@ -9434,17 +9463,17 @@ An item burning on a revealed tile, such as a lit stick, stands in that tile's r
 
 ### D-386 — Which game states does the load of a saved game state admit?
 
-The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards. A moment of real time that the game state stores, the save time and the moment a character's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time and the function that settles a death refuse a moment that is no safe integer with a RangeError, and the function that settles a death reads no moment where there is no death to settle.
+The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards. A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-213 · derives from D-221 · derives from D-248
 - **Verification:** an agent compares a change with the decision:
-  - complies: a game stamped by a device clock set before 1970, its save time below zero, saved and loaded back as the same game state; a save time of NaN, 1.5 or 2 to the power 53 refused by the function that stamps it with a RangeError; the function that settles a death given a game with no map run and an undefined moment returning that very game state
-  - violates: a load that refuses a save time below zero; a load that compares a moment with the clock; a function that stamps a save time or settles a death and stores a moment of 1.5 in the game state; a game state made by the game's own functions in a play that the load refuses
+  - complies: a game stamped by a device clock set before 1970, its save time below zero, saved and loaded back as the same game state; a save time of NaN, 1.5 or 2 to the power 53 refused by the function that stamps it with a RangeError; the function that settles a death given a game with no map run and an undefined moment returning that very game state; the function that settles the first completion of a map given a game with no completion to settle and an undefined moment returning that very game state, and given one with a completion to settle and a moment of NaN refusing it with a RangeError; a game state holding a first completion that no reading of the clock has settled yet loaded back as the same game state
+  - violates: a load that refuses a save time below zero; a load that compares a moment with the clock; a load that refuses a first completion not yet settled; a function that stamps a save time or settles a death or a first completion and stores a moment of 1.5 in the game state; a game state made by the game's own functions in a play that the load refuses
 - **Origin:** none
 
-*Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death at every step, a step with no death included, so a reading there is not looked at.
+*Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death and to the one that settles a first completion at every step, a step with no death or completion included, so a reading there is not looked at.
 *Rejected:* a load that refuses a moment below zero or beyond the present — a device clock set before 1970 reads below zero, and the refusal would discard a save the game itself wrote and start the player anew; a check of the moment against the clock at the load — the load takes no real time (D-247) and a forged moment costs its own player alone (D-07).
 
 ### D-387 — What numbers do the body, the gathering, the campfire and eating have?
