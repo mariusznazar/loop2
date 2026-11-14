@@ -117,7 +117,7 @@ An archetype is the kind of character that sets its predispositions.
 ## Understanding
 
 The Understanding is the record of the game's actions, items, conditions, creatures and branches that the player has
-discovered, together with the condition „Zawsze”, which it holds from the start of a new game.
+discovered, together with the condition „Zawsze” and the action „Eksploruj”, which it holds from the start of a new game.
 
 - **Not:** none
 

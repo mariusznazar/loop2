@@ -1544,7 +1544,7 @@ Outside combat a game minute takes effect in this order: the character's body co
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136 · narrows D-140 · narrows D-141 · derives from D-142 · derives from D-146 · derives from D-175
 - **Verification:** invariants: minute-span-split · nature-energy-range. An agent compares a change with the decision:
-  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage first chilled in game minute 84 discovering „Eksploruj” and starting „Zawsze → Eksploruj” at the pick of game minute 84, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute; a well-fed mage at full nature energy finishing a lighting in a game minute having after it the nature energy of the cap less the lighting's price, the energy that minute gives back lost at the cap;
+  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage with no rule „Eksploruj” in its copy, first chilled in game minute 84, discovering „Wędruj” and „Temperatura poniżej”, the game writing „Zawsze → Eksploruj” and the pick of game minute 84 starting it, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute; a well-fed mage at full nature energy finishing a lighting in a game minute having after it the nature energy of the cap less the lighting's price, the energy that minute gives back lost at the cap;
   - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; nature energy coming back after the effect of the action ending in its game minute, or in a game minute of combat; a completion checked before combat turns in their final minute; an attack tried again after those turns.
 - **Origin:** none
 
@@ -2261,9 +2261,10 @@ The exemplar for kind `browser-api-client` is `src/browser/account-api.ts`, and 
 
 ### D-118 — When does the player learn what the world holds?
 
-The condition „Zawsze” is in the Understanding from the start of a new game; every other action,
-item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action,
-item or encounter that reveals it. When something is discovered, game time stops by itself.
+The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new
+game; every other action, item, condition, creature and branch enters the Understanding only when
+discovered in play, each by the need, action, item or encounter that reveals it. When something is
+discovered, game time stops by itself.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -2279,7 +2280,8 @@ item or encounter that reveals it. When something is discovered, game time stops
 holds as many choices as have been found, so it never starts overwhelming, and the growing list is
 visible progress. The first map run is by nature a linear tutorial; tuning begins in the second.
 The condition „Zawsze” says nothing about the world, so its discovery would tell the player
-nothing. The game's world holds things the player does not know in advance: the first meeting
+nothing. A player needs a first move from the first second, and „Eksploruj” is the move that starts
+discovery. The game's world holds things the player does not know in advance: the first meeting
 reveals one and adds it to the player's list with no reaction defined yet, and only then the
 player gives it a response in the same language as the rest of tuning. The first meeting usually
 ends badly, and that is its function: death is information, not a penalty. The mechanism gives
@@ -2292,8 +2294,7 @@ screen at the source, since there are as many choices on it as were discovered. 
 along two axes, verbs and items apart, and gates the list of conditions too, so that it does not
 give away what the player has not met yet. The list of what is known passes through a reset as part
 of the Understanding. Exploration reveals what lies on the tile where the character stands, not on
-the whole map, and a chill reveals „Eksploruj” and „Wędruj” together, since without movement there
-is nothing to reveal beyond the entry tile.
+the whole map, and a chill reveals „Wędruj”.
 *Rejected:* the full list open from the start — discovery goes, and the tuning screen starts
 overwhelming.
 
@@ -2348,39 +2349,45 @@ the world, not a capacity of the character; „Wytwórz — ognisko” open to e
 
 ### D-121 — What brings each action, item and condition of the first maps into the Understanding?
 
-The first game minute in which a character is chilled brings into the
-Understanding the actions „Eksploruj” and „Wędruj” and the condition „Temperatura poniżej”, and the
-first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas
-poniżej” and the items lying on the tile it reveals, each tile revealed later adding the items
-lying on it, moss and fibre included. The first gathered stick brings „Wytwórz — ognisko”, „Zapal —
-ognisko”, „Zapal — patyk” and the campfire, and the first crafted campfire brings „Idź — ognisko”
-and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”. The first finished
-„Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury
-poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”.
+The Understanding of a new game holds the action „Eksploruj”. The first game minute in which a
+character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first
+finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej”
+and the items lying on the tile it reveals, each tile revealed later adding the items lying on it,
+moss and fibre included. The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”,
+„Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the
+conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a
+campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and
+the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-118
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage of a new game first chilled in game minute 84 bringing „Eksploruj”, „Wędruj”
-    and „Temperatura poniżej” into the Understanding; the program editor offering „Idź” and a
-    condition „Tu leży mniej niż” once the first exploration has finished; the first finished
-    „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury poniżej” in one band of a discovery
+- **Verification:** invariants: first-exploration-discovery · new-account-first-pass. An agent
+  compares a change with the decision:
+  - complies: a mage of a new game first chilled in game minute 84, with „Eksploruj” in the
+    Understanding from the start, bringing „Wędruj” and „Temperatura poniżej” into it; the program
+    editor offering „Idź” and a condition „Tu leży mniej niż” once the first exploration has
+    finished; the first finished „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury
+    poniżej” in one band of a discovery
   - violates: the conditions on the campfire offered after the first gathered stick, before any
     campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick;
     „Energia natury poniżej” discovered before the first finished „Zapal”
 - **Origin:** none
 
-*Rationale:* the first map run is a linear tutorial, so each discovery offers the program
-what the tutorial needs next — cold, the tile, sticks, fire, food — in the order a character
-meets them. The condition on nature energy comes with the first finished lighting, the game minute
-in which the energy first falls, and in one discovery line with „Zasil — ognisko”; the only weak
-point is that the line is longer, and the player learns the condition at the moment the energy
-first falls. Accepted with it: moss and fibre enter the Understanding although
-nothing uses them yet; the first lit stick reveals „Zasil — ognisko” as a lit campfire does; the
-conditions on the campfire come with the first crafted campfire, later than in loop, and „Idź — ognisko” has no source there.
-*Rejected:* the conditions on the campfire coming with the first gathered stick, as in loop;
-„Energia natury poniżej” brought by the first finished „Zapal — ognisko” and not by a lit stick.
+*Rationale:* the first map run is a linear tutorial, so each discovery offers the program what the
+tutorial needs next — cold, the tile, sticks, fire, food — in the order a character meets them, on
+whichever map it stands. A player with „Eksploruj” from the start has something to do from the
+first second instead of watching a game that looks broken for 84 game minutes, and the first
+discovery comes with the first finished exploration. The condition on nature energy comes with the
+first finished lighting, the game minute in which the energy first falls, and in one discovery line
+with „Zasil — ognisko”; the only weak point is that the line is longer, and the player learns the
+condition at the moment the energy first falls. Accepted with it: moss and fibre enter the
+Understanding although nothing uses them yet; the first lit stick reveals „Zasil — ognisko” as a
+lit campfire does; the conditions on the campfire come with the first crafted campfire, later than
+in loop, and „Idź — ognisko” has no source there.
+*Rejected:* „Eksploruj” brought by the first chill — the player can do nothing until then; the
+conditions on the campfire coming with the first gathered stick, as in loop; „Energia natury
+poniżej” brought by the first finished „Zapal — ognisko” and not by a lit stick.
 
 ### D-122 — What does a map run do, and what does the player see, when something is discovered?
 
@@ -2461,9 +2468,9 @@ A program rule the game writes at a discovery goes into the first rule group of 
 carries out and into the first rule group of the program the copy belongs to, while that program is
 on the player's list, and where either holds no rule group, the game adds the rule group „Program”
 with the condition „Zawsze” and writes the rule into it; the other programs of the list stay as they
-were. Today the game writes one such rule, „Zawsze → Eksploruj”, when the first chill brings
-„Eksploruj” into the Understanding. The rule so written counts neither as an unsaved change of the
-copy nor as a change of the program that a save of the copy announces.
+were. Today the game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where
+the copy holds no rule with the action „Eksploruj”. The rule so written counts neither as an unsaved
+change of the copy nor as a change of the program that a save of the copy announces.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -2479,39 +2486,38 @@ copy nor as a change of the program that a save of the copy announces.
     list; the rule lighting „Niezapisane zmiany w kopii.” or the line of a program that changed
 - **Origin:** none
 
-*Rationale:* until the first chill the character knows no action and stands, so the rule written
-then sets it moving and shows the player the shape of a program rule in the program editor. Written
-into the copy and its program alike, the rule acts in the map run and stays in the program the next
-map run takes, and since both receive it, it gives the player nothing to save and nothing to lose.
-Accepted with it: once in a game the game changes a saved program of the player with no move of the
-player, who sees the rule in the program editor and can delete it.
-*Rejected:* the program left as the player wrote it at the first chill; the rule written into the
-copy alone, into the saved program alone or into every program of the list.
+*Rationale:* a player who wrote nothing by the first chill sees the character set moving and the
+shape of a program rule in the editor; a player who wrote the first rule keeps the program as
+written. Written into the copy and its program alike, the rule acts in the map run and stays in the
+program the next map run takes and gives the player nothing to save and nothing to lose. Accepted
+with it: once in a game the game changes a saved program of the player with no move of the player,
+who sees the rule and can delete it.
+*Rejected:* the rule standing ready from the first minute — the first rule is not one the player
+wrote; no rule written at all — a player who does nothing stays stuck until a hint exists; the rule
+written into the copy alone, into the saved program alone or into every program of the list.
 
 ### D-124 — What does „+ reguła” do?
 
-„+ reguła” is disabled while the Understanding holds no action, and once it holds one, it adds the
-program rule „Zawsze → Eksploruj” at the end of its rule group and opens its rule panel on the
-condition, „Zawsze → Eksploruj” standing there until the player picks otherwise.
+„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the
+condition, „Zawsze → Eksploruj” standing there until the player picks otherwise, and it is never
+disabled.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-118
 - **Verification:** an agent compares a change with the decision:
-  - complies: „+ reguła” of a new game's rule group „Program” disabled until the first chill, and
-    from then on adding „Zawsze → Eksploruj” at the end of the group, with its rule panel open on
-    the condition
+  - complies: „+ reguła” of a new game's rule group „Program” enabled from the first game second,
+    adding „Zawsze → Eksploruj” at the end of the group, with its rule panel open on the condition
   - violates: „+ reguła” adding a program rule whose action the Understanding does not hold; the
     rule added with no rule panel open, or with the panel open on the action
 - **Origin:** none
 
-*Rationale:* a program rule needs an action, and before the first chill the Understanding holds
-none to offer; from the first chill on it holds „Eksploruj”, so the rule the button adds is one
-the program editor offers. The rule panel opens on the condition, where the player writes the
-rule next. Accepted with it: through the first game minutes of a new game, 84 of them on Skraj lasu, which take 84 seconds at 1×, the player sees a button
-that cannot be used.
-*Rejected:* „+ reguła” adding „Zawsze → Eksploruj” before „Eksploruj” is discovered — the
-program editor would offer an action the Understanding does not hold.
+*Rationale:* with „Eksploruj” in the Understanding from the start, a rule always has an action to
+offer, so the player's first move works from the first second. The rule panel opens on the
+condition, where the player writes the rule next.
+*Rejected:* a button disabled until the first chill — the player sees a button that cannot be used,
+with no reason, at the worst moment of a first game; a rule added whose action the Understanding
+does not hold.
 
 ### D-125 — What do the body row, the backpack, the list of revealed tiles and the drawing of the game map show of what is not yet discovered?
 
@@ -2590,7 +2596,7 @@ character or another archetype would stop whole.
 
 What reveals each action, item, condition and creature of the game stands in the data files beside that
 action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as
-the first chill, the first gathered piece of an item or an attack naming its creature, and a condition the Understanding holds from
+the first chill, the first gathered piece of an item or an attack naming its creature, and a condition or an action the Understanding holds from
 the start of a new game has none there. An action, an item, a condition or a creature revealed by a kind of
 revealing event the simulation already handles is added, or what reveals it is changed, by a change
 of data alone.
@@ -2603,9 +2609,9 @@ of data alone.
     entry in the data of the actions, which the simulation reads; a condition revealed by the first
     gathered stick added as an entry of the data of the conditions, with no change of the
     simulation's code
-  - violates: a list in the simulation's code naming „Eksploruj” and „Wędruj” as what the first
-    chill reveals; a condition revealed by the first crafted campfire that takes a change of the
-    simulation's code to be revealed
+  - violates: a list in the simulation's code naming „Wędruj” and „Temperatura poniżej” as what the
+    first chill reveals; a condition revealed by the first crafted campfire that takes a change of
+    the simulation's code to be revealed
 - **Origin:** none
 
 *Rationale:* what reveals a thing stands with the thing, so an action, an item, a condition or a creature is
@@ -3787,7 +3793,7 @@ A manual map run holds the practice it gathers separately by character skill and
 
 ### D-195 — When does a character skill tree become known?
 
-A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens. The band of a discovery names the tree beside the action, as „Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
+A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill. The band of a discovery names the tree beside the action, as „Odkryto: Zbierz, drzewo umiejętności Zbieranie.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3797,7 +3803,7 @@ A character skill tree with all its branches enters the Understanding in the gam
   - violates: a tree becoming known only on its first purchase; an unnamed tree in the band of a discovery
 - **Origin:** none
 
-*Rationale:* Discovery tells the player what the action can grow before the first point is earned. The trees come up by the gate the skills panel of the predecessor game used: the branches show once the player knows an action the skill grows. Accepted with it: longer bands of a discovery at the first discoveries, and known actions that no character can yet carry out.
+*Rationale:* Discovery tells the player what the action can grow before the first point is earned. The trees come up by the gate the skills panel of the predecessor game used: the branches show once the player knows an action the skill grows. A tree whose first action the Understanding holds from the start comes up instead with the first finished action of that skill, since the Understanding holds from the start only the condition „Zawsze” and the action „Eksploruj”, and every branch enters it only when discovered in play (D-118). Accepted with it: longer bands of a discovery at the first discoveries, and known actions that no character can yet carry out.
 *Rejected:* revealing a branch action on the first purchase, as the predecessor game did — discovery would depend on a character’s purchase, and the action would enter the Understanding otherwise than when discovered in play (D-118); showing the tree only at the first point; leaving the tree unnamed
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
@@ -7548,7 +7554,8 @@ Where a band names the discovery at which the game wrote a program rule (D-123),
 dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”, {nazwa grupy} being the name of the
 first rule group of the copy, in the order of the program editor, that holds a program rule „Zawsze
 → Eksploruj”, and it gives the rule no number. Where no rule group of the copy holds such a rule,
-the band leaves that sentence out.
+or where the game wrote no rule at the discovery because the copy already held a rule with the
+action „Eksploruj” of the player's own (D-123), the band leaves that sentence out.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -7560,7 +7567,9 @@ the band leaves that sentence out.
     „Ogień” and the player dragging „Głód” above it while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
     Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
     the rule deleted while the band stands and no other group holding „Zawsze → Eksploruj”, the band
-    keeping what was discovered with no sentence about the rule
+    keeping what was discovered with no sentence about the rule; the first chill of a copy holding
+    a rule „Eksploruj” of the player's own, which its character has carried out, the band keeping
+    what was discovered with no sentence about a rule
   - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
     „Głód”: Zawsze → Eksploruj.” while „Głód” holds no rule „Zawsze → Eksploruj”; the sentence still
     standing after the rule or its group was deleted while no other group holds „Zawsze →
@@ -7575,14 +7584,23 @@ the band depending on the numbering of rules. Accepted with it: a longer sentenc
 further cost: where a rule „Zawsze → Eksploruj” of the player's own, such as one „+ reguła” adds,
 stands in another group that comes first — dragged above the one the game wrote into, the game's
 rule moved to a later group, or left standing after the game's rule or its group is deleted — the
-band names that group, where the same rule stands.
+band names that group, where the same rule stands. The game keeps no note that it wrote the rule,
+so it tells a rule of the player's own from the game's by the record of the map run: a character
+that has explored has carried out a rule „Eksploruj” the player wrote, which the rule the game wrote
+in the very game minute of the discovery cannot yet have been. Accepted with it: the band names as
+the game's a rule „Eksploruj” of the player's own that the character has not carried out by the
+first chill — written in the last game minutes, or standing in a group whose condition the
+Understanding lacks — and stays silent about the game's rule where the player deleted every rule
+„Eksploruj” the character had carried out before the first chill.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
 the numbering; no sentence about the rule — the band would not name the program rule the game wrote, which D-122
 has it name; a name the
 screen holds from the moment of the discovery — lost at a load of the paused game, and stale after a
 rename; the copy's first rule group as it stands — false after another group is dragged above it or
-the group is deleted.
+the group is deleted; a note in the game state that the game wrote the rule — it changes the shape
+of the saved game state, which raises its version and discards every saved game state of the
+players (D-206), for one sentence of the band.
 
 ### D-313 — What does „Dodaj regułę z tym” do?
 
@@ -7605,7 +7623,7 @@ stands in the end-of-run window where the window names a discovery of the game m
 - **Verification:** an agent compares a change with the decision:
   - complies: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — patyk” at the end of the copy's
     first rule group, with the rule panel open on the action; at the first chill of a new game
-    „Zawsze → Eksploruj” added at the end of the copy's group „Program” with the panel on the action
+    „Zawsze → Wędruj” added at the end of the copy's group „Program” with the panel on the action
     and the streak at zero (D-131); a discovery of an item alone adding „Zawsze → Eksploruj” with the
     panel on the condition; a discovery of „Idź” and „Wędruj” while the rule panel offers no target
     for „Idź” giving „Zawsze → Wędruj”; the window of a completion in the game minute of the discovery „Zbierz, Patyk” with the button, which closes the window and gives „Zawsze → Zbierz — patyk” with the rule panel open on the action
@@ -9816,3 +9834,44 @@ An account with the previous-save privilege has in the game the control „Zaczn
 
 *Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
 *Rejected:* the reset as a command of the operator, like the block — every reset is an SSH session and a `docker exec`; the reset put off to the work on carrying saves between versions — a reset comes today with every raising of the version, and a new account has nothing to pull; the revision continuing from that of the previous save after a reset — it closes the case of a card whose basis equals a revision the new game has reached, with one more read in the save write, but it changes D-209, which this decision keeps, couples two tables and calls for a sentence of its own.
+
+### D-403 — What does the load do with a saved game state whose Understanding lacks „Eksploruj”?
+
+The load refuses a saved game state whose Understanding does not hold the condition „Zawsze” and the
+action „Eksploruj”, as a saved game state of a shape the game does not admit: the game discards it
+whole and starts the player anew, above which stands „Zapis był uszkodzony i nie dał się wczytać.
+Zaczynasz od nowa.” (D-96), and the version number of the shape stays as it is.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-96 · derives from D-118 · derives from D-206 · derives from D-213
+- **Verification:** invariants: save-version. An agent compares a change with the decision:
+  - complies: a document of the current version whose Understanding holds „Zawsze” and no „Eksploruj”
+    refused whole as a shape the game does not admit, the game starting anew with „Zapis był
+    uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” above it; the same refusal for a document
+    whose list of actions is missing, empty, of a wrong type or names an action twice; a document
+    that holds „Eksploruj” and no „Zawsze” refused alike; the version number of the shape the same
+    before and after the change that put „Eksploruj” into the Understanding of a new game
+  - violates: such a document loaded with „Eksploruj” added to its Understanding; the sentence of
+    another version, „Zapis pochodził z innej wersji gry…”, standing above the new game for it; the
+    version raised for the sake of it
+- **Origin:** none
+
+*Rationale:* a saved game state of the current version whose Understanding lacks „Eksploruj” comes
+from a game made before „Eksploruj” was in the Understanding from the start (D-118), in which no
+character had been chilled in a manual map run. In it no character would ever explore, and the rule
+the game writes at the first chill (D-123) would stand as „jeszcze nieodkryte: Eksploruj”, so the
+refusal is the one a state without „Zawsze” already gets, and the strict load leaves nothing to
+repair (D-213). The version stays, because the shape of the state does not change, and raising it
+discards every saved game state of an older version, whatever progress it holds (D-206). Accepted
+with it: a saved game state made before this change in a game in which no character had been chilled in
+a manual map run is discarded with the sentence of a damaged save, and the player starts anew.
+*Rejected:* raising the version of the shape — every older saved game state, the player's own
+included, is refused whole with „Zapis pochodził z innej wersji gry…”, and all progress is lost
+though the shape of the state does not change, which the guidelines of the saved game raise the
+version for; the load adding „Eksploruj” to the Understanding — nothing is lost, but the load
+departs from „Brakujących kluczy nie uzupełniaj. Wolno odmówić więcej, niewolno mniej.” of the
+guidelines of the saved game, the state it loads differs from the one saved, and that rule of the
+load stays for every later change; the load leaving the state as it is — it loads, the character of
+that game never explores and the rule the game writes stands as „jeszcze nieodkryte: Eksploruj”, a
+game broken for the same saved game states as in the refusal, without a word of explanation.
