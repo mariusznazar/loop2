@@ -53,9 +53,19 @@ function withTrip(program, take, bring) {
   return { ...program, tripPlan: { take, bring } };
 }
 
+/** `skills` with one practice in each skill: what a character needs to have practice at all (D-190). */
+function practised(skills) {
+  return Object.fromEntries(
+    Object.entries(skills).map(([id, skill]) => [
+      id,
+      { ...skill, practice: 1 },
+    ]),
+  );
+}
+
 /**
- * A knowing game with Ala (1) and Ola (2) in the team, Las solved, the first program the empty one
- * and the chest holding `chest`.
+ * A knowing game with Ala (1) and Ola (2) in the team, each with a practice of 1 in each skill, Las
+ * solved, the first program the empty one, the team's resurrection ready and the chest holding `chest`.
  */
 function game(chest = {}) {
   let state = setProgram(newKnowingGame(), EMPTY).state;
@@ -64,7 +74,14 @@ function game(chest = {}) {
   return {
     ...state,
     solvedMaps: ["forestEdge", "forest"],
-    team: { ...state.team, chest: { pieces: chest } },
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) => ({
+        ...character,
+        skills: practised(character.skills),
+      })),
+      chest: { pieces: chest },
+    },
   };
 }
 
@@ -127,9 +144,32 @@ function dyingNext(state, id) {
   return changingRun(state, id, { body: { ...DYING } });
 }
 
-/** The character `id` with a resurrection not ready until the real moment `readyAtMs`. */
-function notReadyUntil(state, id, readyAtMs) {
-  return changing(state, id, { resurrectionReadyAtMs: readyAtMs });
+/** The state with the team's resurrection not ready until the real moment `readyAtMs`. */
+function notReadyUntil(state, readyAtMs) {
+  return {
+    ...state,
+    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+  };
+}
+
+/** The state with the character `id` having no practice yet: no practice and no rank in any skill. */
+function withoutPractice(state, id) {
+  const [character] = game().team.characters.filter(
+    (listed) => listed.id === id,
+  );
+  return changing(state, id, {
+    skills: Object.fromEntries(
+      Object.keys(character.skills).map((skill) => [
+        skill,
+        { practice: 0, ranks: {} },
+      ]),
+    ),
+  });
+}
+
+/** The game with the loop of Ala alone started and saved at `S`: Ola, in the team, has none. */
+function aloneLooping(chest = {}) {
+  return withSaveTime(startLoop(game(chest), FOREST, S).state, S);
 }
 
 const withProgram = (state, id, program) =>
@@ -309,18 +349,18 @@ test("the catch-up and the open game read neither the manual map run nor the pau
 
 // invariant: catch-up-death-moment
 test("a death in game minute 243 of the catch-up is settled at the save time plus 243 minutes, whatever the reading", () => {
-  const state = looping();
+  const state = aloneLooping();
   const death = S + COLD_DEATH_MINUTE * MIN;
-  // Covered: the resurrection is ready again the renewal after that moment.
+  // Covered: the team's resurrection is ready again the renewal after that moment.
   for (const now of [death, death + 57 * MIN + 31_000]) {
     const result = catchUp(state, now);
-    assert.equal(ala(result.state).resurrectionReadyAtMs, death + RENEWAL_MS);
+    assert.equal(result.state.team.resurrectionReadyAtMs, death + RENEWAL_MS);
     assert.equal(ala(result.state).generation, 1);
   }
   // The next death, 243 minutes after the first and long before the renewal, takes the character,
   // and the moment of readiness stays where the first death put it.
   const late = catchUp(state, S + 1000 * MIN);
-  assert.equal(ala(late.state).resurrectionReadyAtMs, death + RENEWAL_MS);
+  assert.equal(late.state.team.resurrectionReadyAtMs, death + RENEWAL_MS);
   assert.equal(ala(late.state).generation, 2);
   assert.equal(late.state.loops[1], undefined);
 });
@@ -329,22 +369,22 @@ test("a death in game minute 243 of the catch-up is settled at the save time plu
 test("a resurrection ready exactly at the moment of the death covers it, and a millisecond later does not", () => {
   const death = S + COLD_DEATH_MINUTE * MIN;
   const reading = S + 300 * MIN + 17_000;
-  const covered = catchUp(notReadyUntil(looping(), 1, death), reading).state;
+  const covered = catchUp(notReadyUntil(aloneLooping(), death), reading).state;
   assert.equal(ala(covered).generation, 1);
-  assert.equal(ala(covered).resurrectionReadyAtMs, death + RENEWAL_MS);
+  assert.equal(covered.team.resurrectionReadyAtMs, death + RENEWAL_MS);
   assert.ok(covered.loops[1]);
-  const lost = catchUp(notReadyUntil(looping(), 1, death + 1), reading).state;
+  const lost = catchUp(notReadyUntil(aloneLooping(), death + 1), reading).state;
   assert.equal(ala(lost).generation, 2);
-  assert.equal(ala(lost).resurrectionReadyAtMs, death + 1);
+  assert.equal(lost.team.resurrectionReadyAtMs, death + 1);
   assert.equal(lost.loops[1], undefined);
 });
 
 // invariant: catch-up-death-moment
 test("the moment of a death is the same in one call and in calls split at any minute", () => {
-  const state = looping();
+  const state = aloneLooping();
   const death = S + COLD_DEATH_MINUTE * MIN;
   const split = openGame(state, S, 300).state;
-  assert.equal(ala(split).resurrectionReadyAtMs, death + RENEWAL_MS);
+  assert.equal(split.team.resurrectionReadyAtMs, death + RENEWAL_MS);
   const whole = passLoops(state, S, S + 300 * MIN).state;
   assert.deepEqual(whole, split);
   const uneven = passLoops(
@@ -357,8 +397,8 @@ test("the moment of a death is the same in one call and in calls split at any mi
 
 /**
  * The open game minute by minute against the catch-up, over the same span: for the first character
- * the same character, loop and chest. The second character is given no reach on the chest, so the
- * whole of the team agrees too.
+ * the same character, loop and chest. No other character has a loop, so none reaches its chest or
+ * its resurrection, and the whole of the team agrees too.
  */
 function assertRelation(state, minutes, label) {
   const open = openGame(state, S, minutes);
@@ -381,19 +421,22 @@ function assertRelation(state, minutes, label) {
 
 // invariant: catch-up-state
 // D-240: a relation, so no value comes from today's run.
-test("a character no other loop reaches ends the catch-up as the open game does, through a covered death and an uncovered one", () => {
-  // Both die of cold in minute 243: the first death is covered, the second (243 minutes later,
-  // before the renewal) takes the character and stops the loop.
-  assertRelation(looping({ stick: 3 }), 600, "covered then uncovered");
-  assert.equal(catchUp(looping(), S + 600 * MIN).state.loops[1], undefined);
+test("a character whose chest and resurrection no other loop reaches ends the catch-up as the open game does, through a covered death and an uncovered one", () => {
+  // It dies of cold in minute 243 and again 243 minutes later: the first death is covered, the
+  // second, before the renewal, takes the character and stops the loop.
+  assertRelation(aloneLooping({ stick: 3 }), 600, "covered then uncovered");
+  assert.equal(
+    catchUp(aloneLooping(), S + 600 * MIN).state.loops[1],
+    undefined,
+  );
   // Uncovered at the first death.
-  const uncovered = notReadyUntil(looping(), 1, S + 400 * MIN);
+  const uncovered = notReadyUntil(aloneLooping(), S + 400 * MIN);
   assertRelation(uncovered, 600, "uncovered");
   const stopped = catchUp(uncovered, S + 600 * MIN).state;
   assert.equal(ala(stopped).generation, 2);
   assert.equal(stopped.loops[1], undefined);
   // Through a completion, deposit into the chest and the take of the next map run.
-  let completing = shortBy(looping({ moss: 50 }), 1, 1, { stick: 4 });
+  let completing = shortBy(aloneLooping({ moss: 50 }), 1, 1, { stick: 4 });
   completing = withProgram(
     completing,
     1,
@@ -564,12 +607,14 @@ test("a covered death in the catch-up gives the loop its next map run with nothi
 
 // D-240, D-246: a loop a death stopped opens its line at any number of game minutes.
 test("a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the others go on", () => {
-  let state = notReadyUntil(looping(), 1, S + 10_000 * MIN);
+  // Ola has no practice, so its death in minute 243 takes nothing and stops nothing (D-190).
+  let state = withoutPractice(notReadyUntil(looping(), S + 10_000 * MIN), 2);
   state = changingLoop(state, 1, { practice: { eating: 3 } });
   const result = catchUp(state, S + 300 * MIN);
   assert.equal(result.state.loops[1], undefined);
   assert.equal(ala(result.state).generation, 2);
   assert.equal(result.state.loops[2].run.minute, 300 - COLD_DEATH_MINUTE);
+  assert.equal(result.state.team.characters[1].generation, 1);
   assert.deepEqual(
     result.events.map((event) => event.characterId),
     [1, 2],
@@ -579,14 +624,14 @@ test("a loop that stops in the catch-up writes its line with the minutes it work
       minutes: COLD_DEATH_MINUTE,
       stop: { generation: 2, away: true },
     }),
-    line(2, { minutes: 300, resurrectionUsed: true }),
+    line(2, { minutes: 300 }),
   ]);
   assert.deepEqual(result.state.stoppedLoops, {}, "death pays nothing");
   assertLoadsBack(result.state, "a loop stopped in a catch-up");
 });
 
 test("a loop that stops in the first minute of the catch-up opens the report at one minute", () => {
-  const state = notReadyUntil(dyingNext(looping(), 1), 1, S + 99 * MIN);
+  const state = notReadyUntil(dyingNext(looping(), 1), S + 99 * MIN);
   const result = catchUp(state, S + MIN);
   assert.deepEqual(result.state.awayReport, [
     line(1, { minutes: 1, stop: { generation: 2, away: true } }),
@@ -650,7 +695,7 @@ test("a later loop of a character whose line stopped opens a line of its own", (
 
 // D-246: the open game writes a stop into the same report and no minutes of its own.
 test("a loop that stops in the open game writes a line of 0 minutes, and a covered death or a completion writes nothing", () => {
-  const stopping = notReadyUntil(dyingNext(looping(), 1), 1, S + 99 * MIN);
+  const stopping = notReadyUntil(dyingNext(looping(), 1), S + 99 * MIN);
   const stopped = passLoops(stopping, S, S + MIN + 5);
   assert.equal(stopped.state.loops[1], undefined);
   assert.deepEqual(stopped.events, [{ kind: "loopRunEnded", characterId: 1 }]);
@@ -674,7 +719,7 @@ test("a loop that stops in the open game closes the line of an earlier return, w
     resurrectionUsed: true,
   });
   const state = {
-    ...notReadyUntil(dyingNext(looping(), 1), 1, S + 99 * MIN),
+    ...notReadyUntil(dyingNext(looping(), 1), S + 99 * MIN),
     awayReport: [earlier, line(2, { minutes: 3 })],
   };
   const result = passLoops(state, S, S + MIN);
@@ -691,7 +736,7 @@ test("a loop that stops in the open game closes the line of an earlier return, w
 test("a stop in the catch-up closes the line of an earlier return with the minutes added", () => {
   const earlier = line(1, { minutes: 10, chest: { stick: 2 } });
   const state = {
-    ...notReadyUntil(looping(), 1, S + 9_999 * MIN),
+    ...notReadyUntil(looping(), S + 9_999 * MIN),
     awayReport: [earlier],
   };
   const result = catchUp(state, S + 400 * MIN);
@@ -737,7 +782,7 @@ test("passLoops, catchUp and closeAwayReport write to nothing they are given, th
     withTrip(EMPTY, [entry("moss", 5)], [entry("stick", 4)]),
   );
   const stopping = {
-    ...notReadyUntil(looping(), 1, S + 9_999 * MIN),
+    ...notReadyUntil(looping(), S + 9_999 * MIN),
     awayReport: [line(1, { minutes: 4, chest: { stick: 1 } })],
   };
   for (const [name, state] of Object.entries({
@@ -756,4 +801,102 @@ test("passLoops, catchUp and closeAwayReport write to nothing they are given, th
     }
     assert.deepEqual(JSON.parse(JSON.stringify(state)), before, name);
   }
+});
+
+/**
+ * A loop of Ala that dies of cold in game minute 243, and one of Ola that dies in minute 1: in the
+ * real time of the span Ola dies first, in the order of the team's list Ala does.
+ */
+function oneEarlyOneLate(chest = {}) {
+  return dyingNext(looping(chest), 2);
+}
+
+// invariant: catch-up-death-moment
+// D-240, D-190: characters meet at the shared resurrection, and the catch-up goes by the list.
+test("with one resurrection for two deaths the catch-up gives it to the character earlier on the list, though it died later in real time", () => {
+  const state = oneEarlyOneLate();
+  const caught = catchUp(state, S + 300 * MIN).state;
+  const [first, second] = caught.team.characters;
+  // Ala's death in minute 243 used the resurrection; Ola's, in minute 1, found it so and took all.
+  assert.equal(first.generation, 1);
+  assert.equal(second.generation, 2);
+  assert.equal(caught.team.resurrectionReadyAtMs, S + 243 * MIN + RENEWAL_MS);
+  assert.ok(caught.loops[1]);
+  assert.equal(caught.loops[2], undefined);
+  assert.deepEqual(caught.awayReport, [
+    line(1, { minutes: 300, resurrectionUsed: true }),
+    line(2, { minutes: 1, stop: { generation: 2, away: true } }),
+  ]);
+  assertLoadsBack(caught, "the second of two deaths on one resurrection");
+});
+
+// D-242: the open game goes minute by minute, so the death earlier in time takes the resurrection.
+test("in the open game the death earlier in time takes the shared resurrection, and of two in one game minute the character earlier in the team's order", () => {
+  const opened = openGame(oneEarlyOneLate(), S, COLD_DEATH_MINUTE).state;
+  assert.equal(opened.team.characters[0].generation, 2);
+  assert.equal(opened.team.characters[1].generation, 1);
+  assert.equal(opened.team.resurrectionReadyAtMs, S + MIN + RENEWAL_MS);
+  assert.equal(opened.loops[1], undefined);
+  assert.ok(opened.loops[2]);
+  // Both die in minute 243: the first of the team's order takes it.
+  const together = openGame(looping(), S, 300).state;
+  assert.equal(together.team.characters[0].generation, 1);
+  assert.equal(together.team.characters[1].generation, 2);
+  assert.equal(together.team.resurrectionReadyAtMs, S + 243 * MIN + RENEWAL_MS);
+});
+
+// D-190: the death of a character with no practice leaves the resurrection for the next one.
+// invariant: resurrection-renewal
+test("a loop of a character with no practice dies on and on with no loss: the resurrection, the generation and the loop stay, and no line marks it", () => {
+  const state = withoutPractice(looping(), 1);
+  const caught = catchUp(state, S + 300 * MIN).state;
+  assert.equal(ala(caught).generation, 1);
+  assert.ok(caught.loops[1], "the loop goes on");
+  assert.equal(caught.loops[1].runNumber, 2);
+  assert.equal(line(1, { minutes: 300 }).resurrectionUsed, false);
+  assert.deepEqual(caught.awayReport[0], line(1, { minutes: 300 }));
+  // Ola, with practice, dies in the same minute and finds the resurrection ready: it takes it.
+  assert.equal(caught.team.resurrectionReadyAtMs, S + 243 * MIN + RENEWAL_MS);
+  assert.deepEqual(
+    caught.awayReport[1],
+    line(2, { minutes: 300, resurrectionUsed: true }),
+  );
+  // The open game does the same through the same minutes.
+  const opened = openGame(state, S, 300).state;
+  assert.deepEqual(opened.team, caught.team);
+  assert.deepEqual(opened.loops, caught.loops);
+  assertLoadsBack(caught, "a death of a character with no practice");
+});
+
+// D-190: the practice gathered at the loop is practice the character has.
+test("a character with no practice in its skills but practice gathered at its loop is guarded by the resurrection, and loses it without one", () => {
+  const gathered = changingLoop(withoutPractice(aloneLooping(), 1), 1, {
+    practice: { eating: 2 },
+  });
+  const covered = catchUp(gathered, S + 300 * MIN).state;
+  assert.deepEqual(covered.loops[1].practice, { eating: 2 });
+  assert.equal(covered.team.resurrectionReadyAtMs, S + 243 * MIN + RENEWAL_MS);
+  assert.deepEqual(covered.awayReport, [
+    line(1, { minutes: 300, resurrectionUsed: true }),
+  ]);
+  const lost = catchUp(
+    notReadyUntil(gathered, S + 10_000 * MIN),
+    S + 300 * MIN,
+  ).state;
+  assert.equal(lost.loops[1], undefined);
+  assert.equal(ala(lost).generation, 2);
+  assert.deepEqual(lost.stoppedLoops, {}, "death pays nothing");
+});
+
+// D-190: only the practice a death takes counts, and the run that died pays nothing.
+test("the practice of the map run that dies is no practice gathered at the loop", () => {
+  const dying = changingRun(
+    dyingNext(withoutPractice(aloneLooping(), 1), 1),
+    1,
+    { practice: { eating: 4 } },
+  );
+  const caught = catchUp(dying, S + 2 * MIN).state;
+  assert.equal(ala(caught).generation, 1);
+  assert.equal(caught.team.resurrectionReadyAtMs, 0);
+  assert.deepEqual(caught.loops[1].practice, {});
 });

@@ -1,8 +1,10 @@
-// A character's resurrection and when it is ready, and how its death is settled, once, on the
-// browser's clock. The expectations come from D-190 (what a death takes), D-219 (whose clock counts
-// the renewal), D-220 (a new character's resurrection is ready from the start), D-221 (when a death
-// is settled), D-386 (which moments the game state holds) and the invariants `resurrection-renewal` (a moment equal to the moment of readiness
-// counts as ready) and `death-settled-once`.
+// The team's one resurrection and when it is ready, and how a death and a first completion of a map
+// are settled, once, on the browser's clock. The expectations come from D-190 (what a death takes,
+// the resurrection shared by the team, the death of a character with no practice, the renewal at a
+// first solving), D-219 (whose clock counts the renewal), D-220 (a new game's resurrection is ready
+// from the start), D-221 (when a death is settled), D-386 (which moments the game state holds) and
+// the invariants `resurrection-renewal` (a moment equal to the moment of readiness counts as ready)
+// and `death-settled-once`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -49,20 +51,17 @@ function team() {
     team: {
       characters: [{ ...ala, skills }, ola],
       chest: { pieces: { stick: 5, berry: 2 } },
+      resurrectionReadyAtMs: 0,
     },
   };
   return buyBranch(state, 1, "patrol").state;
 }
 
-/** `state` with Ala's resurrection ready from the real moment `readyAtMs` on. */
+/** `state` with the team's resurrection ready from the real moment `readyAtMs` on. */
 function readyFrom(state, readyAtMs) {
-  const [ala, ...others] = state.team.characters;
   return {
     ...state,
-    team: {
-      ...state.team,
-      characters: [{ ...ala, resurrectionReadyAtMs: readyAtMs }, ...others],
-    },
+    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
   };
 }
 
@@ -81,10 +80,12 @@ const fallen = (readyAtMs = 0) => died(readyFrom(team(), readyAtMs));
 
 const ala = (state) => state.team.characters[0];
 
-/** A character of the team with the moment of its resurrection's readiness set by hand. */
+/** A team with the moment of its resurrection's readiness set by hand. */
 function readyAt(resurrectionReadyAtMs) {
-  const { characters } = createCharacter(newGame(), "Ala").state.team;
-  return { ...characters[0], resurrectionReadyAtMs };
+  return {
+    ...createCharacter(newGame(), "Ala").state.team,
+    resurrectionReadyAtMs,
+  };
 }
 
 // invariant: resurrection-renewal
@@ -103,11 +104,23 @@ test("a moment of readiness below zero is ready at every moment from zero on", (
   assert.equal(resurrectionReady(character, -6), false);
 });
 
-test("a new character's resurrection is ready from the start, at the first moment there is", () => {
-  const { characters } = createCharacter(newGame(), "Ala").state.team;
-  assert.equal(characters[0].resurrectionReadyAtMs, 0);
-  assert.equal(resurrectionReady(characters[0], 0), true);
-  assert.equal(resurrectionReady(characters[0], 1_760_000_000_000), true);
+test("a new game's resurrection is ready from the start, at the first moment there is, and a created character brings none of its own", () => {
+  const { team } = createCharacter(newGame(), "Ala").state;
+  assert.equal(team.resurrectionReadyAtMs, 0);
+  assert.equal(resurrectionReady(team, 0), true);
+  assert.equal(resurrectionReady(team, 1_760_000_000_000), true);
+  assert.equal(
+    Object.hasOwn(team.characters[0], "resurrectionReadyAtMs"),
+    false,
+  );
+});
+
+// D-190, D-220: a character created while the resurrection is used up does not bring a ready one.
+test("a character created while the team's resurrection is used up does not make it ready", () => {
+  const used = readyFrom(team(), T0 + 1);
+  const added = createCharacter(used, "Ula").state;
+  assert.equal(added.team.resurrectionReadyAtMs, T0 + 1);
+  assert.equal(resurrectionReady(added.team, T0), false);
 });
 
 test("a new character is of generation 1, and a created second one too", () => {
@@ -125,7 +138,7 @@ test("a death with a resurrection ready uses it up: ready again 8 hours after th
   const state = fallen();
   const before = ala(state);
   const settled = settleDeath(state, T0).state;
-  assert.equal(ala(settled).resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  assert.equal(settled.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
   assert.deepEqual(ala(settled).skills, before.skills);
   assert.equal(branchRank(ala(settled).skills, "patrol"), 1);
   assert.equal(ala(settled).generation, 1);
@@ -139,7 +152,7 @@ test("a death with no resurrection ready takes all practice and ranks, the gener
   const before = ala(state);
   const settled = settleDeath(state, T0).state;
   const skills = ala(settled).skills;
-  assert.equal(ala(settled).resurrectionReadyAtMs, T0 + 1);
+  assert.equal(settled.team.resurrectionReadyAtMs, T0 + 1);
   assert.equal(ala(settled).generation, 2);
   assert.equal(skills.smallItemGathering.practice, 0);
   assert.equal(skills.eating.practice, 0);
@@ -202,7 +215,7 @@ test("a death at the very moment of readiness uses the resurrection, and a death
 test("the renewal does not depend on the pace of the map run", () => {
   const fast = died(setPace(team(), 16).state);
   assert.equal(
-    ala(settleDeath(fast, T0).state).resurrectionReadyAtMs,
+    settleDeath(fast, T0).state.team.resurrectionReadyAtMs,
     T0 + RENEWAL_MS,
   );
 });
@@ -215,23 +228,23 @@ test("a resurrection used up is ready again at its moment after a save and a loa
   const loaded = loadSavedGame(savedGame(withSaveTime(end(settled).state, T0)));
   assert.equal(loaded.ok, true);
   const back = loaded.state;
-  assert.equal(resurrectionReady(ala(back), T0 + RENEWAL_MS - 1), false);
-  assert.equal(resurrectionReady(ala(back), T0 + RENEWAL_MS), true);
+  assert.equal(resurrectionReady(back.team, T0 + RENEWAL_MS - 1), false);
+  assert.equal(resurrectionReady(back.team, T0 + RENEWAL_MS), true);
 
   const early = settleDeath(died(back), T0 + RENEWAL_MS - 1).state;
   assert.equal(early.run.deathSettlement.kind, "progressLost");
-  assert.equal(ala(early).resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  assert.equal(early.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
 
   const renewed = settleDeath(died(back), T0 + RENEWAL_MS).state;
   assert.equal(renewed.run.deathSettlement.kind, "resurrectionUsed");
-  assert.equal(ala(renewed).resurrectionReadyAtMs, T0 + 2 * RENEWAL_MS);
+  assert.equal(renewed.team.resurrectionReadyAtMs, T0 + 2 * RENEWAL_MS);
 });
 
 // D-07, D-219: a clock set back is the player's own; the moment is stored as the arithmetic gives it.
 test("a moment below zero settles as any other", () => {
   const state = fallen(-20_000);
   const settled = settleDeath(state, -5_000).state;
-  assert.equal(ala(settled).resurrectionReadyAtMs, RENEWAL_MS - 5_000);
+  assert.equal(settled.team.resurrectionReadyAtMs, RENEWAL_MS - 5_000);
   assert.equal(settled.run.deathSettlement.kind, "resurrectionUsed");
 });
 
@@ -469,7 +482,6 @@ test("„Restart” after a death that took everything reads the character that 
   const [first, second] = start.team.characters;
   const secondSkilled = {
     ...second,
-    resurrectionReadyAtMs: T0 + 1,
     skills: { ...second.skills, eating: { practice: 3, ranks: {} } },
   };
   const state = {
@@ -488,4 +500,141 @@ test("„Restart” after a death that took everything reads the character that 
   const restarted = restart(settled).state;
   assert.equal(restarted.run.character.id, 2);
   assert.equal(restarted.run.character.skills.eating.practice, 0);
+});
+
+/** The character `characterId` of `state` sent to Las and moved on until it dies; the death stands unsettled. */
+function characterDied(state, characterId) {
+  const fell = advanceMinutes(
+    send(state, { mapId: "forest", characterId }, T0).state,
+    LONGER_THAN_A_LIFE,
+  ).state;
+  assert.ok(fell.run.death, "precondition: the character died");
+  return fell;
+}
+
+/** `state` with the character `characterId`'s skills replaced. */
+function withSkills(state, characterId, skills) {
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) =>
+        character.id === characterId ? { ...character, skills } : character,
+      ),
+    },
+  };
+}
+
+// D-190: Ola has nothing a resurrection would guard; Ala has.
+// invariant: resurrection-renewal
+test("the death of a character with no practice leaves the character, the generation and the team's resurrection as they were, ready or not", () => {
+  for (const readyAtMs of [0, T0 + 1]) {
+    const state = characterDied(readyFrom(team(), readyAtMs), 2);
+    const settled = settleDeath(state, T0).state;
+    assert.deepEqual(
+      settled.run.deathSettlement,
+      { kind: "noPractice" },
+      `ready from ${readyAtMs}`,
+    );
+    assert.equal(settled.team.resurrectionReadyAtMs, readyAtMs);
+    assert.deepEqual(settled.team.characters, state.team.characters);
+    assert.equal(settled.team.characters[1].generation, 1);
+    // Like any death it ends the map run, pays nothing and takes what the character carried.
+    assert.ok(settled.run.death);
+    assert.equal(settled.run.deposited, null);
+    assert.deepEqual(settled.team.chest, state.team.chest);
+  }
+});
+
+// D-190: any one of the three things is a practice the resurrection guards.
+test("a character with practice in one skill, or one rank bought, has practice: its death goes by the resurrection", () => {
+  const [, ola] = team().team.characters;
+  const skill = Object.keys(ola.skills)[0];
+  const rank = { patrol: 1 };
+  const one = {
+    "one practice": { ...ola.skills, [skill]: { practice: 1, ranks: {} } },
+    "one rank": { ...ola.skills, [skill]: { practice: 0, ranks: rank } },
+  };
+  for (const [name, skills] of Object.entries(one)) {
+    const state = characterDied(withSkills(team(), 2, skills), 2);
+    assert.equal(
+      settleDeath(state, T0).state.run.deathSettlement.kind,
+      "resurrectionUsed",
+      name,
+    );
+    const lost = characterDied(
+      withSkills(readyFrom(team(), T0 + 1), 2, skills),
+      2,
+    );
+    assert.equal(
+      settleDeath(lost, T0).state.run.deathSettlement.kind,
+      "progressLost",
+      name,
+    );
+  }
+});
+
+// D-190: the resurrection is the team's, one for all its characters.
+// invariant: resurrection-renewal
+test("the death of any character with practice uses up the one resurrection, and the next death of any other takes everything", () => {
+  for (const [first, second] of [
+    [1, 2],
+    [2, 1],
+  ]) {
+    const practised = withSkills(team(), 2, {
+      ...team().team.characters[1].skills,
+      eating: { practice: 5, ranks: {} },
+    });
+    const used = settleDeath(characterDied(practised, first), T0).state;
+    assert.equal(used.run.deathSettlement.kind, "resurrectionUsed");
+    assert.equal(used.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
+    const next = settleDeath(
+      characterDied(end(used).state, second),
+      T0 + 1,
+    ).state;
+    assert.equal(
+      next.run.deathSettlement.kind,
+      "progressLost",
+      `${first} then ${second}`,
+    );
+    assert.equal(
+      next.team.characters.find((character) => character.id === second)
+        .generation,
+      2,
+    );
+    assert.equal(
+      next.team.characters.find((character) => character.id === first)
+        .generation,
+      1,
+    );
+    assert.equal(next.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  }
+});
+
+// D-190: a death of a character with no practice does not wait for the resurrection, and does not stop the earning of the others.
+test("the death of a character with no practice, settled after one that used the resurrection, leaves the used-up resurrection as it stood", () => {
+  const used = settleDeath(characterDied(team(), 1), T0).state;
+  const second = settleDeath(characterDied(end(used).state, 2), T0 + 1).state;
+  assert.equal(second.run.deathSettlement.kind, "noPractice");
+  assert.equal(second.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  assert.equal(second.team.characters[1].generation, 1);
+});
+
+// D-190, D-200: a death of a character with no practice takes nothing from the character, so „Restart” reads the run.
+test("„Restart” after the death of a character with no practice starts from the run it replaces", () => {
+  const settled = settleDeath(characterDied(team(), 2), T0).state;
+  const restarted = restart(settled).state;
+  assert.equal(restarted.run.character.id, 2);
+  assert.equal(restarted.run.deathSettlement, null);
+  assert.deepEqual(
+    restarted.run.character.skills,
+    settled.run.character.skills,
+  );
+});
+
+test("a death of a character with no practice is settled once too, and the moment is looked at only for a death to settle", () => {
+  const state = characterDied(team(), 2);
+  const once = settleDeath(state, T0).state;
+  assert.equal(settleDeath(once, T0 + RENEWAL_MS).state, once);
+  assert.throws(() => settleDeath(state, Number.NaN), RangeError);
 });

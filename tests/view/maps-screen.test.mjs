@@ -60,14 +60,10 @@ const withChest = (state, pieces) => ({
   team: { ...state.team, chest: { ...state.team.chest, pieces } },
 });
 
-const withCharacter = (state, index, fields) => ({
+/** `state` with the team's one resurrection ready from the real moment `readyAtMs` on. */
+const withResurrection = (state, readyAtMs) => ({
   ...state,
-  team: {
-    ...state.team,
-    characters: state.team.characters.map((character, at) =>
-      at === index ? { ...character, ...fields } : character,
-    ),
-  },
+  team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
 });
 
 const LOOP = {
@@ -471,7 +467,10 @@ test("the characters stand in the order of their creation, each with its lines f
       "maps-who-enters",
       "maps-who-actions",
     ]);
-    assert.equal(text(ala, ".maps-who-resurrection"), "Wskrzeszenie gotowe");
+    assert.equal(
+      text(ala, ".maps-who-resurrection"),
+      "Wskrzeszenie drużyny gotowe",
+    );
     assert.equal(
       ala.querySelector(".maps-who-resurrection").classList.contains("danger"),
       false,
@@ -485,25 +484,25 @@ test("the characters stand in the order of their creation, each with its lines f
   });
 });
 
-// D-217: the resurrection line of a character not ready reads the time left, in danger.
-test("a resurrection not ready reads the time left in danger and turns ready with the clock", async () => {
+// D-217, D-190: the team's one resurrection, not ready, reads the time left in danger at every character.
+test("a resurrection not ready reads the time left in danger at each character and turns ready with the clock", async () => {
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
-    const state = withCharacter(teamOf("Ala", "Bob"), 0, {
-      resurrectionReadyAtMs: readyAt,
-    });
+    const state = withResurrection(teamOf("Ala", "Bob"), readyAt);
     const { screen } = await mount(page, propsOf(state, "forest"));
     const lines = () => all(page.root, ".maps-who-resurrection");
     assert.equal(
       lines()[0].textContent,
-      `Wskrzeszenie za 8 godz. 0 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny za 8 godz. 0 min czasu realnego${WARNING}`,
     );
     assert.ok(lines()[0].classList.contains("danger"));
-    assert.equal(lines()[1].textContent, "Wskrzeszenie gotowe");
-    assert.equal(lines()[1].classList.contains("danger"), false);
+    assert.equal(lines()[1].textContent, lines()[0].textContent);
+    assert.ok(lines()[1].classList.contains("danger"));
     await inAct(() => screen.update(propsOf(state, "forest", readyAt)));
-    assert.equal(lines()[0].textContent, "Wskrzeszenie gotowe");
-    assert.equal(lines()[0].classList.contains("danger"), false);
+    for (const line of lines()) {
+      assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe");
+      assert.equal(line.classList.contains("danger"), false);
+    }
   });
 });
 

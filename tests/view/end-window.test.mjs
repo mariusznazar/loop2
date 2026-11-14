@@ -251,7 +251,7 @@ test("the scrolling part opens with the longest streak as the bar of the header'
     const cost = body.querySelector(".end-window-cost");
     assert.equal(
       cost.textContent,
-      "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach czasu realnego.",
+      "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.",
     );
     assert.equal(cost.classList.contains("danger"), false);
     const order = [streak, discovery, cost].map((element) =>
@@ -313,6 +313,47 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
     assert.equal(buttonNamed(container, "Dodaj regułę z tym").disabled, true);
     await show({ ...lost, discovery: DISCOVERED });
     assert.equal(buttonNamed(container, "Dodaj regułę z tym").disabled, false);
+  });
+});
+
+// Catches a death of a character with no practice shown as a resurrection used or a loss, and the
+// renewal line of a first completion missing, in the wrong role, before the deposit line, or standing
+// where the resurrection was found ready (D-216, D-185, D-190, D-39).
+test("the window shows the line of a death with no practice, and the renewal line after the deposit line of a first completion that renewed", async () => {
+  await withPage(async ({ document }) => {
+    const bare = withRun(DIED, { deathSettlement: { kind: "noPractice" } });
+    const { container, show } = await draw(document, bare);
+    const cost = container.querySelector(".end-window-cost");
+    assert.equal(
+      cost.textContent,
+      "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+    );
+    assert.equal(cost.classList.contains("danger"), false);
+    assert.equal(container.querySelectorAll(".end-window-cost").length, 1);
+
+    const renewed = withRun(SOLVED, {
+      completionSettlement: { kind: "resurrectionRenewed" },
+    });
+    await show(renewed);
+    const lines = [...container.querySelectorAll(".end-window-cost")];
+    assert.deepEqual(
+      lines.map((line) => line.textContent),
+      [
+        "Do skrzynki: patyk 3.",
+        "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+      ],
+    );
+    assert.equal(lines[1].classList.contains("danger"), false);
+
+    for (const completionSettlement of [{ kind: "resurrectionReady" }, null]) {
+      await show(withRun(SOLVED, { completionSettlement }));
+      assert.deepEqual(
+        [...container.querySelectorAll(".end-window-cost")].map(
+          (line) => line.textContent,
+        ),
+        ["Do skrzynki: patyk 3."],
+      );
+    }
   });
 });
 

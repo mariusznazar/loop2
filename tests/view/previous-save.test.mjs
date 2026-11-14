@@ -241,7 +241,7 @@ const LAS = {
 
 const item = (id, name, program) => ({ id, name, program });
 /** The answer of the client for a previous save of `version` holding `programs`. */
-const previous = (programs, version = 6) => ({
+const previous = (programs, version = 7) => ({
   ok: true,
   value: { version, game: { programs, nextProgramId: 99 } },
 });
@@ -522,8 +522,8 @@ test("a document with every program skipped gives the skipped sentence alone and
 test("an unreadable document, and one with no program, give the sentence of no readable program; nothing is appended or saved", async () => {
   const sentence = pullResultLine({ ok: false }).text;
   for (const document of [
-    previous([item(1, "Las", LAS)], 7),
-    { ok: true, value: { version: 6, game: {} } },
+    previous([item(1, "Las", LAS)], 8),
+    { ok: true, value: { version: 7, game: {} } },
     previous([]),
   ]) {
     await onPage(async () => {

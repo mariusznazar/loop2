@@ -49,7 +49,7 @@ function createdKnowing(...names) {
   return createdIn(withEdgeSolved(newKnowingGame()), names);
 }
 
-// Generation 1 and a resurrection ready from the start (D-220).
+// Generation 1 and no resurrection of its own: the team's is shared (D-220).
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
   const state = created("Ala", "Ola", "Ela");
   assert.deepEqual(state.team.characters, [
@@ -60,7 +60,6 @@ test("a created character joins the end of the team's list as an elemental mage,
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
       generation: 1,
-      resurrectionReadyAtMs: 0,
     },
     {
       id: 2,
@@ -69,7 +68,6 @@ test("a created character joins the end of the team's list as an elemental mage,
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
       generation: 1,
-      resurrectionReadyAtMs: 0,
     },
     {
       id: 3,
@@ -78,10 +76,10 @@ test("a created character joins the end of the team's list as an elemental mage,
       traits: { carryingCapacity: 15 },
       skills: ZERO_SKILLS,
       generation: 1,
-      resurrectionReadyAtMs: 0,
     },
   ]);
   assert.equal(state.nextCharacterId, 4);
+  assert.equal(state.team.resurrectionReadyAtMs, 0);
 });
 
 test("two characters may share a name and stay two characters", () => {

@@ -287,14 +287,34 @@ function oneShort() {
 
 /**
  * Ala's map run of the forest in a game that knows every action, under a program with no rule: the
- * character waits, no discovery stops the map run, and the cold kills it as the clock passes.
+ * character waits, no discovery stops the map run, and the cold kills it as the clock passes. Ala has
+ * one practice in each skill, so her death goes by the team's resurrection; `bare` leaves her with
+ * none, so that her death leaves the resurrection as it was (D-190).
  */
-function freezing() {
+function freezing(bare = false) {
   const program = setProgram(
     withEdgeSolved(newKnowingGame()),
     programFromRules(),
   ).state;
-  return send(createCharacter(program, "Ala").state, SENT, 0).state;
+  const made = createCharacter(program, "Ala").state;
+  const ready = bare
+    ? made
+    : {
+        ...made,
+        team: {
+          ...made.team,
+          characters: made.team.characters.map((character) => ({
+            ...character,
+            skills: Object.fromEntries(
+              Object.entries(character.skills).map(([id, skill]) => [
+                id,
+                { ...skill, practice: skill.practice + 1 },
+              ]),
+            ),
+          })),
+        },
+      };
+  return send(ready, SENT, 0).state;
 }
 
 /**
@@ -343,8 +363,8 @@ async function dieOnTheScreen(page, start = freezing()) {
 }
 
 /** A map run of `oneShort` completed on the screen by the clock, its effect still playing. */
-async function completeDuringTheEffect({ pass, reading }) {
-  const built = await viewOf(oneShort());
+async function completeDuringTheEffect({ pass, reading }, start = oneShort()) {
+  const built = await viewOf(start);
   pass(2_000);
   await reading();
   assert.ok(
@@ -355,8 +375,8 @@ async function completeDuringTheEffect({ pass, reading }) {
 }
 
 /** A map run of `oneShort` completed on the screen by the clock, its effect played: the window stands. */
-async function completeOnTheScreen(page) {
-  const built = await completeDuringTheEffect(page);
+async function completeOnTheScreen(page, start = oneShort()) {
+  const built = await completeDuringTheEffect(page, start);
   await playTheEffect(page.root);
   return built;
 }
@@ -1025,7 +1045,7 @@ test("a reload of the screen of an ended map run opens the window with its longe
     run.longestStreak = 116;
     assert.deepEqual(await lines(diedDocument, root), {
       streak: "najdłuższa passa 116/480",
-      cost: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach czasu realnego.",
+      cost: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.",
     });
 
     const start = completed(going());
@@ -1049,6 +1069,75 @@ test("a reload of the screen of an ended map run opens the window with its longe
       streak: "najdłuższa passa 480/480",
       cost: "Do skrzynki nic nie trafiło.",
     });
+  });
+});
+
+/** The lines of the window's cost part, each text, after a reload of the saved `document`. */
+async function costLinesAfterReload(document, root) {
+  const loaded = loadSavedGame(JSON.parse(JSON.stringify(document)));
+  assert.equal(loaded.ok, true, "precondition: the document loads");
+  const again = await viewOf(loaded.state);
+  const read = byClass(expectWindow(root), "end-window-cost").map(
+    (line) => line.textContent,
+  );
+  await inAct(() => again.view.dispose());
+  pageDocument().body.replaceChildren();
+  return read;
+}
+
+// D-190, D-216, D-185. Catches the line of a death of a character with no practice, or of a renewal at
+// a first completion, that is missing after a load, stands where the resurrection was found ready, or
+// stands with the line of a resurrection used.
+test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready", async () => {
+  await onPage(async (page) => {
+    const { root } = page;
+    const bare = await dieOnTheScreen(page, freezing(true));
+    const bareDocument = structuredClone(
+      (await inAct(() => bare.view.keep())).document,
+    );
+    await inAct(() => bare.view.dispose());
+    pageDocument().body.replaceChildren();
+    assert.deepEqual(await costLinesAfterReload(bareDocument, root), [
+      "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+    ]);
+
+    // A completion of a map the account had not solved, settled as the clock settles it: the same
+    // document as a completion that deposited nothing, the record kept whole as the load asks.
+    const start = completed(going());
+    const everyMinuteExploring = Object.fromEntries(
+      Object.keys(start.run.minutesByAction).map((kind) => [kind, 0]),
+    );
+    everyMinuteExploring.explore = 480;
+    for (const [settlement, expected] of [
+      [
+        { kind: "resurrectionRenewed" },
+        [
+          "Do skrzynki nic nie trafiło.",
+          "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+        ],
+      ],
+      [{ kind: "resurrectionReady" }, ["Do skrzynki nic nie trafiło."]],
+      [null, ["Do skrzynki nic nie trafiło."]],
+    ]) {
+      const done = await viewOf({
+        ...start,
+        run: {
+          ...start.run,
+          longestStreak: 480,
+          minutesByAction: everyMinuteExploring,
+          deposited: [],
+          completionSettlement: settlement,
+        },
+      });
+      const document = (await inAct(() => done.view.keep())).document;
+      await inAct(() => done.view.dispose());
+      pageDocument().body.replaceChildren();
+      assert.deepEqual(
+        await costLinesAfterReload(document, root),
+        expected,
+        `${settlement?.kind}`,
+      );
+    }
   });
 });
 

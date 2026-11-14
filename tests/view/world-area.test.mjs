@@ -71,13 +71,12 @@ const completed = (state) =>
     1,
   ).state;
 
-/** The map run played on to the character's death and settled; the resurrection is ready at `readyAtMs`. */
+/** The map run played on to the character's death and settled; the team's resurrection is ready at `readyAtMs`. */
 function died(state, readyAtMs) {
-  const characters = state.team.characters.map((character) => ({
-    ...character,
-    resurrectionReadyAtMs: readyAtMs,
-  }));
-  let dying = { ...state, team: { ...state.team, characters } };
+  let dying = {
+    ...state,
+    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+  };
   for (let round = 0; round < 50 && !mapRunEnded(dying.run); round += 1)
     dying = advanceMinutes(setPaused(dying, false).state, 5000).state;
   assert.ok(dying.run.death, "precondition: the run ended in a death");

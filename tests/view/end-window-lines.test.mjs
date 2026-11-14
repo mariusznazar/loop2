@@ -16,6 +16,7 @@ import { MINUTE_KINDS } from "../../dist/browser/sim/run-record.js";
 import {
   discoveryLine,
   endCostLine,
+  endRenewalLine,
   endTitle,
   longestStreakLine,
   timeShares,
@@ -164,7 +165,7 @@ test("after a death the cost line tells a used resurrection with the hours of th
       deathSettlement,
     });
   assert.deepEqual(endCostLine(dead({ kind: "resurrectionUsed" })), {
-    text: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po 8 godzinach czasu realnego.",
+    text: "Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po 8 godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.",
     role: "text-secondary",
   });
   assert.deepEqual(endCostLine(dead({ kind: "progressLost", generation: 3 })), {
@@ -172,6 +173,52 @@ test("after a death the cost line tells a used resurrection with the hours of th
     role: "danger",
   });
   assert.equal(endCostLine(dead(null)), null);
+});
+
+// Catches the line of the death of a character with no practice standing in the other role, with the
+// hours of the renewal or the generation, or missing (D-216, D-190, D-39).
+test("after the death of a character with no practice the cost line says the team's resurrection was not used, in text-secondary", () => {
+  const bare = withRun(RUNNING, {
+    minute: 312,
+    death: { minute: 312, cause: "cold" },
+    deathSettlement: { kind: "noPractice" },
+  });
+  assert.deepEqual(endCostLine(bare), {
+    text: "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
+    role: "text-secondary",
+  });
+});
+
+// Catches a renewal line after a completion that found the resurrection ready, one before the
+// completion is settled, one on a death or a map run going on, or in the other role (D-185, D-190).
+test("the renewal line stands only after a first completion that made a used-up resurrection ready", () => {
+  const completion = { minute: 480 };
+  const done = (completionSettlement) =>
+    withRun(RUNNING, {
+      minute: 480,
+      streak: 480,
+      completion,
+      deposited: [],
+      completionSettlement,
+    });
+  assert.deepEqual(endRenewalLine(done({ kind: "resurrectionRenewed" })), {
+    text: "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+    role: "text-secondary",
+  });
+  assert.equal(endRenewalLine(done({ kind: "resurrectionReady" })), null);
+  assert.equal(endRenewalLine(done(null)), null);
+  assert.equal(endRenewalLine(RUNNING), null);
+  assert.equal(
+    endRenewalLine(
+      withRun(RUNNING, {
+        minute: 312,
+        death: { minute: 312, cause: "cold" },
+        deathSettlement: { kind: "resurrectionUsed" },
+      }),
+    ),
+    null,
+  );
+  assert.equal(endRenewalLine({ ...RUNNING, run: null }), null);
 });
 
 // Catches a discovery shown with no band text, a rule offered on a program with no group to hold it, or
