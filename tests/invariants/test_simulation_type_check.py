@@ -13,9 +13,11 @@ simulation's own can refuse them.
 
 Covers:
 - `npm run typecheck` passes on the unchanged copy, and fails once the simulation holds a use of
-  each of the four names, with an error that names the name as one the compiler cannot find, so the
-  browser configuration, whose libraries hold the page, is not what stopped it;
+  each of the four names, with the error code the compiler gives that name at the line of the use,
+  so the browser configuration, whose libraries hold the page, is not what stopped it;
 - `npm run build` fails on the same copy, and leaves no `dist/public/main.js` to serve;
+- `npm run build` on the unchanged copy writes no `.js`, `.d.ts`, map or build-info file beside the
+  sources of the simulation, since the configuration only checks;
 - the configuration lists every file under `src/browser/sim/` that is TypeScript, read from the
   compiler's own list of the files it takes (`--listFilesOnly`) against the files found on disk.
 
@@ -25,6 +27,7 @@ them); an import of a package that has types of its own; a file outside `src/bro
 """
 
 import os
+import re
 import unittest
 
 import loop2_invariant_support as support
@@ -36,19 +39,27 @@ COMPILER = "node_modules/typescript-compiler/bin/tsc"
 BUILT_ENTRY = "dist/public/main.js"
 
 # The made-up input: one use of each name, each the compiler cannot find when the configuration
-# holds no library of the browser.
+# holds no library of the browser, with the error code the compiler gives it.
 PLANTED_USES = (
-    ("document", "export const plantedPage = document.title;"),
-    ("setTimeout", "export const plantedTimer = setTimeout(() => undefined, 0);"),
-    ("console", "console.log(\"planted\");"),
-    ("structuredClone", "export const plantedClone = structuredClone({});"),
+    ("document", "export const plantedPage = document.title;", "TS2584"),
+    ("setTimeout", "export const plantedTimer = setTimeout(() => undefined, 0);", "TS2304"),
+    ("console", "console.log(\"planted\");", "TS2584"),
+    ("structuredClone", "export const plantedClone = structuredClone({});", "TS2304"),
 )
+# What the compiler writes beside the sources when it is allowed to emit.
+EMITTED_SUFFIXES = (".js", ".d.ts", ".js.map", ".tsbuildinfo")
+# An error of the compiler as `npm run typecheck` prints it: file(line,column): error TSnnnn:
+ERROR_LINE = re.compile(re.escape(PLANTED_FILE) + r"\((\d+),\d+\): error (TS\d+):")
 
 
 def plant_uses(copy):
+    """Appends the uses to the file; gives the line each stands on, by name."""
     with open(copy.file(PLANTED_FILE), "a", encoding="utf-8", newline="\n") as handle:
         handle.write("\n// Appended by the invariant check simulation-type-check.\n")
-        handle.writelines(line + "\n" for _name, line in PLANTED_USES)
+        handle.writelines(line + "\n" for _name, line, _code in PLANTED_USES)
+    with open(copy.file(PLANTED_FILE), encoding="utf-8") as handle:
+        lines = handle.read().splitlines()
+    return {name: lines.index(line) + 1 for name, line, _code in PLANTED_USES}
 
 
 class SimulationTypeCheck(unittest.TestCase):
@@ -71,14 +82,17 @@ class SimulationTypeCheck(unittest.TestCase):
         code, output = clean.npm("run", "typecheck")
         self.assertEqual(code, 0, f"`npm run typecheck` fails on the unchanged tree:\n{output}")
         broken = self.fresh_copy()
-        plant_uses(broken)
+        lines = plant_uses(broken)
         code, output = broken.npm("run", "typecheck")
         self.assertNotEqual(code, 0, f"`npm run typecheck` exits 0 although {PLANTED_FILE} uses "
                                      f"names outside the JavaScript language:\n{output}")
-        for name, _line in PLANTED_USES:
-            self.assertIn(f"Cannot find name '{name}'", output,
-                          f"`npm run typecheck` does not refuse a use of `{name}` in "
-                          f"{PLANTED_FILE}:\n{output}")
+        # Each name is refused at its own line with its error code, as a name the compiler cannot
+        # find, so the browser configuration, which passes all four, is not what stopped it.
+        refused = {(int(line), error) for line, error in ERROR_LINE.findall(output)}
+        for name, _line, error in PLANTED_USES:
+            self.assertIn((lines[name], error), refused,
+                          f"`npm run typecheck` does not refuse a use of `{name}` at line "
+                          f"{lines[name]} of {PLANTED_FILE} with {error}:\n{output}")
 
     def test_build_refuses_it_too_and_leaves_nothing_to_serve(self):
         # invariant: simulation-type-check
@@ -89,6 +103,16 @@ class SimulationTypeCheck(unittest.TestCase):
                                      f"names outside the JavaScript language:\n{output}")
         self.assertFalse(os.path.exists(broken.file(BUILT_ENTRY)),
                          f"`npm run build` with such a use still leaves {BUILT_ENTRY} to serve")
+
+    def test_the_build_writes_nothing_beside_the_sources_of_the_simulation(self):
+        # invariant: simulation-type-check
+        copy = self.fresh_copy()
+        code, output = copy.npm("run", "build")
+        self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
+        written = [path for path in support.files_under(SIMULATION_SOURCE, copy.path)
+                   if path.endswith(EMITTED_SUFFIXES)]
+        self.assertEqual(written, [], f"`npm run build` writes files beside {SIMULATION_SOURCE}: "
+                                      f"{SIMULATION_CONFIG} emits what it should only check")
 
     def test_the_configuration_takes_every_typescript_file_of_the_simulation(self):
         # invariant: simulation-type-check
