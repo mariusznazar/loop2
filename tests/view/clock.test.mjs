@@ -562,6 +562,48 @@ test("a reading passes the manual run, then the loops, and hands the store one r
   });
 });
 
+// invariant: resurrection-renewal
+// D-190, D-242: of two deaths the earlier in real time takes the team's one resurrection. A loop's end
+// lies at its minute's moment, none after the reading, and the manual run's death at the reading.
+test("in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, no later than the reading, takes the resurrection", () => {
+  withBothClocks(({ pass, jump }) => {
+    const both = practised(practised(twoCharacters(), 1), 2);
+    let state = send(loopingOla(both), SENT, 1).state;
+    for (;;) {
+      const next = advanceMinutes(state, 1).state;
+      if (next.run.death) break;
+      state = next;
+    }
+    const store = holdingStore(state);
+    const clock = startClock(store);
+    pass(1000);
+    // The date gave T0 to the start; the loop's minute lies at T0 + 60 s, the reading at the same moment.
+    jump(LOOP_MINUTE_MS - 1000);
+    clock.flush();
+    const handed = store.state;
+    assert.equal(
+      handed.team.resurrectionReadyAtMs,
+      T0 + LOOP_MINUTE_MS + RENEWAL_MS,
+    );
+    assert.equal(
+      handed.team.characters[1].generation,
+      1,
+      "Ola's loop death used it",
+    );
+    assert.ok(handed.loops[2], "her loop goes on");
+    assert.equal(
+      handed.team.characters[0].generation,
+      2,
+      "Ala's death found it used",
+    );
+    assert.deepEqual(handed.run.deathSettlement, {
+      kind: "progressLost",
+      generation: 2,
+    });
+    clock.dispose();
+  });
+});
+
 // D-242: the k-th minute has the real moment fromMs plus k minutes, so a death in the loop is
 // settled at the minute's moment, never at the reading's.
 test("a loop's end is settled at the minute's own moment, not at the reading's", () => {
