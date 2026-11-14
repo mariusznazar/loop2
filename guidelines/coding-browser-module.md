@@ -17,6 +17,7 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/app.ts`                          | do not copy | —        |
 | `src/browser/view/away-report.ts`                  | copy        | —        |
 | `src/browser/view/body-row.ts`                     | do not copy | —        |
+| `src/browser/view/character-entry.ts`              | copy        | —        |
 | `src/browser/view/character-screen.tsx`            | copy        | —        |
 | `src/browser/view/character-skills.ts`             | copy        | —        |
 | `src/browser/view/chronicle-entries.ts`            | copy        | —        |
@@ -45,9 +46,11 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/end-window.tsx`                  | copy        | —        |
 | `src/browser/view/game-saver.ts`                   | do not copy | —        |
 | `src/browser/view/game-view.ts`                    | do not copy | —        |
+| `src/browser/view/headquarters-entry.ts`           | do not copy | —        |
 | `src/browser/view/headquarters.tsx`                | copy        | —        |
 | `src/browser/view/last-resort.ts`                  | copy        | —        |
 | `src/browser/view/map-lines.ts`                    | copy        | —        |
+| `src/browser/view/maps-entry.ts`                   | copy        | —        |
 | `src/browser/view/maps-screen.tsx`                 | copy        | —        |
 | `src/browser/view/menu-bar.tsx`                    | copy        | —        |
 | `src/browser/view/now-lines.ts`                    | copy        | —        |
@@ -55,14 +58,20 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/password-reset.ts`               | copy        | —        |
 | `src/browser/view/program-editor.ts`               | do not copy | —        |
 | `src/browser/view/program-list.tsx`                | copy        | —        |
+| `src/browser/view/program-panel-acts.ts`           | copy        | —        |
 | `src/browser/view/program-panel.tsx`               | copy        | —        |
+| `src/browser/view/programs-entry.ts`               | do not copy | —        |
 | `src/browser/view/rule-list.tsx`                   | copy        | —        |
 | `src/browser/view/rule-panel.tsx`                  | copy        | —        |
+| `src/browser/view/run-entry.ts`                    | copy        | —        |
 | `src/browser/view/run-header.tsx`                  | copy        | —        |
+| `src/browser/view/run-screen-state.ts`             | copy        | —        |
 | `src/browser/view/run-screen.tsx`                  | copy        | —        |
 | `src/browser/view/scene-picture.ts`                | copy        | —        |
 | `src/browser/view/scene.tsx`                       | copy        | —        |
 | `src/browser/view/screen-address.ts`               | copy        | —        |
+| `src/browser/view/screen-registry.ts`              | copy        | —        |
+| `src/browser/view/state-store.ts`                  | copy        | —        |
 | `src/browser/view/status-row.ts`                   | do not copy | —        |
 | `src/browser/view/tabs-area.tsx`                   | copy        | —        |
 | `src/browser/view/team-lines.ts`                   | copy        | —        |
@@ -231,23 +240,28 @@ nie Efekt.
 
 `src/browser/view/character-screen.tsx` jest ekranem w Reactcie, który rysuje z bieżącego
 stanu gry i z adresu. Numer postaci bierze z adresu `#/postac/{n}`: `readScreenAddress`
-z `screen-address.ts` czyta adres, a `game-view.ts` przekazuje numer do ekranu, sam go nie
-wybiera. Ekran powstaje przy wejściu na Postać (`openCharacterScreen`) i jest zdejmowany
-przy wyjściu (`closeCharacterScreen`), więc nie istnieje, gdy gracz jest na innym ekranie.
+z `screen-address.ts` czyta adres, rejestr ekranów (`screen-registry.ts`) podaje ekran
+z adresu wpisowi Postaci, a wpis sam numeru nie wybiera. Ekran żyje tylko wtedy, gdy gracz
+jest na nim: wpis Postaci w `character-entry.ts` ma życie `while-shown` i klucz równy numerowi
+postaci, więc rejestr buduje ekran przy wejściu, buduje go od nowa, gdy adres wskazuje inną
+postać, i zdejmuje przy wyjściu. Ekran nie istnieje, gdy gracz jest na innym ekranie.
 
 Granicą jest `createCharacterScreen({ onBuy, onStop, props })`. Zwraca `element` do
 umieszczenia na stronie, `update(props)`, `focus()` i `dispose()`; pierwsze rysowanie jest
-synchroniczne, więc ekran stoi w elemencie, zanim granica zwróci wynik. Strona woła
-`update` z nowym stanem gry, gdy stan się zmienił (`renderScreens`), oraz przy każdym odczycie
-zegara (wywołanie zwrotne `startClock` w `game-view.ts`), z chwilą odczytu w `nowMs`. Nigdy
-nie woła go z rysowania ani z Efektu.
+synchroniczne, więc ekran stoi w elemencie, zanim granica zwróci wynik. Rejestr woła
+`update` przez wpis, z nowym stanem gry, gdy stan się zmienił (`drawResult` wpisu), oraz przy
+każdym odczycie zegara (`drawReading` wpisu, wołane przez magazyn stanu po odczycie), z chwilą
+odczytu w `nowMs`. Nigdy nie woła go z rysowania ani z Efektu.
 
 Ekran nie wykonuje działań sam: kupno gałęzi i zatrzymanie pętli wychodzą przez `onBuy` i
-`onStop`, a `game-view.ts` zamienia je na wywołania symulacji. Gdy w stanie gry stoi
+`onStop`, a wpis zamienia je na działania magazynu stanu (`state-store.ts`): kupno przez
+`actWithoutCatchUp`, który nie dolicza czasu, zatrzymanie przez `act`, który przed działaniem
+czyta zegar. Gdy w stanie gry stoi
 przejście na mapie (`run !== null`), przycisk „Kup” jest wyłączony, a ekran pisze, że
 stopnie kupi się po jego zakończeniu. Funkcje układające tekst, `loopLine` z `team-lines.ts`
 i `branchText` z `character-skills.ts`, są czystymi funkcjami; nic nie rysują, więc ekran
 może je importować; import czystych funkcji dopuszcza D-265 niezależnie od statusu pliku.
+Nowy ekran kopiuje ten wpis i dopisuje jeden wiersz w tabeli rejestru w `game-view.ts`.
 
 ### Pasek menu w Reactcie
 
@@ -315,11 +329,14 @@ przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
 (D-211), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
 (D-209).
 
-`createGameView` z `game-view.ts` zwraca element gry, wiersz zapisu (`saveLine`)
-do ustawienia w nagłówku pod paskiem menu, metody zapisu (`saveNow`, `saveBeforeLogout`, `keep`),
-`halt()` i `dispose()`, które zatrzymuje zegar (`dispose()` z `clock.ts`) i zapisującego,
-a element gry i wiersz zapisu zdejmuje ze strony, razem z ich obsługą zdarzeń;
-moduł, który tworzy grę, wywołuje `dispose()`, zanim ją porzuci. Wynik zapisu
+`createGameView` z `game-view.ts` składa magazyn stanu gry (`state-store.ts`), stan ekranu
+Przejście (`run-screen-state.ts`) i rejestr ekranów (`screen-registry.ts`) i zwraca element gry,
+wiersz zapisu (`saveLine`) do ustawienia w nagłówku pod paskiem menu, metody zapisu (`saveNow`,
+`saveBeforeLogout`, `keep`), `halt()` i `dispose()`. Wiersz zapisu i metody zapisu pochodzą
+z magazynu, który trzyma zegar i zapisującego; `dispose()` zatrzymuje w magazynie zegar
+(`dispose()` z `clock.ts`) i zapisującego, zdejmuje ekrany w rejestrze, a element gry i wiersz
+zapisu zdejmuje ze strony, razem z ich obsługą zdarzeń; moduł, który tworzy grę, wywołuje
+`dispose()`, zanim ją porzuci. Wynik zapisu
 dociera do strony wywołaniami `onConflict`, `onOutdated` i `onSignedOut`. „Wyloguj” stoi
 w menu „Konto” na pasku menu w nagłówku (`menu-bar.tsx`); pasek tylko je zgłasza, a
 `app.ts` najpierw zapisuje grę przez `saveBeforeLogout`, dopiero potem kończy sesję.
