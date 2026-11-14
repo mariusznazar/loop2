@@ -162,7 +162,7 @@ test("an act's body runs after one reading of the clock that passed the real tim
     store.act(() => {
       seen = store.get().run.minute;
     });
-    // 1000 ms of real time are one game minute (D-04).
+    // 1000 ms of real time are one game minute at pace 1× (D-21).
     assert.equal(seen, 1);
     assert.equal(readings.count, 1);
     assert.equal(taken.length, 1, "the reading's result was taken");

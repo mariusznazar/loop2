@@ -3,15 +3,17 @@
  * for each screen of the game view, through which the view shows a screen, draws the screens after a
  * result of the simulation and after a reading of the clock, picks the element that gets the
  * keyboard's focus and cleans up. A new screen is one more entry of the table; no function of the
- * view names it. The registry knows no screen: an entry tells it which kinds of `Screen` it holds,
- * whether its instance lives always or only while the player is on it, and how to build it. Nothing
- * here runs when the module is imported.
+ * view names it. The registry knows no screen but Przejście, whose way back the page is told of
+ * (`ScreenPlace`): an entry tells it which kinds of `Screen` it holds, whether its instance lives
+ * always or only while the player is on it, and how to build it. Nothing here runs when the module
+ * is imported.
  */
 import type { GameEvent } from "../sim/game.js";
 import type { GameState } from "../sim/types.js";
 import type { PageAddress } from "./email-confirmation.js";
 import {
   returnToRunEntry,
+  SCREEN_KINDS,
   screenAddress,
   type ReturnEntry,
   type Screen,
@@ -122,8 +124,8 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
 
 /**
  * Builds the registry: the `always` entries are built at once, in table order, and their elements
- * appended. Throws where two entries hold one kind of `Screen`, and, when a screen is shown, where
- * no entry holds its kind: both are faults of the code.
+ * appended. Throws where two entries hold one kind of `Screen` and where no entry holds a kind of
+ * `Screen` that `SCREEN_KINDS` lists: both are faults of the code, caught at the first build.
  */
 export function createScreenRegistry(
   options: ScreenRegistryOptions,
@@ -136,6 +138,10 @@ export function createScreenRegistry(
         throw new Error(`two screen entries hold the kind ${kind}`);
       byKind.set(kind, entry);
     }
+  }
+  for (const kind of SCREEN_KINDS) {
+    if (!byKind.has(kind))
+      throw new Error(`no screen entry holds the kind ${kind}`);
   }
   function entryOf(screen: Screen): ScreenEntry {
     const entry = byKind.get(screen.kind);

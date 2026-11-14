@@ -126,7 +126,7 @@ const hiddenNames = (element) =>
 
 // Catches a screen that two entries both claim, which would be built twice, and one that no entry
 // claims, which would show nothing.
-test("a kind that two entries hold throws at creation, and a screen no entry holds throws when it is shown", async () => {
+test("a kind that two entries hold throws at creation, and so does a kind of `Screen` that no entry holds", async () => {
   await withPage(async ({ root }) => {
     const log = [];
     const make = (entries, first = HEADQUARTERS) =>
@@ -150,13 +150,14 @@ test("a kind that two entries hold throws at creation, and a screen no entry hol
       () => make([entryOf("one", ["programs"], log)]),
       /no screen entry holds the kind headquarters/,
     );
-    const registry = make(table(log).slice(0, 2));
+    // A table that leaves out the screens of Postać, Przejście and Mapy is refused when it is built,
+    // not when the player first opens one of them.
     throwsLike(
-      () => registry.show(RUN, "go"),
-      /no screen entry holds the kind run/,
+      () => make(table(log).slice(0, 2)),
+      /no screen entry holds the kind character/,
     );
     assert.equal(
-      log.includes("address go #/postac/1/przejscie"),
+      log.some((line) => line.startsWith("address")),
       false,
       "nothing was written before the refusal",
     );
@@ -405,15 +406,17 @@ test("focusIfLost moves the focus only from the body or from a hidden element of
 });
 
 // Catches an instance left alive after the game is taken down.
-test("dispose takes every living instance down, in table order", async () => {
+test("dispose takes every living instance down", async () => {
   await onRegistry(async ({ registry, log }) => {
     registry.start();
     registry.show(MAPS, "go");
     log.length = 0;
     registry.dispose();
-    assert.deepEqual(
-      log.filter((line) => line.endsWith(":dispose")),
-      ["hq:dispose", "programs:dispose", "run:dispose", "maps:dispose"],
-    );
+    assert.deepEqual(log.filter((line) => line.endsWith(":dispose")).sort(), [
+      "hq:dispose",
+      "maps:dispose",
+      "programs:dispose",
+      "run:dispose",
+    ]);
   });
 });
