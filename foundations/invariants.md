@@ -1381,17 +1381,17 @@ A character of a new game whose program holds „Zawsze → Eksploruj” from th
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-118 · D-121
+- **Derives from:** D-121
 - **Part:** simulation
 - **Violated:** no
 
 ## new-account-first-pass
 
-On the map Skraj lasu, a program of 21 rules in 5 groups that its test names, written from the entrance of a game of an account with nothing discovered, solves the map on at least as many of 300 seeds that its test names as the same program does from the entrance of a game whose Understanding holds every action and condition.
+On the map Skraj lasu, a program of 21 rules in 5 groups that its test names, written from the entrance of a game of an account with nothing discovered, solves the map on at least 289 of 300 seeds that its test names.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-118 · D-121 · D-397 · D-398
+- **Derives from:** D-121 · D-404
 - **Part:** simulation
 - **Violated:** no
 

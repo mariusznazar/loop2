@@ -7554,8 +7554,9 @@ Where a band names the discovery at which the game wrote a program rule (D-123),
 dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”, {nazwa grupy} being the name of the
 first rule group of the copy, in the order of the program editor, that holds a program rule „Zawsze
 → Eksploruj”, and it gives the rule no number. Where no rule group of the copy holds such a rule,
-or where the game wrote no rule at the discovery because the copy already held a rule with the
-action „Eksploruj” of the player's own (D-123), the band leaves that sentence out.
+or where the record of the map run holds a minute of exploring, which a rule „Eksploruj” of the
+player's own has been carried out to give and so the game wrote none (D-123), the band leaves that
+sentence out.
 
 - **Scope:** browser-view, simulation
 - **Based on:** none
@@ -7573,8 +7574,8 @@ action „Eksploruj” of the player's own (D-123), the band leaves that sentenc
   - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
     „Głód”: Zawsze → Eksploruj.” while „Głód” holds no rule „Zawsze → Eksploruj”; the sentence still
     standing after the rule or its group was deleted while no other group holds „Zawsze →
-    Eksploruj”; the sentence in the band of a discovery at which the game wrote no rule; „Gra dopisała
-    regułę 1.1”; the group named from the saved program rather than from the copy
+    Eksploruj”; the sentence in the band of a discovery in a map run whose record holds a minute of
+    exploring; „Gra dopisała regułę 1.1”; the group named from the saved program rather than from the copy
 - **Origin:** none
 
 *Rationale:* the band stands above the program the map run carries out, the copy, so it names the
@@ -7585,13 +7586,14 @@ further cost: where a rule „Zawsze → Eksploruj” of the player's own, such 
 stands in another group that comes first — dragged above the one the game wrote into, the game's
 rule moved to a later group, or left standing after the game's rule or its group is deleted — the
 band names that group, where the same rule stands. The game keeps no note that it wrote the rule,
-so it tells a rule of the player's own from the game's by the record of the map run: a character
-that has explored has carried out a rule „Eksploruj” the player wrote, which the rule the game wrote
-in the very game minute of the discovery cannot yet have been. Accepted with it: the band names as
-the game's a rule „Eksploruj” of the player's own that the character has not carried out by the
-first chill — written in the last game minutes, or standing in a group whose condition the
-Understanding lacks — and stays silent about the game's rule where the player deleted every rule
-„Eksploruj” the character had carried out before the first chill.
+so the sentence is left out by the record of the map run and not by what the game wrote: a
+character that has explored has carried out a rule „Eksploruj” the player wrote, which the rule the
+game wrote in the very game minute of the discovery cannot yet have been. Accepted with it: a rule
+„Eksploruj” of the player's own that the character has not carried out by the first chill — written
+in the last game minutes, or standing in a group whose condition the Understanding lacks — is still
+named by the band as the one the game wrote, though the game wrote none; and the game's rule goes
+unnamed where the player deleted every rule „Eksploruj” the character had carried out before the
+first chill.
 *Rejected:* the sentence with no group, „Gra dopisała regułę: Zawsze → Eksploruj.” — the player
 looks for the rule in the program alone; the rule's number, as „1.1” — the sentence would depend on
 the numbering; no sentence about the rule — the band would not name the program rule the game wrote, which D-122
@@ -8668,8 +8670,8 @@ zagłodziła się.”, „Postać zginęła w walce.”, „Program utrzymał si
 The discoveries of one game minute give one entry of the chronicle holding the whole text of the
 band of that discovery without its buttons (D-122), such as „Odkryto: Idź, Zbierz, Patyk, Jagoda. W
 regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.”, followed, where the
-game wrote a program rule, by „Gra dopisała regułę w grupie „{nazwa grupy}”: Zawsze → Eksploruj.”
-(D-312).
+band of that discovery has it (D-312), by „Gra dopisała regułę w grupie „{nazwa grupy}”: Zawsze →
+Eksploruj.”
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -8678,8 +8680,8 @@ game wrote a program rule, by „Gra dopisała regułę w grupie „{nazwa grupy
   - complies: the first chill of a new game giving one entry with what was discovered and „Gra
     dopisała regułę w grupie „Program”: Zawsze → Eksploruj.”, standing after „Wznów”
   - violates: „Odkryto: Patyk” and „Odkryto: Zbierz” as two entries of one game minute; „Dodaj
-    regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery at
-    which the game wrote one
+    regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery whose
+    band holds it
 - **Origin:** none
 
 *Rationale:* the entry keeps the division of the band the player has just read, one game minute in
@@ -9845,7 +9847,7 @@ Zaczynasz od nowa.” (D-96), and the version number of the shape stays as it is
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-118 · derives from D-206 · derives from D-213
-- **Verification:** invariants: save-version. An agent compares a change with the decision:
+- **Verification:** an agent compares a change with the decision:
   - complies: a document of the current version whose Understanding holds „Zawsze” and no „Eksploruj”
     refused whole as a shape the game does not admit, the game starting anew with „Zapis był
     uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” above it; the same refusal for a document
@@ -9875,3 +9877,34 @@ guidelines of the saved game, the state it loads differs from the one saved, and
 load stays for every later change; the load leaving the state as it is — it loads, the character of
 that game never explores and the rule the game writes stands as „jeszcze nieodkryte: Eksploruj”, a
 game broken for the same saved game states as in the refusal, without a word of explanation.
+
+### D-404 — What does the first pass of a new account on Skraj lasu have to reach?
+
+With the program of 21 rules in 5 groups that its test names, from the entrance of a game of an
+account with nothing discovered, the map Skraj lasu is solved on at least 289 of the 300 seeds that
+the test names; the figure is the measurement the human accepted on 2026-11-14 and is to be revised
+when the balance is worked on.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-80 · derives from D-121 · derives from D-397 · derives from D-398
+- **Verification:** invariants: new-account-first-pass. An agent compares a change with the decision:
+  - complies: the program of the test solving Skraj lasu on 289 of the 300 seeds from a game of an
+    account with nothing discovered, where the same program solves it on 290 from a game whose
+    Understanding holds everything
+  - violates: the program of the test solving Skraj lasu on fewer than 289 of the 300 seeds from a
+    game of an account with nothing discovered; the figure 289 kept after the balance has been
+    worked on and the measurement has moved
+- **Origin:** none
+
+*Rationale:* a player who writes a program from the start of a new account meets the first map with
+nothing discovered but „Zawsze” and „Eksploruj”, and a loss there is to be a fault of the program
+(D-397), so the first pass is measured against the account with everything discovered. That
+account solves 290 of the same 300 seeds; the account with nothing discovered is one seed behind,
+since the condition „Sytość poniżej” is revealed only by the first gathered berry (D-121). The
+human found that difference acceptable for now, so the figure is the measurement and no tolerance.
+Accepted with it: the figure holds the account with nothing discovered one seed below the other
+account, and it is to be revised when the balance is worked on.
+*Rejected:* at least as many seeds as the account with everything discovered — it fails by one seed,
+which the human did not take as a fault; a percentage tolerance fixed without a measurement — it
+would be a number nobody had measured, too loose or too tight.
