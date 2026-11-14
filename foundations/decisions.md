@@ -2867,7 +2867,7 @@ program, sets it to zero, on every map, while a change of the trip plan alone le
 it, so a change of the program's rules or rule groups starts the streak again. Wounds from combat do not break it: a
 program is to handle an attack, not avoid it. The condition differs from map to map, so it lives in
 the map's data, and so does the map that opens it. A map is a level of difficulty that the solving of
-the previous map opens: Las teaches keeping the loop going, Las — głębiej adds combat, and a later map
+the previous map opens: Las teaches keeping the earning loop going, Las — głębiej adds combat, and a later map
 is to teach another mechanic or to set a challenge that the means so far do not close. A solved map can be a place of work, and the chain of maps branches rather than running in one line.
 *Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
 the backpack at completion as a kind of solving condition while no map asks for it — code and tests
