@@ -12,7 +12,7 @@ import { createMenuBar } from "../../dist/browser/view/menu-bar.js";
 const SIGNED_IN = { id: "a1", email: "ala@example.com", emailConfirmed: true };
 const UNCONFIRMED = { ...SIGNED_IN, emailConfirmed: false };
 const HEADQUARTERS = { kind: "headquarters" };
-const NO_LOGOUT = { waiting: false, sentence: null };
+const NO_LOGOUT = { waiting: false, sentence: null, unavailable: false };
 const RETURN_ENTRY = {
   text: "Wróć do przejścia · Las · minuta 212",
   address: "#/postac/3/przejscie",
@@ -653,6 +653,49 @@ test("while the page's logout waits „Wyloguj” reads Wylogowywanie…, disabl
     assert.equal(isWarning(sentence), true);
     assert.equal(isOpen(page.root), true, "open after the answer");
     assert.equal(active(), logout);
+  });
+});
+
+test("while the page says the logout is unavailable „Wyloguj” keeps its text, is disabled and hands the page nothing; the waiting text is the logout's alone", async () => {
+  await withPage(async (page) => {
+    const { bar, logouts } = await openBar(page);
+    await press(buttonNamed(page.root, "Konto"));
+    const logout = buttonNamed(page.root, "Wyloguj");
+    await inAct(() => {
+      bar.update(
+        propsOf({
+          logout: { waiting: false, sentence: null, unavailable: true },
+        }),
+      );
+    });
+    assert.equal(logout.textContent, "Wyloguj");
+    assert.equal(logout.disabled, true);
+    assert.equal(isOpen(page.root), true, "the menu stays open");
+    await press(logout);
+    assert.equal(
+      logouts.length,
+      0,
+      "a click while it is unavailable asks nothing",
+    );
+
+    // A logout that waits meanwhile shows its own text, still disabled.
+    await inAct(() => {
+      bar.update(
+        propsOf({
+          logout: { waiting: true, sentence: null, unavailable: true },
+        }),
+      );
+    });
+    assert.equal(logout.textContent, "Wylogowywanie…");
+    assert.equal(logout.disabled, true);
+
+    await inAct(() => {
+      bar.update(propsOf());
+    });
+    assert.equal(logout.textContent, "Wyloguj");
+    assert.equal(logout.disabled, false);
+    await press(logout);
+    assert.equal(logouts.length, 1);
   });
 });
 

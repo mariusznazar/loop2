@@ -6,6 +6,8 @@ export interface Account {
   readonly id: string;
   readonly email: string;
   readonly emailConfirmed: boolean;
+  /** Whether the account holds the previous-save privilege (D-400). */
+  readonly previousSaveAllowed: boolean;
 }
 
 /** What the server reports of the confirmation message it was asked to send. */
@@ -34,6 +36,7 @@ export const refusalCodes = [
   "save-conflict",
   "save-outdated",
   "save-too-large",
+  "previous-save-forbidden",
 ] as const;
 
 export type RefusalCode = (typeof refusalCodes)[number];
@@ -67,6 +70,12 @@ export type AccountResult<Value> =
 export interface SavedGame {
   readonly version: number;
   readonly revision: number;
+  readonly game: object;
+}
+
+/** The previous save the server holds: the game is handed on unread. */
+export interface PreviousSavedGame {
+  readonly version: number;
   readonly game: object;
 }
 
@@ -121,6 +130,10 @@ export interface AccountClient {
   ): Promise<AccountResult<null>>;
   /** GET /api/saved-game: the account's saved game state, or null when it has none. */
   loadSavedGame(): Promise<AccountResult<SavedGame | null>>;
+  /** GET /api/previous-saved-game: the previous save, or null when the account has none. */
+  loadPreviousSavedGame(): Promise<AccountResult<PreviousSavedGame | null>>;
+  /** POST /api/saved-game-reset: moves the current save to the previous slot. */
+  resetSavedGame(): Promise<AccountResult<null>>;
   /** PUT /api/saved-game: replaces the saved game state, sent with `keepalive`. */
   saveGame(submission: SavedGameSubmission): Promise<SaveOutcome>;
   /** POST /api/browser-failure: reports one line of the browser's last-resort handling. */
@@ -202,11 +215,12 @@ function isConfirmationMessage(value: unknown): value is ConfirmationMessage {
 
 /** The fields of an account, copied; any other property is dropped. */
 function accountOfBody(body: Record<string, unknown>): Account | null {
-  const { id, email, emailConfirmed } = body;
+  const { id, email, emailConfirmed, previousSaveAllowed } = body;
   if (typeof id !== "string" || id === "") return null;
   if (typeof email !== "string" || email === "") return null;
   if (typeof emailConfirmed !== "boolean") return null;
-  return { id, email, emailConfirmed };
+  if (typeof previousSaveAllowed !== "boolean") return null;
+  return { id, email, emailConfirmed, previousSaveAllowed };
 }
 
 function accountOf(text: string): Account | null {
@@ -365,6 +379,39 @@ async function loadSavedGame(
   return { ok: true, value: loaded.save };
 }
 
+/** The `previous` of a previous-save answer: null, or exactly a version and a game object. */
+function previousSavedGameOf(
+  text: string,
+): { readonly previous: PreviousSavedGame | null } | null {
+  const body = objectOf(text);
+  if (body === null || !hasExactKeys(body, ["previous"])) return null;
+  const { previous } = body;
+  if (previous === null) return { previous: null };
+  if (!isGameObject(previous)) return null;
+  const fields = previous as Record<string, unknown>;
+  if (!hasExactKeys(fields, ["version", "game"])) return null;
+  const { version, game } = fields;
+  if (!isPositiveInteger(version) || !isGameObject(game)) return null;
+  return { previous: { version, game } };
+}
+
+async function loadPreviousSavedGame(
+  timeoutMs: number,
+): Promise<AccountResult<PreviousSavedGame | null>> {
+  const outcome = await exchange(
+    "/api/previous-saved-game",
+    "GET",
+    undefined,
+    timeoutMs,
+  );
+  if (!isReply(outcome)) return { ok: false, failure: outcome };
+  if (outcome.status >= 400) return { ok: false, failure: refusal(outcome) };
+  const loaded =
+    outcome.status === 200 ? previousSavedGameOf(outcome.text) : null;
+  if (loaded === null) return { ok: false, failure: unexpected(outcome) };
+  return { ok: true, value: loaded.previous };
+}
+
 function failed(failure: AccountFailure): SaveOutcome {
   return { kind: "failed", failure };
 }
@@ -456,6 +503,9 @@ export function createAccountClient(
         timeoutMs,
       ),
     loadSavedGame: () => loadSavedGame(timeoutMs),
+    loadPreviousSavedGame: () => loadPreviousSavedGame(timeoutMs),
+    resetSavedGame: () =>
+      noContentRequest("/api/saved-game-reset", {}, timeoutMs),
     saveGame: (submission) => saveGame(submission, timeoutMs),
     reportBrowserFailure: (kind, code, place) =>
       noContentRequest(

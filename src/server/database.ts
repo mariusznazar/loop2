@@ -13,6 +13,9 @@ export interface Account {
   // The address given at registration has been confirmed through an emailed
   // link (D-156); it never changes (D-159).
   emailConfirmed: boolean;
+  // The previous-save privilege (D-400), granted and revoked by the operator;
+  // it covers the pull of the previous save and the reset.
+  previousSaveAllowed: boolean;
 }
 
 // A session write refused because its account is blocked, which is what a
@@ -33,6 +36,15 @@ export type BlockOutcome =
 export type UnblockOutcome =
   | { outcome: "unblocked" | "not-blocked"; accountId: string }
   | { outcome: "unknown" };
+export type PreviousSavePrivilegeOutcome =
+  | {
+      outcome: "granted" | "already-granted" | "revoked" | "not-granted";
+      accountId: string;
+    }
+  | { outcome: "unknown" };
+export type ResetSavedGameOutcome = {
+  outcome: "moved" | "nothing-to-move" | "blocked" | "unprivileged";
+};
 
 export type LinkPurpose = "email-confirmation" | "password-reset";
 export type IssueOutcome = "issued" | "limited" | "blocked";
@@ -120,6 +132,22 @@ const schemaSteps = [
   // characters (D-104: at most 64 KiB stored per player).
   `
     CREATE TABLE saved_games (
+      account_id TEXT PRIMARY KEY NOT NULL
+        REFERENCES accounts(id) ON DELETE CASCADE,
+      version INTEGER NOT NULL CHECK (version >= 1),
+      revision INTEGER NOT NULL CHECK (revision >= 1),
+      game TEXT NOT NULL CHECK (length(CAST(game AS BLOB)) <= 65536)
+    ) STRICT;
+  `,
+  // The previous-save privilege is off for every account, the existing ones
+  // included (D-400). The previous save is a copy of a saved game state's row
+  // in a table of its own, so the reset's delete of the current row leaves it
+  // standing (D-399).
+  `
+    ALTER TABLE accounts
+      ADD COLUMN previous_save_allowed INTEGER NOT NULL DEFAULT 0
+        CHECK (previous_save_allowed IN (0, 1));
+    CREATE TABLE previous_saves (
       account_id TEXT PRIMARY KEY NOT NULL
         REFERENCES accounts(id) ON DELETE CASCADE,
       version INTEGER NOT NULL CHECK (version >= 1),
@@ -283,6 +311,7 @@ export class AccountDatabase {
       createdAt: this.now(),
       blocked: false,
       emailConfirmed: false,
+      previousSaveAllowed: false,
     };
     const result = this.connection
       .prepare(
@@ -313,7 +342,8 @@ export class AccountDatabase {
       typeof row.created_at !== "number" ||
       (row.blocked !== 0 && row.blocked !== 1) ||
       (row.email_confirmed_at !== null &&
-        !Number.isSafeInteger(row.email_confirmed_at))
+        !Number.isSafeInteger(row.email_confirmed_at)) ||
+      (row.previous_save_allowed !== 0 && row.previous_save_allowed !== 1)
     ) {
       throw new Error("Invalid stored account");
     }
@@ -324,6 +354,7 @@ export class AccountDatabase {
       createdAt: row.created_at,
       blocked: row.blocked === 1,
       emailConfirmed: row.email_confirmed_at !== null,
+      previousSaveAllowed: row.previous_save_allowed === 1,
     };
   }
 
@@ -614,9 +645,21 @@ export class AccountDatabase {
   }
 
   readSavedGame(accountId: string): SavedGame | null {
+    return this.readStoredGame("saved_games", accountId);
+  }
+
+  readPreviousSavedGame(accountId: string): SavedGame | null {
+    return this.readStoredGame("previous_saves", accountId);
+  }
+
+  // Both tables hold the same fields, so one reader validates both (D-399).
+  private readStoredGame(
+    table: "saved_games" | "previous_saves",
+    accountId: string,
+  ): SavedGame | null {
     const row = this.connection
       .prepare(
-        "SELECT version, revision, game FROM saved_games WHERE account_id = ?",
+        `SELECT version, revision, game FROM ${table} WHERE account_id = ?`,
       )
       .get(accountId);
     if (!row) return null;
@@ -661,6 +704,10 @@ export class AccountDatabase {
         return { outcome: "outdated" };
       const storedRevision = stored?.revision ?? 0;
       if (storedRevision !== save.basedOn) return { outcome: "conflict" };
+      // An accepted save of a higher version replaces the stored one, which
+      // becomes the previous save first, in this same transaction (D-210).
+      if (stored && stored.version < save.version)
+        this.movePreviousSave(accountId);
       const revision = storedRevision + 1;
       this.connection
         .prepare(
@@ -673,6 +720,74 @@ export class AccountDatabase {
         )
         .run(accountId, save.version, revision, save.game);
       return { outcome: "saved", revision };
+    });
+  }
+
+  // Copies the stored saved game state into the previous slot, replacing what
+  // the slot held. It is SQL over the stored row, so the game's text is not
+  // read here (D-07). Callers run it inside their transaction.
+  private movePreviousSave(accountId: string): void {
+    this.connection
+      .prepare(
+        `
+      INSERT INTO previous_saves (account_id, version, revision, game)
+      SELECT account_id, version, revision, game FROM saved_games
+      WHERE account_id = ?
+      ON CONFLICT(account_id) DO UPDATE SET version = excluded.version,
+        revision = excluded.revision, game = excluded.game
+    `,
+      )
+      .run(accountId);
+  }
+
+  // The reset (D-402) reads the block, then the privilege, then the current
+  // save, in the transaction that moves the save: a block or a grant committed
+  // through another connection is seen here or waits. It moves nothing for a
+  // blocked account, an account without the privilege or one with no current
+  // save, and each of those answers its own outcome.
+  resetSavedGame(accountId: string): ResetSavedGameOutcome {
+    return this.transaction((): ResetSavedGameOutcome => {
+      const account = this.connection
+        .prepare(
+          "SELECT blocked, previous_save_allowed FROM accounts WHERE id = ?",
+        )
+        .get(accountId);
+      if (!account) throw new Error("Unknown account");
+      if (account.blocked !== 0) return { outcome: "blocked" };
+      if (account.previous_save_allowed !== 1)
+        return { outcome: "unprivileged" };
+      if (this.readSavedGame(accountId) === null)
+        return { outcome: "nothing-to-move" };
+      this.movePreviousSave(accountId);
+      this.connection
+        .prepare("DELETE FROM saved_games WHERE account_id = ?")
+        .run(accountId);
+      return { outcome: "moved" };
+    });
+  }
+
+  // Grants or revokes the previous-save privilege of the account of a
+  // normalized address, in one transaction, reporting what it found, as the
+  // block and the unblock do (D-400). Neither touches the previous save.
+  setPreviousSavePrivilege(
+    email: string,
+    granted: boolean,
+  ): PreviousSavePrivilegeOutcome {
+    return this.transaction((): PreviousSavePrivilegeOutcome => {
+      const account = this.findAccountByEmail(email);
+      if (!account) return { outcome: "unknown" };
+      if (account.previousSaveAllowed === granted)
+        return {
+          outcome: granted ? "already-granted" : "not-granted",
+          accountId: account.id,
+        };
+      this.connection
+        .prepare("UPDATE accounts SET previous_save_allowed = ? WHERE id = ?")
+        .run(granted ? 1 : 0, account.id);
+      return {
+        outcome: granted ? "granted" : "revoked",
+        accountId: account.id,
+      };
     });
   }
 

@@ -448,6 +448,44 @@ export function createProgram(state: GameState): GameResult {
 }
 
 /**
+ * The name a pulled program takes on the list: its own name where no program of the list bears it,
+ * letter case ignored, else the name, a space and „(n)” for the smallest n from 2 that makes it free.
+ */
+function freeName(taken: ReadonlySet<string>, name: string): string {
+  if (!taken.has(name.toLowerCase())) return name;
+  let n = 2;
+  while (taken.has(`${name} (${n})`.toLowerCase())) n += 1;
+  return `${name} (${n})`;
+}
+
+/**
+ * Appends the programs a previous save gave to the end of the list, in order, each with the next
+ * program number (`nextProgramId` rises by their count, D-165). Each name is numbered against the
+ * list including the programs appended before it (D-169). Nothing else of the game state changes.
+ */
+export function appendPrograms(
+  state: GameState,
+  read: readonly { name: string; program: Program }[],
+): GameState {
+  const taken = new Set(
+    state.programs.map((saved) => saved.name.toLowerCase()),
+  );
+  const appended: SavedProgram[] = [];
+  let id = state.nextProgramId;
+  for (const { name, program } of read) {
+    const named = freeName(taken, name);
+    taken.add(named.toLowerCase());
+    appended.push({ id, name: named, program });
+    id += 1;
+  }
+  return {
+    ...state,
+    programs: [...state.programs, ...appended],
+    nextProgramId: id,
+  };
+}
+
+/**
  * Renames the program numbered `programId` to the name `programName` gives for `text`, keeping its
  * place; throws on a program not on the list and on a refused name.
  */
