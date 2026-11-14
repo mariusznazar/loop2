@@ -126,7 +126,7 @@ test("Usuń hands the chosen program's number to the page, and Nowy program hand
   });
 });
 
-// --- the pull of the previous save (D-399, D-167) ---------------------------------------------
+// --- the pull of the previous save (D-401, D-167) ---------------------------------------------
 
 const PULL_TEXT = "Wciągnij programy z poprzedniego zapisu";
 const pullButton = (root) => buttonNamed(root, PULL_TEXT);
@@ -236,7 +236,7 @@ test("a line stands also where the control is away", async () => {
   });
 });
 
-// Catches a text of the document drawn as markup: the line is a text node (D-399).
+// Catches a text of the document drawn as markup: the line is a text node (D-401).
 test("a line's text is shown as text, never as markup", async () => {
   await withPage(async (page) => {
     const hostile = '<img src="x"><b>Las</b>';
@@ -355,7 +355,7 @@ test("the name field leaves when another program is chosen, and nothing is hande
   });
 });
 
-// --- the reset of the game (D-400, D-44) ----------------------------------------------------
+// --- the reset of the game (D-402, D-44) ----------------------------------------------------
 
 const RESET_TEXT = "Zacznij od zera";
 const RESET_CONFIRM_TEXT = "Tak, zacznij od zera";
@@ -368,7 +368,7 @@ const resetLine = (root) =>
 
 // Catches the control drawn on an account the page gives no reset (no privilege, or no callback):
 // the page then leaves `reset` out or null, and the list must draw nothing of the control.
-test("without a reset state the list has no reset control and no confirmation (D-400)", async () => {
+test("without a reset state the list has no reset control and no confirmation (D-402)", async () => {
   for (const reset of [undefined, null]) {
     await withPage(async (page) => {
       await mount(page, { ...propsOf(TWO, 3), reset });

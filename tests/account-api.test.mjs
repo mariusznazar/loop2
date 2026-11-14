@@ -934,7 +934,7 @@ test("a save body over 65 536 bytes is never sent and comes back too large", asy
   assert.deepEqual(seen, []);
 });
 
-// Previous save routes (D-398, D-399, D-400).
+// Previous save routes (D-400, D-401, D-402).
 
 // invariant: account-client-requests
 test("loadPreviousSavedGame sends a bodiless GET to the relative previous-save path, and resetSavedGame a JSON POST of the empty object to the reset path", async () => {

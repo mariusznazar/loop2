@@ -13,7 +13,7 @@ export interface Account {
   // The address given at registration has been confirmed through an emailed
   // link (D-156); it never changes (D-159).
   emailConfirmed: boolean;
-  // The previous-save privilege (D-398), granted and revoked by the operator;
+  // The previous-save privilege (D-400), granted and revoked by the operator;
   // it covers the pull of the previous save and the reset.
   previousSaveAllowed: boolean;
 }
@@ -140,9 +140,9 @@ const schemaSteps = [
     ) STRICT;
   `,
   // The previous-save privilege is off for every account, the existing ones
-  // included (D-398). The previous save is a copy of a saved game state's row
+  // included (D-400). The previous save is a copy of a saved game state's row
   // in a table of its own, so the reset's delete of the current row leaves it
-  // standing (D-397).
+  // standing (D-399).
   `
     ALTER TABLE accounts
       ADD COLUMN previous_save_allowed INTEGER NOT NULL DEFAULT 0
@@ -652,7 +652,7 @@ export class AccountDatabase {
     return this.readStoredGame("previous_saves", accountId);
   }
 
-  // Both tables hold the same fields, so one reader validates both (D-397).
+  // Both tables hold the same fields, so one reader validates both (D-399).
   private readStoredGame(
     table: "saved_games" | "previous_saves",
     accountId: string,
@@ -740,7 +740,7 @@ export class AccountDatabase {
       .run(accountId);
   }
 
-  // The reset (D-400) reads the block, then the privilege, then the current
+  // The reset (D-402) reads the block, then the privilege, then the current
   // save, in the transaction that moves the save: a block or a grant committed
   // through another connection is seen here or waits. It moves nothing for a
   // blocked account, an account without the privilege or one with no current
@@ -768,7 +768,7 @@ export class AccountDatabase {
 
   // Grants or revokes the previous-save privilege of the account of a
   // normalized address, in one transaction, reporting what it found, as the
-  // block and the unblock do (D-398). Neither touches the previous save.
+  // block and the unblock do (D-400). Neither touches the previous save.
   setPreviousSavePrivilege(
     email: string,
     granted: boolean,

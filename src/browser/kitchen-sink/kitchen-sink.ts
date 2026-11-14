@@ -99,7 +99,7 @@ function forced(element: HTMLElement, state: State): void {
 /**
  * What the loading state of a button shows: the reason the state does not apply to it, or the
  * button's resting text and the text it shows while it waits for the server, null where the button
- * keeps its text and is only disabled, as „Zacznij od zera” does while its reset waits (D-44, D-400).
+ * keeps its text and is only disabled, as „Zacznij od zera” does while its reset waits (D-44, D-402).
  */
 type Loading = string | readonly [string, string | null];
 

@@ -117,7 +117,7 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         self.assertEqual(created["status"], 201, created["body"])
         # The registration answer also carries its confirmation message's outcome
         # (D-157); the account reads that follow carry only the account's fields,
-        # among them the previous-save privilege, which a new account lacks (D-398).
+        # among them the previous-save privilege, which a new account lacks (D-400).
         account = {key: created["body"][key]
                    for key in ("id", "email", "emailConfirmed", "previousSaveAllowed")}
         self.assertEqual(account["email"], EMAIL)

@@ -140,7 +140,7 @@ function createPageNotice(sentence: string): HTMLElement {
  * to mark, with „Wróć do przejścia” where a map run waits.
  *
  * For an account with the previous-save privilege the page gives the game the act of „Zacznij od
- * zera” (D-400): after the player's confirmation it sends the reset, with no save of its own before
+ * zera” (D-402): after the player's confirmation it sends the reset, with no save of its own before
  * it, and while it waits holds the old saver's outcomes, which it acts on only if the reset fails, and
  * leaves „Wyloguj” not pressable; on 204 it replaces the game with a new one on revision 0, saved
  * only at the player's first act, under one sentence that the previous game waits as the previous save.
@@ -221,7 +221,7 @@ export function startApp(
   let deferred: (() => void) | null = null;
   // While the reset of the game waits for the server, the old game's saver may still report a
   // conflict or a missing session; the page holds that outcome and acts on it only if the reset fails
-  // (D-400), and „Wyloguj” is not pressable.
+  // (D-402), and „Wyloguj” is not pressable.
   let resetting = false;
   let heldByReset: (() => void) | null = null;
   // Each request of the page takes the next number; an answer counts only while it is the last.
@@ -388,7 +388,7 @@ export function startApp(
 
   /**
    * An outcome of the saver acts now, after the answer to a logout under way, or, while the reset
-   * waits, only if the reset fails (D-400): the held outcome then goes through here again.
+   * waits, only if the reset fails (D-402): the held outcome then goes through here again.
    */
   function whenNotBusy(view: GameView, action: () => void): void {
     const guarded = (): void => {
@@ -598,10 +598,10 @@ export function startApp(
    * „Zacznij od zera” confirmed: the page sends no save of its own, since programs are saved right
    * after each edit (D-207), and asks the server to move the saved game state to the previous save.
    * While it waits the outcomes of the old game's saver are held and „Wyloguj” is not pressable
-   * (D-400). On 204 the game is replaced by a new one built as for an account with no save, with no
+   * (D-402). On 204 the game is replaced by a new one built as for an account with no save, with no
    * save sent at once and one sentence above it; no session goes as for a save (D-211); a refusal of
    * the privilege and any other failure each have a sentence beside the control, the game stays
-   * and a held outcome is acted on (D-400).
+   * and a held outcome is acted on (D-402).
    */
   function resetGame(): void {
     const view = game;

@@ -1,6 +1,6 @@
 // The reader of the programs of a previous save: a document of an older version, handed over as an
 // unknown, gives its programs one by one through the program check of the editor. Expectations come
-// from D-399, D-206 and D-213 in foundations/decisions.md, and from the invariant
+// from D-401, D-206 and D-213 in foundations/decisions.md, and from the invariant
 // previous-save-programs-reader and save-version in foundations/invariants.md; every expected value
 // is written out here.
 import assert from "node:assert/strict";
@@ -456,7 +456,7 @@ test("the id of an item is neither used nor checked", () => {
 // Fault: a hostile value at some place of a document makes the reading throw a
 // message-quoting error, and the page shows the player a failure for a
 // document that should only be skipped. The expected result comes from D-213
-// and D-399: the reader refuses or skips and never throws.
+// and D-401: the reader refuses or skips and never throws.
 test("no value a document can hold, at any place of it, throws out of the reading, and the document is left as it was", () => {
   const places = placesIn(DOCUMENT);
   assert.ok(places.length > 40, "precondition: the sweep reaches the programs");
@@ -482,7 +482,7 @@ test("no value a document can hold, at any place of it, throws out of the readin
 
 // invariant: previous-save-programs-reader
 // Fault: the reading accepts any value that is an object for a document, a game or an item, so
-// a Map or a class instance of the right keys passes. The expected result comes from D-399: a
+// a Map or a class instance of the right keys passes. The expected result comes from D-401: a
 // value that does not look like what the game wrote gives a refusal or a skip and no guess. An
 // object with no prototype looks like a literal, so it is read.
 test("a document, a game or an item that is undefined, a Map or a class instance is not a plain object, and one with no prototype is", () => {
@@ -546,7 +546,7 @@ test("a document, a game or an item that is undefined, a Map or a class instance
 // invariant: previous-save-programs-reader
 // Fault: the reading recurses on, or copies as text, a value of the document, so a very deep
 // value or a very long list ends in a RangeError and the page shows the player a failure. The
-// expected result comes from D-213 and D-399: the reader refuses or skips and never throws.
+// expected result comes from D-213 and D-401: the reader refuses or skips and never throws.
 test("a very deep value at a place of the document and a very long list of items are read without error", () => {
   const deep = () => {
     let value = [];
@@ -679,7 +679,7 @@ test("an error that is no refusal of the check propagates out of the reading", (
 // invariant: previous-save-programs-reader
 // Fault: the reading catches the program check's own refusal and every other
 // error as well, so a fault inside checkProgram is shown as a skipped program.
-// The expected result comes from D-213 and D-399: only ProgramCheckError skips.
+// The expected result comes from D-213 and D-401: only ProgramCheckError skips.
 test("a fault inside the program check of an item propagates out of the reading", () => {
   const faultyProgram = new Proxy(structuredClone(EXPLORE), {
     get() {

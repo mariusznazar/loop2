@@ -103,7 +103,7 @@ function invalidRequest(response: Response): void {
   refuse(response, 400, "invalid-request", "Nieprawidłowe żądanie.");
 }
 
-// The account lacks the previous-save privilege (D-398). The answer is the same
+// The account lacks the previous-save privilege (D-400). The answer is the same
 // whatever its previous save holds, so it tells nothing of the slot.
 function previousSaveForbidden(response: Response): void {
   refuse(
@@ -149,7 +149,7 @@ function invalidLink(response: Response): void {
 }
 
 // The account answer carries the privilege and nothing of the previous save, so
-// it does not change as the slot does (D-398).
+// it does not change as the slot does (D-400).
 function accountBody(account: Account) {
   return {
     id: account.id,
@@ -545,7 +545,7 @@ export function accountRoutes(
   });
 
   // The previous save of the session's account, for an account with the
-  // privilege (D-399). The privilege is read at this request, after the session.
+  // privilege (D-401). The privilege is read at this request, after the session.
   // The stored text is embedded as it is, as GET /api/saved-game does (D-07).
   router.get(paths.previousSavedGame, (request, response) => {
     const account = sessionAccount(runtime, request);
@@ -567,7 +567,7 @@ export function accountRoutes(
       );
   });
 
-  // The reset (D-400) takes an empty object, so no field names an account. The
+  // The reset (D-402) takes an empty object, so no field names an account. The
   // session names the account; the one write checks the block and the privilege
   // before it moves anything. Nothing to move answers 204 as a move does, and
   // only a move writes its business event.

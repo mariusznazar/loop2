@@ -1,9 +1,9 @@
-// The pull of the previous save on the screen Programy (D-399, D-398, D-167, D-169, D-206, D-207,
+// The pull of the previous save on the screen Programy (D-401, D-400, D-167, D-169, D-206, D-207,
 // D-208, D-211) on jsdom through tests/view/page-document.mjs (D-264). The game view is built as the
 // page builds it (tests/view/end-question.test.mjs does the same), with a client whose answers the
 // case gives when it chooses, and the pull is driven through the button the player presses; the game
 // state is read back from the document the view keeps (`keep`) and the saves from what the client was
-// sent. The page's part of the reset (D-400) runs through `startApp` with a client that holds every
+// sent. The page's part of the reset (D-402) runs through `startApp` with a client that holds every
 // call until the case answers it. Every expected value is written out here. Real events, the look and the focus ring are the
 // browser check's (D-88).
 import { assert, inAct, press, settle, withPage } from "./page-document.mjs";
@@ -268,7 +268,7 @@ const going = () =>
 
 // invariant: save-version
 // Catches the page asking the server, or drawing the button, for an account the privilege flag is
-// false or missing for (D-398): the client given has no `loadPreviousSavedGame`, so a question throws.
+// false or missing for (D-400): the client given has no `loadPreviousSavedGame`, so a question throws.
 test("an account without the flag, or with it false, never asks and has no button, however often the screen is shown", async () => {
   for (const allowed of [undefined, false]) {
     await onPage(async () => {
@@ -296,7 +296,7 @@ test("an account without the flag, or with it false, never asks and has no butto
 
 // Catches the button standing while the question is open (the page has no answer that a previous
 // save exists), the question asked at building on another screen, one not asked at each entering
-// of the screen, and an answer of a document that does not show the button (D-399).
+// of the screen, and an answer of a document that does not show the button (D-401).
 test("the question is asked at each entering of Programy; while it is open the button is away, and a document shows it", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -342,7 +342,7 @@ test("a game built at the address of Programy asks at once", async () => {
 });
 
 // Catches an answer of null drawn as the button, a sentence for a thing that is no failure, and a
-// failure left silent: null leaves the button away with no line; a failure one sentence (D-399).
+// failure left silent: null leaves the button away with no line; a failure one sentence (D-401).
 test("an answer of null leaves the button away, and a failure of the check leaves it away with one sentence; the next entering asks again", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -375,7 +375,7 @@ test("an answer of null leaves the button away, and a failure of the check leave
 
 // Catches a pull that replaces the list, appends out of order, keeps a taken name or a number, takes
 // the document the check saw instead of fetching again (the server may hold another now), changes
-// anything but the list and its next number, and does not save at once (D-399, D-169, D-165, D-207).
+// anything but the list and its next number, and does not save at once (D-401, D-169, D-165, D-207).
 test("a pull fetches the previous save again and appends its programs in order with free names and the next numbers, and the game saves at once", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -437,7 +437,7 @@ test("a pull fetches the previous save again and appends its programs in order w
   });
 });
 
-// Catches a button that goes away after a pull: a second press appends copies again (D-399).
+// Catches a button that goes away after a pull: a second press appends copies again (D-401).
 test("after a pull the button stays, and a second press appends the programs again as copies", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -541,7 +541,7 @@ test("an unreadable document, and one with no program, give the sentence of no r
 });
 
 // Catches an answer of null at the pull drawn as a failure or leaving the button: the previous save
-// is gone, so one sentence and no control (D-399).
+// is gone, so one sentence and no control (D-401).
 test("a pull that finds no previous save says so and the button goes away", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -558,7 +558,7 @@ test("a pull that finds no previous save says so and the button goes away", asyn
 });
 
 // Catches a failed fetch that drops the button, appends something or is drawn as a result, and a
-// retry that does not work: the control stays for a retry (D-399).
+// retry that does not work: the control stays for a retry (D-401).
 test("a failed fetch is one warning, the button stays, and a retry appends", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -601,7 +601,7 @@ test("a 401 at the pull goes to the page as a save's 401, and nothing is appende
 });
 
 // Catches a 403 of the pull told as a failed fetch, the button kept for an account the server says
-// has no privilege, or an append (D-398).
+// has no privilege, or an append (D-400).
 test("a 403 previous-save-forbidden says the account has no such privilege now, and the button goes away", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -620,7 +620,7 @@ test("a 403 previous-save-forbidden says the account has no such privilege now, 
   });
 });
 
-// Catches a name of the document written into the page as markup (D-399: shown only as text).
+// Catches a name of the document written into the page as markup (D-401: shown only as text).
 test("names from the document are shown as text, in the sentence and in the list", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -727,7 +727,7 @@ test("the answer of a pull that comes after the player left the screen appends n
 // --- a map run ------------------------------------------------------------------------------------
 
 // Catches the button tied to there being no map run: it stands and works while a manual map run
-// goes on and while one has ended and waits, and the map run itself is left as it was (D-399).
+// goes on and while one has ended and waits, and the map run itself is left as it was (D-401).
 test("the pull works while a manual map run goes on and while one has ended", async () => {
   const ended = () => {
     const state = going();
@@ -891,7 +891,7 @@ test("the result line of the reader's answer names the appended count and the sk
   );
 });
 
-// --- the reset of the game (D-400) ----------------------------------------------------------------
+// --- the reset of the game (D-402) ----------------------------------------------------------------
 
 const RESET_TEXT = "Zacznij od zera";
 const RESET_CONFIRM_TEXT = "Tak, zacznij od zera";
@@ -905,7 +905,7 @@ const confirmation = (view) =>
   view.element.querySelector(".program-reset-confirm");
 
 // Catches the control on an account the page gives no privilege, or a game given no callback for a
-// confirmed reset: the control then stands in the page of no one who may not reset (D-400).
+// confirmed reset: the control then stands in the page of no one who may not reset (D-402).
 test("the reset control stands only for a privileged account whose page gives the game a callback", async () => {
   const cases = [
     [undefined, undefined],
@@ -938,7 +938,7 @@ test("the reset control stands only for a privileged account whose page gives th
   });
 });
 
-// Catches a click that resets, saves or changes the game before the player confirms (D-400): the
+// Catches a click that resets, saves or changes the game before the player confirms (D-402): the
 // click that opens the confirmation sends nothing and changes nothing.
 test("the click that opens the confirmation sends nothing and changes nothing", async () => {
   await onPage(async () => {
@@ -960,7 +960,7 @@ test("the click that opens the confirmation sends nothing and changes nothing", 
 });
 
 // Catches a confirmation that does not say that an earlier previous save is replaced and that its
-// programs can no longer be pulled, and a withdraw that changes anything (D-400).
+// programs can no longer be pulled, and a withdraw that changes anything (D-402).
 test("the confirmation names the replacement of an earlier previous save, and withdrawing changes nothing", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -987,7 +987,7 @@ test("the confirmation names the replacement of an earlier previous save, and wi
 
 // Catches a confirmed reset that calls the page twice, a control that stays pressable while the page
 // waits, a save sent before the page's act, and a failure that does not return the control to rest
-// with its sentence (D-400, D-44).
+// with its sentence (D-402, D-44).
 test("a confirmed reset calls the page once, waits for its answer, and a failure returns the control to rest with its sentence", async () => {
   await onPage(async () => {
     const held = heldClient();
@@ -1039,7 +1039,7 @@ test("leaving Programy closes the confirmation, and the game asks the server for
   });
 });
 
-// --- the page's reset (D-400, D-209, D-211, D-97) -------------------------------------------------
+// --- the page's reset (D-402, D-209, D-211, D-97) -------------------------------------------------
 
 const RESET_OK = { ok: true, value: null };
 const FORBIDDEN = failure(403, "previous-save-forbidden");
@@ -1137,8 +1137,8 @@ async function confirmReset() {
 }
 
 // Catches a reset control, or a request for a reset, on the page of an account the server names
-// without the privilege or with the flag missing (D-398), and a page that asks the server before the
-// player confirms (D-400).
+// without the privilege or with the flag missing (D-400), and a page that asks the server before the
+// player confirms (D-402).
 test("the page gives the reset control to a privileged account alone, and sends nothing for it before the confirmation", async () => {
   for (const allowed of [false, undefined]) {
     await onPage(async () => {
@@ -1160,7 +1160,7 @@ test("the page gives the reset control to a privileged account alone, and sends 
   });
 });
 
-// Catches a save of the page's own before the reset (D-400, D-207), a reset sent more than once, and a
+// Catches a save of the page's own before the reset (D-402, D-207), a reset sent more than once, and a
 // "Wyloguj" that stays pressable while the reset waits (the logout would save and end the session).
 test("a confirmed reset is the next call after the confirmation, with no save before it, and „Wyloguj” cannot be pressed while it waits", async () => {
   await onPage(async () => {
@@ -1189,7 +1189,7 @@ test("a confirmed reset is the next call after the confirmation, with no save be
 });
 
 // Catches a new game built on a revision other than 0, one saved at once, one that loads the server's
-// save again, a missing sentence above it, and the game left on another screen (D-400, D-209).
+// save again, a missing sentence above it, and the game left on another screen (D-402, D-209).
 test("on 204 the page builds a new game on revision 0 with the sentence above it, and sends no save at once", async () => {
   await onPage(async () => {
     const page = await startedPage();
@@ -1245,7 +1245,7 @@ const HELD_OUTCOMES = [
 ];
 
 // Catches the old saver's outcome acted on while the reset waits (the page would drop the game, or
-// show the forms, under a request that may yet succeed), and one lost after a failure (D-400, D-209,
+// show the forms, under a request that may yet succeed), and one lost after a failure (D-402, D-209,
 // D-211): the outcome waits, and a failure acts on it.
 for (const held of HELD_OUTCOMES) {
   test(`${held.name} of the old saver during the reset waits, and a failed reset acts on it`, async () => {
@@ -1276,7 +1276,7 @@ for (const held of HELD_OUTCOMES) {
 }
 
 // Catches a conflict from the old game's saver, answered after the reset, that the page acts on: it
-// would load the server's save (none) and replace the new game with another new one (D-400, D-209).
+// would load the server's save (none) and replace the new game with another new one (D-402, D-209).
 test("a conflict that the old saver gets after the reset is not acted on", async () => {
   await onPage(async () => {
     const page = await startedPage();
@@ -1301,7 +1301,7 @@ const FAILED_RESETS = [
 ];
 
 // Catches a failed reset that drops the game, leaves the control waiting or the saving stopped, or
-// shows no sentence, or the wrong one for a 403 (D-400, D-398).
+// shows no sentence, or the wrong one for a 403 (D-402, D-400).
 for (const { name, answer, line } of FAILED_RESETS) {
   test(`a reset answered with ${name} shows its one sentence, and the game stays, saving on, with the control at rest`, async () => {
     await onPage(async () => {
@@ -1334,7 +1334,7 @@ test("a reset answered with no session shows the forms with the expired sentence
 });
 
 // Catches a page that stops a reset while a logout waits, or lets the reset's late answer build a
-// game over the forms the logout brought (D-400): the logout's own answer decides what stands.
+// game over the forms the logout brought (D-402): the logout's own answer decides what stands.
 test("a reset confirmed while a logout waits is sent, and the logout's answer decides what the page shows", async () => {
   await onPage(async () => {
     const page = await startedPage();
@@ -1366,7 +1366,7 @@ async function pressLogout() {
 
 // Catches the uncertain end of a logout, answered after a reset built the new game, acting on the
 // new game: its failure sentence on it, and, where the old game's save lost to a conflict, a reload
-// that replaces it with another new game (D-400, D-97, D-209).
+// that replaces it with another new game (D-402, D-97, D-209).
 test("a logout that fails after the reset built the new game leaves that game as it is, whatever the outcome of the logout's save", async () => {
   for (const outcome of [
     { kind: "saved", revision: 4 },
@@ -1393,7 +1393,7 @@ test("a logout that fails after the reset built the new game leaves that game as
 });
 
 // Catches the reset's success leaving the sentence of an uncertain logout, or „Wyloguj” pressed out
-// by it, on the new game that the other order built (D-400, D-97).
+// by it, on the new game that the other order built (D-402, D-97).
 test("a reset that succeeds after a logout failed uncertainly builds the new game without that logout's sentence", async () => {
   await onPage(async () => {
     const page = await startedPage();
@@ -1417,7 +1417,7 @@ test("a reset that succeeds after a logout failed uncertainly builds the new gam
 });
 
 // Catches a logout that the server ended, answered after a reset built the new game, left without
-// effect: the session is over, so the forms stand, as when the logout answers first (D-97, D-400).
+// effect: the session is over, so the forms stand, as when the logout answers first (D-97, D-402).
 test("a logout that the server ended after the reset built the new game brings the forms", async () => {
   await onPage(async () => {
     const page = await startedPage();

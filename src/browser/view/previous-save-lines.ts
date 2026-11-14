@@ -1,7 +1,7 @@
 /**
- * The texts of the previous save on the screen Programy: those of the pull (D-399), the sentence
+ * The texts of the previous save on the screen Programy: those of the pull (D-401), the sentence
  * that stands next to „Wciągnij programy z poprzedniego zapisu” after each pull and the one of a
- * failed check, and those of the reset (D-400), its two sentences of failure and the one above the
+ * failed check, and those of the reset (D-402), its two sentences of failure and the one above the
  * new game. Pure: each function reads its arguments and draws nothing, and nothing runs when the
  * module is imported. A result is in `text` and a failure in `warning`, never in `positive` or
  * `danger` (D-39, D-40); the names of skipped programs come from the document and are plain text.
@@ -32,21 +32,21 @@ export const NO_PREVIOUS_SAVE: PullLine = {
   text: "Nie ma już poprzedniego zapisu.",
 };
 
-/** The sentence of a 403: the server says the account no longer holds the privilege (D-398). */
+/** The sentence of a 403: the server says the account no longer holds the privilege (D-400). */
 export const NOT_ALLOWED: PullLine = {
   role: "warning",
   text: "To konto nie ma już uprawnienia do poprzedniego zapisu.",
 };
 
-/** The sentence of a 403 of the reset: the account no longer holds the privilege (D-398, D-400). */
+/** The sentence of a 403 of the reset: the account no longer holds the privilege (D-400, D-402). */
 export const RESET_NOT_ALLOWED =
   "To konto nie ma już uprawnienia do zacznięcia gry od zera.";
 
-/** The sentence of a reset that failed otherwise: the game stays, and the control is at rest (D-400). */
+/** The sentence of a reset that failed otherwise: the game stays, and the control is at rest (D-402). */
 export const RESET_FAILED =
   "Nie udało się zacząć gry od zera. Gra zostaje bez zmian.";
 
-/** The one-time sentence above the new game that a reset built; the old game waits as the previous save (D-400). */
+/** The one-time sentence above the new game that a reset built; the old game waits as the previous save (D-402). */
 export const GAME_STARTS_ANEW =
   "Gra zaczyna się od nowa, a poprzednia czeka jako poprzedni zapis.";
 
