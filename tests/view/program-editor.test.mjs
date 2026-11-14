@@ -692,10 +692,12 @@ test("choosing a resource or a number changes only that rule; the same choice co
 });
 
 test("the resource lists offer the resources of every map before sending and the run's map's during a run, in order", () => {
-  const game = withEdgeSolved(newKnowingGame());
+  // D-289: with no map run every discovered target may be picked, whichever maps are open.
+  const game = newKnowingGame();
+  assert.deepEqual(game.solvedMaps, []);
   assert.deepEqual(offeredResources(game), LAS);
   const onLas = send(
-    createCharacter(game, "Ala").state,
+    createCharacter(withEdgeSolved(game), "Ala").state,
     SENT,
     1760000000000,
   ).state;

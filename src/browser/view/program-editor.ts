@@ -177,7 +177,8 @@ export function offeredItems(state: GameState): ItemId[] {
 /**
  * The resources the resource selects offer, in the order of the maps' lists, each once: those of
  * the run's map during a map run, otherwise those of every map of the data, that the repertoire
- * holds as items. Pure.
+ * holds as items, since while the game holds no map run every discovered target may be picked
+ * (D-289). Pure.
  */
 export function offeredResources(state: GameState): ResourceId[] {
   const maps: MapDef[] = state.run
