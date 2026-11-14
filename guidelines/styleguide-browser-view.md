@@ -192,7 +192,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47
+- **Decision:** D-38 · D-44 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-395 · D-396
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -220,7 +220,11 @@ stanów:
   też mają tekst w `text-disabled`; przycisk „Wyślij ponownie” w menu „Konto”,
   który nie wysyła formularza, zmienia napis na „Wysyłanie…”, a przycisk
   „Wyloguj” w tym menu czekający na zapis i na koniec sesji — na
-  „Wylogowywanie…” (D-97); menu stoi wtedy otwarte (D-285). Nie ma ruchomego wskaźnika. Odmowa
+  „Wylogowywanie…” (D-97); menu stoi wtedy otwarte (D-285); przycisk „Wciągnij
+  programy z poprzedniego zapisu” na ekranie Programy, czekający na odpowiedź
+  serwera, zmienia napis na „Wciąganie…” (D-44, D-395), a przycisk niszczący
+  „Zacznij od zera”, czekający na odpowiedź na reset, jest wyłączony i zachowuje
+  napis (D-44, D-396). Nie ma ruchomego wskaźnika. Odmowa
   serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
   formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
@@ -252,11 +256,13 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   „Przełącz postać na ten program”, „Zatrzymaj” i „Zacznij od zera” (D-44, D-396) oraz „Odrzuć” pytania
   „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
-  Loading dotyczy tylko zwykłego przycisku, który czeka na odpowiedź
-  serwera, także w głównym wyglądzie; przycisk niszczący i przycisk wybrany
-  w grupie nie czekają na serwer. Główny wygląd ma przycisk, który wysyła
-  formularz, i „Wejdź” przy każdej postaci w sekcji „Kto idzie” karty mapy
-  (D-274; reguła Main button, secondary action and tab): tekst w `text-strong`
+  Loading dotyczy zwykłego przycisku, który czeka na odpowiedź serwera,
+  także w głównym wyglądzie, i przycisku niszczącego „Zacznij od zera”, który
+  czeka na odpowiedź na reset: jest wtedy wyłączony i zachowuje napis (D-44,
+  D-396); przycisk wybrany w grupie nie czeka na serwer. Główny wygląd ma
+  przycisk, który wysyła formularz, i „Wejdź” przy każdej postaci w sekcji
+  „Kto idzie” karty mapy (D-274; reguła Main button, secondary action and
+  tab): tekst w `text-strong`
   o wadze `--font-weight-emphasis` i ramka w kolorze tego tekstu
   (`currentColor`), bez wypełnienia, więc widać tło pod nim; pod kursorem tło
   `highlight`, ramka i tekst bez zmiany; czekając na serwer albo wyłączony
@@ -394,7 +400,8 @@ serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontro
 w jej postaci DOM (D-269), w każdym stanie albo z powodem, dla którego stan
 nie dotyczy — przycisk także w głównym wyglądzie (D-274), jako zakładkę
 wybraną i niewybraną (D-276), w `positive` (D-44, D-39), przycisk niszczący
-w spoczynku, pod kursorem i przy fokusie (D-44) — formularze
+w spoczynku, pod kursorem, przy fokusie i wyłączony, gdy czeka na serwer
+(D-44, D-396) — formularze
 logowania i zakładania konta, „Nie pamiętam hasła” i „Ustaw nowe hasło”
 czekające na serwer i ze zdaniem odmowy pod nimi oraz formularz „Nie pamiętam
 hasła” ze zdaniem odpowiedzi na prośbę w `text` z belką (D-44),

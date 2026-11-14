@@ -98,9 +98,10 @@ function forced(element: HTMLElement, state: State): void {
 
 /**
  * What the loading state of a button shows: the reason the state does not apply to it, or the
- * button's resting text and the text it shows while it waits for the server.
+ * button's resting text and the text it shows while it waits for the server, null where the button
+ * keeps its text and is only disabled, as „Zacznij od zera” does while its reset waits (D-44, D-396).
  */
-type Loading = string | readonly [string, string];
+type Loading = string | readonly [string, string | null];
 
 /** The container of the tabs, as a screen sets it on its group: the thin line under the tabs. */
 function inTabs(tab: HTMLElement): HTMLElement {
@@ -131,7 +132,8 @@ function buttonSample(
     if (state === "loading") {
       if (typeof loading === "string") return loading;
       const waiting = createButton(loading[0], options);
-      setButtonWaiting(waiting, loading[1]);
+      if (loading[1] === null) waiting.disabled = true;
+      else setButtonWaiting(waiting, loading[1]);
       return waiting;
     }
     const button = make(text);
@@ -229,11 +231,7 @@ const CONTROLS: readonly (readonly [string, (state: State) => Sample])[] = [
   ],
   [
     "Przycisk niszczący",
-    buttonSample(
-      "Zakończ",
-      { kind: "destructive" },
-      NOT_APPLYING.buttonLoading,
-    ),
+    buttonSample("Zakończ", { kind: "destructive" }, ["Zacznij od zera", null]),
   ],
   [
     "Przycisk w zieleni",
