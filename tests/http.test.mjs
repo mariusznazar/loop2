@@ -213,6 +213,8 @@ test("unconfigured accounts answer the canonical account routes as unavailable J
     ["POST", "/api/password-reset"],
     ["GET", "/api/saved-game"],
     ["PUT", "/api/saved-game"],
+    ["GET", "/api/previous-saved-game"],
+    ["POST", "/api/saved-game-reset"],
     ["POST", "/api/browser-failure"],
   ]) {
     const response = await send(path, { method });
@@ -331,6 +333,7 @@ async function accountFixture(
     // login's password check is answered.
     afterFind: null,
     beforeReset: null,
+    beforeSavedReset: null,
   };
   const database = new Proxy(runtime.database, {
     get(target, name) {
@@ -341,6 +344,7 @@ async function accountFixture(
         writeSavedGame: "beforeSave",
         findAccountByEmail: "beforeFind",
         resetPassword: "beforeReset",
+        resetSavedGame: "beforeSavedReset",
       }[name];
       if (!hook) return value.bind(target);
       return (...parameters) => {
@@ -481,6 +485,7 @@ test(
       id: f.first.id,
       email: "first@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assert.ok(
       storedRow(f, "lookup-first").data === before.data,
@@ -490,6 +495,7 @@ test(
       id: f.second.id,
       email: "second@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assertRefusal(
       await readAccount(f, null, `/api/account?${foreign}`, {
@@ -623,11 +629,13 @@ test(
       id: f.first.id,
       email: "first@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
       id: f.second.id,
       email: "second@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assert.equal((await logout(f, one)).status, 401);
   },
@@ -849,6 +857,7 @@ test(
       id: stored.id,
       email: "new.player@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
       confirmationMessage: "sent",
     });
     assert.ok(
@@ -866,11 +875,13 @@ test(
       id: stored.id,
       email: "new.player@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assert.deepEqual(JSON.parse((await readAccount(f, other)).body), {
       id: f.second.id,
       email: "second@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assertLoginRefused(
       await login(f, "new.player@example.test", password.trim()),
@@ -882,6 +893,7 @@ test(
       id: stored.id,
       email: "new.player@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
   },
 );
@@ -923,10 +935,16 @@ test(
       id: f.second.id,
       email: "second@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
     assert.deepEqual(
       JSON.parse((await readAccount(f, registered.cookie)).body),
-      { id: account, email: "fresh@example.test", emailConfirmed: false },
+      {
+        id: account,
+        email: "fresh@example.test",
+        emailConfirmed: false,
+        previousSaveAllowed: false,
+      },
       "the registering browser stays signed in",
     );
   },
@@ -1768,6 +1786,7 @@ test(
       id: f.second.id,
       email: "second@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
 
     // A session row of the blocked account stored past the write guard, as by
@@ -2209,6 +2228,7 @@ test(
           id: stored.id,
           email,
           emailConfirmed: false,
+          previousSaveAllowed: false,
           confirmationMessage: expected,
         },
         behaviour,
@@ -3612,6 +3632,7 @@ test(
       id: f.second.id,
       email: "second@example.test",
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
   },
 );
@@ -4239,6 +4260,497 @@ test(
   },
 );
 
+const previousSavedGamePath = "/api/previous-saved-game";
+const savedGameResetPath = "/api/saved-game-reset";
+
+function grantPrevious(f, email) {
+  assert.equal(
+    f.runtime.database.setPreviousSavePrivilege(email, true).outcome,
+    "granted",
+    "precondition: the previous-save privilege",
+  );
+}
+
+function getPrevious(f, cookie, extra = {}, path = previousSavedGamePath) {
+  return readAccount(f, cookie, path, extra);
+}
+
+function resetSave(
+  f,
+  cookie,
+  body = "{}",
+  extra = {},
+  path = savedGameResetPath,
+) {
+  const headers = { ...logoutHeaders, ...extra };
+  if (cookie) headers.Cookie = cookie;
+  return f.send(path, { method: "POST", headers, body });
+}
+
+function storedPrevious(f, accountId) {
+  return f.inspection
+    .prepare(
+      "SELECT version, revision, game FROM previous_saves WHERE account_id = ?",
+    )
+    .get(accountId);
+}
+
+// Everything the new routes may change of an account: its current and previous save.
+function savesOf(f, accountId) {
+  return {
+    current: storedSave(f, accountId),
+    previous: storedPrevious(f, accountId),
+  };
+}
+
+test(
+  "no session, a forged or removed session and a blocked account get JSON 401 on both previous-save routes and change no save",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-session-authorization
+    // invariant: blocked-account-access
+    // invariant: previous-save-slot
+    // Faults: a route without the session guard; a reset that moves the save of
+    // an account the session does not name; a block read only from the session.
+    const f = await accountFixture(t);
+    const own = seed(f, "previous-401-live", f.first);
+    grantPrevious(f, "first@example.test");
+    assert.equal(
+      (await putSave(f, own, { version: 1, basedOn: 0, game: { turn: 1 } }))
+        .status,
+      200,
+    );
+    assert.equal(
+      (await putSave(f, own, { version: 2, basedOn: 1, game: { turn: 2 } }))
+        .status,
+      200,
+    );
+    const before = savesOf(f, f.first.id);
+    assert.ok(before.previous, "precondition: a previous save");
+    const refusedBy = async (label, cookie) => {
+      assertSaveRefusal(
+        await getPrevious(f, cookie),
+        401,
+        "unauthenticated",
+        `${label} read`,
+      );
+      assertSaveRefusal(
+        await resetSave(f, cookie),
+        401,
+        "unauthenticated",
+        `${label} reset`,
+      );
+      assert.deepEqual(savesOf(f, f.first.id), before, `${label}: unchanged`);
+    };
+    for (const [label, cookie] of [
+      ["absent", null],
+      ["foreign key", signedCookie("previous-401-live", randomBytes(32))],
+      ["unsigned", "__Host-loop2.sid=previous-401-live"],
+      ["unknown", signedCookie("previous-401-unknown", f.keys[0])],
+    ])
+      await refusedBy(label, cookie);
+    await refusedBy("account identifier", signedCookie(f.first.id, f.keys[0]));
+
+    const removed = seed(f, "previous-401-removed", f.first);
+    assert.equal((await getPrevious(f, removed)).status, 200, "precondition");
+    f.runtime.database.destroySession("previous-401-removed");
+    await refusedBy("removed", removed);
+
+    const blocked = seed(f, "previous-401-blocked", f.first);
+    assert.equal(
+      f.runtime.database.blockAccount("first@example.test").outcome,
+      "blocked",
+    );
+    await refusedBy("blocked", blocked);
+    assert.equal(
+      f.runtime.database.unblockAccount("first@example.test").outcome,
+      "unblocked",
+    );
+    await refusedBy("blocked, after unblocking", blocked);
+  },
+);
+
+test(
+  "a block committed between the session check and the reset moves nothing and answers 401",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: blocked-account-access
+    // invariant: previous-save-slot
+    // Fault: a reset that reads the block outside its own transaction.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "previous-race", f.first);
+    grantPrevious(f, "first@example.test");
+    assert.equal(
+      (await putSave(f, cookie, { version: 1, basedOn: 0, game: { turn: 1 } }))
+        .status,
+      200,
+    );
+    const before = savesOf(f, f.first.id);
+    f.hooks.beforeSavedReset = () => {
+      f.runtime.database.blockAccount("first@example.test");
+      f.hooks.beforeSavedReset = null;
+    };
+    assertSaveRefusal(
+      await resetSave(f, cookie),
+      401,
+      "unauthenticated",
+      "raced reset",
+    );
+    assert.deepEqual(savesOf(f, f.first.id), before, "nothing moved");
+  },
+);
+
+test(
+  "an account without the previous-save privilege gets 403 on both routes whatever its slot holds, and its saves stay",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: previous-save-slot
+    // Faults: a route answering the slot's existence to an account without the
+    // privilege; a reset that moves the save without the privilege.
+    const f = await accountFixture(t);
+    const withSlot = seed(f, "previous-403-slot", f.first);
+    const bare = seed(f, "previous-403-bare", f.second);
+    assert.equal(
+      (
+        await putSave(f, withSlot, {
+          version: 1,
+          basedOn: 0,
+          game: { turn: 1 },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await putSave(f, withSlot, {
+          version: 2,
+          basedOn: 1,
+          game: { turn: 2 },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await putSave(f, bare, {
+          version: 1,
+          basedOn: 0,
+          game: { turn: "bare" },
+        })
+      ).status,
+      200,
+    );
+    assert.ok(storedPrevious(f, f.first.id), "precondition: a slot holds one");
+    assert.equal(storedPrevious(f, f.second.id), undefined, "precondition");
+    const before = {
+      first: savesOf(f, f.first.id),
+      second: savesOf(f, f.second.id),
+    };
+    for (const [label, cookie] of [
+      ["with a slot", withSlot],
+      ["with no slot", bare],
+    ]) {
+      assertSaveRefusal(
+        await getPrevious(f, cookie),
+        403,
+        "previous-save-forbidden",
+        `${label} read`,
+      );
+      assertSaveRefusal(
+        await resetSave(f, cookie),
+        403,
+        "previous-save-forbidden",
+        `${label} reset`,
+      );
+    }
+    assert.deepEqual(
+      { first: savesOf(f, f.first.id), second: savesOf(f, f.second.id) },
+      before,
+      "nothing moved",
+    );
+  },
+);
+
+test(
+  "a privileged account reads null, then the document of its slot; a save of a higher version fills it, and the privilege off stops the reads and keeps the slot",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: previous-save-slot
+    // Faults: a save of the same version filling the slot; a save of a higher
+    // version storing the incoming document as the previous one; the slot
+    // dropped when the privilege goes; the account answer lacking the flag.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "previous-read", f.first);
+    const account = async () => JSON.parse((await readAccount(f, cookie)).body);
+    assert.equal(
+      JSON.parse((await readAccount(f, cookie)).body).previousSaveAllowed,
+      false,
+      "the account answer without the privilege",
+    );
+    grantPrevious(f, "first@example.test");
+    assert.equal(
+      JSON.parse((await readAccount(f, cookie)).body).previousSaveAllowed,
+      true,
+      "the account answer with the privilege",
+    );
+    const none = await getPrevious(f, cookie);
+    assert.equal(none.status, 200);
+    assert.match(none.headers["content-type"], /^application\/json/);
+    assert.equal(none.headers["cache-control"], "no-store");
+    assert.deepEqual(JSON.parse(none.body), { previous: null });
+
+    assert.deepEqual(
+      JSON.parse(
+        (
+          await putSave(f, cookie, {
+            version: 1,
+            basedOn: 0,
+            game: { steps: [1] },
+          })
+        ).body,
+      ),
+      { revision: 1 },
+    );
+    assert.deepEqual(
+      JSON.parse(
+        (
+          await putSave(f, cookie, {
+            version: 1,
+            basedOn: 1,
+            game: { steps: [2] },
+          })
+        ).body,
+      ),
+      { revision: 2 },
+    );
+    assert.deepEqual(
+      JSON.parse((await getPrevious(f, cookie)).body),
+      { previous: null },
+      "a save of the same version fills no slot",
+    );
+    assert.deepEqual(
+      JSON.parse(
+        (
+          await putSave(f, cookie, {
+            version: 2,
+            basedOn: 2,
+            game: { steps: [3] },
+          })
+        ).body,
+      ),
+      { revision: 3 },
+    );
+    assert.deepEqual(JSON.parse((await getPrevious(f, cookie)).body), {
+      previous: { version: 1, game: { steps: [2] } },
+    });
+    assert.deepEqual(
+      JSON.parse(
+        (
+          await putSave(f, cookie, {
+            version: 3,
+            basedOn: 3,
+            game: { steps: [4] },
+          })
+        ).body,
+      ),
+      { revision: 4 },
+    );
+    assert.deepEqual(JSON.parse((await getPrevious(f, cookie)).body), {
+      previous: { version: 2, game: { steps: [3] } },
+    });
+
+    const slot = storedPrevious(f, f.first.id);
+    assert.equal(
+      f.runtime.database.setPreviousSavePrivilege("first@example.test", false)
+        .outcome,
+      "revoked",
+    );
+    assertSaveRefusal(
+      await getPrevious(f, cookie),
+      403,
+      "previous-save-forbidden",
+      "read after the revoke",
+    );
+    assertSaveRefusal(
+      await resetSave(f, cookie),
+      403,
+      "previous-save-forbidden",
+      "reset after the revoke",
+    );
+    assert.deepEqual(storedPrevious(f, f.first.id), slot, "the slot stays");
+    assert.equal((await account()).previousSaveAllowed, false);
+    grantPrevious(f, "first@example.test");
+    assert.deepEqual(JSON.parse((await getPrevious(f, cookie)).body), {
+      previous: { version: 2, game: { steps: [3] } },
+    });
+  },
+);
+
+test(
+  "the reset moves the save to the previous slot and answers 204, a second reset changes nothing, and a card on another revision then gets the conflict",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: previous-save-slot
+    // D-209: a basis other than 0 after the reset is refused as a conflict.
+    // Faults: the current save kept beside the previous one; the second reset
+    // replacing the slot; a reset answered 204 with a body; an event for a
+    // reset that moved nothing.
+    const f = await accountFixture(t);
+    const logged = captureLog(t);
+    const cookie = seed(f, "previous-reset", f.first);
+    grantPrevious(f, "first@example.test");
+    const game = { owner: "first", programs: ["Las"] };
+    assert.equal(
+      (await putSave(f, cookie, { version: 2, basedOn: 0, game })).status,
+      200,
+    );
+    const moved = await resetSave(f, cookie);
+    assert.equal(moved.status, 204);
+    assert.equal(moved.body, "");
+    assert.equal(storedSave(f, f.first.id), undefined, "no current save");
+    assert.deepEqual(JSON.parse((await getPrevious(f, cookie)).body), {
+      previous: { version: 2, game },
+    });
+    const slot = storedPrevious(f, f.first.id);
+
+    const again = await resetSave(f, cookie);
+    assert.equal(again.status, 204);
+    assert.equal(again.body, "");
+    assert.deepEqual(storedPrevious(f, f.first.id), slot, "the slot stays");
+
+    assertSaveRefusal(
+      await putSave(f, cookie, {
+        version: 2,
+        basedOn: 2,
+        game: { turn: "old card" },
+      }),
+      409,
+      "save-conflict",
+      "a card on another revision",
+    );
+    assert.equal(
+      storedSave(f, f.first.id),
+      undefined,
+      "the conflict stores nothing",
+    );
+    assert.deepEqual(
+      JSON.parse(
+        (
+          await putSave(f, cookie, {
+            version: 2,
+            basedOn: 0,
+            game: { turn: "new" },
+          })
+        ).body,
+      ),
+      { revision: 1 },
+      "a save on basis 0 starts the new game",
+    );
+    assert.deepEqual(JSON.parse((await getPrevious(f, cookie)).body), {
+      previous: { version: 2, game },
+    });
+    assert.deepEqual(
+      logged.map(fieldsOf).filter((line) => line.event === "saved-game-reset"),
+      [{ event: "saved-game-reset", accountId: f.first.id }],
+      "one line, for the move only",
+    );
+  },
+);
+
+test(
+  "a reset with any field is a 400 that moves nothing, and no request names an account",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: player-save-isolation
+    // invariant: previous-save-slot
+    // Faults: a body field read as the account; the query or a header choosing
+    // another account's save.
+    const f = await accountFixture(t);
+    const cookie = seed(f, "previous-named", f.first);
+    const otherCookie = seed(f, "previous-named-other", f.second);
+    grantPrevious(f, "first@example.test");
+    grantPrevious(f, "second@example.test");
+    assert.equal(
+      (
+        await putSave(f, cookie, {
+          version: 1,
+          basedOn: 0,
+          game: { owner: "first" },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await putSave(f, otherCookie, {
+          version: 1,
+          basedOn: 0,
+          game: { owner: "second" },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await putSave(f, cookie, {
+          version: 2,
+          basedOn: 1,
+          game: { owner: "first" },
+        })
+      ).status,
+      200,
+    );
+    const before = {
+      first: savesOf(f, f.first.id),
+      second: savesOf(f, f.second.id),
+    };
+    for (const body of [
+      { accountId: f.second.id },
+      { id: f.second.id },
+      { email: "second@example.test" },
+      { padding: "x" },
+    ]) {
+      assertSaveRefusal(
+        await resetSave(f, cookie, JSON.stringify(body)),
+        400,
+        "invalid-request",
+        JSON.stringify(body),
+      );
+    }
+    assert.deepEqual(
+      { first: savesOf(f, f.first.id), second: savesOf(f, f.second.id) },
+      before,
+      "refused resets move nothing",
+    );
+
+    const named = await resetSave(
+      f,
+      cookie,
+      "{}",
+      { "X-Account-Id": f.second.id },
+      `${savedGameResetPath}?accountId=${f.second.id}&id=${f.second.id}`,
+    );
+    assert.equal(named.status, 204);
+    assert.equal(
+      storedSave(f, f.first.id),
+      undefined,
+      "the session's save moved",
+    );
+    assert.deepEqual(
+      savesOf(f, f.second.id),
+      before.second,
+      "the other is untouched",
+    );
+    const read = await getPrevious(
+      f,
+      otherCookie,
+      { "X-Account-Id": f.first.id },
+      `${previousSavedGamePath}?accountId=${f.first.id}`,
+    );
+    assert.deepEqual(JSON.parse(read.body), { previous: null });
+  },
+);
+
 // The field names of a line (D-252): what a fault of the code or a crafted
 // request would add to a line stands outside them.
 const lineFields = new Set([
@@ -4287,6 +4799,16 @@ test(
     });
     assert.equal(signedIn.status, 200);
     const { cookie } = issuedSession(signedIn, "login");
+    assert.equal(
+      f.runtime.database.setPreviousSavePrivilege(email, true).outcome,
+      "granted",
+    );
+    assert.equal(
+      (await putSave(f, cookie, { version: 1, basedOn: 0, game: { turn: 1 } }))
+        .status,
+      200,
+    );
+    assert.equal((await resetSave(f, cookie)).status, 204);
     assert.equal((await logout(f, cookie)).status, 204);
     assert.equal((await askReset(f, email)).status, 204);
     await waitFor(() => f.mailer.messages.length === 2, "the reset message");
@@ -4306,6 +4828,7 @@ test(
       { event: "message-sent", ...confirmationLine },
       { event: "email-confirmed", accountId },
       { event: "signed-in", accountId },
+      { event: "saved-game-reset", accountId },
       { event: "signed-out", accountId },
       { event: "link-issued", ...resetLine },
       { event: "message-sent", ...resetLine },

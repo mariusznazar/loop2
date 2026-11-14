@@ -227,6 +227,7 @@ Zdarzenia biznesowe:
 - wiadomość wysłana (`message-sent`);
 - adres potwierdzony (`email-confirmed`);
 - hasło ustawione odnośnikiem (`password-set`);
+- poprzedni zapis odłożony przez reset gry (`saved-game-reset`);
 - konto zablokowane (`account-blocked`);
 - konto odblokowane (`account-unblocked`);
 - kopia bazy wykonana;

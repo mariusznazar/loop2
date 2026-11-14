@@ -55,6 +55,8 @@ const paths = {
   passwordResetMessage: "/api/password-reset-message",
   passwordReset: "/api/password-reset",
   savedGame: "/api/saved-game",
+  previousSavedGame: "/api/previous-saved-game",
+  savedGameReset: "/api/saved-game-reset",
   browserFailure: "/api/browser-failure",
 };
 
@@ -101,6 +103,17 @@ function invalidRequest(response: Response): void {
   refuse(response, 400, "invalid-request", "Nieprawidłowe żądanie.");
 }
 
+// The account lacks the previous-save privilege (D-394). The answer is the same
+// whatever its previous save holds, so it tells nothing of the slot.
+function previousSaveForbidden(response: Response): void {
+  refuse(
+    response,
+    403,
+    "previous-save-forbidden",
+    "Konto nie ma uprawnienia do poprzedniego zapisu.",
+  );
+}
+
 function saveTooLarge(response: Response): void {
   refuse(response, 413, "save-too-large", "Zapis gry jest za duży.");
 }
@@ -135,11 +148,14 @@ function invalidLink(response: Response): void {
   refuse(response, 400, "invalid-link", "Odnośnik jest nieważny albo wygasł.");
 }
 
+// The account answer carries the privilege and nothing of the previous save, so
+// it does not change as the slot does (D-394).
 function accountBody(account: Account) {
   return {
     id: account.id,
     email: account.email,
     emailConfirmed: account.emailConfirmed,
+    previousSaveAllowed: account.previousSaveAllowed,
   };
 }
 
@@ -397,6 +413,7 @@ export function accountRoutes(
       paths.confirmationMessage,
       paths.passwordResetMessage,
       paths.passwordReset,
+      paths.savedGameReset,
       paths.browserFailure,
     ],
     ...mutationGuards(runtime.configuration.publicOrigin, accountBodyLimit),
@@ -523,6 +540,61 @@ export function accountRoutes(
           "save-conflict",
           "Zapis na serwerze jest nowszy niż ten, z którego wyszedł zapis.",
         );
+        return;
+    }
+  });
+
+  // The previous save of the session's account, for an account with the
+  // privilege (D-395). The privilege is read at this request, after the session.
+  // The stored text is embedded as it is, as GET /api/saved-game does (D-07).
+  router.get(paths.previousSavedGame, (request, response) => {
+    const account = sessionAccount(runtime, request);
+    if (!account) {
+      unauthenticated(response);
+      return;
+    }
+    if (!account.previousSaveAllowed) {
+      previousSaveForbidden(response);
+      return;
+    }
+    const previous = runtime.database.readPreviousSavedGame(account.id);
+    response
+      .type("json")
+      .send(
+        previous
+          ? `{"previous":{"version":${previous.version},"game":${previous.game}}}`
+          : '{"previous":null}',
+      );
+  });
+
+  // The reset (D-396) takes an empty object, so no field names an account. The
+  // session names the account; the one write checks the block and the privilege
+  // before it moves anything. Nothing to move answers 204 as a move does, and
+  // only a move writes its business event.
+  router.post(paths.savedGameReset, (request, response) => {
+    if (Object.keys(request.body as object).length > 0) {
+      invalidRequest(response);
+      return;
+    }
+    const account = sessionAccount(runtime, request);
+    if (!account) {
+      unauthenticated(response);
+      return;
+    }
+    const outcome = runtime.database.resetSavedGame(account.id);
+    switch (outcome.outcome) {
+      case "moved":
+        writeEvent("saved-game-reset", { accountId: account.id });
+        response.status(204).end();
+        return;
+      case "nothing-to-move":
+        response.status(204).end();
+        return;
+      case "blocked":
+        unauthenticated(response);
+        return;
+      case "unprivileged":
+        previousSaveForbidden(response);
         return;
     }
   });

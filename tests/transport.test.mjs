@@ -1194,3 +1194,118 @@ test(
     ]);
   },
 );
+
+test(
+  "refused reset requests change no saved game state, and the transport check stands before the session",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-mutation-request-guards
+    // invariant: account-request-transport
+    // invariant: previous-save-slot
+    // Faults: the reset route outside the guards or the transport gate; a
+    // refused reset that moves the save; a body field read as the account.
+    const f = await fixture(t);
+    const live = "reset-guarded-session";
+    seed(f, live);
+    const cookie = signedCookie(live, f.keys[0]);
+    assert.equal(
+      f.runtime.database.setPreviousSavePrivilege(
+        "synthetic@example.test",
+        true,
+      ).outcome,
+      "granted",
+      "precondition: the previous-save privilege",
+    );
+    const valid = {
+      ...proxyHeaders,
+      Origin: origin,
+      "Content-Type": "application/json",
+      Cookie: cookie,
+    };
+    const saved = await f.send(savedGame, {
+      method: "PUT",
+      headers: valid,
+      body: JSON.stringify({ version: 1, basedOn: 0, game: { turn: 1 } }),
+    });
+    assert.equal(saved.status, 200, "precondition: a saved game state");
+    const state = () => ({
+      saved: f.inspection
+        .prepare(
+          "SELECT account_id, version, revision, game FROM saved_games ORDER BY account_id",
+        )
+        .all(),
+      previous: f.inspection
+        .prepare(
+          "SELECT account_id, version, revision, game FROM previous_saves ORDER BY account_id",
+        )
+        .all(),
+    });
+    const before = state();
+    assert.equal(before.saved.length, 1, "precondition");
+    const reset = "/api/saved-game-reset";
+    const variants = [
+      ["missing origin", { Origin: undefined }, "{}", 403],
+      ["foreign origin", { Origin: "https://evil.example" }, "{}", 403],
+      ["text media", { "Content-Type": "text/plain" }, "{}", 415],
+      ["compressed", { "Content-Encoding": "gzip" }, "{}", 415],
+      [
+        "over 16 KiB",
+        {},
+        JSON.stringify({ padding: "x".repeat(20 * 1024) }),
+        413,
+      ],
+      ["empty body", {}, "", 400],
+      ["array body", {}, "[]", 400],
+      ["null body", {}, "null", 400],
+      ["account field", {}, JSON.stringify({ accountId: f.account.id }), 400],
+      ["any field", {}, JSON.stringify({ turn: 1 }), 400],
+    ];
+    for (const [label, changes, body, expected] of variants) {
+      const headers = { ...valid, ...changes };
+      for (const name of Object.keys(headers))
+        if (headers[name] === undefined) delete headers[name];
+      const response = await f.send(reset, { method: "POST", headers, body });
+      assert.equal(response.status, expected, label);
+      assert.match(
+        response.headers["content-type"],
+        /application\/json/,
+        label,
+      );
+      assert.deepEqual(state(), before, `${label}: nothing moved`);
+    }
+
+    // The transport check comes before the session, for the reset as for the saves.
+    for (const headers of [
+      {},
+      { ...proxyHeaders, "X-Forwarded-Proto": "http" },
+      { ...proxyHeaders, "CF-Connecting-IP": "192.0.2.7,192.0.2.8" },
+    ]) {
+      const name = JSON.stringify(headers);
+      const response = await f.send(reset, {
+        method: "POST",
+        headers: {
+          ...headers,
+          Origin: origin,
+          "Content-Type": "application/json",
+          Cookie: cookie,
+        },
+        body: "{}",
+      });
+      assert.equal(response.status, 403, name);
+      assert.equal(response.headers["cache-control"], "no-store", name);
+      assert.equal(response.headers["set-cookie"], undefined, name);
+      assert.deepEqual(state(), before, `${name}: nothing moved`);
+    }
+
+    // Control: a valid reset moves the save and the route answers 204.
+    const control = await f.send(reset, {
+      method: "POST",
+      headers: valid,
+      body: "{}",
+    });
+    assert.equal(control.status, 204);
+    assert.equal(control.body, "");
+    assert.deepEqual(state().saved, [], "the current save moved");
+    assert.deepEqual(state().previous, before.saved, "to the previous slot");
+  },
+);
