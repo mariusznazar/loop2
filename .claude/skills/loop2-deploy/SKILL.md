@@ -75,8 +75,8 @@ files or requests. The MCP has full rights, so the following limits are an agree
   version, whose first line is what such a reading quotes; they expect no fixed value.
 - Allowed, the log's rotation: `systemctl is-enabled logrotate.timer` (expects `enabled`) and
   `systemctl cat logrotate.timer` (the timer's unit file, which holds the line `OnCalendar=daily`;
-  it shows whether `logrotate` runs every day). Where the server has no such timer, the entry of
-  cron instead is `ls /etc/cron.daily/logrotate` (expects the path back). Also `ls -1 /var/log/loop2-app.log*`,
+  it shows that `logrotate` is scheduled every day, not that a run happened). The server has the
+  entry of cron as well, `ls /etc/cron.daily/logrotate` (expects the path back). Also `ls -1 /var/log/loop2-app.log*`,
   which lists the names of the dump and its rotated copies only, never their content.
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
   `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
