@@ -12,6 +12,7 @@ import { SKILLS } from "../../dist/browser/sim/data/skills.js";
 import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
 import { TRAITS } from "../../dist/browser/sim/data/traits.js";
 import { programFromRules, programWithRules } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 test("the map Las has the size, entrance, step and resources of D-388", () => {
   const forest = MAPS.forest;
@@ -26,6 +27,26 @@ test("the map Las has the size, entrance, step and resources of D-388", () => {
     { id: "moss", density: 0.4, stock: 6, renewMinutes: 60 },
     { id: "fiber", density: 0.4, stock: 6, renewMinutes: 60 },
   ]);
+});
+
+test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () => {
+  assert.deepEqual(MAPS.forestEdge, {
+    name: "Skraj lasu",
+    width: 4,
+    height: 4,
+    entrance: { col: 1, row: 1 },
+    ambientTemperature: 25,
+    stepMinutes: 5,
+    resources: [
+      { id: "stick", density: 1, stock: 12, renewMinutes: 30 },
+      { id: "berry", density: 1, stock: 8, renewMinutes: 40 },
+    ],
+    solving: { streak: 480 },
+    solvingText:
+      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    completionText: "Skraj lasu rozwiązany",
+  });
+  assert.equal(MAPS.forest.opensAfter, "forestEdge");
 });
 
 test("Las — głębiej has the map data, attacker, solving requirements and opening map of D-388", () => {
@@ -536,7 +557,7 @@ test("setProgram accepts every resource of the map data list, in conditions and 
   const program = programFromRules(...rules);
   assert.deepEqual(heldProgram(setProgram(newGame(), program).state), program);
   const running = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     SENT,
     REAL_MS,
   ).state;
@@ -572,7 +593,7 @@ test("setProgram rejects a resource id outside the map data list", async () => {
   const { createCharacter, newGame, send, setProgram } =
     await import("../../dist/browser/sim/game.js");
   const running = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     SENT,
     REAL_MS,
   ).state;
@@ -641,7 +662,7 @@ test("a refused program leaves the game unchanged", async () => {
 test("send rejects a map id not in the data and a character id not in the team", async () => {
   const { createCharacter, newGame, send } =
     await import("../../dist/browser/sim/game.js");
-  const game = createCharacter(newGame(), "Ala").state;
+  const game = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   for (const ids of [
     { mapId: "nowhere", characterId: 1 },
     { mapId: "toString", characterId: 1 },

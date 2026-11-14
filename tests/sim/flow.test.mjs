@@ -15,7 +15,11 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { mixSeed } from "../../dist/browser/sim/random.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
-import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
+import {
+  fullUnderstanding,
+  newKnowingGame,
+  withEdgeSolved,
+} from "./understanding-fixture.mjs";
 
 const mapId = "forest";
 // The first character a new game creates takes the id 1.
@@ -33,7 +37,7 @@ const WANDER_FIRST = programFromRules(
 
 function sent(program = EXPLORING, realMs = REAL_MS) {
   const game = createCharacter(
-    setProgram(newKnowingGame(), program).state,
+    setProgram(withEdgeSolved(newKnowingGame()), program).state,
     "Ala",
   );
   return send(game.state, SENT, realMs);

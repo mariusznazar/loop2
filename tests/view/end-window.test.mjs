@@ -21,7 +21,10 @@ import {
 import { MINUTE_KINDS } from "../../dist/browser/sim/run-record.js";
 import { EndWindow } from "../../dist/browser/view/end-window.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const REAL_MS = 1760000000000;
 const ALWAYS = { kind: "always" };
@@ -30,7 +33,7 @@ const rule = (action) => ({ condition: ALWAYS, action });
 /** A game with a map run of the map given, sent under the rules given. */
 function sent(rules, mapId = "forest") {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...rules),
   ).state;
   return send(
@@ -440,7 +443,7 @@ test("a section stands only where it has content", async () => {
     await show({ ...SOLVED, ruleCounts: {}, discovery: null }, []);
     assert.deepEqual(sectionHeads(container), ["Wyprawa i teren"]);
     const program = setProgram(
-      newKnowingGame(),
+      withEdgeSolved(newKnowingGame()),
       programFromRules(rule({ kind: "explore" })),
     ).state;
     const ruled = withRun(

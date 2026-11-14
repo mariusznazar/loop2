@@ -22,7 +22,7 @@ import {
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { branchRank, buyBranch } from "../../dist/browser/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 /** A real moment of the browser's clock, in ms. */
 const T0 = 1_760_000_000_000;
@@ -36,7 +36,7 @@ const ALWAYS = { kind: "always" };
 
 /** Ala, with „Obchód” bought out of the practice below, and Ola behind her in the team. */
 function team() {
-  let state = createCharacter(newKnowingGame(), "Ala").state;
+  let state = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
   state = createCharacter(state, "Ola").state;
   const [ala, ola] = state.team.characters;
   const skills = {
@@ -236,7 +236,10 @@ test("a moment below zero settles as any other", () => {
 });
 
 /** Las with `state`'s run marked as a run of a solved map. */
-const onSolvedMap = (state) => ({ ...state, solvedMaps: ["forest"] });
+const onSolvedMap = (state) => ({
+  ...state,
+  solvedMaps: ["forestEdge", "forest"],
+});
 
 // D-61, D-190, D-194: a death pays nothing, and the map run stays ended in death.
 test("a death ends the map run, pays nothing and takes what it carried, a resurrection ready or not, on a solved map too", () => {

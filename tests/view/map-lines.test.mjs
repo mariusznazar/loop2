@@ -14,7 +14,7 @@ import {
 } from "../../dist/browser/view/map-lines.js";
 
 // The made-up cases below change one field of Las or Las — głębiej, so each case names the field.
-const { forest, forestDeep } = MAPS;
+const { forestEdge, forest, forestDeep } = MAPS;
 
 test("importing the map lines touches no DOM: Node has no document and the import succeeded", () => {
   assert.equal(typeof globalThis.document, "undefined");
@@ -29,24 +29,34 @@ test("the condition sentence is the map's name, a dash and the solving text of i
 });
 
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
-  assert.deepEqual(sendMaps(), ["forest", "forestDeep"]);
-  assert.deepEqual(sendMaps([]), ["forest"]);
-  assert.deepEqual(sendMaps(["forest"]), ["forest", "forestDeep"]);
+  assert.deepEqual(sendMaps(), ["forestEdge", "forest", "forestDeep"]);
+  assert.deepEqual(sendMaps([]), ["forestEdge"]);
+  assert.deepEqual(sendMaps(["forestEdge"]), ["forestEdge", "forest"]);
+  assert.deepEqual(sendMaps(["forestEdge", "forest"]), [
+    "forestEdge",
+    "forest",
+    "forestDeep",
+  ]);
 });
 
 // D-327: the heading names the map, says „rozwiązana” once it is solved, and says „odsłania ją”
 // with the opener's name from the data at a map another map opens. Catches a heading that drops the
 // solved mark or the opener, or takes the opener's name from the wrong map.
 test("the heading names the map, with the solved mark and the opener's name from the data", () => {
+  assert.deepEqual(cardHeading(forestEdge, false), {
+    name: "Skraj lasu",
+    solved: null,
+    openedBy: null,
+  });
   assert.deepEqual(cardHeading(forest, false), {
     name: "Las",
     solved: null,
-    openedBy: null,
+    openedBy: "odsłania ją Skraj lasu",
   });
   assert.deepEqual(cardHeading(forest, true), {
     name: "Las",
     solved: "rozwiązana",
-    openedBy: null,
+    openedBy: "odsłania ją Skraj lasu",
   });
   assert.deepEqual(cardHeading(forestDeep, false), {
     name: "Las — głębiej",
@@ -104,7 +114,8 @@ test("a step above the usual costs more, one below costs less, the note standing
 });
 
 // D-327: each resource with its name, the tiles that hold it (density times the tiles, rounded to the
-// nearest whole: 0.7 × 16 = 11.2, 0.4 × 16 = 6.4, 0.7 × 25 = 17.5), its stock and its renewal.
+// nearest whole: 0.7 × 16 = 11.2, 0.4 × 16 = 6.4, 0.7 × 25 = 17.5, and 1 × 16 = 16 on every tile), its
+// stock and its renewal.
 // Catches a floored count, a renewal given the wrong minutes, and a resource whose line is missing.
 test("each resource gives its name, the tiles that hold it, its stock and its renewal", () => {
   assert.deepEqual(resourceLines(forest), [
@@ -127,6 +138,18 @@ test("each resource gives its name, the tiles that hold it, its stock and its re
       id: "fiber",
       text: "włókno — ≈ 6 z 16 kafelków, po 6",
       renewal: { text: "+1 co 60 min", warning: false },
+    },
+  ]);
+  assert.deepEqual(resourceLines(forestEdge), [
+    {
+      id: "stick",
+      text: "patyk — ≈ 16 z 16 kafelków, po 12",
+      renewal: { text: "+1 co 30 min", warning: false },
+    },
+    {
+      id: "berry",
+      text: "jagoda — ≈ 16 z 16 kafelków, po 8",
+      renewal: { text: "+1 co 40 min", warning: false },
     },
   ]);
   assert.deepEqual(resourceLines(forestDeep)[0], {

@@ -24,7 +24,7 @@ import {
   solvingRequirements,
 } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const mapId = "forest";
 const SENT = { mapId, characterId: 1 };
@@ -37,7 +37,7 @@ const EXPLORE = { kind: "explore" };
 const HEALTHY = { temperature: 37, satiety: 100, health: 100 };
 
 /** A game sent to Las with a program that explores; the map run stands at minute 0. */
-function sent(game = newKnowingGame()) {
+function sent(game = withEdgeSolved(newKnowingGame())) {
   const ready = createCharacter(setProgram(game, EXPLORING).state, "Ala").state;
   return send(ready, SENT, REAL_MS).state;
 }
@@ -109,7 +109,7 @@ test("a map run with a streak of 479 completes at the end of the next game minut
   assert.ok(!kinds(result.events).includes("activityStarted"));
   assert.equal(result.state.paused, false);
   assert.equal(result.state.discovery, null);
-  assert.deepEqual(result.state.solvedMaps, [mapId]);
+  assert.deepEqual(result.state.solvedMaps, ["forestEdge", mapId]);
 });
 
 test("a streak of 478 completes nothing in the next minute and the pick goes on", () => {
@@ -117,7 +117,7 @@ test("a streak of 478 completes nothing in the next minute and the pick goes on"
   const result = advanceMinutes(state, 1);
   assert.equal(result.state.run.streak, 479);
   assert.equal(result.state.run.completion, null);
-  assert.deepEqual(result.state.solvedMaps, []);
+  assert.deepEqual(result.state.solvedMaps, ["forestEdge"]);
   assert.ok(kinds(result.events).includes("activityStarted"));
 });
 
@@ -129,7 +129,7 @@ test("a minute of loss from a streak of 479 does not complete", () => {
   const result = advanceMinutes(state, 1);
   assert.equal(result.state.run.streak, 0);
   assert.equal(result.state.run.completion, null);
-  assert.deepEqual(result.state.solvedMaps, []);
+  assert.deepEqual(result.state.solvedMaps, ["forestEdge"]);
 });
 
 test("a new game and a new map run hold no completion and no solved map", () => {
@@ -159,7 +159,7 @@ test("real time that ends in a completion stops there and drops the whole carry"
 
 test("the completion in the minute of a discovery leaves the state holding the discovery, not paused", () => {
   const unknowing = {
-    ...newGame(),
+    ...withEdgeSolved(newGame()),
     understanding: {
       actions: [],
       conditions: ["always"],
@@ -190,15 +190,18 @@ test("the completion in the minute of a discovery leaves the state holding the d
   for (const kind of ["actions", "conditions", "items"])
     for (const entry of revealed[kind])
       assert.ok(result.state.understanding[kind].includes(entry), entry);
-  assert.deepEqual(result.state.solvedMaps, [mapId]);
+  assert.deepEqual(result.state.solvedMaps, ["forestEdge", mapId]);
 });
 
 test("a map solved stays solved, once, through restart, end, send and a later death", () => {
   const solved = advanceMinutes(oneShort(), 1).state;
-  assert.deepEqual(restart(solved).state.solvedMaps, [mapId]);
+  assert.deepEqual(restart(solved).state.solvedMaps, ["forestEdge", mapId]);
   const ended = end(solved).state;
-  assert.deepEqual(ended.solvedMaps, [mapId]);
-  assert.deepEqual(send(ended, SENT, REAL_MS).state.solvedMaps, [mapId]);
+  assert.deepEqual(ended.solvedMaps, ["forestEdge", mapId]);
+  assert.deepEqual(send(ended, SENT, REAL_MS).state.solvedMaps, [
+    "forestEdge",
+    mapId,
+  ]);
 
   // A later map run on the same map completes again and the map is listed once.
   const second = restart(solved).state;
@@ -211,7 +214,10 @@ test("a map solved stays solved, once, through restart, end, send and a later de
       current: endingNext(second.run),
     },
   };
-  assert.deepEqual(advanceMinutes(again, 1).state.solvedMaps, [mapId]);
+  assert.deepEqual(advanceMinutes(again, 1).state.solvedMaps, [
+    "forestEdge",
+    mapId,
+  ]);
 
   // A later map run that ends in death leaves the map solved.
   const dying = {
@@ -225,7 +231,7 @@ test("a map solved stays solved, once, through restart, end, send and a later de
   const died = advanceMinutes(dying, 30).state;
   assert.ok(died.run.death);
   assert.equal(died.run.completion, null);
-  assert.deepEqual(died.solvedMaps, [mapId]);
+  assert.deepEqual(died.solvedMaps, ["forestEdge", mapId]);
 });
 
 test("restart after a completion keeps the seed and starts with a streak of 0 and no completion", () => {
@@ -389,22 +395,57 @@ test("solvingRequirements changes neither the map run nor the map", () => {
 });
 
 test("a map is sendable only after each map it opens after is solved", () => {
-  assert.deepEqual(canSendMap([], "forest"), true);
+  assert.deepEqual(canSendMap([], "forestEdge"), true);
+  assert.deepEqual(canSendMap([], "forest"), false);
   assert.deepEqual(canSendMap([], "forestDeep"), false);
-  assert.deepEqual(canSendMap(["forest"], "forestDeep"), true);
-  assert.throws(
-    () =>
-      send(
-        createCharacter(newGame(), "Ala").state,
-        { mapId: "forestDeep", characterId: 1 },
-        REAL_MS,
-      ),
-    /not available/,
-  );
+  assert.deepEqual(canSendMap(["forestEdge"], "forest"), true);
+  assert.deepEqual(canSendMap(["forestEdge"], "forestDeep"), false);
+  assert.deepEqual(canSendMap(["forestEdge", "forest"], "forestDeep"), true);
+  for (const unavailable of ["forest", "forestDeep"]) {
+    assert.throws(
+      () =>
+        send(
+          createCharacter(newGame(), "Ala").state,
+          { mapId: unavailable, characterId: 1 },
+          REAL_MS,
+        ),
+      /not available/,
+    );
+  }
+});
+
+test("completing Skraj lasu solves it alone and opens Las, which a send then reaches", () => {
+  const ready = createCharacter(
+    setProgram(newKnowingGame(), EXPLORING).state,
+    "Ala",
+  ).state;
+  const edge = send(
+    ready,
+    { mapId: "forestEdge", characterId: 1 },
+    REAL_MS,
+  ).state;
+  const state = {
+    ...edge,
+    run: {
+      ...edge.run,
+      body: { ...HEALTHY },
+      streak: 479,
+      current: endingNext(edge.run),
+    },
+  };
+  assert.deepEqual(state.solvedMaps, []);
+  const done = advanceMinutes(state, 1).state;
+  assert.deepEqual(done.run.completion, { minute: 1 });
+  assert.deepEqual(done.solvedMaps, ["forestEdge"]);
+  const onLas = send(end(done).state, SENT, REAL_MS).state;
+  assert.equal(onLas.run.mapId, "forest");
 });
 
 test("an actual program edit resets the streak and defeated attacks; cold loss keeps defeated attacks", () => {
-  const prepared = { ...end(sent()).state, solvedMaps: ["forest"] };
+  const prepared = {
+    ...end(sent()).state,
+    solvedMaps: ["forest"],
+  };
   const deeper = send(
     prepared,
     { mapId: "forestDeep", characterId: 1 },

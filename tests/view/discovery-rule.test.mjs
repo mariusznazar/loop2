@@ -12,6 +12,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { discoveryRule } from "../../dist/browser/view/discovery-rule.js";
 import { programWithRules } from "../sim/program-fixture.mjs";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: "forest",
@@ -43,7 +44,7 @@ const knowing = (found = {}) => ({
  * given ones; the program stands in the copy as it was sent.
  */
 function running(program, understanding, discovery) {
-  const programmed = setProgram(newGame(), program).state;
+  const programmed = setProgram(withEdgeSolved(newGame()), program).state;
   const sent = send(
     createCharacter(programmed, "Ala").state,
     SENT,
@@ -146,7 +147,7 @@ test("a first action that needs a target nobody can pick yet gives way to the ne
 test("the first chill adds „Zawsze → Eksploruj” at the end of the group „Program” and opens the panel on the action", () => {
   // The real first chill of a new game: the discovery holds „Eksploruj”, „Wędruj” and „Temperatura
   // poniżej”, and the copy already holds the rule the game wrote.
-  let state = createCharacter(newGame(), "Ala").state;
+  let state = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   state = send(state, SENT, 1760000000003).state;
   const chilled = advanceMinutes(state, 100).state;
   assert.deepEqual(chilled.discovery.actions, ["explore", "wander"]);

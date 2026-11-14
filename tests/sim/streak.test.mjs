@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 import {
   advanceMinutes,
   createCharacter,
@@ -26,7 +26,10 @@ const EXPLORING = programFromRules({
 /** A game sent to Las; the run stands at minute 0 with the streak at 0. */
 function sent() {
   return send(
-    createCharacter(setProgram(newKnowingGame(), EXPLORING).state, "Ala").state,
+    createCharacter(
+      setProgram(withEdgeSolved(newKnowingGame()), EXPLORING).state,
+      "Ala",
+    ).state,
     SENT,
     REAL_MS,
   ).state;

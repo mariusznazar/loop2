@@ -21,6 +21,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { TabsArea } from "../../dist/browser/view/tabs-area.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000003;
@@ -73,7 +74,7 @@ const buttonNamed = (root, text) =>
   );
 
 /** A new game with one character, not yet sent, and the game after the send. */
-const readyGame = () => createCharacter(newGame(), "Ala").state;
+const readyGame = () => createCharacter(withEdgeSolved(newGame()), "Ala").state;
 const sentGame = () => send(readyGame(), SENT, REAL_MS).state;
 
 /** A chronicle built from a game with no map run, the send of its character recorded. */

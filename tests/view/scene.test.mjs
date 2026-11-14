@@ -22,7 +22,10 @@ import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { createRunScreen } from "../../dist/browser/view/run-screen.js";
 import { Scene } from "../../dist/browser/view/scene.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const STYLES = readFileSync(
   new URL("../../src/browser/styles.css", import.meta.url),
@@ -48,7 +51,7 @@ const WAITING = {
 /** A new game with one character sent into its map, its program explores at once. */
 function sent() {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules({ condition: ALWAYS, action: { kind: "explore" } }),
   ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
@@ -456,7 +459,11 @@ test("a game with no map run draws no scene", async () => {
     const root = createRoot(container);
     await inAct(() =>
       root.render(
-        createElement(Scene, { state: newGame(), width: 672, height: 304 }),
+        createElement(Scene, {
+          state: newGame(),
+          width: 672,
+          height: 304,
+        }),
       ),
     );
     assert.equal(container.childElementCount, 0);

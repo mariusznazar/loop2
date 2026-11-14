@@ -58,6 +58,22 @@ export type MapDef = {
 };
 
 export const MAPS = {
+  forestEdge: {
+    name: "Skraj lasu",
+    width: 4,
+    height: 4,
+    entrance: { col: 1, row: 1 },
+    ambientTemperature: 25,
+    stepMinutes: 5,
+    resources: [
+      { id: "stick", density: 1, stock: 12, renewMinutes: 30 },
+      { id: "berry", density: 1, stock: 8, renewMinutes: 40 },
+    ],
+    solving: { streak: 480 },
+    solvingText:
+      "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    completionText: "Skraj lasu rozwiązany",
+  },
   forest: {
     name: "Las",
     width: 4,
@@ -75,6 +91,7 @@ export const MAPS = {
     solvingText:
       "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
     completionText: "Las rozwiązany",
+    opensAfter: "forestEdge",
   },
   forestDeep: {
     name: "Las — głębiej",

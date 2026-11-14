@@ -23,8 +23,9 @@ def program_rules(program):
 
 # Source text of a JavaScript function for the Node drivers of invariant tests to embed. It gives
 # a new game whose Understanding holds everything the built data modules next to `game.js` list:
-# every action, condition, item, creature and skill tree, and the campfire. It reads the data,
-# so it stays full as the data grows. Pass the module `game.js` was imported as and its path.
+# every action, condition, item, creature and skill tree, and the campfire, and whose first map,
+# Skraj lasu (`forestEdge`), is solved, so that Las, which it opens, can be sent to. It reads the
+# data, so it stays full as the data grows. Pass the module `game.js` was imported as and its path.
 KNOWING_GAME_JS = """
 async function newKnowingGame(game, gamePath) {
   const { dirname, join } = await import('node:path');
@@ -38,6 +39,7 @@ async function newKnowingGame(game, gamePath) {
   const { SKILLS } = await data('skills.js');
   return {
     ...game.newGame(),
+    solvedMaps: ['forestEdge'],
     understanding: {
       actions: Object.keys(ACTIONS),
       conditions: Object.keys(CONDITIONS),

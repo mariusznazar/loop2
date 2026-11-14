@@ -13,7 +13,7 @@ import {
   setPaused,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const mapId = "forest";
 const map = MAPS[mapId];
@@ -53,8 +53,10 @@ function assertPure(name, fn, ...inputs) {
 }
 
 function freshGame() {
-  return createCharacter(setProgram(newKnowingGame(), PROGRAM).state, "Ala")
-    .state;
+  return createCharacter(
+    setProgram(withEdgeSolved(newKnowingGame()), PROGRAM).state,
+    "Ala",
+  ).state;
 }
 
 /** A game mid-run: some minutes passed, a revealed tile, a carry of real time. */

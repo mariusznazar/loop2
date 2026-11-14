@@ -8,6 +8,7 @@ import {
   campCapacity,
   campDrawing,
 } from "../../dist/browser/view/camp-picture.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const NOW = 1_800_000_000_000;
 const MAP = "forest";
@@ -19,7 +20,7 @@ const LOOP = {
 
 /** The new game with `count` characters, named after the order they were created, numbered from 1. */
 function teamOf(count) {
-  let state = newGame();
+  let state = withEdgeSolved(newGame());
   for (let n = 1; n <= count; n++)
     state = createCharacter(state, `Postać ${n}`).state;
   return state;

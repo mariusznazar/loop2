@@ -11,7 +11,10 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { tileLine, tileList } from "../../dist/browser/view/tile-list.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: "forest",
@@ -23,7 +26,7 @@ const EXPLORE = [{ condition: ALWAYS, action: { kind: "explore" } }];
 
 function sent(rules = EXPLORE) {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...rules),
   ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
@@ -50,7 +53,10 @@ function tile(col, row, revealed, stock) {
 }
 
 test("a game without a map run has no columns and no rows", () => {
-  assert.deepEqual(tileList(newGame()), { columns: [], rows: [] });
+  assert.deepEqual(tileList(newGame()), {
+    columns: [],
+    rows: [],
+  });
 });
 
 test("the columns are the map's resources in the map's order, with names and icons from data", () => {

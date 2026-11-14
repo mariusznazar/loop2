@@ -22,7 +22,7 @@ import {
   programHasChangesCopyLacks,
 } from "../../dist/browser/sim/programs.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { fullUnderstanding } from "./understanding-fixture.mjs";
+import { fullUnderstanding, withEdgeSolved } from "./understanding-fixture.mjs";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import {
@@ -45,7 +45,7 @@ function freeze(value) {
   return value;
 }
 function equipped() {
-  let state = createCharacter(newGame(), "Tester").state;
+  let state = createCharacter(withEdgeSolved(newGame()), "Tester").state;
   state = {
     ...state,
     team: {
@@ -338,7 +338,7 @@ test("saved plan edits stay out of the copy; saves and overwrite detection inclu
 test("switching programs retains the entry snapshot, including on solved-map runs", () => {
   // invariant: trip-transfer
   let state = equipped();
-  state = { ...state, solvedMaps: ["forest"] };
+  state = { ...state, solvedMaps: ["forestEdge", "forest"] };
   state = createProgram(state).state;
   state = send(
     state,
@@ -541,7 +541,7 @@ test("the first action already sees entry equipment and transfers preserve their
 
 // Each expected value below is hand-counted from the rules of D-189, D-190 and D-214.
 function solvedForest(state = equipped()) {
-  return { ...state, solvedMaps: ["forest"] };
+  return { ...state, solvedMaps: ["forestEdge", "forest"] };
 }
 function aboutToComplete(state) {
   return { ...state, run: { ...state.run, streak: 479 } };
@@ -625,7 +625,7 @@ test("a run records at its start whether its map was solved, and a restart after
   assert.equal(sent(solvedForest()).run.solvedMapRun, true);
   const completed = advanceMinutes(aboutToComplete(unsolved), 1).state;
   assert.ok(completed.run.completion);
-  assert.deepEqual(completed.solvedMaps, ["forest"]);
+  assert.deepEqual(completed.solvedMaps, ["forestEdge", "forest"]);
   assert.equal(completed.run.solvedMapRun, false, "the mark holds to the end");
   const restarted = restart(completed).state;
   assert.equal(restarted.run.solvedMapRun, true);
@@ -653,7 +653,7 @@ test("completing a manual run of a solved map pays no practice and deposits noth
   assert.deepEqual(completed.team.chest, fixture.team.chest);
   assert.deepEqual(completed.team.characters, fixture.team.characters);
   assert.deepEqual(completed.run.practice, { smallItemGathering: 7 });
-  assert.deepEqual(completed.solvedMaps, ["forest"]);
+  assert.deepEqual(completed.solvedMaps, ["forestEdge", "forest"]);
   assert.equal(completed.run.solvedMapRun, true);
   assert.deepEqual(fixture, before);
   assert.equal(advanceMinutes(completed, 10).state, completed);
@@ -711,7 +711,7 @@ test("a death on a manual run of a solved map takes what the character carried a
   assert.equal(dead.run.deposited, null);
   assert.deepEqual(dead.team.chest, started.team.chest);
   assert.deepEqual(dead.team.characters, started.team.characters);
-  assert.deepEqual(dead.solvedMaps, ["forest"]);
+  assert.deepEqual(dead.solvedMaps, ["forestEdge", "forest"]);
   assert.deepEqual(dead.run.character.backpack, started.run.character.backpack);
 });
 

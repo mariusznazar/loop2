@@ -25,7 +25,10 @@ import {
   requirementText,
 } from "../../dist/browser/view/status-row.js";
 import { programFromRules, ruleActivity } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: "forest",
@@ -37,7 +40,7 @@ const ALWAYS = { kind: "always" };
 /** A game with a map run started by `send` under the given program rules. */
 function sent(rules) {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...rules),
   ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
@@ -146,7 +149,7 @@ test("a paused map run gets „ (pauza)” appended, and loses it when resumed",
 // of a map run, tests/view/run-screen.test.mjs, relies on).
 test("at a stop at a discovery the clock reads „ (pauza)” as at the player's pause, and loses it at „Wznów”", () => {
   const started = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { ...SENT, mapId: "forest" },
     1760000000000,
   );

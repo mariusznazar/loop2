@@ -60,7 +60,10 @@ import {
   withConditionResource,
   withConditionValue,
 } from "../../dist/browser/view/program-editor.js";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: "forest",
@@ -688,15 +691,23 @@ test("choosing a resource or a number changes only that rule; the same choice co
   assert.deepEqual(THREE, before);
 });
 
-test("the resource lists offer the shown map's resources before sending and the run's map's during a run, in order", () => {
+test("the resource lists offer the resources of every map before sending and the run's map's during a run, in order", () => {
+  // D-289: with no map run every discovered target may be picked, whichever maps are open.
   const game = newKnowingGame();
+  assert.deepEqual(game.solvedMaps, []);
   assert.deepEqual(offeredResources(game), LAS);
-  const running = send(
-    createCharacter(game, "Ala").state,
+  const onLas = send(
+    createCharacter(withEdgeSolved(game), "Ala").state,
     SENT,
     1760000000000,
   ).state;
-  assert.deepEqual(offeredResources(running), LAS);
+  assert.deepEqual(offeredResources(onLas), LAS);
+  const onEdge = send(
+    createCharacter(newKnowingGame(), "Ala").state,
+    { mapId: "forestEdge", characterId: 1 },
+    1760000000000,
+  ).state;
+  assert.deepEqual(offeredResources(onEdge), ["stick", "berry"]);
 });
 
 // D-124. Hand-written
@@ -914,7 +925,7 @@ test("every program the editor builds passes setProgram, before sending and duri
 
   const before = newGame();
   const during = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     SENT,
     1760000000000,
   ).state;
@@ -1010,7 +1021,7 @@ const ALWAYS = { kind: "always" };
 /** A game in a map run whose Understanding holds everything and whose character bought no branch. */
 function runningGame() {
   return send(
-    createCharacter(newKnowingGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state,
     SENT,
     1760000000000,
   ).state;
@@ -1272,7 +1283,9 @@ test("a known resource the map of the map run lacks stands greyed: „nie ma go 
 });
 
 test("a target is picked from the resources of the Understanding alone, and an action with no target has no target field", () => {
-  const state = knowing(newKnowingGame(), { items: ["berry", "stick"] });
+  const state = knowing(newKnowingGame(), {
+    items: ["berry", "stick"],
+  });
   assert.deepEqual(
     actionTargetPick(state, { kind: "gather", resource: "berry" }).map(
       (cell) => [cell.label, cell.chosen],

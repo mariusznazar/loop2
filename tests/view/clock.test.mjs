@@ -19,7 +19,10 @@ import {
 } from "../../dist/browser/sim/loop.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { startClock } from "../../dist/browser/view/clock.js";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 /**
  * Runs `body` under Node's mocked timers, with the intervals still registered counted: the timer
@@ -117,7 +120,10 @@ test("games started and disposed one after another leave only the last clock run
 
 test("the clock's send carries the program number to the simulation's send", () => {
   withTimers(() => {
-    const withCharacter = createCharacter(newGame(), "Ala").state;
+    const withCharacter = createCharacter(
+      withEdgeSolved(newGame()),
+      "Ala",
+    ).state;
     const state = createProgram(withCharacter).state;
     const second = state.programs[1];
     let applied = null;
@@ -189,7 +195,7 @@ function holdingStore(state) {
 
 /** Ala on an empty program in Las, one game minute from dying of cold. */
 function lastMinute(readyAtMs = 0) {
-  const made = createCharacter(newKnowingGame(), "Ala").state;
+  const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
   const [ala] = made.team.characters;
   let state = send(
     {
@@ -227,7 +233,7 @@ test("a flush reads the date once, whether the tick or a caller asks for it", ()
 
 test("a send takes the one reading of its flush", () => {
   withBothClocks(({ readings }) => {
-    const state = createCharacter(newGame(), "Ala").state;
+    const state = createCharacter(withEdgeSolved(newGame()), "Ala").state;
     const store = holdingStore(state);
     const clock = startClock(store);
     const start = readings();
@@ -341,7 +347,7 @@ test("the clock gives the moment of its latest reading: the start's until the fi
 test("a send makes a reading, so the moment is the one the send took", () => {
   withBothClocks(() => {
     const clock = startClock(
-      holdingStore(createCharacter(newGame(), "Ala").state),
+      holdingStore(createCharacter(withEdgeSolved(newGame()), "Ala").state),
     );
     clock.send(SENT);
     assert.equal(clock.moment(), T0 + 1000);
@@ -396,7 +402,7 @@ function twoCharacters() {
     createCharacter(newKnowingGame(), "Ala").state,
     "Ola",
   ).state;
-  return { ...made, solvedMaps: ["forest"] };
+  return { ...made, solvedMaps: ["forestEdge", "forest"] };
 }
 
 /** `state` with the loop of character `id` one game minute short of the end of its map run. */

@@ -13,6 +13,7 @@ import { actionFeasible } from "../../dist/browser/sim/program.js";
 import { streamState } from "../../dist/browser/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 // „Zbierz — <zasób mapy>” (D-25, D-64 to D-66, D-71). The numbers below are written
 // out by hand: a gathering lasts 10 game minutes and succeeds in 7 tries of 10, the backpack holds
@@ -308,7 +309,7 @@ test("a map run restart starts the gathering generator anew from the seed", () =
   const rules = [rule(ALWAYS, gather(stick))];
   const sent = send(
     createCharacter(
-      setProgram(newGame(), programFromRules(...rules)).state,
+      setProgram(withEdgeSolved(newGame()), programFromRules(...rules)).state,
       "Ala",
     ).state,
     { mapId, characterId },
@@ -334,7 +335,7 @@ test("the program check takes „Zbierz” with a resource of the map and refuse
   const taken = setProgram(newGame(), takenProgram);
   assert.deepEqual(heldProgram(taken.state), takenProgram);
   const during = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId, characterId },
     1760000000000,
   ).state;
