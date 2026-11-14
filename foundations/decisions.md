@@ -9662,7 +9662,7 @@ Two checks keep the simulation's files from using the page, a timer, the console
 - **Verification:** invariants: simulation-isolation · simulation-type-check
 - **Origin:** none
 
-*Rationale:* the compiler refuses a use of the page, a timer, the console or the structured copy within seconds of a change, where the test of isolation comes late in the gate. The compiler does not take the test's place: the type `Date` belongs to the language, so it does not refuse `Date.now()` or `new Date()`, and it does not refuse an import of a package that brings types of its own, while the test checks the system clock, the imports and a run of the built simulation. A configuration that only checks leaves the compiling of the simulation's files to the browser's configuration, so the files are built once.
+*Rationale:* the compiler refuses a use of the page, a timer, the console or the structured copy at the type check, ahead of the slower tests of the gate among which the test of isolation stands. The compiler does not take the test's place: the type `Date` belongs to the language, so it does not refuse `Date.now()` or `new Date()`, and it does not refuse an import of a package that brings types of its own, while the test checks the system clock, the imports and a run of the built simulation. A configuration that only checks leaves the compiling of the simulation's files to the browser's configuration, so the files are built once.
 *Rejected:* cutting from the test of isolation the part of its scan of sources that the compiler takes over — a shorter test, but it has to be cut exactly so that the system clock and the imports are not lost, it changes what the test checks of `simulation-isolation`, the work grows and a gap may open; moving the simulation into a directory of its own with its own configuration — the path of the simulation changes in the tests, the guidelines, the foundation and the configuration and the build is rebuilt, for a gain that a separate configuration gives without the move, and the move would make sense if the server computed the game, while D-07 says the server computes nothing of the game.
 
 ### D-394 — Does the simulation keep `actionFeasible`, which the game does not call?
@@ -9693,4 +9693,4 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 - **Origin:** none
 
 *Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
-*Rejected:* the control picking the rule of a screen by a value of its parameter `rule`, as `rule="trip"` did — the source keeps no cost or reason beside it, so none is known.
+*Rejected:* the control picking the rule of a screen by a value of one of its parameters — no cost or reason of it is known.
