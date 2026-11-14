@@ -203,8 +203,13 @@ function showProblems(checked: [CardField, string | null | undefined][]) {
 }
 
 /** The fields of an account, copied, so nothing else of the answer passes on. */
-function accountOf({ id, email, emailConfirmed }: Account): Account {
-  return { id, email, emailConfirmed };
+function accountOf({
+  id,
+  email,
+  emailConfirmed,
+  previousSaveAllowed,
+}: Account): Account {
+  return { id, email, emailConfirmed, previousSaveAllowed };
 }
 
 /** A text input with the keyboard of an address; the browser's own check is stricter than the server's. */

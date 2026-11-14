@@ -320,11 +320,21 @@ function heldClient() {
 
 const ACCOUNT = {
   ok: true,
-  value: { id: "a1", email: "ala@example.com", emailConfirmed: true },
+  value: {
+    id: "a1",
+    email: "ala@example.com",
+    emailConfirmed: true,
+    previousSaveAllowed: false,
+  },
 };
 const UNCONFIRMED_ACCOUNT = {
   ok: true,
-  value: { id: "a1", email: "ala@example.com", emailConfirmed: false },
+  value: {
+    id: "a1",
+    email: "ala@example.com",
+    emailConfirmed: false,
+    previousSaveAllowed: false,
+  },
 };
 const NO_SESSION = {
   ok: false,
