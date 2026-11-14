@@ -182,11 +182,11 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  // Version 4 is the current schema version (D-112), so 5 is the first version
-  // this code does not know.
-  raw.exec("PRAGMA user_version = 5");
+  // Version 5 is the current schema version (D-112, D-394), so 6 is the first
+  // version this code does not know.
+  raw.exec("PRAGMA user_version = 6");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.equal(
     raw.prepare("SELECT count(*) AS count FROM accounts").get().count,
     1,
@@ -315,12 +315,12 @@ async function olderDatabaseFixture(t, sql, version) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-// A database may still be at version 1 when version 4 arrives, so it moves
-// through steps 2, 3 and 4 in one opening.
-test("a version-1 database opens as version 4 with every account and session intact, no account blocked and no address confirmed", async (t) => {
+// A database may still be at version 1 when version 5 arrives, so it moves
+// through steps 2, 3, 4 and 5 in one opening.
+test("a version-1 database opens as version 5 with every account and session intact, no account blocked, no address confirmed and no account privileged", async (t) => {
   const { path, raw, track } = await versionOneFixture(t);
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.deepEqual(storedVersionOneRows(raw), {
     accounts: versionOneAccounts,
     sessions: versionOneSessions,
@@ -333,6 +333,7 @@ test("a version-1 database opens as version 4 with every account and session int
       createdAt: account.created,
       blocked: false,
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
   for (const session of versionOneSessions)
     assert.deepEqual(database.readSession(session.id), {
@@ -344,7 +345,7 @@ test("a version-1 database opens as version 4 with every account and session int
   assert.equal(database.blockAccount("b@example.test").outcome, "blocked");
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.equal(reopened.findAccountByEmail("b@example.test").blocked, true);
   assert.equal(reopened.findAccountByEmail("a@example.test").blocked, false);
   assert.equal(reopened.readSession("browser-a1").accountId, "account-a");
@@ -441,14 +442,14 @@ function storedLinkCount(raw) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-2 database opens as version 4 with every account, blocked state and session intact and no address confirmed", async (t) => {
+test("a version-2 database opens as version 5 with every account, blocked state and session intact, no address confirmed and no account privileged", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionTwoDatabase,
     2,
   );
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.deepEqual(storedVersionTwoRows(raw), {
     accounts: versionTwoAccounts,
     sessions: versionOneSessions,
@@ -461,6 +462,7 @@ test("a version-2 database opens as version 4 with every account, blocked state 
       createdAt: account.created,
       blocked: account.blocked === 1,
       emailConfirmed: false,
+      previousSaveAllowed: false,
     });
   for (const session of versionOneSessions)
     assert.deepEqual(database.readSession(session.id), {
@@ -484,7 +486,7 @@ test("a version-2 database opens as version 4 with every account, blocked state 
   );
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.equal(reopened.findAccountById("account-a").emailConfirmed, true);
   assert.equal(reopened.findAccountById("account-b").emailConfirmed, false);
   assert.equal(reopened.findAccountById("account-c").blocked, true);
@@ -584,14 +586,14 @@ function storedVersionThreeRows(raw) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-3 database opens as version 4 with every row and value kept and no saved game state", async (t) => {
+test("a version-3 database opens as version 5 with every row and value kept, no saved game state and no previous save", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionThreeDatabase,
     3,
   );
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.deepEqual(storedVersionThreeRows(raw), {
     accounts: versionThreeAccounts,
     sessions: versionOneSessions,
@@ -606,6 +608,7 @@ test("a version-3 database opens as version 4 with every row and value kept and 
       createdAt: account.created,
       blocked: account.blocked === 1,
       emailConfirmed: account.confirmed !== null,
+      previousSaveAllowed: false,
     });
     assert.equal(database.readSavedGame(account.id), null, account.id);
   }
@@ -636,7 +639,7 @@ test("a version-3 database opens as version 4 with every row and value kept and 
   );
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
   assert.deepEqual(reopened.readSavedGame("account-a"), {
     version: 1,
     revision: 1,
@@ -648,6 +651,106 @@ test("a version-3 database opens as version 4 with every row and value kept and 
     sessions: versionOneSessions,
     links: versionThreeLinks,
   });
+});
+
+// A version-4 database as the code of version 4 writes it: the version-3
+// database moved by the saved game state step, the schema the test server holds
+// before this version. Account a holds a saved game state, which must outlast
+// the move unchanged.
+const versionFourDatabase = `${versionThreeDatabase}
+  CREATE TABLE saved_games (
+    account_id TEXT PRIMARY KEY NOT NULL
+      REFERENCES accounts(id) ON DELETE CASCADE,
+    version INTEGER NOT NULL CHECK (version >= 1),
+    revision INTEGER NOT NULL CHECK (revision >= 1),
+    game TEXT NOT NULL CHECK (length(CAST(game AS BLOB)) <= 65536)
+  ) STRICT;
+  INSERT INTO saved_games VALUES ('account-a', 2, 3, '{"kept":true}');
+`;
+
+// invariant: account-database-schema
+// invariant: account-schema-lifecycle
+test("a version-4 database opens as version 5 with every row kept, every account unprivileged and no previous save", async (t) => {
+  const { path, raw, track } = await olderDatabaseFixture(
+    t,
+    versionFourDatabase,
+    4,
+  );
+  const database = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+  assert.deepEqual(
+    rows(raw, "SELECT account_id, version, revision, game FROM saved_games"),
+    [
+      {
+        account_id: "account-a",
+        version: 2,
+        revision: 3,
+        game: '{"kept":true}',
+      },
+    ],
+  );
+  for (const account of versionThreeAccounts) {
+    assert.equal(
+      database.findAccountByEmail(account.email).previousSaveAllowed,
+      false,
+      account.id,
+    );
+    assert.equal(database.readPreviousSavedGame(account.id), null, account.id);
+  }
+  assert.deepEqual(database.readSavedGame("account-a"), {
+    version: 2,
+    revision: 3,
+    game: '{"kept":true}',
+  });
+});
+
+// invariant: account-schema-lifecycle
+test("a failing step 5 leaves a version-4 database at version 4 with its rows, columns and tables unchanged", async (t) => {
+  // A table of the new name already there makes step 5 fail after it has added
+  // the privilege column, which the rollback has to take away again.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionFourDatabase}
+      CREATE TABLE previous_saves (marker TEXT);
+      INSERT INTO previous_saves VALUES ('keep');`,
+    4,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /already exists/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+  assert.deepEqual(
+    rows(raw, "SELECT name FROM pragma_table_info('accounts') ORDER BY cid"),
+    [
+      "id",
+      "email",
+      "password_hash",
+      "created_at",
+      "blocked",
+      "email_confirmed_at",
+    ].map((name) => ({ name })),
+  );
+  assert.deepEqual(tableNames(raw), [
+    "accounts",
+    "emailed_links",
+    "previous_saves",
+    "saved_games",
+    "sessions",
+  ]);
+  assert.deepEqual(rows(raw, "SELECT marker FROM previous_saves"), [
+    { marker: "keep" },
+  ]);
 });
 
 function tableNames(raw) {
@@ -926,6 +1029,275 @@ test("a saved game state goes with its account, and a save for an unknown accoun
     game: "{}",
   });
   assert.equal(savedGameCount(raw), 1);
+});
+
+function storedPreviousSave(raw, accountId) {
+  const row = raw
+    .prepare(
+      "SELECT version, revision, game FROM previous_saves WHERE account_id = ?",
+    )
+    .get(accountId);
+  return row ? { ...row } : undefined;
+}
+
+// invariant: previous-save-slot
+test("a save of a higher version moves the stored save into the previous slot, a second move replaces it, and a first or same-version save moves nothing", async (t) => {
+  const { database, account } = await fixture(t);
+  const save = (version, basedOn, game) =>
+    database.writeSavedGame(account.id, { version, basedOn, game });
+  assert.deepEqual(save(1, 0, '{"v":1}'), { outcome: "saved", revision: 1 });
+  assert.equal(
+    database.readPreviousSavedGame(account.id),
+    null,
+    "a first save moves nothing",
+  );
+  assert.deepEqual(save(1, 1, '{"v":1,"second":true}'), {
+    outcome: "saved",
+    revision: 2,
+  });
+  assert.equal(
+    database.readPreviousSavedGame(account.id),
+    null,
+    "a save of the same version moves nothing",
+  );
+
+  assert.deepEqual(save(2, 2, '{"v":2}'), { outcome: "saved", revision: 3 });
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 1,
+    revision: 2,
+    game: '{"v":1,"second":true}',
+  });
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 2,
+    revision: 3,
+    game: '{"v":2}',
+  });
+
+  assert.deepEqual(save(3, 3, '{"v":3}'), { outcome: "saved", revision: 4 });
+  assert.deepEqual(
+    database.readPreviousSavedGame(account.id),
+    { version: 2, revision: 3, game: '{"v":2}' },
+    "the second move replaces the first",
+  );
+});
+
+// invariant: previous-save-slot
+test("a save refused as blocked, outdated or conflicting moves nothing, neither the current save nor the previous one", async (t) => {
+  const { path, database, account, track } = await fixture(t);
+  const save = (version, basedOn, game) =>
+    database.writeSavedGame(account.id, { version, basedOn, game });
+  save(1, 0, '{"v":1}');
+  save(2, 1, '{"v":2}');
+  const previous = { version: 1, revision: 1, game: '{"v":1}' };
+  const current = { version: 2, revision: 2, game: '{"v":2}' };
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+
+  assert.deepEqual(save(3, 1, '{"stale":3}'), { outcome: "conflict" });
+  assert.deepEqual(save(1, 2, '{"old":1}'), { outcome: "outdated" });
+  const operator = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
+  assert.deepEqual(save(3, 2, '{"blocked":3}'), { outcome: "blocked" });
+
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+  assert.deepEqual(database.readSavedGame(account.id), current);
+});
+
+// invariant: previous-save-slot
+test("a save whose write fails after its move leaves both the previous save and the current save as they were", async (t) => {
+  const { database, account } = await fixture(t);
+  const save = (version, basedOn, game) =>
+    database.writeSavedGame(account.id, { version, basedOn, game });
+  save(1, 0, '{"v":1}');
+  save(2, 1, '{"v":2}');
+  const full = "ż".repeat(32_768);
+  // The move copies the current save into the slot first; the text over the
+  // limit then fails the write, and the transaction takes the copy back.
+  assert.throws(() => save(3, 2, `${full}a`), /CHECK constraint/);
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"v":1}',
+  });
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 2,
+    revision: 2,
+    game: '{"v":2}',
+  });
+});
+
+// invariant: previous-save-slot
+test("a reset of a privileged, unblocked account moves the current save into the previous slot and leaves no current save", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  database.writeSavedGame(account.id, {
+    version: 1,
+    basedOn: 0,
+    game: '{"programs":["Las"]}',
+  });
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("player@example.test", true),
+    { outcome: "granted", accountId: account.id },
+  );
+  assert.deepEqual(database.resetSavedGame(account.id), { outcome: "moved" });
+  assert.equal(database.readSavedGame(account.id), null);
+  assert.equal(savedGameCount(raw), 0);
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"programs":["Las"]}',
+  });
+});
+
+// invariant: previous-save-slot
+test("a reset replaces the previous save the earlier moves left, and the next save of the new game starts at revision 1", async (t) => {
+  const { database, account } = await fixture(t);
+  const save = (version, basedOn, game) =>
+    database.writeSavedGame(account.id, { version, basedOn, game });
+  database.setPreviousSavePrivilege("player@example.test", true);
+  save(1, 0, '{"first":1}');
+  save(2, 1, '{"second":2}');
+  assert.deepEqual(database.resetSavedGame(account.id), { outcome: "moved" });
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 2,
+    revision: 2,
+    game: '{"second":2}',
+  });
+  // D-209: after a reset the account has no save, so a save based on 0 starts at 1.
+  assert.deepEqual(save(2, 0, '{"new":1}'), { outcome: "saved", revision: 1 });
+  assert.deepEqual(database.resetSavedGame(account.id), { outcome: "moved" });
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 2,
+    revision: 1,
+    game: '{"new":1}',
+  });
+});
+
+// invariant: previous-save-slot
+test("a reset moves nothing without the privilege, for a blocked account, and with no current save", async (t) => {
+  const { path, database, raw, account, track } = await fixture(t);
+  database.writeSavedGame(account.id, {
+    version: 1,
+    basedOn: 0,
+    game: '{"kept":1}',
+  });
+  assert.deepEqual(database.resetSavedGame(account.id), {
+    outcome: "unprivileged",
+  });
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"kept":1}',
+  });
+  assert.equal(database.readPreviousSavedGame(account.id), null);
+
+  // The block is read before the privilege: a blocked account without the
+  // privilege answers blocked.
+  const operator = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
+  database.setPreviousSavePrivilege("player@example.test", true);
+  assert.deepEqual(database.resetSavedGame(account.id), { outcome: "blocked" });
+  assert.deepEqual(database.readSavedGame(account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"kept":1}',
+  });
+  assert.equal(database.readPreviousSavedGame(account.id), null);
+  assert.equal(storedPreviousSave(raw, account.id), undefined);
+
+  const empty = database.createAccount("empty@example.test", "hash");
+  database.setPreviousSavePrivilege("empty@example.test", true);
+  assert.deepEqual(database.resetSavedGame(empty.id), {
+    outcome: "nothing-to-move",
+  });
+  assert.equal(database.readPreviousSavedGame(empty.id), null);
+  assert.equal(storedPreviousSave(raw, empty.id), undefined);
+});
+
+// invariant: previous-save-slot
+test("blocking, unblocking, granting and revoking the privilege leave the previous save as it is", async (t) => {
+  const { database, account } = await fixture(t);
+  database.writeSavedGame(account.id, {
+    version: 1,
+    basedOn: 0,
+    game: '{"v":1}',
+  });
+  database.writeSavedGame(account.id, {
+    version: 2,
+    basedOn: 1,
+    game: '{"v":2}',
+  });
+  const previous = { version: 1, revision: 1, game: '{"v":1}' };
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+  assert.equal(database.blockAccount("player@example.test").outcome, "blocked");
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+  assert.equal(
+    database.unblockAccount("player@example.test").outcome,
+    "unblocked",
+  );
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+  database.setPreviousSavePrivilege("player@example.test", true);
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+  database.setPreviousSavePrivilege("player@example.test", false);
+  assert.deepEqual(database.readPreviousSavedGame(account.id), previous);
+});
+
+// invariant: previous-save-slot
+test("the privilege write answers granted, already granted, revoked, not granted and unknown, and the account reads it back", async (t) => {
+  const { database, account } = await fixture(t);
+  assert.equal(database.findAccountById(account.id).previousSaveAllowed, false);
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("player@example.test", true),
+    { outcome: "granted", accountId: account.id },
+  );
+  assert.equal(database.findAccountById(account.id).previousSaveAllowed, true);
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("player@example.test", true),
+    { outcome: "already-granted", accountId: account.id },
+  );
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("player@example.test", false),
+    { outcome: "revoked", accountId: account.id },
+  );
+  assert.equal(database.findAccountById(account.id).previousSaveAllowed, false);
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("player@example.test", false),
+    { outcome: "not-granted", accountId: account.id },
+  );
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("absent@example.test", true),
+    { outcome: "unknown" },
+  );
+});
+
+// invariant: previous-save-slot
+test("the table of previous saves holds at most 65 536 bytes of text, counted in bytes, a longer one changes nothing, and it goes with its account", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  const other = database.createAccount("other@example.test", "hash");
+  // D-104: the previous save has the limit of the saved game state, so "ż"
+  // counts two bytes and 32 768 of them fill the limit exactly.
+  const full = "ż".repeat(32_768);
+  raw
+    .prepare("INSERT INTO previous_saves VALUES (?, 1, 1, ?)")
+    .run(account.id, full);
+  assert.equal(database.readPreviousSavedGame(account.id)?.game, full);
+  assert.throws(
+    () =>
+      raw
+        .prepare("INSERT INTO previous_saves VALUES (?, 1, 1, ?)")
+        .run(other.id, `${full}a`),
+    /CHECK constraint/,
+  );
+  assert.throws(
+    () =>
+      raw
+        .prepare("UPDATE previous_saves SET game = ? WHERE account_id = ?")
+        .run(`${full}a`, account.id),
+    /CHECK constraint/,
+  );
+  assert.equal(storedPreviousSave(raw, other.id), undefined);
+  assert.equal(database.readPreviousSavedGame(account.id)?.game, full);
+
+  raw.prepare("DELETE FROM accounts WHERE id = ?").run(account.id);
+  assert.equal(storedPreviousSave(raw, account.id), undefined);
 });
 
 // invariant: account-message-limits
@@ -1287,8 +1659,8 @@ test("a working reset link replaces the password, deletes every session of its a
   assert.equal(database.findAccountById(other.id).passwordHash, "other-hash");
   assert.equal(
     raw.prepare("PRAGMA user_version").get().user_version,
-    4,
-    "no schema step is added",
+    5,
+    "the schema stays at its current version 5",
   );
 
   // The link is spent with the password: neither it nor the link left over

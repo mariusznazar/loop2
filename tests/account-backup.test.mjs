@@ -278,7 +278,7 @@ test("a backup made beside a separate writer finishes, opens and holds everythin
       opened.prepare("PRAGMA integrity_check").get().integrity_check,
       "ok",
     );
-    assert.equal(opened.prepare("PRAGMA user_version").get().user_version, 4);
+    assert.equal(opened.prepare("PRAGMA user_version").get().user_version, 5);
   } finally {
     opened.close();
   }
