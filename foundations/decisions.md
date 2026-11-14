@@ -9872,6 +9872,51 @@ The full gate runs the directories of Python tests one after another, giving the
 *Rationale:* three full runs with the directories at the same time, on one computer of 32 GB as it was, with other work on it that no file of the repository records, took 18.3 to 19.6 minutes. The gate had been measured earlier with the directories one after another at 23 to 24 minutes on a slow computer and at 24.0 to 28.0 minutes with another cycle working beside it; that measurement is a note made on 2026-11-12 outside the repository, and the conditions of the two sets of runs are not alike. In each of the three runs the same two tests failed and no other: the two that prove that a run of the gate starts Docker Desktop once and waits for it once, each seeing it started twice. Run alone on the same tree, those two tests fail with the directories at the same time and pass with them one after another. The cause is read in the code of the start of Docker Desktop: a start that has not finished is recorded only when its wait ends, and a process asks for that record before it starts Docker Desktop, so two directories running at the same time both find none, both start it and both wait. These measurements are the product's own, and their records are not open to a reader of the repository. Whether the other tests that use Docker, with the names of their containers, images, volumes and networks, stand running at the same time was not examined; only the start of Docker Desktop is known to fail. Accepted with it: the gate takes longer than in those three runs until the repair is made; by how much has not been measured under like conditions.
 *Rejected:* the repair of the isolation made in the same change as the one-after-another run — its extent is unknown, because what fails is not known, and the change may grow several times over; the change stopping and opening a request held back, with the results — one more round, but the decision rests on facts.
 
+### D-407 — Does the browser view keep a React root for each screen, and where does its state live?
+
+The browser view keeps React roots of its own for each screen and for the menu bar, none shared between screens, and no single root over the whole view. The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`, and the state of one screen lives in the component of that screen.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-03
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new screen built as a root of its own, whose factory receives the game state from the store and the memory of its unfolded trees, shared with another screen, as a memory of the page read through `useSyncExternalStore`; a setting only that screen reads kept in its component
+  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a memory two screens share held in the component of one of them
+- **Origin:** none
+
+*Rationale:* the store and the state of the screen Przejście stay as they are under any later choice of one root for the view, so a change of mind costs only the table of screens. Separate roots change nothing the player sees just before the next screen is added, and the question of one root stays open until the view is wholly in React. Accepted with it: the menu bar and the account card stay roots of their own beside the screens, a panel that the page moves by hand between two places stays moved by hand, outside what React knows, and a context of React reaches only the inside of one root.
+*Rejected:* one root with portals into the places of today's page — it gives a context of React shared by the screens, but it does not remove the moving of a rule's panel by hand, since React builds the content anew when a portal changes its place and the field loses its focus, and the page is still built by hand, so in practice it is a stop on the way to one root as a component; one root with the game view written as a component — the tutorial hints get a context for nothing and the two rules of the life of screens go, but it is a rewrite of the game view's controller, many tests call the factories of the screens directly, a change the player sees is a greater risk just before a new screen, and the menu bar and the account card stay roots of their own anyway; a trial of one tree on the screen Programy first — a medium task for an agent and a conversation about its result, so the next screen waits longer
+
+### D-408 — What does a new screen of the game add, and where?
+
+A new screen of the game is added as a module of its own, one entry in the registry of screens, its address and its position on the menu bar. No function the game view shares between its screens names the new screen, and its entry is one line of the table the registry is made from.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280 · derives from D-281
+- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries, and refuses a table that leaves a kind of screen without an entry. An agent compares a change with the part no test holds:
+  - complies: the screen Wiedza added as its module, an entry file, one line of the registry's table with that entry's import, its address in the module of addresses and its place on the menu bar
+  - violates: a new screen that names its kind in a function of the game view outside its entry and the line of the table, or that the registry shows, draws, focuses or takes down by a branch written for it
+- **Origin:** none
+
+*Rationale:* the shared functions of the game view held a branch for each screen, so a screen added later meant a line in each of them, and a forgotten line gave a fault hard to notice, such as a screen that was not drawn after a result. A table of entries turns those functions into loops over the table, with one branch left for the way back to the screen of a map run, so a new screen touches none of them. Accepted with it: the table lists the screens in the order they stand in the page, so the place of a new entry in it is chosen on purpose, and the address and the menu bar stay outside the registry because the page owns them.
+*Rejected:* unknown
+
+### D-409 — Where does an act of the player that depends on time catch up the time?
+
+An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs, so no act reads the clock itself before it calls the simulation. A new character and the purchase of a branch rank do not catch up time.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-04
+- **Verification:** tests: that the store reads the clock and passes the time elapsed to the simulation before the body of an act runs, and that its act without catch-up reads no clock. An agent compares a change with the part no test holds:
+  - complies: a new act of the screen Wiedza written as an act of the store that reads the state in its body, after the store's reading of the clock; a new character created with no reading of the clock before it
+  - violates: an act that calls the simulation with the state it holds with no reading of the clock before it; an act that reads the clock itself and then calls the simulation, beside the store's own reading
+- **Origin:** none
+
+*Rationale:* the protocol „first count the time, then do the act” stands in one place, so an act written later cannot leave it out unnoticed, where a call written before each act could. The two acts that never catch up time are named, so that a later act does not copy them by chance.
+*Rejected:* unknown
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

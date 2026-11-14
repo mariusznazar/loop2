@@ -12,6 +12,22 @@ export type Screen =
   | { readonly kind: "maps" }
   | { readonly kind: "map"; readonly mapId: MapId };
 
+/**
+ * Every kind of `Screen`, which the registry of screens checks that its entries hold (D-408). The
+ * record names each kind once, so a kind added to `Screen` and left out of it stops the build, and a
+ * name that is no kind stops it too.
+ */
+const KIND_NAMED = {
+  headquarters: true,
+  character: true,
+  programs: true,
+  program: true,
+  run: true,
+  maps: true,
+  map: true,
+} as const satisfies Record<Screen["kind"], true>;
+export const SCREEN_KINDS = Object.keys(KIND_NAMED) as Screen["kind"][];
+
 /** The items of the menu bar that a screen can mark (D-280, D-277). */
 export type MenuItem = "headquarters" | "programs" | "maps";
 
