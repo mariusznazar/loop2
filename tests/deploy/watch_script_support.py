@@ -22,8 +22,8 @@ What a run gets:
   second later at each further ask of the same run, so a script that reads the time again for the
   end of its window shows it;
 - a `flock` that, besides the answers by pattern, refuses a shared lock from the Nth look at the
-  deployment's lock on (`hold_deploy_lock_from`), so a deployment that begins between the two looks
-  of one run can be made;
+  deployment's lock on (`hold_deploy_lock_from`), with a chosen status, so a deployment that begins
+  between the two looks of one run can be made, and a `flock` that breaks at the second look too;
 - a `pusher` that keeps what it read from each call, one record per call;
 - `timeout`, `mkdir`, `mv` and `rm` of the machine, so a time limit and a missing directory are real;
 - the state directory, the log, the watcher's own lock and the deployment's lock under the
@@ -93,7 +93,7 @@ BEFORE = {
   looks=$(( $(cat "$stubs/calls/shared-looks" 2>/dev/null || echo 0) + 1 ))
   printf '%s' "$looks" >"$stubs/calls/shared-looks"
   if [[ -f $stubs/hold-shared-from ]] && (( looks >= $(<"$stubs/hold-shared-from") )); then
-    exit 1
+    exit "$(<"$stubs/hold-shared-status")"
   fi
 fi""",
 }
@@ -242,9 +242,12 @@ class WatchFixture(backup_support.BackupFixture):
         deploy_support.write_bytes(os.path.join(self.stubs, "log-output"), text.encode())
         deploy_support.write_bytes(os.path.join(self.stubs, "log-error"), errors.encode())
 
-    def hold_deploy_lock_from(self, look):
-        """From the `look`-th ask for a shared lock of one run on, the lock is held: 1 is held at
+    def hold_deploy_lock_from(self, look, status=1):
+        """From the `look`-th ask for a shared lock of one run on, `flock` answers `status` (1, a
+        held lock, by default; 2 or 127, a broken `flock`, to test the other case): 1 is held at
         the first look, 2 is free at the first and held at the second."""
+        deploy_support.write_bytes(os.path.join(self.stubs, "hold-shared-status"),
+                                   f"{status}\n".encode())
         deploy_support.write_bytes(os.path.join(self.stubs, "hold-shared-from"),
                                    f"{look}\n".encode())
 

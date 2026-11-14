@@ -497,6 +497,25 @@ class TheDeploymentLock(WithFixture):
                 self.assertRegex(lines[0], rf"skipped: .*\(flock exit {status}\)")
                 self.assertNotRegex(lines[0], r"is held|holds")
 
+    def test_a_broken_flock_at_the_second_look_drops_the_readings_and_names_its_status(self):
+        # The break: any non-zero status at the second look named as a held lock, so a broken
+        # `flock` looks like a deployment that is running while the readings are dropped.
+        for status in (2, 127):
+            with self.subTest(status):
+                fixture = self.primed()
+                before = fixture.state_text()
+                fixture.set_container(support.GAME, support.GAME_ID, status="exited")
+                fixture.set_log(failure_line())
+                fixture.hold_deploy_lock_from(2, status=status)
+                result, lines = self.run_logged(fixture, T0 + FIVE_MINUTES)
+                self.assert_quiet(result)
+                self.assertIn("docker", result.tools(), "precondition: the readings were made")
+                self.assertEqual(fixture.state_text(), before)
+                self.assertEqual(len(lines), 1, result)
+                self.assertRegex(lines[0], rf"loop2-watch: dropped: .*\(flock exit {status}\)",
+                                 result)
+                self.assertNotRegex(lines[0], r"is held|holds", result)
+
     def test_the_lock_is_only_asked_for_shared_and_without_waiting_by_its_descriptor(self):
         # The break: `flock` called on the path, which would create the file as root; or a wait.
         fixture = self.primed()
