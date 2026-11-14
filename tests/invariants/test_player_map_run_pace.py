@@ -16,8 +16,8 @@ holds a discovery (`discovery` not null). The new game of each sent character is
 Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
 `program_fixture.py` gives it, so that the rules of the program stay what the check drives and no
 game minute discovers anything; the discovery scenarios alone start from the new game `newGame()`
-gives, which knows nothing, with Skraj lasu solved so that Las can be sent to, and its program of
-one empty group.
+gives, which knows only the condition „Zawsze” and the action „Eksploruj”, with Skraj lasu solved
+so that Las can be sent to, and its program of one empty group.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
@@ -163,8 +163,8 @@ CONTROL = PREFIX + (
 
 # The discovery scenario: (input, the map run's game minute after it, whether the game is paused
 # after it, the real time carried over after it, whether the game holds a discovery). The new game
-# is the one that knows nothing, sent with its program of one empty group: its first chill is in
-# game minute 84 (D-121) and writes the rule that makes it explore (D-123), whose exploration ends,
+# is the one that knows only the start, sent with its program of one empty group: its first chill
+# is in game minute 84 (D-121) and writes the rule that makes it explore (D-123), whose exploration ends,
 # a discovery too, in game minute 104.
 BARE_START = [["newBareGame"], CREATE, ["send", SENT, T]]
 DISCOVERY_SCENARIO = (

@@ -1,8 +1,10 @@
 // Discovery in the game minute of a map run: what a minute reveals, the Understanding growing and
 // the rule written at the first chill. Expectations come from D-118 (what the Understanding holds
 // at the start), D-121 (what each discovery brings), D-122 (the pause after the minute of a
-// discovery) and D-123 (the rule written at the first chill). The first chill is minute 84: Las
-// cools the body by 0.002 × (37 − 25) = 0,024 °C a minute, so minute 83 ends at 35,008 °C and
+// discovery), D-123 (the rule written at the first chill, only where the copy holds no rule
+// „Eksploruj”) and D-195 (the tree of Eksploracja, which enters with the first finished
+// exploration). The first chill of the program of a new game, which holds no rule, is minute 84:
+// Las cools the body by 0.002 × (37 − 25) = 0,024 °C a minute, so minute 83 ends at 35,008 °C and
 // minute 84 at 34,984 °C, below the 35,0 °C of a chill.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -36,16 +38,18 @@ const EXPLORE_RULE = {
   action: { kind: "explore" },
 };
 
-// The Understanding after the first chill, from the first row of D-121.
+// The Understanding after the first chill, from the first row of D-121: the chill adds „Wędruj”
+// and „Temperatura poniżej” to the start, and no tree (D-195).
 const CHILLED = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
   items: [],
-  trees: ["exploration"],
+  trees: [],
   creatures: [],
 };
-const NOTHING = {
-  actions: [],
+// The Understanding of a new game (D-118): the condition „Zawsze” and the action „Eksploruj”.
+const START = {
+  actions: ["explore"],
   conditions: ["always"],
   items: [],
   trees: [],
@@ -121,13 +125,13 @@ function assertWritten(state, program) {
   assert.deepEqual(state.programs[0].program, program, "program 1");
 }
 
-test("a new game sent with its one empty group waits until the minute of the first chill, which learns Eksploruj, Wędruj and Temperatura poniżej, writes Zawsze → Eksploruj into the group Program and starts exploring in that minute", () => {
+test("a new game sent with its one empty group waits until the minute of the first chill, which learns Wędruj and Temperatura poniżej, writes Zawsze → Eksploruj into the group Program and starts exploring in that minute", () => {
   const before = advanceMinutes(sentNew(), 83);
   assert.equal(before.state.run.minute, 83);
   assert.equal(before.state.run.body.temperature, 35.008);
   assert.deepEqual(before.state.run.current.activity, { kind: "wait" });
   assert.deepEqual(discoveries(before.events), []);
-  assert.deepEqual(before.state.understanding, NOTHING);
+  assert.deepEqual(before.state.understanding, START);
 
   const chilled = advanceMinutes(before.state, 1);
   const state = chilled.state;
@@ -141,10 +145,10 @@ test("a new game sent with its one empty group waits until the minute of the fir
     {
       kind: "discovered",
       minute: 84,
-      actions: ["explore", "wander"],
+      actions: ["wander"],
       conditions: ["temperatureBelow"],
       items: [],
-      trees: ["exploration"],
+      trees: [],
       creatures: [],
     },
     {
@@ -285,7 +289,59 @@ test("a chill that reveals nothing new writes no rule", () => {
   assert.deepEqual(result.state.ruleCounts, {});
 });
 
-test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej and the items of the tile, read from the tile", () => {
+test("a copy that holds a rule „Eksploruj” of the player's own gets none from the game at the first chill, and none after it", () => {
+  const given = programFromRules(EXPLORE_RULE);
+  // The character explores from minute 0, so the first discovery is the exploration, in minute 20.
+  const exploring = advanceMinutes(sentNew(given), 100);
+  assert.equal(exploring.state.run.minute, 20, "precondition: the exploration");
+  const chilled = advanceMinutes(exploring.state, 100);
+  assert.equal(chilled.state.run.minute, 84, "precondition: the first chill");
+  assert.deepEqual(chilled.state.discovery, CHILL_REVEALED);
+  assert.deepEqual(chilled.state.run.copy.program, given);
+  assert.deepEqual(chilled.state.run.copy.base, given);
+  assert.deepEqual(chilled.state.programs[0].program, given);
+  const later = advanceMinutes(chilled.state, 100);
+  assert.deepEqual(later.state.run.copy.program, given);
+  assert.deepEqual(later.state.programs[0].program, given);
+});
+
+test("a copy whose rule „Eksploruj” stands under a condition that does not hold, in any group, gets no second one at the first chill", () => {
+  const blocked = {
+    condition: { kind: "temperatureBelow", value: 30 },
+    action: { kind: "explore" },
+  };
+  const given = programOfGroups(group(1, "Zimno", [{ id: 1, ...blocked }]));
+  const chilled = advanceMinutes(sentNew(given), 100);
+  assert.equal(chilled.state.run.minute, 84, "precondition: the first chill");
+  assert.deepEqual(chilled.state.discovery, CHILL_REVEALED);
+  assert.deepEqual(chilled.state.run.copy.program, given);
+  assert.deepEqual(chilled.state.run.copy.base, given);
+  assert.deepEqual(chilled.state.programs[0].program, given);
+});
+
+// The goal of the first action of a new game: whoever writes „Zawsze → Eksploruj” sees the first
+// discovery in the twentieth game minute at the latest, on every map.
+// invariant: first-exploration-discovery
+test("a character of a new game whose program holds Zawsze → Eksploruj from the entrance makes the first discovery by game minute 20, on every map", () => {
+  for (const mapId of Object.keys(MAPS)) {
+    // Every other map solved, so that the map is open whichever it follows, and it is not solved.
+    const solvedMaps = Object.keys(MAPS).filter((id) => id !== mapId);
+    let state = setProgram(
+      { ...newGame(), solvedMaps },
+      programFromRules(EXPLORE_RULE),
+    ).state;
+    state = createCharacter(state, "Ala").state;
+    state = send(state, { mapId, characterId: 1 }, REAL_MS).state;
+    assert.equal(state.run.mapId, mapId, "precondition: the map is sent to");
+    const first = advanceMinutes(state, 20);
+    const found = discoveries(first.events);
+    assert.equal(found.length, 1, `a discovery on ${mapId}`);
+    assert.ok(found[0].minute <= 20, `by minute 20 on ${mapId}`);
+    assert.equal(first.state.paused, true, `paused at it on ${mapId}`);
+  }
+});
+
+test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej, the items of the tile, read from the tile, and the tree Eksploracja beside the gathering tree", () => {
   const explored = advanceMinutes(advanceMinutes(sentNew(), 84).state, 20);
   const run = explored.state.run;
   assert.equal(run.minute, 104);
@@ -303,7 +359,7 @@ test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, 
       actions: ["walkTo", "gather", "patrol"],
       conditions: ["hereBelow", "itemBelow"],
       items: held,
-      trees: ["smallItemGathering"],
+      trees: ["exploration", "smallItemGathering"],
       creatures: [],
     },
   ]);
@@ -433,7 +489,7 @@ const ROWS = [
 
 for (const row of ROWS) {
   test(`${row.name} reveals exactly its row of the table, between the finish and the pick`, () => {
-    const result = advanceMinutes(prepared(NOTHING, row.prepare), 1);
+    const result = advanceMinutes(prepared(START, row.prepare), 1);
     assert.deepEqual(discoveries(result.events), [
       {
         kind: "discovered",
@@ -446,7 +502,7 @@ for (const row of ROWS) {
       },
     ]);
     assert.deepEqual(result.state.understanding, {
-      actions: row.actions,
+      actions: ["explore", ...row.actions],
       conditions: ["always", ...row.conditions],
       items: row.items,
       trees: row.trees,
@@ -461,7 +517,7 @@ for (const row of ROWS) {
 }
 
 test("a gathering that misses reveals nothing", () => {
-  const state = prepared(NOTHING, (run) => ({
+  const state = prepared(START, (run) => ({
     tiles: onStandingTile(run, { revealed: true, stock: { stick: 5 } }),
     gatherRandom: gatherRandomOf(false),
     current: ending(run, { kind: "gather", resource: "stick" }),
@@ -469,20 +525,20 @@ test("a gathering that misses reveals nothing", () => {
   const result = advanceMinutes(state, 1);
   assert.equal(result.state.run.character.backpack.stick, 0, "it missed");
   assert.deepEqual(discoveries(result.events), []);
-  assert.deepEqual(result.state.understanding, NOTHING);
+  assert.deepEqual(result.state.understanding, START);
 });
 
 test("a lighting that takes no hold, for want of sticks, reveals nothing", () => {
-  const state = prepared(NOTHING, (run) => ({
+  const state = prepared(START, (run) => ({
     current: ending(run, { kind: "lightItem" }),
   }));
   const result = advanceMinutes(state, 1);
   assert.deepEqual(discoveries(result.events), []);
-  assert.deepEqual(result.state.understanding, NOTHING);
+  assert.deepEqual(result.state.understanding, START);
 });
 
 test("a crafting that puts no campfire on the tile, for want of sticks, reveals nothing", () => {
-  const state = prepared(NOTHING, (run) => ({
+  const state = prepared(START, (run) => ({
     current: ending(run, { kind: "craftCampfire" }),
   }));
   const result = advanceMinutes(state, 1);
@@ -531,7 +587,7 @@ test("a gathering ending in the minute of the character's death reveals nothing,
 });
 
 test("the first chill in the minute of death still reveals what the body step reveals", () => {
-  const state = prepared(NOTHING, () => ({
+  const state = prepared(START, () => ({
     body: { temperature: 34.9, satiety: 100, health: 0.2 },
   }));
   const dead = advanceMinutes(state, 1);
@@ -556,9 +612,10 @@ test("the Understanding stands after death, Restart and Zakończ, and stands for
     held.length > 0,
     "precondition: the explored tile holds a resource",
   );
+  // The exploration of minute 0 finished first; the first chill came after it.
   const learned = {
-    actions: ["explore", "wander", "walkTo", "gather", "patrol"],
-    conditions: ["always", "temperatureBelow", "hereBelow", "itemBelow"],
+    actions: ["explore", "walkTo", "gather", "patrol", "wander"],
+    conditions: ["always", "hereBelow", "itemBelow", "temperatureBelow"],
     items: held,
     trees: ["exploration", "smallItemGathering"],
     creatures: [],
@@ -569,8 +626,9 @@ test("the Understanding stands after death, Restart and Zakończ, and stands for
   assert.deepEqual(restarted.understanding, learned);
   // What the first run learned is known to the run started again: it explores in minute 0.
   assert.equal(restarted.run.current.activity.action.kind, "explore");
-  // The program holds the rule given and the rule written at the first chill, which is a second one.
-  assert.deepEqual(restarted.ruleCounts, { 1: 1, 2: 0 });
+  // The program holds the one rule given: the copy held a rule „Eksploruj” at the first chill, so
+  // the game wrote none (D-123).
+  assert.deepEqual(restarted.ruleCounts, { 1: 1 });
 
   const ended = end(restarted).state;
   assert.deepEqual(ended.understanding, learned);
@@ -582,7 +640,7 @@ test("the Understanding stands after death, Restart and Zakończ, and stands for
   assert.deepEqual(next.understanding, learned);
   assert.equal(next.run.minute, 0);
   assert.equal(next.run.current.activity.action.kind, "explore");
-  assert.deepEqual(next.ruleCounts, { 1: 1, 2: 0 });
+  assert.deepEqual(next.ruleCounts, { 1: 1 });
 });
 
 test("advancing minutes through the first chill changes neither the game state given nor its program", () => {
@@ -596,7 +654,7 @@ test("advancing minutes through the first chill changes neither the game state g
 // cools a body by 0,024 °C a minute, so these bodies end the minute at 35,0 and at 34,999 °C.
 test("a body temperature of exactly 35,0 °C after the minute is not a chill, one thousandth below it is", () => {
   const cooling = (temperature) =>
-    prepared(NOTHING, () => ({
+    prepared(START, () => ({
       body: { temperature, satiety: 100, health: 100 },
     }));
   const exactly = advanceMinutes(cooling(35.024), 1);
@@ -607,7 +665,7 @@ test("a body temperature of exactly 35,0 °C after the minute is not a chill, on
   assert.equal(discoveries(below.events).length, 1);
 });
 
-test("what the chill reveals is exactly its row, and the condition Zawsze, which nothing reveals, is not added to an Understanding that lacks it", () => {
+test("what the chill reveals is exactly its row, and the condition Zawsze and the action Eksploruj, which nothing reveals, are not added to an Understanding that lacks them", () => {
   const state = prepared(
     { actions: [], conditions: [], items: [], trees: [], creatures: [] },
     () => ({
@@ -616,10 +674,10 @@ test("what the chill reveals is exactly its row, and the condition Zawsze, which
   );
   const result = advanceMinutes(state, 1);
   assert.deepEqual(result.state.understanding, {
-    actions: ["explore", "wander"],
+    actions: ["wander"],
     conditions: ["temperatureBelow"],
     items: [],
-    trees: ["exploration"],
+    trees: [],
     creatures: [],
   });
 });
@@ -666,10 +724,10 @@ test("a map run ended in death passes no further minute at the level of the run"
 // the game state holds what that minute revealed until the player moves on. Minute 84 is the first
 // chill; the first exploration ends at minute 104.
 const CHILL_REVEALED = {
-  actions: ["explore", "wander"],
+  actions: ["wander"],
   conditions: ["temperatureBelow"],
   items: [],
-  trees: ["exploration"],
+  trees: [],
   creatures: [],
 };
 
@@ -694,7 +752,7 @@ test("a span of minutes of a new game sent, given 100, ends at the minute of the
     actions: discoveries(second.events)[0].actions,
     conditions: discoveries(second.events)[0].conditions,
     items: discoveries(second.events)[0].items,
-    trees: ["smallItemGathering"],
+    trees: ["exploration", "smallItemGathering"],
     creatures: [],
   });
   assert.ok(second.state.discovery.actions.includes("walkTo"));
@@ -750,7 +808,7 @@ test("restart, end and send clear what the last minute revealed, and a new game 
 });
 
 test("real time passed over a minute that gave events but no discovery keeps its carry and does not pause", () => {
-  const state = prepared(NOTHING, (run) => ({
+  const state = prepared(START, (run) => ({
     tiles: onStandingTile(run, { revealed: true, stock: { stick: 5 } }),
     gatherRandom: gatherRandomOf(false),
     current: ending(run, { kind: "gather", resource: "stick" }),

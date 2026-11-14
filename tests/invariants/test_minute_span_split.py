@@ -11,8 +11,8 @@ the script records the JSON of the whole game state and the events that call gav
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
 program stay what the check drives and no game minute discovers anything; the scenario DISCOVERS
-alone starts from `newGame()`, which knows nothing, with Skraj lasu solved so that Las can be sent
-to.
+alone starts from `newGame()`, which knows only the condition „Zawsze” and the action „Eksploruj”,
+with Skraj lasu solved so that Las can be sent to.
 
 Reading of the sentence:
 - a span of game minutes: the SPAN minutes after a send to the map Las (`forest`) of a character
@@ -49,7 +49,8 @@ Scenarios (the program ACCEPTANCE is the one of `tests/sim/acceptance.test.mjs`)
   reaches 480, the solving condition of Las (D-133, D-136), in game minute 20, where the map run
   completes;
 - DISCOVERS: the program of a new game (one empty group) sent at ALIVE_REAL_MS from `newGame()`, a
-  game that knows nothing, 100 game minutes; its first chill, in game minute 84, is a discovery.
+  game that knows only the start, 100 game minutes; its first chill, in game minute 84, is a
+  discovery.
 
 Splits, written out below: one call for the whole span; calls of 2 minutes, 1 then 2 minutes, 3,
 7 and 60 minutes; calls of growing sizes 1, 2, 3, 5, 8, ...; passRealTime in whole seconds of
@@ -144,8 +145,8 @@ SCENARIOS = {
     "DIES_BUSY": (ACCEPTANCE, T, 400),
 }
 IDLE_DEATH_MINUTE = 243
-# The scenario of a new game that knows nothing: (real time of the send, span in game minutes, the
-# game minute of its first discovery, the first chill).
+# The scenario of a new game that knows only the start: (real time of the send, span in game
+# minutes, the game minute of its first discovery, the first chill).
 DISCOVERS = ("DISCOVERS", ALIVE_REAL_MS, 100, 84)
 # The scenario whose map run completes: (program, real time of the send, span in game minutes, the
 # fields of the map run replaced at game minute 0, the game minute of the completion). A streak of

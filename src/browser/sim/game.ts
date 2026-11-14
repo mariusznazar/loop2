@@ -5,6 +5,7 @@ import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
   discover,
   editorRepertoire,
+  holdsRuleWith,
   knownRepertoire,
   newUnderstanding,
   programInRepertoire,
@@ -689,9 +690,9 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
 /**
  * A span of game minutes: the minute of D-71 repeated, also while paused. A discovery takes hold
  * between the minute's last effect and the pick: what the minute revealed enters the Understanding,
- * at the first chill the rule "Zawsze → Eksploruj" enters the copy, its base and the copy's program
- * while that program is on the list, each by `withFirstChillRule` on its own content, and no other
- * program, and the pick that ends the minute is made from the copy and the Understanding as they
+ * at the first chill, where the copy holds no rule with the action "Eksploruj", the rule "Zawsze →
+ * Eksploruj" enters the copy, its base and the copy's program while that program is on the list,
+ * each by `withFirstChillRule` on its own content, and no other program, and the pick that ends the minute is made from the copy and the Understanding as they
  * then stand. A span that reaches
  * the character's death, or the whole minute of a discovery, stops there; a stop at a discovery
  * leaves the game paused, holding what the minute revealed. A map run that meets the solving
@@ -743,7 +744,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     );
     if (found) {
       current = { ...current, understanding: found.understanding };
-      if (found.chill) {
+      if (found.chill && !holdsRuleWith(copy.program, "explore")) {
         const written = withFirstChillRule(copy.program);
         const owner = programById(current.programs, copy.programId);
         current = {

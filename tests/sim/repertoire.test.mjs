@@ -76,27 +76,25 @@ const GROWN = {
 };
 const OPEN_TO_ALL = ["wander", "walkTo", "walkToCampfire"];
 
-test("a new game's Understanding holds the condition Zawsze alone", () => {
-  assert.deepEqual(newUnderstanding(), {
-    actions: [],
+// D-118: „Zawsze” and „Eksploruj” are all a new game knows (written out, not read from the data).
+test("a new game's Understanding holds the condition Zawsze and the action Eksploruj alone", () => {
+  const atStart = {
+    actions: ["explore"],
     conditions: ["always"],
     items: [],
     trees: [],
     creatures: [],
-  });
-  assert.deepEqual(newGame().understanding, {
-    actions: [],
-    conditions: ["always"],
-    items: [],
-    trees: [],
-    creatures: [],
-  });
+  };
+  assert.deepEqual(newUnderstanding(), atStart);
+  assert.deepEqual(newGame().understanding, atStart);
 });
 
 test("two new Understandings share no array, so a change of one reaches no other", () => {
   const first = newUnderstanding();
   first.conditions.push("hereBelow");
+  first.actions.push("wander");
   assert.deepEqual(newUnderstanding().conditions, ["always"]);
+  assert.deepEqual(newUnderstanding().actions, ["explore"]);
 });
 
 test("the mage, with all five skills, has the Understanding as its repertoire", () => {
@@ -385,7 +383,7 @@ test("the editor shows the repertoire of the mage through the Understanding, out
     understanding,
   };
   assert.deepEqual(editorRepertoire(hq), understanding);
-  assert.deepEqual(editorRepertoire(newGame()).actions, []);
+  assert.deepEqual(editorRepertoire(newGame()).actions, ["explore"]);
   const running = { ...sent(), understanding };
   assert.deepEqual(editorRepertoire(running), understanding);
 });

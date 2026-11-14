@@ -32,7 +32,7 @@ const REAL_MS = 1760000000003;
 const WAIT = "Czeka — żadna reguła nie pasuje";
 // The band at the first chill of a new game (tests/view/discovery-band.test.mjs; D-122, D-312).
 const CHILL_BAND =
-  "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C. Gra dopisała regułę w grupie „Program”: Zawsze → Eksploruj.";
+  "Odkryto: Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C. Gra dopisała regułę w grupie „Program”: Zawsze → Eksploruj.";
 
 /** A new game with one character, not yet sent. */
 function readyGame() {
@@ -41,7 +41,7 @@ function readyGame() {
 
 /**
  * A chronicle built from a game with no map run, with the send of its character recorded; `state` is
- * the game the send returned. A new game knows no action, so the first activity is a wait.
+ * the game the send returned. The program of a new game holds no rule, so the first activity is a wait.
  */
 function sentChronicle() {
   const before = readyGame();
@@ -413,6 +413,32 @@ test("the first chill gives one entry of the discovery holding the band's text, 
     ),
   ]);
   assert.deepEqual(rowsOf(chronicle, "change"), []);
+});
+
+// Catches the sentence of the rule left in the entry of a discovery at which the game wrote none:
+// the copy holds the player's own rule „Eksploruj” at the first chill, so the game writes nothing
+// (D-123, D-345).
+test("the first chill of a copy that holds a rule „Eksploruj” of the player's own gives an entry of the discovery with no sentence about a rule", () => {
+  const own = withRuleAdded(newGame().programs[0].program);
+  const before = createCharacter(
+    setProgram(withEdgeSolved(newGame()), own).state,
+    "Ala",
+  ).state;
+  const chronicle = createChronicle(before);
+  const sent = send(before, SENT, REAL_MS);
+  chronicle.record(sent, before);
+  const exploring = advanceMinutes(sent.state, 100);
+  chronicle.record(exploring, sent.state);
+  const chilled = advanceMinutes(exploring.state, 100);
+  chronicle.record(chilled, exploring.state);
+  assert.equal(chilled.state.run.minute, 84, "precondition: the first chill");
+  assert.deepEqual(chilled.state.run.copy.program, own, "precondition");
+  assert.deepEqual(rowsOf(chronicle, "discovery")[0], {
+    kind: "discovery",
+    minute: 84,
+    text: "Odkryto: Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+    role: "discovery",
+  });
 });
 
 // Catches an entry that follows the group's later rename, as the band does while it stands (D-312

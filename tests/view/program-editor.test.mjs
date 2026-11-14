@@ -43,7 +43,6 @@ import {
   groupNumber,
   groupSummary,
   moveRule,
-  offeredActionKinds,
   offeredItems,
   offeredResources,
   PICK_REASONS,
@@ -710,9 +709,9 @@ test("the resource lists offer the resources of every map before sending and the
   assert.deepEqual(offeredResources(onEdge), ["stick", "berry"]);
 });
 
-// D-124. Hand-written
-// Understandings: a new game holds the condition "Zawsze" alone; the first chill adds "Eksploruj",
-// "Wędruj" and "Temperatura poniżej" (written out here, not read from the data).
+// D-124, D-121. Hand-written
+// Understandings: a new game holds the condition "Zawsze" and the action "Eksploruj"; the first chill
+// adds "Wędruj" and "Temperatura poniżej" (written out here, not read from the data).
 const AFTER_FIRST_CHILL = {
   actions: ["explore", "wander"],
   conditions: ["always", "temperatureBelow"],
@@ -722,13 +721,19 @@ const AFTER_FIRST_CHILL = {
 };
 const gameKnowing = (understanding) => ({ ...newGame(), understanding });
 
-test("the offer is the repertoire: a new game offers no action, no resource and no item, the first chill adds two actions", () => {
+test("the offer is the repertoire: a new game offers „Eksploruj” and no resource and no item, the first chill adds „Wędruj”", () => {
+  const offered = (state) =>
+    actionPick(state, EXPLORE).flatMap((section) =>
+      section.cells.map((cell) => cell.value),
+    );
   const fresh = newGame();
-  assert.deepEqual(offeredActionKinds(fresh), []);
+  assert.deepEqual(offered(fresh), ["explore"]);
   assert.deepEqual(offeredResources(fresh), []);
   assert.deepEqual(offeredItems(fresh), []);
-  const chilled = gameKnowing(AFTER_FIRST_CHILL);
-  assert.deepEqual(offeredActionKinds(chilled), ["explore", "wander"]);
+  assert.deepEqual(offered(gameKnowing(AFTER_FIRST_CHILL)), [
+    "explore",
+    "wander",
+  ]);
 });
 
 test("target lists follow the Understanding's items: resources of the shown map in the map's order, backpack items in the data's order, the campfire in neither", () => {
@@ -752,14 +757,6 @@ test("target lists follow the Understanding's items: resources of the shown map 
   assert.deepEqual(offeredItems(onlyCampfire), []);
 });
 
-test("an Understanding that holds everything gives lists of every action and condition of the data", () => {
-  const everything = newKnowingGame();
-  assert.deepEqual(
-    offeredActionKinds(everything),
-    Object.keys(ACTIONS).filter((kind) => kind !== "patrol"),
-  );
-});
-
 test("a condition switching to „Zapas poniżej” takes the first of the offered items; with none offered nothing is committed", () => {
   assert.deepEqual(
     withConditionKind(THREE, 1, 0, "itemBelow", LAS, ["moss", "fiber"])
@@ -772,28 +769,6 @@ test("a condition switching to „Zapas poniżej” takes the first of the offer
       .rules[0].condition,
     { kind: "temperatureBelow", value: 36.5 },
   );
-});
-
-// An action that names a resource is no choice while no resource is offered, since the edit would
-// commit nothing.
-const NO_TARGETS = {
-  actions: ["explore", "wander", "walkTo", "gather"],
-  conditions: ["always", "hereBelow", "itemBelow"],
-  items: [],
-  trees: [],
-  creatures: [],
-};
-
-test("actions that name a resource are not offered while the Understanding holds no resource for them", () => {
-  const state = gameKnowing(NO_TARGETS);
-  assert.deepEqual(offeredActionKinds(state), ["explore", "wander"]);
-  const resourceOnly = gameKnowing({ ...NO_TARGETS, items: ["moss"] });
-  assert.deepEqual(offeredActionKinds(resourceOnly), [
-    "explore",
-    "wander",
-    "walkTo",
-    "gather",
-  ]);
 });
 
 test("focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition", () => {
@@ -1153,7 +1128,7 @@ test("a section holds only what the Understanding holds: a new game's condition 
     sections.map((section) => section.cells.map((cell) => cell.label)),
     [["Zawsze"]],
   );
-  // D-118: the action pick of a new game holds no action but the held one.
+  // D-118: the action pick of a new game holds „Eksploruj” alone, which it knows from the start.
   assert.deepEqual(
     actionPick(newGame(), EXPLORE).flatMap((section) =>
       section.cells.map((cell) => cell.value),

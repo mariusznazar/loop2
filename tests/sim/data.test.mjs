@@ -100,7 +100,6 @@ test("actions carry their labels, status texts and the fixed explore duration", 
     group: "move",
     status: "Eksploruje",
     minutes: 20,
-    revealedBy: { kind: "chilled" },
     icon: "binoculars",
     iconTitle: "Binoculars icon",
   });
@@ -409,11 +408,20 @@ test("the elemental mage has all listed skills as predispositions", () => {
   assert.equal(Object.keys(SKILLS).length, 8);
 });
 
+test("the tree of Eksploracja, whose first action is held from the start, is revealed by the first finished exploration, and no other tree has an event of its own", () => {
+  // D-195: every other tree enters with the first action it grows.
+  assert.deepEqual(SKILLS.exploration.revealedBy, { kind: "explored" });
+  assert.deepEqual(
+    Object.keys(SKILLS).filter((id) => "revealedBy" in SKILLS[id]),
+    ["exploration"],
+  );
+});
+
 /** The rows of D-121, by the revealing event: what each reveals. */
 const ROWS = [
   {
     event: { kind: "chilled" },
-    actions: ["explore", "wander"],
+    actions: ["wander"],
     conditions: ["temperatureBelow"],
     items: [],
   },
@@ -495,13 +503,14 @@ test("each revealing event reveals exactly the actions, conditions and items of 
   }
 });
 
-test("every action and condition stands in exactly one row, and Zawsze in none", () => {
-  // D-121 is the table; D-118: „Zawsze” is known from the start.
+test("every action and condition stands in exactly one row, and Zawsze and Eksploruj in none", () => {
+  // D-121 is the table; D-118: „Zawsze” and „Eksploruj” are known from the start.
   const revealing = (def) =>
     ROWS.filter(
       (row) => JSON.stringify(row.event) === JSON.stringify(def.revealedBy),
     );
   for (const [id, action] of Object.entries(ACTIONS)) {
+    if (id === "explore") continue;
     assert.equal(revealing(action).length, 1, `action ${id}`);
   }
   for (const [id, condition] of Object.entries(CONDITIONS)) {
@@ -509,9 +518,15 @@ test("every action and condition stands in exactly one row, and Zawsze in none",
     assert.equal(revealing(condition).length, 1, `condition ${id}`);
   }
   assert.ok(!("revealedBy" in CONDITIONS.always));
+  assert.ok(!("revealedBy" in ACTIONS.explore));
   const tableActions = ROWS.flatMap((row) => row.actions);
   const tableConditions = ROWS.flatMap((row) => row.conditions);
-  assert.deepEqual([...tableActions].sort(), Object.keys(ACTIONS).sort());
+  assert.deepEqual(
+    [...tableActions].sort(),
+    Object.keys(ACTIONS)
+      .filter((id) => id !== "explore")
+      .sort(),
+  );
   assert.deepEqual(
     [...tableConditions].sort(),
     Object.keys(CONDITIONS)

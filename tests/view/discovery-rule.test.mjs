@@ -21,6 +21,7 @@ const SENT = {
 };
 const ALWAYS = { kind: "always" };
 const EXPLORE = { kind: "explore" };
+const WANDER = { kind: "wander" };
 const rule = (id, condition, action) => ({ id, condition, action });
 
 /** What a discovery holds when it holds only what the call names. */
@@ -144,21 +145,22 @@ test("a first action that needs a target nobody can pick yet gives way to the ne
   assert.equal(result.open.field, "action");
 });
 
-test("the first chill adds „Zawsze → Eksploruj” at the end of the group „Program” and opens the panel on the action", () => {
-  // The real first chill of a new game: the discovery holds „Eksploruj”, „Wędruj” and „Temperatura
-  // poniżej”, and the copy already holds the rule the game wrote.
+test("the first chill adds „Zawsze → Wędruj” at the end of the group „Program” and opens the panel on the action", () => {
+  // The real first chill of a new game: the discovery holds „Wędruj” and „Temperatura poniżej”, and
+  // the copy already holds the rule the game wrote, „Zawsze → Eksploruj” (D-123).
   let state = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   state = send(state, SENT, 1760000000003).state;
   const chilled = advanceMinutes(state, 100).state;
-  assert.deepEqual(chilled.discovery.actions, ["explore", "wander"]);
+  assert.deepEqual(chilled.discovery.actions, ["wander"]);
   assert.deepEqual(chilled.discovery.conditions, ["temperatureBelow"]);
   const before = chilled.run.copy.program.groups[0].rules;
   assert.equal(before.length, 1);
+  assert.deepEqual(before[0].action, EXPLORE);
   const result = discoveryRule(chilled);
   assert.equal(result.program.groups[0].name, "Program");
   assert.deepEqual(result.program.groups[0].rules, [
     ...before,
-    rule(before[0].id + 1, ALWAYS, EXPLORE),
+    rule(before[0].id + 1, ALWAYS, WANDER),
   ]);
   assert.deepEqual(result.open, {
     groupId: result.program.groups[0].id,

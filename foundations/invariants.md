@@ -1365,6 +1365,26 @@ The reader of the programs of a previous save reads from a document only its ver
 - **Part:** simulation
 - **Violated:** no
 
+## first-exploration-discovery
+
+A character of a new game whose program holds „Zawsze → Eksploruj” from the entrance of a map finishes its first exploration and makes its first discovery by the twentieth game minute, on every map of the game.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-121
+- **Part:** simulation
+- **Violated:** no
+
+## new-account-first-pass
+
+On the map Skraj lasu, a program of 21 rules in 5 groups that its test names, written from the entrance of a game of an account with nothing discovered, solves the map on at least 289 of 300 seeds that its test names.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-121 · D-404
+- **Part:** simulation
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

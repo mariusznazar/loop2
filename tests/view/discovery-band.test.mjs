@@ -25,7 +25,7 @@ const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000003;
 const SENTENCE = "Gra dopisała regułę w grupie „Program”: Zawsze → Eksploruj.";
 const CHILL_TEXT =
-  "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.";
+  "Odkryto: Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.";
 
 // What the first finished exploration of a tile with sticks and berries reveals.
 const EXPLORED = {
@@ -156,6 +156,34 @@ test("the first chill of a new game gives the text of the discovery and the sent
     const { container } = await draw(document, chilled());
     assert.equal(textOf(container), `${CHILL_TEXT} ${SENTENCE}`);
     assert.doesNotMatch(textOf(container), /\d\.\d/);
+  });
+});
+
+// D-123, D-312: the game writes the rule only where the copy holds none „Eksploruj”, and the band
+// speaks of a rule only where the game wrote one. The copy of this program holds the player's own
+// rule from minute 0, carried out up to the first finished exploration in minute 20.
+test("the first chill of a copy that holds a rule „Eksploruj” of the player's own gives the text of the discovery and no sentence about a rule", async () => {
+  await withPage(async ({ document }) => {
+    const own = programOfGroups(
+      group(1, "Ogień", [
+        {
+          id: 1,
+          condition: { kind: "always" },
+          action: { kind: "explore" },
+        },
+      ]),
+    );
+    const exploring = advanceMinutes(sentNew(own), 100).state;
+    assert.equal(exploring.run.minute, 20, "precondition: the exploration");
+    const state = advanceMinutes(exploring, 100).state;
+    assert.equal(state.run.minute, 84, "precondition: the first chill");
+    assert.deepEqual(
+      state.run.copy.program,
+      own,
+      "precondition: the game wrote no rule",
+    );
+    const { container } = await draw(document, state);
+    assert.equal(textOf(container), CHILL_TEXT);
   });
 });
 

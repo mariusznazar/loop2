@@ -52,7 +52,6 @@ import {
   groupNumber,
   groupSummary,
   moveRule,
-  offeredActionKinds,
   removeGroup,
   removeRule,
   ruleArrows,
@@ -63,7 +62,7 @@ import {
 
 /** What the page gives the list; every call of `update` gives it whole. */
 export type RuleListProps = {
-  /** The game state, for the time of an action and for what the Understanding holds. */
+  /** The game state, for the time of an action. */
   state: GameState;
   /** The program shown: the saved program or the copy. */
   program: Program;
@@ -216,7 +215,6 @@ export function RuleListView({
   const controls = useRef(new Map<string, HTMLElement>());
   // The keys the focus goes to once the program an edit made is drawn, in the order tried.
   const pendingFocus = useRef<string[] | null>(null);
-  const canAddRule = offeredActionKinds(state).length > 0;
   // The element the one rule panel is drawn into, moved to the place of the open row or header. The
   // panel is mounted in it once, so its field and its focus outlive a change of place.
   const [panelHost] = useState(() => document.createElement("div"));
@@ -693,7 +691,6 @@ export function RuleListView({
             <div className="rule-list-actions">
               <ReactButton
                 text="+ reguła"
-                disabled={!canAddRule}
                 buttonRef={track(`group:${group.id}:add`)}
                 onClick={() => add(group)}
               />

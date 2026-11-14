@@ -47,6 +47,7 @@ const COLD_DEATH_MINUTE = 243;
 const FOREST = { mapId: "forest", characterId: 1 };
 const ALWAYS = { kind: "always" };
 const EXPLORE = { kind: "explore" };
+const WANDER = { kind: "wander" };
 const HEALTHY = { temperature: 37, satiety: 100, health: 100 };
 /** One game minute from a death of cold: chilled, with health the next minute takes away. */
 const DYING = { temperature: 30, satiety: 100, health: 0.1 };
@@ -432,9 +433,10 @@ test("a loop's map run through a death and its next map run still leaves the Und
 // D-249, D-119: the repertoire is computed on each call that passes minutes, so what a manual
 // map run discovers meanwhile widens a loop's repertoire.
 test("an action a manual map run discovers meanwhile enters the loop's next pick, and not before", () => {
+  // „Wędruj” is no action of a new game: the first chill of a manual map run discovers it.
   let state = setProgram(
     newGame(),
-    programFromRules(rule(ALWAYS, EXPLORE)),
+    programFromRules(rule(ALWAYS, WANDER)),
   ).state;
   state = {
     ...createCharacter(state, "Ala").state,
@@ -452,14 +454,14 @@ test("an action a manual map run discovers meanwhile enters the loop's next pick
     ...state,
     understanding: {
       ...state.understanding,
-      actions: [...state.understanding.actions, "explore"],
+      actions: [...state.understanding.actions, "wander"],
     },
   };
   const after = advanceLoopRun(widened, 1, 1).state;
   assert.deepEqual(after.loops[1].run.current.activity, {
     kind: "rule",
     ruleId: 1,
-    action: EXPLORE,
+    action: WANDER,
   });
 });
 

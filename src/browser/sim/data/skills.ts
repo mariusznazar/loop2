@@ -1,4 +1,5 @@
 import type { ActionId } from "./actions.js";
+import type { Revelation } from "./revelations.js";
 
 export type SkillDef = {
   /** Name shown to the player. */
@@ -6,6 +7,12 @@ export type SkillDef = {
   /** The actions, each a pair of verb and target, that the skill grows. */
   actions: readonly ActionId[];
   thresholds: readonly number[];
+  /**
+   * The event that reveals the skill's tree where its first action is no event of its own: present
+   * only for a skill whose first action the Understanding holds from the start of a new game. A
+   * tree of any other skill enters the Understanding with the first action it grows.
+   */
+  revealedBy?: Revelation;
 };
 
 /**
@@ -17,6 +24,7 @@ const skills = {
     name: "Eksploracja",
     actions: ["explore"],
     thresholds: [15, 45, 100, 200],
+    revealedBy: { kind: "explored" },
   },
   smallItemGathering: {
     name: "Zbieranie małych przedmiotów",

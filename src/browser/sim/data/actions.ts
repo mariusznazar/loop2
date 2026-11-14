@@ -9,8 +9,11 @@ export type ActionDef = {
   status: string;
   /** Fixed duration in game minutes; null = taken from the target tile. */
   minutes: number | null;
-  /** The event that reveals the action to the player. */
-  revealedBy: Revelation;
+  /**
+   * The event that reveals the action to the player; absent for an action the Understanding holds
+   * from the start of a new game.
+   */
+  revealedBy?: Revelation;
   /**
    * The nature energy the action costs: a spell. The character can start it with at least this much
    * energy, and the energy is taken when the action finishes, together with the pieces it uses.
@@ -62,7 +65,6 @@ export const ACTIONS = {
     group: "move",
     status: "Eksploruje",
     minutes: 20,
-    revealedBy: { kind: "chilled" },
     icon: "binoculars",
     iconTitle: "Binoculars icon",
   },

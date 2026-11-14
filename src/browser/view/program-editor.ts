@@ -153,18 +153,6 @@ export type FocusTarget =
 export type StructuralEdit = "add" | "remove" | "up" | "down";
 
 /**
- * The action kinds the action selects offer, in the data's order: those of the repertoire, less
- * „Idź” and „Zbierz” while no resource is offered for them to name. Pure.
- */
-export function offeredActionKinds(state: GameState): ActionKind[] {
-  const { actions } = editorRepertoire(state);
-  const named = offeredResources(state).length > 0;
-  return (Object.keys(ACTIONS) as ActionKind[]).filter(
-    (kind) => actions.includes(kind) && (named || !takesResource(kind)),
-  );
-}
-
-/**
  * The items „Zapas poniżej” offers, in the data's order: the repertoire's items of the backpack,
  * bound to no map, since an item can reach the backpack from elsewhere than the map's tiles. The
  * campfire is no item of the backpack. Pure.

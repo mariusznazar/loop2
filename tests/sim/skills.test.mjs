@@ -631,7 +631,11 @@ test("scout discovers neighboring resources and the gathering tree with Obchód 
   const result = advanceMinutes(fixture, 10);
   assert.equal(result.state.run.minute, 1);
   assert.equal(result.state.paused, true);
-  assert.deepEqual(result.state.discovery.trees, ["smallItemGathering"]);
+  // The first finished exploration also brings the tree of Eksploracja (D-195).
+  assert.deepEqual(result.state.discovery.trees, [
+    "exploration",
+    "smallItemGathering",
+  ]);
   assert.ok(result.state.discovery.actions.includes("patrol"));
   assert.ok(result.state.understanding.items.includes("fiber"));
   assert.deepEqual(result.state.run.practice, { exploration: 1 });

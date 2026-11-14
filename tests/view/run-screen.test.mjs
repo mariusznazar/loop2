@@ -37,6 +37,10 @@ const ALWAYS_EXPLORE = {
   condition: { kind: "always" },
   action: { kind: "explore" },
 };
+const ALWAYS_WANDER = {
+  condition: { kind: "always" },
+  action: { kind: "wander" },
+};
 
 const all = (root) => [root, ...root.querySelectorAll("*")];
 const byClass = (root, name) =>
@@ -175,7 +179,7 @@ function firstChill() {
   assert.equal(state.run.minute, 84, "precondition: the first chill");
   assert.deepEqual(
     state.discovery?.actions,
-    ["explore", "wander"],
+    ["wander"],
     "precondition: the first chill holds its discovery",
   );
   return state;
@@ -413,7 +417,7 @@ test("an open rule panel stands in the program under its header, the tabs and th
 // not reaching the panel, the rule added to a saved program or to a group of its own, the panel
 // opened outside the program, not under the new rule's row, or on the condition, the tabs taken away
 // by it, and the streak left as it stood.
-test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero", async () => {
+test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero", async () => {
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -438,7 +442,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
     assert.equal(game.state.run.copy.program.groups.length, 1, "no new group");
     assert.deepEqual(
       group.rules.map(({ condition, action }) => ({ condition, action })),
-      [ALWAYS_EXPLORE, ALWAYS_EXPLORE],
+      [ALWAYS_EXPLORE, ALWAYS_WANDER],
     );
     assert.equal(game.state.run.streak, 0);
     const panel = byClass(program, "rule-panel")[0];

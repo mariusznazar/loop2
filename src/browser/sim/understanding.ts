@@ -7,7 +7,12 @@ import { CREATURES } from "./data/creatures.js";
 import { ITEMS } from "./data/items.js";
 import type { Revelation } from "./data/revelations.js";
 import { RESOURCES } from "./data/resources.js";
-import { BRANCHES, SKILLS, type SkillId } from "./data/skills.js";
+import {
+  BRANCHES,
+  SKILLS,
+  type SkillDef,
+  type SkillId,
+} from "./data/skills.js";
 import { branchActionAvailable } from "./skills.js";
 import { tileAt } from "./hex.js";
 import type { GameEvent } from "./run.js";
@@ -26,11 +31,18 @@ import type {
 /** The subset of an Understanding that a character can use in a program; computed, never saved. */
 export type Repertoire = Understanding;
 
-/** The Understanding of a new game: the condition "Zawsze" alone. */
+/**
+ * The Understanding of a new game (D-118): what the data gives no revealing event, in the order of
+ * its data — the condition "Zawsze" and the action "Eksploruj" — and nothing else.
+ */
 export function newUnderstanding(): Understanding {
   return {
-    actions: [],
-    conditions: ["always"],
+    actions: (Object.keys(ACTIONS) as Action["kind"][]).filter(
+      (kind) => (ACTIONS[kind] as ActionDef).revealedBy === undefined,
+    ),
+    conditions: (Object.keys(CONDITIONS) as Condition["kind"][]).filter(
+      (kind) => (CONDITIONS[kind] as ConditionDef).revealedBy === undefined,
+    ),
     items: [],
     creatures: [],
     trees: [],
@@ -358,12 +370,13 @@ function newlyRevealed(
   const trees = (Object.keys(SKILLS) as SkillId[]).filter(
     (id) =>
       !understanding.trees.includes(id) &&
-      SKILLS[id].actions.some((action) => actions.includes(action)),
+      (SKILLS[id].actions.some((action) => actions.includes(action)) ||
+        revealing((SKILLS[id] as SkillDef).revealedBy)),
   );
   const unlocked = (Object.keys(ACTIONS) as Action["kind"][]).filter((kind) => {
-    const revelation = ACTIONS[kind].revealedBy;
+    const revelation = (ACTIONS[kind] as ActionDef).revealedBy;
     return (
-      revelation.kind === "treeDiscovered" &&
+      revelation?.kind === "treeDiscovered" &&
       trees.includes(revelation.skill) &&
       !understanding.actions.includes(kind)
     );
@@ -458,20 +471,41 @@ export function withFirstChillRule(program: Program): Program {
   };
 }
 
+/** Whether a rule of the program, in any of its groups and under any condition, has the action `kind`. */
+export function holdsRuleWith(program: Program, kind: Action["kind"]): boolean {
+  return program.groups.some((group) =>
+    group.rules.some((rule) => rule.action.kind === kind),
+  );
+}
+
 /**
  * The name of the first rule group of the copy the map run carries out, in the copy's order, that
  * holds a program rule "Zawsze → Eksploruj" — where the rule the game wrote at the held discovery
  * stands now. Null where the state holds no map run or no discovery, where the held discovery is
- * not the one at which the game wrote that rule (the first chill; it holds an action the data
- * reveals by the chill), or where no group of the copy holds such a rule any more. Inputs are not
- * changed.
+ * not the one at which the game wrote that rule (the first chill; it holds an action or a condition
+ * the data reveals by the chill), where the game wrote none because the copy already held a rule
+ * "Eksploruj" of the player's own, or where no group of the copy holds such a rule any more. Inputs
+ * are not changed.
+ *
+ * The state keeps no note that the game wrote the rule; it tells it from the map run's record. At
+ * the first chill the copy held a rule "Eksploruj" before the game's turn only if the player wrote
+ * one, and a rule the player wrote that the character has carried out leaves minutes of exploring
+ * in the record, which a rule the game wrote in that very minute cannot yet have left. So a record
+ * with a minute of exploring says the rule is the player's.
  */
 export function chillRuleGroupName(state: GameState): string | null {
   if (!state.run || !state.discovery) return null;
-  const atChill = state.discovery.actions.some(
-    (kind) => ACTIONS[kind].revealedBy.kind === "chilled",
-  );
+  const { actions, conditions } = state.discovery;
+  const atChill =
+    actions.some(
+      (kind) => (ACTIONS[kind] as ActionDef).revealedBy?.kind === "chilled",
+    ) ||
+    conditions.some(
+      (kind) =>
+        (CONDITIONS[kind] as ConditionDef).revealedBy?.kind === "chilled",
+    );
   if (!atChill) return null;
+  if (state.run.minutesByAction.explore > 0) return null;
   const group = state.run.copy.program.groups.find((candidate) =>
     candidate.rules.some(
       (rule) =>

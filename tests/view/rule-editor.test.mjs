@@ -483,22 +483,27 @@ test("„+ reguła” adds „Zawsze → Eksploruj” at the end of its group an
   });
 });
 
-test("„+ reguła” is disabled while the Understanding holds no action", async () => {
-  await withPage(async (page) => {
-    const empty = {
-      ...newGame(),
-      understanding: { ...fullUnderstanding(), actions: [] },
-    };
-    const { calls } = await mount(page, twoGroups(), { state: empty });
-    const add = buttonIn(sectionOf(page.root, 1), "+ reguła");
-    assert.equal(add.disabled, true);
-    await press(add);
-    assert.deepEqual(calls, []);
-  });
-  await withPage(async (page) => {
-    await mount(page, twoGroups());
-    assert.equal(buttonIn(sectionOf(page.root, 1), "+ reguła").disabled, false);
-  });
+// D-124: with „Eksploruj” in the Understanding from the start the button always has a rule to add,
+// so it is never disabled — not in a new game and not where the Understanding holds no action.
+test("„+ reguła” is never disabled, in a new game or in a game whose Understanding holds no action, and adds its rule there", async () => {
+  const noAction = {
+    ...newGame(),
+    understanding: { ...fullUnderstanding(), actions: [] },
+  };
+  for (const state of [newGame(), noAction]) {
+    await withPage(async (page) => {
+      const { calls } = await mount(page, twoGroups(), { state });
+      const add = buttonIn(sectionOf(page.root, 1), "+ reguła");
+      assert.equal(add.disabled, false);
+      await press(add);
+      assert.equal(calls[0][0], "commit");
+      assert.deepEqual(calls[0][1].groups[0].rules[2], {
+        id: 4,
+        condition: { kind: "always" },
+        action: { kind: "explore" },
+      });
+    });
+  }
 });
 
 test("„+ dodaj grupę” appends an empty group with the next number", async () => {
