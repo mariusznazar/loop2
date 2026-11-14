@@ -118,7 +118,7 @@ stworzeń, rodzajów działań i warunków, umiejętności postaci i gałęzi ic
 drzew, górną granicę energii natury, pojemność skrzyni, predyspozycje
 archetypu postaci, liczbę cen każdej gałęzi (najwyższą rangę) oraz progi
 wprawy, od których zależą punkty do wydania na rangi. Zmiana którejś
-z tych rzeczy nie podnosi wersji sama, ale dokumenty bieżącej wersji, które
+z tych rzeczy nie podnosi wersji sama (poza dodaniem albo usunięciem zwykłej czynności, które ją podnosi), ale dokumenty bieżącej wersji, które
 jej już nie spełniają, są odrzucane jako uszkodzone (powód `shape`, zdanie
 „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.”), nie jako
 inna wersja.

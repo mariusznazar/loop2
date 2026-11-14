@@ -2336,7 +2336,7 @@ tile, is open to every character, and an archetype never filters items.
     item
 - **Origin:** none
 
-*Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes both a campfire and an archetype's goods, so only
+*Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes a campfire and, in later data, an archetype's goods, so only
 the pair of verb and target names the character skill the action belongs to, and an action that no character skill grows, such as moving or wandering, is common to all. Items are things of
 the world: a character eats, burns and carries what it would not make itself, and without that the
 team's chest would mean nothing. The one filter on items is the gate of a bought branch (D-119). An action opened by a branch is open to the character that bought it and to no other: the program editor offers it in that character's map run and outside a map run does not (D-196), and for a character without the branch a rule with it is skipped and stays in the program (D-126). Accepted with it: the player sees in the Understanding an action that nobody yet can carry out, and a rule with such an action can be added only in the map run of the character that bought the branch; added in the copy it resets the streak and the number of attacks beaten (D-131) and reaches the program with „Zapisz w programie”, while without losing the streak it can be added in minute zero or in a saved program edited during the map run, which acts from the next entry onto a map other than „Restart”.
@@ -9640,15 +9640,15 @@ The gate starts Docker Desktop whatever the free memory of the computer is; it k
 
 ### D-393 — In which browsers and from which window size does the game have to work?
 
-The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen.
+The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
-  - complies: a check of a change in Chromium at a page area of 1280 × 720 px; a remark that the look breaks in Safari, or in a window 1000 px wide, set aside as outside the set and below the smallest window
-  - violates: a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a window of 1280 × 720 px counted as the resolution of the screen, which leaves a page area of about 1280 × 600
+  - complies: a check of a change in Chromium at a page area of 1280 × 720 px; a change that keeps the content of Siedziba as wide as a window 1000 px wide, as D-280 gives it
+  - violates: a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a check of a change at a screen resolution of 1280 × 720 px, which leaves a page area of about 1280 × 600; a change made only to fix a look in a window below the smallest where no decision defines it; a change that drops the 1000 px width of D-280 as outside the set
 - **Origin:** none
 
-*Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions; a window below the smallest, such as one narrower than 1074 px (D-311), is no fault to fix.
+*Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request; the decisions that already define the look of a narrower or a lower window bind what the game does there, so what is left unfixed is only what no decision defines. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions.
 *Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and it is not known whether the tool installs with Firefox on this computer (it did not install with WebKit); no entry — every remark about Safari and about a narrow window stays without a measure.
