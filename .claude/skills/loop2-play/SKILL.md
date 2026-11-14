@@ -43,7 +43,8 @@ Every account is made through the login card, with a made-up address at `example
 ## Operate the game with Playwright CLI
 
 Playwright CLI is the first way because its maker recommends it to agents writing code for the
-tokens it saves, and it holds the same engine as the Playwright MCP server.
+tokens it saves, though with no figures, and it holds the same engine as the Playwright MCP server,
+so going back to MCP costs almost nothing.
 
 `playwright-cli` is a program installed on the computer, not a dependency of the repository. Where
 `playwright-cli --version` fails, stop and tell the human: installing it is their step.
@@ -169,9 +170,9 @@ in words and keep logs and outputs in the report. A screenshot you show lies in
 `mariusznazar/screenshots`, a public repository that holds only the screenshots of public products,
 in the directory `loop2/` and in it a directory named as your cycle (the name of the cycle's
 directory under `.runs/task-cycles/`). The owner accepts a request by seeing the screen in its
-description, without running the game, so the screenshot is evidence for the time of acceptance:
-the repository may be cleared after a long time, when the images of old requests stop showing, and
-a repository of its own keeps the images out of the history of loop2, which every clone downloads.
+description, without running the game, and does not go back to views of half a year ago, so the
+repository may be cleared after a long time, and the images of old requests then stop showing; a
+repository of its own keeps the images out of the history of loop2, which every clone downloads.
 The repository is public and keeps its history, so look at the screenshot
 before you push it: it may show only the made-up account of this start, an address at
 `example.test`, and no real address, password or token. Never write an access value into a file of
