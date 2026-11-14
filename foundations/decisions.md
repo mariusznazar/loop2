@@ -1023,7 +1023,7 @@ In the browser view `character` means that here is the character and here it is 
 
 ### D-42 — Which accessibility requirements does the browser view keep?
 
-For now every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
+Every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
 
 - **Scope:** browser-view
 - **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-three-flashes · wcag-focus-visible
@@ -1441,7 +1441,7 @@ game's concept and loop name the spell's verb „Zapal”.
 
 ### D-64 — What does the backpack's cap count, and what sets its height?
 
-The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is currently 15 pieces, and the character skill trees currently have no branch that raises it.
+The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is 15 pieces, and the character skill trees have no branch that raises it.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -2463,7 +2463,7 @@ A program rule the game writes at a discovery goes into the first rule group of 
 carries out and into the first rule group of the program the copy belongs to, while that program is
 on the player's list, and where either holds no rule group, the game adds the rule group „Program”
 with the condition „Zawsze” and writes the rule into it; the other programs of the list stay as they
-were. Today the game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where
+were. The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where
 the copy holds no rule with the action „Eksploruj”. The rule so written counts neither as an unsaved
 change of the copy nor as a change of the program that a save of the copy announces.
 
@@ -2990,7 +2990,7 @@ An attack uses the per-game-minute chance and cooldown in its map's data, with t
 
 ### D-143 — What does the first wolf attack reveal?
 
-The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn. The discovery leaves writing combat rules to the player; the game currently adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else.
+The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn. The discovery leaves writing combat rules to the player; the game adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3005,7 +3005,7 @@ The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „O
 
 ### D-144 — What actions does a character use in combat?
 
-The character currently uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
+The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3020,7 +3020,7 @@ The character currently uses „Uderz — patyk”, which requires a stick in th
 
 ### D-145 — How do weapon wear and wound dressing work today?
 
-A stick currently stays in the backpack after a strike, with its condition unchanged, and the game currently has no action for dressing wounds.
+A stick stays in the backpack after a strike, with its condition unchanged, and the game has no action for dressing wounds.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3347,7 +3347,7 @@ The screen Programy holds on the left the list of the player's programs and on t
 
 ### D-167 — What can the player do with the list of programs?
 
-The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”. A program left alone on the list stays there, „Usuń” leaving it in place. The game has today no action that duplicates a program.
+The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”. A program left alone on the list stays there, „Usuń” leaving it in place. The game has no action that duplicates a program.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3377,7 +3377,7 @@ Deleting the program the copy of the map run belongs to leaves the map run going
 
 ### D-169 — How is a program named?
 
-The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number. A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets today no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it.
+The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number. A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3594,7 +3594,7 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
 
 ### D-181 — Which entries does a trip list accept?
 
-The game currently accepts an item once on each trip list, and the same item can stand on both lists. A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is currently left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
+The game accepts an item once on each trip list, and the same item can stand on both lists. A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3672,7 +3672,7 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 
 ### D-187 — How does a map cap equipment and loot?
 
-A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset. The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is currently bounded by the character's carrying capacity, which the map cap currently leaves unchanged.
+A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset. The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is bounded by the character's carrying capacity, which the map cap leaves unchanged.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3685,7 +3685,7 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 
 ### D-188 — Where does the player learn that a map cuts the trip plan?
 
-On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity. The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is currently absent.
+On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity. The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -3773,7 +3773,7 @@ An action ending in effect adds one practice to the character skill its pair of 
 
 ### D-194 — When does a manual map run pay its practice to its character?
 
-A manual map run holds the practice it gathers separately by character skill and currently pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run. A run cut short by „Restart” or „Zakończ” before completion currently leaves the character’s practice and bought ranks as they were.
+A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run. A run cut short by „Restart” or „Zakończ” before completion leaves the character’s practice and bought ranks as they were.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3803,7 +3803,7 @@ A character skill tree with all its branches enters the Understanding in the gam
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
 
-Outside a map run the program editor currently offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches currently contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
+Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3848,7 +3848,7 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 
 ### D-199 — What does the screen Postać show of character skills?
 
-The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
+The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and omits the next value and price.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -3863,7 +3863,7 @@ The screen Postać shows „Umiejętności” after a tree is known, with a row 
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
-The player currently buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
+The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3878,7 +3878,7 @@ The player currently buys a branch rank with „Kup” on the screen Postać out
 
 ### D-201 — What does the map-run view show of its practice?
 
-Below the body row the map-run view currently shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are currently absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
+Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -4099,7 +4099,7 @@ Las, while closing the tab takes at most 30 game minutes at every pace.
 
 ### D-208 — What does the player see of saving the game state?
 
-A save of the game state that succeeds shows nothing. When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
+A save of the game state that succeeds shows nothing. When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds; the game sets no limit on the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -5251,12 +5251,12 @@ split of a span would change who gets the chest, and `minute-span-split` would n
 
 ### D-243 — How does the player start an earning loop?
 
-The player currently starts an earning loop with „Puść w pętlę”, which stands at each character in
+The player starts an earning loop with „Puść w pętlę”, which stands at each character in
 the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that
 character's list „Program:” and acts at once on the click. For that list the start counts as a send:
 the program becomes the one the character used last and the one with which a character last entered
 a map, and the pick clears. At a character in an earning loop „Wejdź” and „Puść w pętlę” are
-currently inactive, and the player stops the earning loop first.
+inactive, and the player stops the earning loop first.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -5279,7 +5279,7 @@ character did in the predecessor game — one click silently loses the backpack.
 
 ### D-244 — What does the player see of an earning loop?
 
-A running earning loop currently shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
+A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -5331,7 +5331,7 @@ wprawa: nic” — the line speaks of practice that was not there.
 
 ### D-246 — What does the player read after being away?
 
-After being away the player currently reads a report in the section „Gdy cię nie było” of
+After being away the player reads a report in the section „Gdy cię nie było” of
 Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning
 loop of a character whose earning loop a death stopped opening a line of its own, and one button
 „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}:
@@ -5396,7 +5396,7 @@ the title says what is untrue to a player who sat at the game.
 
 ### D-247 — When is time away computed, and how much?
 
-The catch-up currently computes all the missed game minutes, and the game currently sets no upper
+The catch-up computes all the missed game minutes, and the game sets no upper
 bound on them. It runs on its own after each load of a game state, the unsaved game state kept in the page's
 memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another
 browser's (D-209) and after a sign-in to the same account with that unsaved game state.
@@ -5466,7 +5466,7 @@ not the moment of the save.
 
 ### D-249 — What does a map run of an earning loop discover?
 
-A map run of an earning loop currently discovers nothing: the Understanding and the program stay as
+A map run of an earning loop discovers nothing: the Understanding and the program stay as
 they stand, game time goes on, and the game writes no program rule at a discovery, and the player
 discovers what the character met in a manual map run.
 
@@ -9419,7 +9419,7 @@ Where the program the program panel shows is gone from the player's list, or the
 
 ### D-385 — How does the list of revealed tiles show an item that burns on a tile?
 
-An item burning on a revealed tile, a lit stick today, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map, and its name comes from the game's data (D-18).
+An item burning on a revealed tile, such as a lit stick, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map, and its name comes from the game's data (D-18).
 
 - **Scope:** browser-view
 - **Based on:** none
