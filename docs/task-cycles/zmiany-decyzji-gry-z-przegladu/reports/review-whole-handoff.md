@@ -1,0 +1,25 @@
+# Handoff — review of the whole change
+
+**Delegation.** The human who requested this task cycle delegated intermediate choices to the orchestrator. You review as an agent that made none of the change. You change nothing in the worktree and ask the human nothing; a question goes to the orchestrator as the report's status `questions`.
+
+**Method.** Read `.the-way/task-cycle/review/SKILL.md` whole and follow it; you review "the whole change" — read `.the-way/task-cycle/review/whole_change.md` as that variant gives. Read a file the method names only when the step or variant that names it comes. You select your own foundation entries and guidelines by the parts the change touches (`product-foundation`, `simulation` through `src/browser/sim/saved-game.ts`, `agent-workflow` through `guidelines/**`), as "Reading the foundation" in `.the-way/elements/common/way_of_working.md` and `.the-way/product-guidelines/reading.md` give.
+
+**Worktree and range.** the task's worktree, the repository's root, branch `task/zmiany-decyzji-gry-z-przegladu`. Review the range `5159e8c475a5faa77529020a51b21e271c695132..3767fd3d` (three commits: `2e5c2a80`, `285a210c`, `3767fd3d`). The pinned the-way (`.the-way`, commit `55afa8e57aa1b83c77108576a36642722e0dda15`) is not changed by the task. The route is the one author without a plan: no slices, no spec, no plan, no earlier slice review.
+
+**Frozen task.** `docs/task-cycles/zmiany-decyzji-gry-z-przegladu/task.md` — read it whole. Check the change against every to-do item 1–9, every row of *Settlements to record* (rows 1–3), the answered *Questions to settle*, and *Out of scope* (nothing of it may be done). The foundation entries the change writes are accepted with the task document; judge their wording against the task's meaning, the foundation's templates and rules, and the code. Source of the items: the sections `### F-1`, `### F-8`, `### F-12`, `### F-19`, `### F-20`, `### F-22`, `### F-27`, `### F-38`, `### F-40` of `the data note of the foundation review of 2026-11-13, in the author's private notes` (about 290 KB — read only those sections, each to the next `###`); check source fidelity against them and against the base's code.
+
+**Author's report.** `docs/task-cycles/zmiany-decyzji-gry-z-przegladu/reports/author-report.md`. It gives the author's choices, the full list of places of item 8 and the places left, and findings. Treat its claims as hypotheses; verify them against the diff and the code. The orchestrator decided one place the author left unclear: D-136 *Rationale* "keeping the loop going" now reads "keeping the earning loop going" (commit `3767fd3d`); judge that reading too.
+
+**Answers of step 4.**
+- Trust boundary: yes — `src/browser/sim/saved-game.ts` is the trust boundary of `simulation`. Check that its diff is a comment alone: no code, value or behaviour of loading a crafted saved game document changes, and no other file of a trust boundary is touched.
+- Irreversible operation: no. Nothing is deployed, migrated or deleted; confirm.
+- The product's gate is the orchestrator's, not yours; the orchestrator runs `npm test` after the review. You may run a focused check you need (`python -B .the-way/elements/common/foundation_check.py`, a single test), each with its command and exit code in the report.
+
+**Points to judge with care.**
+- Item 8: every bare "loop"/"loops" that means the earning loop is "earning loop"; "loop" as the previous game and in other senses stay. Sample the places the author changed and the places it left (the list is in its report), and search the decisions yourself for a missed bare "loop" that means the earning loop, and for a changed place that meant the previous game.
+- D-393 (new decision, row 1): its *Scope*, *Rejected*, *Verification*, the claim "Chromium for the agent's daily checks; Firefox and Edge by hand" and the window defined as the page area 1280 × 720 px; whether it collides with another decision (for example D-311, D-282 and the skill `loop2-play`).
+- D-311's cost clause says a window narrower than 1074 px puts the chronicle under the whole program; check the number and the behaviour against `src/browser/styles.css` and the view code.
+- D-120, D-186, D-179, D-367: check each new claim against the data and the code of the base, not only against the task's wording.
+- The author's findings 1–5 (a test docstring quoting the old sentence of `streak-program-change`, D-136's binding sentence, the guideline's second paragraph, the glossary template's rule for *Not*, D-393's *Scope*) are information; grade them yourself, and mark what is outside the task's scope as the method gives.
+
+**Report.** Write your full report to `docs/task-cycles/zmiany-decyzji-gry-z-przegladu/reports/review-whole-report.md` as the method gives it, first line `PASS <sha>` or `FAIL <sha>` (or `questions`), with its sections, in particular **Unread material**, **Searches not found or unclear**, and the count of decisions read whole and by title only. Return the first line, the path of the report and a one-line check result.
