@@ -1,4 +1,4 @@
-// The area under the drawing of the screen of a map run, `RightArea` in right-area.tsx, in React
+// The area under the drawing of the screen of a map run, `TabsArea` in tabs-area.tsx, in React
 // (D-311, D-343, D-344, D-346, D-382, D-383, D-147, D-276, D-130) on jsdom through
 // tests/view/page-document.mjs (D-264): the tabs „Kronika” and „Teren”, under „Kronika” the seven
 // filter buttons and the list of the chronicle, newest first, each row the game minute alone in a
@@ -20,7 +20,7 @@ import {
   send,
 } from "../../dist/browser/sim/game.js";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
-import { RightArea } from "../../dist/browser/view/right-area.js";
+import { TabsArea } from "../../dist/browser/view/tabs-area.js";
 
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000003;
@@ -119,7 +119,7 @@ async function draw(document, chronicle, state, extra = {}) {
   const show = (next) =>
     inAct(() =>
       root.render(
-        createElement(RightArea, {
+        createElement(TabsArea, {
           state: next,
           chronicle,
           hovered: extra.hovered ?? null,

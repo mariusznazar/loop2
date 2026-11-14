@@ -37,9 +37,9 @@ import type { Chronicle } from "./chronicle.js";
 import { DiscoveryBand } from "./discovery-band.js";
 import { EndWindow, type EndWindowControls } from "./end-window.js";
 import type { ProgramPanel } from "./program-panel.js";
-import { RightArea } from "./right-area.js";
 import { RunHeader, type RunHeaderControls } from "./run-header.js";
 import type { EndQuestionControls } from "./end-question.js";
+import { TabsArea } from "./tabs-area.js";
 import { WorldArea } from "./world-area.js";
 
 /** The entries of „Ostatnie minuty” the screen asks its chronicle memory for (D-368). */
@@ -191,7 +191,7 @@ function RunScreenView({
         </section>
         <section className="screen-area run-tabs" hidden={covering}>
           {state === null ? null : (
-            <RightArea
+            <TabsArea
               state={state}
               chronicle={chronicle}
               hovered={hovered}
