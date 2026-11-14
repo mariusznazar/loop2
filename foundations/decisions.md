@@ -9641,7 +9641,7 @@ The simulation keeps `actionFeasible`, the function that tells whether an action
   - violates: a change that removes `actionFeasible` because no code of the game calls it
 - **Origin:** none
 
-*Rationale:* the tests that call it need no other public function of the simulation to tell whether an action is allowed, and a function of the simulation that is the simplest point of observation of a rule is worth keeping where the game has no use for it.
+*Rationale:* the tests that call it need no other public function of the simulation to tell whether an action is allowed, and `actionFeasible` is their simplest point of observation of that.
 *Rejected:* removing it — the tests that call it are rewritten onto another public function of the simulation, the work grows, and the tests lose the simplest point of observing whether an action is allowed.
 
 ### D-395 — What does a shared control of the browser view know of the screens that use it?
@@ -9657,4 +9657,4 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 - **Origin:** none
 
 *Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
-*Rejected:* unknown
+*Rejected:* the control picking the rule of a screen by a value of its parameter `rule`, as `rule="trip"` did — the source keeps no cost or reason beside it, so none is known.
