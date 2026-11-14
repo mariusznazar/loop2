@@ -2850,9 +2850,10 @@ the bar of the solving condition in the header (D-133).
 The condition that solves a map stands in the map's data — a streak, a number of attacks beaten,
 alone or together — and a map opens when the map its data names as its opener is solved. A streak
 counts the successive game minutes in which the character loses no health to cold or hunger: a game
-minute with such a loss sets it to zero, wounds taken in combat do not, and every change of the
-program rules or rule groups the map run carries out, and every switch of the character to another
-program, sets it to zero, on every map, while a change of the trip plan alone leaves it.
+minute with such a loss sets it to zero, wounds taken in combat do not, and every change, in a map
+run that has not ended, of the program rules or rule groups the map run carries out, and every switch
+of the character to another program during that map run, sets it to zero, on every map, while a change
+of the trip plan alone leaves it.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -9696,7 +9697,7 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 
 ### D-396 — In which browsers and from which window size does the game have to work?
 
-The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
+The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311, D-349, D-370 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** none
