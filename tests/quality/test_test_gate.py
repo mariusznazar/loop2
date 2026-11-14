@@ -1,4 +1,5 @@
-"""The file selection of D-77 runs one real test file and refuses an empty run."""
+"""The file selection of D-77 runs one real test file and refuses an empty run; the whole run
+gives the Python runner one job at a time (D-406)."""
 
 import unittest
 
@@ -36,6 +37,18 @@ class TestGate(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue((self.gate.root / "tests/selected.test.mjs.ran").exists())
         self.assert_focused()
+
+    def test_the_whole_gate_runs_its_stages_and_gives_the_python_runner_one_job(self):
+        # decision: D-406 "The full gate runs the directories of Python tests one after another"
+        # Breaking it: drop `--jobs 1` from the stage that runs the Python tests and the runner
+        # is given no argument, so its directories run at the same time.
+        self.gate.write("tests/passing.test.mjs",
+                        'import test from "node:test"; test("passes", () => {});\n')
+        result = self.gate.run()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((self.gate.root / "built").read_text(encoding="utf-8"), "yes")
+        self.assertEqual((self.gate.root / "python-stage").read_text(encoding="utf-8"), "--jobs 1")
+        self.assertTrue((self.gate.root / "foundation-stage").exists())
 
     def test_empty_or_skipped_only_files_fail(self):
         # invariant: focused-test-execution

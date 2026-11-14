@@ -1,4 +1,6 @@
-"""Temporary repository with the real gate and cheap stand-ins for its other stages."""
+"""Temporary repository with the real gate and cheap stand-ins for its other stages.
+
+A stand-in of a stage writes its marker file with the arguments it was given."""
 
 import json
 import os
@@ -27,7 +29,8 @@ class GateFixture:
                    'import { writeFileSync } from "node:fs"; writeFileSync("built", "yes");\n')
         for path, marker in ((".the-way/gate/run_tests.py", "python-stage"),
                              (".the-way/elements/common/foundation_check.py", "foundation-stage")):
-            self.write(path, f'from pathlib import Path\nPath("{marker}").touch()\n')
+            self.write(path, 'import sys\nfrom pathlib import Path\n'
+                       f'Path("{marker}").write_text(" ".join(sys.argv[1:]))\n')
 
     def write(self, name, content):
         path = self.root / name
