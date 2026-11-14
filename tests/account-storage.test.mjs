@@ -1268,6 +1268,75 @@ test("the privilege write answers granted, already granted, revoked, not granted
   );
 });
 
+// invariant: player-save-isolation
+// invariant: previous-save-slot
+test("the move, the reset and the privilege write touch only the account they name, and another account's saves and privilege stay as they were", async (t) => {
+  const { database, account } = await fixture(t);
+  const neighbour = database.createAccount(
+    "neighbour@example.test",
+    "neighbour-hash",
+  );
+  const save = (accountId, version, basedOn, game) =>
+    database.writeSavedGame(accountId, { version, basedOn, game });
+  // The neighbour holds a current save and a previous save of its own, and no
+  // privilege; both are written before the first account does anything.
+  save(neighbour.id, 1, 0, '{"b":1}');
+  save(neighbour.id, 2, 1, '{"b":2}');
+  assert.deepEqual(database.readPreviousSavedGame(neighbour.id), {
+    version: 1,
+    revision: 1,
+    game: '{"b":1}',
+  });
+  save(account.id, 1, 0, '{"a":1}');
+
+  // The first account is granted the privilege, saves a higher version, which
+  // moves its own save, and resets, which moves its current save.
+  assert.deepEqual(
+    database.setPreviousSavePrivilege("player@example.test", true),
+    { outcome: "granted", accountId: account.id },
+  );
+  assert.deepEqual(save(account.id, 2, 1, '{"a":2}'), {
+    outcome: "saved",
+    revision: 2,
+  });
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 1,
+    revision: 1,
+    game: '{"a":1}',
+  });
+  assert.deepEqual(database.resetSavedGame(account.id), { outcome: "moved" });
+  assert.deepEqual(database.readPreviousSavedGame(account.id), {
+    version: 2,
+    revision: 2,
+    game: '{"a":2}',
+  });
+
+  // The neighbour's current save, previous save and privilege are as they were,
+  // and its own reset still refuses for want of the privilege.
+  assert.deepEqual(database.readSavedGame(neighbour.id), {
+    version: 2,
+    revision: 2,
+    game: '{"b":2}',
+  });
+  assert.deepEqual(database.readPreviousSavedGame(neighbour.id), {
+    version: 1,
+    revision: 1,
+    game: '{"b":1}',
+  });
+  assert.equal(
+    database.findAccountById(neighbour.id).previousSaveAllowed,
+    false,
+  );
+  assert.deepEqual(database.resetSavedGame(neighbour.id), {
+    outcome: "unprivileged",
+  });
+  assert.deepEqual(database.readSavedGame(neighbour.id), {
+    version: 2,
+    revision: 2,
+    game: '{"b":2}',
+  });
+});
+
 // invariant: previous-save-slot
 test("the table of previous saves holds at most 65 536 bytes of text, counted in bytes, a longer one changes nothing, and it goes with its account", async (t) => {
   const { database, raw, account } = await fixture(t);
