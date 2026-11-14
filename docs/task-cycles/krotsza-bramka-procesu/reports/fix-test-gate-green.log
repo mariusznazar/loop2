@@ -1,0 +1,9 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/quality/test_test_gate.py
+
+........
+----------------------------------------------------------------------
+Ran 8 tests in 14.331s
+
+OK

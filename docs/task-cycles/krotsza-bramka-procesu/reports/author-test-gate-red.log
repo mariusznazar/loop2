@@ -1,0 +1,20 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/quality/test_test_gate.py
+
+.......F
+======================================================================
+FAIL: test_the_whole_gate_runs_its_stages_and_gives_the_python_runner_one_job (test_test_gate.TestGate.test_the_whole_gate_runs_its_stages_and_gives_the_python_runner_one_job)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tests\quality\test_test_gate.py", line 49, in test_the_whole_gate_runs_its_stages_and_gives_the_python_runner_one_job
+    self.assertEqual((self.gate.root / "python-stage").read_text(encoding="utf-8"), "--jobs 1")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '' != '--jobs 1'
++ --jobs 1
+
+
+----------------------------------------------------------------------
+Ran 8 tests in 9.102s
+
+FAILED (failures=1)
