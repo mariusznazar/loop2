@@ -11,7 +11,8 @@ the script records the JSON of the whole game state and the events that call gav
 The new game of each sent character is one whose Understanding holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
 program stay what the check drives and no game minute discovers anything; the scenario DISCOVERS
-alone starts from `newGame()`, which knows nothing.
+alone starts from `newGame()`, which knows nothing, with Skraj lasu solved so that Las can be sent
+to.
 
 Reading of the sentence:
 - a span of game minutes: the SPAN minutes after a send to the map Las (`forest`) of a character
@@ -211,7 +212,7 @@ const game = await import(pathToFileURL(gamePath).href);
 const runs = JSON.parse(readFileSync(runsPath, 'utf8'));
 const out = {};
 for (const [key, { program, sent, realMs, calls, bare, patch }] of Object.entries(runs)) {
-  let state = bare ? game.newGame() : await newKnowingGame(game, gamePath);
+  let state = bare ? { ...game.newGame(), solvedMaps: ['forestEdge'] } : await newKnowingGame(game, gamePath);
   if (program) state = game.setProgram(state, program).state;
   state = game.createCharacter(state, 'Ala').state;
   state = game.send(state, sent, realMs).state;
@@ -388,7 +389,7 @@ class MinuteSpanSplit(unittest.TestCase):
         at_completion = reference[completions[0][0]]
         self.assertEqual(minute(at_completion), COMPLETES[5])
         self.assertEqual(at_completion["state"]["run"]["completion"], {"minute": COMPLETES[5]})
-        self.assertEqual(at_completion["state"]["solvedMaps"], [SENT["mapId"]])
+        self.assertEqual(at_completion["state"]["solvedMaps"], ["forestEdge", SENT["mapId"]])
         self.assertFalse(at_completion["state"]["paused"])
         self.assertEqual(at_completion["events"][-1]["kind"], "mapRunCompleted")
         self.assertLess(COMPLETES[5], COMPLETES[3], "the span does not reach past the completion")

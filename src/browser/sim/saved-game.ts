@@ -77,7 +77,7 @@ import type {
  * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
  * record of a manual map run: a new action or a removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 5;
+export const SAVED_GAME_VERSION = 6;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };

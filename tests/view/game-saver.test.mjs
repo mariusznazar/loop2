@@ -17,6 +17,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { createGameSaver } from "../../dist/browser/view/game-saver.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 // --- a document model with just what the saver builds and listens to -----------------------
 
@@ -196,7 +197,8 @@ function submissionOf(state, basedOn) {
   return { version, basedOn, game: { ...game, saveTimeMs: CLOCK_MS } };
 }
 
-const withCharacter = () => createCharacter(newGame(), "Ala").state;
+const withCharacter = () =>
+  createCharacter(withEdgeSolved(newGame()), "Ala").state;
 /** A game whose map run passes: sent at the real date 0, unpaused. */
 const passing = () =>
   send(withCharacter(), { mapId: "forest", characterId: 1 }, 0).state;

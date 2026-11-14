@@ -22,7 +22,10 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { RunHeader } from "../../dist/browser/view/run-header.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const SENT = {
   mapId: "forest",
@@ -36,7 +39,7 @@ const EXPLORE = [
 /** A game with a map run of the character „Ala” started under the given program rules. */
 function sent(rules = EXPLORE) {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...rules),
   ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
@@ -132,7 +135,7 @@ test("the header reads the character's name, the map's name, the clock, the bar 
 test("the name is the one of the team member whose map run it is", async () => {
   await withPage(async ({ document }) => {
     const program = setProgram(
-      newKnowingGame(),
+      withEdgeSolved(newKnowingGame()),
       programFromRules(...EXPLORE),
     ).state;
     const team = createCharacter(

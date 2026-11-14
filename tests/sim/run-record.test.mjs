@@ -17,7 +17,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { startLoop } from "../../dist/browser/sim/loop.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const ALWAYS = { kind: "always" };
 const REAL_MS = 1760000000000;
@@ -40,7 +40,7 @@ const OTHER_KINDS = ["wait", "combat"];
 /** A game with `program`, one character, sent to `mapId`; `game` is the game it starts from. */
 function sentWith(
   program,
-  { game = newKnowingGame(), mapId = "forest", ms } = {},
+  { game = withEdgeSolved(newKnowingGame()), mapId = "forest", ms } = {},
 ) {
   const ready = createCharacter(setProgram(game, program).state, "Ala").state;
   return send(ready, { mapId, characterId: 1 }, ms ?? REAL_MS).state;
@@ -48,7 +48,7 @@ function sentWith(
 
 /** The sent game with the chest holding `pieces` before the send. */
 function sentWithChest(program, pieces, extra = {}) {
-  const game = newKnowingGame();
+  const game = withEdgeSolved(newKnowingGame());
   return sentWith(program, {
     ...extra,
     game: {
@@ -313,7 +313,7 @@ test("a map run of a solved map keeps what it took from nowhere, and the chest s
       action: { kind: "explore" },
     }),
     {},
-    { game: { solvedMaps: ["forest"] } },
+    { game: { solvedMaps: ["forestEdge", "forest"] } },
   );
   assert.equal(state.run.solvedMapRun, true);
   assert.deepEqual(state.team.chest.pieces, {});

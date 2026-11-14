@@ -14,13 +14,14 @@ import {
   satietyNoteText,
   temperatureNoteText,
 } from "../../dist/browser/view/body-row.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const LAS = MAPS.forest;
 
 /** A map run of „Ala” on Las at game minute zero, her body and nature energy and fields replaced. */
 function runOf(body, natureEnergy = 100, fields = {}) {
   const state = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId: "forest", characterId: 1 },
     1760000000000,
   ).state;

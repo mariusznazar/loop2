@@ -23,7 +23,7 @@ import {
 } from "../../dist/browser/sim/programs.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
@@ -44,7 +44,7 @@ const listed = (...names) =>
 /** A knowing game with Ala (1) and Bartek (2) and the programs 1, 3 and 4 — 2 stands for a deleted one. */
 function team(extra = {}) {
   const made = createCharacter(
-    createCharacter(newKnowingGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state,
     "Bartek",
   ).state;
   return {

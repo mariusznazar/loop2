@@ -12,6 +12,7 @@ import {
   screenAddress,
 } from "../../dist/browser/view/screen-address.js";
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const HEADQUARTERS = { kind: "headquarters" };
 const PROGRAMS = { kind: "programs" };
@@ -39,7 +40,7 @@ function explicitGame() {
 /** The explicit game with a map run of the forest for character 2, sent for real. */
 function withRunOfCharacterTwo(minute, death = null) {
   const sentRun = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId: "forest", characterId: 1 },
     1760000000000,
   ).state.run;
@@ -224,20 +225,28 @@ test("the maps screen stays", () => {
 });
 
 test("a map off the list of open maps gives Siedziba: a map whose opening map is not solved", () => {
-  assert.deepEqual(
-    resolveScreen({ kind: "map", mapId: "forestDeep" }, explicitGame()),
-    HEADQUARTERS,
-  );
+  for (const mapId of ["forest", "forestDeep"]) {
+    assert.deepEqual(
+      resolveScreen({ kind: "map", mapId }, explicitGame()),
+      HEADQUARTERS,
+      mapId,
+    );
+  }
 });
 
 test("a map with no opening map stays, although no map is solved", () => {
   assert.deepEqual(
-    resolveScreen({ kind: "map", mapId: "forest" }, explicitGame()),
-    { kind: "map", mapId: "forest" },
+    resolveScreen({ kind: "map", mapId: "forestEdge" }, explicitGame()),
+    { kind: "map", mapId: "forestEdge" },
   );
 });
 
 test("a map whose opening map is solved stays", () => {
+  const edge = { ...explicitGame(), solvedMaps: ["forestEdge"] };
+  assert.deepEqual(resolveScreen({ kind: "map", mapId: "forest" }, edge), {
+    kind: "map",
+    mapId: "forest",
+  });
   const game = { ...explicitGame(), solvedMaps: ["forest"] };
   assert.deepEqual(resolveScreen({ kind: "map", mapId: "forestDeep" }, game), {
     kind: "map",

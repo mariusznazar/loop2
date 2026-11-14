@@ -35,6 +35,7 @@ import {
 import { loadSavedGame } from "../../dist/browser/sim/saved-game.js";
 import { EndQuestion } from "../../dist/browser/view/end-question.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
 
@@ -195,7 +196,7 @@ function shownScreen(root) {
 const SENT = { mapId: "forest", characterId: 1, programId: 1 };
 /** Ala with „Program” and „Program 2” on the list. */
 const twoPrograms = () =>
-  createProgram(createCharacter(newGame(), "Ala").state).state;
+  createProgram(createCharacter(withEdgeSolved(newGame()), "Ala").state).state;
 /** Ala's map run of the forest under program 1, going on, the copy the program as it stands. */
 const going = () => send(twoPrograms(), SENT, 0).state;
 const paused = () => setPaused(going(), true).state;

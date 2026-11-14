@@ -24,7 +24,10 @@ import {
   wayOnButtons,
 } from "../../dist/browser/view/end-window-lines.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const REAL_MS = 1760000000000;
 const ALWAYS = { kind: "always" };
@@ -33,7 +36,7 @@ const rule = (action) => ({ condition: ALWAYS, action });
 /** A game with a map run of the map given, sent under the rules given. */
 function sent(rules, mapId = "forest") {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...rules),
   ).state;
   return send(

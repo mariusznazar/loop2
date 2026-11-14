@@ -21,8 +21,8 @@ let state = createCharacter(newGame(), "Agent").state;
 
 // The Understanding grows only through events of a map run, so take a real map run to read them
 // against and keep the Understanding it yields, not the map run.
-const run = send(state, { mapId: "forest", characterId: CHARACTER_ID }, 0).state
-  .run;
+const run = send(state, { mapId: "forestEdge", characterId: CHARACTER_ID }, 0)
+  .state.run;
 const hold = (item) => ({ ...run.character.backpack, [item]: 1 });
 const steps = [
   // [events, map run after]: each event reveals what the data says it reveals.

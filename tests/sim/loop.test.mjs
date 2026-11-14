@@ -95,7 +95,7 @@ function game(program = EMPTY, chest = {}) {
   state = createCharacter(state, "Ola").state;
   return {
     ...state,
-    solvedMaps: ["forest"],
+    solvedMaps: ["forestEdge", "forest"],
     team: { ...state.team, chest: { pieces: chest } },
   };
 }
@@ -387,7 +387,7 @@ test("a loop's map run through the first chill leaves the Understanding, the pro
   let state = setProgram(newGame(), EMPTY).state;
   state = {
     ...createCharacter(state, "Ala").state,
-    solvedMaps: ["forest"],
+    solvedMaps: ["forestEdge", "forest"],
   };
   const manual = advanceMinutes(send(state, FOREST, COLD_REAL_MS).state, 100);
   assert.ok(
@@ -596,7 +596,7 @@ test("passing the minute of a completion deposits nothing, pays nothing and coun
   assert.deepEqual(done.state.loops[1].run.completion, { minute: 1 });
   assert.deepEqual(done.state.team, state.team);
   assert.equal(done.state.loops[1].completed, 0);
-  assert.deepEqual(done.state.solvedMaps, ["forest"]);
+  assert.deepEqual(done.state.solvedMaps, ["forestEdge", "forest"]);
   const again = advanceLoopRun(done.state, 1, 5);
   assert.equal(again.state, done.state);
   assert.equal(again.passed, 0);
@@ -660,7 +660,7 @@ test("a completion deposits the bring list's clipped loot, counts the map run, a
   assert.deepEqual(loop.program, program);
   // Practice stays with the loop; the map is solved already and the first seed stays the last seed.
   assert.deepEqual(ala(after).skills, skillsBefore);
-  assert.deepEqual(after.solvedMaps, ["forest"]);
+  assert.deepEqual(after.solvedMaps, ["forestEdge", "forest"]);
   assert.equal(after.lastSeed, ready.lastSeed);
 });
 
@@ -726,7 +726,7 @@ test("a death with a resurrection ready is settled at the moment given: used up,
   // Nothing came back: the berries of the dead map run are gone and the next one took the last two.
   assert.deepEqual(after.team.chest.pieces, { berry: 0 });
   assert.equal(loop.run.character.backpack.berry, 2);
-  assert.deepEqual(after.solvedMaps, ["forest"]);
+  assert.deepEqual(after.solvedMaps, ["forestEdge", "forest"]);
 });
 
 // invariant: death-settled-once

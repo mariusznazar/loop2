@@ -48,6 +48,7 @@ import {
   registrationProblems,
 } from "../../dist/browser/view/account-rules.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
 
@@ -1727,12 +1728,15 @@ const OTHER_ACCOUNT = {
 };
 
 /** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 5;
-/** A version older than `VERSION`, which D-206 makes another version. */
-const OLDER_VERSION = 2;
+const VERSION = 6;
+/** The version before `VERSION`, which D-206 makes another version: the save of a game that began on Las. */
+const OLDER_VERSION = 5;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
 const SAVED_MS = CLOCK_MS - 60_000;
-const withCharacter = () => createCharacter(newGame(), "Ala").state;
+/** A new game with Ala in its team. */
+const newWithCharacter = () => createCharacter(newGame(), "Ala").state;
+/** The same game with Skraj lasu solved, which opens Las. */
+const withCharacter = () => withEdgeSolved(newWithCharacter());
 /** A game whose map run passes: Ala sent to the forest at the real date 0, unpaused. */
 const passing = () =>
   send(withCharacter(), { mapId: "forest", characterId: 1 }, 0).state;
@@ -2055,7 +2059,7 @@ test("a save builds the game the load gives: a map run that went on comes back p
 
 /** Ala in an earning loop in Las; with `short` her first map run is one game minute from its end. */
 function loopingAla(short) {
-  const made = { ...withCharacter(), solvedMaps: ["forest"] };
+  const made = { ...withCharacter(), solvedMaps: ["forestEdge", "forest"] };
   const started = startLoop(made, { mapId: "forest", characterId: 1 }, 5).state;
   if (!short) return started;
   const whole = advanceLoopRun(started, 1, 100_000);
@@ -2198,7 +2202,8 @@ function pickOn(list, value) {
 
 /** Ala with the forest solved and the second program picked on her row (D-170). */
 const solvedAla = () =>
-  pickProgram({ ...twoPrograms(), solvedMaps: ["forest"] }, 1, 2).state;
+  pickProgram({ ...twoPrograms(), solvedMaps: ["forestEdge", "forest"] }, 1, 2)
+    .state;
 
 /**
  * Each act of the player D-207 names, made once on a game built from `start`: `act` clicks, types
@@ -2584,7 +2589,7 @@ async function viewOf(state, address = fakeAddress()) {
 
 /** Ala, the first character, and Ola, the second, with the forest solved and Ala in a loop in it. */
 function alaLoopingOlaFree() {
-  const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
+  const solved = { ...eatingPoint(), solvedMaps: ["forestEdge", "forest"] };
   const team = createCharacter(solved, "Ola").state;
   return startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
 }
@@ -2862,7 +2867,7 @@ test("a game built from a state with a stopped loop shows the line of the stop i
 // Siedziba, hidden meanwhile, draws the chest on.
 test("a change of the chest redraws the chest alone: the rows of Siedziba and the blocks of „Kto idzie” stay, with their lists", async () => {
   await onPage(async ({ root }) => {
-    const solved = { ...eatingPoint(), solvedMaps: ["forest"] };
+    const solved = { ...eatingPoint(), solvedMaps: ["forestEdge", "forest"] };
     const stocked = {
       ...solved,
       team: { ...solved.team, chest: { pieces: { stick: 10 } } },
@@ -2908,7 +2913,7 @@ test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” o
     "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
   /** Ala with the forest solved, a take list of three sticks and `held` sticks in the chest. */
   const holding = (held) => {
-    const solved = { ...twoPrograms(), solvedMaps: ["forest"] };
+    const solved = { ...twoPrograms(), solvedMaps: ["forestEdge", "forest"] };
     const stocked = {
       ...solved,
       team: { ...solved.team, chest: { pieces: { stick: held } } },
@@ -3872,7 +3877,10 @@ test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none
         item.textContent,
         item.getAttribute("aria-current"),
       ]),
-      [["Las", "page"]],
+      [
+        ["Skraj lasurozwiązana", null],
+        ["Las", "page"],
+      ],
     );
     const names = byClass(root, "maps-who-name");
     assert.deepEqual(
@@ -4103,10 +4111,10 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
 // list that leads elsewhere than to its map, and „Wejdź” that does not send the one character with
 // the program its list shows. A click on a link is the address changing, which the case makes with
 // `follow` on the address the link itself holds.
-test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Las and „Wejdź” to the screen of the map run in three clicks", async () => {
+test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu and „Wejdź” to the screen of the map run in three clicks", async () => {
   await onPage(async ({ root }) => {
     const held = heldClient();
-    const address = await reloadedAt(held, "#/", withCharacter());
+    const address = await reloadedAt(held, "#/", newWithCharacter());
     assert.equal(shownScreen(root), "headquarters");
     assert.deepEqual(
       tagged(byClass(root, "headquarters")[0], "button")
@@ -4127,24 +4135,27 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
       "Wybierz mapę z listy.",
     );
 
-    // Second click: the row of Las.
-    const [row] = byClass(root, "maps-list-item");
-    assert.equal(row.textContent, "Las");
-    await follow(address, row.getAttribute("href"));
-    assert.equal(byClass(root, "maps-card-name")[0].textContent, "Las");
+    // Second click: the row of Skraj lasu, the one map the list holds.
+    const rows = byClass(root, "maps-list-item");
+    assert.deepEqual(
+      rows.map((item) => item.textContent),
+      ["Skraj lasu"],
+    );
+    await follow(address, rows[0].getAttribute("href"));
+    assert.equal(byClass(root, "maps-card-name")[0].textContent, "Skraj lasu");
 
     // Third click: „Wejdź” at the character.
-    await press(buttonLabelled(root, "Wejdź: Ala, mapa Las"));
+    await press(buttonLabelled(root, "Wejdź: Ala, mapa Skraj lasu"));
     assert.equal(shownScreen(root), "run");
     assert.equal(clockTextOf(root), "Minuta 0");
     assert.deepEqual(address.entries, [
       "#/",
       "#/mapy",
-      "#/mapy/forest",
+      "#/mapy/forestEdge",
       RUN_ADDRESS,
     ]);
     const [sent] = argsOf(held, "saveGame");
-    assert.equal(sent.game.run.mapId, "forest");
+    assert.equal(sent.game.run.mapId, "forestEdge");
     assert.equal(sent.game.run.character.id, 1);
     assert.equal(sent.game.run.copy.programId, 1);
   });

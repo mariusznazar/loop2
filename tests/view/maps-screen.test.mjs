@@ -16,6 +16,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { createMapsScreen } from "../../dist/browser/view/maps-screen.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 // --- the page ------------------------------------------------------------------------------
 
@@ -27,14 +28,19 @@ const RUN_SENTENCE =
   "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.";
 
 /** A new game whose team holds the named characters, numbered from 1 in the order given. */
-function teamOf(...names) {
+function newTeamOf(...names) {
   let state = newGame();
   for (const name of names) state = createCharacter(state, name).state;
   return state;
 }
 
+/** The same game with the first map, Skraj lasu, solved, which opens Las. */
+function teamOf(...names) {
+  return withEdgeSolved(newTeamOf(...names));
+}
+
 /** The state with Las solved, the one map that opens Las — głębiej. */
-const solved = (state) => ({ ...state, solvedMaps: ["forest"] });
+const solved = (state) => ({ ...state, solvedMaps: ["forestEdge", "forest"] });
 
 /** The state with the trip plan of the program at `index` of the list replaced. */
 function withPlan(state, tripPlan, index = 0) {
@@ -138,11 +144,12 @@ function endedRun(state) {
 
 // --- the list and the right area -----------------------------------------------------------
 
-// D-331, D-149: nothing is picked under #/mapy, and a map whose opener is unsolved is not listed.
+// D-331, D-149: nothing is picked under #/mapy, and a map whose opener is unsolved is not listed:
+// a new game lists Skraj lasu alone.
 test("with no map named the list holds the open maps alone and the right area says to pick from it", async () => {
   await withPage(async (page) => {
-    const { screen } = await mount(page, propsOf(teamOf("Ala")));
-    assert.deepEqual(texts(page.root, ".maps-list-item"), ["Las"]);
+    const { screen } = await mount(page, propsOf(newTeamOf("Ala")));
+    assert.deepEqual(texts(page.root, ".maps-list-item"), ["Skraj lasu"]);
     assert.equal(
       text(page.root, ".maps-card-area"),
       "Wybierz mapę z listy.",
@@ -159,8 +166,14 @@ test("with no map named the list holds the open maps alone and the right area sa
       null,
       "no row is marked",
     );
+    await inAct(() => screen.update(propsOf(teamOf("Ala"))));
+    assert.deepEqual(texts(page.root, ".maps-list-item"), [
+      "Skraj lasurozwiązana",
+      "Las",
+    ]);
     await inAct(() => screen.update(propsOf(solved(teamOf("Ala")))));
     assert.deepEqual(texts(page.root, ".maps-list-item"), [
+      "Skraj lasurozwiązana",
       "Lasrozwiązana",
       "Las — głębiej",
     ]);
@@ -178,19 +191,16 @@ test("a row is a link to the map's address, a solved map says so after its name 
     const rows = all(page.root, ".maps-list-item");
     assert.deepEqual(
       rows.map((row) => row.getAttribute("href")),
-      ["#/mapy/forest", "#/mapy/forestDeep"],
+      ["#/mapy/forestEdge", "#/mapy/forest", "#/mapy/forestDeep"],
     );
-    assert.equal(
-      rows[0].querySelector(".maps-list-solved").textContent,
-      "rozwiązana",
-    );
-    assert.equal(
-      rows[1].querySelector(".maps-list-solved"),
-      null,
-      "an unsolved map has no mark",
+    assert.deepEqual(
+      rows.map((row) => row.querySelector(".maps-list-solved")?.textContent),
+      ["rozwiązana", "rozwiązana", undefined],
+      "a solved map has the mark and an unsolved map has none",
     );
     assert.equal(rows[0].getAttribute("aria-current"), null);
-    assert.equal(rows[1].getAttribute("aria-current"), "page");
+    assert.equal(rows[1].getAttribute("aria-current"), null);
+    assert.equal(rows[2].getAttribute("aria-current"), "page");
     assert.equal(all(page.root, "[aria-current]").length, 1);
     assert.equal(
       page.root.querySelector(".maps-card-empty"),
@@ -199,7 +209,7 @@ test("a row is a link to the map's address, a solved map says so after its name 
     );
     await inAct(() => screen.update(propsOf(solved(teamOf("Ala")), "forest")));
     assert.equal(
-      all(page.root, ".maps-list-item")[0].getAttribute("aria-current"),
+      all(page.root, ".maps-list-item")[1].getAttribute("aria-current"),
       "page",
     );
   });
@@ -208,7 +218,10 @@ test("a row is a link to the map's address, a solved map says so after its name 
 // A map off the list is no map the screen draws a card for, since sending to it is refused (D-149).
 test("a map named whose opener is unsolved draws no card", async () => {
   await withPage(async (page) => {
-    await mount(page, propsOf(teamOf("Ala"), "forestDeep"));
+    const { screen } = await mount(page, propsOf(teamOf("Ala"), "forestDeep"));
+    assert.equal(page.root.querySelector(".maps-card"), null);
+    assert.equal(text(page.root, ".maps-card-empty"), "Wybierz mapę z listy.");
+    await inAct(() => screen.update(propsOf(newTeamOf("Ala"), "forest")));
     assert.equal(page.root.querySelector(".maps-card"), null);
     assert.equal(text(page.root, ".maps-card-empty"), "Wybierz mapę z listy.");
   });
@@ -216,13 +229,45 @@ test("a map named whose opener is unsolved draws no card", async () => {
 
 // --- the card ------------------------------------------------------------------------------
 
-// D-327: the card of Las, an unsolved Las with neither „Czyha” nor „Odbiera”.
+// D-327: the card of Skraj lasu, the map a new game opens on, with sticks and berries alone: no
+// opener, no „Czyha”, no „Odbiera”.
+test("the card of Skraj lasu holds its heading, what it asks, its terrain and its sticks and berries alone", async () => {
+  await withPage(async (page) => {
+    await mount(page, propsOf(newTeamOf("Ala"), "forestEdge"));
+    assert.equal(text(page.root, ".maps-card-name"), "Skraj lasu");
+    assert.equal(page.root.querySelector(".maps-card-solved"), null);
+    assert.equal(page.root.querySelector(".maps-card-opened-by"), null);
+    assert.deepEqual(texts(page.root, ".maps-card-part-name"), [
+      "Żąda",
+      "Teren",
+      "Leży tu",
+    ]);
+    assert.deepEqual(texts(part(page.root, "Żąda"), "p"), [
+      "Skraj lasu — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+    ]);
+    assert.deepEqual(texts(part(page.root, "Teren"), "li"), [
+      "siatka 4 × 4",
+      "wejście stałe",
+      "krok 5 min",
+      "bez ognia 83 min — otoczenie 25 °C",
+    ]);
+    assert.deepEqual(texts(part(page.root, "Leży tu"), "li"), [
+      "patyk — ≈ 16 z 16 kafelków, po 12, +1 co 30 min",
+      "jagoda — ≈ 16 z 16 kafelków, po 8, +1 co 40 min",
+    ]);
+  });
+});
+
+// D-327: the card of Las, an unsolved Las with neither „Czyha” nor „Odbiera”, which Skraj lasu opens.
 test("the card of Las holds its heading, what it asks, its terrain and what lies there, and no part Las lacks", async () => {
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
     assert.equal(text(page.root, ".maps-card-name"), "Las");
     assert.equal(page.root.querySelector(".maps-card-solved"), null);
-    assert.equal(page.root.querySelector(".maps-card-opened-by"), null);
+    assert.equal(
+      text(page.root, ".maps-card-opened-by"),
+      "odsłania ją Skraj lasu",
+    );
     assert.deepEqual(texts(page.root, ".maps-card-part-name"), [
       "Żąda",
       "Teren",
@@ -270,7 +315,10 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
     const { screen } = await mount(page, propsOf(state, "forest"));
     assert.equal(text(page.root, ".maps-card-solved"), "rozwiązana");
     // The marks follow the name joined by „ · ” (D-327), as the old Loop joins them.
-    assert.equal(text(page.root, ".maps-card-heading"), "Las · rozwiązana");
+    assert.equal(
+      text(page.root, ".maps-card-heading"),
+      "Las · rozwiązana · odsłania ją Skraj lasu",
+    );
     await inAct(() => screen.update(propsOf(state, "forestDeep")));
     assert.equal(text(page.root, ".maps-card-name"), "Las — głębiej");
     assert.equal(
@@ -383,7 +431,7 @@ test("a step other than the usual one, a resource that does not renew and the en
 // D-329: the sentence of an empty team stands under the heading.
 test("a team with no character reads the sentence under the heading of „Kto idzie”", async () => {
   await withPage(async (page) => {
-    await mount(page, propsOf(newGame(), "forest"));
+    await mount(page, propsOf(withEdgeSolved(newGame()), "forest"));
     assert.equal(text(page.root, ".maps-who-heading"), "Kto idzie");
     assert.equal(
       text(page.root, ".maps-who-empty"),

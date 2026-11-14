@@ -12,7 +12,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
@@ -36,7 +36,7 @@ const EMPTY = {
 /** A knowing game whose program 1 holds `program`, with Ala, character 1, sent to Las. */
 function sent(program = EXPLORING) {
   const ready = createCharacter(
-    setProgram(newKnowingGame(), program).state,
+    setProgram(withEdgeSolved(newKnowingGame()), program).state,
     "Ala",
   ).state;
   return send(ready, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
@@ -46,7 +46,7 @@ function sent(program = EXPLORING) {
  * A game of Ala, character 1, and Bartek, character 2, holding the programs 1 and 3 — program 2
  * stands for one deleted — and the records `records`.
  */
-function twoPrograms(records = {}, game = newKnowingGame()) {
+function twoPrograms(records = {}, game = withEdgeSolved(newKnowingGame())) {
   const team = createCharacter(createCharacter(game, "Ala").state, "Bartek");
   return {
     ...team.state,
@@ -224,7 +224,7 @@ test("Zakończ clears the counts where the copy's program is gone", () => {
 // D-123: the rule of the first chill (minute 84, see tests/sim/discovery.test.mjs).
 test("the first chill writes „Zawsze → Eksploruj” into the copy, its base and the copy's program, and into no other program", () => {
   const state = {
-    ...twoPrograms({}, newGame()),
+    ...twoPrograms({}, withEdgeSolved(newGame())),
     programs: [
       { id: 1, name: "Program", program: EMPTY },
       { id: 3, name: "Las", program: EMPTY },
@@ -256,7 +256,7 @@ test("the first chill writes „Zawsze → Eksploruj” into the copy, its base 
 
 test("the first chill writes the rule into the copy and its base alone where the copy's program is gone", () => {
   const running = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId: MAP_ID, characterId: 1 },
     REAL_MS,
   ).state;
@@ -311,7 +311,10 @@ test("setProgram outside a map run edits the program entered with last, or else 
 test("a copy rule outside the character's repertoire is passed over and stays in the copy", () => {
   // A new game knows no action, so „Zawsze → Eksploruj” is outside the repertoire until the first
   // chill.
-  const ready = createCharacter(setProgram(newGame(), EXPLORING).state, "Ala");
+  const ready = createCharacter(
+    setProgram(withEdgeSolved(newGame()), EXPLORING).state,
+    "Ala",
+  );
   const running = send(
     ready.state,
     { mapId: MAP_ID, characterId: 1 },

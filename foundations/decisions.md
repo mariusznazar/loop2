@@ -509,7 +509,7 @@ takes no room from the tabs. Accepted with it: in a low window, such as 1280 × 
 begins below the lower edge of the window and has to be scrolled to.
 *Rejected:* the grid drawn without the list and its numbers — the player would write that condition
 without seeing the number it compares; numbers written into the tiles — unreadable where a tile
-holds several resources (four in the first game map); the area of the list and the
+holds several resources (four in Las); the area of the list and the
 chronicle under the program in a joined column — its place would depend on the length of the
 program, so with several rule groups it would slide far down and jump whenever the player opens the
 panel of a rule or folds a group; the list and the chronicle as tabs at the top of a joined column,
@@ -2346,9 +2346,9 @@ team's chest would mean nothing. The one filter on items is the gate of a bought
 *Rejected:* reading the predisposition condition as only necessary while leaving this decision's sentence unchanged — its plain reading would admit „Obchód” without buying the branch; outside a map run the editor offering such an action when any character of the team has bought the branch; the action of a branch entering the Understanding at the first purchase of the branch, as in the game this one follows — it breaks D-118; a filter on verbs — cannot express „Wytwórz”; a filter on items — an item is a thing of
 the world, not a capacity of the character; „Wytwórz — ognisko” open to every archetype — it changes the data, the tests and the curve of practice of D-379, and with one archetype it gives nothing; to be weighed again at the design of a second archetype.
 
-### D-121 — What brings each action, item and condition of Las into the Understanding?
+### D-121 — What brings each action, item and condition of the first maps into the Understanding?
 
-On the game map Las, the first game minute in which a character is chilled brings into the
+The first game minute in which a character is chilled brings into the
 Understanding the actions „Eksploruj” and „Wędruj” and the condition „Temperatura poniżej”, and the
 first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas
 poniżej” and the items lying on the tile it reveals, each tile revealed later adding the items
@@ -2371,7 +2371,7 @@ poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the 
     „Energia natury poniżej” discovered before the first finished „Zapal”
 - **Origin:** none
 
-*Rationale:* the first map run is a linear tutorial, so each discovery in Las offers the program
+*Rationale:* the first map run is a linear tutorial, so each discovery offers the program
 what the tutorial needs next — cold, the tile, sticks, fire, food — in the order a character
 meets them. The condition on nature energy comes with the first finished lighting, the game minute
 in which the energy first falls, and in one discovery line with „Zasil — ognisko”; the only weak
@@ -2508,7 +2508,7 @@ condition, „Zawsze → Eksploruj” standing there until the player picks othe
 *Rationale:* a program rule needs an action, and before the first chill the Understanding holds
 none to offer; from the first chill on it holds „Eksploruj”, so the rule the button adds is one
 the program editor offers. The rule panel opens on the condition, where the player writes the
-rule next. Accepted with it: through the first game minutes of a new game, 84 of them on Las, which take 84 seconds at 1×, the player sees a button
+rule next. Accepted with it: through the first game minutes of a new game, 84 of them on Skraj lasu, which take 84 seconds at 1×, the player sees a button
 that cannot be used.
 *Rejected:* „+ reguła” adding „Zawsze → Eksploruj” before „Eksploruj” is discovered — the
 program editor would offer an action the Understanding does not hold.
@@ -8189,7 +8189,7 @@ The first of the three clicks from Siedziba to a first map run (D-280) is the it
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-325
 - **Verification:** an agent compares a change with the decision:
-  - complies: a player with one character reaching the first map run from Siedziba by „Mapy”, the row of Las and „Wejdź”; a character in Siedziba holding its name as a link to the screen Postać and no button that leads to the screen Mapy
+  - complies: a player with one character reaching the first map run from Siedziba by „Mapy”, the row of Skraj lasu and „Wejdź”; a character in Siedziba holding its name as a link to the screen Postać and no button that leads to the screen Mapy
   - violates: a button „Wybierz mapę” at a character in Siedziba that leads to the screen Mapy
 - **Origin:** none
 
@@ -9405,7 +9405,7 @@ On Las a program built of the closed lists of conditions and actions keeps the m
   - violates: a price of lighting, a rate of coming back or a number of the body left in the data under which no program built of the closed lists passes Las; a program made to pass by a rule outside the closed lists
 - **Origin:** none
 
-*Rationale:* the first map is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
+*Rationale:* Las is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
 *Rejected:* unknown
 
 ### D-379 — What are the curves of practice, and the effects and prices of the branches, of the eight character skills?
@@ -9555,7 +9555,7 @@ Las is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an amb
   - violates: Las on a grid of 5 × 5 tiles or solved at a streak of 540; Las — głębiej with a fixed entrance or solved by a streak alone; moss renewing in 30 game minutes; a berry stock of 12; a step between tiles of 10 game minutes
 - **Origin:** none
 
-*Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-80, D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the second map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
+*Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-80, D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the third map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
 *Rejected:* other numbers for Las than those of the old loop game's data.
 
 ### D-389 — What does the camp at the top of Siedziba show, and how does it stand and move?
@@ -9728,6 +9728,34 @@ The game works in the current releases of Chrome, Edge and Firefox on a computer
 
 *Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request; the decisions that already define the look of a narrower or a lower window bind what the game does there, so what is left unfixed is only what no decision defines. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions.
 *Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and it is not known whether the tool installs with Firefox on this computer (it did not install with WebKit); no entry — every remark about Safari and about a narrow window stays without a measure.
+
+### D-397 — Which map does a new game open on?
+
+A new game opens the map Skraj lasu, and solving it opens Las.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-136 · derives from D-149
+- **Verification:** invariants: first-map-stock · first-map-balance
+- **Origin:** none
+
+*Rationale:* on Las the tile a character enters decides more than the program can make up for, so a loss on the first map has to mean a fault in the program. Measured by an agent with programs an agent wrote, over 300 seeds: a program of seven rules solves Las on 107 seeds, and on 280 of them on Las whose sticks and berries alone are made denser; on Las about four map runs in ten of a good program are lost through no fault of the player, and about one player in five loses the gains in the first day of the earning loop, while on that denser Las none of 60 simulated earning loops of 14 days lost the gains. The measurement did not check whether the next map then seems too hard. The predecessor game, loop, opens on a tutorial map of the same name with resources on every tile, since its first map run is a tutorial and may not depend on where the character landed. Las becomes the second step. Accepted with it: an easier start and one more map than the game had.
+*Rejected:* making Las itself denser — a larger step to Las — głębiej that nobody has tried.
+
+### D-398 — What numbers does the map Skraj lasu have?
+
+Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an ambient temperature of 25 °C and 5 game minutes to enter a tile, with no attacking creature and no cap on what is carried in or out, and it is solved by a streak of 480 game minutes (D-136). Its resources are sticks, with density 1, a stock of 12 per tile and one piece renewed in 30 game minutes, and berries, with density 1, a stock of 8 per tile and one piece renewed in 40 game minutes, and it has no moss and no fiber. These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-24 · derives from D-80 · derives from D-136 · derives from D-397
+- **Verification:** invariants: first-map-balance. An agent compares a change with the decision:
+  - complies: Skraj lasu with 16 tiles, each holding 12 sticks, which gain one in 30 game minutes, and 8 berries, which gain one in 40; the character entering it on column 1, row 1 on every seed; the body first chilled in game minute 84; the map solved at a streak of 480 game minutes and not at 479
+  - violates: moss or fiber on Skraj lasu; sticks on 70 % of its tiles; an ambient temperature of 34 °C; a streak of 720 game minutes; a wolf that attacks on it
+- **Origin:** none
+
+*Rationale:* Skraj lasu is the map a new game opens on (D-397), so its numbers are those under which a loss on it is a fault in the program. Its streak is 480 game minutes, as that of Las, so that the first map asks no longer streak than the second. Its air is 25 °C, as that of Las, so that the body is first chilled in game minute 84; at 34 °C the first chilling comes in game minute 333, and a new player waits 333 game minutes for anything to happen. Its resources are sticks and berries alone, as in the first map of the predecessor game, with a density of 1, so that the tile a character enters decides nothing; moss and fiber are met first in Las. A measurement on a copy of the game's engine, over 500 seeds, with every action and condition discovered, in a manual map run, gave for this shape at 480 game minutes and 25 °C: a naive program of six rules solved the map on 16.8 % of the seeds, a decent program of twelve rules on 96.4 % and the best program tried on 97 %; at 720 game minutes and 25 °C, on 16.8 %, 91.2 % and 97 %; at 34 °C and 480 or 720 game minutes, on 83.6 %, 100 % and 100 %. Accepted with it: at 25 °C a program that stands still is no longer forgiven on the first map; the shares were measured in a copy of the engine, so the game may give others.
+*Rejected:* a streak of 720 game minutes, as in the first map of the predecessor game — nobody had measured how often a good program closes 720 game minutes in loop2, so the sentence that a loss on the first map is a fault in the program had no number under it, and the first map would ask a longer streak than the second, which asks 480; the shape of Las with sticks and berries on every tile and moss and fiber on 40 % of the tiles, 6 pieces each, renewed in 60 game minutes, at 25 °C — those numbers do not come from the predecessor game, so they depart from the pattern of D-388; a player has moss and fiber on the map from the first map run with nothing in the game to use them on, and finding them gives the first map run up to two more stops; the whole first map of the predecessor game, sticks and berries alone, at 34 °C — the body is first chilled in game minute 333 and not 84, so such a player waits 333 game minutes.
 
 ### D-399 — Which saved game state does the server keep beside the current one?
 

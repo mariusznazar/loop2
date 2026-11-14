@@ -26,7 +26,11 @@ import {
   knownRepertoire,
 } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
+import {
+  fullUnderstanding,
+  newKnowingGame,
+  withEdgeSolved,
+} from "./understanding-fixture.mjs";
 
 const map = MAPS.forest;
 const T0 = 1_760_000_000_000;
@@ -425,7 +429,7 @@ test("stopping at the winner leaves the rules below it unjudged", () => {
 /** The state of a map run of the forest for a character that knows everything, program `groups`. */
 function sentWith(groups, understanding = fullUnderstanding()) {
   const created = createCharacter(
-    { ...newKnowingGame(), understanding },
+    { ...withEdgeSolved(newKnowingGame()), understanding },
     "Ala",
   ).state;
   const set = setProgram(created, program(...groups)).state;

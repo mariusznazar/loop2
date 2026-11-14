@@ -28,7 +28,7 @@ import {
 } from "../../dist/browser/sim/skills.js";
 import { editorRepertoire } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { fullUnderstanding } from "./understanding-fixture.mjs";
+import { fullUnderstanding, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const ids = { mapId: "forest", characterId: 1 };
 const empty = programFromRules();
@@ -67,7 +67,7 @@ function randomBetween(low, high) {
 }
 function headquarters() {
   const state = createCharacter(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     "Ola",
   ).state;
   return {
@@ -608,7 +608,7 @@ test("Obchód is known with its tree but offered only in its owner's run; an una
 });
 
 test("scout discovers neighboring resources and the gathering tree with Obchód in the same paused minute", () => {
-  const hq = createCharacter(newGame(), "Ala").state;
+  const hq = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   const sent = send(hq, ids, 1).state;
   const run = base(ranks("exploration", { scout: 1 }));
   const neighbor = neighbours(run.tiles, run.character.at)[0];

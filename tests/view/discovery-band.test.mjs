@@ -18,6 +18,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { DiscoveryBand } from "../../dist/browser/view/discovery-band.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENT = { mapId: "forest", characterId: 1 };
 // A real time whose seed lays berries and moss, but no sticks, on the entrance tile.
@@ -58,7 +59,7 @@ function programOfGroups(...groups) {
 
 /** A new game with one character sent, its program the given one or the empty group of a new game. */
 function sentNew(program) {
-  let state = newGame();
+  let state = withEdgeSolved(newGame());
   if (program) state = setProgram(state, program).state;
   state = createCharacter(state, "Ala").state;
   return send(state, SENT, REAL_MS).state;

@@ -27,6 +27,7 @@ import {
 } from "../../dist/browser/view/trip-lines.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const entry = (item, count) => ({ item, count });
 const plan = {
@@ -34,7 +35,7 @@ const plan = {
   bring: [entry("stick", 3), entry("berry", 4)],
 };
 function sent(tripPlan = plan) {
-  let state = createCharacter(newGame(), "Tester").state;
+  let state = createCharacter(withEdgeSolved(newGame()), "Tester").state;
   state = {
     ...state,
     team: { ...state.team, chest: { pieces: { stick: 10 } } },
@@ -104,7 +105,10 @@ test("preview follows frozen inventory and available chest room, even after the 
     tripTexts({ ...state, run: { ...state.run, death: "cold" } }).preview,
     null,
   );
-  assert.deepEqual(tripTexts(newGame()), { deposited: null, preview: null });
+  assert.deepEqual(tripTexts(newGame()), {
+    deposited: null,
+    preview: null,
+  });
 });
 
 test("completion keeps actual deposit text while later editing cannot change it", () => {
@@ -313,7 +317,7 @@ const SOLVED_LINE =
 function solvedSent() {
   const unmarked = sent();
   return send(
-    { ...unmarked, run: null, solvedMaps: ["forest"] },
+    { ...unmarked, run: null, solvedMaps: ["forestEdge", "forest"] },
     { mapId: "forest", characterId: 1 },
     23,
   ).state;

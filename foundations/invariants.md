@@ -1335,6 +1335,26 @@ The simulation's TypeScript files are type-checked under a configuration of thei
 - **Part:** simulation · build-tools
 - **Violated:** no
 
+## first-map-stock
+
+Every tile of the map Skraj lasu holds sticks and berries, whatever the seed of its map run.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-397
+- **Part:** simulation
+- **Violated:** no
+
+## first-map-balance
+
+On the map Skraj lasu, from a game whose Understanding holds every action and condition, a decent program of twelve rules solves the map in at least 95 % of several hundred map runs that its test names, and a naive program of six rules in at most 50 % of them.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-397 · D-398
+- **Part:** simulation
+- **Violated:** no
+
 ## previous-save-slot
 
 The account server moves a stored saved game state into the previous save only at an accepted save of a higher version and at the reset, refuses the reset to an account without the previous-save privilege with nothing moved, and answers the route of the previous save with 403 to such an account whatever its previous save holds.

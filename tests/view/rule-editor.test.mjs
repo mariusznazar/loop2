@@ -18,6 +18,7 @@ import {
 import {
   fullUnderstanding,
   newKnowingGame,
+  withEdgeSolved,
 } from "../sim/understanding-fixture.mjs";
 import { RuleListView } from "../../dist/browser/view/rule-list.js";
 import { RulePanelView } from "../../dist/browser/view/rule-panel.js";
@@ -145,7 +146,7 @@ const buttonNamed = (root, text) =>
 /** A game in a map run whose Understanding holds everything. */
 function runningGame() {
   return send(
-    createCharacter(newKnowingGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state,
     { mapId: "forest", characterId: 1 },
     1760000000000,
   ).state;
