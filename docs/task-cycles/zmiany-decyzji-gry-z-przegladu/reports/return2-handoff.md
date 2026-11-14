@@ -1,0 +1,11 @@
+# Handoff — the return step again, after the correction
+
+**Delegation.** The orchestrator holds the delegation. You are resumed as the one author for the return step of the correction, as `.the-way/task-cycle/skill/return_step.md` gives (read it again whole; it is the same stage as `reports/return-handoff.md`, whose boundary and rules still hold — re-read that file too).
+
+**What changed since your first return step.** The correction commit `39f3daa7` (reviewed: `PASS 39f3daa7`, `reports/review-correction-report.md`) changed two decisions: D-396 (its third binding sentence now also names D-349 and D-370) and D-136 (its binding sentence now says "in a map run that has not ended", as the invariant `streak-program-change` does). The remarks that asked for it: `reports/correction-remarks.md`. The head is `39f3daa7`.
+
+**What you do.** Repeat only what the correction touches: compare D-396 and D-136, the entries that name them (the invariants `streak-program-change` and `trip-plan-progress` that D-136 cites as *Verification*, D-131, D-349, D-370, D-280, D-282, D-311, D-389) and the part map entries of `simulation` and `product-foundation`, with the code, and correct whatever no longer matches. In particular: does the code reset the streak of a map run that has ended (`withCopyProgram` and `switchProgram` in `src/browser/sim/programs.ts`, `mapRunEnded`) in the way D-136 now says, and does D-396's list of named decisions stay true of what each defines? Write nothing else (no new entry for a thing no one asked for). The findings the human put aside — the test docstring, the code comments, `cross-part-imports` — stay untouched.
+
+**Boundary.** No commit unless something no longer matches; then commit by explicit paths, English message in the repository's form; no push; no `npm test`. Run `python -B .the-way/elements/common/foundation_check.py` after any change, command and exit code in the report.
+
+**Report.** `docs/task-cycles/zmiany-decyzji-gry-z-przegladu/reports/return2-report.md`, with the compared entries and what no longer matched (or none), the entries written or changed in the *Return step* form of the record template, **Unread material**, **Searches not found or unclear** (`none` is an answer). Return status, commits (or `no commit`), a one-line check result and the path.
