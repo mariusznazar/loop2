@@ -84,7 +84,8 @@ export function longestStreakLine(
 
 /**
  * What the end gave or cost: after a completion the deposit the completion froze, after a death its
- * settlement with the resurrection; null while the map run goes on or a death is unsettled.
+ * settlement with the resurrection, of the team's or none where the character had no practice yet;
+ * null while the map run goes on or a death is unsettled.
  */
 export function endCostLine(state: GameState): EndLine | null {
   const run = state.run;
@@ -94,7 +95,12 @@ export function endCostLine(state: GameState): EndLine | null {
     if (!settlement) return null;
     if (settlement.kind === "resurrectionUsed")
       return {
-        text: `Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie po ${BALANCE.resurrectionRenewalRealMinutes / 60} godzinach czasu realnego.`,
+        text: `Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają. Następne wskrzeszenie, wspólne dla całej drużyny, po ${BALANCE.resurrectionRenewalRealMinutes / 60} godzinach czasu realnego albo po pierwszym rozwiązaniu nowej mapy.`,
+        role: "text-secondary",
+      };
+    if (settlement.kind === "noPractice")
+      return {
+        text: "Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.",
         role: "text-secondary",
       };
     return {
@@ -106,6 +112,20 @@ export function endCostLine(state: GameState): EndLine | null {
   return deposited === null
     ? null
     : { text: deposited, role: "text-secondary" };
+}
+
+/**
+ * The line of the renewal a first solving made (D-185): „Wskrzeszenie odnowione: pierwsze rozwiązanie
+ * tej mapy.” after a completion that made the team's used-up resurrection ready, null otherwise,
+ * a completion that found it ready included.
+ */
+export function endRenewalLine(state: GameState): EndLine | null {
+  if (state.run?.completionSettlement?.kind !== "resurrectionRenewed")
+    return null;
+  return {
+    text: "Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.",
+    role: "text-secondary",
+  };
 }
 
 /**

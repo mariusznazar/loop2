@@ -23,6 +23,7 @@ import { ReactButton } from "./controls/react-button.js";
 import {
   discoveryLine,
   endCostLine,
+  endRenewalLine,
   endTitle,
   longestStreakLine,
   timeShares,
@@ -71,6 +72,7 @@ function EndWindowView({ state, lastMinutes, controls }: EndWindowProps) {
   const streak = longestStreakLine(run, map);
   const discovery = discoveryLine(state);
   const cost = endCostLine(state);
+  const renewal = endRenewalLine(state);
   const unfired = unfiredRules(state);
   const shares = timeShares(run);
   const warning = tripWarning(
@@ -149,6 +151,9 @@ function EndWindowView({ state, lastMinutes, controls }: EndWindowProps) {
           >
             {cost.text}
           </p>
+        )}
+        {renewal === null ? null : (
+          <p className="end-window-cost">{renewal.text}</p>
         )}
         {run.death === null || lastMinutes.length === 0 ? null : (
           <section className="end-window-section">

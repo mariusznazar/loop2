@@ -129,6 +129,24 @@ export function sumPractice(left: Practice, right: Practice): Practice {
   return result;
 }
 
+/**
+ * Whether a character has no practice yet: none in any of its skills, no rank of any branch bought,
+ * and none in `gathered`, the practice gathered at its earning loop.
+ */
+export function hasNoPractice(
+  skills: CharacterSkills,
+  gathered: Practice,
+): boolean {
+  return (
+    Object.values(gathered).every((practice) => (practice ?? 0) === 0) &&
+    Object.values(skills).every(
+      (skill) =>
+        (skill?.practice ?? 0) === 0 &&
+        Object.values(skill?.ranks ?? {}).every((rank) => (rank ?? 0) === 0),
+    )
+  );
+}
+
 /** Pays a completed run into the character's existing skills, leaving ranks intact. */
 export function paidPractice(
   skills: CharacterSkills,

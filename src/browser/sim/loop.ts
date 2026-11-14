@@ -1,8 +1,8 @@
 import { BALANCE } from "./data/balance.js";
 import { MAPS } from "./data/maps.js";
 import {
-  characterAfterDeath,
   programOf,
+  teamAfterDeath,
   type GameEvent,
   type GameResult,
 } from "./game.js";
@@ -285,25 +285,18 @@ export function advanceLoopRun(
   };
 }
 
-/**
- * Takes the end a character's loop run reached, at the real moment `nowMs`, and starts the next map
- * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
- * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
- * to the loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
- * settled at `nowMs` as a manual one is: with a resurrection ready it is used up, the run pays
- * nothing, the loop keeps what it gathered and goes on; without one the character loses its
- * practice and ranks and the loop is dropped with what it gathered. The carried items go with the
- * run and the chest stays as it stood. One `loopRunEnded` event follows for the end. With no loop
- * or a map run that goes on, returns the very state without reading `nowMs`; otherwise a `nowMs`
- * that is no safe integer is a RangeError.
- */
-export function endLoopRun(
+/** How the end of a loop's map run was dealt with. */
+type EndKind = "none" | "completion" | "covered" | "noPractice" | "stopped";
+
+/** What `endLoopRun` does, and how the end was dealt with, `kind`. */
+function takeEnd(
   state: GameState,
   characterId: CharacterId,
   nowMs: number,
-): GameResult {
+): GameResult & { kind: EndKind } {
   const found = loopOf(state, characterId);
-  if (!found || !mapRunEnded(found.loop.run)) return { state, events: [] };
+  if (!found || !mapRunEnded(found.loop.run))
+    return { state, events: [], kind: "none" };
   if (!Number.isSafeInteger(nowMs)) {
     throw new RangeError(
       `endLoopRun: ${String(nowMs)} is not a safe integer moment`,
@@ -312,23 +305,29 @@ export function endLoopRun(
   const { loop } = found;
   const run = loop.run;
   const events: GameEvent[] = [{ kind: "loopRunEnded", characterId }];
-  let character = found.character;
-  let chest = state.team.chest;
+  let kind: EndKind = "completion";
+  let team = state.team;
+  let chest = team.chest;
   let practice = loop.practice;
   let completed = loop.completed;
   if (run.death) {
-    const settled = characterAfterDeath(character, nowMs);
-    character = settled.character;
-    if (!settled.resurrectionUsed) {
+    // The practice gathered at the loop is what the death takes with the rest (D-190); the run that
+    // died pays nothing, so it is no part of it.
+    const settled = teamAfterDeath(
+      team,
+      found.character,
+      waitingPractice(loop),
+      nowMs,
+    );
+    team = settled.team;
+    if (settled.settlement.kind === "progressLost") {
       return {
-        state: withLoop(
-          withCharacter(state, found.character, character),
-          characterId,
-          null,
-        ),
+        state: withLoop({ ...state, team }, characterId, null),
         events,
+        kind: "stopped",
       };
     }
+    kind = settled.settlement.kind === "noPractice" ? "noPractice" : "covered";
   } else {
     const pieces = { ...chest.pieces };
     for (const { item, count } of tripLoot(
@@ -345,16 +344,12 @@ export function endLoopRun(
     practice = sumPractice(practice, run.practice);
     completed += 1;
   }
-  const settledState = withCharacter(
-    { ...state, team: { ...state.team, chest } },
-    found.character,
-    character,
-  );
+  const settledState: GameState = { ...state, team: { ...team, chest } };
   const next = beginRun(
     settledState,
     loop.program,
     run.mapId,
-    character,
+    found.character,
     nextSeed(run.seed),
     chest,
   );
@@ -371,7 +366,31 @@ export function endLoopRun(
       },
     ),
     events,
+    kind,
   };
+}
+
+/**
+ * Takes the end a character's loop run reached, at the real moment `nowMs`, and starts the next map
+ * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
+ * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
+ * to the loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
+ * settled at `nowMs` as a manual one is, by the team's one resurrection (`teamAfterDeath`): the
+ * practice gathered at the loop counts as the character's practice. A character with no practice
+ * leaves the resurrection as it was, ready or not, and the loop goes on; otherwise, with it ready it
+ * is used up, the run pays nothing, the loop keeps what it gathered and goes on; without one the
+ * character loses its practice and ranks and the loop is dropped with what it gathered. The carried
+ * items go with the run and the chest stays as it stood. One `loopRunEnded` event follows for the end.
+ * With no loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a
+ * `nowMs` that is no safe integer is a RangeError.
+ */
+export function endLoopRun(
+  state: GameState,
+  characterId: CharacterId,
+  nowMs: number,
+): GameResult {
+  const { state: ended, events } = takeEnd(state, characterId, nowMs);
+  return { state: ended, events };
 }
 
 /** The state with the team's character `before` replaced by `after`. */
@@ -420,27 +439,6 @@ export function loopSpan(
   if (nowMs < fromMs) return { minutes: 0, clockMs: nowMs };
   const minutes = Math.floor((nowMs - fromMs) / MS_PER_LOOP_MINUTE);
   return { minutes, clockMs: fromMs + minutes * MS_PER_LOOP_MINUTE };
-}
-
-/** How the end of a loop's map run was dealt with. */
-type EndKind = "none" | "completion" | "covered" | "stopped";
-
-/** Takes the end of the character's loop run at `momentMs`, if there is one, and says which it was. */
-function takeEnd(
-  state: GameState,
-  characterId: CharacterId,
-  momentMs: number,
-): GameResult & { kind: EndKind } {
-  const found = loopOf(state, characterId);
-  if (!found || !mapRunEnded(found.loop.run))
-    return { state, events: [], kind: "none" };
-  const taken = endLoopRun(state, characterId, momentMs);
-  const kind: EndKind = !Object.hasOwn(taken.state.loops, characterId)
-    ? "stopped"
-    : found.loop.run.death
-      ? "covered"
-      : "completion";
-  return { ...taken, kind };
 }
 
 /** The generation of the team's character `characterId`. */
@@ -553,6 +551,8 @@ export function passLoops(
  * The catch-up (D-240, D-247): the whole minutes from the save time to `nowMs`, one character at a
  * time in the team's order, each through the whole span and the chest as the one before left it. It
  * reads neither the manual map run nor the pause, and a loop that stops does not stop the others.
+ * The team's one resurrection goes by the same order: the death of each character finds it as the
+ * characters earlier on the list left it, even when they died later in real time (D-240).
  * Each character's turn is written into the report: its minutes, its own change of the chest, and
  * a covered death or a stop; the practice its loop gathered is read from the loop (D-246). With
  * no loop, no whole minute or no save time, the very state is returned.

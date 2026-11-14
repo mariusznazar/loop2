@@ -283,12 +283,22 @@ export type MapRun = {
 };
 
 /**
- * How a death was settled: the resurrection it used up, or everything it took, with the generation
+ * How a death was settled: the resurrection it used up, everything it took, with the generation
  * number the death gave the character, which stays the number of that death however the character
- * goes on.
+ * goes on, or nothing besides what the character carried, the character having no practice yet, so
+ * that the team's resurrection and the character stay as the death found them.
  */
 export type DeathSettlement =
-  { kind: "resurrectionUsed" } | { kind: "progressLost"; generation: number };
+  | { kind: "resurrectionUsed" }
+  | { kind: "progressLost"; generation: number }
+  | { kind: "noPractice" };
+
+/**
+ * How the first completion of a map the account had not solved was settled at the real moment of its
+ * reading: the team's used-up resurrection it made ready, or the ready one it found, which stays.
+ */
+export type CompletionSettlement =
+  { kind: "resurrectionRenewed" } | { kind: "resurrectionReady" };
 
 /**
  * What the character was doing in a game minute of a manual map run, as the record counts it: the
@@ -333,6 +343,12 @@ export type GameMapRun = MapRun & {
    * death. A settlement held is what keeps a death from being settled twice.
    */
   deathSettlement: DeathSettlement | null;
+  /**
+   * How the run's completion was settled: null until `settleCompletion` settles a completion of a
+   * map the account had not solved when the run started, and null on every other run. Unlike a death,
+   * a completion held unsettled is admitted by the load: the next reading of the clock settles it.
+   */
+  completionSettlement: CompletionSettlement | null;
 };
 
 /** The record a manual map run keeps for its end: the three fields of `GameMapRun` that make it up. */
@@ -385,8 +401,8 @@ export type CharacterId = number;
 
 /**
  * A character of the player's team; its traits are made when it is created and saved with it. The
- * generation number is 1 at creation and grows at a death with no resurrection ready; the
- * resurrection is ready from the real moment `resurrectionReadyAtMs` on, and from the start at 0.
+ * generation number is 1 at creation and grows at a death with no resurrection ready, of a
+ * character with practice.
  */
 export type Character = {
   skills: CharacterSkills;
@@ -395,14 +411,21 @@ export type Character = {
   archetypeId: ArchetypeId;
   traits: Traits;
   generation: number;
-  resurrectionReadyAtMs: number;
 };
 
 /** The team's chest: pieces held, by item; a key absent holds none. */
 export type Chest = { pieces: Partial<Record<ItemId, number>> };
 
-/** The player's one team: its characters in the order they were created, and its chest. */
-export type Team = { characters: Character[]; chest: Chest };
+/**
+ * The player's one team: its characters in the order they were created, its chest and its one
+ * resurrection, shared by all the characters: ready from the real moment `resurrectionReadyAtMs`
+ * on, and from the start of a new game at 0.
+ */
+export type Team = {
+  characters: Character[];
+  chest: Chest;
+  resurrectionReadyAtMs: number;
+};
 
 export type GameState = {
   /** The player's programs in the order they were created; never empty. */

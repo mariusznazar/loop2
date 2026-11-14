@@ -258,7 +258,7 @@ function CharacterRow({
   const positions = programPositions(state.programs, program);
   const plan = program.program.tripPlan;
   const capacity = character.traits.carryingCapacity;
-  const resurrection = resurrectionLine(character, nowMs);
+  const resurrection = resurrectionLine(state.team, nowMs);
   const warning = tripWarning(plan, capacity, map);
   const rehearsal = rehearsalMark(
     solved,
