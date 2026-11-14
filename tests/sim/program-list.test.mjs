@@ -476,9 +476,7 @@ test("the counter rises by the count of the appended programs and nothing is app
 
 test("an append changes nothing of the game state but the programs and the counter", () => {
   const before = pickProgram(sentWithThird(), 2, 4).state;
-  const after = appendPrograms(before, [
-    { name: "Las", program: EXPLORING },
-  ]);
+  const after = appendPrograms(before, [{ name: "Las", program: EXPLORING }]);
   assert.deepEqual(after, {
     ...before,
     programs: [

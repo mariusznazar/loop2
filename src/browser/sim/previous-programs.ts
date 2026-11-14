@@ -14,8 +14,7 @@ export type PreviousItem =
 
 /** The programs a document gives in order, or the refusal to read it at all. */
 export type PreviousPrograms =
-  | { ok: false }
-  | { ok: true; items: PreviousItem[] };
+  { ok: false } | { ok: true; items: PreviousItem[] };
 
 const UNREADABLE: PreviousPrograms = { ok: false };
 

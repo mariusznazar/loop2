@@ -228,6 +228,28 @@ test("an item with a key besides id, name and program is skipped and named, and 
 });
 
 // invariant: previous-save-programs-reader
+test("an item with three keys of which one is not id, name or program is skipped and named", () => {
+  const document = {
+    version: 5,
+    game: {
+      programs: [
+        { ident: 1, name: "Las", program: EXPLORE },
+        { id: 2, name: "Noc", programme: EXPLORE },
+        { id: 3, name: "Dom", program: EXPLORE },
+      ],
+    },
+  };
+  assert.deepEqual(readPreviousPrograms(document), {
+    ok: true,
+    items: [
+      { kind: "skipped", name: "Las" },
+      { kind: "skipped", name: "Noc" },
+      { kind: "read", name: "Dom", program: EXPLORE },
+    ],
+  });
+});
+
+// invariant: previous-save-programs-reader
 test("an item missing a key is skipped: named when its name is text, by its place when it is not", () => {
   const document = {
     version: 5,
@@ -366,7 +388,11 @@ test("a document of another version or with no whole version is unreadable", () 
     );
   }
   const noVersion = { game: { programs } };
-  assert.deepEqual(readPreviousPrograms(noVersion), { ok: false }, "no version");
+  assert.deepEqual(
+    readPreviousPrograms(noVersion),
+    { ok: false },
+    "no version",
+  );
 });
 
 // invariant: save-version
@@ -389,16 +415,23 @@ test("a value that is no document, or has no game, no program list or a list wit
     { version: 5, game: { programs: holed } },
   ];
   for (const document of unreadable) {
-    assert.deepEqual(readPreviousPrograms(document), { ok: false }, JSON.stringify(document));
+    assert.deepEqual(
+      readPreviousPrograms(document),
+      { ok: false },
+      JSON.stringify(document),
+    );
   }
 });
 
 // invariant: previous-save-programs-reader
 test("an empty list of programs is read as a readable document with no item", () => {
-  assert.deepEqual(readPreviousPrograms({ version: 5, game: { programs: [] } }), {
-    ok: true,
-    items: [],
-  });
+  assert.deepEqual(
+    readPreviousPrograms({ version: 5, game: { programs: [] } }),
+    {
+      ok: true,
+      items: [],
+    },
+  );
 });
 
 // invariant: previous-save-programs-reader
@@ -408,10 +441,14 @@ test("the id of an item is neither used nor checked", () => {
       version: 5,
       game: { programs: [{ id, name: "Las", program: EXPLORE }] },
     };
-    assert.deepEqual(readPreviousPrograms(document), {
-      ok: true,
-      items: [{ kind: "read", name: "Las", program: EXPLORE }],
-    }, `id ${JSON.stringify(id)}`);
+    assert.deepEqual(
+      readPreviousPrograms(document),
+      {
+        ok: true,
+        items: [{ kind: "read", name: "Las", program: EXPLORE }],
+      },
+      `id ${JSON.stringify(id)}`,
+    );
   }
 });
 
@@ -436,7 +473,10 @@ test("no value a document can hold, at any place of it, throws out of the readin
     const removed = editedAt(DOCUMENT, path, (holder, key) => {
       delete holder[key];
     });
-    assert.doesNotThrow(() => readPreviousPrograms(removed), `${label} removed`);
+    assert.doesNotThrow(
+      () => readPreviousPrograms(removed),
+      `${label} removed`,
+    );
   }
 });
 
@@ -468,7 +508,8 @@ test("the result shares nothing with the document: a later change of the documen
 // invariant: previous-save-programs-reader
 test("nothing of the document beside its version, its game's programs and the items' name and program is read", () => {
   const reads = [];
-  const named = (key) => typeof key === "string" && !/^\d+$/.test(key) && key !== "length";
+  const named = (key) =>
+    typeof key === "string" && !/^\d+$/.test(key) && key !== "length";
   const watched = (target, label) =>
     new Proxy(target, {
       get(object, key, receiver) {
@@ -510,4 +551,21 @@ test("an error that is no refusal of the check propagates out of the reading", (
     },
   });
   assert.throws(() => readPreviousPrograms(faulty), TypeError);
+});
+
+// invariant: previous-save-programs-reader
+// Fault: the reading catches the program check's own refusal and every other
+// error as well, so a fault inside checkProgram is shown as a skipped program.
+// The expected result comes from D-213 and D-395: only ProgramCheckError skips.
+test("a fault inside the program check of an item propagates out of the reading", () => {
+  const faultyProgram = new Proxy(structuredClone(EXPLORE), {
+    get() {
+      throw new TypeError("a fault of the code");
+    },
+  });
+  const document = {
+    version: 5,
+    game: { programs: [{ id: 1, name: "Las", program: faultyProgram }] },
+  };
+  assert.throws(() => readPreviousPrograms(document), TypeError);
 });
