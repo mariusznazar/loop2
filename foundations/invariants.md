@@ -717,7 +717,7 @@ The browser loads the built game and sends account and save requests to relative
 
 ## account-session-authorization
 
-The account API returns JSON 401 for `GET /api/account` and `GET /api/saved-game`, and for `PUT /api/saved-game`, `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session; an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address, the address of a `POST /api/password-reset-message` naming only the account to whose own confirmed address a link may go; and a password-reset link sent to `POST /api/password-reset`, with or without a session, authorizes setting a new password of its own account and nothing else.
+The account API returns JSON 401 for `GET /api/account`, `GET /api/saved-game` and `GET /api/previous-saved-game`, and for `PUT /api/saved-game`, `POST /api/saved-game-reset`, `POST /api/email-confirmation-message` and `POST /api/logout` that meet the Origin, media-type and body requirements, without a valid server-side session; an account identifier or email address supplied by the caller cannot authorize reading or changing another account or session or direct a message to another address, the address of a `POST /api/password-reset-message` naming only the account to whose own confirmed address a link may go; and a password-reset link sent to `POST /api/password-reset`, with or without a session, authorizes setting a new password of its own account and nothing else.
 
 - **Method:** test
 - **Rests on:** none
@@ -727,7 +727,7 @@ The account API returns JSON 401 for `GET /api/account` and `GET /api/saved-game
 
 ## account-mutation-request-guards
 
-Every state-changing account route, the save route `PUT /api/saved-game` included, refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed or structurally invalid body or one over that route's body limit of D-104 before password work or mutation.
+Every state-changing account route, the save route `PUT /api/saved-game` and the reset route `POST /api/saved-game-reset` included, refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed or structurally invalid body or one over that route's body limit of D-104 before password work or mutation.
 
 - **Method:** test
 - **Rests on:** none
@@ -757,7 +757,7 @@ Production startup without all valid account settings and every startup with par
 
 ## account-schema-lifecycle
 
-Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts, sessions and saved game states, and refuses a newer unknown schema before readiness.
+Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts with the previous-save privilege of each, sessions, saved game states and previous saves, and refuses a newer unknown schema before readiness.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -767,7 +767,7 @@ Opening the account database initializes a new schema transactionally, moves an 
 
 ## account-database-schema
 
-Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, session and saved game state and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
+Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, saved game state and previous save and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -817,11 +817,11 @@ The browser account client sends each account request to one of the relative `/a
 
 ## account-client-outcomes
 
-The browser account client returns an account only for the success status of its request with a body holding a non-empty string `id` and `email` and a boolean `emailConfirmed`, and returns every other answer, a failed connection and an answer not complete within its time limit as a failure.
+The browser account client returns an account only for the success status of its request with a body holding a non-empty string `id` and `email` and the booleans `emailConfirmed` and `previousSaveAllowed`, and returns every other answer, a failed connection and an answer not complete within its time limit as a failure.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-117
+- **Derives from:** D-117 · D-394
 - **Part:** browser-view
 - **Violated:** no
 
@@ -987,11 +987,11 @@ Editing or discarding changes to the copy's trip plan alone leaves the run's str
 
 ## player-save-isolation
 
-A signed-in player can read and change only the saved game state belonging to their own account.
+A signed-in player can read and change only the saved game states, the previous save included, belonging to their own account.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-109 · D-202
+- **Derives from:** D-109 · D-202 · D-393
 - **Part:** account-server
 - **Violated:** no
 
@@ -1027,11 +1027,11 @@ The browser loads and sends saved game states as JSON through `fetch()` requests
 
 ## save-version
 
-The game loads no data from a saved game state whose version differs from the game's current version of the saved game state's shape.
+The game loads no data from a saved game state whose version differs from the game's current version of the saved game state's shape, except the programs that an account with the previous-save privilege pulls from its previous save one by one, each accepted only through the check of the program editor.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-206
+- **Derives from:** D-206 · D-395
 - **Part:** simulation
 - **Violated:** no
 
@@ -1322,6 +1322,26 @@ The practice an earning loop gathers is never added to its character's skills tw
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-189 · D-241 · D-245 · D-246
+- **Part:** simulation
+- **Violated:** no
+
+## previous-save-slot
+
+The account server moves a stored saved game state into the previous save only at an accepted save of a higher version and at the reset, refuses the reset to an account without the previous-save privilege with nothing moved, and answers the route of the previous save with 403 to such an account whatever its previous save holds.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-210 · D-393 · D-394 · D-396
+- **Part:** account-server
+- **Violated:** no
+
+## previous-save-programs-reader
+
+The reader of the programs of a previous save reads from a document only its version, the list of programs of its game and the items of that list, accepts each program only through the check of the program editor, skips an item that is not exactly the keys `id`, `name` and `program`, and throws for no value a document can hold.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-395
 - **Part:** simulation
 - **Violated:** no
 
