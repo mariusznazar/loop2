@@ -312,11 +312,15 @@ of that data (D-252), and its lines are reported selected and redacted like othe
    `restarted`. The browser kind comes last in the order and goes once in six hours at most, so a
    flood of browser reports takes at most four of the day's six messages and leaves at least two
    for the server kinds.
-2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). Every
-   five minutes, at minutes that are not the top of the hour, GitHub Actions opens the public
-   address, up to six attempts 20 seconds apart, and the run fails unless one answers 200.
-   GitHub then notifies the owner of the failed run. It sees what the watcher cannot: a server
-   that is off, a fallen tunnel, a Cloudflare fault.
+2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). The
+   workflow asks for a run every five minutes, at minutes that are not the top of the hour; in a
+   run, GitHub Actions opens the public address, up to six attempts 20 seconds apart, and the
+   run fails unless one answers 200. GitHub then notifies the owner of the failed run. It sees
+   what the watcher cannot: a server that is off, a fallen tunnel, a Cloudflare fault. The five
+   minutes are what the schedule asks for, not the rhythm GitHub gives: the start times of the
+   scheduled runs (the `gh run list` form that "Agent or human" allows)
+   show gaps of hours between neighbouring runs. So with the server or the tunnel down, the
+   alarm of GitHub may come only after hours. What causes the gaps is not established.
 3. **The browser's report.** The page's last-resort handling, besides its line in the console,
    sends the kind, code and place of an error no code handled to `POST /api/browser-failure`,
    once per distinct line per page load. The server accepts at most 30 reports an hour for the
@@ -348,8 +352,10 @@ GitHub are both down, nothing is sent. (2) GitHub disables a scheduled workflow 
 with no activity in the repository, which is public; then the check stops silently. (3) GitHub
 sends the failure notice of a scheduled run to the user who last changed the cron line, so
 notifications set off, or set on another account, give a silence taken for "it works". (4) A real
-outage brings two messages, one from the watcher and one from GitHub, and during a longer one a
-GitHub mail every five minutes.
+outage brings two messages, one from the watcher and one from GitHub, and the one from GitHub
+follows the rhythm of its scheduled runs, so it may come only after hours; during a longer outage
+the mails of GitHub follow that rhythm too, not one every five minutes. The cause of the gaps
+between the runs is not established.
 
 **What no test proves.** Docker's log driver and its `inspect` fields, the `--since` and
 `--until` windowing of `docker logs` that the watcher uses, `logrotate`, delivery by `pusher`,
