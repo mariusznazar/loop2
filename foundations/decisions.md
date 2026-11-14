@@ -9807,6 +9807,36 @@ account, and it is to be revised when the balance is worked on.
 which the human did not take as a fault; a percentage tolerance fixed without a measurement — it
 would be a number nobody had measured, too loose or too tight.
 
+### D-405 — In which order does the full gate run its stages, and where does it stop?
+
+The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests and the foundation check, in this order, and ends at the first stage that fails. The Node tests do not run at the same time as the directories of Python tests.
+
+- **Scope:** build-tools
+- **Based on:** none
+- **Relations:** derives from D-77
+- **Verification:** an agent compares a change with the decision:
+  - complies: the Node tests run as a stage of their own after the build and before the directories of Python tests; a run that finds a stage failing runs no stage after it
+  - violates: the Node tests started beside the directories of Python tests; a stage run after a stage that failed
+- **Origin:** none
+
+*Rationale:* the Node tests take about one minute, so running them beside the directories of Python tests would save about that minute of a run (an estimate, not a measurement), at the price of a more complex gate and a more complex test of it, and of more memory at the peak, where two heavy directories that use Docker would run beside Node tests on a document imitation with a memory limit of their own; nobody has measured that peak. Accepted with it: the gate keeps that minute.
+*Rejected:* the Node tests beside the directories of Python tests — about one minute gained of about 15 (an estimate made with the directories at the same time), against a more complex gate and test of it and more memory at the peak, which nobody measured.
+
+### D-406 — Does the full gate run the directories of Python tests one after another or at the same time?
+
+The full gate runs the directories of Python tests one after another, giving the runner of the Python tests `--jobs 1`, and does not run them at the same time. `--jobs 1` is withdrawn only together with a repair of the isolation of the tests that need Docker, after which a run of the gate with the directories at the same time starts Docker Desktop at most once and waits for it at most once, whichever directories need a daemon, so that `gate-docker-start-waits-once` holds in it.
+
+- **Scope:** build-tools
+- **Based on:** none
+- **Relations:** derives from D-77 · derives from D-390
+- **Verification:** tests: the argument that gives the runner of the Python tests the directories one after another. An agent compares a change with the part no test holds:
+  - complies: `--jobs 1` withdrawn in a change that also repairs the start of Docker Desktop, so that a run of the whole gate with the directories at the same time starts it once and the test of that run passes
+  - violates: `--jobs 1` withdrawn, or the directories run at the same time by another way, while the test that a run of the whole gate starts Docker Desktop once fails
+- **Origin:** none
+
+*Rationale:* three full runs with the directories at the same time, on one computer of 32 GB with no other gate running, took 18.3 to 19.6 minutes, against 23.0 to 28.0 minutes measured earlier with the directories one after another. In each of the three runs the same two tests failed and no other: the two that prove that a run of the gate starts Docker Desktop once and waits for it once, each seeing it started twice. Run alone on the same tree, those two tests fail with the directories at the same time and pass with them one after another. The cause is read in the code of the start of Docker Desktop: a start that has not finished is recorded only when its wait ends, and a process asks for that record before it starts Docker Desktop, so two directories running at the same time both find none, both start it and both wait. These measurements are the product's own, and their records are not open to a reader of the repository. Whether the other tests that use Docker, with the names of their containers, images, volumes and networks, stand running at the same time was not examined; only the start of Docker Desktop is known to fail. Accepted with it: the gate takes longer, by the difference of those measurements, until the repair is made.
+*Rejected:* the repair of the isolation made in the same change as the one-after-another run — its extent is unknown, because what fails is not known, and the change may grow several times over; the change stopping and opening a request held back, with the results — one more round, but the decision rests on facts.
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
