@@ -1902,7 +1902,7 @@ nothing in the map run. After „Zakończ” the counts stand beside the program
 and a rule whose content differs there is not the rule that fired. The player watches a manual map
 run and reads an earning loop by what it brought (D-244), so the counts stand with the manual map
 run. Accepted with it: the rule that a map run counts its firings takes an exception, and the player
-of an earning loop sees neither what the character does nor why it died; a preview of the loop can
+of an earning loop sees neither what the character does nor why it died; a preview of the earning loop can
 come later without reworking it.
 *Rejected:* a bare number with „×” — it reads as a limit; no sum in the header of a rule group — a
 folded rule group says nothing; the heading during a map run alone — Programy would not say it;
@@ -2334,18 +2334,17 @@ tile, is open to every character, and an archetype never filters items.
 - **Based on:** none
 - **Relations:** derives from D-119
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Wytwórz — ognisko” open to every archetype, while making an archetype's own goods is
-    open only to that archetype
+  - complies: „Wędruj” open to every archetype, while „Wytwórz — ognisko” is open only to an archetype with the predisposition „Wytwarzanie ogniska”
   - violates: an archetype defined as a list of allowed verbs; an archetype that forbids eating an
     item
 - **Origin:** none
 
-*Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes both the common campfire and an archetype's goods, so only
+*Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes a campfire and, in later data, an archetype's goods, so only
 the pair of verb and target names the character skill the action belongs to, and an action that no character skill grows, such as moving or wandering, is common to all. Items are things of
 the world: a character eats, burns and carries what it would not make itself, and without that the
 team's chest would mean nothing. The one filter on items is the gate of a bought branch (D-119). An action opened by a branch is open to the character that bought it and to no other: the program editor offers it in that character's map run and outside a map run does not (D-196), and for a character without the branch a rule with it is skipped and stays in the program (D-126). Accepted with it: the player sees in the Understanding an action that nobody yet can carry out, and a rule with such an action can be added only in the map run of the character that bought the branch; added in the copy it resets the streak and the number of attacks beaten (D-131) and reaches the program with „Zapisz w programie”, while without losing the streak it can be added in minute zero or in a saved program edited during the map run, which acts from the next entry onto a map other than „Restart”.
 *Rejected:* reading the predisposition condition as only necessary while leaving this decision's sentence unchanged — its plain reading would admit „Obchód” without buying the branch; outside a map run the editor offering such an action when any character of the team has bought the branch; the action of a branch entering the Understanding at the first purchase of the branch, as in the game this one follows — it breaks D-118; a filter on verbs — cannot express „Wytwórz”; a filter on items — an item is a thing of
-the world, not a capacity of the character.
+the world, not a capacity of the character; „Wytwórz — ognisko” open to every archetype — it changes the data, the tests and the curve of practice of D-379, and with one archetype it gives nothing; to be weighed again at the design of a second archetype.
 
 ### D-121 — What brings each action, item and condition of Las into the Understanding?
 
@@ -2851,9 +2850,10 @@ the bar of the solving condition in the header (D-133).
 The condition that solves a map stands in the map's data — a streak, a number of attacks beaten,
 alone or together — and a map opens when the map its data names as its opener is solved. A streak
 counts the successive game minutes in which the character loses no health to cold or hunger: a game
-minute with such a loss sets it to zero, wounds taken in combat do not, and every change of the
-program rules or rule groups the map run carries out, and every switch of the character to another
-program, sets it to zero, on every map, while a change of the trip plan alone leaves it.
+minute with such a loss sets it to zero, wounds taken in combat do not, and every change, in a map
+run that has not ended, of the program rules or rule groups the map run carries out, and every switch
+of the character to another program during that map run, sets it to zero, on every map, while a change
+of the trip plan alone leaves it.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -2871,7 +2871,7 @@ program, sets it to zero, on every map, while a change of the trip plan alone le
 it, so a change of the program's rules or rule groups starts the streak again. Wounds from combat do not break it: a
 program is to handle an attack, not avoid it. The condition differs from map to map, so it lives in
 the map's data, and so does the map that opens it. A map is a level of difficulty that the solving of
-the previous map opens: Las teaches keeping the loop going, Las — głębiej adds combat, and a later map
+the previous map opens: Las teaches keeping the earning loop going, Las — głębiej adds combat, and a later map
 is to teach another mechanic or to set a challenge that the means so far do not close. A solved map can be a place of work, and the chain of maps branches rather than running in one line.
 *Rejected:* survival counted from the start of the map run — rewards patching on the go; items in
 the backpack at completion as a kind of solving condition while no map asks for it — code and tests
@@ -3302,7 +3302,7 @@ Programs belong to the player, as one list shared by all characters; a character
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: saved-program-edit · copy-save. An agent compares a change with the decision:
-  - complies: a program edited while a character's earning loop goes on its copy, the loop unchanged until its next start; „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
+  - complies: a program edited while a character's earning loop goes on its copy, the earning loop unchanged until its next start; „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
   - violates: a program stored as a field of the character; saving a program that rewrites the copies of characters already out; a save over a changed program refused; „Restart” taking a fresh copy of the program and dropping the copy's unsaved fix
 - **Origin:** none
 
@@ -3573,7 +3573,7 @@ The trip plan is a field of the program, both its lists are bound at the start o
   - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
 - **Origin:** none
 
-*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since editing the trip plan does not break it. The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
+*Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since the simulation lets the trip plan of the copy change without breaking the streak (D-131), and a switch to another program brings another trip plan, which the snapshot does not follow; the shield stands in the simulation and at the switch, because the screen of a map run gives no edit of the trip plan (D-180). The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
 *Rejected:* a choice made by a click before each start — the earning loop could not carry it out without the player.
 
 ### D-180 — Where does the player arrange the trip plan?
@@ -3666,8 +3666,8 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 - **Verification:** none
 - **Origin:** none
 
-*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives a part of what a panel showing clearly which trip plan is in force in the map run going on would give. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the plan is edited, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
-*Rejected:* a completion line alone — the running snapshot stays hidden; nothing beyond what stood on the screen; a line hidden for an empty snapshot — an item added during the first map run looks as though it could leave, the player does not see that it will not come out of that map run; a line from minute zero for every empty plan — persistent empty information, a constant line with no content at an empty plan; the line not counting the map's exit cap — on a map with an exit cap it would promise more than completion deposits; keeping the preview after the run ends, in the wording of the last minute, until „Restart” or „Zakończ”; the role `text`.
+*Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives a part of what a panel showing clearly which trip plan is in force in the map run going on would give. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the character is switched to another program, whose bring list differs from the snapshot, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
+*Rejected:* a completion line alone — the running snapshot stays hidden; nothing beyond what stood on the screen; a line hidden for an empty snapshot — an item that a switch to another program brought into the bring list of the copy during the first map run looks as though it could leave, the player does not see that it will not come out of that map run; a line from minute zero for every empty plan — persistent empty information, a constant line with no content at an empty plan; the line not counting the map's exit cap — on a map with an exit cap it would promise more than completion deposits; keeping the preview after the run ends, in the wording of the last minute, until „Restart” or „Zakończ”; the role `text`.
 
 ### D-187 — How does a map cap equipment and loot?
 
@@ -3697,7 +3697,7 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 
 ### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -4100,7 +4100,7 @@ A save of the game state that succeeds shows nothing. When one fails, the header
     loop refused for the number of earning loops
 - **Origin:** none
 
-*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured as the bytes in UTF-8 that the game sends to the server, in a game that already knew everything, so that no discovery was made in it, the headquarters with one character came to 3 202 bytes and a map run of Las at game minute 300 to a median of 9 838 bytes, of „Las — głębiej” to a median of 12 402, each with the copy of the program and its basis, and counted directly, under 64 KiB (65 536 bytes) 12 earning loops fit on Las (13 come to 67 272 bytes) and 9 on „Las — głębiej” (10 come to 66 675 bytes), with one program shared by the loops, no manual map run and an empty report of absence; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because the player can currently remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
+*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured as the bytes in UTF-8 that the game sends to the server, in a game that already knew everything, so that no discovery was made in it, the headquarters with one character came to 3 202 bytes and a map run of Las at game minute 300 to a median of 9 838 bytes, of „Las — głębiej” to a median of 12 402, each with the copy of the program and its basis, and counted directly, under 64 KiB (65 536 bytes) 12 earning loops fit on Las (13 come to 67 272 bytes) and 9 on „Las — głębiej” (10 come to 66 675 bytes), with one program shared by the earning loops, no manual map run and an empty report of absence; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because the player can currently remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
 *Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` — it would change every 30 real seconds while a map run passes, and add text to the header; nothing shown, a failed save included — the player plays on believing the progress saved, and loses it when the tab closes; the too-large refusal counted as a failed save — endless retries, the promise „Gra spróbuje ponownie.” that would not be kept, and a „Wyloguj” that would not work, so that a player at a shared computer stays signed in; a limit of N earning loops at once — the scope lets a team hold any number of characters, so this would be a rule it does not have, and a new number to settle; a slimmer save of earning loops — more work, a more complex load and no guarantee of reaching the threshold; a higher limit — the browser sends no more than 64 KiB when a tab closes, so the last save would be lost.
 
 ### D-209 — Which browser's save of the game state does the server accept?
@@ -5079,12 +5079,12 @@ unlocks its earning loop without certifying that the chosen program survives eve
 world's time. Without that split "passive" would be a fiction — fast-forward a day and take the
 wages. With it comes the rhythm of a session: tinker with a program, let the character go, come back
 the next day. Short map runs keep the catch-up cheap, since the cost of a game minute grows with the
-length of a map run: a loop of short map runs was expected to catch up a week of absence in about a
+length of a map run: an earning loop of short map runs was expected to catch up a week of absence in about a
 second, while one map run without end would choke after a few days. One completion opens the earning loop but does not establish that the program
 survives every seed, so trying to earn still carries the risk of death.
 *Rejected:* the earning loop as one long map run — the cost of a game minute grows without end; one
 speed control for tuning and earning — passivity goes, and with it the sense of the earning loop;
-requiring a safety guarantee across all seeds before earning — delays the loop and promises more
+requiring a safety guarantee across all seeds before earning — delays the earning loop and promises more
 than the player's first completion establishes.
 
 ### D-240 — When and how is the time away computed?
@@ -5140,8 +5140,8 @@ D-55 keeps it, so what reads it goes on reading it. Content that never changes n
 program, so deleting or editing a program, or a rule written at a discovery, reaches no earning loop,
 and each map run binds the same lists anew. An end dealt with where it is reached leaves a load
 nothing to settle. The practice gathered from completions stays with the earning loop, outside the
-character's skills, until the player takes it with „Odbierz” or the loop stops; „Odbierz” empties it
-together with the practice of the map run going on, so the loop and that map run hold exactly the
+character's skills, until the player takes it with „Odbierz” or the earning loop stops; „Odbierz” empties it
+together with the practice of the map run going on, so the earning loop and that map run hold exactly the
 practice that waits, and a death with no resurrection ready takes what waits with the rest. D-56 has
 a map run name its character by number. Accepted with it: a later preview of an earning loop's map
 run needs more of the copy, which is a change of the shape and of its version.
@@ -5308,7 +5308,7 @@ manual map run reads the report on reaching Siedziba.
   - complies: an earning loop a death stopped standing above one that went on; a line of an earning
     loop a death stopped naming no practice, since the death took it; a character's own change in the
     chest on its line, with the practice waiting at its earning loop, the map run going on included,
-    read from the loop whenever the section is drawn and gone after „Odbierz” until the loop gathers
+    read from the earning loop whenever the section is drawn and gone after „Odbierz” until the earning loop gathers
     more, and „Odbierz” beside the line only where practice waits;
     a resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
     adding no line; a stop in the open game on a line that holds minutes of an earlier return reading
@@ -5372,9 +5372,9 @@ with it: after many months the page stands for some seconds per character, longe
 on longer map runs, and a clock moved by years gives progress in the player's own game, which D-07
 accepts. The seconds rest on a measurement of one character in an earning loop over a window of 30
 days, the median of 5 repeats: from 0.001 ms for a game minute, on short map runs ended by death,
-to 0.011 ms on „Las — głębiej” with fights with the wolf. No loop in it ran the whole 30 days, since
-the catch-up of a loop ends at a death that a resurrection does not cover, so the seconds after many
-months are those of a loop that does not die, which no loop measured was. A bound can be added later, once the game has matured.
+to 0.011 ms on „Las — głębiej” with fights with the wolf. No earning loop in it ran the whole 30 days, since
+the catch-up of an earning loop ends at a death that a resurrection does not cover, so the seconds after many
+months are those of an earning loop that does not die, which no earning loop measured was. A bound can be added later, once the game has matured.
 *Rejected:* a bound of 7 days, the rest lost; a bound of another number.
 
 ### D-248 — What is the save time?
@@ -5463,7 +5463,7 @@ this decision a pause and the screens after an end would have held every earning
 *Rejected:* the screen after an end stopping the earning loops of other characters — looking at the
 result holds up what they earn.
 
-### D-251 — How does the card of a map mark a rehearsal the loop cannot repeat?
+### D-251 — How does the card of a map mark a rehearsal the earning loop cannot repeat?
 
 At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its
 program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest,
@@ -5484,7 +5484,7 @@ program, clipped by carrying capacity and the map's entry cap, exceeds the stock
 where an earning loop, bound to the chest, goes cut, and the mark names that one price before the
 player starts. It stands where the line of D-188 stands, in the same role. The mark uses the name of the
 earning loop on the screen.
-*Rejected:* the mark brought in before the earning loop — the game speaks of a loop it does not have
+*Rejected:* the mark brought in before the earning loop — the game speaks of an earning loop it does not have
 yet; another text, given by the human.
 
 ### D-252 — How does loop2 write its failures to its logs, and what does it log?
@@ -7462,7 +7462,7 @@ program and the player sees it beside the program. The header is where the playe
 run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
 the solving condition and three buttons may break in a narrower window; the table of revealed tiles
 one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
-tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; the
+tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; in a window narrower than 1074 px, below the smallest window of D-396, the screen falling to one column with the area with the tabs under the whole program, so that the place of the chronicle depends on the length of the program, as the rejection of the tabs under the program below names it, in the order D-282 gives for a narrower layout; the
 hover over a tile of the drawing links with its row only while the table is picked. The end
 of the map run stands in a window over the screen, so no place of the screen moves for it and its
 buttons stand in sight, and the menu bar with the row of warnings stays above it, so a failed save
@@ -8149,7 +8149,7 @@ The card of a map shows all that the map's data holds, whatever the player has d
 
 ### D-329 — What stands at each character in the section „Kto idzie”, and in what order?
 
-At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać, the line of the resurrection and, at a character in an earning loop, the line of the loop, „Program:” with its list, „Wejdzie: …” in `text-secondary` always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and „Puść w pętlę” with their warnings, the characters standing in the order of D-54. „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card. A team with no character has in the section the sentence „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
+At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać, the line of the resurrection and, at a character in an earning loop, the line of the earning loop, „Program:” with its list, „Wejdzie: …” in `text-secondary` always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” and „Puść w pętlę” with their warnings, the characters standing in the order of D-54. „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card. A team with no character has in the section the sentence „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -8159,7 +8159,7 @@ At each character in the section „Kto idzie” stand, from the top, the name a
   - violates: „Wejdzie: …” standing only where the plan enters clipped; a section with its heading alone for a team with no character; „Puść w pętlę” taking the player to the screen of a map run
 - **Origin:** none
 
-*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243), the sentence of a rehearsal under „Wejdź” (D-251) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the three warnings stand in `warning`; the lines of the resurrection and of the loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
+*Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243), the sentence of a rehearsal under „Wejdź” (D-251) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the three warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
 *Rejected:* „Wejdzie: …” only where less enters than the plan asks, as in the predecessor game — a player with a full chest would not see what enters, and with a plan that enters whole the words of D-180 „the card of a map shows what of it enters” and of D-325 „what enters from the trip plan” would not hold; the rest as it stands but with no sentence for a team with no character — the section would have its heading alone, an empty area with no hint where to make a character.
 
 ### D-330 — What is the first of the three clicks from Siedziba to the first map run?
@@ -8655,7 +8655,7 @@ has just read.
 
 The tab „Kronika” or „Teren” the player picks in the area under the world on the screen of a map
 run stays picked through the whole map run, through leaving its screen and coming back, and through
-„Restart”, and a rule panel opened or closed in the program leaves it as it was.
+„Restart”, and a rule panel opened or closed in the program leaves it as it was; a reload of the page does not keep the pick, and „Kronika” stands picked again.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -8663,7 +8663,7 @@ run stays picked through the whole map run, through leaving its screen and comin
 - **Verification:** an agent compares a change with the decision:
   - complies: „Teren” picked, then Siedziba and back to the map run, „Teren” still picked; „Teren”
     picked before „Restart” and still picked after it; a rule panel opened and closed with „✕”
-    with „Teren” still picked and its table still standing
+    with „Teren” still picked and its table still standing; „Teren” picked, then the page reloaded, with „Kronika” picked
   - violates: „Kronika” picked again after „Restart” where the player had picked „Teren”; the pick
     lost at a return from the headquarters; the tabs replaced by the rule panel while it is open and
     „Teren” given back when it closes
@@ -8672,7 +8672,7 @@ run stays picked through the whole map run, through leaving its screen and comin
 *Rationale:* the area under the world keeps what the player chose to read through the map run and
 its restarts, so the player does not pick it again at each return to the screen or each „Restart”.
 Accepted with it: while „Kronika” is picked the table of revealed tiles is one click away, and a
-tile of the drawing under the pointer marks its row of the table only while „Teren” is picked.
+tile of the drawing under the pointer marks its row of the table only while „Teren” is picked; a reload of the page loses the pick, and the player picks again.
 *Rejected:* „Teren” picked at the start — the chronicle the player is to read stays hidden until it
 is opened; the chronicle and the table one under the other — both shorter, and the area would hold
 two contents at once, against D-311.
@@ -9170,7 +9170,7 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 
 ### D-367 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
+The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, unless the map run is left or a new one starts, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9180,7 +9180,7 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
   - violates: an effect shown for a gathering that ended in the first reading the scene draws; an icon that lands where the next action leads the mage; a field of the game state that holds the result of a gathering for the scene
 - **Origin:** none
 
-*Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, which is the place the mage stood or walked to at the previous reading.
+*Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.
 *Rejected:* unknown
 
 ### D-368 — What does the end-of-run window say, and how does it open and close?
@@ -9210,8 +9210,8 @@ A manual map run keeps, in the map run of the game state and so in the saved gam
   - violates: the three things standing in the plain map run of an earning loop; a game minute counted to two kinds or to none; a count missing from the saved record that the load fills in with 0; a load accepting counts that sum to another number than the game minute, or a longest streak above it; the longest streak read from the chronicle
 - **Origin:** none
 
-*Rationale:* the window tells how near the map run came, where its time went and what the character entered with, and all three must come back after a load (D-212), so they stand in the game state, and not in the chronicle, which lives in the memory of the page and is lost at a load (D-339). The game state holds the counters of how many times each rule fired (D-93), which the window reads for „Nie zadziałały ani razu”, so the record adds only the three. The sections of the window and their rows come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse. Everything the window shows comes back after a load but „Ostatnie minuty”, which come from the chronicle and so show what it holds. They stand in the manual map run alone, since every earning loop would otherwise carry and save them, and the saved game state would grow with the number of loops against the limits of D-207 and D-208 for nothing the loops use. The longest streak is read at the end of every game minute, the one in which the map run ends included, so a fall of the streak that ends the map run does not lose it. The kinds are those of the simulation and the grouping the window shows is the view's, so a new action needs no wording in the simulation. The load is strict, as D-213 asks, so a record whose counting disagrees with the game minute is refused and not shown. Accepted with it: a wrong counting reaches saved documents until a new version of the save drops them (D-206); a sound document refused where the counting has an exception nobody found, the player starting anew as D-206 gives; the saved game state growing by the record and its version rising once for it, as the version rises once in the change that alters the shape of the game state, which discards a saved game state of the older version, the player's programs in it included (D-206).
-*Rejected:* the game state keeping the four last entries before the end as well, so that the whole window comes back after a load — the entries of the chronicle are made in the view from events (D-348), so the simulation would have to compose those texts or the view write them into the game state, which changes D-339, and there is more to build and check; the three things in the plain map run that earning loops share — every earning loop would carry and save them, the saved game state would grow with the number of loops against the limits of D-207 and D-208, and the loops' map run in the document would change shape without any gain; the counts stored under the grouped names of the window — the simulation would know the view's wording and a new action would have to be grouped there; counting in the view from the events — lost at a load, since the events are not kept (D-348); the longest streak read from the entries of the chronicle that record a lost streak — they live in the memory of the page and are lost at a load (D-339); what the character entered with read at the end from the trip plan and the chest — both change during the map run; a lenient load that fills in a missing count or accepts counts that do not sum to the game minute — a migration by another name, against D-206 and D-213.
+*Rationale:* the window tells how near the map run came, where its time went and what the character entered with, and all three must come back after a load (D-212), so they stand in the game state, and not in the chronicle, which lives in the memory of the page and is lost at a load (D-339). The game state holds the counters of how many times each rule fired (D-93), which the window reads for „Nie zadziałały ani razu”, so the record adds only the three. The sections of the window and their rows come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse. Everything the window shows comes back after a load but „Ostatnie minuty”, which come from the chronicle and so show what it holds. They stand in the manual map run alone, since every earning loop would otherwise carry and save them, and the saved game state would grow with the number of earning loops against the limits of D-207 and D-208 for nothing the earning loops use. The longest streak is read at the end of every game minute, the one in which the map run ends included, so a fall of the streak that ends the map run does not lose it. The kinds are those of the simulation and the grouping the window shows is the view's, so a new action needs no wording in the simulation. The load is strict, as D-213 asks, so a record whose counting disagrees with the game minute is refused and not shown. Accepted with it: a wrong counting reaches saved documents until a new version of the save drops them (D-206); a sound document refused where the counting has an exception nobody found, the player starting anew as D-206 gives; the saved game state growing by the record and its version rising once for it, as the version rises once in the change that alters the shape of the game state, which discards a saved game state of the older version, the player's programs in it included (D-206); the version rising again in every later change that adds an ordinary action to the data or removes one, since the kinds of the ordinary actions are the keys of the counts, so each such change alters the shape of the record and discards every saved game state of the older version in full (D-206).
+*Rejected:* the game state keeping the four last entries before the end as well, so that the whole window comes back after a load — the entries of the chronicle are made in the view from events (D-348), so the simulation would have to compose those texts or the view write them into the game state, which changes D-339, and there is more to build and check; the three things in the plain map run that earning loops share — every earning loop would carry and save them, the saved game state would grow with the number of earning loops against the limits of D-207 and D-208, and the earning loops' map run in the document would change shape without any gain; the counts stored under the grouped names of the window — the simulation would know the view's wording and a new action would have to be grouped there; counting in the view from the events — lost at a load, since the events are not kept (D-348); the longest streak read from the entries of the chronicle that record a lost streak — they live in the memory of the page and are lost at a load (D-339); what the character entered with read at the end from the trip plan and the chest — both change during the map run; a lenient load that fills in a missing count or accepts counts that do not sum to the game minute — a migration by another name, against D-206 and D-213.
 
 ### D-370 — How does the end-of-run window cover the screen of a map run, and where does the keyboard go?
 
@@ -9451,17 +9451,17 @@ The list of the chronicle draws the entries of the filter picked, newest first, 
 
 ### D-383 — How long does the pick of a filter of the chronicle hold on the screen of a map run?
 
-The filter the player picks above the list of the chronicle stays picked through the whole map run, through leaving its screen and coming back, and through „Restart”, as the tab does (D-346); „Wszystko” stands picked again when the character is sent to the map (D-343).
+The filter the player picks above the list of the chronicle stays picked through the whole map run, through leaving its screen and coming back, and through „Restart”, as the tab does (D-346); „Wszystko” stands picked again when the character is sent to the map (D-343), and after a reload of the page, which does not keep the filter.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-343 · derives from D-346
 - **Verification:** an agent compares a change with the decision:
-  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked; „Czynności” picked before „Restart” and still picked after it, over the entries of the new map run alone; a character sent after „Zakończ” with „Wszystko” picked
+  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked; „Czynności” picked before „Restart” and still picked after it, over the entries of the new map run alone; a character sent after „Zakończ” with „Wszystko” picked; the page reloaded with „Czynności” picked, then „Wszystko” picked
   - violates: „Wszystko” picked again after „Restart” where the player had picked „Czynności”; the pick lost at a return from Siedziba; „Czynności” still picked at a send after „Zakończ”
 - **Origin:** none
 
-*Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives.
+*Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives. Accepted with it: a reload of the page loses the pick, as it does that of the tab (D-346), and the player picks again.
 *Rejected:* the filter picked again as „Wszystko” at „Restart” or at a return to the screen — the player picks it again each time, the cost D-346 names for the tab.
 
 ### D-384 — Which program does the program panel show when the one it showed is gone?
@@ -9597,8 +9597,8 @@ character.
 the first thing of the screen, the heading standing over it; the band with no clearing, the fire, the chest
 and the characters straight on the page — nothing to compose, but pixel pictures with an outline look like
 stickers on a flat background; every character of the team, always, in the order of creation, those on a
-map and in a loop too — a character of a manual map run sits at the fire and nothing on Siedziba says it is
-on the map, a character in a loop sits at the fire though the line under it says it walks in a loop, and the
+map and in an earning loop too — a character of a manual map run sits at the fire and nothing on Siedziba says it is
+on the map, a character in an earning loop sits at the fire though the line under it says it walks in an earning loop, and the
 picture has no meaning; every character, those away drawn differently, dimmed — a new look whose meaning
 nothing settles, and grey means stopped time and death in the game (D-322), so a dimmed character would read
 as dead; every character, always, closer and closer until they overlap — a crowd in which a mage hides a
@@ -9694,3 +9694,18 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 
 *Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
 *Rejected:* the control picking the rule of a screen by a value of one of its parameters — no cost or reason of it is known.
+
+### D-396 — In which browsers and from which window size does the game have to work?
+
+The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311, D-349, D-370 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
+
+- **Scope:** browser-view, agent-workflow
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a check of a change in Chromium at a page area of 1280 × 720 px; a change that keeps the content of Siedziba as wide as a window 1000 px wide, as D-280 gives it
+  - violates: a change that is known to break in Firefox at a page area of 1280 × 720 px and is left so; a check of a change at a screen resolution of 1280 × 720 px, which leaves a page area of about 1280 × 600; a change made only to fix a look in a window below the smallest where no decision defines it; a change that drops the 1000 px width of D-280 as outside the set
+- **Origin:** none
+
+*Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request; the decisions that already define the look of a narrower or a lower window bind what the game does there, so what is left unfixed is only what no decision defines. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions.
+*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and it is not known whether the tool installs with Firefox on this computer (it did not install with WebKit); no entry — every remark about Safari and about a narrow window stays without a measure.
