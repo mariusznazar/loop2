@@ -7461,7 +7461,7 @@ program and the player sees it beside the program. The header is where the playe
 run, so „Restart” and „Zakończ” stay there. Accepted with it: a long header, which with the bar of
 the solving condition and three buttons may break in a narrower window; the table of revealed tiles
 one click away while „Kronika” is picked; in a low window, such as 1280 × 720, the area with the
-tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; in a window narrower than 1074 px, below the smallest window of D-393, the screen falling to one column with the area with the tabs under the whole program, so that the place of the chronicle depends on the length of the program, as the rejection of the tabs under the program below names it, in the order D-282 gives for a narrower layout; the
+tabs starting below the lower edge of the window, so that the chronicle has to be scrolled to; in a window narrower than 1074 px, below the smallest window of D-396, the screen falling to one column with the area with the tabs under the whole program, so that the place of the chronicle depends on the length of the program, as the rejection of the tabs under the program below names it, in the order D-282 gives for a narrower layout; the
 hover over a tile of the drawing links with its row only while the table is picked. The end
 of the map run stands in a window over the screen, so no place of the screen moves for it and its
 buttons stand in sight, and the menu bar with the row of warnings stays above it, so a failed save
@@ -9694,7 +9694,7 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 *Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
 *Rejected:* the control picking the rule of a screen by a value of one of its parameters — no cost or reason of it is known.
 
-### D-393 — In which browsers and from which window size does the game have to work?
+### D-396 — In which browsers and from which window size does the game have to work?
 
 The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
 
