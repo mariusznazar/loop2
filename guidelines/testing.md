@@ -79,7 +79,7 @@ zastąpienia mechanizmu, którego awarię sprawdzasz.
 
 ### Where the expected value comes from
 
-- **Decision:** D-73 · D-80 · D-82
+- **Decision:** D-73 · D-82
 - **Invariant:** none
 - **Good:** Oczekiwana suma plecaka wynika z jawnych składników i arytmetyki.
 - **Bad:** Oczekiwany czas przeżycia zapisano z dzisiejszego wyniku symulacji bez uzgodnionego wymagania.
@@ -90,7 +90,7 @@ jako niepowodzenie; ocena człowieka jest źródłem, gdy trzyma ją decyzja fun
 (D-82). Dzisiejszy wynik programu nie jest dowodem poprawności, również
 w zapisanych obrazach i stanach. Test parametru gry może użyć konkretnych liczb;
 oczekiwany czas przeżycia, tempo postępu lub trudność mapy wymagają uzgodnionego
-wymagania (D-80).
+wymagania (D-73).
 
 Szablon każe komentarzowi nazwać źródło wartości, gdy nazwa testu go nie pokazuje;
 w loop2 żaden komentarz nie musi tego robić (D-82). Wymaganie, którego test
