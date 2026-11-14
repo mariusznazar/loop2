@@ -12,12 +12,13 @@ VENV = ROOT / ".runs/quality-venv" / ("Scripts" if WINDOWS else "bin")
 SCRIPT = "{ts,tsx,mts,cts,js,jsx,mjs,cjs}"
 WEB = "{ts,tsx,mts,cts,js,jsx,mjs,cjs,html,css}"
 # The D-32 scope, each pattern within one .gitattributes keeps at LF. A pattern matching no file
-# fails the check, but a brace alternative may: tests/quality, with no such file yet, stands
-# beside tests/sim and tests/view, and their HTML and CSS beside their scripts.
+# fails the check, but a brace alternative may: the HTML and CSS of tests/sim and tests/view stand
+# beside their scripts. test_source_tool_scope.py keeps the patterns to the scope.
 PRETTIER_PATTERNS = [f"src/browser/**/*.{WEB}", f"src/server/**/*.{SCRIPT}",
-                     f"scripts/**/*.{SCRIPT}", f"tests/{{sim,view,quality}}/**/*.{SCRIPT}",
-                     f"tests/{{sim,view}}/**/*.{WEB}", "tests/{http,startup}.test.mjs",
-                     "{eslint,prettier}.config.mjs"]
+                     f"scripts/**/*.{SCRIPT}", f"tests/**/*.{SCRIPT}",
+                     f"tests/{{sim,view}}/**/*.{WEB}", "{eslint,prettier}.config.mjs"]
+# The flags of the Prettier check; the scope test runs the same check on made-up files (D-32).
+PRETTIER_FLAGS = ["--check", "--no-config", "--no-editorconfig", "--ignore-path", ".gitignore"]
 # Named one by one: review keeps a new standalone Bash script from going unnamed (D-31).
 BASH_SCRIPTS = ["deploy/loop2-deploy", "deploy/loop2-backup", "deploy/loop2-watch"]
 
@@ -61,8 +62,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_prettier_source_format(self):
         # invariant: prettier-source-format
-        self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", "--check",
-                           "--no-config", "--no-editorconfig", "--ignore-path", ".gitignore",
+        self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", *PRETTIER_FLAGS,
                            *PRETTIER_PATTERNS)
 
     def test_introduced_npm_vulnerabilities(self):

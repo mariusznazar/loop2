@@ -407,12 +407,12 @@ whatever their amounts, at every game minute, whatever programs they run under.
 
 ## eslint-source-rules
 
-No file `eslint.config.mjs` matches breaks a rule that configuration applies or carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
+Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
 
 - **Method:** test
 - **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Derives from:** D-29
-- **Part:** browser-view · simulation · account-server · build-tools
+- **Part:** browser-view · simulation · account-server · build-tools · deployment
 - **Violated:** no
 
 ## ruff-source-rules
@@ -437,7 +437,7 @@ No Bash script the test of this invariant names gets a ShellCheck 0.11.0 report 
 
 ## prettier-source-format
 
-Every file the patterns of this invariant's test match stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
+Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, is matched by the patterns of this invariant's test and kept at LF line endings by `.gitattributes`, and every file those patterns match stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
 
 - **Method:** test
 - **Rests on:** none
