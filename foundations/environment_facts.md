@@ -835,7 +835,7 @@ On 2026-11-14, `docker stats --no-stream loop2 loop2-cloudflared` on the test se
 
 On 2026-11-14, neither the game's dump file `/var/log/loop2-app.log` nor its rotated copy `/var/log/loop2-app.log.1` on the test server's host holds a line with the text `SQLITE_BUSY`.
 
-- **Source:** reading: `grep -F -m 50 -- 'SQLITE_BUSY' /var/log/loop2-app.log; echo "exit=$?"` on the test server's host, grep (GNU grep) 3.7 — grep printed no line, and the `echo` after it printed "exit=1" · and the same with `/var/log/loop2-app.log.1` in place of the first file — no line from grep, and "exit=1"; run 2026-11-14
+- **Source:** reading: `grep -F -m 50 -- 'SQLITE_BUSY' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — no output · and the same with `/var/log/loop2-app.log.1` in place of the file — no output; run 2026-11-14
 
 ## mikrus-host-docker-compose-version
 
