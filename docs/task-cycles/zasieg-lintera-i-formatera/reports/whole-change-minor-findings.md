@@ -1,9 +1,0 @@
-# Findings of the review of the whole change — Minor findings within the task
-
-Source: `reports/review-whole-report.md`, first line `PASS 8d211cbed07a0fd0a4669c3e13a857c5c2a4dfc9`. No blocking finding. The two Minor findings below are within the task and are cut from the report in the reviewer's words (WAY-161).
-
-## Minor
-
-1. **`tests/quality/test_source_tool_scope.py:141-149` (`test_gitattributes_keeps_lf_for_every_scope_file`) — within the task (To do 3).** The test reads only the attribute `eol`. An added line `tests/transport.test.mjs -text` (text unset, `eol=lf` still given by the earlier line) leaves `git check-attr eol` at `lf`, so the test passes, although with `-text` git does no line-ending conversion and the LF the invariant promises is no longer kept on Windows. Evidence: in a scratch worktree of HEAD I appended that line to `.gitattributes` and ran the test: exit 0, "Ran 4 tests ... OK". The mutation is contrived (an explicit unset), a missing `text` alone with `eol=lf` is treated by git as text, so the practical gap is small; the same line dropped entirely is caught (mutation 7 below). A cheap improvement is to also require `git check-attr text` to be `set` (or `auto`).
-
-2. **`guidelines/coding.md:37-41` and `:94-96` — within the task (To do 5).** `.the-way/product-guidelines/template.md` says a rule "repeats neither a decision of the product's log nor a value taken from a configuration file; it says what the author of the code is to do". The new text names the five parts ("każdy plik TS/JS części browser-view, simulation, account-server, build-tools i deployment") — the scope that D-29 and D-32 already hold, so a next change of the scope must change three places (D-29, D-32, this file). The previous text of the paragraph did the same with four parts, so this is inherited, not new; it is Minor. A phrase such as "każdy plik TS/JS części z zakresu D-29" would say what the author is to do without the list.
