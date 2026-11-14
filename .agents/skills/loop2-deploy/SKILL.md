@@ -290,11 +290,11 @@ of that data (D-252), and its lines are reported selected and redacted like othe
 **The three ways the owner learns the game failed.**
 
 1. **The watcher** (`loop2-watch`, root, cron every five minutes). It reads state and health of
-   both containers and the fresh failure lines of the game container's log, skips a run while a
-   deployment or the backup holds the deploy lock, and calls `pusher` with a fixed subject and
-   one fixed Polish sentence per kind, which name the kind and send the reader here. It never
-   puts a number, a commit, an account or any output into a message, because `pusher` may travel
-   unencrypted.
+   both containers, the fresh failure lines of the game container's log and the last lines of the
+   log of the nightly backup, skips a run while a deployment or the backup holds the deploy lock,
+   and calls `pusher` with a fixed subject and one fixed Polish sentence per kind, which name the
+   kind and send the reader here. It never puts a number, a commit, an account or any output into
+   a message, because `pusher` may travel unencrypted.
 
    | Mail subject | Kind | An agent reads |
    |---|---|---|
