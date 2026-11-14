@@ -16,7 +16,8 @@ import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 // its tile by 0.5 °C a minute and a burning stick by 0.15 °C; the body stops at 37.0 °C. Sticks
 // renew one piece every 30 minutes and berries every 40, up to a stock of 12 sticks and 8 berries.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const entrance = offsetToAxial(forest.entrance.col, forest.entrance.row);

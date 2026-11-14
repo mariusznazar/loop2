@@ -2,7 +2,6 @@
 // reading of the browser's clock reaches the simulation and the store (D-221, D-242).
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -94,7 +93,7 @@ test("flush and send of a disposed clock no longer reach the game", () => {
     clock.flush();
     assert.equal(store.applied, 0);
     // The first character a new game creates takes the id 1.
-    clock.send({ mapId: Object.keys(MAPS)[0], characterId: 1 });
+    clock.send({ mapId: "forest", characterId: 1 });
     assert.equal(store.applied, 0);
   });
 });

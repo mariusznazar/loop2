@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { INITIAL_SEED } from "../../dist/browser/sim/data/balance.js";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -18,7 +17,7 @@ import { mixSeed } from "../../dist/browser/sim/random.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
 import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
 
-const mapId = Object.keys(MAPS)[0];
+const mapId = "forest";
 // The first character a new game creates takes the id 1.
 const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;

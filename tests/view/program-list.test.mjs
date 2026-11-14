@@ -2,7 +2,7 @@
 // the list builds, which program it marks, what its acts hand the page and which name the name rule
 // refuses. Real focus order and rendering are the browser check's (D-88), so a focus case here holds
 // only what jsdom shows.
-import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
+import { assert, inAct, press, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { newGame } from "../../dist/browser/sim/game.js";
 import { createProgramList } from "../../dist/browser/view/program-list.js";
@@ -59,17 +59,6 @@ async function mount({ root }, props) {
     root.append(list.element);
   });
   return { list, calls };
-}
-
-/** Clicks inside act; React's work on an event shows only through act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  const { Event } = target.ownerDocument.defaultView;
-  return inAct(() =>
-    target.dispatchEvent(
-      new Event("click", { bubbles: true, cancelable: true }),
-    ),
-  );
 }
 
 const buttonNamed = (root, text) =>

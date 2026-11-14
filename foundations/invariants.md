@@ -219,7 +219,7 @@ Node.js adds to those of the JavaScript language.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-04
+- **Derives from:** D-04 · D-393
 - **Part:** simulation
 - **Violated:** no
 
@@ -827,7 +827,7 @@ The browser account client returns an account only for the success status of its
 
 ## streak-program-change
 
-A change of the program rules or rule groups of the copy a map run carries out, and every switch of the character to another program during the map run, to one holding the same rules included, sets the streak of that map run to zero, on every map.
+A change, in a map run that has not ended, of the program rules or rule groups of the copy it carries out, and every switch of the character to another program during that map run, to one holding the same rules included, sets the streak of that map run to zero, on every map.
 
 - **Method:** test
 - **Rests on:** none
@@ -1317,12 +1317,22 @@ In one run of the gate, a start of Docker Desktop that has not finished in its t
 
 ## loop-practice-payment
 
-The practice an earning loop gathers is never added to its character's skills twice, whichever of „Odbierz” and the stop of the loop pays it and whether the completion of the map run it was gathered in came between.
+The practice an earning loop gathers is never added to its character's skills twice, whichever of „Odbierz” and the stop of the earning loop pays it and whether the completion of the map run it was gathered in came between.
 
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-189 · D-241 · D-245 · D-246
 - **Part:** simulation
+- **Violated:** no
+
+## simulation-type-check
+
+The simulation's TypeScript files are type-checked under a configuration of their own that covers every file under `src/browser/sim/`, holds the library of the JavaScript language alone and no ambient types, and that `npm run typecheck` and `npm run build` both run.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-393
+- **Part:** simulation · build-tools
 - **Violated:** no
 
 ## previous-save-slot

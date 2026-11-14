@@ -6,8 +6,10 @@ import { writeSync } from "node:fs";
 import { isMainThread, Worker, workerData } from "node:worker_threads";
 
 const MIB = 1024 ** 2;
-// D-268: above the 1.68 GB the whole Node stage peaked at when the limit was set,
-// and low enough that several killed files add up safely.
+// D-268: about twice the 1076 MiB the largest file of tests peaked at, measured
+// over 24 files on a document imitation (the whole Node stage peaked at about
+// 2.9 GiB without the one case that grows to the limit on purpose, on a
+// computer with 32 GB), and low enough that several killed files add up safely.
 const DEFAULT_LIMIT_BYTES = 2048 * MIB;
 const DEFAULT_INTERVAL_MS = 100;
 

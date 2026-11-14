@@ -27,7 +27,7 @@ import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { chillRuleGroupName } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
 
-const MAP_ID = Object.keys(MAPS)[0];
+const MAP_ID = "forest";
 // A real time whose seed lays berries and moss, but no sticks, on the entrance tile.
 const REAL_MS = 1760000000003;
 const EXPLORE_RULE = {

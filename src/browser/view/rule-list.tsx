@@ -7,9 +7,8 @@
  * folded comes in the props and a change goes out through `onFoldedChange`, so the list holds no
  * memory of its own about it (D-295). Rules move by „↑” and „↓”, across the border of a group too,
  * and rules and whole groups by their handle on the browser's own drag (D-270), a drop line showing
- * where they would land. The page holds the list behind `createRuleList`, as the program list does,
- * calling it from an event handler or the continuation of an answer, never from render or an
- * effect. Nothing runs when the module is imported.
+ * where they would land. The program panel draws it as `RuleListView` in its own tree. Nothing runs
+ * when the module is imported.
  *
  * Where the page hands it the rule panel (`panel`), the list draws it in place, under the row of the
  * rule it changes or under the header of the group it changes, so the player edits a rule where it
@@ -36,8 +35,7 @@ import type {
   MouseEvent,
   ReactNode,
 } from "react";
-import { createPortal, flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
+import { createPortal } from "react-dom";
 import { ACTIONS } from "../sim/data/actions.js";
 import type { RuleSigns } from "../sim/game.js";
 import type { GameState, GroupId, Program, RuleGroup } from "../sim/types.js";
@@ -93,7 +91,7 @@ export type RuleListProps = {
 /** The row, or with a null rule the header of the group, a click or an addition asks to open. */
 export type RuleListTarget = { groupId: GroupId; ruleId: number | null };
 
-export type RuleListOptions = {
+export type RuleListHandlers = {
   /**
    * Called with the whole new program after each edit. An edit that moves a rule by „↑” or „↓” or a
    * rule or a group by a drop also hands which one the player moved, since the program alone cannot
@@ -104,16 +102,6 @@ export type RuleListOptions = {
   onOpen: (target: RuleListTarget) => void;
   /** Called with the whole list of folded groups after a fold or an unfold. */
   onFoldedChange: (folded: GroupId[]) => void;
-  props: RuleListProps;
-};
-
-export type RuleList = {
-  /** The list with its place, for the page to put in. */
-  element: HTMLElement;
-  /** Draws the list anew from what the page gives. */
-  update(props: RuleListProps): void;
-  /** Unmounts the list and takes it out of the page. */
-  dispose(): void;
 };
 
 /** What is being dragged: a rule by its number or a whole group. */
@@ -207,7 +195,7 @@ function clickedBody(event: MouseEvent<HTMLElement>): boolean {
   );
 }
 
-type RuleListViewProps = Omit<RuleListOptions, "props"> & RuleListProps;
+type RuleListViewProps = RuleListHandlers & RuleListProps;
 
 /** The list of groups and rules, with the drag, the fold and the edits of its rows. */
 export function RuleListView({
@@ -764,40 +752,4 @@ export function RuleListView({
       {panelSeated ? createPortal(panel, panelHost) : null}
     </div>
   );
-}
-
-/**
- * Builds the list in an element of its own, for the page to place. The render is synchronous, so the
- * list stands in the element when this returns. Each list is a new root: nothing it holds outlives
- * `dispose()`.
- */
-export function createRuleList(options: RuleListOptions): RuleList {
-  const element = document.createElement("div");
-  element.className = "rule-list-host";
-  const root = createRoot(element);
-  let disposed = false;
-  function draw(props: RuleListProps): void {
-    flushSync(() => {
-      root.render(
-        <RuleListView
-          {...props}
-          onCommit={options.onCommit}
-          onOpen={options.onOpen}
-          onFoldedChange={options.onFoldedChange}
-        />,
-      );
-    });
-  }
-  draw(options.props);
-  return {
-    element,
-    update(props: RuleListProps): void {
-      if (!disposed) draw(props);
-    },
-    dispose(): void {
-      disposed = true;
-      root.unmount();
-      element.remove();
-    },
-  };
 }

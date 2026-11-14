@@ -20,7 +20,8 @@ import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 // simulation: one mulberry32 step over the map run's gathering state, written out below from the
 // published algorithm, and the gathering hits where the value lies below 0.7.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const [stick, berry, moss] = forest.resources.map((resource) => resource.id);
@@ -106,36 +107,30 @@ function statesBy(hit) {
 
 test("„Zbierz” is feasible on a revealed tile holding the resource, with room in the backpack", () => {
   const run = onSticks();
-  assert.equal(actionFeasible(run, forest, gather(stick)), true);
+  assert.equal(actionFeasible(run, gather(stick)), true);
   const almostFull = carrying(run, backpackOf(run, berry, 14));
-  assert.equal(actionFeasible(almostFull, forest, gather(stick)), true);
+  assert.equal(actionFeasible(almostFull, gather(stick)), true);
 });
 
 test("„Zbierz” is not feasible on a tile not revealed", () => {
   const run = withHere(onSticks(), (tile) => ({ ...tile, revealed: false }));
-  assert.equal(actionFeasible(run, forest, gather(stick)), false);
+  assert.equal(actionFeasible(run, gather(stick)), false);
 });
 
 test("„Zbierz” is not feasible on a tile without the resource or with 0 of it", () => {
   const without = onSticks();
-  assert.equal(actionFeasible(without, forest, gather(berry)), false);
+  assert.equal(actionFeasible(without, gather(berry)), false);
   const none = onSticks(0);
   assert.deepEqual(hereOf(none).stock, { [stick]: 0 });
-  assert.equal(actionFeasible(none, forest, gather(stick)), false);
+  assert.equal(actionFeasible(none, gather(stick)), false);
 });
 
 test("„Zbierz” is not feasible with a full backpack of 15 pieces of any items", () => {
   const run = onSticks();
   const full = { ...backpackOf(run, berry, 10), [moss]: 5 };
-  assert.equal(
-    actionFeasible(carrying(run, full), forest, gather(stick)),
-    false,
-  );
+  assert.equal(actionFeasible(carrying(run, full), gather(stick)), false);
   const overFull = backpackOf(run, stick, 16);
-  assert.equal(
-    actionFeasible(carrying(run, overFull), forest, gather(stick)),
-    false,
-  );
+  assert.equal(actionFeasible(carrying(run, overFull), gather(stick)), false);
 });
 
 test("a gathering lasts 10 game minutes, takes nothing at its start and draws nothing then", () => {
@@ -238,7 +233,7 @@ test("a tile gathered to 0 pieces keeps the key of its resource", () => {
   const next = stepMinute(run, forest, IDLE).run;
   assert.deepEqual(hereOf(next).stock, { [stick]: 0 });
   assert.ok(Object.hasOwn(hereOf(next).stock, stick));
-  assert.equal(actionFeasible(next, forest, gather(stick)), false);
+  assert.equal(actionFeasible(next, gather(stick)), false);
 });
 
 test("a gathering takes no more than lies on the tile, nor beyond the backpack's cap, at its end", () => {

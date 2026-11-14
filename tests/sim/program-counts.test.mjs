@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -39,7 +38,7 @@ const PROGRAM = {
   nextGroupId: 9,
   nextRuleId: 92,
 };
-const SENT = { mapId: Object.keys(MAPS)[0], characterId: 1 };
+const SENT = { mapId: "forest", characterId: 1 };
 
 function ready(program = PROGRAM) {
   return createCharacter(setProgram(newKnowingGame(), program).state, "Ala")

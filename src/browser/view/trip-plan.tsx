@@ -7,16 +7,12 @@
  * `onCommit`. The folding is the component's own state, folded at the start; a click on the line
  * opens and closes it, and so does Enter on its button, which is a click there.
  *
- * The page holds the section behind `createTripPlan`, as it holds the rule panel: an element of its
- * own, `update(props)` and `dispose()`, called from an event handler or the continuation of an
- * answer, never from render or an effect. A program of another identity is a new section: the page
- * makes a new one, so a count rejected in one program's field is not shown in another's. Nothing
- * runs when the module is imported.
+ * The program panel draws the section as `TripPlanView`. A program of another identity is a new
+ * section: the panel makes a new one, so a count rejected in one program's field is not shown in
+ * another's. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
 import { ITEMS } from "../sim/data/items.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import type { ConditionNumber } from "../sim/program.js";
@@ -25,7 +21,7 @@ import { ReactButton } from "./controls/react-button.js";
 import { ReactNumberField } from "./controls/react-number-field.js";
 import { ReactSelectList } from "./controls/react-select-list.js";
 import type { SelectOption } from "./controls/select-list.js";
-import { tripChoices } from "./trip-editor.js";
+import { readTripCount, tripChoices } from "./trip-editor.js";
 
 type Side = keyof TripPlan;
 
@@ -35,7 +31,7 @@ const LISTS: readonly { side: Side; label: string }[] = [
   { side: "bring", label: "Wynieś" },
 ];
 
-/** A position's count: a safe integer from 1 up (D-181). The count field commits by the trip rule. */
+/** A position's count: a safe integer from 1 up (D-181). The count field commits by `readTripCount`. */
 const COUNT: ConditionNumber = {
   defaultValue: 1,
   min: 1,
@@ -250,7 +246,7 @@ export function TripPlanView({ program, items, onCommit }: TripPlanViewProps) {
                         label={`${label}: liczba`}
                         number={COUNT}
                         value={entry.count}
-                        rule="trip"
+                        rule={readTripCount}
                         error={
                           rejected.has(rejectKey(side, entry.item))
                             ? COUNT_MESSAGE
@@ -298,56 +294,4 @@ export function TripPlanView({ program, items, onCommit }: TripPlanViewProps) {
         : null}
     </section>
   );
-}
-
-export type TripPlanProps = Omit<TripPlanViewProps, "onCommit">;
-
-export type TripPlanOptions = {
-  /** Called with the whole new program after each edit. */
-  onCommit: (program: Program) => void;
-  props: TripPlanProps;
-};
-
-export type TripPlanHandle = {
-  /** The section with its place, for the page to put in. */
-  element: HTMLElement;
-  /** Draws the section anew from what the page gives. */
-  update(props: TripPlanProps): void;
-  /** Unmounts the section and takes it out of the page. */
-  dispose(): void;
-};
-
-/**
- * Builds the trip plan in an element of its own, for the page to place. The first render is
- * synchronous, so the section stands in the element when this returns. Each section is a new root:
- * nothing it holds outlives `dispose()`.
- */
-export function createTripPlan(options: TripPlanOptions): TripPlanHandle {
-  const element = document.createElement("div");
-  element.className = "trip-plan-host";
-  const root = createRoot(element);
-  let disposed = false;
-  function draw(props: TripPlanProps): void {
-    flushSync(() => {
-      root.render(
-        <TripPlanView
-          program={props.program}
-          items={props.items}
-          onCommit={options.onCommit}
-        />,
-      );
-    });
-  }
-  draw(options.props);
-  return {
-    element,
-    update(props: TripPlanProps): void {
-      if (!disposed) draw(props);
-    },
-    dispose(): void {
-      disposed = true;
-      root.unmount();
-      element.remove();
-    },
-  };
 }

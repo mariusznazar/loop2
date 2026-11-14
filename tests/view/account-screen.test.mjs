@@ -3,7 +3,15 @@
 // screens by address (D-280, D-281, D-283, D-284, D-286). These tests run the page's logic on jsdom through tests/view/page-document.mjs (D-264):
 // they prove which elements it builds and what it does with the client's answers, never real
 // events, focus or rendering, which the browser check covers (D-88).
-import { assert, inAct, settle, typeInto, withPage } from "./page-document.mjs";
+import {
+  assert,
+  fire,
+  inAct,
+  press,
+  settle,
+  typeInto,
+  withPage,
+} from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
   advanceMinutes,
@@ -103,21 +111,6 @@ function all(root) {
 }
 
 const childrenOf = (element) => [...element.children];
-
-/**
- * Fires `type` at `target`. Unlike `click()`, it reaches the listeners of a disabled control too,
- * so a case proves the page's own guard on a locked control.
- */
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks `target` inside act; React's work on an event shows only through act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
 
 /** Sends `form` inside act, as a browser does; true when the card stopped the page's navigation. */
 function sendForm(form) {

@@ -2,7 +2,7 @@
 // builds, what it does with the events a case fires and with the client's answers, never real
 // keyboard handling, focus order or rendering, which the browser check covers (D-88). Enter and
 // Space on „Konto” are the browser's own click of a native button; here a click stands for them.
-import { assert, inAct, settle, withPage } from "./page-document.mjs";
+import { assert, inAct, press, settle, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { ABOUT } from "../../dist/browser/sim/data/about.js";
 import { createMenuBar } from "../../dist/browser/view/menu-bar.js";
@@ -74,17 +74,6 @@ async function openBar(
     root.prepend(bar.element);
   });
   return { bar, held, logouts, outside, field };
-}
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks inside act; React's work on an event shows only through act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
 }
 
 function pressKey(target, key) {

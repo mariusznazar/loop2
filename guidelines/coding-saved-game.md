@@ -92,14 +92,14 @@ widok zapisuje błąd w konsoli bez jego treści i pokazuje zdanie z D-96.
 
 ### Wersja podnoszona razem z kształtem
 
-- **Decision:** D-206 · D-213
+- **Decision:** D-206 · D-213 · D-369
 - **Invariant:** save-version
 - **Good:** Zmiana `GameState` albo typu, do którego prowadzi, podnosi stałą wersji, a dokument zapisany w teście ma nową wersję i nowy kształt.
 - **Bad:** Zmiana kształtu stanu gry zostawia wersję bez zmian albo przepisuje dokument w teście bez podniesienia wersji.
 
 Wersja kształtu stoi w stałej `SAVED_GAME_VERSION` obok funkcji wczytującej
 i zapisującej. Podnieś ją przy każdej zmianie kształtu: typu `GameState` albo
-typu, do którego prowadzi, oraz przedmiotów z danych, które wylicza `Backpack`.
+typu, do którego prowadzi, oraz przedmiotów z danych, które wylicza `Backpack`. Podnosi ją także dodanie albo usunięcie zwykłej czynności z danych, choć zmiana danych niżej wersji sama nie podnosi: rodzaj zwykłej czynności jest kluczem liczników `minutesByAction` w rekordzie ręcznego przebiegu, a ścisłe wczytanie odmawia dokumentowi z innym zestawem kluczy.
 Test zapisanego dokumentu bieżącej wersji (`tests/sim/saved-game.test.mjs`)
 wypełnia każdą gałąź opcjonalną, sprawdza, że dokument wczytuje się w opisany
 stan gry, i że stała jest równa wersji zapisanej obok. Zmiana kształtu każe
@@ -118,7 +118,7 @@ stworzeń, rodzajów działań i warunków, umiejętności postaci i gałęzi ic
 drzew, górną granicę energii natury, pojemność skrzyni, predyspozycje
 archetypu postaci, liczbę cen każdej gałęzi (najwyższą rangę) oraz progi
 wprawy, od których zależą punkty do wydania na rangi. Zmiana którejś
-z tych rzeczy nie podnosi wersji sama, ale dokumenty bieżącej wersji, które
+z tych rzeczy nie podnosi wersji sama (poza dodaniem albo usunięciem zwykłej czynności, które ją podnosi), ale dokumenty bieżącej wersji, które
 jej już nie spełniają, są odrzucane jako uszkodzone (powód `shape`, zdanie
 „Zapis był uszkodzony i nie dał się wczytać. Zaczynasz od nowa.”), nie jako
 inna wersja.
