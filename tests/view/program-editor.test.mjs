@@ -12,7 +12,6 @@ import {
   CONDITION_SECTIONS,
   CONDITIONS,
 } from "../../dist/browser/sim/data/conditions.js";
-import { ITEMS } from "../../dist/browser/sim/data/items.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import {
@@ -109,7 +108,9 @@ const CAMPFIRE_AND_BACKPACK = [
 /** The numbers the conditions take, written out from D-376. */
 const HERE_BELOW = { defaultValue: 1, min: 0, max: 50, step: 1 };
 const TEMPERATURE = { defaultValue: 36.5, min: 30, max: 37, step: 0.1 };
-const ITEMS_LISTED = Object.keys(ITEMS);
+// The items the editor is given, in the order it offers them: written out, so that a new item
+// in the data changes none of these cases.
+const ITEMS_LISTED = ["stick", "berry", "moss", "fiber"];
 
 /** A deep copy, to show that an edit leaves its input as it was. */
 const copy = (value) => JSON.parse(JSON.stringify(value));
