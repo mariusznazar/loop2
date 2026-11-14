@@ -26,6 +26,7 @@ import { stepMinute } from "../../dist/browser/sim/run.js";
 import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { chillRuleGroupName } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 const MAP_ID = "forest";
 // A real time whose seed lays berries and moss, but no sticks, on the entrance tile.
@@ -62,7 +63,7 @@ function discoveries(events) {
 
 // A new game with one character sent: its program is the one empty group of a new game, or `program`.
 function sentNew(program) {
-  let state = newGame();
+  let state = withEdgeSolved(newGame());
   if (program) state = setProgram(state, program).state;
   state = createCharacter(state, "Ala").state;
   return send(state, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
@@ -540,7 +541,10 @@ test("the first chill in the minute of death still reveals what the body step re
 });
 
 test("the Understanding stands after death, Restart and Zakończ, and stands for the next character sent", () => {
-  let state = setProgram(newGame(), programFromRules(EXPLORE_RULE)).state;
+  let state = setProgram(
+    withEdgeSolved(newGame()),
+    programFromRules(EXPLORE_RULE),
+  ).state;
   state = createCharacter(state, "Ala").state;
   state = createCharacter(state, "Bartek").state;
   state = send(state, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;

@@ -27,7 +27,7 @@ import {
 } from "../../dist/browser/sim/saved-game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 // The saved documents of versions 1 and 2 of the shape stay below as they were, written out by
 // hand; the game refuses each as another version. The document of version 2 is that of version 1
@@ -45,9 +45,15 @@ import { newKnowingGame } from "./understanding-fixture.mjs";
 // doing, and what the character entered with (D-206, D-135 and D-368); the game refuses it as
 // another version since version 5.
 //
-// The document of the current version, version 5, is that of version 4 with the practice taken out
-// of the lines of the report, which the game reads from the earning loops instead (D-206, D-246 and
-// D-189). It fills every optional branch of the game state: a map run with a
+// The document of version 5 is that of version 4 with the practice taken out of the lines of the
+// report, which the game reads from the earning loops instead (D-206, D-246 and D-189); the game
+// refuses it as another version since version 6, which keeps its shape and was raised because a new
+// game opens on another map, Skraj lasu, so that a game state of version 5 describes a game whose
+// first map the game no longer starts on (D-206).
+//
+// The document of the current version, version 6, is that of version 5 with Skraj lasu among the
+// solved maps, where Las is, since Skraj lasu opens Las (D-149). It fills every optional branch of
+// the game state: a map run with a
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
@@ -643,8 +649,8 @@ const DOCUMENT_V4 = {
   },
 };
 
-/** The document of the current version: version 4 with no practice in the lines of its report. */
-const DOCUMENT = {
+/** The document of version 5: version 4 with no practice in the lines of its report; the game refuses it as another version. */
+const DOCUMENT_V5 = {
   version: 5,
   game: {
     ...DOCUMENT_V4.game,
@@ -656,12 +662,18 @@ const DOCUMENT = {
   },
 };
 
+/** The document of the current version: version 5 with Skraj lasu solved before the Las it opens. */
+const DOCUMENT = {
+  version: 6,
+  game: { ...DOCUMENT_V5.game, solvedMaps: ["forestEdge", "forest"] },
+};
+
 /**
  * A document of the current version with no manual map run, its counts beside program 1, Ala in an
  * earning loop whose map run is in a combat going on.
  */
 const HEADQUARTERS = {
-  version: 5,
+  version: 6,
   game: {
     programs: [{ id: 1, name: "Program", program: PROGRAM_1 }],
     nextProgramId: 2,
@@ -695,7 +707,7 @@ const HEADQUARTERS = {
     run: null,
     lastSeed: 99,
     paused: false,
-    solvedMaps: ["forest"],
+    solvedMaps: ["forestEdge", "forest"],
     pace: 1,
     discovery: null,
     realMsCarry: 0,
@@ -737,13 +749,13 @@ test("the current version is the one the document of the current version is writ
 // The `save` the server hands back: exactly `version`, `revision` and `game` (D-204).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
   const save = {
-    version: 5,
+    version: 6,
     revision: 3,
     game: structuredClone(DOCUMENT.game),
   };
   assert.deepEqual(loadSavedGame(save), { ok: true, state: DOCUMENT.game });
-  // D-206: 5 is the current version since the raise, so 6 is another one.
-  assert.deepEqual(loadSavedGame({ ...save, version: 6 }), {
+  // D-206: 6 is the current version since the raise, so 7 is another one.
+  assert.deepEqual(loadSavedGame({ ...save, version: 7 }), {
     ok: false,
     reason: "version",
   });
@@ -756,9 +768,9 @@ function changed(change, document = DOCUMENT) {
   return copy;
 }
 
-/** The solved maps a document needs for its map run to have completed: Las and its own map. */
+/** The solved maps a document needs for its map run to have completed: the maps before it and its own. */
 function solvingItsMap(document) {
-  document.game.solvedMaps = ["forest", "forestDeep"];
+  document.game.solvedMaps = ["forestEdge", "forest", "forestDeep"];
 }
 
 /**
@@ -920,8 +932,8 @@ test("a moment of readiness below zero loads, as it is a safe integer of any sig
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
-  // D-206: 5 is the current version since the raise, so 6 stands in for another one.
-  for (const version of [0, 6, -1]) {
+  // D-206: 6 is the current version since the raise, so 7 stands in for another one.
+  for (const version of [0, 7, -1]) {
     assertRefused(
       `version ${version}`,
       { ...structuredClone(DOCUMENT), version },
@@ -929,14 +941,14 @@ test("a document of another version is refused as version, whatever its game hol
     );
   }
   assertRefused(
-    "version 6 of another shape",
-    { version: 6, game: "Las" },
+    "version 7 of another shape",
+    { version: 7, game: "Las" },
     "version",
   );
   assertRefused(
-    "version 6 with an archetype absent from the data",
+    "version 7 with an archetype absent from the data",
     changed((document) => {
-      document.version = 6;
+      document.version = 7;
       document.game.team.characters[1].archetypeId = "fireMage";
     }),
     "version",
@@ -990,7 +1002,25 @@ test("the document of version 4 is refused as version, whatever its game holds",
     structuredClone(DOCUMENT_V4),
     "version",
   );
-  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V4.version + 1);
+});
+
+// invariant: save-version
+// D-206: a save of the version before the raise is discarded whole, whatever it holds, though its
+// game state has the shape of the current version: it describes a game that began on Las, not on
+// Skraj lasu, and the game does not load it, whether Las is among its solved maps or not.
+test("the document of version 5 is refused as version, whatever its game holds", () => {
+  assert.equal(DOCUMENT_V5.version, 5);
+  assertRefused(
+    "the document of version 5",
+    structuredClone(DOCUMENT_V5),
+    "version",
+  );
+  assertRefused(
+    "the document of version 5 with the maps of the current version solved",
+    { ...structuredClone(DOCUMENT), version: 5 },
+    "version",
+  );
+  assert.equal(SAVED_GAME_VERSION, DOCUMENT_V5.version + 1);
 });
 
 // invariant: save-version
@@ -2440,7 +2470,7 @@ const SAVE_MS = 1760000060000;
 
 /** Two characters and two programs; the first character in Las at 4×, 155 game minutes in. */
 function played() {
-  let state = setProgram(newKnowingGame(), FIGHTING).state;
+  let state = setProgram(withEdgeSolved(newKnowingGame()), FIGHTING).state;
   state = createCharacter(state, "Ala").state;
   state = createCharacter(state, " Ola ").state;
   state = createProgram(state).state;
@@ -2512,7 +2542,7 @@ function doing(run) {
  * given, moved on minute by minute until it is doing `kind`.
  */
 function sentDoing(kind, program) {
-  let state = newKnowingGame();
+  let state = withEdgeSolved(newKnowingGame());
   if (program) state = setProgram(state, program).state;
   state = createCharacter(state, "Ala").state;
   state = send(state, { mapId: "forest", characterId: 1 }, REAL_MS).state;
@@ -2523,7 +2553,7 @@ function sentDoing(kind, program) {
 
 /** Ala, created in a game whose Understanding holds everything, with `skills` set among hers. */
 function skilled(skills) {
-  const state = createCharacter(newKnowingGame(), "Ala").state;
+  const state = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
   return {
     ...state,
     team: {
@@ -2559,7 +2589,7 @@ function equipped(solved = false) {
       bring: [BERRY_3, { item: "stick", count: 2 }],
     },
   }).state;
-  if (solved) state = { ...state, solvedMaps: ["forest"] };
+  if (solved) state = { ...state, solvedMaps: ["forestEdge", "forest"] };
   return send(state, { mapId: "forest", characterId: 1 }, REAL_MS).state;
 }
 
@@ -2756,7 +2786,7 @@ test("a game state the simulation made loads back from its saved document", () =
   // Preconditions of the marked states: the mark follows the map's state at the run's start.
   assert.equal(started.run.solvedMapRun, false);
   assert.equal(done.run.solvedMapRun, false);
-  assert.deepEqual(done.solvedMaps, ["forest"]);
+  assert.deepEqual(done.solvedMaps, ["forestEdge", "forest"]);
   assert.equal(
     states["a map run of a solved map, its mark set"].state.run.solvedMapRun,
     true,

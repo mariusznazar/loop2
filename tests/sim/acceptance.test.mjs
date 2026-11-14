@@ -4,7 +4,11 @@ import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
-import { fullUnderstanding, newKnowingGame } from "./understanding-fixture.mjs";
+import {
+  fullUnderstanding,
+  newKnowingGame,
+  withEdgeSolved,
+} from "./understanding-fixture.mjs";
 import {
   advanceMinutes,
   createCharacter,
@@ -68,7 +72,7 @@ const EMPTY_PROGRAM = programFromRules();
 /** The game sent to Las with the program on the named seed, then advanced by `minutes`. */
 function played(program, minutes) {
   const ready = createCharacter(
-    setProgram(newKnowingGame(), program).state,
+    setProgram(withEdgeSolved(newKnowingGame()), program).state,
     "Ala",
   ).state;
   const sent = send(ready, SENT, ALIVE_REAL_MS).state;
@@ -104,7 +108,7 @@ test("precondition: the knowing game these tests start from holds every action a
 test("the map is Las and the send takes the seed named here", () => {
   assert.equal(forest.name, "Las");
   const sent = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     SENT,
     ALIVE_REAL_MS,
   ).state;

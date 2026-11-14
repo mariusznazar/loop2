@@ -24,3 +24,11 @@ export function fullUnderstanding() {
 export function newKnowingGame() {
   return { ...newGame(), understanding: fullUnderstanding() };
 }
+
+/**
+ * The game state with the first map, Skraj lasu, solved: the state from which Las, the map that
+ * Skraj lasu opens, can be sent to (D-149). `state` stays unchanged.
+ */
+export function withEdgeSolved(state) {
+  return { ...state, solvedMaps: ["forestEdge", ...state.solvedMaps] };
+}

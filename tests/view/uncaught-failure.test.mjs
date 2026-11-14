@@ -24,6 +24,7 @@ import {
 import { advanceLoopRun, startLoop } from "../../dist/browser/sim/loop.js";
 import { savedGame } from "../../dist/browser/sim/saved-game.js";
 import { createAccountCard } from "../../dist/browser/view/account-card.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENTENCE = "Coś w grze się zepsuło — odśwież stronę.";
 const SAVE_FAILED = "Nie udało się zapisać postępu. Gra spróbuje ponownie.";
@@ -284,7 +285,7 @@ const saveOf = (state, revision) => ({
 /** A game whose map run passes: Ala sent to the forest at the real date 0. */
 const passing = () =>
   send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId: "forest", characterId: 1 },
     0,
   ).state;
@@ -450,7 +451,7 @@ test("after an error nothing handled, the buttons of the screen Mapy change no s
     const address = fakeAddress("#/mapy/forest");
     const state = {
       ...createCharacter(newGame(), "Ala").state,
-      solvedMaps: ["forest"],
+      solvedMaps: ["forestEdge", "forest"],
     };
     await startPage(held, address);
     await held.answer("currentAccount", ACCOUNT);

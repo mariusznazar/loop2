@@ -36,6 +36,23 @@ test("only the map resources appear, each with its full stock", () => {
   }
 });
 
+// invariant: first-map-stock
+test("every tile of Skraj lasu holds its full stock of sticks and berries, whatever the seed", () => {
+  const seeds = [0, ...Array.from({ length: 200 }, (_, index) => index + 1)];
+  seeds.push(4294967295);
+  for (const seed of seeds) {
+    const { tiles } = drawLayout(MAPS.forestEdge, seed);
+    assert.equal(tiles.length, 16, `seed ${seed}`);
+    for (const tile of tiles) {
+      assert.deepEqual(
+        tile.stock,
+        { stick: 12, berry: 8 },
+        `seed ${seed}, tile ${tile.col}, ${tile.row}`,
+      );
+    }
+  }
+});
+
 test("the entrance is the fixed one and lies on the map", () => {
   for (const seed of [1, 2, 3]) {
     const { tiles, entrance } = drawLayout(map, seed);

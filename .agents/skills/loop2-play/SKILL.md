@@ -63,8 +63,8 @@ The way into a map run:
    under the fields. „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” is
    expected here.
 2. In „Drużyna”, fill „Imię nowej postaci” and click „Załóż”.
-3. Click „Mapy” in the bar, then the row „Las” in the list, then „Wejdź” at the character (its button
-   reads „Wejdź: <name>, mapa Las”). The line „Minuta …” appears and its number grows once a second
+3. Click „Mapy” in the bar, then the row „Skraj lasu” in the list, then „Wejdź” at the character (its button
+   reads „Wejdź: <name>, mapa Skraj lasu”). The line „Minuta …” appears and its number grows once a second
    at the pace 1×.
 4. After a reload the same map run comes back paused, with „(pauza)” in that line. Click „Wznów”.
    A map run also stops by itself at a discovery, again with „Wznów”.
@@ -133,7 +133,7 @@ playwright-cli --raw run-code --filename .playwright-cli/send-state.js
 
    It answers `200 {"revision":…}`. On Playwright MCP, which takes no such file, give
    `browser_run_code_unsafe` the same function with the document pasted in as `saved`.
-5. `playwright-cli reload`. The team now holds „Agent”; click „Mapy”, the row „Las” and „Wejdź” at
+5. `playwright-cli reload`. The team now holds „Agent”; click „Mapy”, the row „Skraj lasu” and „Wejdź” at
    „Agent”. The screen of the map run stands, with the rule list; click „+ reguła” (or a rule's row) to
    open the rule panel, which opens under the row of that rule and leaves the tabs as they were. Click
    the value of the field „Czynność”: its pick holds the cells „Uderz — patyk”, „Kopnij”, „Odskocz” and

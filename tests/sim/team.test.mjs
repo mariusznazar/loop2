@@ -12,7 +12,7 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const mapId = "forest";
 const REAL_MS = 1760000000000;
@@ -41,12 +41,12 @@ function createdIn(game, names) {
 
 /** A new game with characters created under the given names, in that order. */
 function created(...names) {
-  return createdIn(newGame(), names);
+  return createdIn(withEdgeSolved(newGame()), names);
 }
 
 /** The same, from a game that knows everything: for a game that is sent and then passes time. */
 function createdKnowing(...names) {
-  return createdIn(newKnowingGame(), names);
+  return createdIn(withEdgeSolved(newKnowingGame()), names);
 }
 
 // Generation 1 and a resurrection ready from the start (D-220).

@@ -13,7 +13,10 @@ import {
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 import { programFromRules } from "../sim/program-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
@@ -142,7 +145,7 @@ const filterPressed = (root) =>
 /** Ala's map run of Las under „Zawsze → Wędruj” in a game that knows every action, going on. */
 function exploring() {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules({
       condition: { kind: "always" },
       action: { kind: "wander" },

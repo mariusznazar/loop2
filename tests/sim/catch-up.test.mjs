@@ -63,7 +63,7 @@ function game(chest = {}) {
   state = createCharacter(state, "Ola").state;
   return {
     ...state,
-    solvedMaps: ["forest"],
+    solvedMaps: ["forestEdge", "forest"],
     team: { ...state.team, chest: { pieces: chest } },
   };
 }
@@ -412,7 +412,7 @@ test("a catch-up across the first chill leaves the Understanding and the program
   let state = setProgram(newGame(), EMPTY).state;
   state = {
     ...createCharacter(state, "Ala").state,
-    solvedMaps: ["forest"],
+    solvedMaps: ["forestEdge", "forest"],
   };
   const manual = advanceMinutes(send(state, FOREST, S).state, 100);
   assert.ok(

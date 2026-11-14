@@ -22,7 +22,7 @@ import {
   switchProgram,
 } from "../../dist/browser/sim/programs.js";
 import { programFromRules } from "./program-fixture.mjs";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
@@ -39,7 +39,7 @@ const DEATH = { minute: 10, cause: "cold" };
 
 /** A knowing game with Ala (1) and the program 1 holding `program`. */
 function ready(program) {
-  const made = createCharacter(newKnowingGame(), "Ala").state;
+  const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
   return editProgram(made, 1, program).state;
 }
 
@@ -87,7 +87,7 @@ function deepFreeze(value) {
 /** A map run paused at its first discovery, the first chill, from a program holding the empty group. */
 function pausedAtDiscovery() {
   const sent = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId: MAP_ID, characterId: 1, programId: 1 },
     REAL_MS,
   ).state;
