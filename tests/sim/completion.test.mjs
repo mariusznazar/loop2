@@ -572,7 +572,7 @@ test("a restart after a first completion starts a map run of a solved map, whose
 });
 
 // D-221 in step: a completion is settled once, and a resurrection used up afterwards is not renewed by the screen standing on.
-// invariant: death-settled-once
+// invariant: resurrection-renewal
 test("a completion settled is not settled again, even when the resurrection is used up while the screen stands", () => {
   const settled = settleCompletion(completedWith(0), T0).state;
   const used = {
