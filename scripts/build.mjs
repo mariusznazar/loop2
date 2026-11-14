@@ -16,7 +16,14 @@ if (!checkOnly) {
     await rm(new URL(directory, root), { recursive: true, force: true });
 }
 
-for (const config of ["tsconfig.browser.json", "tsconfig.server.json"]) {
+// The simulation is checked first and on its own, with the library of the JavaScript language alone
+// and no ambient types, so a name of the page or of Node.js in it stops the build before anything is
+// emitted. The configuration emits nothing: the browser's configuration compiles those files.
+for (const config of [
+  "tsconfig.sim.json",
+  "tsconfig.browser.json",
+  "tsconfig.server.json",
+]) {
   const result = spawnSync(
     process.execPath,
     [compiler, "-p", config, ...(checkOnly ? ["--noEmit"] : [])],
