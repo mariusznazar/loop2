@@ -9866,7 +9866,7 @@ The full gate runs the directories of Python tests at the same time, giving the 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** derives from D-77 · derives from D-390
-- **Verification:** tests: the directories of Python tests running at the same time in a run of the whole gate, and a run of the whole gate with them so that starts Docker Desktop once and waits for it once.
+- **Verification:** tests: the directories of Python tests running at the same time in a run of the whole gate, and a run of the whole gate with them that starts Docker Desktop once and waits for it once.
 - **Origin:** none
 
 *Rationale:* the directories at the same time shorten the gate: three full runs with them so, on one computer of 32 GB as it was, with other work on it that no file of the repository records, took 18.3 to 19.6 minutes, while the gate with the directories one after another was measured earlier at 23 to 24 minutes on a slow computer and at 24.0 to 28.0 minutes with another cycle working beside it; that measurement is a note made on 2026-11-12 outside the repository, and the conditions of the two sets of runs are not alike. These measurements are the product's own, and their records are not open to a reader of the repository. What stood in the way of the directories at the same time was the start of Docker Desktop, which two of them began each for itself; it is begun once for the run now, as D-390 gives, and the tests that use Docker give the containers, images and volumes they make names with a random part, so that they do not meet by name. Accepted with it: the directories share the memory and the processor of the computer at the same time.
