@@ -5,6 +5,8 @@
 import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   createCharacter,
@@ -17,8 +19,8 @@ import {
   fullUnderstanding,
   newKnowingGame,
 } from "../sim/understanding-fixture.mjs";
-import { createRuleList } from "../../dist/browser/view/rule-list.js";
-import { createRulePanel } from "../../dist/browser/view/rule-panel.js";
+import { RuleListView } from "../../dist/browser/view/rule-list.js";
+import { RulePanelView } from "../../dist/browser/view/rule-panel.js";
 
 const rule = (id, condition, action) => ({ id, condition, action });
 const EXPLORE = { kind: "explore" };
@@ -47,27 +49,43 @@ function twoGroups() {
   };
 }
 
+/**
+ * Draws `component`, the one the game draws, in a root of its own on the page of `page`, as the
+ * program panel draws it: `element` is the root's element for the case to place, and `update(props)`
+ * draws the component again at once with the handlers kept and `props` whole.
+ */
+function drawnIn(page, component, handlers, props) {
+  const element = page.ownerDocument.createElement("div");
+  const root = createRoot(element);
+  const update = (next) =>
+    flushSync(() =>
+      root.render(createElement(component, { ...next, ...handlers })),
+    );
+  update(props);
+  return { element, update };
+}
+
 async function mount({ root }, program, extra = {}) {
   const calls = [];
-  const options = {
+  const handlers = {
     onCommit: (next, move) => calls.push(["commit", next, move]),
     onOpen: (target) => calls.push(["open", target]),
     onFoldedChange: (folded) => calls.push(["folded", folded]),
-    props: {
-      state: newKnowingGame(),
-      program,
-      counts: null,
-      folded: [],
-      open: null,
-      ...extra,
-    },
+  };
+  const props = {
+    state: newKnowingGame(),
+    program,
+    counts: null,
+    folded: [],
+    open: null,
+    ...extra,
   };
   let list = null;
   await inAct(() => {
-    list = createRuleList(options);
+    list = drawnIn(root, RuleListView, handlers, props);
     root.append(list.element);
   });
-  return { list, calls, props: options.props };
+  return { list, calls, props };
 }
 
 function press(target) {
@@ -138,7 +156,7 @@ const buttonNamed = (root, text) =>
 function runningGame() {
   return send(
     createCharacter(newKnowingGame(), "Ala").state,
-    { mapId: Object.keys(MAPS)[0], characterId: 1 },
+    { mapId: "forest", characterId: 1 },
     1760000000000,
   ).state;
 }
@@ -944,11 +962,15 @@ async function mountPanel({ root }, program, open, extra = {}) {
   };
   let panel = null;
   await inAct(() => {
-    panel = createRulePanel({
-      onCommit: (next) => calls.push(["commit", next]),
-      onClose: () => calls.push(["close"]),
-      props: { ...props, open: null },
-    });
+    panel = drawnIn(
+      root,
+      RulePanelView,
+      {
+        onCommit: (next) => calls.push(["commit", next]),
+        onClose: () => calls.push(["close"]),
+      },
+      { ...props, open: null },
+    );
     root.append(panel.element);
   });
   await inAct(() => panel.update(props));
@@ -994,13 +1016,13 @@ async function mountEditor({ root }, program, state = newKnowingGame()) {
     redraw();
   };
   await inAct(() => {
-    list = createRuleList({
-      onCommit,
-      onOpen,
-      onFoldedChange: () => {},
-      props: listProps(),
-    });
-    panel = createRulePanel({ onCommit, onClose, props: panelProps() });
+    list = drawnIn(
+      root,
+      RuleListView,
+      { onCommit, onOpen, onFoldedChange: () => {} },
+      listProps(),
+    );
+    panel = drawnIn(root, RulePanelView, { onCommit, onClose }, panelProps());
     root.append(list.element, panel.element);
   });
   return page;
@@ -1339,7 +1361,7 @@ test("each reason stands beside its greyed cell: „gałąź niewykupiona”, �
     assert.deepEqual(calls, [], "a greyed cell picks nothing");
   });
   await withPage(async (page) => {
-    const mapId = Object.keys(MAPS)[0];
+    const mapId = "forest";
     const resources = MAPS[mapId].resources;
     MAPS[mapId].resources = resources.filter((each) => each.id !== "fiber");
     try {

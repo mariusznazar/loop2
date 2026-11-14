@@ -2755,12 +2755,6 @@ header .failure-line {
   overflow-wrap: anywhere;
 }
 
-/* The element of its own that `createRulePanel` builds for the rule panel. */
-.rule-panel-host {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
 .terrain-drawing {
   display: block;
   max-width: 100%;
