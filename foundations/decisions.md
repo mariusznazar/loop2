@@ -1023,7 +1023,7 @@ In the browser view `character` means that here is the character and here it is 
 
 ### D-42 — Which accessibility requirements does the browser view keep?
 
-For now every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
+Every screen of the browser view keeps four success criteria of WCAG 2.2, the W3C Recommendation of 12 December 2024 — 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast, 2.3.1 Three Flashes or Below Threshold and 2.4.7 Focus Visible — and no other requirement of WCAG, with no date or event set for returning to it. Every role of the kind text but `text-disabled`, the signal colours included, has a contrast ratio of at least 4.5:1 on `page`, `panel`, `highlight`, `rule-winning` and `rule-running`, and `text-disabled` has no threshold. `control-border`, `focus` and `character` have a contrast ratio of at least 3:1 against the colours they touch, and so have `tile-revealed` against `tile-hidden` and the frame of the plaque of a discovery in the scene, in `discovery`, against `panel`; `condition-unmet` has no threshold.
 
 - **Scope:** browser-view
 - **Based on:** wcag-text-contrast · wcag-non-text-contrast · wcag-three-flashes · wcag-focus-visible
@@ -1441,7 +1441,7 @@ game's concept and loop name the spell's verb „Zapal”.
 
 ### D-64 — What does the backpack's cap count, and what sets its height?
 
-The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is currently 15 pieces, and the character skill trees currently have no branch that raises it.
+The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity. Carrying capacity is 15 pieces, and the character skill trees have no branch that raises it.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -1666,19 +1666,6 @@ The npm registry has no separate contract test: the real dependency audit in the
 
 *Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response. When this was decided, the npm registry in the dependency audit was the only service of another party that the tested code of loop2 talked to, so the template's row on code talking to such a service was met only there: the tests of the audit substitute its result, while the gate runs the real audit, where an unreadable response of the registry ends in failure, and that run is taken as the check of the format.
 *Rejected:* A separate registry contract test — adds a test and its maintenance without further protection.
-
-### D-80 — What establishes a game-balance expectation?
-
-A test of a game parameter, such as survival time, progress rate or map difficulty, may check calculations on concrete numbers, but takes its expectation from an agreed requirement. Current parameters or the simulation's current result are not themselves evidence of correctness.
-
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
-- **Based on:** none
-- **Relations:** derives from D-73
-- **Verification:** none
-- **Origin:** none
-
-*Rationale:* Protecting agreed relationships and limits avoids preserving an accidental balance as a requirement; without an agreed difficulty the tests cannot judge whether a map is too easy or hard. Accepted with it: as long as the intended difficulty is not settled, no test says that Las is too easy or too hard. An expected survival time, rate of progress or map difficulty becomes a requirement of a test only once it is agreed, and an agreed expectation stands in the foundation (D-82). The decision rests on the intended balance having had no settled source when it was decided.
-*Rejected:* Freezing the current simulation outcome, such as today's survival time on Las, in a test — treats present behaviour as the intended balance.
 
 ### D-81 — At which levels do loop2 tests stand?
 
@@ -2476,7 +2463,7 @@ A program rule the game writes at a discovery goes into the first rule group of 
 carries out and into the first rule group of the program the copy belongs to, while that program is
 on the player's list, and where either holds no rule group, the game adds the rule group „Program”
 with the condition „Zawsze” and writes the rule into it; the other programs of the list stay as they
-were. Today the game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where
+were. The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where
 the copy holds no rule with the action „Eksploruj”. The rule so written counts neither as an unsaved
 change of the copy nor as a change of the program that a save of the copy announces.
 
@@ -3003,7 +2990,7 @@ An attack uses the per-game-minute chance and cooldown in its map's data, with t
 
 ### D-143 — What does the first wolf attack reveal?
 
-The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn. The discovery leaves writing combat rules to the player; the game currently adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else.
+The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn. The discovery leaves writing combat rules to the player; the game adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3018,7 +3005,7 @@ The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „O
 
 ### D-144 — What actions does a character use in combat?
 
-The character currently uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
+The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike. Another dodge refreshes that reduction, the strike consumes it with damage floored at zero, a creature’s dodge leaves it pending, and the encounter’s end clears it. The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3033,7 +3020,7 @@ The character currently uses „Uderz — patyk”, which requires a stick in th
 
 ### D-145 — How do weapon wear and wound dressing work today?
 
-A stick currently stays in the backpack after a strike, with its condition unchanged, and the game currently has no action for dressing wounds.
+A stick stays in the backpack after a strike, with its condition unchanged, and the game has no action for dressing wounds.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3360,7 +3347,7 @@ The screen Programy holds on the left the list of the player's programs and on t
 
 ### D-167 — What can the player do with the list of programs?
 
-The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”. A program left alone on the list stays there, „Usuń” leaving it in place. The game has today no action that duplicates a program.
+The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”. A program left alone on the list stays there, „Usuń” leaving it in place. The game has no action that duplicates a program.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3390,7 +3377,7 @@ Deleting the program the copy of the map run belongs to leaves the map run going
 
 ### D-169 — How is a program named?
 
-The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number. A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets today no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it.
+The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number. A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3607,7 +3594,7 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
 
 ### D-181 — Which entries does a trip list accept?
 
-The game currently accepts an item once on each trip list, and the same item can stand on both lists. A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is currently left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
+The game accepts an item once on each trip list, and the same item can stand on both lists. A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3685,7 +3672,7 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 
 ### D-187 — How does a map cap equipment and loot?
 
-A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset. The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is currently bounded by the character's carrying capacity, which the map cap currently leaves unchanged.
+A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset. The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is bounded by the character's carrying capacity, which the map cap leaves unchanged.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3698,7 +3685,7 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 
 ### D-188 — Where does the player learn that a map cuts the trip plan?
 
-On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity. The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is currently absent.
+On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity. The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -3786,7 +3773,7 @@ An action ending in effect adds one practice to the character skill its pair of 
 
 ### D-194 — When does a manual map run pay its practice to its character?
 
-A manual map run holds the practice it gathers separately by character skill and currently pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run. A run cut short by „Restart” or „Zakończ” before completion currently leaves the character’s practice and bought ranks as they were.
+A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run. A run cut short by „Restart” or „Zakończ” before completion leaves the character’s practice and bought ranks as they were.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -3816,7 +3803,7 @@ A character skill tree with all its branches enters the Understanding in the gam
 
 ### D-196 — Which branch actions does the program editor offer outside a map run?
 
-Outside a map run the program editor currently offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches currently contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
+Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer. During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3861,7 +3848,7 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 
 ### D-199 — What does the screen Postać show of character skills?
 
-The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is currently absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and currently omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and currently omits the next value and price.
+The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is absent. Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values. A fully bought branch keeps its present value if numerical and omits the next value and price.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -3876,7 +3863,7 @@ The screen Postać shows „Umiejętności” after a tree is known, with a row 
 
 ### D-200 — Where does the player buy a branch rank, and when does it act?
 
-The player currently buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game currently has no purchase in the map-run view and no undo of a purchase.
+The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start. The game has no purchase in the map-run view and no undo of a purchase.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
@@ -3891,7 +3878,7 @@ The player currently buys a branch rank with „Kup” on the screen Postać out
 
 ### D-201 — What does the map-run view show of its practice?
 
-Below the body row the map-run view currently shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are currently absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
+Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run. Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -4112,7 +4099,7 @@ Las, while closing the tab takes at most 30 game minutes at every pace.
 
 ### D-208 — What does the player see of saving the game state?
 
-A save of the game state that succeeds shows nothing. When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds; the game currently sets no limit on the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
+A save of the game state that succeeds shows nothing. When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes. When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds; the game sets no limit on the number of earning loops, and the limits of a save stay as D-104 and D-207 give them.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -5264,12 +5251,12 @@ split of a span would change who gets the chest, and `minute-span-split` would n
 
 ### D-243 — How does the player start an earning loop?
 
-The player currently starts an earning loop with „Puść w pętlę”, which stands at each character in
+The player starts an earning loop with „Puść w pętlę”, which stands at each character in
 the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that
 character's list „Program:” and acts at once on the click. For that list the start counts as a send:
 the program becomes the one the character used last and the one with which a character last entered
 a map, and the pick clears. At a character in an earning loop „Wejdź” and „Puść w pętlę” are
-currently inactive, and the player stops the earning loop first.
+inactive, and the player stops the earning loop first.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -5292,7 +5279,7 @@ character did in the predecessor game — one click silently loses the backpack.
 
 ### D-244 — What does the player see of an earning loop?
 
-A running earning loop currently shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game currently opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
+A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”. The game opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -5344,7 +5331,7 @@ wprawa: nic” — the line speaks of practice that was not there.
 
 ### D-246 — What does the player read after being away?
 
-After being away the player currently reads a report in the section „Gdy cię nie było” of
+After being away the player reads a report in the section „Gdy cię nie było” of
 Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning
 loop of a character whose earning loop a death stopped opening a line of its own, and one button
 „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}:
@@ -5409,7 +5396,7 @@ the title says what is untrue to a player who sat at the game.
 
 ### D-247 — When is time away computed, and how much?
 
-The catch-up currently computes all the missed game minutes, and the game currently sets no upper
+The catch-up computes all the missed game minutes, and the game sets no upper
 bound on them. It runs on its own after each load of a game state, the unsaved game state kept in the page's
 memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another
 browser's (D-209) and after a sign-in to the same account with that unsaved game state.
@@ -5479,7 +5466,7 @@ not the moment of the save.
 
 ### D-249 — What does a map run of an earning loop discover?
 
-A map run of an earning loop currently discovers nothing: the Understanding and the program stay as
+A map run of an earning loop discovers nothing: the Understanding and the program stay as
 they stand, game time goes on, and the game writes no program rule at a discovery, and the player
 discovers what the character met in a manual map run.
 
@@ -5654,72 +5641,6 @@ without its first line — an agent gets a position in the bundled file of the s
 coding guidelines would have to give up reading never the message or the stack, and cutting the text
 from the stack breaks when the text has several lines, so it is worth returning to when the first
 real error shows that the kind alone does not suffice.
-
-### D-254 — How does an agent operate the game as a player does?
-
-An agent operates the running game in a real browser with Playwright CLI, and with Playwright MCP
-where the CLI fails, and reads motion from a stream of frames. This inspection adds to the checks
-D-75 and D-88 leave with a person and replaces none of them.
-
-- **Scope:** agent-workflow · browser-view
-- **Based on:** playwright-cli-token-use · playwright-cli-config-path · playwright-cli-context-options · playwright-screencast-frames · chrome-devtools-ignore-certificate-errors
-- **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a changed screen operated once through Playwright CLI, the evidence in the request,
-    and the person's check of that change still made
-  - violates: a Playwright test left in the repository; a request that drops the person's check
-    because an agent has seen the screen
-- **Origin:** none
-
-*Rationale:* the project is made of screens, and an agent that cannot use them as a player does
-cannot check its own work; left as it was, an agent has no described way to the game, and each
-session finds one anew or waits for a person's description. Playwright was no stranger to the
-project, since agents had already operated this game through its MCP server. Its maker recommends
-the CLI to agents writing code for the tokens it saves, though with no figures, its setting for a
-certificate stands in a file of the repository, and it holds the same engine as the MCP server, so
-going back costs almost nothing. The inspection only adds to the checks of D-75 and D-88: an agent
-that looks in addition collides with neither, while one that replaced the person would collide, on
-one reading, with „a changed journey is checked manually” of D-75 and „a person catches event and
-focus defects” of D-88, though both set manual checking against permanent tests and not against an
-agent, and a script left in the repository would be a permanent test against both. Motion is read
-from a stream of frames because the text of a page shows none, a single screenshot of a short
-effect taken a second late shows the state before it, and the model takes images one at a time and
-uses only the first frame of an animated one. A stream of frames, measured once with the library
-form of Playwright on a stand-in page with a moving sprite, came about every tenth of a second and
-caught an effect of 300 ms. The fake clock of Playwright moves the game's clock but not motion made
-by CSS, so motion at the faster paces is judged in real time. A cropped picture of the scene costs
-far less than a picture of the whole screen, and a text read of the game is not cheaper than a
-screenshot of it. Lacks of the option chosen: its version is below 1.0 and leans on an alpha of
-Playwright, a session with no window closes by itself after an hour, the text of a page shows no
-motion, and images cost tokens. Risks taken, each a hypothesis: a drag may catch a select list
-instead of a handle; an agent judging motion from a few frames may report that a scene works while a
-person sees it jerk at 16×.
-*Rejected:* Playwright MCP as the first way — more tokens, a part of which the loading of the tool
-descriptions on demand takes away, and a command sent at each tab where the
-CLI reads one file of the repository, a version that changes with no question because it runs the
-latest release and is not pinned in the repository, a setting for a certificate that lies in a
-plugin and not in the repository, and a stream of frames only through its tool that runs any code;
-Playwright as a library — a script written at each check costs tokens, each version wants its own
-browser version, and kept in the repository the script is a permanent test against D-75 and D-88,
-with a new dependency for the audit and the lock file and files that must each belong to a part;
-Chrome DevTools MCP and agent-browser — no clock found in their descriptions, which only a return
-after an absence needs, and a stream of frames never shown to arrive as images, the first also
-sending usage statistics to Google by default, though it has ready tools for measuring performance,
-useful were a screen to be measured at 16×, and the second being a young project; Puppeteer,
-Selenium, WebdriverIO, Cypress and Stagehand — nothing above Playwright, Puppeteer and Selenium
-having no skeleton of a project, Puppeteer and Cypress downloading a browser or a program at their
-install, as a development dependency also at the install of the server image, Selenium wanting a
-newer Node than the computer had and types
-apart, Cypress being tests only and its dragging made of events a browser does not trust, and
-Stagehand needing a key and a bill for a model; Claude in Chrome — it waits for a person at a
-login, gives a moving image of which the model sees the first frame alone, and whether it is
-installed was not checked; computer use — in the command line it works only on macOS, and on Windows
-only in the Desktop application, a route never tried; direct calls to the API — the game is
-computed in the browser, and they show a save and not a screen; a document model — it computes no
-layout, and a hand-made model proves no real events (D-88); a person clicking and describing — the
-agent knows only what the person describes, and only the person judges whether the game is fun;
-Protractor, PhantomJS, Nightmare and Zombie — discontinued or not maintained; browser-use,
-Nightwatch and TestCafe were not examined.
 
 ### D-255 — Where does the data an agent checks the game on come from?
 
@@ -6026,7 +5947,7 @@ every test of a screen, so it stands once in the harness that already awaits Rea
 `act`, and no test file keeps a copy. Only the harness of one kind of test hangs on the choice, so a wrong one
 costs little.
 Accepted with it: a new development dependency, jsdom, with the packages it brings. What
-the imitation does not prove stays with a person and an agent (D-88, D-254): pressing Enter in a
+the imitation does not prove stays with a person and an agent (D-88): pressing Enter in a
 field does not send a form, a click on a label does not move focus, and nothing computes layout.
 *Rejected:* happy-dom — faster and lighter, but a browser constructor the product calls has to be
 written by the test, on a path most cases walk, and it does not honour `hidden` in computed styles;
@@ -8763,7 +8684,7 @@ and goes to the console.
 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** playwright-cli-console-messages
-- **Relations:** derives from D-254 · derives from D-323 · derives from D-253
+- **Relations:** derives from D-323 · derives from D-253
 - **Verification:** an agent compares a change with the decision:
   - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
     chronicle why the streak fell, and reading in the console the line of an error no code handled
@@ -9095,51 +9016,6 @@ A watcher script on the server, outside the game container, run by cron every fe
 *Rationale:* each of the three ways leaves a hole that another covers. The watcher sees a process that fell and rose, a failure the server handled and, from the log of the backup, a night without a successful send, none of which a check of the address sees, and it costs nothing, with a script that a human installs. The scheduled check of the address also sees a server that is off, a fallen tunnel and a Cloudflare fault, with no new account, no secret and no change on the server, but it speaks at the pace at which GitHub starts its scheduled runs, which in the reading of 2026-11-14 is hours, not the five minutes the schedule asks for; the shortest interval GitHub allows is one thing, the interval it gives is another. The report from the browser covers a failure in the player's browser without a foreign service, at the price of code in two parts and a new public route. Failures of the server and of the player's browser are both to be covered, the server weighing more only where covering the browser would strongly narrow the choice; the report from the browser narrows nothing on the side of the server and costs no money. The one `LIMITED` line is kept although D-353 leaves the expected refusals without a line: it records no refused request of a player but that reports were dropped, and without it a flood past the limit would look like a quiet hour. Lacks of the option chosen: when the server and GitHub lie down together, or the schedule is disabled after 60 days without a commit, the owner gets nothing and the silence looks like „działa”; when `flock` does not work on the server, each run of the watcher ends with success and a line in its own log, and the owner gets nothing (on the test server `flock` works: in the watcher's log read on 2026-11-14 the lines for a held deployment lock name `flock exit 1` and no other status); the page does not say whether GitHub sends an email for a failed run by default, so the owner checks it in their own settings (the owner gave this result on 2026-11-14: a manual run of the check with `force_failure` of 2026-11-09 09:45 UTC, run 42595890225, with „Forced failure requested” in its log, brought the mail „[mariusznazar/loop2] Run failed: Check the public address - main (2fe922c)” to his inbox on 2026-11-09 at 10:46 Polish time; the line `cron` of the workflow file was last changed by his own commit `fc493baa` of 2026-11-09, so the notices of scheduled runs go to the right account; the result is about a run started by hand); the limits of `push.mikr.us` are unknown, so the watcher throttles itself and may stay silent about a second failure of the same kind; the new public route accepts reports from anyone, so false reports reach the log and the watcher; an error in the browser while the server or the network is down does not reach the server; there is code in two parts and a script on the server that a human installs. Risks taken, each a hypothesis: a watcher that read Docker's events would raise a false alarm after every merge or lose a fall during the backup; a watcher run as root would create a lock file and block deployments from the account that is not root, or, hung, would stop deployments and the backup; the buffer of 256 events would fill with health checks and a fall would vanish before it is read; failure lines from the moment before a deployment would reach only the copy of the log in the file and not be reported; a watcher running as root on a server shared with other projects is covered by no invariant test; the loss of the file with the time of the last run would flood the owner with messages, and the throttling of `push.mikr.us` would swallow the notice of the backup of D-233 too; the test gate would refuse a new workflow file, since it counts every file in the folder of workflows as a route of deployment; the notifications of GitHub set to „Don't notify”, or sent to another account, would give a silence taken for „działa”; during a longer outage a mail at every scheduled run would teach the owner to ignore them, which at the gaps GitHub gives is a few a day and not the hundreds a schedule of five minutes would make; a check that hits a deployment or Cloudflare's block of bots would raise a false alarm, and a real failure would bring two messages by two channels; a report sent with `keepalive` or `sendBeacon` would eat the browser's quota and the player would lose the save at „Wyloguj”; false reports from many addresses would use the watcher's budget of messages, cover a real failure of the server and swell the file of the copied log; arbitrary text from a report, such as an email address or someone else's `accountId`, would land in a log that lives for weeks; an error repeated at every tick would send several reports a second and break „the same line once” of D-253; the route would either fall out on the guards of state-changing requests or be the only one without a check of the origin.
 *Rejected:* a conscious absence, „for now nothing” — free, but from the first outside player the owner learns of a failure from the player or not at all; an absence with a written review before the public opening of accounts — free, but the review blocks nothing and until its date the silence stays; the watcher alone, without checking the address and without the browser — a server that is off, a dead cron and a dead `push.mikr.us` give a silence that looks like „all works”, and the browser is heard only from the player; the watcher with an outside „signal of life” (Healthchecks.io, Better Stack) — it also catches a server that is off, but it brings a new account in a foreign service and a secret on the server, which D-233 already rejected; a service that checks the address (Better Stack, UptimeRobot, Uptime Kuma of its own) — only a game that is unreachable, with an account in a foreign service, and Uptime Kuma on the same server does not see the server turned off; an alert of Cloudflare on the state of the tunnel — free with Zero Trust Free, but it does not see a dead game behind a live connector; Health Checks of Cloudflare — it catches the origin's answers, but needs the Pro plan or higher; Sentry — server and browser, with an availability monitor for an unreachable game, free from 0 to 5 thousand errors and then $29 a month, with data in a foreign cloud and collection and `beforeSend` to set so that no text or stack leaves (D-252, D-253); GlitchTip, hosted or of its own — server and browser, hosted free from 0 to 1000 events and then $15 a month, of its own a service, PostgreSQL, a copy of the database and at least 256 MB of memory on a server without swap, outside the loop2 project; Bugsink — as GlitchTip, with an SDK compatible with Sentry, its price list unread (404); an alarm in an outside store of logs — exists only with the choice of Grafana Cloud, Better Stack or a Loki of its own for the game's log, which was not made; for a `flock` that does not work, a message of a new kind, „the watcher does not work” — without a lock of its own the messages cannot be limited safely and a mail every five minutes is to be feared, and it is a medium amount of code and tests; for a `flock` that does not work, an exit of the watcher with an error — the schedule has its mail turned off, so nobody sees it, and the effect is the same as that of the way chosen.
 
-### D-357 — Where do the screenshots that a task cycle of loop2 shows the human lie, and how does the description of its request embed them?
-
-The screenshots that a task cycle shows the human lie in the public GitHub repository `mariusznazar/screenshots`, in its directory `loop2/` and in that a directory for each cycle, named as the directory of the cycle's own record, on a branch of that repository named `loop2/` and the name of that directory, never on `main`, and the description of the request embeds each as an image by a link to its file in a particular commit of that repository, with `?raw=true` appended. That repository holds only the screenshots of public products and may be cleared after a long time, and the images of old requests then stop showing.
-
-- **Scope:** agent-workflow
-- **Based on:** screenshots-repository-visibility · loop2-repository-visibility · https://github.com/mariusznazar/loop2/pull/67 § description — "![The screen of a map run in two columns](https://github.com/mariusznazar/loop2/blob/a70acfacb9909615ba5ff7c98d557cd066d351cc/docs/task-cycles/proporcje-sceny-i-programu/reports/screens/run-two-columns-1280.png?raw=true)"; read 2026-11-11
-- **Relations:** derives from D-254
-- **Verification:** an agent compares a change with the decision:
-  - complies: a task cycle that changes a screen, whose author puts the screenshot in the directory `loop2/` of `mariusznazar/screenshots`, in a directory of that cycle, on the branch `loop2/<cycle>`, and whose request embeds it as `![…](https://github.com/mariusznazar/screenshots/blob/<commit>/loop2/<cycle>/<file>.png?raw=true)`; the repository cleared a year later, the images of old requests stop showing and nothing in loop2 changes
-  - violates: a request that embeds a screenshot by a link to a branch of `mariusznazar/screenshots` or by an address on `raw.githubusercontent.com`; a directory of a cycle placed outside `loop2/`; a push of a screenshot to `main` of that repository; a screenshot of loop2 stored in a private repository; a screenshot of a private product stored in `mariusznazar/screenshots`; a screenshot file committed to the repository of loop2
-- **Origin:** none
-
-*Rationale:* the owner accepts a request by seeing the screen in its description, without running the game, and a screenshot is evidence for the time of acceptance: the owner does not go back to views of half a year ago, so the place may be cleared after a long time, and the images of old requests then stop showing. A repository of its own keeps the screenshots out of the history of loop2, which every clone downloads. The files of a cycle lie on a branch of that cycle, so that cycles pushing at the same time do not meet and no agent pushes to the default branch of a repository that serves several products. The repository is public because loop2 and its requests are public: a private repository would show an image in a request to the owner alone and a broken icon to every other reader, and would need a trial of the mechanism, while a link to a file in a commit with `?raw=true` already showed images in a request of loop2. One repository serves the public products, with a directory for each product, so a private product does not use it: its screenshots would be public, and deleting the repository and creating it anew clears the screenshots of all products at once. Price taken: the images of old requests break once the repository is cleared.
-*Rejected:* a separate private repository — a picture in a public request of loop2 would be seen only by the owner, and to other readers it would show as a broken icon, and the mechanism needed a trial; privacy protects nothing, since loop2 and its requests are public; a place that is never cleared, the matter returning when it grows — no one reaches for views of half a year ago when something in the look breaks then; a repository for loop2 alone, named `loop2-screenshots` — clearing would concern loop2 only, but every next product would create a repository of its own.
-
-### D-358 — Who puts a screenshot into the repository for screenshots?
-
-The agent that shows a screenshot pushes it itself to the repository `mariusznazar/screenshots` with the `gh` account of the human who owns that repository, with no step of the human.
-
-- **Scope:** agent-workflow
-- **Based on:** none
-- **Relations:** derives from D-357
-- **Verification:** an agent compares a change with the decision:
-  - complies: an agent that has looked at a changed screen, pushes the screenshot to the directory of its cycle in `mariusznazar/screenshots` with the `gh` account of that repository's owner and embeds it in the request
-  - violates: an instruction that has the agent hand the screenshot to the human to upload; a push to the repository with an account or a token written into a file of loop2 or into a request
-- **Origin:** none
-
-*Rationale:* in an earlier request of loop2 the agent committed its screenshots itself, and a hand-over to the human would put a step of the human into every cycle that shows a screen. D-12 sets what the agent may do on the server, and the repository for screenshots is no part of the server. Price taken, a hypothesis: the push is made with the human's own account, whose rights reach beyond that repository.
-*Rejected:* unknown
-
-### D-359 — From which session may an agent use Playwright MCP?
-
-An agent uses Playwright MCP, the fallback way of D-254, only from a session of the agent started in the worktree of its cycle.
-
-- **Scope:** agent-workflow
-- **Based on:** playwright-mcp-persistent-profile · playwright-cli-workspace-directory · playwright-cli-sessions-per-workspace
-- **Relations:** narrows D-254
-- **Verification:** an agent compares a change with the decision:
-  - complies: two task cycles, each in its own worktree and each with an agent session started in that worktree, both driving the game through Playwright MCP at the same time
-  - violates: a Playwright MCP session started in the main checkout, or in the worktree of another cycle, that a cycle drives the game with
-- **Origin:** none
-
-*Rationale:* the process the product pins asks that two task cycles in separate worktrees can check at the same time without a browser they share. By default Playwright MCP keeps one persistent profile for the workspace root of its client and one browser instance can use it at a time, so two sessions started from one directory block each other; a session started in the worktree of its cycle has a profile of its own. Playwright CLI, the main way of D-254, needs no such condition: it keeps the sessions of each workspace apart from those of every other, and every worktree of loop2 is one. Risk taken, a hypothesis: the client of the agent gives the directory a session started in as its workspace root; this was not checked.
-*Rejected:* unknown
-
 ### D-360 — What does a restore of the database from a backup do about the passwords and sessions it brings back?
 
 A restore of the account and save database from a backup signs nobody out: the passwords and sessions the backup holds come back as they were. Whoever reset a password since the backup resets it again, and the restore procedure ends by saying so.
@@ -9154,21 +9030,6 @@ A restore of the account and save database from a backup signs nobody out: the p
 
 *Rationale:* a restore from before a password reset brings back the old password, and whoever knows it signs in again whether or not the sessions were ended, so signing everybody out would not protect the account that was reset, and the one thing that does is a new password. The sessions of the players who did nothing stay valid, and nobody is thrown out of the game for a reset that was not theirs. The decision holds the same once other players have accounts; the owner then resets again only the accounts he knows were reset, and a reset he does not know of since the backup stays undone.
 *Rejected:* signing everybody out after the restore through a session-key file with one new key — needs an exception to D-13, and the old password still works, which takes the point from the action; signing everybody out by deleting the sessions from the restored database — a new server command with tests, and the same reason; a sentence about the effect and no step — on the day of the failure one has to think of resetting again on one's own; a row that holds only until the game is given to other players and a review after that — the review would give nothing more than the decision does now; a step in which the human reads the lines of password resets from the server's log since the time of the backup and writes to those accounts — when this was settled the log vanished at every deployment, so it found only part of the resets (D-355 keeps it longer since), and it adds a step to the procedure on the day of the failure
-
-### D-361 — May an agent read root's SSH configuration on the server?
-
-An agent reads root's SSH configuration and the system-wide one on the server only as a count of the lines that set `KnownHostsCommand` or `VerifyHostKeyDNS` in them and in the files they pull in with `Include`, by the one command the `loop2-deploy` skill gives, which returns the number and nothing else; it never reads their content.
-
-- **Scope:** deployment, agent-workflow
-- **Based on:** none
-- **Relations:** derives from D-12 · derives from D-238
-- **Verification:** an agent compares a change with the decision:
-  - complies: an agent that checks the condition of D-238 by running the skill's counting command through the `mikrus` MCP server and reports the number
-  - violates: an agent that prints, copies or quotes a line of root's SSH configuration; a skill that lets an agent read that configuration in any form but the count
-- **Origin:** none
-
-*Rationale:* root's SSH configuration holds the login to Mikrus Strych, an access value kept outside the repository by D-13, and a number shows none of it. The count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests on. The limit of D-12 is an agreement, not an enforced boundary, so a slip in the command's switches would print lines with the login; the count is accepted with that risk.
-*Rejected:* a ban on every reading, the two options checked only by a human at the installation — it costs nothing, but the condition of D-238 is then checked only at a hand installation, and an agent seeking the reason of a failed backup cannot confirm it
 
 ### D-362 — How does loop2 point to places outside the repository that its readers cannot reach?
 
@@ -9457,7 +9318,7 @@ On Las a program built of the closed lists of conditions and actions keeps the m
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-63 · derives from D-80
+- **Relations:** derives from D-63
 - **Verification:** an agent compares a change with the decision:
   - complies: a test of the simulation that runs a program which eats, keeps a campfire and keeps berries and sticks at hand through 480 game minutes alive on a seed it names, each lighting taking its price in nature energy, and the empty program on that seed dying
   - violates: a price of lighting, a rate of coming back or a number of the body left in the data under which no program built of the closed lists passes Las; a program made to pass by a rule outside the closed lists
@@ -9558,7 +9419,7 @@ Where the program the program panel shows is gone from the player's list, or the
 
 ### D-385 — How does the list of revealed tiles show an item that burns on a tile?
 
-An item burning on a revealed tile, a lit stick today, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map, and its name comes from the game's data (D-18).
+An item burning on a revealed tile, such as a lit stick, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map, and its name comes from the game's data (D-18).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9592,13 +9453,13 @@ These numbers are requirements of the game, held in its data (D-18), that tests 
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-18 · derives from D-58 · derives from D-60 · derives from D-80
+- **Relations:** derives from D-18 · derives from D-58 · derives from D-60
 - **Verification:** an agent compares a change with the decision:
   - complies: on Las, which holds the air at 25 °C, a body with no fire cooling by 0.024 °C a game minute, so that it stands at 35.008 °C in game minute 83 and is first chilled at 34.984 °C in game minute 84, while on Las — głębiej, at 7 °C, it cools by 0.06; satiety at 30.4 in game minute 116 and starving at 29.8 in game minute 117; a game minute in which the body is chilled alone taking 0.35 health, chilled and starving together 0.7, and neither giving back 0.05 up to 100; „Wytwórz — ognisko” lasting 20 game minutes and taking 6 sticks; „Zapal — ognisko” lasting 5 game minutes, taking 2 sticks and leaving 60 minutes of burning; „Zasil — ognisko” taking one stick and adding 20 minutes; „Zjedz — jagoda” at 50 satiety giving 75 and at 90 giving 100
   - violates: a campfire made from 5 sticks or in 15 game minutes; a campfire lit for 30 minutes of burning; a feeding that adds 10 minutes of burning; a berry that gives 20 satiety; a body chilled below 36.0 °C or starving below 25 satiety; health regained in a game minute in which the body is starving; a gathering that always succeeds
 - **Origin:** none
 
-*Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-80, D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The numbers of nature energy are D-176's, D-177's and D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning them later is a change of this decision as well as of data and tests (D-18).
+*Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The numbers of nature energy are D-176's, D-177's and D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning them later is a change of this decision as well as of data and tests (D-18).
 *Rejected:* other numbers than those of the old loop game's data.
 
 ### D-388 — What numbers do the maps Las and Las — głębiej have?
@@ -9607,13 +9468,13 @@ Las is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an amb
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-18 · derives from D-24 · derives from D-80 · derives from D-136
+- **Relations:** derives from D-18 · derives from D-24 · derives from D-136
 - **Verification:** an agent compares a change with the decision:
   - complies: Las with 16 tiles, a tile holding a stick holding 12 and gaining one in 30 game minutes, and sticks lying on 70 % of the tiles, about 11 of 16; the character entering Las on column 1, row 1 on every seed; Las — głębiej with 25 tiles and its entrance drawn from the seed, solved at a streak of 540 game minutes with two beaten attacks and not at 540 with one; the body on Las — głębiej first chilled in game minute 34, against 84 on Las
   - violates: Las on a grid of 5 × 5 tiles or solved at a streak of 540; Las — głębiej with a fixed entrance or solved by a streak alone; moss renewing in 30 game minutes; a berry stock of 12; a step between tiles of 10 game minutes
 - **Origin:** none
 
-*Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-80, D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the third map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
+*Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the third map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
 *Rejected:* other numbers for Las than those of the old loop game's data.
 
 ### D-389 — What does the camp at the top of Siedziba show, and how does it stand and move?
@@ -9806,7 +9667,7 @@ Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1,
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-18 · derives from D-24 · derives from D-80 · derives from D-136 · derives from D-397
+- **Relations:** derives from D-18 · derives from D-24 · derives from D-136 · derives from D-397
 - **Verification:** invariants: first-map-balance. An agent compares a change with the decision:
   - complies: Skraj lasu with 16 tiles, each holding 12 sticks, which gain one in 30 game minutes, and 8 berries, which gain one in 40; the character entering it on column 1, row 1 on every seed; the body first chilled in game minute 84; the map solved at a streak of 480 game minutes and not at 479
   - violates: moss or fiber on Skraj lasu; sticks on 70 % of its tiles; an ambient temperature of 34 °C; a streak of 720 game minutes; a wolf that attacks on it
@@ -9925,7 +9786,7 @@ when the balance is worked on.
 
 - **Scope:** simulation
 - **Based on:** none
-- **Relations:** derives from D-80 · derives from D-121 · derives from D-397 · derives from D-398
+- **Relations:** derives from D-121 · derives from D-397 · derives from D-398
 - **Verification:** invariants: new-account-first-pass. An agent compares a change with the decision:
   - complies: the program of the test solving Skraj lasu on at least 289 of the 300 seeds from a
     game of an account with nothing discovered
@@ -9945,3 +9806,14 @@ account, and it is to be revised when the balance is worked on.
 *Rejected:* at least as many seeds as the account with everything discovered — it fails by one seed,
 which the human did not take as a fault; a percentage tolerance fixed without a measurement — it
 would be a number nobody had measured, too loose or too tight.
+
+## Withdrawn identifiers
+
+| Identifier | Why | Successors |
+|---|---|---|
+| D-80 | withdrawn: it repeated, for a game parameter, the rule of the testing guidelines that D-73 adopts and D-82 supplies, that an expectation never comes from what the code gives today; the rule stands in `guidelines/testing.md`, in "Where the expected value comes from" | none |
+| D-254 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, to operate the running game in a real browser with Playwright CLI, with Playwright MCP where the CLI fails, and to read motion from a stream of frames, stands in the skill `loop2-play` | none |
+| D-357 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, where the screenshots a task cycle shows the human lie and how the request embeds them, stands in the skill `loop2-play` | none |
+| D-358 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, that the agent pushes the screenshot itself with the owner's `gh` account, stands in the skill `loop2-play` | none |
+| D-359 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, that Playwright MCP is used only from a session started in the worktree of the cycle, stands in the skill `loop2-play` | none |
+| D-361 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, that root's SSH configuration is read only as a count of lines by the one command the skill gives, stands in the skill `loop2-deploy` | none |
