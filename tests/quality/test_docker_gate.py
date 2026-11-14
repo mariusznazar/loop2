@@ -12,13 +12,14 @@ three minutes itself is not exercised.
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
 from unittest import mock
 
 from docker_standin import DockerStandIn
-from gate_fixture import GateFixture
+from gate_fixture import ROOT, GateFixture
 from scripts import docker_gate
 
 NEEDS_DOCKER = """\
@@ -145,6 +146,97 @@ class DaemonGap(unittest.TestCase):
         self.assertNotIn("tried to start Docker Desktop", reasons["no desktop"])
 
 
+ASK = f"""import sys
+
+sys.path.insert(0, {os.fspath(ROOT)!r})
+from scripts import docker_gate
+
+print(docker_gate.daemon_gap())
+"""
+
+
+class ProcessesAtOnce(unittest.TestCase):
+    """`daemon_gap` in several processes of one run, which share one state file, as the processes
+    of the directories of Python tests do when they run at the same time."""
+
+    def setUp(self):
+        self.running = []
+
+    def tearDown(self):
+        for process in self.running:
+            process.kill()
+            process.communicate()
+
+    def environment(self, docker, limit):
+        state = tempfile.TemporaryDirectory(prefix="loop2-docker-state-")
+        self.addCleanup(state.cleanup)
+        return docker.environment(
+            LOOP2_DOCKER_START_LIMIT=limit,
+            LOOP2_DOCKER_RUN_STATE=os.fspath(Path(state.name) / "state.json"))
+
+    def ask(self, environment):
+        process = subprocess.Popen([sys.executable, "-B", "-c", ASK], env=environment,
+                                   stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, text=True)
+        self.running.append(process)
+        return process
+
+    def wait_for_a_start(self, docker):
+        deadline = time.monotonic() + 30
+        while not docker.starts():
+            self.assertLess(time.monotonic(), deadline, "no process started Docker Desktop")
+            time.sleep(0.05)
+
+    def answer_of(self, process):
+        output, errors = process.communicate(timeout=60)
+        self.assertEqual(process.returncode, 0, errors)
+        return output.strip()
+
+    def test_a_process_that_asks_during_a_start_of_another_waits_for_that_start_alone(self):
+        # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once"
+        # Breaking it: let the second process start Docker Desktop for itself while the first
+        # one's start is not finished, the stand-in seeing two starts.
+        docker = DockerStandIn(self, rise_after_polls=8)
+        environment = self.environment(docker, "60")
+        first = self.ask(environment)
+        self.wait_for_a_start(docker)
+        second = self.ask(environment)
+        self.assertEqual(self.answer_of(first), "None")
+        self.assertEqual(self.answer_of(second), "None")
+        self.assertEqual(len(docker.starts()), 1)
+        self.assertEqual(docker.stops(), [])
+
+    def test_a_process_that_asks_during_a_start_that_does_not_finish_gets_its_gap_after_it(self):
+        # invariant: gate-docker-start-waits-once
+        # Breaking it: let the second process wait for a start of its own after the first one
+        # recorded the gap, the stand-in seeing two starts and the second answer coming later.
+        docker = DockerStandIn(self)
+        environment = self.environment(docker, "4")
+        began = time.monotonic()
+        first = self.ask(environment)
+        self.wait_for_a_start(docker)
+        second = self.ask(environment)
+        gaps = [self.answer_of(first), self.answer_of(second)]
+        self.assertIn("tried to start Docker Desktop", gaps[0])
+        self.assertEqual(gaps[1], gaps[0])
+        self.assertEqual(len(docker.starts()), 1)
+        self.assertLess(time.monotonic() - began, 4 + 4 + 20, "the second process waited again")
+
+    def test_a_start_whose_process_died_is_started_again_by_the_next_process_that_asks(self):
+        # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once: a test that asks for a daemon while a start begun by another process of the run has not finished waits for that start, within its limit, and starts none of its own; where the process that began the start ended before it finished, the next test to ask starts Docker Desktop again"
+        # Breaking it: leave the start marked for good when its process dies and the second
+        # process waits for a start that nobody is making, until the test's own time limit.
+        docker = DockerStandIn(self, rise_after_polls=8)
+        environment = self.environment(docker, "60")
+        first = self.ask(environment)
+        self.wait_for_a_start(docker)
+        first.kill()
+        first.communicate()
+        second = self.ask(environment)
+        self.assertEqual(self.answer_of(second), "None")
+        self.assertEqual(len(docker.starts()), 2)
+
+
 class GateRuns(unittest.TestCase):
     """The real `scripts/test.py` and, for a whole run, the real runner of the-way, which runs
     each directory of Python tests in a process of its own."""
@@ -179,6 +271,9 @@ class GateRuns(unittest.TestCase):
             self.assertIn("whether the checked thing works stays unchecked", line)
 
     def test_a_whole_run_that_finds_docker_stopped_starts_it_once_and_skips_nothing(self):
+        # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once"
+        # Breaking it: let the directories' processes, running at the same time, each find no
+        # daemon and no record and start Docker Desktop, the stand-in seeing two starts.
         docker = DockerStandIn(self, rise_after_polls=1)
         result = self.run_whole(docker, limit="30")
         output = result.stdout + result.stderr
