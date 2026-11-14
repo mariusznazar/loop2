@@ -83,7 +83,7 @@ const campfireHere = (run, minutesLeft) => ({
   campfires: [{ at: { ...run.character.at }, minutesLeft }],
 });
 
-const refusalOf = (run, action) => actionRefusal(run, map, action);
+const refusalOf = (run, action) => actionRefusal(run, action);
 
 // What refuses the action, and the words of the reason (D-380). Each case writes the state out.
 test("each refusal of an action gives the reason of its row in D-380", () => {
@@ -210,7 +210,7 @@ test("each refusal of an action gives the reason of its row in D-380", () => {
   ];
   for (const [name, run, action, reason] of cases) {
     assert.equal(refusalOf(run, action), reason, name);
-    assert.equal(actionFeasible(run, map, action), false, name);
+    assert.equal(actionFeasible(run, action), false, name);
   }
 });
 
@@ -259,7 +259,6 @@ test("of several reasons the world and the backpack come before the nature energ
 test("the bar of every rule is judged, below the winning rule too", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(
       group(1, ALWAYS, [
         rule(11, ALWAYS, act("explore")),
@@ -286,7 +285,6 @@ test("the bar of every rule is judged, below the winning rule too", () => {
 test("the winner is the first green rule of the first group that holds", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(
       group(1, NEVER, [rule(11, ALWAYS, act("explore"))]),
       group(2, ALWAYS, [
@@ -302,7 +300,6 @@ test("the winner is the first green rule of the first group that holds", () => {
 test("no rule goes: no winner", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(group(1, ALWAYS, [rule(11, ALWAYS, act("eat"))])),
   );
   assert.equal(judged.winner, null);
@@ -311,7 +308,6 @@ test("no rule goes: no winner", () => {
 test("every rule of a group whose condition does not hold shows dark with no reason, whatever the rule would say", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(
       group(1, NEVER, [
         rule(11, ALWAYS, act("explore")),
@@ -327,7 +323,6 @@ test("every rule of a group whose condition does not hold shows dark with no rea
 test("the bar of a group is green when one of its rules can start, amber when none can, and amber when it holds no rule", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(
       group(1, ALWAYS, [
         rule(11, ALWAYS, act("eat")),
@@ -352,7 +347,6 @@ test("the bar of a group is green when one of its rules can start, amber when no
 test("a combat rule outside combat is amber with „tylko w walce” when its condition holds, dark when it does not", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(
       group(1, ALWAYS, [
         rule(11, ALWAYS, act("kick")),
@@ -371,7 +365,6 @@ test("a combat rule outside combat is amber with „tylko w walce” when its co
 test("in combat the rule the first turn would choose wins, an ordinary rule is amber with „trwa walka”, and a combat action short of its stick says what it lacks", () => {
   const judged = judgeProgram(
     freshRun(),
-    map,
     program(
       group(1, ALWAYS, [
         rule(11, ALWAYS, act("explore")),
@@ -406,7 +399,7 @@ test("combat conditions read the health of the two sides given", () => {
     ]),
   );
   const at = (health, opponentHealth) =>
-    judgeProgram(freshRun(), map, rules, {
+    judgeProgram(freshRun(), rules, {
       combat: { health, opponentHealth },
     }).rules;
   assert.equal(at(49, 24)[11].bar, "go");
@@ -423,10 +416,10 @@ test("stopping at the winner leaves the rules below it unjudged", () => {
     ]),
     group(2, ALWAYS, [rule(21, ALWAYS, act("wander"))]),
   );
-  const judged = judgeProgram(freshRun(), map, rules, { throughWinner: true });
+  const judged = judgeProgram(freshRun(), rules, { throughWinner: true });
   assert.equal(judged.winner?.id, 11);
   assert.deepEqual(Object.keys(judged.rules), ["11"]);
-  assert.equal(chooseActivity(freshRun(), map, rules).ruleId, 11);
+  assert.equal(chooseActivity(freshRun(), rules).ruleId, 11);
 });
 
 /** The state of a map run of the forest for a character that knows everything, program `groups`. */
@@ -534,7 +527,7 @@ test("a group whose condition lies outside the repertoire shows dark with its ru
     run: { ...sent.run, body: { ...sent.run.body, temperature: 34 } },
   };
   assert.equal(
-    judgeProgram(state.run, map, state.run.copy.program).groups[1],
+    judgeProgram(state.run, state.run.copy.program).groups[1],
     "go",
     "precondition: without the repertoire the group goes",
   );
@@ -584,7 +577,7 @@ test("the winner the signs show is the rule the pick takes, minute after minute,
       run.character.id,
       run.character.skills,
     );
-    const picked = chooseActivity(run, MAPS[run.mapId], reduced);
+    const picked = chooseActivity(run, reduced);
     assert.equal(
       ruleSigns(current).judgement.winner?.id,
       picked.kind === "rule" ? picked.ruleId : undefined,
@@ -1045,7 +1038,7 @@ test("in the minutes of an attack Potem names the combat rule the turn would cho
     ]),
   ]);
   assert.equal(
-    chooseActivity(state.run, MAPS.forest, state.run.copy.program).ruleId,
+    chooseActivity(state.run, state.run.copy.program).ruleId,
     11,
     "precondition: an ordinary pick takes the first rule",
   );

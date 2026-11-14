@@ -6,7 +6,8 @@ import { resolveCombat } from "../../dist/browser/sim/combat.js";
 import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 
-const [mapId, map] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const map = MAPS[mapId];
 
 function encounter(action, backpack = {}) {
   const program = programFromRules({
@@ -42,7 +43,7 @@ test("four stick strikes defeat the wolf after three bites, leaving 79 health", 
   const runBefore = structuredClone(run);
   const programBefore = structuredClone(program);
   const mapBefore = structuredClone(map);
-  const result = resolveCombat(run, map, "wolf", program);
+  const result = resolveCombat(run, "wolf", program);
 
   assert.equal(result.creatureHealth, 0);
   assert.equal(result.characterHealth, 79);
@@ -60,7 +61,7 @@ test("four stick strikes defeat the wolf after three bites, leaving 79 health", 
 
 test("eight kicks defeat the wolf after six bites, leaving 58 health", () => {
   const { run, program } = encounter("kick");
-  const result = resolveCombat(run, map, "wolf", program);
+  const result = resolveCombat(run, "wolf", program);
 
   assert.equal(result.creatureHealth, 0);
   assert.equal(result.characterHealth, 58);
@@ -71,7 +72,7 @@ test("eight kicks defeat the wolf after six bites, leaving 58 health", () => {
 test("no feasible combat rule loses each action and the fifteenth bite kills", () => {
   const program = programFromRules();
   const run = runWithProgram(program);
-  const result = resolveCombat(run, map, "wolf", program);
+  const result = resolveCombat(run, "wolf", program);
 
   assert.equal(result.outcome, "characterDied");
   assert.equal(result.characterHealth, 0);
@@ -86,7 +87,7 @@ test("no feasible combat rule loses each action and the fifteenth bite kills", (
 test("a lethal opening strike ends the exchange before the character can act", () => {
   const { run, program } = encounter("kick");
   const woundedRun = { ...run, body: { ...run.body, health: 7 } };
-  const result = resolveCombat(woundedRun, map, "wolf", program);
+  const result = resolveCombat(woundedRun, "wolf", program);
 
   assert.equal(result.outcome, "characterDied");
   assert.equal(result.characterHealth, 0);
@@ -97,7 +98,7 @@ test("a lethal opening strike ends the exchange before the character can act", (
 
 test("forty dodges use one refreshed reduction and leave the wolf at 15 health", () => {
   const { run, program } = encounter("dodge");
-  const result = resolveCombat(run, map, "wolf", program);
+  const result = resolveCombat(run, "wolf", program);
 
   assert.equal(result.outcome, "creatureDeparted");
   assert.equal(result.creatureHealth, 24);
@@ -116,7 +117,7 @@ test("a stick strike without a stick is skipped in favor of the next combat rule
     { condition: { kind: "always" }, action: { kind: "strikeWithStick" } },
     { condition: { kind: "always" }, action: { kind: "kick" } },
   );
-  const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+  const result = resolveCombat(runWithProgram(program), "wolf", program);
 
   assert.deepEqual(result.exchanges[0].characterAction, {
     ruleId: 2,
@@ -133,7 +134,7 @@ test("ordinary actions cannot be carried out during combat", () => {
     condition: { kind: "always" },
     action: { kind: "explore" },
   });
-  const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+  const result = resolveCombat(runWithProgram(program), "wolf", program);
 
   assert.equal(result.exchanges[0].characterAction, null);
   assert.deepEqual(result.ruleStarts, {});
@@ -144,7 +145,7 @@ test("character health conditions are checked after the creature's strike", () =
     condition: { kind: "healthBelow", value: 94 },
     action: { kind: "kick" },
   });
-  const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+  const result = resolveCombat(runWithProgram(program), "wolf", program);
 
   assert.equal(result.exchanges[0].creatureAction.characterHealth, 93);
   assert.equal(result.exchanges[0].characterAction.action.kind, "kick");
@@ -172,7 +173,7 @@ test("combat checks group conditions in order against post-strike health", () =>
     nextGroupId: 3,
     nextRuleId: 23,
   };
-  const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+  const result = resolveCombat(runWithProgram(program), "wolf", program);
 
   assert.equal(result.exchanges[0].characterAction.ruleId, 11);
   assert.equal(result.ruleStarts[11], 8);
@@ -209,7 +210,7 @@ test("combat skips a false first group and selects it when its condition holds",
       nextGroupId: 3,
       nextRuleId: 3,
     };
-    const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+    const result = resolveCombat(runWithProgram(program), "wolf", program);
     const first = result.exchanges[0];
     assert.equal(first.creatureAction.characterHealth, 93);
     assert.equal(first.characterAction.action.kind, expectedAction);
@@ -232,7 +233,7 @@ test("combat skips a false first rule and selects it when its condition holds", 
       },
       { condition: { kind: "always" }, action: { kind: "kick" } },
     );
-    const result = resolveCombat(runWithProgram(program), map, "wolf", program);
+    const result = resolveCombat(runWithProgram(program), "wolf", program);
     assert.equal(
       result.exchanges[0].characterAction.action.kind,
       expectedAction,

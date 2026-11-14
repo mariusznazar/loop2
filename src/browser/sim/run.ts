@@ -107,10 +107,9 @@ export type GameEvent =
  */
 function startActivity(
   run: Omit<MapRun, "current">,
-  map: MapDef,
   program: Program,
 ): { current: CurrentActivity; wanderRandom: number; event: GameEvent } {
-  const activity = chooseActivity(run, map, program);
+  const activity = chooseActivity(run, program);
   let wanderRandom = run.wanderRandom;
   let stepTo: Hex | null = null;
   let minutes: number = BALANCE.waitMinutes;
@@ -388,7 +387,7 @@ export function newMapRun(
     death: null,
     completion: null,
   };
-  const started = startActivity(base, map, program);
+  const started = startActivity(base, program);
   return {
     run: {
       ...base,
@@ -652,10 +651,9 @@ export function minuteBeforePick(run: MapRun, map: MapDef): MinuteBeforePick {
  */
 export function pickActivity(
   run: MapRun,
-  map: MapDef,
   program: Program,
 ): { run: MapRun; events: GameEvent[] } {
-  const started = startActivity(run, map, program);
+  const started = startActivity(run, program);
   return {
     run: {
       ...run,
@@ -701,7 +699,7 @@ export function finishMinute(
   const combat = run.activeCombat;
   let picks = stepped.picks;
   if (combat && run.minute >= combat.resolveMinute) {
-    const result = resolveCombat(run, map, combat.creatureId, program);
+    const result = resolveCombat(run, combat.creatureId, program);
     run = {
       ...run,
       body: { ...run.body, health: result.characterHealth },
@@ -776,7 +774,7 @@ export function finishMinute(
     }
   }
   if (picks) {
-    const picked = pickActivity(run, map, program);
+    const picked = pickActivity(run, program);
     return { run: picked.run, events: [...events, ...picked.events] };
   }
   return { run, events };

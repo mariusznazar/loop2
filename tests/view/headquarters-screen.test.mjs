@@ -9,7 +9,6 @@ import {
   ARCHETYPES,
   CREATED_ARCHETYPE,
 } from "../../dist/browser/sim/data/archetypes.js";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import { createHeadquarters } from "../../dist/browser/view/headquarters.js";
 
@@ -623,7 +622,7 @@ const campMembers = (root) => all(root, ".camp .camp-member");
 
 /** `state` with its character `id` sent into a map run, going. */
 const sentInto = (state, id) =>
-  send(state, { mapId: Object.keys(MAPS)[0], characterId: id }, NOW).state;
+  send(state, { mapId: "forest", characterId: id }, NOW).state;
 
 // Catches the band standing inside the screen's panel (narrower than the content, with its padding), under
 // the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the

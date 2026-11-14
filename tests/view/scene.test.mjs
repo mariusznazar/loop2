@@ -11,7 +11,6 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   createCharacter,
   newGame,
@@ -29,7 +28,7 @@ const STYLES = readFileSync(
   new URL("../../src/browser/styles.css", import.meta.url),
   "utf8",
 );
-const SENT = { mapId: Object.keys(MAPS)[0], characterId: 1 };
+const SENT = { mapId: "forest", characterId: 1 };
 const ALWAYS = { kind: "always" };
 const GATHER_STICK = { kind: "gather", resource: "stick" };
 const NO_UNDERSTANDING_ITEMS = {

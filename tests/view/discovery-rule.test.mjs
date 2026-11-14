@@ -3,7 +3,6 @@
 // group and the field the panel opens on are written out here, not read from the editor's functions.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -15,7 +14,7 @@ import { discoveryRule } from "../../dist/browser/view/discovery-rule.js";
 import { programWithRules } from "../sim/program-fixture.mjs";
 
 const SENT = {
-  mapId: Object.keys(MAPS)[0],
+  mapId: "forest",
   // The first character a new game creates takes the id 1.
   characterId: 1,
 };

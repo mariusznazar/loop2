@@ -1,7 +1,6 @@
 import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { BALANCE } from "./data/balance.js";
 import { CREATURES, type CreatureAction } from "./data/creatures.js";
-import type { MapDef } from "./data/maps.js";
 import { conditionHolds, chooseCombatRule } from "./program.js";
 import { practiced, skillBonus } from "./skills.js";
 import type {
@@ -17,7 +16,6 @@ import type {
 
 function chooseCreatureAction(
   run: MapRun,
-  map: MapDef,
   creatureId: CreatureId,
   health: number,
   opponentHealth: number,
@@ -25,17 +23,16 @@ function chooseCreatureAction(
   const creature = CREATURES[creatureId];
   const context = { health, opponentHealth };
   const selected = creature.rules.find((rule) =>
-    conditionHolds(run, map, rule.condition, context),
+    conditionHolds(run, rule.condition, context),
   );
   if (!selected)
     throw new Error(`combat: ${creatureId} has no applicable rule`);
   return selected.action;
 }
 
-/** Resolves one encounter without changing the run, program, map or creature data. */
+/** Resolves one encounter without changing the run, program or creature data. */
 export function resolveCombat(
   run: MapRun,
-  map: MapDef,
   creatureId: CreatureId,
   program: Program,
 ): CombatResult {
@@ -54,7 +51,6 @@ export function resolveCombat(
   ) {
     const enemyAction = chooseCreatureAction(
       run,
-      map,
       creatureId,
       creatureHealth,
       characterHealth,
@@ -78,7 +74,6 @@ export function resolveCombat(
 
     const rule = chooseCombatRule(
       run,
-      map,
       program,
       characterHealth,
       creatureHealth,

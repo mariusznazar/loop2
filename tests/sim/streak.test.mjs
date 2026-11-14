@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 import {
@@ -16,7 +15,7 @@ import {
 // through minute 83 (35.008), so minutes 1 to 83 lose nothing and minute 84 is the first chilled
 // one; satiety falls by 0.6 a minute from 100 and stays at or above 30 through minute 116.
 
-const [mapId] = Object.entries(MAPS)[0];
+const mapId = "forest";
 const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
 const EXPLORING = programFromRules({

@@ -3,7 +3,6 @@
 // foundations/decisions.md. Every expected value is written out here.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -25,7 +24,7 @@ import {
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-const MAP_ID = Object.keys(MAPS)[0];
+const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
 const ALWAYS = { kind: "always" };
 const rule = (condition, action) => ({ condition, action });
