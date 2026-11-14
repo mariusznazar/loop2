@@ -128,7 +128,7 @@ czyli z pierwotnym błędem, a nie z samym napisem, raz, tam gdzie kod ją
 obsługuje. W kodzie Node.js robi to `writeFailure` z `src/server/log-line.ts`,
 a porażkę bez pierwotnego błędu nazywa kodem `ReasonedFailure`.
 
-Zdanie, którym polecenie serwisowe (`account-block`, `account-backup`) odpowiada
+Zdanie, którym polecenie serwisowe (`account-block`, `account-previous-save`, `account-backup`) odpowiada
 operatorowi, nie jest wierszem logu (D-354). Wiersz JSON awarii i zdanie po nim
 to jeden zapis awarii: zostaw oba i nie licz zdania jako drugiego zapisu.
 
@@ -143,7 +143,7 @@ raport `measure-passwords` zostaje takim, jaki jest.
 
 Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
 to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
-serwer, `account-block` i `account-backup` — mają własną, `installLastResort`,
+serwer, `account-block`, `account-previous-save` i `account-backup` — mają własną, `installLastResort`,
 bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
 albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
 wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. Reguła obowiązuje
@@ -230,6 +230,8 @@ Zdarzenia biznesowe:
 - poprzedni zapis odłożony przez reset gry (`saved-game-reset`);
 - konto zablokowane (`account-blocked`);
 - konto odblokowane (`account-unblocked`);
+- uprawnienie do poprzedniego zapisu nadane (`account-previous-save-granted`);
+- uprawnienie do poprzedniego zapisu odebrane (`account-previous-save-revoked`);
 - kopia bazy wykonana;
 - wdrożenie.
 

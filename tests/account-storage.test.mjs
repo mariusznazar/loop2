@@ -2644,15 +2644,23 @@ const blockCommand = fileURLToPath(
   new URL("../dist/server/account-block.js", import.meta.url),
 );
 
+const previousSaveCommand = fileURLToPath(
+  new URL("../dist/server/account-previous-save.js", import.meta.url),
+);
+
 // Runs the owner's command as `docker exec loop2 node dist/server/account-block.js`
 // does: its own process, with the database path its only setting. `mode` runs
 // it under the stand-in for `node:sqlite`, which acts as the mode says.
 function runBlockCommand(args, databasePath, mode) {
+  return runOwnerCommand(blockCommand, args, databasePath, mode);
+}
+
+function runOwnerCommand(script, args, databasePath, mode) {
   const env = { ...process.env };
   for (const name of Object.keys(env))
     if (name.startsWith("LOOP2_")) delete env[name];
   if (databasePath !== undefined) env.LOOP2_DATABASE_PATH = databasePath;
-  const command = [blockCommand, ...args];
+  const command = [script, ...args];
   if (mode !== undefined) {
     env.LOOP2_CHECK_STANDIN = mode;
     command.unshift("--import", standin);
@@ -2965,4 +2973,250 @@ test("the owner's command changes nothing on a usage error, an unknown address o
       /encoded-hash|\bone\b|database is locked/i,
       "no hash, session identifier or database error detail",
     );
+});
+
+// D-394 and the operator command of the spec's section 5.
+test("the previous-save command grants and revokes by address beside an open connection and says which outcome it reached", async (t) => {
+  // The fixture's open AccountDatabase stands in for the running server's.
+  const { path, database } = await fixture(t);
+  const runCommand = (args) => runOwnerCommand(previousSaveCommand, args, path);
+  const flagOf = () =>
+    database.findAccountByEmail("player@example.test").previousSaveAllowed;
+
+  // D-99: the address is normalized as login normalizes it.
+  const granted = await runCommand(["grant", " Player@EXAMPLE.test "]);
+  assert.equal(granted.code, 0, granted.output);
+  assert.equal(flagOf(), true);
+
+  const again = await runCommand(["grant", "player@example.test"]);
+  assert.equal(again.code, 0, again.output);
+  assert.equal(flagOf(), true);
+
+  const revoked = await runCommand(["revoke", "player@example.test"]);
+  assert.equal(revoked.code, 0, revoked.output);
+  assert.equal(flagOf(), false);
+
+  const notGranted = await runCommand(["revoke", "player@example.test"]);
+  assert.equal(notGranted.code, 0, notGranted.output);
+  assert.equal(flagOf(), false);
+
+  const unknown = await runCommand(["grant", "nobody@example.test"]);
+  assert.equal(unknown.code, 4, unknown.output);
+  assert.match(
+    unknown.stderr,
+    /No account has the address nobody@example\.test\. Nothing changed\./,
+  );
+
+  const outcomes = [granted, again, revoked, notGranted].map((run) =>
+    run.stdout.trim(),
+  );
+  for (const outcome of outcomes) {
+    assert.ok(outcome !== "", "each outcome is reported");
+    assert.match(outcome, /player@example\.test/, "it names the account");
+  }
+  assert.equal(new Set(outcomes).size, 4, "each outcome reads differently");
+  assert.match(outcomes[1], /nothing changed/i, "a repeated grant says so");
+  assert.match(outcomes[3], /nothing changed/i, "a repeated revoke says so");
+  for (const run of [granted, again, revoked, notGranted, unknown])
+    assert.doesNotMatch(run.output, /encoded-hash/);
+});
+
+// D-252, business events of the guidelines' list. Faults: a line for a command
+// that changed nothing, no line for a change, the wrong account's number, the
+// address in the line.
+test("the previous-save command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
+  const { path, database, account } = await fixture(t);
+  database.createAccount("other@example.test", "hash");
+  const eventsOf = (run) =>
+    run.stdout
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith("{"))
+      .map((line) => {
+        assert.doesNotMatch(line, /example\.test/);
+        return JSON.parse(line);
+      });
+  const run = (action, address = "player@example.test") =>
+    runOwnerCommand(previousSaveCommand, [action, address], path);
+
+  assert.deepEqual(eventsOf(await run("grant")), [
+    { event: "account-previous-save-granted", accountId: account.id },
+  ]);
+  assert.deepEqual(eventsOf(await run("grant")), []);
+  assert.deepEqual(eventsOf(await run("revoke")), [
+    { event: "account-previous-save-revoked", accountId: account.id },
+  ]);
+  assert.deepEqual(eventsOf(await run("revoke")), []);
+  assert.deepEqual(eventsOf(await run("grant", "nobody@example.test")), []);
+});
+
+// D-252, D-354. Faults: the failure's reason left out, so the owner only hears
+// to try again; SQLite's message or the file's path in the output; a sentence
+// dropped, so the owner no longer reads what happened.
+test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
+  const { path } = await fixture(t);
+  const garbage = join(path, "..", "garbage-secret-name.sqlite");
+  await writeFile(garbage, "this is not an SQLite database at all, padding");
+
+  const run = await runOwnerCommand(
+    previousSaveCommand,
+    ["grant", "player@example.test"],
+    garbage,
+  );
+
+  assert.equal(run.code, 1, run.output);
+  assert.match(run.stderr, /Nothing changed; run the command again\./);
+  const [line] = run.stderr.split(/\r?\n/).filter((text) => text[0] === "{");
+  const { failure, kind, code, errcode, place } = JSON.parse(line);
+  assert.deepEqual(
+    { failure, kind, code, errcode, place },
+    {
+      failure: "account-previous-save",
+      kind: "Error",
+      code: "ERR_SQLITE_ERROR",
+      errcode: 26,
+      place: "account-previous-save.change",
+    },
+    "SQLite's number 26 says the file is no database",
+  );
+  assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
+});
+
+// D-253. Faults: no handler of its own, so the default print writes the message
+// and the stack; a handler that goes on after what no code handled.
+test("what no code of the previous-save command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
+  const { path } = await fixture(t);
+  const run = await runOwnerCommand(
+    previousSaveCommand,
+    ["grant", "player@example.test"],
+    path,
+    "uncaught",
+  );
+  assert.equal(run.code, 1, run.output);
+  assert.deepEqual(JSON.parse(run.stderr.trim()), {
+    failure: "uncaught",
+    kind: "RangeError",
+    code: "ERR_STANDIN_FAULT",
+    place: "account-previous-save",
+  });
+  assert.doesNotMatch(run.stderr, /quoting/);
+});
+
+// Faults: a change made by a refused run, a refusal with another exit code than
+// the block command's, a database created by a run that found no file.
+test("the previous-save command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
+  const { path, database, store, raw, account } = await fixture(t);
+  await call(store, "set", "one", data(account.id, liveExpiry()));
+  const unchanged = (label) => {
+    const stored = database.findAccountById(account.id);
+    assert.equal(stored.previousSaveAllowed, false, label);
+    assert.equal(stored.blocked, false, label);
+    assert.ok(
+      raw.prepare("SELECT id FROM sessions WHERE id = 'one'").get(),
+      `${label}: the session stays`,
+    );
+  };
+  const refusals = [];
+  for (const [label, args, exitCode] of [
+    ["no arguments", [], 2],
+    ["no address", ["grant"], 2],
+    ["an extra argument", ["grant", "player@example.test", "now"], 2],
+    ["an unknown action", ["block", "player@example.test"], 2],
+    ["an address without a valid form", ["grant", "player-example.test"], 2],
+    ["an unknown address", ["grant", "nobody@example.test"], 4],
+    ["an unknown address to revoke", ["revoke", "nobody@example.test"], 4],
+  ]) {
+    const run = await runOwnerCommand(previousSaveCommand, args, path);
+    assert.equal(run.code, exitCode, label);
+    assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
+    unchanged(label);
+    refusals.push(run);
+  }
+
+  const directory = join(path, "..");
+  const absent = join(directory, "absent.sqlite");
+  for (const [label, databasePath] of [
+    ["an unset database path", undefined],
+    ["an empty database path", ""],
+    ["an in-memory database", ":memory:"],
+    ["a database file that does not exist", absent],
+  ]) {
+    const run = await runOwnerCommand(
+      previousSaveCommand,
+      ["grant", "player@example.test"],
+      databasePath,
+    );
+    assert.equal(run.code, 3, label);
+    assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
+    refusals.push(run);
+  }
+  await assert.rejects(access(absent), "the command creates no database");
+  unchanged("a refused database");
+
+  // Another connection holds the write lock past the command's busy timeout.
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runOwnerCommand(
+      previousSaveCommand,
+      ["grant", "player@example.test"],
+      path,
+    );
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.equal(busy.code, 1, busy.output);
+  assert.ok(busy.output.trim() !== "", "the database failure is reported");
+  unchanged("a busy database");
+  refusals.push(busy);
+
+  for (const run of refusals)
+    assert.doesNotMatch(
+      run.output,
+      /encoded-hash|\bone\b|database is locked/i,
+      "no hash, session identifier or database error detail",
+    );
+});
+
+// Faults: the command ends a session or stops a link, or a privilege change
+// lifts a block or brings a link back.
+test("the previous-save command leaves a block, a session and an emailed link as they were", async (t) => {
+  // The command prunes by the real clock, so the server's connection uses it
+  // too and its links are recorded now, not at the fixture's fixed time.
+  const { path, database, store, raw, account } = await fixture(t, {
+    now: () => Date.now(),
+  });
+  await call(store, "set", "one", data(account.id, liveExpiry()));
+  database.issueLink(confirmationLink(account.id, "confirm"), limits);
+  const sessionCount = () =>
+    raw
+      .prepare("SELECT count(*) AS n FROM sessions WHERE account_id = ?")
+      .get(account.id).n;
+  const runCommand = (args) => runOwnerCommand(previousSaveCommand, args, path);
+
+  const granted = await runCommand(["grant", "player@example.test"]);
+  assert.equal(granted.code, 0, granted.output);
+  assert.equal(
+    database.findAccountById(account.id).previousSaveAllowed,
+    true,
+    "a grant sets the privilege",
+  );
+  assert.equal(sessionCount(), 1, "a grant ends no session");
+  assert.equal(storedLink(raw, "confirm").spent, 0, "a grant stops no link");
+
+  const blocked = await runBlockCommand(["block", "player@example.test"], path);
+  assert.equal(blocked.code, 0, blocked.output);
+  assert.equal(sessionCount(), 0);
+  assert.equal(storedLink(raw, "confirm").spent, 1);
+
+  const revoked = await runCommand(["revoke", "player@example.test"]);
+  assert.equal(revoked.code, 0, revoked.output);
+  const stored = database.findAccountById(account.id);
+  assert.equal(stored.previousSaveAllowed, false);
+  assert.equal(stored.blocked, true, "a revoke leaves the block");
+  assert.equal(sessionCount(), 0, "a revoke brings no session back");
+  assert.equal(
+    storedLink(raw, "confirm").spent,
+    1,
+    "a revoke brings no link back",
+  );
 });
