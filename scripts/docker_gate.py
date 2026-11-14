@@ -137,17 +137,24 @@ def shared_state():
                 os.environ[STATE_VARIABLE] = previous
 
 
+class StartWaitExpired(Exception):
+    """The start lock was not let go of before the limit of the process that waited for it."""
+
+
 @contextlib.contextmanager
-def start_lock():
+def start_lock(deadline):
     """Held by the one process of a run that is starting Docker Desktop. Yields whether the
-    process had to wait for another to let go. The lock is the operating system's, on a file
-    beside the state file, and is let go of when its holder ends, however it ends."""
+    process had to wait for another to let go, and raises `StartWaitExpired` where the lock is
+    not let go of by `deadline`. The lock is the operating system's, on a file beside the state
+    file, and is let go of when its holder ends, however it ends."""
     descriptor = os.open(state_file() + ".lock", os.O_RDWR | os.O_CREAT)
     try:
         waited = False
         while not try_lock(descriptor):
+            if time.monotonic() >= deadline:
+                raise StartWaitExpired
             waited = True
-            time.sleep(POLL_INTERVAL)
+            time.sleep(min(POLL_INTERVAL, max(0, deadline - time.monotonic())))
         yield waited
     finally:
         os.close(descriptor)
@@ -184,15 +191,18 @@ def daemon_gap():
         return "no Docker daemon answers: `docker` is not on PATH"
     if not desktop_present(timeout=within(deadline, ANSWER_LIMIT)):
         return "no Docker daemon answers, and this computer has no Docker Desktop to start"
-    with start_lock() as waited:
-        gap = recorded_gap()
-        if gap:
-            return gap
-        if waited:
-            deadline = time.monotonic() + limit
-        if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
-            return None
-        return started_gap(limit, deadline)
+    try:
+        with start_lock(deadline) as waited:
+            gap = recorded_gap()
+            if gap:
+                return gap
+            if waited:
+                deadline = time.monotonic() + limit
+            if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
+                return None
+            return started_gap(limit, deadline)
+    except StartWaitExpired:
+        return unfinished_gap(limit)
 
 
 def started_gap(limit, deadline):
@@ -205,6 +215,11 @@ def started_gap(limit, deadline):
         if time.monotonic() >= deadline:
             break
         time.sleep(min(POLL_INTERVAL, max(0, deadline - time.monotonic())))
+    return unfinished_gap(limit)
+
+
+def unfinished_gap(limit):
+    """The gap of a start that did not finish in the limit, recorded for the run."""
     gap = (f"no Docker daemon answers: the gate tried to start Docker Desktop and no daemon "
            f"answered within {limit:g} seconds")
     record_gap(gap)

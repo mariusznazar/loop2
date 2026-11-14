@@ -256,6 +256,23 @@ class ProcessesAtOnce(unittest.TestCase):
         self.assertEqual(self.answer_of(late), "None")
         self.assertEqual(len(docker.starts()), 1)
 
+    def test_a_wait_for_a_start_that_never_lets_go_ends_in_the_limit_with_the_gap(self):
+        # invariant: gate-docker-start-waits-once
+        # Breaking it: wait for the lock without the limit of the one that waits, so that a
+        # holder that stays alive and does nothing holds the process on for as long as it lives.
+        docker = DockerStandIn(self)
+        environment = self.environment(docker, "3")
+        held = os.open(environment["LOOP2_DOCKER_RUN_STATE"] + ".lock", os.O_RDWR | os.O_CREAT)
+        self.addCleanup(os.close, held)
+        self.assertTrue(docker_gate.try_lock(held))
+        began = time.monotonic()
+        waiting = self.ask(environment)
+        gap = self.answer_of(waiting)
+        self.assertLess(time.monotonic() - began, 3 + 20, "the wait for the lock had no limit")
+        self.assertIn("within 3 seconds", gap)
+        self.assertEqual(docker.starts(), [])
+        self.assertEqual(self.answer_of(self.ask(environment)), gap, "the gap is recorded for the run")
+
     def test_a_process_that_asks_during_a_start_that_does_not_finish_gets_its_gap_after_it(self):
         # invariant: gate-docker-start-waits-once
         # Breaking it: let the second process wait for a start of its own after the first one
