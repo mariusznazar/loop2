@@ -37,6 +37,14 @@ export const NOT_ALLOWED: PullLine = {
   text: "To konto nie ma już uprawnienia do poprzedniego zapisu.",
 };
 
+/** The sentence of a 403 of the reset: the account no longer holds the privilege (D-394, D-396). */
+export const RESET_NOT_ALLOWED =
+  "To konto nie ma już uprawnienia do zacznięcia gry od zera.";
+
+/** The sentence of a reset that failed otherwise: the game stays, and the control is at rest (D-396). */
+export const RESET_FAILED =
+  "Nie udało się zacząć gry od zera. Gra zostaje bez zmian.";
+
 /** The sentence of a document that is unreadable or gives no program at all. */
 const NOTHING_READABLE: PullLine = {
   role: "text",

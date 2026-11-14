@@ -63,7 +63,11 @@ import {
   NOT_ALLOWED,
   pullResultLine,
 } from "./previous-save-lines.js";
-import { createProgramList, type PullView } from "./program-list.js";
+import {
+  createProgramList,
+  type PullView,
+  type ResetView,
+} from "./program-list.js";
 import {
   createFolding,
   createProgramPanel,
@@ -89,6 +93,13 @@ import {
  */
 export type GameEntry = "sign-in" | "link" | "address";
 
+/** The reset control's state as the view holds it (D-396): waiting, the sentence of a failure, and the confirmation. */
+type ResetState = {
+  readonly waiting: boolean;
+  readonly sentence: string | null;
+  readonly confirming: boolean;
+};
+
 /** Where the player is: the screen, and the bar's way back to a map run the player left. */
 export type ScreenPlace = {
   readonly screen: Screen;
@@ -107,6 +118,13 @@ export type GameViewOptions = {
    * and shows no control for it.
    */
   readonly previousSaveAllowed?: boolean;
+  /**
+   * The page's act of a confirmed „Zacznij od zera” (D-396): the game calls it once for each
+   * confirmation and sends no request of its own for the reset. Left out, the game shows no reset
+   * control, so that no page that gives none offers the reset. Only for an account with the
+   * previous-save privilege, as `previousSaveAllowed` says.
+   */
+  readonly onReset?: () => void;
   /** The game state the game starts from: a new game, or the state a load returned. */
   readonly state: GameState;
   /** The revision of the saved game state `state` came from; 0 when the server held none. */
@@ -152,6 +170,12 @@ export type GameView = {
    * and D-97 give, with the state the game held. Calling it again does nothing.
    */
   halt(): void;
+  /**
+   * Sets what the reset control shows (D-396), for the page: `waiting` while the page waits for the
+   * server's answer, and a `sentence` beside the control for a failed reset, after which the control
+   * is at rest. The view sets `waiting` itself when the player confirms, before it calls `onReset`.
+   */
+  setReset(next: { waiting: boolean; sentence: string | null }): void;
   /**
    * Ends this game in the page: its clock and its saver stop, it stops listening to the address,
    * and its elements leave the page, taking their event handlers with them. It changes no screen
@@ -244,6 +268,10 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * of the player, so that it is saved at once; one line beside the button tells the result. An
  * answer that comes after the player left the screen, after a later question or pull, or after
  * `dispose()` is ignored.
+ *
+ * The reset of the game (D-396) is a control beside the pull, for a privileged account whose page gave
+ * `onReset`. Its click opens a confirmation and changes nothing; the confirmed act calls `onReset`
+ * once and waits until the page answers through `setReset`; leaving Programy closes the confirmation.
  *
  * Every act of the player whose result changed the state, every game minute that ends the map run
  * in a death or a completion and every result in which a loop's map run ended is a moment of saving
@@ -817,12 +845,31 @@ export function createGameView(options: GameViewOptions): GameView {
   let pullAsk = 0;
   /** Whether Programy was shown when `show` last ran, so that only an entering asks. */
   let onProgramsScreen = false;
+  /**
+   * The reset control of Programy as the page and the player left it (D-396): a memory of the view
+   * alone, never of the game state or of a save. Each change makes a new object, so the list is
+   * drawn anew only when it changed.
+   */
+  let resetState: ResetState = {
+    waiting: false,
+    sentence: null,
+    confirming: false,
+  };
 
   // The list of programs on Programy. A pick is a link to the program's address, which the address
   // listener below turns into the screen; the list's acts go to the simulation (D-166, D-167, D-169).
   const programList = createProgramList({
     onPull() {
       pullPrevious();
+    },
+    onResetAsk() {
+      askReset();
+    },
+    onResetConfirm() {
+      confirmReset();
+    },
+    onResetWithdraw() {
+      withdrawReset();
     },
     onCreate() {
       clock.flush();
@@ -843,7 +890,12 @@ export function createGameView(options: GameViewOptions): GameView {
       if (!sameScreen(nearest, current)) show(nearest, "replace");
       focusShownScreen();
     },
-    props: { programs: state.programs, chosenId: null, pull },
+    props: {
+      programs: state.programs,
+      chosenId: null,
+      pull,
+      reset: resetView(),
+    },
   });
   programList.element.classList.add("screen-area");
   // Programy has two areas, the list and the program panel; an open rule's panel stands in the panel's
@@ -854,6 +906,7 @@ export function createGameView(options: GameViewOptions): GameView {
     programs: GameState["programs"];
     chosenId: ProgramId;
     pull: PullView;
+    reset: ResetState;
   } | null = null;
 
   /** Gives the program panel and the list of Programy the program they show. */
@@ -863,11 +916,22 @@ export function createGameView(options: GameViewOptions): GameView {
     if (
       drawnPrograms?.programs === state.programs &&
       drawnPrograms.chosenId === chosenId &&
-      drawnPrograms.pull === pull
+      drawnPrograms.pull === pull &&
+      drawnPrograms.reset === resetState
     )
       return;
-    drawnPrograms = { programs: state.programs, chosenId, pull };
-    programList.update({ programs: state.programs, chosenId, pull });
+    drawnPrograms = {
+      programs: state.programs,
+      chosenId,
+      pull,
+      reset: resetState,
+    };
+    programList.update({
+      programs: state.programs,
+      chosenId,
+      pull,
+      reset: resetView(),
+    });
   }
 
   /** Changes what the list shows of the pull. */
@@ -894,10 +958,59 @@ export function createGameView(options: GameViewOptions): GameView {
     });
   }
 
-  /** The player left Programy: what is open of the pull is dropped and its answer will be ignored. */
+  /**
+   * The player left Programy: what is open of the pull is dropped and its answer will be ignored, and
+   * the confirmation of the reset closes (D-396).
+   */
   function leavePrograms(): void {
     pullAsk += 1;
     if (pull !== NO_PULL) setPull(NO_PULL);
+    if (resetState.confirming)
+      setResetState({ ...resetState, confirming: false });
+  }
+
+  /** The reset control as the list draws it, or none where the page gives no reset (D-396). */
+  function resetView(): ResetView | null {
+    if (options.previousSaveAllowed !== true || options.onReset === undefined)
+      return null;
+    return {
+      control: resetState.waiting ? "waiting" : "rest",
+      confirming: resetState.confirming,
+      line: resetState.sentence,
+    };
+  }
+
+  /** Changes the reset control's state and draws the list from it. */
+  function setResetState(next: ResetState): void {
+    resetState = next;
+    drawPrograms();
+  }
+
+  /**
+   * „Zacznij od zera” asks for its confirmation; the click changes nothing else, and nothing shows
+   * where the control is not shown (D-396).
+   */
+  function askReset(): void {
+    if (halted || disposed || resetView() === null) return;
+    if (resetState.waiting || resetState.confirming) return;
+    setResetState({ ...resetState, confirming: true });
+  }
+
+  /** The confirmation's withdraw: it closes and changes nothing (D-396). */
+  function withdrawReset(): void {
+    if (!resetState.confirming) return;
+    setResetState({ ...resetState, confirming: false });
+  }
+
+  /**
+   * The confirmed reset: the control waits, and the page is told once. The game sends no save and
+   * no request for the reset of its own; the page makes the request and answers it through `setReset`.
+   */
+  function confirmReset(): void {
+    if (halted || disposed || resetView() === null) return;
+    if (!resetState.confirming || resetState.waiting) return;
+    setResetState({ waiting: true, sentence: null, confirming: false });
+    options.onReset?.();
   }
 
   /**
@@ -1155,6 +1268,14 @@ export function createGameView(options: GameViewOptions): GameView {
         document: savedGame(withSaveTime(state, clock.moment())),
         revision: saver.revision(),
       };
+    },
+    setReset(next: { waiting: boolean; sentence: string | null }): void {
+      if (disposed) return;
+      setResetState({
+        waiting: next.waiting,
+        sentence: next.sentence,
+        confirming: resetState.confirming,
+      });
     },
     halt(): void {
       halted = true;

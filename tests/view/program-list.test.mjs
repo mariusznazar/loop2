@@ -45,6 +45,15 @@ async function mount({ root }, props) {
       onDelete: (programId) => {
         calls.push(["delete", programId]);
       },
+      onResetAsk: () => {
+        calls.push(["reset-ask"]);
+      },
+      onResetConfirm: () => {
+        calls.push(["reset-confirm"]);
+      },
+      onResetWithdraw: () => {
+        calls.push(["reset-withdraw"]);
+      },
       props,
     });
     root.append(list.element);
@@ -354,5 +363,156 @@ test("the name field leaves when another program is chosen, and nothing is hande
     await inAct(() => list.update(propsOf(TWO, 1)));
     assert.equal(nameField(page.root), null);
     assert.deepEqual(calls, []);
+  });
+});
+
+// --- the reset of the game (D-396, D-44) ----------------------------------------------------
+
+const RESET_TEXT = "Zacznij od zera";
+const RESET_CONFIRM_TEXT = "Tak, zacznij od zera";
+const WITHDRAW_TEXT = "Wróć";
+const RESET_AT_REST = { control: "rest", confirming: false, line: null };
+const RESET_FAILED = "Nie udało się zacząć gry od zera. Gra zostaje bez zmian.";
+const confirmation = (root) => root.querySelector(".program-reset-confirm");
+const resetLine = (root) =>
+  root.querySelector(".program-actions .form-warning");
+
+// Catches the control drawn on an account the page gives no reset (no privilege, or no callback):
+// the page then leaves `reset` out or null, and the list must draw nothing of the control.
+test("without a reset state the list has no reset control and no confirmation (D-396)", async () => {
+  for (const reset of [undefined, null]) {
+    await withPage(async (page) => {
+      await mount(page, { ...propsOf(TWO, 3), reset });
+      assert.equal(buttonNamed(page.root, RESET_TEXT), undefined);
+      assert.equal(confirmation(page.root), null);
+    });
+  }
+});
+
+// Catches a control that is not a destructive button (D-44: neutral at rest, `danger` under the
+// pointer), one that sits in another place than beside the pull, and a press that does more than
+// asking for the confirmation.
+test("at rest the reset is an enabled destructive button beside the pull, and a press only asks for the confirmation", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, {
+      ...propsOf(TWO, 3),
+      reset: RESET_AT_REST,
+    });
+    const button = buttonNamed(page.root, RESET_TEXT);
+    assert.ok(button, "the reset control stands");
+    assert.equal(button.className, "button destructive");
+    assert.equal(button.disabled, false);
+    assert.equal(button.parentElement.className, "program-actions");
+    assert.deepEqual(
+      [...button.parentElement.querySelectorAll("button")].map(
+        (each) => each.textContent,
+      ),
+      ["Nowy program", "Zmień nazwę", "Usuń", RESET_TEXT],
+    );
+    assert.equal(confirmation(page.root), null);
+    await press(button);
+    assert.deepEqual(calls, [["reset-ask"]]);
+  });
+});
+
+// Catches a confirmation that says nothing of the replacement of an earlier previous save, one whose
+// two buttons are not the confirm (destructive) and the withdraw (plain), and a press of either
+// that hands the page the wrong act or hands it twice.
+test("opened, the confirmation names what the reset does, and its two answers hand the page one act each", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, {
+      ...propsOf(TWO, 3),
+      reset: { control: "rest", confirming: true, line: null },
+    });
+    const block = confirmation(page.root);
+    assert.ok(block, "the confirmation stands");
+    const sentence = block.querySelector(".program-reset-text").textContent;
+    assert.match(sentence, /poprzedniego zapisu/);
+    assert.match(sentence, /zastąp/);
+    assert.match(sentence, /zera/);
+    const confirm = buttonNamed(page.root, RESET_CONFIRM_TEXT);
+    const withdraw = buttonNamed(page.root, WITHDRAW_TEXT);
+    assert.equal(confirm.className, "button destructive");
+    assert.equal(withdraw.className, "button");
+    await press(withdraw);
+    await press(confirm);
+    assert.deepEqual(calls, [["reset-withdraw"], ["reset-confirm"]]);
+  });
+});
+
+// Catches a waiting control that stays pressable or asks again, and a confirmation that stays open
+// while the page waits for the server.
+test("while the reset waits the control is disabled, a press hands nothing, and no confirmation stands", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(page, {
+      ...propsOf(TWO, 3),
+      reset: { control: "waiting", confirming: false, line: null },
+    });
+    const button = buttonNamed(page.root, RESET_TEXT);
+    assert.ok(button, "the control stands while it waits");
+    assert.equal(button.disabled, true);
+    assert.equal(confirmation(page.root), null);
+    await press(button);
+    assert.deepEqual(calls, []);
+  });
+});
+
+// Catches a failed reset drawn as a result or without its sentence, and a sentence that stands
+// anywhere but beside the control it answers (D-39: a refusal in `warning`).
+test("a failed reset stands beside its control as a warning with its text, and the control is at rest", async () => {
+  await withPage(async (page) => {
+    await mount(page, {
+      ...propsOf(TWO, 3),
+      reset: { control: "rest", confirming: false, line: RESET_FAILED },
+    });
+    const line = resetLine(page.root);
+    assert.ok(line, "the sentence of the failure stands");
+    assert.equal(line.getAttribute("role"), "alert");
+    assert.equal(line.textContent, RESET_FAILED);
+    assert.equal(
+      line.previousElementSibling,
+      buttonNamed(page.root, RESET_TEXT),
+    );
+    assert.equal(buttonNamed(page.root, RESET_TEXT).disabled, false);
+  });
+});
+
+// jsdom keeps focus on a disabled button; the list puts it back on the reset control once the answer
+// has come, and the confirmation takes the focus on withdraw when it opens (styleguide, States of
+// shared controls). Real focus order is the browser check's (D-88).
+test("the focus goes to withdraw when the confirmation opens, and back to the reset control after the wait", async () => {
+  await withPage(async (page) => {
+    const { list } = await mount(page, {
+      ...propsOf(TWO, 3),
+      reset: RESET_AT_REST,
+    });
+    await press(buttonNamed(page.root, RESET_TEXT));
+    await inAct(() =>
+      list.update({
+        ...propsOf(TWO, 3),
+        reset: { control: "rest", confirming: true, line: null },
+      }),
+    );
+    assert.equal(
+      page.document.activeElement,
+      buttonNamed(page.root, WITHDRAW_TEXT),
+    );
+    await press(buttonNamed(page.root, RESET_CONFIRM_TEXT));
+    await inAct(() =>
+      list.update({
+        ...propsOf(TWO, 3),
+        reset: { control: "waiting", confirming: false, line: null },
+      }),
+    );
+    await inAct(() =>
+      list.update({
+        ...propsOf(TWO, 3),
+        reset: { control: "rest", confirming: false, line: RESET_FAILED },
+      }),
+    );
+    assert.equal(
+      page.document.activeElement,
+      buttonNamed(page.root, RESET_TEXT),
+    );
   });
 });

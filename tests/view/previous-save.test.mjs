@@ -10,6 +10,7 @@ import { mock, test } from "node:test";
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import {
+  RESET_FAILED,
   programsWord,
   pullResultLine,
 } from "../../dist/browser/view/previous-save-lines.js";
@@ -120,7 +121,11 @@ function heldClient({ saveAnswer = { kind: "saved", revision: 2 } } = {}) {
 }
 
 /** The game of `state` built in the page as a reload at `hash` builds it. */
-async function viewOf(state, client, { hash = PROGRAMS, allowed } = {}) {
+async function viewOf(
+  state,
+  client,
+  { hash = PROGRAMS, allowed, onReset } = {},
+) {
   const { createGameView } =
     await import("../../dist/browser/view/game-view.js");
   const address = fakeAddress(hash);
@@ -133,6 +138,7 @@ async function viewOf(state, client, { hash = PROGRAMS, allowed } = {}) {
       address,
       entry: "address",
       ...(allowed === undefined ? {} : { previousSaveAllowed: allowed }),
+      ...(onReset === undefined ? {} : { onReset }),
       onScreen: () => {},
       onConflict: () => {},
       onOutdated: () => {},
@@ -882,4 +888,152 @@ test("the result line of the reader's answer names the appended count and the sk
       text: "Wciągnięto 1 program. Pominięto programy, których ta wersja gry nie przyjmuje: „B”, bez nazwy (pozycja 3).",
     },
   );
+});
+
+// --- the reset of the game (D-396) ----------------------------------------------------------------
+
+const RESET_TEXT = "Zacznij od zera";
+const RESET_CONFIRM_TEXT = "Tak, zacznij od zera";
+const WITHDRAW_TEXT = "Wróć";
+const buttonOf = (view, text) =>
+  all(view.element).find(
+    (element) => element.localName === "button" && element.textContent === text,
+  );
+const resetButton = (view) => buttonOf(view, RESET_TEXT);
+const confirmation = (view) =>
+  view.element.querySelector(".program-reset-confirm");
+
+// Catches the control on an account the page gives no privilege, or a game given no callback for a
+// confirmed reset: the control then stands in the page of no one who may not reset (D-396).
+test("the reset control stands only for a privileged account whose page gives the game a callback", async () => {
+  const cases = [
+    [undefined, undefined],
+    [false, () => {}],
+    [true, undefined],
+  ];
+  for (const [allowed, onReset] of cases) {
+    await onPage(async () => {
+      const held = heldClient();
+      const { view } = await viewOf(twoPrograms(), held.client, {
+        allowed,
+        onReset,
+      });
+      assert.equal(resetButton(view), undefined);
+      await inAct(() => view.dispose());
+    });
+  }
+  await onPage(async () => {
+    const held = heldClient();
+    const { view } = await viewOf(twoPrograms(), held.client, {
+      allowed: true,
+      onReset: () => {},
+    });
+    await held.answer(NO_PREVIOUS);
+    assert.ok(
+      resetButton(view),
+      "the control stands for the privileged account",
+    );
+    await inAct(() => view.dispose());
+  });
+});
+
+// Catches a click that resets, saves or changes the game before the player confirms (D-396): the
+// click that opens the confirmation sends nothing and changes nothing.
+test("the click that opens the confirmation sends nothing and changes nothing", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const resets = [];
+    const { view } = await viewOf(twoPrograms(), held.client, {
+      allowed: true,
+      onReset: () => resets.push("reset"),
+    });
+    await held.answer(NO_PREVIOUS);
+    const before = await heldState(view);
+    await press(resetButton(view));
+    assert.ok(confirmation(view), "the confirmation stands");
+    assert.deepEqual(resets, []);
+    assert.deepEqual(held.saves, []);
+    assert.deepEqual(await heldState(view), before);
+    await inAct(() => view.dispose());
+  });
+});
+
+// Catches a confirmation that does not say that an earlier previous save is replaced and that its
+// programs can no longer be pulled, and a withdraw that changes anything (D-396).
+test("the confirmation names the replacement of an earlier previous save, and withdrawing changes nothing", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const resets = [];
+    const { view } = await viewOf(twoPrograms(), held.client, {
+      allowed: true,
+      onReset: () => resets.push("reset"),
+    });
+    await held.answer(NO_PREVIOUS);
+    const before = await heldState(view);
+    await press(resetButton(view));
+    const sentence = confirmation(view).querySelector(".program-reset-text");
+    assert.match(sentence.textContent, /poprzedniego zapisu/);
+    assert.match(sentence.textContent, /zastąp/);
+    assert.match(sentence.textContent, /zera/);
+    await press(buttonOf(view, WITHDRAW_TEXT));
+    assert.equal(confirmation(view), null);
+    assert.deepEqual(resets, []);
+    assert.deepEqual(held.saves, []);
+    assert.deepEqual(await heldState(view), before);
+    await inAct(() => view.dispose());
+  });
+});
+
+// Catches a confirmed reset that calls the page twice, a control that stays pressable while the page
+// waits, a save sent before the page's act, and a failure that does not return the control to rest
+// with its sentence (D-396, D-44).
+test("a confirmed reset calls the page once, waits for its answer, and a failure returns the control to rest with its sentence", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const resets = [];
+    const { view } = await viewOf(twoPrograms(), held.client, {
+      allowed: true,
+      onReset: () => resets.push("reset"),
+    });
+    await held.answer(NO_PREVIOUS);
+    await press(resetButton(view));
+    await press(buttonOf(view, RESET_CONFIRM_TEXT));
+    assert.deepEqual(resets, ["reset"]);
+    assert.equal(confirmation(view), null);
+    assert.equal(resetButton(view).disabled, true);
+    await press(resetButton(view));
+    assert.deepEqual(resets, ["reset"]);
+    assert.deepEqual(held.saves, []);
+    await inAct(() =>
+      view.setReset({ waiting: false, sentence: RESET_FAILED }),
+    );
+    assert.equal(resetButton(view).disabled, false);
+    assert.deepEqual(linesOf(view), [["form-warning", RESET_FAILED]]);
+    await inAct(() => view.setReset({ waiting: false, sentence: null }));
+    assert.deepEqual(linesOf(view), []);
+    await inAct(() => view.dispose());
+  });
+});
+
+// Catches a confirmation that stays open when the player leaves Programy, and a game that asks the
+// server for the reset itself: the client given has no reset method, so a call of one would throw.
+test("leaving Programy closes the confirmation, and the game asks the server for no reset", async () => {
+  await onPage(async () => {
+    const held = heldClient();
+    const resets = [];
+    const { view, address } = await viewOf(twoPrograms(), held.client, {
+      allowed: true,
+      onReset: () => resets.push("reset"),
+    });
+    await held.answer(NO_PREVIOUS);
+    await press(resetButton(view));
+    assert.ok(confirmation(view), "the confirmation stands");
+    await inAct(() => address.follow(HEADQUARTERS));
+    await inAct(() => address.follow(PROGRAMS));
+    assert.equal(confirmation(view), null);
+    assert.ok(resetButton(view));
+    assert.deepEqual(resets, []);
+    assert.deepEqual(held.saves, []);
+    await inAct(() => view.dispose());
+  });
 });

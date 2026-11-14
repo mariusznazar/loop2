@@ -3,13 +3,16 @@
  * player's programs in the list's order, each a link to its address with the chosen one marked, and
  * under them „Nowy program”, „Zmień nazwę” and the destructive „Usuń” of the chosen program, and,
  * where the page gives it, „Wciągnij programy z poprzedniego zapisu” with the one line of its
- * result (D-167, D-395), with the name field under those where „Zmień nazwę” opened it. The page
- * holds the state of the pull — whether the button stands, whether it waits for the server and the
- * line beside it — and gives it through `props.pull`. The page holds the list behind one boundary,
+ * result (D-167, D-395), and „Zacznij od zera” with its confirmation and the line of a failed reset
+ * (D-396), with the name field under those where „Zmień nazwę” opened it. The page holds the state
+ * of the pull — whether the button stands, whether it waits for the server and the line beside it —
+ * and gives it through `props.pull`; the game view holds the reset's state and gives it through
+ * `props.reset`. The page holds the list behind one boundary,
  * `createProgramList` (D-36), as the menu bar and the character screen do: an element of its own for
  * the page to place, a first render that is synchronous, `update(props)` and `dispose()`. The page
  * calls them from an event handler or the continuation of an answer, never from render or an effect.
- * The list's acts go to the page through `onCreate`, `onRename`, `onDelete` and `onPull`. The name field's
+ * The list's acts go to the page through `onCreate`, `onRename`, `onDelete`, `onPull` and the three
+ * of the reset. The name field's
  * message is the one the program panel holds, for the same name rule. Nothing runs when the module
  * is imported.
  */
@@ -38,6 +41,25 @@ export type PullView = {
   line: PullLine | null;
 };
 
+/**
+ * The reset of the game as the view gives it (D-396): the control „Zacznij od zera”, at rest or
+ * waiting for the server, whether its confirmation stands beside it, and the sentence of a failed
+ * reset under it.
+ */
+export type ResetView = {
+  control: "rest" | "waiting";
+  confirming: boolean;
+  /** The sentence of a failed reset, in `warning` beside the control; null where there is none. */
+  line: string | null;
+};
+
+/** The control of the reset and the words of its confirmation (D-396, D-44). */
+const RESET_TEXT = "Zacznij od zera";
+const RESET_QUESTION =
+  "Obecna gra przejdzie na miejsce poprzedniego zapisu, a gra zacznie się od zera. Poprzedni zapis, który tam jest, zostanie zastąpiony, a jego programów nie da się potem wciągnąć.";
+const RESET_CONFIRM_TEXT = "Tak, zacznij od zera";
+const RESET_WITHDRAW_TEXT = "Wróć";
+
 /** What the page gives the list; every call of `update` gives it whole. */
 export type ProgramListProps = {
   /** The player's saved programs, in the list's order. */
@@ -46,11 +68,19 @@ export type ProgramListProps = {
   chosenId: ProgramId | null;
   /** The pull of the previous save: its button and the line of its result. */
   pull: PullView;
+  /** The reset of the game; left out or null, the list draws neither the control nor its confirmation. */
+  reset?: ResetView | null;
 };
 
 export type ProgramListOptions = {
   /** Called when the player asks for „Wciągnij programy z poprzedniego zapisu”. */
   onPull: () => void;
+  /** Called when the player asks for „Zacznij od zera”, which opens its confirmation. */
+  onResetAsk: () => void;
+  /** Called when the player confirms the reset, once per confirmation. */
+  onResetConfirm: () => void;
+  /** Called when the player withdraws from the confirmation of the reset; nothing else changes. */
+  onResetWithdraw: () => void;
   /** Called when the player asks for „Nowy program”. */
   onCreate: () => void;
   /** Called with a name the name rule takes, when the player saves „Zmień nazwę”. */
@@ -79,24 +109,35 @@ type ProgramListViewProps = Omit<ProgramListOptions, "props"> & {
 /** The list: the programs, the actions on the chosen one and the name field where it is open. */
 function ProgramListView({
   onPull,
+  onResetAsk,
+  onResetConfirm,
+  onResetWithdraw,
   onCreate,
   onRename,
   onDelete,
   props,
 }: ProgramListViewProps) {
   const { programs, chosenId, pull } = props;
+  const reset = props.reset ?? null;
+  const resetControl = reset?.control;
+  const resetConfirming = reset?.confirming ?? false;
   const chosen = programs.find((saved) => saved.id === chosenId);
   const onlyOne = programs.length <= 1;
   const [naming, setNaming] = useState<Naming | null>(null);
   const [namedFor, setNamedFor] = useState(chosenId);
   const renameButton = useRef<HTMLButtonElement>(null);
   const pullButton = useRef<HTMLButtonElement>(null);
+  const resetButton = useRef<HTMLButtonElement>(null);
+  const withdrawButton = useRef<HTMLButtonElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
   // Set by „Zmień nazwę”, so the commit that shows the field moves focus into it.
   const focusNameOnOpen = useRef(false);
   // Set by the pull, so the commit that brings the button back from waiting moves focus to it: a
   // disabled button loses the focus.
   const focusPullOnRest = useRef(false);
+  // Set by the reset's confirm, and by its open and withdraw, for the same reasons as the pull.
+  const focusResetOnRest = useRef(false);
+  const focusWithdrawOnOpen = useRef(false);
 
   // The field leaves with the program it was open for: another program chosen closes it.
   if (namedFor !== chosenId) {
@@ -115,6 +156,18 @@ function ProgramListView({
     focusPullOnRest.current = false;
     if (pull.control === "rest") pullButton.current?.focus();
   }, [pull.control]);
+
+  useLayoutEffect(() => {
+    if (!focusWithdrawOnOpen.current || !resetConfirming) return;
+    focusWithdrawOnOpen.current = false;
+    withdrawButton.current?.focus();
+  }, [resetConfirming]);
+
+  useLayoutEffect(() => {
+    if (resetControl === "waiting" || !focusResetOnRest.current) return;
+    focusResetOnRest.current = false;
+    if (resetControl === "rest") resetButton.current?.focus();
+  }, [resetControl]);
 
   // The name rule judges the text for the program the field is open for; its own name is not taken.
   const checked =
@@ -151,6 +204,22 @@ function ProgramListView({
     if (pull.control !== "rest") return;
     focusPullOnRest.current = true;
     onPull();
+  }
+
+  function askReset(): void {
+    focusWithdrawOnOpen.current = true;
+    onResetAsk();
+  }
+
+  function confirmReset(): void {
+    focusResetOnRest.current = true;
+    onResetConfirm();
+  }
+
+  function withdrawReset(): void {
+    onResetWithdraw();
+    // The confirmation's buttons leave with it; the reset control stays, so focus goes back to it.
+    resetButton.current?.focus();
   }
 
   return (
@@ -195,7 +264,34 @@ function ProgramListView({
         ) : (
           <ReactFormNote sentence={pull.line.text} />
         )}
+        {reset === null ? null : (
+          <ReactButton
+            text={RESET_TEXT}
+            kind="destructive"
+            buttonRef={resetButton}
+            disabled={reset.control === "waiting"}
+            onClick={askReset}
+          />
+        )}
+        {reset === null || reset.line === null ? null : (
+          <ReactFormWarning sentence={reset.line} />
+        )}
       </div>
+      {reset === null || !reset.confirming ? null : (
+        <div className="program-reset-confirm">
+          <p className="program-reset-text">{RESET_QUESTION}</p>
+          <ReactButton
+            text={RESET_CONFIRM_TEXT}
+            kind="destructive"
+            onClick={confirmReset}
+          />
+          <ReactButton
+            text={RESET_WITHDRAW_TEXT}
+            buttonRef={withdrawButton}
+            onClick={withdrawReset}
+          />
+        </div>
+      )}
       {naming === null ? null : (
         <div className="program-name">
           <ReactTextField
@@ -233,6 +329,9 @@ export function createProgramList(options: ProgramListOptions): ProgramList {
       root.render(
         <ProgramListView
           onPull={options.onPull}
+          onResetAsk={options.onResetAsk}
+          onResetConfirm={options.onResetConfirm}
+          onResetWithdraw={options.onResetWithdraw}
           onCreate={options.onCreate}
           onRename={options.onRename}
           onDelete={options.onDelete}

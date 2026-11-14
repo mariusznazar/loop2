@@ -249,7 +249,7 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
   a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39), w obu
   postaciach przycisku; są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
-  „Przełącz postać na ten program” i „Zatrzymaj” (D-44) oraz „Odrzuć” pytania
+  „Przełącz postać na ten program”, „Zatrzymaj” i „Zacznij od zera” (D-44, D-396) oraz „Odrzuć” pytania
   „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
   Loading dotyczy tylko zwykłego przycisku, który czeka na odpowiedź
