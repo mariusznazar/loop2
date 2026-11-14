@@ -813,6 +813,42 @@ The last 8000 lines of the deploy log of the test server's host, read on 2026-11
 
 - **Source:** reading: `tail -n 8000 /var/log/loop2-deploy.log` on the test server's host, tail from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — of its 8000 lines, the one holding the text `: stage ` and the only one holding `(exit `: "2026-11-05T16:01:33Z loop2-deploy: stage fetch: git fetch from GitHub failed (git exit 128; git's message is in /var/log/loop2-deploy.log) (exit 6)"; run 2026-11-14
 
+## loop2-containers-published-ports
+
+On the test server's host, the two containers of the Compose project `loop2` publish no host port: `docker ps` and `docker compose -p loop2 ps` show for `loop2` only the exposed `3000/tcp`, with no `->` mapping, and for `loop2-cloudflared` an empty ports column.
+
+- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377 — the header and the two rows of these containers, runs of spaces collapsed to one, the rows of the four other containers left out: "CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES" · "f5e9f12cbbcd loop2-app "docker-entrypoint.s…" 3 hours ago Up 3 hours (healthy) 3000/tcp loop2" · "d8830e65e49e loop2-cloudflared "cloudflared --no-au…" 3 hours ago Up 3 hours (healthy) loop2-cloudflared"; and `cd /srv/loop2 && docker compose -p loop2 ps` on the same host, Docker Compose version v2.35.1, its whole output, runs of spaces collapsed to one: "NAME IMAGE COMMAND SERVICE CREATED STATUS PORTS" · "loop2 loop2-app "docker-entrypoint.s…" app 3 hours ago Up 3 hours (healthy) 3000/tcp" · "loop2-cloudflared loop2-cloudflared "cloudflared --no-au…" cloudflared 3 hours ago Up 3 hours (healthy)"; run 2026-11-14
+
+## loop2-containers-memory-use
+
+On 2026-11-14, `docker stats --no-stream loop2 loop2-cloudflared` on the test server's host shows the container `loop2` using 77.07MiB of a limit of 512MiB and the container `loop2-cloudflared` using 23.2MiB of a limit of 256MiB.
+
+- **Source:** reading: `docker stats --no-stream loop2 loop2-cloudflared` on the test server's host, Docker version 28.1.1, build 4eba377 — its whole output, runs of spaces collapsed to one: "CONTAINER ID NAME CPU % MEM USAGE / LIMIT MEM % NET I/O BLOCK I/O PIDS" · "f5e9f12cbbcd loop2 0.00% 77.07MiB / 512MiB 15.05% 2.88kB / 1.52kB 1.83GB / 65.5kB 12" · "d8830e65e49e loop2-cloudflared 12.76% 23.2MiB / 256MiB 9.06% 1.4MB / 885kB 48.3MB / 0B 6"; run 2026-11-14
+
+## loop2-app-log-sqlite-busy-lines
+
+On 2026-11-14, neither the game's dump file `/var/log/loop2-app.log` nor its rotated copy `/var/log/loop2-app.log.1` on the test server's host holds a line with the text `SQLITE_BUSY`.
+
+- **Source:** reading: `grep -F -m 50 -- 'SQLITE_BUSY' /var/log/loop2-app.log; echo "exit=$?"` on the test server's host, grep (GNU grep) 3.7 — grep printed no line, and the `echo` after it printed "exit=1" · and the same with `/var/log/loop2-app.log.1` in place of the first file — no line from grep, and "exit=1"; run 2026-11-14
+
+## mikrus-host-docker-compose-version
+
+The test server's host runs Docker Compose version v2.35.1.
+
+- **Source:** reading: `docker compose version | head -1` on the test server's host, Docker version 28.1.1, build 4eba377 — "Docker Compose version v2.35.1"; run 2026-11-14
+
+## mikrus-host-logrotate-schedule
+
+The test server's host has the systemd timer `logrotate.timer` enabled, its unit file sets `OnCalendar=daily`, and the file `/etc/cron.daily/logrotate` exists.
+
+- **Source:** reading: `systemctl is-enabled logrotate.timer` on the test server's host, systemctl, whose version no reading the skill allows prints — "enabled" · `systemctl cat logrotate.timer` on the same host, its lines of the schedule: "# /lib/systemd/system/logrotate.timer" · "[Timer]" · "OnCalendar=daily" · "AccuracySec=1h" · "Persistent=true" · `ls /etc/cron.daily/logrotate` on the same host, ls from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — "/etc/cron.daily/logrotate"; run 2026-11-14
+
+## loop2-app-log-file-names
+
+The names that `ls -1 /var/log/loop2-app.log*` lists on the test server's host are `/var/log/loop2-app.log` and `/var/log/loop2-app.log.1`, and no other.
+
+- **Source:** reading: `ls -1 /var/log/loop2-app.log*` on the test server's host, ls from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — its whole output: "/var/log/loop2-app.log" · "/var/log/loop2-app.log.1"; run 2026-11-14
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
