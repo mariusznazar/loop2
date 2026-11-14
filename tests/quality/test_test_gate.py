@@ -1,4 +1,5 @@
-"""The file selection of D-77 runs one real test file and refuses an empty run."""
+"""The file selection of D-77 runs one real test file and refuses an empty run; the whole run
+gives the Python runner one job at a time (D-406)."""
 
 import unittest
 
