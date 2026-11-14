@@ -317,6 +317,7 @@ test("a reading is drawn on every living instance, `shown` true for the screen t
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches events that do not reach the instances, or reach them out of the table's order.
 test("a result is drawn on every living instance in table order, with the events of the call", async () => {
   await onRegistry(async ({ registry, log }) => {

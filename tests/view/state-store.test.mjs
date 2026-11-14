@@ -153,6 +153,7 @@ async function onStore(state, body, { revision = 0 } = {}) {
   });
 }
 
+// decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock and passes the time elapsed to the simulation before the act runs"
 // Catches an act that runs before the clock is read, so its result is computed from a stale state.
 test("an act's body runs after one reading of the clock that passed the real time elapsed", async () => {
   await onStore(passing(), async ({ store, taken, readings, pass }) => {
