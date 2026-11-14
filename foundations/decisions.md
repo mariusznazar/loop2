@@ -5239,7 +5239,10 @@ balance data gives, and a reading before it passes zero game minutes and sets it
 Each game minute has its own real moment, the loop clock's value plus the real time up to and
 including that game minute, and a death in it is settled at that moment, in the open game as in the
 catch-up. In the open game a reading passes its game minutes one after another, within each game
-minute the characters in the team's order, however many game minutes it brings.
+minute the characters in the team's order, however many game minutes it brings; the death and the
+first completion of the manual map run that the reading brings are settled after those game minutes,
+at the reading, so that of two deaths on the account's one resurrection in the open game the earlier
+in real time takes it.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -5251,8 +5254,11 @@ minute the characters in the team's order, however many game minutes it brings.
     another sharing its clock, its first game minute shorter than a real minute; with no earning loop
     in the game state the clock set to the reading, so a first earning loop gets a whole first game
     minute; the loop clock taking its new value before the result reaches the game, so a save made
-    on its way passes no game minute twice
-  - violates: a death settled at the reading in place of its game minute's moment; the loop clock's
+    on its way passes no game minute twice; a reading that ends a loop's map run in a death a
+    millisecond before it and the manual map run in another giving the one resurrection to the death
+    of the earning loop
+  - violates: a death settled at the reading in place of its game minute's moment; the manual map
+    run's death settled before the game minutes of the earning loops that the same reading passes; the loop clock's
     value held in the game state; one character passed through all the game minutes of a reading
     before the next in the open game; the speed control or the pause of a manual map run reaching
     the loop clock
