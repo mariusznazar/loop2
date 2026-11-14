@@ -1347,7 +1347,7 @@ Every tile of the map Skraj lasu holds sticks and berries, whatever the seed of 
 
 ## first-map-balance
 
-On the map Skraj lasu, from a game whose Understanding holds every action and condition, a decent program of twelve rules solves the map in at least 95 % of 500 map runs and a naive program of six rules, which never leaves the entrance tile, in at most 50 % of them, the map runs being the sends at 500 consecutive real moments, one millisecond apart, from 1760000000000.
+On the map Skraj lasu, from a game whose Understanding holds every action and condition, a decent program of twelve rules solves the map in at least 95 % of several hundred map runs that its test names, and a naive program of six rules in at most 50 % of them.
 
 - **Method:** test
 - **Rests on:** none
