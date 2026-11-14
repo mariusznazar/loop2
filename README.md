@@ -2,6 +2,12 @@
 
 Aplikacja TypeScript: gra w przeglądarce zbudowana w React oraz serwer Express 5, który podaje jej pliki.
 
+## Opis produktu i epik MVP2
+
+Dla kogo jest gra, jaki problem rozwiązuje, co wchodzi do MVP2 i czego świadomie nie robimy — to stoi w zgłoszeniu-epiku [#100 „Epik: MVP2 — ekrany, oprawa i samouczek”](https://github.com/mariusznazar/loop2/issues/100). Pod nim są zadania MVP2, każde z pełnym dokumentem zadania, kryteriami akceptacji i pull requestem, który je zrobił.
+
+Decyzje, które opisują grę, są zapisane w fundamencie: w dzienniku decyzji [`foundations/decisions.md`](foundations/decisions.md).
+
 Wymagania: Node.js 24.15.0 lub nowszy w linii 24 (`^24.15.0`) i dostarczony z nim npm. Wszystkie polecenia wykonuj w głównym katalogu repozytorium.
 
 ## Pierwsze uruchomienie
