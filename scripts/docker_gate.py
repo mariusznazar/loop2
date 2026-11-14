@@ -18,7 +18,9 @@ holds beside the state file, from before it asks Docker Desktop to start until i
 A process that finds no daemon and the lock held waits for the lock instead of starting, and then
 goes by what the start left: a gap recorded, a daemon answering, or, where the process that
 started died, neither, and then it starts itself. The operating system releases the lock of a
-process that died, so a dead start holds no one.
+process that died, so a dead start holds no one. The wait for the lock ends at the limit of the
+process that waits, counted from its first ask: the process then gives, and records for the run,
+the gap of a start that did not finish, and starts none of its own.
 
 `LOOP2_DOCKER_START_LIMIT` (seconds) replaces the limit; the tests of this module use it to wait
 seconds, not minutes.
@@ -178,8 +180,8 @@ def daemon_gap():
     """None when a Docker daemon answers, after starting Docker Desktop if that was needed and
     possible; otherwise the sentence that says why no daemon answers. The limit is counted from
     the first ask, or from the end of the wait for another process's start where this process,
-    after that wait, must start Docker Desktop itself; every call of `docker` here is held to
-    what remains of it."""
+    after that wait, must start Docker Desktop itself; every call of `docker` here, and the wait
+    for another process's start, is held to what remains of it."""
     gap = recorded_gap()
     if gap:
         return gap
