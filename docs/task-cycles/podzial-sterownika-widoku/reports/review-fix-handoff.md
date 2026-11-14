@@ -1,0 +1,6 @@
+# Handoff — the review of the fix of the Minor findings (the reviewer of the whole change, resumed)
+
+- What is reviewed: the fix range `0785c763896565f0ccd3f2323e4fb44eee5a17ac..4f62fec5af761084a7aa832b077958d735edaad0` on `task/podzial-sterownika-widoku` (commits `15cf4273`, `4f62fec5`), worktree `the root of the task's worktree`.
+- The findings it answers: `reports/minor-fix-findings.md` (your six Minor findings, within the task, cut in your words). The author's fix report: `reports/author-fix-report.md`.
+- Check that each finding is fixed as you meant it, and that the fix brought no new finding. Only a new Critical or Important finding fails this review; Minor ones that remain or that you find new do not block and go to the request's list. Finding 3: the author changed the D-407 binding sentence to "React roots of its own for each screen and for the menu bar, none shared between screens", which departs from the task row's wording; judge only whether it is faithful to the code and your suggestion — the human will see it in the request.
+- Read only, no commit, no full gate. Report to `reports/review-fix-report.md`, first line `PASS <sha>` or `FAIL <sha>`; working copies in `.runs/review-fix/` and removed; report **Unread material**, **Searches not found or unclear** and checks run with command and exit code.
