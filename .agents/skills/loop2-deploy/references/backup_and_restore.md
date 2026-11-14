@@ -241,7 +241,10 @@ quote (`ssh` reads a quoted keyword as the option); a word of an `Include` line 
 outside letters, digits and `_ . / * ? ~ + -` (a variable, a `%` token, a quote, a trailing
 comment); a word of an `Include` line that begins with `~` but not with `~/` (a `~user/` path);
 and a nesting deeper than 16. A number above 0 is a finding for the human, not a line to read:
-the agent reports the number and does not open the files.
+the agent reports the number and does not open the files. Root's SSH configuration holds the login
+to Strych, an access value kept outside the repository, and a number shows none of it, while the
+count lets an agent that looks for the reason of a failed backup confirm the condition D-238 rests
+on.
 
 Never: reading the content of the key, the known-hosts file or root's SSH configuration (the count
 above is the only reading of the configuration); running
