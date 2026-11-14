@@ -1,0 +1,512 @@
+2026-11-01T22:39:06Z loop2-deploy: build of 54b2b7831cfb08c8e2d3eda8bfaf87b9a4205470 succeeded
+2026-11-01T22:39:06Z loop2-deploy: resources after the build: MemAvailable 3590 MiB
+2026-11-01T22:39:16Z loop2-deploy: switch: both loop2 services of 54b2b7831cfb08c8e2d3eda8bfaf87b9a4205470 are running and healthy
+2026-11-01T22:39:17Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-01T22:39:17Z loop2-deploy: old game container: loop running healthy
+2026-11-01T22:39:17Z loop2-deploy: deployed 54b2b7831cfb08c8e2d3eda8bfaf87b9a4205470, previously 48544f02375233ff1aa6ecbfe2422a812c8dff7d
+2026-11-02T06:53:10Z loop2-deploy: start: commit fe25b7d1f847a0346b4a70316a35fcbed41ac732, path: forced command, running commit: 54b2b7831cfb08c8e2d3eda8bfaf87b9a4205470
+2026-11-02T06:53:12Z loop2-deploy: accepted: fe25b7d1f847a0346b4a70316a35fcbed41ac732 is on main
+2026-11-02T06:53:12Z loop2-deploy: checked out fe25b7d1f847a0346b4a70316a35fcbed41ac732 in /srv/loop2
+2026-11-02T06:53:13Z loop2-deploy: resources: MemAvailable 3602 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18713 MiB (minimum 4 GiB)
+2026-11-02T07:03:47Z loop2-deploy: build of fe25b7d1f847a0346b4a70316a35fcbed41ac732 succeeded
+2026-11-02T07:03:47Z loop2-deploy: resources after the build: MemAvailable 3556 MiB
+2026-11-02T07:04:00Z loop2-deploy: switch: both loop2 services of fe25b7d1f847a0346b4a70316a35fcbed41ac732 are running and healthy
+2026-11-02T07:04:00Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T07:04:00Z loop2-deploy: old game container: loop running healthy
+2026-11-02T07:04:01Z loop2-deploy: deployed fe25b7d1f847a0346b4a70316a35fcbed41ac732, previously 54b2b7831cfb08c8e2d3eda8bfaf87b9a4205470
+2026-11-02T09:43:03Z loop2-deploy: start: commit 3d366c8cea73c950ac935f5fa344eff4bd8ceaba, path: forced command, running commit: fe25b7d1f847a0346b4a70316a35fcbed41ac732
+2026-11-02T09:43:05Z loop2-deploy: accepted: 3d366c8cea73c950ac935f5fa344eff4bd8ceaba is on main
+2026-11-02T09:43:06Z loop2-deploy: checked out 3d366c8cea73c950ac935f5fa344eff4bd8ceaba in /srv/loop2
+2026-11-02T09:43:06Z loop2-deploy: resources: MemAvailable 3600 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18708 MiB (minimum 4 GiB)
+2026-11-02T09:57:29Z loop2-deploy: build of 3d366c8cea73c950ac935f5fa344eff4bd8ceaba succeeded
+2026-11-02T09:57:29Z loop2-deploy: resources after the build: MemAvailable 3557 MiB
+2026-11-02T09:57:43Z loop2-deploy: switch: both loop2 services of 3d366c8cea73c950ac935f5fa344eff4bd8ceaba are running and healthy
+2026-11-02T09:57:44Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T09:57:44Z loop2-deploy: old game container: loop running healthy
+2026-11-02T09:57:44Z loop2-deploy: deployed 3d366c8cea73c950ac935f5fa344eff4bd8ceaba, previously fe25b7d1f847a0346b4a70316a35fcbed41ac732
+2026-11-02T19:05:36Z loop2-deploy: start: commit 9e9500de0a7ba2f656cb941a3bfcea157a65baa5, path: human run, running commit: 3d366c8cea73c950ac935f5fa344eff4bd8ceaba
+2026-11-02T19:05:39Z loop2-deploy: accepted: 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 is on task/logowanie-w-react
+2026-11-02T19:05:39Z loop2-deploy: checked out 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 in /srv/loop2
+2026-11-02T19:05:39Z loop2-deploy: resources: MemAvailable 3560 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18418 MiB (minimum 4 GiB)
+2026-11-02T19:19:36Z loop2-deploy: build of 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 succeeded
+2026-11-02T19:19:36Z loop2-deploy: resources after the build: MemAvailable 3504 MiB
+2026-11-02T19:19:47Z loop2-deploy: switch: both loop2 services of 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 are running and healthy
+2026-11-02T19:19:48Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T19:19:48Z loop2-deploy: old game container: loop running healthy
+2026-11-02T19:19:48Z loop2-deploy: deployed 9e9500de0a7ba2f656cb941a3bfcea157a65baa5, previously 3d366c8cea73c950ac935f5fa344eff4bd8ceaba
+2026-11-02T19:35:18Z loop2-deploy: start: commit 9e9500de0a7ba2f656cb941a3bfcea157a65baa5, path: human run, running commit: 9e9500de0a7ba2f656cb941a3bfcea157a65baa5
+2026-11-02T19:35:20Z loop2-deploy: accepted: 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 is on task/logowanie-w-react
+2026-11-02T19:35:20Z loop2-deploy: checked out 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 in /srv/loop2
+2026-11-02T19:35:20Z loop2-deploy: resources: MemAvailable 3542 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18067 MiB (minimum 4 GiB)
+2026-11-02T19:35:25Z loop2-deploy: build of 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 succeeded
+2026-11-02T19:35:25Z loop2-deploy: resources after the build: MemAvailable 3539 MiB
+2026-11-02T19:35:35Z loop2-deploy: switch: both loop2 services of 9e9500de0a7ba2f656cb941a3bfcea157a65baa5 are running and healthy
+2026-11-02T19:35:35Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T19:35:35Z loop2-deploy: old game container: loop running healthy
+2026-11-02T19:35:35Z loop2-deploy: deployed 9e9500de0a7ba2f656cb941a3bfcea157a65baa5, previously 9e9500de0a7ba2f656cb941a3bfcea157a65baa5
+2026-11-02T19:48:16Z loop2-deploy: start: commit 68644631622fb63dc624912639377d35b295fbe2, path: forced command, running commit: 9e9500de0a7ba2f656cb941a3bfcea157a65baa5
+2026-11-02T19:48:17Z loop2-deploy: accepted: 68644631622fb63dc624912639377d35b295fbe2 is on main
+2026-11-02T19:48:17Z loop2-deploy: checked out 68644631622fb63dc624912639377d35b295fbe2 in /srv/loop2
+2026-11-02T19:48:18Z loop2-deploy: resources: MemAvailable 3536 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18067 MiB (minimum 4 GiB)
+2026-11-02T19:48:27Z loop2-deploy: build of 68644631622fb63dc624912639377d35b295fbe2 succeeded
+2026-11-02T19:48:27Z loop2-deploy: resources after the build: MemAvailable 3523 MiB
+2026-11-02T19:48:38Z loop2-deploy: switch: both loop2 services of 68644631622fb63dc624912639377d35b295fbe2 are running and healthy
+2026-11-02T19:48:38Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T19:48:38Z loop2-deploy: old game container: loop running healthy
+2026-11-02T19:48:38Z loop2-deploy: deployed 68644631622fb63dc624912639377d35b295fbe2, previously 9e9500de0a7ba2f656cb941a3bfcea157a65baa5
+2026-11-02T20:52:07Z loop2-deploy: start: commit 6100f866026dea9f519b2e835134b730e676c470, path: human run, running commit: 68644631622fb63dc624912639377d35b295fbe2
+2026-11-02T20:52:09Z loop2-deploy: accepted: 6100f866026dea9f519b2e835134b730e676c470 is on claude/keen-curie-jazxic
+2026-11-02T20:52:09Z loop2-deploy: checked out 6100f866026dea9f519b2e835134b730e676c470 in /srv/loop2
+2026-11-02T20:52:10Z loop2-deploy: resources: MemAvailable 3536 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18065 MiB (minimum 4 GiB)
+2026-11-02T21:03:15Z loop2-deploy: build of 6100f866026dea9f519b2e835134b730e676c470 succeeded
+2026-11-02T21:03:15Z loop2-deploy: resources after the build: MemAvailable 3513 MiB
+2026-11-02T21:03:26Z loop2-deploy: switch: both loop2 services of 6100f866026dea9f519b2e835134b730e676c470 are running and healthy
+2026-11-02T21:03:26Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T21:03:26Z loop2-deploy: old game container: loop running healthy
+2026-11-02T21:03:26Z loop2-deploy: deployed 6100f866026dea9f519b2e835134b730e676c470, previously 68644631622fb63dc624912639377d35b295fbe2
+2026-11-02T21:26:35Z loop2-deploy: start: commit 799d1ffc899fe631ddc03381302ede7d94f49df5, path: forced command, running commit: 6100f866026dea9f519b2e835134b730e676c470
+2026-11-02T21:26:37Z loop2-deploy: accepted: 799d1ffc899fe631ddc03381302ede7d94f49df5 is on main
+2026-11-02T21:26:37Z loop2-deploy: checked out 799d1ffc899fe631ddc03381302ede7d94f49df5 in /srv/loop2
+2026-11-02T21:26:37Z loop2-deploy: resources: MemAvailable 3535 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18059 MiB (minimum 4 GiB)
+2026-11-02T21:26:49Z loop2-deploy: build of 799d1ffc899fe631ddc03381302ede7d94f49df5 succeeded
+2026-11-02T21:26:49Z loop2-deploy: resources after the build: MemAvailable 3524 MiB
+2026-11-02T21:27:03Z loop2-deploy: switch: both loop2 services of 799d1ffc899fe631ddc03381302ede7d94f49df5 are running and healthy
+2026-11-02T21:27:04Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-02T21:27:04Z loop2-deploy: old game container: loop running healthy
+2026-11-02T21:27:04Z loop2-deploy: deployed 799d1ffc899fe631ddc03381302ede7d94f49df5, previously 6100f866026dea9f519b2e835134b730e676c470
+2026-11-03T01:06:10Z loop2-deploy: start: commit 20d804b04ba564b578551c687cde78baadf78878, path: forced command, running commit: 799d1ffc899fe631ddc03381302ede7d94f49df5
+2026-11-03T01:06:13Z loop2-deploy: accepted: 20d804b04ba564b578551c687cde78baadf78878 is on main
+2026-11-03T01:06:13Z loop2-deploy: checked out 20d804b04ba564b578551c687cde78baadf78878 in /srv/loop2
+2026-11-03T01:06:14Z loop2-deploy: resources: MemAvailable 3521 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18055 MiB (minimum 4 GiB)
+2026-11-03T01:17:04Z loop2-deploy: build of 20d804b04ba564b578551c687cde78baadf78878 succeeded
+2026-11-03T01:17:04Z loop2-deploy: resources after the build: MemAvailable 3499 MiB
+2026-11-03T01:17:16Z loop2-deploy: switch: both loop2 services of 20d804b04ba564b578551c687cde78baadf78878 are running and healthy
+2026-11-03T01:17:17Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-03T01:17:17Z loop2-deploy: old game container: loop running healthy
+2026-11-03T01:17:17Z loop2-deploy: deployed 20d804b04ba564b578551c687cde78baadf78878, previously 799d1ffc899fe631ddc03381302ede7d94f49df5
+2026-11-03T18:20:17Z loop2-deploy: start: commit 6fec0ea2de6033b4e46c43fc8593014b08eef542, path: forced command, running commit: 20d804b04ba564b578551c687cde78baadf78878
+2026-11-03T18:20:19Z loop2-deploy: accepted: 6fec0ea2de6033b4e46c43fc8593014b08eef542 is on main
+2026-11-03T18:20:19Z loop2-deploy: checked out 6fec0ea2de6033b4e46c43fc8593014b08eef542 in /srv/loop2
+2026-11-03T18:20:20Z loop2-deploy: resources: MemAvailable 3509 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18046 MiB (minimum 4 GiB)
+2026-11-03T18:32:01Z loop2-deploy: build of 6fec0ea2de6033b4e46c43fc8593014b08eef542 succeeded
+2026-11-03T18:32:01Z loop2-deploy: resources after the build: MemAvailable 3482 MiB
+2026-11-03T18:32:11Z loop2-deploy: switch: both loop2 services of 6fec0ea2de6033b4e46c43fc8593014b08eef542 are running and healthy
+2026-11-03T18:32:12Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-03T18:32:12Z loop2-deploy: old game container: loop running healthy
+2026-11-03T18:32:12Z loop2-deploy: deployed 6fec0ea2de6033b4e46c43fc8593014b08eef542, previously 20d804b04ba564b578551c687cde78baadf78878
+2026-11-05T16:01:26Z loop2-deploy: start: commit 18fca47bc1b099ff8a5fbe9d688fabf201b7759f, path: forced command, running commit: 6fec0ea2de6033b4e46c43fc8593014b08eef542
+2026-11-05T16:01:33Z loop2-deploy: stage fetch: git fetch from GitHub failed (git exit 128; git's message is in /var/log/loop2-deploy.log) (exit 6)
+2026-11-05T20:07:10Z loop2-deploy: start: commit d50158a3180a9c1dbf7e9f5c8dbecdde656340c7, path: forced command, running commit: 6fec0ea2de6033b4e46c43fc8593014b08eef542
+2026-11-05T20:07:12Z loop2-deploy: accepted: d50158a3180a9c1dbf7e9f5c8dbecdde656340c7 is on main
+2026-11-05T20:07:12Z loop2-deploy: checked out d50158a3180a9c1dbf7e9f5c8dbecdde656340c7 in /srv/loop2
+2026-11-05T20:07:13Z loop2-deploy: resources: MemAvailable 3586 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 18031 MiB (minimum 4 GiB)
+2026-11-05T20:20:34Z loop2-deploy: build of d50158a3180a9c1dbf7e9f5c8dbecdde656340c7 succeeded
+2026-11-05T20:20:34Z loop2-deploy: resources after the build: MemAvailable 3520 MiB
+2026-11-05T20:20:44Z loop2-deploy: switch: both loop2 services of d50158a3180a9c1dbf7e9f5c8dbecdde656340c7 are running and healthy
+2026-11-05T20:20:45Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-05T20:20:45Z loop2-deploy: old game container: loop running healthy
+2026-11-05T20:20:45Z loop2-deploy: deployed d50158a3180a9c1dbf7e9f5c8dbecdde656340c7, previously 6fec0ea2de6033b4e46c43fc8593014b08eef542
+2026-11-06T07:23:54Z loop2-deploy: start: commit 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d, path: forced command, running commit: d50158a3180a9c1dbf7e9f5c8dbecdde656340c7
+2026-11-06T07:23:56Z loop2-deploy: accepted: 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d is on main
+2026-11-06T07:23:56Z loop2-deploy: checked out 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d in /srv/loop2
+2026-11-06T07:23:57Z loop2-deploy: resources: MemAvailable 3554 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17441 MiB (minimum 4 GiB)
+2026-11-06T07:35:08Z loop2-deploy: build of 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d succeeded
+2026-11-06T07:35:08Z loop2-deploy: resources after the build: MemAvailable 3526 MiB
+2026-11-06T07:35:19Z loop2-deploy: switch: both loop2 services of 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d are running and healthy
+2026-11-06T07:35:19Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-06T07:35:19Z loop2-deploy: old game container: loop running healthy
+2026-11-06T07:35:19Z loop2-deploy: deployed 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d, previously d50158a3180a9c1dbf7e9f5c8dbecdde656340c7
+2026-11-06T18:56:34Z loop2-deploy: start: commit b97fdd06e6daf1841d5290dab0be71b5a44ff404, path: forced command, running commit: 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d
+2026-11-06T18:56:37Z loop2-deploy: accepted: b97fdd06e6daf1841d5290dab0be71b5a44ff404 is on main
+2026-11-06T18:56:37Z loop2-deploy: checked out b97fdd06e6daf1841d5290dab0be71b5a44ff404 in /srv/loop2
+2026-11-06T18:56:38Z loop2-deploy: resources: MemAvailable 3552 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17432 MiB (minimum 4 GiB)
+2026-11-06T19:07:35Z loop2-deploy: build of b97fdd06e6daf1841d5290dab0be71b5a44ff404 succeeded
+2026-11-06T19:07:35Z loop2-deploy: resources after the build: MemAvailable 3523 MiB
+2026-11-06T19:07:47Z loop2-deploy: switch: both loop2 services of b97fdd06e6daf1841d5290dab0be71b5a44ff404 are running and healthy
+2026-11-06T19:07:47Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-06T19:07:47Z loop2-deploy: old game container: loop running healthy
+2026-11-06T19:07:47Z loop2-deploy: deployed b97fdd06e6daf1841d5290dab0be71b5a44ff404, previously 8f9e713d7c0fd0fb206c4c1018a28e4e8ad0202d
+2026-11-06T20:36:12Z loop2-deploy: start: commit 5694146af4b65fbe506c43eb3638c87fd0ad4783, path: forced command, running commit: b97fdd06e6daf1841d5290dab0be71b5a44ff404
+2026-11-06T20:36:14Z loop2-deploy: accepted: 5694146af4b65fbe506c43eb3638c87fd0ad4783 is on main
+2026-11-06T20:36:14Z loop2-deploy: checked out 5694146af4b65fbe506c43eb3638c87fd0ad4783 in /srv/loop2
+2026-11-06T20:36:15Z loop2-deploy: resources: MemAvailable 3558 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17426 MiB (minimum 4 GiB)
+2026-11-06T20:36:23Z loop2-deploy: build of 5694146af4b65fbe506c43eb3638c87fd0ad4783 succeeded
+2026-11-06T20:36:23Z loop2-deploy: resources after the build: MemAvailable 3544 MiB
+2026-11-06T20:36:33Z loop2-deploy: switch: both loop2 services of 5694146af4b65fbe506c43eb3638c87fd0ad4783 are running and healthy
+2026-11-06T20:36:33Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-06T20:36:33Z loop2-deploy: old game container: loop running healthy
+2026-11-06T20:36:33Z loop2-deploy: deployed 5694146af4b65fbe506c43eb3638c87fd0ad4783, previously b97fdd06e6daf1841d5290dab0be71b5a44ff404
+2026-11-07T07:49:18Z loop2-deploy: start: commit 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b, path: forced command, running commit: 5694146af4b65fbe506c43eb3638c87fd0ad4783
+2026-11-07T07:49:19Z loop2-deploy: accepted: 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b is on main
+2026-11-07T07:49:19Z loop2-deploy: checked out 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b in /srv/loop2
+2026-11-07T07:49:20Z loop2-deploy: resources: MemAvailable 3530 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17424 MiB (minimum 4 GiB)
+2026-11-07T08:02:43Z loop2-deploy: build of 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b succeeded
+2026-11-07T08:02:43Z loop2-deploy: resources after the build: MemAvailable 3486 MiB
+2026-11-07T08:02:54Z loop2-deploy: switch: both loop2 services of 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b are running and healthy
+2026-11-07T08:02:54Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-07T08:02:54Z loop2-deploy: old game container: loop running healthy
+2026-11-07T08:02:55Z loop2-deploy: deployed 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b, previously 5694146af4b65fbe506c43eb3638c87fd0ad4783
+2026-11-07T08:03:04Z loop2-deploy: start: commit 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c, path: forced command, running commit: 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b
+2026-11-07T08:03:06Z loop2-deploy: accepted: 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c is on main
+2026-11-07T08:03:06Z loop2-deploy: checked out 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c in /srv/loop2
+2026-11-07T08:03:07Z loop2-deploy: resources: MemAvailable 3510 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17072 MiB (minimum 4 GiB)
+2026-11-07T08:14:00Z loop2-deploy: build of 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c succeeded
+2026-11-07T08:14:00Z loop2-deploy: resources after the build: MemAvailable 3496 MiB
+2026-11-07T08:14:12Z loop2-deploy: switch: both loop2 services of 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c are running and healthy
+2026-11-07T08:14:12Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-07T08:14:12Z loop2-deploy: old game container: loop running healthy
+2026-11-07T08:14:12Z loop2-deploy: deployed 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c, previously 3a5976ca8f0aff67a378afdc20d1ddd3ba84ae3b
+2026-11-07T13:37:45Z loop2-deploy: start: commit 213670952542816b8dd86117f815c3869cc090d5, path: forced command, running commit: 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c
+2026-11-07T13:37:47Z loop2-deploy: accepted: 213670952542816b8dd86117f815c3869cc090d5 is on main
+2026-11-07T13:37:47Z loop2-deploy: checked out 213670952542816b8dd86117f815c3869cc090d5 in /srv/loop2
+2026-11-07T13:37:48Z loop2-deploy: resources: MemAvailable 3515 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17065 MiB (minimum 4 GiB)
+2026-11-07T13:48:56Z loop2-deploy: build of 213670952542816b8dd86117f815c3869cc090d5 succeeded
+2026-11-07T13:48:56Z loop2-deploy: resources after the build: MemAvailable 3488 MiB
+2026-11-07T13:49:06Z loop2-deploy: switch: both loop2 services of 213670952542816b8dd86117f815c3869cc090d5 are running and healthy
+2026-11-07T13:49:06Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-07T13:49:06Z loop2-deploy: old game container: loop running healthy
+2026-11-07T13:49:06Z loop2-deploy: deployed 213670952542816b8dd86117f815c3869cc090d5, previously 73751e81c2a1e6274096f3d1cc9b594bb5a6ab1c
+2026-11-07T22:28:09Z loop2-deploy: start: commit 381588fbd31838b9c0075707a6588213cf6e5eaa, path: forced command, running commit: 213670952542816b8dd86117f815c3869cc090d5
+2026-11-07T22:28:11Z loop2-deploy: accepted: 381588fbd31838b9c0075707a6588213cf6e5eaa is on main
+2026-11-07T22:28:11Z loop2-deploy: checked out 381588fbd31838b9c0075707a6588213cf6e5eaa in /srv/loop2
+2026-11-07T22:28:12Z loop2-deploy: resources: MemAvailable 3510 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17057 MiB (minimum 4 GiB)
+2026-11-07T22:39:03Z loop2-deploy: build of 381588fbd31838b9c0075707a6588213cf6e5eaa succeeded
+2026-11-07T22:39:03Z loop2-deploy: resources after the build: MemAvailable 3479 MiB
+2026-11-07T22:39:14Z loop2-deploy: switch: both loop2 services of 381588fbd31838b9c0075707a6588213cf6e5eaa are running and healthy
+2026-11-07T22:39:15Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-07T22:39:15Z loop2-deploy: old game container: loop running healthy
+2026-11-07T22:39:15Z loop2-deploy: deployed 381588fbd31838b9c0075707a6588213cf6e5eaa, previously 213670952542816b8dd86117f815c3869cc090d5
+2026-11-08T09:12:54Z loop2-deploy: start: commit 6f36c7ab998ceaf996afb617ca95881b3f007b2d, path: forced command, running commit: 381588fbd31838b9c0075707a6588213cf6e5eaa
+2026-11-08T09:12:56Z loop2-deploy: accepted: 6f36c7ab998ceaf996afb617ca95881b3f007b2d is on main
+2026-11-08T09:12:56Z loop2-deploy: checked out 6f36c7ab998ceaf996afb617ca95881b3f007b2d in /srv/loop2
+2026-11-08T09:12:56Z loop2-deploy: resources: MemAvailable 3504 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17050 MiB (minimum 4 GiB)
+2026-11-08T09:23:38Z loop2-deploy: build of 6f36c7ab998ceaf996afb617ca95881b3f007b2d succeeded
+2026-11-08T09:23:38Z loop2-deploy: resources after the build: MemAvailable 3453 MiB
+2026-11-08T09:23:48Z loop2-deploy: switch: both loop2 services of 6f36c7ab998ceaf996afb617ca95881b3f007b2d are running and healthy
+2026-11-08T09:23:48Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-08T09:23:48Z loop2-deploy: old game container: loop running healthy
+2026-11-08T09:23:48Z loop2-deploy: deployed 6f36c7ab998ceaf996afb617ca95881b3f007b2d, previously 381588fbd31838b9c0075707a6588213cf6e5eaa
+2026-11-08T12:17:41Z loop2-deploy: start: commit 01b26d54d1fea63de8570ca854814ff8e564048c, path: forced command, running commit: 6f36c7ab998ceaf996afb617ca95881b3f007b2d
+2026-11-08T12:17:43Z loop2-deploy: accepted: 01b26d54d1fea63de8570ca854814ff8e564048c is on main
+2026-11-08T12:17:43Z loop2-deploy: checked out 01b26d54d1fea63de8570ca854814ff8e564048c in /srv/loop2
+2026-11-08T12:17:44Z loop2-deploy: resources: MemAvailable 3512 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17039 MiB (minimum 4 GiB)
+2026-11-08T12:28:38Z loop2-deploy: build of 01b26d54d1fea63de8570ca854814ff8e564048c succeeded
+2026-11-08T12:28:38Z loop2-deploy: resources after the build: MemAvailable 3480 MiB
+2026-11-08T12:28:49Z loop2-deploy: switch: both loop2 services of 01b26d54d1fea63de8570ca854814ff8e564048c are running and healthy
+2026-11-08T12:28:49Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-08T12:28:49Z loop2-deploy: old game container: loop running healthy
+2026-11-08T12:28:49Z loop2-deploy: deployed 01b26d54d1fea63de8570ca854814ff8e564048c, previously 6f36c7ab998ceaf996afb617ca95881b3f007b2d
+2026-11-08T15:54:44Z loop2-deploy: start: commit df0f1256fe7ff85bca7c77f938900d8932168719, path: forced command, running commit: 01b26d54d1fea63de8570ca854814ff8e564048c
+2026-11-08T15:54:46Z loop2-deploy: accepted: df0f1256fe7ff85bca7c77f938900d8932168719 is on main
+2026-11-08T15:54:47Z loop2-deploy: checked out df0f1256fe7ff85bca7c77f938900d8932168719 in /srv/loop2
+2026-11-08T15:54:47Z loop2-deploy: resources: MemAvailable 3502 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17031 MiB (minimum 4 GiB)
+2026-11-08T16:05:58Z loop2-deploy: build of df0f1256fe7ff85bca7c77f938900d8932168719 succeeded
+2026-11-08T16:05:58Z loop2-deploy: resources after the build: MemAvailable 3469 MiB
+2026-11-08T16:06:13Z loop2-deploy: switch: both loop2 services of df0f1256fe7ff85bca7c77f938900d8932168719 are running and healthy
+2026-11-08T16:06:13Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-08T16:06:13Z loop2-deploy: old game container: loop running healthy
+2026-11-08T16:06:13Z loop2-deploy: deployed df0f1256fe7ff85bca7c77f938900d8932168719, previously 01b26d54d1fea63de8570ca854814ff8e564048c
+2026-11-08T19:08:28Z loop2-deploy: start: commit 331688e00b0d5a3cc82ffa13f0d54aeb92c30733, path: forced command, running commit: df0f1256fe7ff85bca7c77f938900d8932168719
+2026-11-08T19:08:29Z loop2-deploy: accepted: 331688e00b0d5a3cc82ffa13f0d54aeb92c30733 is on main
+2026-11-08T19:08:29Z loop2-deploy: checked out 331688e00b0d5a3cc82ffa13f0d54aeb92c30733 in /srv/loop2
+2026-11-08T19:08:30Z loop2-deploy: resources: MemAvailable 3500 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17024 MiB (minimum 4 GiB)
+2026-11-08T19:08:39Z loop2-deploy: build of 331688e00b0d5a3cc82ffa13f0d54aeb92c30733 succeeded
+2026-11-08T19:08:39Z loop2-deploy: resources after the build: MemAvailable 3477 MiB
+2026-11-08T19:08:48Z loop2-deploy: switch: both loop2 services of 331688e00b0d5a3cc82ffa13f0d54aeb92c30733 are running and healthy
+2026-11-08T19:08:49Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-08T19:08:49Z loop2-deploy: old game container: loop running healthy
+2026-11-08T19:08:49Z loop2-deploy: deployed 331688e00b0d5a3cc82ffa13f0d54aeb92c30733, previously df0f1256fe7ff85bca7c77f938900d8932168719
+2026-11-08T20:41:58Z loop2-deploy: start: commit 72287c2bd00c411929354bdb95949537adeb6dca, path: forced command, running commit: 331688e00b0d5a3cc82ffa13f0d54aeb92c30733
+2026-11-08T20:41:59Z loop2-deploy: accepted: 72287c2bd00c411929354bdb95949537adeb6dca is on main
+2026-11-08T20:41:59Z loop2-deploy: checked out 72287c2bd00c411929354bdb95949537adeb6dca in /srv/loop2
+2026-11-08T20:42:00Z loop2-deploy: resources: MemAvailable 3505 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17023 MiB (minimum 4 GiB)
+2026-11-08T20:42:09Z loop2-deploy: build of 72287c2bd00c411929354bdb95949537adeb6dca succeeded
+2026-11-08T20:42:09Z loop2-deploy: resources after the build: MemAvailable 3487 MiB
+2026-11-08T20:42:20Z loop2-deploy: switch: both loop2 services of 72287c2bd00c411929354bdb95949537adeb6dca are running and healthy
+2026-11-08T20:42:21Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-08T20:42:21Z loop2-deploy: old game container: loop running healthy
+2026-11-08T20:42:21Z loop2-deploy: deployed 72287c2bd00c411929354bdb95949537adeb6dca, previously 331688e00b0d5a3cc82ffa13f0d54aeb92c30733
+2026-11-08T22:07:12Z loop2-deploy: start: commit 00aa818e59ab484358970f98af1f4ab61e969e4c, path: forced command, running commit: 72287c2bd00c411929354bdb95949537adeb6dca
+2026-11-08T22:07:13Z loop2-deploy: accepted: 00aa818e59ab484358970f98af1f4ab61e969e4c is on main
+2026-11-08T22:07:14Z loop2-deploy: checked out 00aa818e59ab484358970f98af1f4ab61e969e4c in /srv/loop2
+2026-11-08T22:07:14Z loop2-deploy: resources: MemAvailable 3506 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17008 MiB (minimum 4 GiB)
+2026-11-08T22:07:22Z loop2-deploy: build of 00aa818e59ab484358970f98af1f4ab61e969e4c succeeded
+2026-11-08T22:07:22Z loop2-deploy: resources after the build: MemAvailable 3491 MiB
+2026-11-08T22:07:33Z loop2-deploy: switch: both loop2 services of 00aa818e59ab484358970f98af1f4ab61e969e4c are running and healthy
+2026-11-08T22:07:34Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-08T22:07:34Z loop2-deploy: old game container: loop running healthy
+2026-11-08T22:07:34Z loop2-deploy: deployed 00aa818e59ab484358970f98af1f4ab61e969e4c, previously 72287c2bd00c411929354bdb95949537adeb6dca
+2026-11-09T07:09:13Z loop2-deploy: start: commit 90bf21f28f8d9b91e7cbf9e0755285b536189389, path: forced command, running commit: 00aa818e59ab484358970f98af1f4ab61e969e4c
+2026-11-09T07:09:15Z loop2-deploy: accepted: 90bf21f28f8d9b91e7cbf9e0755285b536189389 is on main
+2026-11-09T07:09:15Z loop2-deploy: checked out 90bf21f28f8d9b91e7cbf9e0755285b536189389 in /srv/loop2
+2026-11-09T07:09:16Z loop2-deploy: resources: MemAvailable 3476 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 17006 MiB (minimum 4 GiB)
+2026-11-09T07:20:32Z loop2-deploy: build of 90bf21f28f8d9b91e7cbf9e0755285b536189389 succeeded
+2026-11-09T07:20:32Z loop2-deploy: resources after the build: MemAvailable 3460 MiB
+2026-11-09T07:20:43Z loop2-deploy: switch: both loop2 services of 90bf21f28f8d9b91e7cbf9e0755285b536189389 are running and healthy
+2026-11-09T07:20:44Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-09T07:20:44Z loop2-deploy: old game container: loop running healthy
+2026-11-09T07:20:44Z loop2-deploy: deployed 90bf21f28f8d9b91e7cbf9e0755285b536189389, previously 00aa818e59ab484358970f98af1f4ab61e969e4c
+2026-11-09T09:17:02Z loop2-deploy: start: commit 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2, path: forced command, running commit: 90bf21f28f8d9b91e7cbf9e0755285b536189389
+2026-11-09T09:17:04Z loop2-deploy: accepted: 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2 is on main
+2026-11-09T09:17:04Z loop2-deploy: checked out 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2 in /srv/loop2
+2026-11-09T09:17:05Z loop2-deploy: resources: MemAvailable 3501 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16998 MiB (minimum 4 GiB)
+2026-11-09T09:28:26Z loop2-deploy: build of 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2 succeeded
+2026-11-09T09:28:26Z loop2-deploy: resources after the build: MemAvailable 3473 MiB
+2026-11-09T09:28:26Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 0 to 9380 bytes
+2026-11-09T09:28:41Z loop2-deploy: switch: both loop2 services of 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2 are running and healthy
+2026-11-09T09:28:42Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-09T09:28:42Z loop2-deploy: old game container: loop running healthy
+2026-11-09T09:28:42Z loop2-deploy: deployed 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2, previously 90bf21f28f8d9b91e7cbf9e0755285b536189389
+2026-11-10T23:23:35Z loop2-deploy: start: commit a4015546163f24f82f4694830fcad457efa1caf2, path: forced command, running commit: 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2
+2026-11-10T23:23:37Z loop2-deploy: accepted: a4015546163f24f82f4694830fcad457efa1caf2 is on main
+2026-11-10T23:23:37Z loop2-deploy: checked out a4015546163f24f82f4694830fcad457efa1caf2 in /srv/loop2
+2026-11-10T23:23:38Z loop2-deploy: resources: MemAvailable 3728 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16990 MiB (minimum 4 GiB)
+2026-11-10T23:36:56Z loop2-deploy: build of a4015546163f24f82f4694830fcad457efa1caf2 succeeded
+2026-11-10T23:36:56Z loop2-deploy: resources after the build: MemAvailable 3663 MiB
+2026-11-10T23:36:56Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 9380 to 22462 bytes
+2026-11-10T23:37:06Z loop2-deploy: switch: both loop2 services of a4015546163f24f82f4694830fcad457efa1caf2 are running and healthy
+2026-11-10T23:37:06Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-10T23:37:06Z loop2-deploy: old game container: loop running healthy
+2026-11-10T23:37:06Z loop2-deploy: deployed a4015546163f24f82f4694830fcad457efa1caf2, previously 2fe922cc0a7d420ae41bc02f64732f6d888eb3a2
+2026-11-11T08:00:48Z loop2-deploy: start: commit f672c7b1d7e71c7f8077b2bb5f16fd9b37196998, path: forced command, running commit: a4015546163f24f82f4694830fcad457efa1caf2
+2026-11-11T08:00:50Z loop2-deploy: accepted: f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 is on main
+2026-11-11T08:00:50Z loop2-deploy: checked out f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 in /srv/loop2
+2026-11-11T08:00:51Z loop2-deploy: resources: MemAvailable 3683 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16637 MiB (minimum 4 GiB)
+2026-11-11T08:01:03Z loop2-deploy: build of f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 succeeded
+2026-11-11T08:01:03Z loop2-deploy: resources after the build: MemAvailable 3663 MiB
+2026-11-11T08:01:04Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 22462 to 31770 bytes
+2026-11-11T08:01:14Z loop2-deploy: switch: both loop2 services of f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 are running and healthy
+2026-11-11T08:01:15Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T08:01:15Z loop2-deploy: old game container: loop running healthy
+2026-11-11T08:01:15Z loop2-deploy: deployed f672c7b1d7e71c7f8077b2bb5f16fd9b37196998, previously a4015546163f24f82f4694830fcad457efa1caf2
+2026-11-11T09:57:03Z loop2-deploy: start: commit f672c7b1d7e71c7f8077b2bb5f16fd9b37196998, path: human run, running commit: f672c7b1d7e71c7f8077b2bb5f16fd9b37196998
+2026-11-11T09:57:05Z loop2-deploy: accepted: f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 is on main
+2026-11-11T09:57:05Z loop2-deploy: checked out f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 in /srv/loop2
+2026-11-11T09:57:06Z loop2-deploy: resources: MemAvailable 3734 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16634 MiB (minimum 4 GiB)
+2026-11-11T09:57:11Z loop2-deploy: build of f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 succeeded
+2026-11-11T09:57:11Z loop2-deploy: resources after the build: MemAvailable 3731 MiB
+2026-11-11T09:57:11Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 31770 to 41080 bytes
+2026-11-11T09:57:22Z loop2-deploy: switch: both loop2 services of f672c7b1d7e71c7f8077b2bb5f16fd9b37196998 are running and healthy
+2026-11-11T09:57:22Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T09:57:22Z loop2-deploy: old game container: loop running healthy
+2026-11-11T09:57:22Z loop2-deploy: deployed f672c7b1d7e71c7f8077b2bb5f16fd9b37196998, previously f672c7b1d7e71c7f8077b2bb5f16fd9b37196998
+2026-11-11T11:49:18Z loop2-deploy: start: commit 211a4ea556d48f5da98fc08380b3c061b9365709, path: forced command, running commit: f672c7b1d7e71c7f8077b2bb5f16fd9b37196998
+2026-11-11T11:49:19Z loop2-deploy: accepted: 211a4ea556d48f5da98fc08380b3c061b9365709 is on main
+2026-11-11T11:49:20Z loop2-deploy: checked out 211a4ea556d48f5da98fc08380b3c061b9365709 in /srv/loop2
+2026-11-11T11:49:20Z loop2-deploy: resources: MemAvailable 3693 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16634 MiB (minimum 4 GiB)
+2026-11-11T11:49:29Z loop2-deploy: build of 211a4ea556d48f5da98fc08380b3c061b9365709 succeeded
+2026-11-11T11:49:29Z loop2-deploy: resources after the build: MemAvailable 3696 MiB
+2026-11-11T11:49:29Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 41080 to 50655 bytes
+2026-11-11T11:49:38Z loop2-deploy: switch: both loop2 services of 211a4ea556d48f5da98fc08380b3c061b9365709 are running and healthy
+2026-11-11T11:49:38Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T11:49:38Z loop2-deploy: old game container: loop running healthy
+2026-11-11T11:49:38Z loop2-deploy: deployed 211a4ea556d48f5da98fc08380b3c061b9365709, previously f672c7b1d7e71c7f8077b2bb5f16fd9b37196998
+2026-11-11T16:10:20Z loop2-deploy: start: commit 952fbd078d25bc96595b7c90aa0e1a04f3500024, path: forced command, running commit: 211a4ea556d48f5da98fc08380b3c061b9365709
+2026-11-11T16:10:21Z loop2-deploy: accepted: 952fbd078d25bc96595b7c90aa0e1a04f3500024 is on main
+2026-11-11T16:10:21Z loop2-deploy: checked out 952fbd078d25bc96595b7c90aa0e1a04f3500024 in /srv/loop2
+2026-11-11T16:10:22Z loop2-deploy: resources: MemAvailable 3715 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16633 MiB (minimum 4 GiB)
+2026-11-11T16:10:31Z loop2-deploy: build of 952fbd078d25bc96595b7c90aa0e1a04f3500024 succeeded
+2026-11-11T16:10:31Z loop2-deploy: resources after the build: MemAvailable 3680 MiB
+2026-11-11T16:10:31Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 50655 to 59965 bytes
+2026-11-11T16:10:42Z loop2-deploy: switch: both loop2 services of 952fbd078d25bc96595b7c90aa0e1a04f3500024 are running and healthy
+2026-11-11T16:10:42Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T16:10:42Z loop2-deploy: old game container: loop running healthy
+2026-11-11T16:10:42Z loop2-deploy: deployed 952fbd078d25bc96595b7c90aa0e1a04f3500024, previously 211a4ea556d48f5da98fc08380b3c061b9365709
+2026-11-11T19:14:21Z loop2-deploy: start: commit 3b7e4930e3193376416f569e3b9cae1c31caa780, path: forced command, running commit: 952fbd078d25bc96595b7c90aa0e1a04f3500024
+2026-11-11T19:14:23Z loop2-deploy: accepted: 3b7e4930e3193376416f569e3b9cae1c31caa780 is on main
+2026-11-11T19:14:23Z loop2-deploy: checked out 3b7e4930e3193376416f569e3b9cae1c31caa780 in /srv/loop2
+2026-11-11T19:14:24Z loop2-deploy: resources: MemAvailable 3707 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16632 MiB (minimum 4 GiB)
+2026-11-11T19:25:29Z loop2-deploy: build of 3b7e4930e3193376416f569e3b9cae1c31caa780 succeeded
+2026-11-11T19:25:29Z loop2-deploy: resources after the build: MemAvailable 3682 MiB
+2026-11-11T19:25:30Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 59965 to 69275 bytes
+2026-11-11T19:25:40Z loop2-deploy: switch: both loop2 services of 3b7e4930e3193376416f569e3b9cae1c31caa780 are running and healthy
+2026-11-11T19:25:41Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T19:25:41Z loop2-deploy: old game container: loop running healthy
+2026-11-11T19:25:41Z loop2-deploy: deployed 3b7e4930e3193376416f569e3b9cae1c31caa780, previously 952fbd078d25bc96595b7c90aa0e1a04f3500024
+2026-11-11T19:59:44Z loop2-deploy: start: commit 01418389d242cbe5792d8b22291acf4303c4edc3, path: forced command, running commit: 3b7e4930e3193376416f569e3b9cae1c31caa780
+2026-11-11T19:59:46Z loop2-deploy: accepted: 01418389d242cbe5792d8b22291acf4303c4edc3 is on main
+2026-11-11T19:59:46Z loop2-deploy: checked out 01418389d242cbe5792d8b22291acf4303c4edc3 in /srv/loop2
+2026-11-11T19:59:47Z loop2-deploy: resources: MemAvailable 3707 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16624 MiB (minimum 4 GiB)
+2026-11-11T20:14:50Z loop2-deploy: build of 01418389d242cbe5792d8b22291acf4303c4edc3 succeeded
+2026-11-11T20:14:50Z loop2-deploy: resources after the build: MemAvailable 3647 MiB
+2026-11-11T20:14:51Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 69275 to 78583 bytes
+2026-11-11T20:15:01Z loop2-deploy: switch: both loop2 services of 01418389d242cbe5792d8b22291acf4303c4edc3 are running and healthy
+2026-11-11T20:15:02Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T20:15:02Z loop2-deploy: old game container: loop running healthy
+2026-11-11T20:15:02Z loop2-deploy: deployed 01418389d242cbe5792d8b22291acf4303c4edc3, previously 3b7e4930e3193376416f569e3b9cae1c31caa780
+2026-11-11T21:50:59Z loop2-deploy: start: commit f55ca38b44e32cbc05abcd4a53fc1e225b5e595d, path: forced command, running commit: 01418389d242cbe5792d8b22291acf4303c4edc3
+2026-11-11T21:51:01Z loop2-deploy: accepted: f55ca38b44e32cbc05abcd4a53fc1e225b5e595d is on main
+2026-11-11T21:51:01Z loop2-deploy: checked out f55ca38b44e32cbc05abcd4a53fc1e225b5e595d in /srv/loop2
+2026-11-11T21:51:02Z loop2-deploy: resources: MemAvailable 3670 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16115 MiB (minimum 4 GiB)
+2026-11-11T22:01:50Z loop2-deploy: build of f55ca38b44e32cbc05abcd4a53fc1e225b5e595d succeeded
+2026-11-11T22:01:50Z loop2-deploy: resources after the build: MemAvailable 3643 MiB
+2026-11-11T22:01:50Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 78583 to 87895 bytes
+2026-11-11T22:02:00Z loop2-deploy: switch: both loop2 services of f55ca38b44e32cbc05abcd4a53fc1e225b5e595d are running and healthy
+2026-11-11T22:02:00Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T22:02:00Z loop2-deploy: old game container: loop running healthy
+2026-11-11T22:02:00Z loop2-deploy: deployed f55ca38b44e32cbc05abcd4a53fc1e225b5e595d, previously 01418389d242cbe5792d8b22291acf4303c4edc3
+2026-11-11T22:02:10Z loop2-deploy: start: commit 4027d2fd75e7b46baa9545a1d11bd011f55e5824, path: forced command, running commit: f55ca38b44e32cbc05abcd4a53fc1e225b5e595d
+2026-11-11T22:02:11Z loop2-deploy: accepted: 4027d2fd75e7b46baa9545a1d11bd011f55e5824 is on main
+2026-11-11T22:02:11Z loop2-deploy: checked out 4027d2fd75e7b46baa9545a1d11bd011f55e5824 in /srv/loop2
+2026-11-11T22:02:12Z loop2-deploy: resources: MemAvailable 3662 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16106 MiB (minimum 4 GiB)
+2026-11-11T22:02:22Z loop2-deploy: build of 4027d2fd75e7b46baa9545a1d11bd011f55e5824 succeeded
+2026-11-11T22:02:22Z loop2-deploy: resources after the build: MemAvailable 3665 MiB
+2026-11-11T22:02:22Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 87895 to 97219 bytes
+2026-11-11T22:02:42Z loop2-deploy: switch: both loop2 services of 4027d2fd75e7b46baa9545a1d11bd011f55e5824 are running and healthy
+2026-11-11T22:02:43Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T22:02:43Z loop2-deploy: old game container: loop running healthy
+2026-11-11T22:02:43Z loop2-deploy: deployed 4027d2fd75e7b46baa9545a1d11bd011f55e5824, previously f55ca38b44e32cbc05abcd4a53fc1e225b5e595d
+2026-11-11T22:24:19Z loop2-deploy: start: commit 4660e14a20977ec54249d6ee900920d7679b5ca0, path: forced command, running commit: 4027d2fd75e7b46baa9545a1d11bd011f55e5824
+2026-11-11T22:24:21Z loop2-deploy: accepted: 4660e14a20977ec54249d6ee900920d7679b5ca0 is on main
+2026-11-11T22:24:21Z loop2-deploy: checked out 4660e14a20977ec54249d6ee900920d7679b5ca0 in /srv/loop2
+2026-11-11T22:24:22Z loop2-deploy: resources: MemAvailable 3677 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16105 MiB (minimum 4 GiB)
+2026-11-11T22:35:24Z loop2-deploy: build of 4660e14a20977ec54249d6ee900920d7679b5ca0 succeeded
+2026-11-11T22:35:24Z loop2-deploy: resources after the build: MemAvailable 3647 MiB
+2026-11-11T22:35:25Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 97219 to 107427 bytes
+2026-11-11T22:35:35Z loop2-deploy: switch: both loop2 services of 4660e14a20977ec54249d6ee900920d7679b5ca0 are running and healthy
+2026-11-11T22:35:36Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T22:35:36Z loop2-deploy: old game container: loop running healthy
+2026-11-11T22:35:36Z loop2-deploy: deployed 4660e14a20977ec54249d6ee900920d7679b5ca0, previously 4027d2fd75e7b46baa9545a1d11bd011f55e5824
+2026-11-11T23:58:50Z loop2-deploy: start: commit 7846213c25675b2c084e4587cd1ffb09316ef486, path: forced command, running commit: 4660e14a20977ec54249d6ee900920d7679b5ca0
+2026-11-11T23:58:52Z loop2-deploy: accepted: 7846213c25675b2c084e4587cd1ffb09316ef486 is on main
+2026-11-11T23:58:52Z loop2-deploy: checked out 7846213c25675b2c084e4587cd1ffb09316ef486 in /srv/loop2
+2026-11-11T23:58:52Z loop2-deploy: resources: MemAvailable 3672 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16097 MiB (minimum 4 GiB)
+2026-11-11T23:59:01Z loop2-deploy: build of 7846213c25675b2c084e4587cd1ffb09316ef486 succeeded
+2026-11-11T23:59:01Z loop2-deploy: resources after the build: MemAvailable 3657 MiB
+2026-11-11T23:59:01Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 107427 to 116741 bytes
+2026-11-11T23:59:11Z loop2-deploy: switch: both loop2 services of 7846213c25675b2c084e4587cd1ffb09316ef486 are running and healthy
+2026-11-11T23:59:11Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-11T23:59:11Z loop2-deploy: old game container: loop running healthy
+2026-11-11T23:59:11Z loop2-deploy: deployed 7846213c25675b2c084e4587cd1ffb09316ef486, previously 4660e14a20977ec54249d6ee900920d7679b5ca0
+2026-11-12T10:33:52Z loop2-deploy: start: commit 20bcc58df073ab5d5ead7c6f04cd136117da08bd, path: forced command, running commit: 7846213c25675b2c084e4587cd1ffb09316ef486
+2026-11-12T10:33:54Z loop2-deploy: accepted: 20bcc58df073ab5d5ead7c6f04cd136117da08bd is on main
+2026-11-12T10:33:54Z loop2-deploy: checked out 20bcc58df073ab5d5ead7c6f04cd136117da08bd in /srv/loop2
+2026-11-12T10:33:55Z loop2-deploy: resources: MemAvailable 3778 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16095 MiB (minimum 4 GiB)
+2026-11-12T10:48:12Z loop2-deploy: build of 20bcc58df073ab5d5ead7c6f04cd136117da08bd succeeded
+2026-11-12T10:48:12Z loop2-deploy: resources after the build: MemAvailable 3793 MiB
+2026-11-12T10:48:12Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 116741 to 126049 bytes
+2026-11-12T10:48:23Z loop2-deploy: switch: both loop2 services of 20bcc58df073ab5d5ead7c6f04cd136117da08bd are running and healthy
+2026-11-12T10:48:23Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-12T10:48:23Z loop2-deploy: old game container: loop running healthy
+2026-11-12T10:48:24Z loop2-deploy: deployed 20bcc58df073ab5d5ead7c6f04cd136117da08bd, previously 7846213c25675b2c084e4587cd1ffb09316ef486
+2026-11-12T16:32:11Z loop2-deploy: start: commit eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb, path: forced command, running commit: 20bcc58df073ab5d5ead7c6f04cd136117da08bd
+2026-11-12T16:32:14Z loop2-deploy: accepted: eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb is on main
+2026-11-12T16:32:14Z loop2-deploy: checked out eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb in /srv/loop2
+2026-11-12T16:32:15Z loop2-deploy: resources: MemAvailable 3823 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16086 MiB (minimum 4 GiB)
+2026-11-12T16:43:09Z loop2-deploy: build of eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb succeeded
+2026-11-12T16:43:09Z loop2-deploy: resources after the build: MemAvailable 3807 MiB
+2026-11-12T16:43:09Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 126049 to 135361 bytes
+2026-11-12T16:43:19Z loop2-deploy: switch: both loop2 services of eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb are running and healthy
+2026-11-12T16:43:20Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-12T16:43:20Z loop2-deploy: old game container: loop running healthy
+2026-11-12T16:43:20Z loop2-deploy: deployed eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb, previously 20bcc58df073ab5d5ead7c6f04cd136117da08bd
+2026-11-12T17:53:27Z loop2-deploy: start: commit 7ff7c729f60fafac1f9cd467dd68607a5f326451, path: forced command, running commit: eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb
+2026-11-12T17:53:29Z loop2-deploy: accepted: 7ff7c729f60fafac1f9cd467dd68607a5f326451 is on main
+2026-11-12T17:53:29Z loop2-deploy: checked out 7ff7c729f60fafac1f9cd467dd68607a5f326451 in /srv/loop2
+2026-11-12T17:53:30Z loop2-deploy: resources: MemAvailable 3840 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16113 MiB (minimum 4 GiB)
+2026-11-12T18:04:20Z loop2-deploy: build of 7ff7c729f60fafac1f9cd467dd68607a5f326451 succeeded
+2026-11-12T18:04:20Z loop2-deploy: resources after the build: MemAvailable 3789 MiB
+2026-11-12T18:04:20Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 135361 to 144673 bytes
+2026-11-12T18:04:30Z loop2-deploy: switch: both loop2 services of 7ff7c729f60fafac1f9cd467dd68607a5f326451 are running and healthy
+2026-11-12T18:04:30Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-12T18:04:30Z loop2-deploy: old game container: loop running healthy
+2026-11-12T18:04:30Z loop2-deploy: deployed 7ff7c729f60fafac1f9cd467dd68607a5f326451, previously eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb
+2026-11-12T21:33:02Z loop2-deploy: start: commit 2b4d760c517a8b399b2d9b80f77531455e32d11c, path: forced command, running commit: 7ff7c729f60fafac1f9cd467dd68607a5f326451
+2026-11-12T21:33:05Z loop2-deploy: accepted: 2b4d760c517a8b399b2d9b80f77531455e32d11c is on main
+2026-11-12T21:33:05Z loop2-deploy: checked out 2b4d760c517a8b399b2d9b80f77531455e32d11c in /srv/loop2
+2026-11-12T21:33:05Z loop2-deploy: resources: MemAvailable 3823 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16104 MiB (minimum 4 GiB)
+2026-11-12T21:43:44Z loop2-deploy: build of 2b4d760c517a8b399b2d9b80f77531455e32d11c succeeded
+2026-11-12T21:43:44Z loop2-deploy: resources after the build: MemAvailable 3789 MiB
+2026-11-12T21:43:45Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 144673 to 159027 bytes
+2026-11-12T21:43:54Z loop2-deploy: switch: both loop2 services of 2b4d760c517a8b399b2d9b80f77531455e32d11c are running and healthy
+2026-11-12T21:43:55Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-12T21:43:55Z loop2-deploy: old game container: loop running healthy
+2026-11-12T21:43:55Z loop2-deploy: deployed 2b4d760c517a8b399b2d9b80f77531455e32d11c, previously 7ff7c729f60fafac1f9cd467dd68607a5f326451
+2026-11-13T17:38:25Z loop2-deploy: start: commit 1b0c8ad4466fdd6d067da7bbc27b10458d81012b, path: forced command, running commit: 2b4d760c517a8b399b2d9b80f77531455e32d11c
+2026-11-13T17:38:27Z loop2-deploy: accepted: 1b0c8ad4466fdd6d067da7bbc27b10458d81012b is on main
+2026-11-13T17:38:27Z loop2-deploy: checked out 1b0c8ad4466fdd6d067da7bbc27b10458d81012b in /srv/loop2
+2026-11-13T17:38:28Z loop2-deploy: resources: MemAvailable 3801 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16094 MiB (minimum 4 GiB)
+2026-11-13T17:49:22Z loop2-deploy: build of 1b0c8ad4466fdd6d067da7bbc27b10458d81012b succeeded
+2026-11-13T17:49:22Z loop2-deploy: resources after the build: MemAvailable 3750 MiB
+2026-11-13T17:49:23Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 159027 to 168339 bytes
+2026-11-13T17:49:32Z loop2-deploy: switch: both loop2 services of 1b0c8ad4466fdd6d067da7bbc27b10458d81012b are running and healthy
+2026-11-13T17:49:33Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-13T17:49:33Z loop2-deploy: old game container: loop running healthy
+2026-11-13T17:49:33Z loop2-deploy: deployed 1b0c8ad4466fdd6d067da7bbc27b10458d81012b, previously 2b4d760c517a8b399b2d9b80f77531455e32d11c
+2026-11-13T20:13:21Z loop2-deploy: start: commit fc00c40652cd794f76f5ea18a2529e5c5c44c087, path: forced command, running commit: 1b0c8ad4466fdd6d067da7bbc27b10458d81012b
+2026-11-13T20:13:24Z loop2-deploy: accepted: fc00c40652cd794f76f5ea18a2529e5c5c44c087 is on main
+2026-11-13T20:13:24Z loop2-deploy: checked out fc00c40652cd794f76f5ea18a2529e5c5c44c087 in /srv/loop2
+2026-11-13T20:13:24Z loop2-deploy: resources: MemAvailable 3812 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16086 MiB (minimum 4 GiB)
+2026-11-13T20:24:07Z loop2-deploy: build of fc00c40652cd794f76f5ea18a2529e5c5c44c087 succeeded
+2026-11-13T20:24:07Z loop2-deploy: resources after the build: MemAvailable 3776 MiB
+2026-11-13T20:24:07Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 168339 to 177644 bytes
+2026-11-13T20:24:16Z loop2-deploy: switch: both loop2 services of fc00c40652cd794f76f5ea18a2529e5c5c44c087 are running and healthy
+2026-11-13T20:24:17Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-13T20:24:17Z loop2-deploy: old game container: loop running healthy
+2026-11-13T20:24:17Z loop2-deploy: deployed fc00c40652cd794f76f5ea18a2529e5c5c44c087, previously 1b0c8ad4466fdd6d067da7bbc27b10458d81012b
+2026-11-13T21:29:18Z loop2-deploy: start: commit aa0ecd09a1037e3aff0ac2bcfc786f2707352929, path: forced command, running commit: fc00c40652cd794f76f5ea18a2529e5c5c44c087
+2026-11-13T21:29:20Z loop2-deploy: accepted: aa0ecd09a1037e3aff0ac2bcfc786f2707352929 is on main
+2026-11-13T21:29:20Z loop2-deploy: checked out aa0ecd09a1037e3aff0ac2bcfc786f2707352929 in /srv/loop2
+2026-11-13T21:29:20Z loop2-deploy: resources: MemAvailable 3810 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16077 MiB (minimum 4 GiB)
+2026-11-13T21:39:37Z loop2-deploy: build of aa0ecd09a1037e3aff0ac2bcfc786f2707352929 succeeded
+2026-11-13T21:39:37Z loop2-deploy: resources after the build: MemAvailable 3778 MiB
+2026-11-13T21:39:37Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 177644 to 186952 bytes
+2026-11-13T21:39:47Z loop2-deploy: switch: both loop2 services of aa0ecd09a1037e3aff0ac2bcfc786f2707352929 are running and healthy
+2026-11-13T21:39:48Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-13T21:39:48Z loop2-deploy: old game container: loop running healthy
+2026-11-13T21:39:48Z loop2-deploy: deployed aa0ecd09a1037e3aff0ac2bcfc786f2707352929, previously fc00c40652cd794f76f5ea18a2529e5c5c44c087
+2026-11-13T22:59:23Z loop2-deploy: start: commit 6ab6a32be884ac174b068b8a6a5dd1515073d2a9, path: forced command, running commit: aa0ecd09a1037e3aff0ac2bcfc786f2707352929
+2026-11-13T22:59:25Z loop2-deploy: accepted: 6ab6a32be884ac174b068b8a6a5dd1515073d2a9 is on main
+2026-11-13T22:59:25Z loop2-deploy: checked out 6ab6a32be884ac174b068b8a6a5dd1515073d2a9 in /srv/loop2
+2026-11-13T22:59:25Z loop2-deploy: resources: MemAvailable 3803 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16068 MiB (minimum 4 GiB)
+2026-11-13T23:10:31Z loop2-deploy: build of 6ab6a32be884ac174b068b8a6a5dd1515073d2a9 succeeded
+2026-11-13T23:10:31Z loop2-deploy: resources after the build: MemAvailable 3749 MiB
+2026-11-13T23:10:31Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 186952 to 196712 bytes
+2026-11-13T23:10:41Z loop2-deploy: switch: both loop2 services of 6ab6a32be884ac174b068b8a6a5dd1515073d2a9 are running and healthy
+2026-11-13T23:10:42Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-13T23:10:42Z loop2-deploy: old game container: loop running healthy
+2026-11-13T23:10:42Z loop2-deploy: deployed 6ab6a32be884ac174b068b8a6a5dd1515073d2a9, previously aa0ecd09a1037e3aff0ac2bcfc786f2707352929
+2026-11-14T00:28:55Z loop2-deploy: start: commit 6f237fb8ce26450706d8738d3d3a07298e8ec110, path: forced command, running commit: 6ab6a32be884ac174b068b8a6a5dd1515073d2a9
+2026-11-14T00:28:57Z loop2-deploy: accepted: 6f237fb8ce26450706d8738d3d3a07298e8ec110 is on main
+2026-11-14T00:28:57Z loop2-deploy: checked out 6f237fb8ce26450706d8738d3d3a07298e8ec110 in /srv/loop2
+2026-11-14T00:28:57Z loop2-deploy: resources: MemAvailable 3787 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16061 MiB (minimum 4 GiB)
+2026-11-14T00:29:06Z loop2-deploy: build of 6f237fb8ce26450706d8738d3d3a07298e8ec110 succeeded
+2026-11-14T00:29:06Z loop2-deploy: resources after the build: MemAvailable 3773 MiB
+2026-11-14T00:29:06Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 196712 to 206133 bytes
+2026-11-14T00:29:15Z loop2-deploy: switch: both loop2 services of 6f237fb8ce26450706d8738d3d3a07298e8ec110 are running and healthy
+2026-11-14T00:29:15Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-14T00:29:15Z loop2-deploy: old game container: loop running healthy
+2026-11-14T00:29:15Z loop2-deploy: deployed 6f237fb8ce26450706d8738d3d3a07298e8ec110, previously 6ab6a32be884ac174b068b8a6a5dd1515073d2a9
+2026-11-14T00:33:38Z loop2-deploy: start: commit 5159e8c475a5faa77529020a51b21e271c695132, path: forced command, running commit: 6f237fb8ce26450706d8738d3d3a07298e8ec110
+2026-11-14T00:33:39Z loop2-deploy: accepted: 5159e8c475a5faa77529020a51b21e271c695132 is on main
+2026-11-14T00:33:40Z loop2-deploy: checked out 5159e8c475a5faa77529020a51b21e271c695132 in /srv/loop2
+2026-11-14T00:33:40Z loop2-deploy: resources: MemAvailable 3802 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16060 MiB (minimum 4 GiB)
+2026-11-14T00:33:48Z loop2-deploy: build of 5159e8c475a5faa77529020a51b21e271c695132 succeeded
+2026-11-14T00:33:48Z loop2-deploy: resources after the build: MemAvailable 3785 MiB
+2026-11-14T00:33:48Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 206133 to 215440 bytes
+2026-11-14T00:33:58Z loop2-deploy: switch: both loop2 services of 5159e8c475a5faa77529020a51b21e271c695132 are running and healthy
+2026-11-14T00:33:58Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-14T00:33:58Z loop2-deploy: old game container: loop running healthy
+2026-11-14T00:33:59Z loop2-deploy: deployed 5159e8c475a5faa77529020a51b21e271c695132, previously 6f237fb8ce26450706d8738d3d3a07298e8ec110
+2026-11-14T03:08:57Z loop2-deploy: start: commit e54f23c0ea3bd1db13d2635333417eb50412d6a0, path: forced command, running commit: 5159e8c475a5faa77529020a51b21e271c695132
+2026-11-14T03:08:59Z loop2-deploy: accepted: e54f23c0ea3bd1db13d2635333417eb50412d6a0 is on main
+2026-11-14T03:08:59Z loop2-deploy: checked out e54f23c0ea3bd1db13d2635333417eb50412d6a0 in /srv/loop2
+2026-11-14T03:09:00Z loop2-deploy: resources: MemAvailable 3800 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16058 MiB (minimum 4 GiB)
+2026-11-14T03:19:49Z loop2-deploy: build of e54f23c0ea3bd1db13d2635333417eb50412d6a0 succeeded
+2026-11-14T03:19:49Z loop2-deploy: resources after the build: MemAvailable 3761 MiB
+2026-11-14T03:19:50Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 215440 to 224752 bytes
+2026-11-14T03:19:59Z loop2-deploy: switch: both loop2 services of e54f23c0ea3bd1db13d2635333417eb50412d6a0 are running and healthy
+2026-11-14T03:19:59Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-14T03:19:59Z loop2-deploy: old game container: loop running healthy
+2026-11-14T03:19:59Z loop2-deploy: deployed e54f23c0ea3bd1db13d2635333417eb50412d6a0, previously 5159e8c475a5faa77529020a51b21e271c695132
+2026-11-14T05:14:44Z loop2-deploy: start: commit f0814d773b80228bd9b35caf42ca1dd6c5235c02, path: forced command, running commit: e54f23c0ea3bd1db13d2635333417eb50412d6a0
+2026-11-14T05:14:46Z loop2-deploy: accepted: f0814d773b80228bd9b35caf42ca1dd6c5235c02 is on main
+2026-11-14T05:14:47Z loop2-deploy: checked out f0814d773b80228bd9b35caf42ca1dd6c5235c02 in /srv/loop2
+2026-11-14T05:14:47Z loop2-deploy: resources: MemAvailable 3793 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16047 MiB (minimum 4 GiB)
+2026-11-14T05:25:54Z loop2-deploy: build of f0814d773b80228bd9b35caf42ca1dd6c5235c02 succeeded
+2026-11-14T05:25:54Z loop2-deploy: resources after the build: MemAvailable 3759 MiB
+2026-11-14T05:25:54Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 224752 to 234060 bytes
+2026-11-14T05:26:04Z loop2-deploy: switch: both loop2 services of f0814d773b80228bd9b35caf42ca1dd6c5235c02 are running and healthy
+2026-11-14T05:26:05Z loop2-deploy: probe: GET / answered 200, an unknown /api/ path a JSON 404
+2026-11-14T05:26:05Z loop2-deploy: old game container: loop running healthy
+2026-11-14T05:26:05Z loop2-deploy: deployed f0814d773b80228bd9b35caf42ca1dd6c5235c02, previously e54f23c0ea3bd1db13d2635333417eb50412d6a0
