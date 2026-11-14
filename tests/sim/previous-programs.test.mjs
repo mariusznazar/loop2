@@ -480,6 +480,129 @@ test("no value a document can hold, at any place of it, throws out of the readin
   }
 });
 
+// invariant: previous-save-programs-reader
+// Fault: the reading accepts any value that is an object for a document, a game or an item, so
+// a Map or a class instance of the right keys passes. The expected result comes from D-395: a
+// value that does not look like what the game wrote gives a refusal or a skip and no guess. An
+// object with no prototype looks like a literal, so it is read.
+test("a document, a game or an item that is undefined, a Map or a class instance is not a plain object, and one with no prototype is", () => {
+  class Holder {
+    constructor(fields) {
+      Object.assign(this, fields);
+    }
+  }
+  const bare = (fields) => Object.assign(Object.create(null), fields);
+  const item = { id: 1, name: "Las", program: EXPLORE };
+  const game = { programs: [item] };
+  const read = [{ kind: "read", name: "Las", program: EXPLORE }];
+  for (const [label, document] of [
+    ["undefined", undefined],
+    [
+      "a Map",
+      new Map([
+        ["version", 5],
+        ["game", game],
+      ]),
+    ],
+    ["a class instance", new Holder({ version: 5, game })],
+  ]) {
+    assert.deepEqual(
+      readPreviousPrograms(document),
+      { ok: false },
+      `${label} as the document`,
+    );
+  }
+  for (const [label, held] of [
+    ["undefined", undefined],
+    ["a Map", new Map([["programs", [item]]])],
+    ["a class instance", new Holder({ programs: [item] })],
+  ]) {
+    assert.deepEqual(
+      readPreviousPrograms({ version: 5, game: held }),
+      { ok: false },
+      `${label} as the game`,
+    );
+  }
+  for (const [label, held] of [
+    ["undefined", undefined],
+    ["a Map", new Map(Object.entries(item))],
+    ["a class instance", new Holder(item)],
+  ]) {
+    assert.deepEqual(
+      readPreviousPrograms({ version: 5, game: { programs: [held] } }),
+      { ok: true, items: [{ kind: "skipped", place: 1 }] },
+      `${label} as the item`,
+    );
+  }
+  assert.deepEqual(
+    readPreviousPrograms(
+      bare({ version: 5, game: bare({ programs: [bare(item)] }) }),
+    ),
+    { ok: true, items: read },
+    "no prototype at all three places",
+  );
+});
+
+// invariant: previous-save-programs-reader
+// Fault: the reading recurses on, or copies as text, a value of the document, so a very deep
+// value or a very long list ends in a RangeError and the page shows the player a failure. The
+// expected result comes from D-213 and D-395: the reader refuses or skips and never throws.
+test("a very deep value at a place of the document and a very long list of items are read without error", () => {
+  const deep = () => {
+    let value = [];
+    for (let level = 0; level < 30_000; level += 1) value = [value];
+    return value;
+  };
+  const program = (changes) => ({ ...EXPLORE, ...changes });
+  const document = {
+    version: 5,
+    game: {
+      programs: [
+        { id: deep(), name: "Id", program: EXPLORE },
+        { id: 2, name: deep(), program: EXPLORE },
+        { id: 3, name: "Program", program: deep() },
+        { id: 4, name: "Klucz", program: EXPLORE, extra: deep() },
+        {
+          id: 5,
+          name: "Warunek",
+          program: program({
+            groups: [{ ...EXPLORE.groups[0], condition: deep() }],
+          }),
+        },
+        {
+          id: 6,
+          name: "Plan",
+          program: program({ tripPlan: { take: deep(), bring: [] } }),
+        },
+      ],
+      note: deep(),
+    },
+  };
+  assert.deepEqual(readPreviousPrograms(document), {
+    ok: true,
+    items: [
+      { kind: "read", name: "Id", program: EXPLORE },
+      { kind: "skipped", place: 2 },
+      { kind: "skipped", name: "Program" },
+      { kind: "skipped", name: "Klucz" },
+      { kind: "skipped", name: "Warunek" },
+      { kind: "skipped", name: "Plan" },
+    ],
+  });
+  assert.doesNotThrow(
+    () => readPreviousPrograms({ version: deep(), game: document.game }),
+    "a deep version",
+  );
+  const count = 200_000;
+  const long = readPreviousPrograms({
+    version: 5,
+    game: { programs: new Array(count).fill(null) },
+  });
+  assert.equal(long.ok, true);
+  assert.equal(long.items.length, count);
+  assert.deepEqual(long.items.at(-1), { kind: "skipped", place: count });
+});
+
 // invariant: save-version
 test("a document frozen all the way down is read without error, which shows the reading writes nothing", () => {
   const frozen = deepFreeze(structuredClone(DOCUMENT));

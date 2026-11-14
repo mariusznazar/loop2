@@ -4723,6 +4723,24 @@ test(
       "refused resets move nothing",
     );
 
+    // The field check stands before the session: a body with a field is the
+    // same 400 for a caller with no session and one with a forged cookie.
+    for (const [label, sessionless] of [
+      ["absent", null],
+      ["forged", signedCookie("previous-named", randomBytes(32))],
+    ])
+      assertSaveRefusal(
+        await resetSave(f, sessionless, '{"accountId":"x"}'),
+        400,
+        "invalid-request",
+        `a field with a ${label} session`,
+      );
+    assert.deepEqual(
+      { first: savesOf(f, f.first.id), second: savesOf(f, f.second.id) },
+      before,
+      "refused resets without a session move nothing",
+    );
+
     const named = await resetSave(
       f,
       cookie,

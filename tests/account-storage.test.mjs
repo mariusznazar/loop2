@@ -1189,11 +1189,10 @@ test("a reset moves nothing without the privilege, for a blocked account, and wi
   });
   assert.equal(database.readPreviousSavedGame(account.id), null);
 
-  // The block is read before the privilege: a blocked account without the
-  // privilege answers blocked.
+  // The block is read before the privilege: the account never got the
+  // privilege, and once blocked it answers blocked, not unprivileged.
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
   assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
-  database.setPreviousSavePrivilege("player@example.test", true);
   assert.deepEqual(database.resetSavedGame(account.id), { outcome: "blocked" });
   assert.deepEqual(database.readSavedGame(account.id), {
     version: 1,
@@ -1210,6 +1209,24 @@ test("a reset moves nothing without the privilege, for a blocked account, and wi
   });
   assert.equal(database.readPreviousSavedGame(empty.id), null);
   assert.equal(storedPreviousSave(raw, empty.id), undefined);
+
+  // Nothing to move after a move: the second reset leaves the slot holding the
+  // document the first one put there.
+  const moved = database.createAccount("moved@example.test", "hash");
+  database.setPreviousSavePrivilege("moved@example.test", true);
+  database.writeSavedGame(moved.id, {
+    version: 1,
+    basedOn: 0,
+    game: '{"first":1}',
+  });
+  assert.deepEqual(database.resetSavedGame(moved.id), { outcome: "moved" });
+  const slot = { version: 1, revision: 1, game: '{"first":1}' };
+  assert.deepEqual(database.readPreviousSavedGame(moved.id), slot);
+  assert.deepEqual(database.resetSavedGame(moved.id), {
+    outcome: "nothing-to-move",
+  });
+  assert.deepEqual(database.readPreviousSavedGame(moved.id), slot);
+  assert.equal(database.readSavedGame(moved.id), null);
 });
 
 // invariant: previous-save-slot

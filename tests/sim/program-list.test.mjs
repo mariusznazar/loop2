@@ -10,6 +10,7 @@ import {
   newGame,
   send,
   setProgram,
+  withSaveTime,
 } from "../../dist/browser/sim/game.js";
 import {
   appendPrograms,
@@ -21,6 +22,7 @@ import {
   renameProgram,
   suggestedProgramName,
 } from "../../dist/browser/sim/programs.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
@@ -485,6 +487,32 @@ test("an append changes nothing of the game state but the programs and the count
     ],
     nextProgramId: 6,
   });
+});
+
+// Fault: a pulled name the game's own load refuses (empty, untrimmed, taken in another
+// letter case), which would discard the whole new game at its next load (D-206). The
+// expectation comes from D-386: the game never writes a saved game state its own load
+// discards.
+test("the game state after an append is saved and loaded again whole, names taken in another letter case, with Polish letters, an emoji and 5000 characters among them", () => {
+  const long = "x".repeat(5000);
+  const state = appendPrograms(
+    team(),
+    pulled("Program", "program", "Program (2)", "PROGRAM 2", "Łąka 🌲", long),
+  );
+  assert.deepEqual(
+    state.programs.slice(3).map(({ name }) => name),
+    [
+      "Program (2)",
+      "program (3)",
+      "Program (2) (2)",
+      "PROGRAM 2",
+      "Łąka 🌲",
+      long,
+    ],
+  );
+  const stamped = withSaveTime(state, REAL_MS);
+  const written = JSON.parse(JSON.stringify(savedGame(stamped)));
+  assert.deepEqual(loadSavedGame(written), { ok: true, state: stamped });
 });
 
 test("the append changes nothing passed to it", () => {
