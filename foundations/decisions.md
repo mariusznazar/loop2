@@ -9894,7 +9894,7 @@ A new screen of the game is added as a module of its own, one entry in the regis
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-281
-- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries alone, and refuses a table that leaves a kind of screen without an entry. An agent compares a change with the part no test holds:
+- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries, and refuses a table that leaves a kind of screen without an entry. An agent compares a change with the part no test holds:
   - complies: the screen Wiedza added as its module, an entry file, one line of the registry's table with that entry's import, its address in the module of addresses and its place on the menu bar
   - violates: a new screen that names its kind in a function of the game view outside its entry and the line of the table, or that the registry shows, draws, focuses or takes down by a branch written for it
 - **Origin:** none
@@ -9909,7 +9909,7 @@ An act of the player that depends on the passing of time goes through the store 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04
-- **Verification:** tests: that the store reads the clock and passes the time elapsed to the simulation before the body of an act runs. An agent compares a change with the part no test holds:
+- **Verification:** tests: that the store reads the clock and passes the time elapsed to the simulation before the body of an act runs, and that its act without catch-up reads no clock. An agent compares a change with the part no test holds:
   - complies: a new act of the screen Wiedza written as an act of the store that reads the state in its body, after the store's reading of the clock; a new character created with no reading of the clock before it
   - violates: an act that calls the simulation with the state it holds with no reading of the clock before it; an act that reads the clock itself and then calls the simulation, beside the store's own reading
 - **Origin:** none

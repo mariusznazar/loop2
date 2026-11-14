@@ -172,6 +172,7 @@ test("an act's body runs after one reading of the clock that passed the real tim
   });
 });
 
+// decision: D-409 "A new character and the purchase of a branch rank do not catch up time"
 // Catches a new character or a bought branch rank that catches up time, which D-04 gives to no act
 // of them: the clock would pass the minutes and change the state under them.
 test("an act without catch-up reads no clock and passes no time", async () => {
