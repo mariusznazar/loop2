@@ -1335,6 +1335,26 @@ The simulation's TypeScript files are type-checked under a configuration of thei
 - **Part:** simulation · build-tools
 - **Violated:** no
 
+## first-map-stock
+
+Every tile of the map Skraj lasu holds sticks and berries, whatever the seed of its map run.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-396
+- **Part:** simulation
+- **Violated:** no
+
+## first-map-balance
+
+On the map Skraj lasu, from a game whose Understanding holds every action and condition, a decent program of twelve rules solves the map in at least 95 % of 500 map runs and a naive program of six rules, which never leaves the entrance tile, in at most 50 % of them, the map runs being the sends at 500 consecutive real moments, one millisecond apart, from 1760000000000.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-396 · D-397
+- **Part:** simulation
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
