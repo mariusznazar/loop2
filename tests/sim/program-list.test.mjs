@@ -12,6 +12,7 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import {
+  appendPrograms,
   createProgram,
   deleteProgram,
   editProgram,
@@ -409,4 +410,90 @@ test("an edit of the copy reaches only the copy while the list holds more progra
   const { state } = setProgram(sentWithThird(), EXPLORING);
   assert.deepEqual(state.run.copy.program, EXPLORING);
   assert.deepEqual(state.programs[1].program, WANDERING);
+});
+
+const pulled = (...names) =>
+  names.map((name) => ({ name, program: WANDERING }));
+
+test("pulled programs are appended at the end of the list in order, numbered from the next number, which rises by their count", () => {
+  const state = appendPrograms(team(), [
+    { name: "Dom", program: WANDERING },
+    { name: "Las", program: EXPLORING },
+  ]);
+  assert.deepEqual(
+    state.programs.map(({ id, name }) => [id, name]),
+    [
+      [1, "Program"],
+      [3, "Las"],
+      [4, "Noc"],
+      [5, "Dom"],
+      [6, "Las (2)"],
+    ],
+  );
+  assert.deepEqual(state.programs[3].program, WANDERING);
+  assert.deepEqual(state.programs[4].program, EXPLORING);
+  assert.equal(state.nextProgramId, 7);
+});
+
+test("a pulled name taken on the list takes the next free number, and the next one Las (3) while Las (2) stands", () => {
+  const state = appendPrograms(team(), pulled("Las", "Las"));
+  assert.deepEqual(
+    state.programs.slice(3).map(({ id, name }) => [id, name]),
+    [
+      [5, "Las (2)"],
+      [6, "Las (3)"],
+    ],
+  );
+  assert.equal(state.nextProgramId, 7);
+});
+
+test("a pulled name is numbered against the programs appended before it, and a name ending in (2) gets another (2)", () => {
+  const state = appendPrograms(team(), pulled("Las", "Las", "Las (2)"));
+  assert.deepEqual(
+    state.programs.slice(3).map(({ name }) => name),
+    ["Las (2)", "Las (3)", "Las (2) (2)"],
+  );
+});
+
+test("a pulled name is taken regardless of letter case, and the number keeps the name's own letters", () => {
+  const state = appendPrograms(team(), pulled("las", "NOC", "Noc (2)"));
+  assert.deepEqual(
+    state.programs.slice(3).map(({ name }) => name),
+    ["las (2)", "NOC (2)", "Noc (2) (2)"],
+  );
+});
+
+test("the counter rises by the count of the appended programs and nothing is appended for none", () => {
+  const three = appendPrograms(team(), pulled("A", "B", "C"));
+  assert.equal(three.nextProgramId, 8);
+  assert.deepEqual(
+    three.programs.slice(3).map(({ id }) => id),
+    [5, 6, 7],
+  );
+  const none = team();
+  assert.deepEqual(appendPrograms(none, []), none);
+});
+
+test("an append changes nothing of the game state but the programs and the counter", () => {
+  const before = pickProgram(sentWithThird(), 2, 4).state;
+  const after = appendPrograms(before, [
+    { name: "Las", program: EXPLORING },
+  ]);
+  assert.deepEqual(after, {
+    ...before,
+    programs: [
+      ...before.programs,
+      { id: 5, name: "Las (2)", program: EXPLORING },
+    ],
+    nextProgramId: 6,
+  });
+});
+
+test("the append changes nothing passed to it", () => {
+  const state = team();
+  const frozen = deepFreeze(structuredClone(state));
+  const read = deepFreeze([{ name: "Las", program: EXPLORING }]);
+  appendPrograms(frozen, read);
+  assert.deepEqual(frozen, state);
+  assert.deepEqual(read, [{ name: "Las", program: EXPLORING }]);
 });
