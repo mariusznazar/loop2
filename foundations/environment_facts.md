@@ -833,9 +833,9 @@ On 2026-11-14, `docker stats --no-stream loop2 loop2-cloudflared` on the test se
 
 ## loop2-app-log-sqlite-busy-lines
 
-On 2026-11-14, neither the game's dump file `/var/log/loop2-app.log` nor its rotated copy `/var/log/loop2-app.log.1` on the test server's host holds a line with the text `SQLITE_BUSY`.
+On 2026-11-14, neither the game's dump file `/var/log/loop2-app.log` nor its rotated copy `/var/log/loop2-app.log.1` on the test server's host holds a line with the text `"errcode":5,`, which is how a failure line of the game writes SQLite's number 5 for a busy failure; the dump holds no line with the text `"failure":`, so no failure line of any kind, and the copy holds one line, `logrotate trial`, and no line of the game.
 
-- **Source:** reading: `grep -F -m 50 -- 'SQLITE_BUSY' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — no output · and the same with `/var/log/loop2-app.log.1` in place of the file — no output; run 2026-11-14
+- **Source:** reading: `grep -F -m 50 -- '"errcode":5,' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — no output · and the same with `/var/log/loop2-app.log.1` in place of the file — no output · `grep -F -m 50 -- '"failure":' /var/log/loop2-app.log` — no output · and the same with `/var/log/loop2-app.log.1` — no output · `tail -n 200 /var/log/loop2-app.log.1` on the same host, tail, whose version no reading the skill allows prints — its whole output: "logrotate trial" · and, to show that a fixed string written as the game writes its lines can match in the dump, `grep -F -m 50 -- '"event":"link-issued"' /var/log/loop2-app.log` — its whole output, with the account identifier replaced by `<account>` and runs of spaces collapsed to one: "loop2 | 2026-11-13T23:03:05.952126792Z {"event":"link-issued","accountId":"<account>","linkPurpose":"password-reset"}"; run 2026-11-14
 
 ## mikrus-host-docker-compose-version
 

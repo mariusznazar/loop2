@@ -3986,10 +3986,11 @@ layer.
 without operating another database process. It is a simple start. The choice accepts SQLite's
 one-writer limit and the possibility of migrating data and access code if actual use exposes a
 problem, and is to be looked at again on observed database write failures or unacceptable waits, or
-when a second account server instance has to write the same data. On 2026-11-14 neither the game's
-dump file on the server nor its one rotated copy held a line with `SQLITE_BUSY`; the log of the
-running containers was not read. The file needs a durable local
-place because replacing a container must not erase player accounts or saves.
+when a second account server instance has to write the same data. On 2026-11-14 the game's dump
+file on the server held no line with SQLite's busy number 5 in a failure line and no failure line of
+any kind, and its one rotated copy held no line of the game; the log of the running containers was
+not read. The file needs a durable local place because replacing a container must not erase player
+accounts or saves.
 *Rejected:* PostgreSQL — adds a database server process and its operation before concurrent writes
 show a need for it; MongoDB — also adds a server process, while its document model brings no
 demonstrated benefit for storing whole saves and has a 16 MiB limit per document; ad hoc JSON
