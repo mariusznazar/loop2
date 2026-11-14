@@ -10,7 +10,9 @@
  * element of its own for the page to place, a first render that is synchronous, `update(props)` and
  * `dispose()`. The page calls them from an event handler or the continuation of an answer, never
  * from render or an effect. The page runs the logout itself, since it saves the game first; the bar
- * only shows the waiting and the sentence the page gives. The bar sends „Wyślij ponownie” itself.
+ * only shows the waiting and the sentence the page gives, and draws „Wyloguj” disabled, its text kept,
+ * while the page says it is unavailable, as it does while the page waits for the reset of the game
+ * (D-396). The bar sends „Wyślij ponownie” itself.
  * Nothing runs when the module is imported.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -42,8 +44,16 @@ export type MenuBarProps = {
    * place of the unconfirmed sentence; read when the player's menu first stands.
    */
   registrationMessage: ConfirmationMessage | null;
-  /** The page's logout: whether it waits for the server, and the sentence of an uncertain end. */
-  logout: { waiting: boolean; sentence: string | null };
+  /**
+   * The page's logout: whether it waits for the server, the sentence of an uncertain end, and
+   * whether „Wyloguj” cannot be pressed now because the page waits for another request of the
+   * account, the reset of the game (D-396); the text of the waiting is the logout's alone.
+   */
+  logout: {
+    waiting: boolean;
+    sentence: string | null;
+    unavailable: boolean;
+  };
 };
 
 export type MenuBarOptions = {
@@ -239,9 +249,10 @@ function AccountMenu({
             <ReactButton
               text="Wyloguj"
               waitingText={logout.waiting ? "Wylogowywanie…" : null}
+              disabled={logout.unavailable}
               buttonRef={logoutButton}
               onClick={() => {
-                if (!logout.waiting) onLogout();
+                if (!logout.waiting && !logout.unavailable) onLogout();
               }}
             />
             {logout.sentence === null ? null : (

@@ -37,6 +37,7 @@ import {
 } from "./last-resort.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
+import { RESET_FAILED, RESET_NOT_ALLOWED } from "./previous-save-lines.js";
 import { screenAddress } from "./screen-address.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
@@ -53,6 +54,9 @@ const REFUSED_LOAD: Readonly<Record<SavedGameRefusal, string>> = {
 };
 /** The sentence of a load that met an error of the code: it refused nothing, so nothing is replaced. */
 const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
+/** The one-time sentence above the new game that a reset built; the old game waits as the previous save (D-396). */
+const GAME_STARTS_ANEW =
+  "Gra zaczyna się od nowa, a poprzednia czeka jako poprzedni zapis.";
 
 /** The server's answer that this browser has no valid session: the player is signed out. */
 function signedOut(failure: AccountFailure): boolean {
@@ -101,7 +105,7 @@ const NAME_ALONE: MenuBarProps = {
   screen: null,
   returnEntry: null,
   registrationMessage: null,
-  logout: { waiting: false, sentence: null },
+  logout: { waiting: false, sentence: null, unavailable: false },
 };
 
 /** A sentence of the page in `warning`, standing once above the screen it opens. */
@@ -134,6 +138,12 @@ function createPageNotice(sentence: string): HTMLElement {
  * which entry built it — the sign-in form, an emailed link or the address itself — which picks the
  * first screen (D-96, D-225), and the game tells the page its place, which the page gives the bar
  * to mark, with „Wróć do przejścia” where a map run waits.
+ *
+ * For an account with the previous-save privilege the page gives the game the act of „Zacznij od
+ * zera” (D-396): after the player's confirmation it sends the reset, with no save of its own before
+ * it, and while it waits holds the old saver's outcomes, which it acts on only if the reset fails, and
+ * leaves „Wyloguj” not pressable; on 204 it replaces the game with a new one on revision 0, saved
+ * only at the player's first act, under one sentence that the previous game waits as the previous save.
  *
  * Under the bar, on a line of its own, stands the line of saving (D-208), which shows only at a
  * problem, the sentence of a failed save before a logout (D-97) included. When the page's
@@ -209,6 +219,11 @@ export function startApp(
   // page does, so an outcome the saver reports meanwhile waits for it.
   let loggingOut = false;
   let deferred: (() => void) | null = null;
+  // While the reset of the game waits for the server, the old game's saver may still report a
+  // conflict or a missing session; the page holds that outcome and acts on it only if the reset fails
+  // (D-396), and „Wyloguj” is not pressable.
+  let resetting = false;
+  let heldByReset: (() => void) | null = null;
   // Each request of the page takes the next number; an answer counts only while it is the last.
   let latest = 0;
   // An error nothing handled came: the game takes no change and the sentence stands, until the page
@@ -330,7 +345,11 @@ export function startApp(
             screen: place.screen,
             returnEntry: place.returnEntry,
             registrationMessage: barMessage,
-            logout: { waiting: logoutWaiting, sentence: logoutSentence },
+            logout: {
+              waiting: logoutWaiting,
+              sentence: logoutSentence,
+              unavailable: resetting,
+            },
           },
     );
   }
@@ -362,15 +381,21 @@ export function startApp(
     barMessage = null;
     logoutWaiting = false;
     logoutSentence = null;
+    resetting = false;
+    heldByReset = null;
     drawBar();
   }
 
-  /** An outcome of the saver acts now, or after the answer to a logout under way. */
-  function whenNotLoggingOut(view: GameView, action: () => void): void {
+  /**
+   * An outcome of the saver acts now, after the answer to a logout under way, or, while the reset
+   * waits, only if the reset fails (D-396): the held outcome then goes through here again.
+   */
+  function whenNotBusy(view: GameView, action: () => void): void {
     const guarded = (): void => {
       if (game === view) action();
     };
-    if (loggingOut) deferred = guarded;
+    if (resetting) heldByReset = () => whenNotBusy(view, action);
+    else if (loggingOut) deferred = guarded;
     else guarded();
   }
 
@@ -400,9 +425,10 @@ export function startApp(
       address,
       entry,
       onScreen,
-      onConflict: () => whenNotLoggingOut(view, () => reloadAfterConflict()),
+      ...(owner.previousSaveAllowed ? { onReset: () => resetGame() } : {}),
+      onConflict: () => whenNotBusy(view, () => reloadAfterConflict()),
       onOutdated: () => {},
-      onSignedOut: () => whenNotLoggingOut(view, () => expire()),
+      onSignedOut: () => whenNotBusy(view, () => expire()),
     });
     game = view;
     account = owner;
@@ -525,7 +551,7 @@ export function startApp(
    */
   function logOut(): void {
     const view = game;
-    if (view === null || logoutWaiting) return;
+    if (view === null || logoutWaiting || resetting) return;
     void (async () => {
       const mine = ++latest;
       logoutSentence = null;
@@ -562,6 +588,58 @@ export function startApp(
       // A save that lost to another browser leaves this game behind the server's save (D-209).
       if (save.kind === "conflict") reloadAfterConflict();
       else later?.();
+    })();
+  }
+
+  /**
+   * „Zacznij od zera” confirmed: the page sends no save of its own, since programs are saved right
+   * after each edit (D-207), and asks the server to move the saved game state to the previous save.
+   * While it waits the outcomes of the old game's saver are held and „Wyloguj” is not pressable
+   * (D-396). On 204 the game is replaced by a new one built as for an account with no save, with no
+   * save sent at once and one sentence above it; no session goes as for a save (D-211); a refusal of
+   * the privilege and any other failure each have a sentence beside the control, the game stays
+   * and a held outcome is acted on (D-396).
+   */
+  function resetGame(): void {
+    const view = game;
+    const owner = account;
+    if (view === null || owner === null || resetting) return;
+    resetting = true;
+    drawBar();
+    void (async () => {
+      const result = await client.resetSavedGame();
+      // The game left the page meanwhile (a logout, a sign-in elsewhere): nothing here concerns it.
+      if (game !== view) return;
+      resetting = false;
+      if (result.ok) {
+        heldByReset = null;
+        pendingNotice = { text: GAME_STARTS_ANEW, role: "positive" };
+        entry = "address";
+        showGame(
+          owner,
+          { state: newGame(), revision: 0, refused: null },
+          false,
+        );
+        return;
+      }
+      if (signedOut(result.failure)) {
+        heldByReset = null;
+        expire();
+        return;
+      }
+      const { failure } = result;
+      const forbidden =
+        failure.kind === "refused" &&
+        failure.status === 403 &&
+        failure.code === "previous-save-forbidden";
+      view.setReset({
+        waiting: false,
+        sentence: forbidden ? RESET_NOT_ALLOWED : RESET_FAILED,
+      });
+      drawBar();
+      const held = heldByReset;
+      heldByReset = null;
+      held?.();
     })();
   }
 

@@ -3,14 +3,22 @@
 // page builds it (tests/view/end-question.test.mjs does the same), with a client whose answers the
 // case gives when it chooses, and the pull is driven through the button the player presses; the game
 // state is read back from the document the view keeps (`keep`) and the saves from what the client was
-// sent. Every expected value is written out here. Real events, the look and the focus ring are the
+// sent. The page's part of the reset (D-396) runs through `startApp` with a client that holds every
+// call until the case answers it. Every expected value is written out here. Real events, the look and the focus ring are the
 // browser check's (D-88).
 import { assert, inAct, settle, withPage } from "./page-document.mjs";
 import { mock, test } from "node:test";
-import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
+import {
+  createCharacter,
+  newGame,
+  send,
+  withSaveTime,
+} from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
+import { savedGame } from "../../dist/browser/sim/saved-game.js";
 import {
   RESET_FAILED,
+  RESET_NOT_ALLOWED,
   programsWord,
   pullResultLine,
 } from "../../dist/browser/view/previous-save-lines.js";
@@ -1035,5 +1043,319 @@ test("leaving Programy closes the confirmation, and the game asks the server for
     assert.deepEqual(resets, []);
     assert.deepEqual(held.saves, []);
     await inAct(() => view.dispose());
+  });
+});
+
+// --- the page's reset (D-396, D-209, D-211, D-97) -------------------------------------------------
+
+const RESET_OK = { ok: true, value: null };
+const FORBIDDEN = failure(403, "previous-save-forbidden");
+const SERVER_ERROR = failure(500);
+const NO_SESSION = failure(401, "unauthenticated");
+const EXPIRED_SENTENCE =
+  "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
+
+/**
+ * The page started through `startApp` with a client that holds every call until the case answers
+ * it, signed in as an account with (or without) the privilege and showing Programy with the game of
+ * `state`, loaded at `revision`. `log` is every call in the order it was made.
+ */
+async function startedPage(options = {}) {
+  // An `allowed` the case gives as undefined stays undefined: the account answer then has no flag.
+  const { allowed, state, revision } = {
+    allowed: true,
+    state: twoPrograms(),
+    revision: 3,
+    ...options,
+  };
+  const { startApp } = await import("../../dist/browser/view/app.js");
+  const calls = [];
+  const log = [];
+  const hold =
+    (name) =>
+    (...args) =>
+      new Promise((resolve) => {
+        log.push(name);
+        calls.push({ name, args, resolve });
+      });
+  const client = {
+    currentAccount: hold("currentAccount"),
+    loadSavedGame: hold("loadSavedGame"),
+    loadPreviousSavedGame: hold("loadPreviousSavedGame"),
+    resetSavedGame: hold("resetSavedGame"),
+    saveGame: hold("saveGame"),
+    logout: hold("logout"),
+    reportBrowserFailure: () => Promise.resolve({ ok: true, value: null }),
+  };
+  const page = {
+    log,
+    named: (name) => calls.filter((entry) => entry.name === name),
+    async answer(name, result) {
+      const index = calls.findIndex((entry) => entry.name === name);
+      assert.notEqual(index, -1, `no ${name} call is waiting`);
+      const [entry] = calls.splice(index, 1);
+      entry.resolve(result);
+      await settle();
+    },
+  };
+  await inAct(() =>
+    startApp(pageDocument().body, client, fakeAddress(PROGRAMS)),
+  );
+  await settle();
+  await page.answer("currentAccount", {
+    ok: true,
+    value: {
+      id: "a1",
+      email: "ala@example.test",
+      emailConfirmed: true,
+      ...(allowed === undefined ? {} : { previousSaveAllowed: allowed }),
+    },
+  });
+  await page.answer("loadSavedGame", {
+    ok: true,
+    value: { ...savedGame(withSaveTime(state, CLOCK_MS)), revision },
+  });
+  if (allowed === true) await page.answer("loadPreviousSavedGame", NO_PREVIOUS);
+  return page;
+}
+
+const pageButton = (text) =>
+  all(pageDocument().body).find(
+    (element) => element.localName === "button" && element.textContent === text,
+  );
+const programNames = () =>
+  [...pageDocument().body.querySelectorAll(".program-list-item")].map(
+    (element) => element.textContent,
+  );
+const resetLines = () =>
+  [
+    ...pageDocument().body.querySelectorAll(".program-actions .form-warning"),
+  ].map((element) => element.textContent);
+const pageNotices = () =>
+  [...pageDocument().body.querySelectorAll(".confirmation-notice")].map(
+    (element) => [element.className, element.textContent],
+  );
+const bodyText = () => pageDocument().body.textContent;
+
+/** The player opens the confirmation and confirms it. */
+async function confirmReset() {
+  await press(pageButton(RESET_TEXT));
+  await press(pageButton(RESET_CONFIRM_TEXT));
+}
+
+// Catches a reset control, or a request for a reset, on the page of an account the server names
+// without the privilege or with the flag missing (D-394), and a page that asks the server before the
+// player confirms (D-396).
+test("the page gives the reset control to a privileged account alone, and sends nothing for it before the confirmation", async () => {
+  for (const allowed of [false, undefined]) {
+    await onPage(async () => {
+      const page = await startedPage({ allowed });
+      assert.equal(pageButton(RESET_TEXT), undefined);
+      assert.deepEqual(page.named("resetSavedGame"), []);
+    });
+  }
+  await onPage(async () => {
+    const page = await startedPage({ allowed: true });
+    assert.ok(pageButton(RESET_TEXT), "the control stands");
+    await press(pageButton(RESET_TEXT));
+    await press(pageButton(WITHDRAW_TEXT));
+    assert.deepEqual(page.log, [
+      "currentAccount",
+      "loadSavedGame",
+      "loadPreviousSavedGame",
+    ]);
+  });
+});
+
+// Catches a save of the page's own before the reset (D-396, D-207), a reset sent more than once, and a
+// "Wyloguj" that stays pressable while the reset waits (the logout would save and end the session).
+test("a confirmed reset is the next call after the confirmation, with no save before it, and „Wyloguj” cannot be pressed while it waits", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await confirmReset();
+    assert.deepEqual(page.log, [
+      "currentAccount",
+      "loadSavedGame",
+      "loadPreviousSavedGame",
+      "resetSavedGame",
+    ]);
+    assert.equal(pageButton(RESET_TEXT).disabled, true, "the control waits");
+    await press(pageButton("Konto"));
+    const logout = pageButton("Wyloguj");
+    assert.equal(logout.disabled, true);
+    assert.equal(logout.textContent, "Wyloguj");
+    await press(logout);
+    assert.deepEqual(page.named("saveGame"), []);
+    assert.deepEqual(page.named("logout"), []);
+    assert.equal(page.named("resetSavedGame").length, 1);
+    // The failure gives „Wyloguj” back.
+    await page.answer("resetSavedGame", SERVER_ERROR);
+    assert.equal(pageButton("Wyloguj").disabled, false);
+    assert.equal(pageButton(RESET_TEXT).disabled, false);
+  });
+});
+
+// Catches a new game built on a revision other than 0, one saved at once, one that loads the server's
+// save again, a missing sentence above it, and the game left on another screen (D-396, D-209).
+test("on 204 the page builds a new game on revision 0 with the sentence above it, and sends no save at once", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    assert.deepEqual(programNames(), ["Program", "Program 2"]);
+    await confirmReset();
+    await page.answer("resetSavedGame", RESET_OK);
+    assert.deepEqual(programNames(), ["Program"], "the game is a new one");
+    assert.ok(shown(pageDocument().body.querySelector(".program-list-item")));
+    const notices = pageNotices();
+    assert.equal(notices.length, 1);
+    assert.match(notices[0][0], /positive/);
+    assert.match(notices[0][1], /zaczyna się od nowa/);
+    assert.match(notices[0][1], /poprzedni zapis/);
+    assert.deepEqual(page.named("saveGame"), [], "no save at once");
+    assert.equal(page.named("loadSavedGame").length, 0);
+    // The first save of the new game is based on 0, as for an account with no save.
+    await press(pageButton("Nowy program"));
+    const saves = page.named("saveGame");
+    assert.equal(saves.length, 1);
+    assert.equal(saves[0].args[0].basedOn, 0);
+    assert.equal(saves[0].args[0].game.programs.length, 2);
+  });
+});
+
+// Catches a new game with no question about the previous save, so that its programs cannot be pulled
+// (task point 5): the new game's Programy asks again and the pull appends the reset game's programs.
+test("after the reset the new game's Programy asks for the previous save, and its programs can be pulled", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await confirmReset();
+    await page.answer("resetSavedGame", RESET_OK);
+    assert.equal(page.named("loadPreviousSavedGame").length, 1);
+    await page.answer("loadPreviousSavedGame", previous([item(1, "Las", LAS)]));
+    await press(pageButton(PULL_TEXT));
+    await page.answer("loadPreviousSavedGame", previous([item(1, "Las", LAS)]));
+    assert.deepEqual(programNames(), ["Program", "Las"]);
+  });
+});
+
+const HELD_OUTCOMES = [
+  {
+    name: "a conflict",
+    outcome: { kind: "conflict" },
+    acted: (page) =>
+      assert.equal(page.named("loadSavedGame").length, 1, "the server's save"),
+    notActed: (page) => assert.equal(page.named("loadSavedGame").length, 0),
+  },
+  {
+    name: "a signed-out answer",
+    outcome: { kind: "signed-out" },
+    acted: () => assert.match(bodyText(), /Sesja wygasła/),
+    notActed: () => assert.doesNotMatch(bodyText(), /Sesja wygasła/),
+  },
+];
+
+// Catches the old saver's outcome acted on while the reset waits (the page would drop the game, or
+// show the forms, under a request that may yet succeed), and one lost after a failure (D-396, D-209,
+// D-211): the outcome waits, and a failure acts on it.
+for (const held of HELD_OUTCOMES) {
+  test(`${held.name} of the old saver during the reset waits, and a failed reset acts on it`, async () => {
+    await onPage(async () => {
+      const page = await startedPage();
+      await press(pageButton("Nowy program"));
+      await confirmReset();
+      await page.answer("saveGame", held.outcome);
+      held.notActed(page);
+      assert.deepEqual(programNames(), ["Program", "Program 2", "Program 3"]);
+      await page.answer("resetSavedGame", SERVER_ERROR);
+      held.acted(page);
+    });
+  });
+
+  test(`${held.name} of the old saver during the reset is dropped when the reset succeeds`, async () => {
+    await onPage(async () => {
+      const page = await startedPage();
+      await press(pageButton("Nowy program"));
+      await confirmReset();
+      await page.answer("saveGame", held.outcome);
+      await page.answer("resetSavedGame", RESET_OK);
+      held.notActed(page);
+      assert.deepEqual(programNames(), ["Program"]);
+      assert.equal(pageNotices().length, 1);
+    });
+  });
+}
+
+// Catches a conflict from the old game's saver, answered after the reset, that the page acts on: it
+// would load the server's save (none) and replace the new game with another new one (D-396, D-209).
+test("a conflict that the old saver gets after the reset is not acted on", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await press(pageButton("Nowy program"));
+    await confirmReset();
+    await page.answer("resetSavedGame", RESET_OK);
+    await page.answer("saveGame", { kind: "conflict" });
+    assert.equal(page.named("loadSavedGame").length, 0);
+    assert.deepEqual(programNames(), ["Program"]);
+    assert.equal(pageNotices().length, 1, "the sentence of the reset stands");
+  });
+});
+
+const FAILED_RESETS = [
+  {
+    name: "403 previous-save-forbidden",
+    answer: FORBIDDEN,
+    line: RESET_NOT_ALLOWED,
+  },
+  { name: "another refusal", answer: SERVER_ERROR, line: RESET_FAILED },
+  { name: "no connection", answer: NO_CONNECTION, line: RESET_FAILED },
+];
+
+// Catches a failed reset that drops the game, leaves the control waiting or the saving stopped, or
+// shows no sentence, or the wrong one for a 403 (D-396, D-394).
+for (const { name, answer, line } of FAILED_RESETS) {
+  test(`a reset answered with ${name} shows its one sentence, and the game stays, saving on, with the control at rest`, async () => {
+    await onPage(async () => {
+      const page = await startedPage();
+      await confirmReset();
+      await page.answer("resetSavedGame", answer);
+      assert.deepEqual(resetLines(), [line]);
+      assert.deepEqual(programNames(), ["Program", "Program 2"]);
+      assert.equal(pageButton(RESET_TEXT).disabled, false);
+      assert.deepEqual(pageNotices(), []);
+      assert.equal(page.named("loadSavedGame").length, 0);
+      await press(pageButton("Nowy program"));
+      const saves = page.named("saveGame");
+      assert.equal(saves.length, 1, "the game goes on saving");
+      assert.equal(saves[0].args[0].basedOn, 3);
+    });
+  });
+}
+
+// Catches a reset answered 401 that is not handled as a save with no session (D-211): the game goes,
+// the forms stand with the sentence, and the state is kept for the same account.
+test("a reset answered with no session shows the forms with the expired sentence, as a save does", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await confirmReset();
+    await page.answer("resetSavedGame", NO_SESSION);
+    assert.deepEqual(programNames(), []);
+    assert.ok(bodyText().includes(EXPIRED_SENTENCE));
+  });
+});
+
+// Catches a page that stops a reset while a logout waits, or lets the reset's late answer build a
+// game over the forms the logout brought (D-396): the logout's own answer decides what stands.
+test("a reset confirmed while a logout waits is sent, and the logout's answer decides what the page shows", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await press(pageButton("Konto"));
+    await press(pageButton("Wyloguj"));
+    assert.equal(page.named("saveGame").length, 1, "the logout's own save");
+    await confirmReset();
+    assert.equal(page.named("resetSavedGame").length, 1, "the reset is sent");
+    await page.answer("saveGame", { kind: "saved", revision: 4 });
+    await page.answer("logout", { ok: true, value: null });
+    assert.deepEqual(programNames(), [], "the forms stand");
+    await page.answer("resetSavedGame", RESET_OK);
+    assert.deepEqual(programNames(), [], "the late answer builds no game");
+    assert.deepEqual(pageNotices(), []);
   });
 });
