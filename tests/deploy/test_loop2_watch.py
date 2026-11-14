@@ -8,8 +8,13 @@ message, that a marker in a log line or in Docker's output never reaches `pusher
 log, has its own file, `test_loop2_watch_message.py`.
 
 What the tests below prove, by group:
-- the five kinds each raise one call of `pusher` with their own fixed notice, a flood of browser
+- the six kinds each raise one call of `pusher` with their own fixed notice, a flood of browser
   lines moves only the browser kind, and a line counts only by its anchored prefix;
+- the backup kind: a night with no successful send in the log of the backup for 26 hours, held for
+  24 hours once sent, counted in the day's budget, evaluated only on a state it could read, and
+  dropped with the other readings when a deployment begins; the log of the backup is data that may
+  hold anything, so a line counts only when it is exactly the line the backup script writes at the
+  end of a night that sent its file, and the same script's own run is fed to the watcher;
 - the window: from the end of the last run to the start of this one, never more than 24 hours, left
   open by a run that dropped it, and "from now" when the state is missing or damaged;
 - the state: strict, never sourced, rewritten by every quiet run, a replaced container recorded
@@ -19,6 +24,7 @@ What the tests below prove, by group:
   the log and the schedule.
 """
 
+import calendar
 import os
 import re
 import unittest
@@ -31,6 +37,7 @@ T0 = support.T0
 FIVE_MINUTES = 5 * support.MINUTES
 HOUR = 60 * support.MINUTES
 DAY = 24 * HOUR
+NOW = T0 + FIVE_MINUTES
 
 
 def failure_line(word="database", place="open"):
@@ -62,7 +69,7 @@ def state_text(window_end, containers=None, last=None, messages=()):
 STATE_LINE = re.compile(
     r"^(window_end [1-9][0-9]{9,10}"
     r"|container (loop2|loop2-cloudflared) [0-9a-f]{64} \d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d{1,9})?Z"
-    r"|last (down|unhealthy|restarted|failures|browser) [1-9][0-9]{9,10}"
+    r"|last (down|unhealthy|restarted|failures|backup|browser) [1-9][0-9]{9,10}"
     r"|message [1-9][0-9]{9,10})$")
 
 
@@ -77,6 +84,15 @@ class WithFixture(unittest.TestCase):
         """A fixture whose first run has written the state at T0."""
         fixture = self.fixture()
         fixture.prime()
+        return fixture
+
+    def stated(self, backup_log=None, window=T0, **state):
+        """A fixture with the state a first run would have left at `window` (and the rest of it as
+        `state_text` takes it), written without a run, and the backup log a test chose, if any."""
+        fixture = self.fixture()
+        fixture.write_state(state_text(window, **state))
+        if backup_log is not None:
+            fixture.write_backup_log(backup_log)
         return fixture
 
     def run_logged(self, fixture, epoch):
@@ -94,7 +110,7 @@ class WithFixture(unittest.TestCase):
         self.assertEqual(result.messages(), [notice(kind) for kind in kinds], result)
 
 
-class TheFiveKinds(WithFixture):
+class TheKinds(WithFixture):
 
     def test_each_kind_calls_pusher_once_with_its_own_fixed_notice(self):
         # The break: a notice paired with the wrong kind, or two calls for one trouble.
@@ -105,6 +121,7 @@ class TheFiveKinds(WithFixture):
             "restarted": lambda f: f.set_container(support.TUNNEL, support.TUNNEL_ID,
                                                    started=support.RESTARTED),
             "failures": lambda f: f.set_log(failure_line()),
+            "backup": lambda f: f.write_backup_log(""),
             "browser": lambda f: f.set_log(BROWSER_LINE),
         }
         self.assertEqual(set(arrangements), set(support.KINDS))
@@ -115,12 +132,15 @@ class TheFiveKinds(WithFixture):
                 result = fixture.run_at(T0 + FIVE_MINUTES)
                 self.assert_sent(result, kind)
 
-    def test_the_five_notices_differ_and_none_is_the_backups(self):
+    def test_the_six_notices_differ_and_none_is_the_backup_scripts(self):
+        # The break: the backup kind worded as the backup script's own notice, so the owner could
+        # not tell a failed night from the night that is missing.
         subjects = [subject for subject, _text in support.NOTICES.values()]
         texts = [text for _subject, text in support.NOTICES.values()]
-        self.assertEqual(len(set(subjects)), 5)
-        self.assertEqual(len(set(texts)), 5)
+        self.assertEqual(len(set(subjects)), 6)
+        self.assertEqual(len(set(texts)), 6)
         self.assertNotIn("kopia_bazy_loop2_nieudana", subjects)
+        self.assertNotIn("Kopia bazy loop2 nie udała się.", texts)
 
     def test_a_container_that_is_not_running_is_down_whatever_it_is_doing_instead(self):
         for status in ("created", "paused", "restarting", "removing", "exited", "dead"):
@@ -194,13 +214,15 @@ class TheFiveKinds(WithFixture):
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "failures", "browser")
 
     def test_every_kind_due_at_once_goes_in_the_order_of_the_table(self):
+        # The break: the backup kind listed before the server's failures or after the browser's.
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         fixture.set_container(support.TUNNEL, support.TUNNEL_ID, health="unhealthy",
                               started=support.RESTARTED)
         fixture.set_log(BROWSER_LINE + failure_line())
+        fixture.write_backup_log("")
         result = fixture.run_at(T0 + FIVE_MINUTES)
-        self.assert_sent(result, "down", "unhealthy", "restarted", "failures", "browser")
+        self.assert_sent(result, "down", "unhealthy", "restarted", "failures", "backup", "browser")
 
     def test_only_a_line_that_begins_as_a_failure_object_counts(self):
         # The break: a match anywhere in the line, so a player's text or a quoted object counts.
@@ -329,6 +351,10 @@ class TheState(WithFixture):
         "kind unknown": state_text(T0, last={"sleeping": T0}),
         "kind time not digits": state_text(T0) + "last down soon\n",
         "kind twice": state_text(T0, last={"down": T0 - HOUR}) + f"last down {T0 - 2 * HOUR}\n",
+        "backup twice": state_text(T0, last={"backup": T0 - HOUR}) + f"last backup {T0 - 2 * HOUR}\n",
+        "backup time not digits": state_text(T0) + "last backup soon\n",
+        "a kind that only begins like backup": state_text(T0) + f"last backups {T0}\n",
+        "backup in capitals": state_text(T0) + f"last Backup {T0}\n",
         "message not digits": state_text(T0) + "message now\n",
         "message with a command": state_text(T0) + "message 1 $(touch pwned)\n",
         "a blank line": state_text(T0) + "\n",
@@ -433,6 +459,307 @@ class TheState(WithFixture):
         self.assertEqual(fixture.state_text(), state_text(
             T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES, "failures": T0 - 7 * HOUR},
             messages=[T0 - HOUR, T0 + FIVE_MINUTES]))
+
+
+    def test_a_last_backup_line_is_read_as_state_and_the_next_run_writes_it(self):
+        # The break: the backup kind missing from the strict reading, so that a state the run
+        # itself wrote counts as damaged and the next run, which only records, reports nothing.
+        fixture = self.fixture()
+        fixture.write_state(state_text(T0, last={"backup": T0 - HOUR}))
+        fixture.set_container(support.GAME, support.GAME_ID, status="exited")
+        self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
+        self.assertEqual(fixture.state_text(), state_text(
+            T0 + FIVE_MINUTES, last={"down": T0 + FIVE_MINUTES, "backup": T0 - HOUR},
+            messages=[T0 + FIVE_MINUTES]))
+
+
+class TheBackupKind(WithFixture):
+    """No successful send of a backup in the log of the backup for 26 hours (D-233, D-356)."""
+
+    def test_a_send_26_hours_old_or_less_counts_and_one_second_older_does_not(self):
+        # The break: a limit of another length, or a comparison off by one second.
+        for age in (0, 26 * HOUR - 1, 26 * HOUR):
+            with self.subTest(age=age):
+                fixture = self.stated(support.night(NOW - age))
+                self.assert_quiet(fixture.run_at(NOW))
+        with self.subTest(age=26 * HOUR + 1):
+            fixture = self.stated(support.night(NOW - 26 * HOUR - 1))
+            self.assert_sent(fixture.run_at(NOW), "backup")
+
+    def test_a_missing_empty_or_unreadable_log_counts_as_no_send(self):
+        # The break: a log that cannot be read taken for a quiet night.
+        arrangements = {"missing": lambda f: f.remove_backup_log(),
+                        "empty": lambda f: f.write_backup_log(""),
+                        "not a file": lambda f: f.make_backup_log_a_directory()}
+        for name, arrange in arrangements.items():
+            with self.subTest(name):
+                fixture = self.stated()
+                arrange(fixture)
+                self.assert_sent(fixture.run_at(NOW), "backup")
+
+    def test_the_kind_is_sent_once_and_then_held_for_24_hours(self):
+        # The break: the six hours of the other kinds, which would bring four mails a day.
+        fixture = self.stated("")
+        self.assert_sent(fixture.run_at(NOW), "backup")
+        self.assertIn(f"last backup {NOW}\n", fixture.state_text())
+        self.assert_quiet(fixture.run_at(NOW + FIVE_MINUTES))
+        for last, kinds in ((NOW - DAY + 1, ()), (NOW - DAY, ("backup",))):
+            with self.subTest(last=last):
+                fixture = self.stated("", last={"backup": last})
+                self.assert_sent(fixture.run_at(NOW), *kinds)
+
+    def test_the_kind_counts_in_the_budget_and_stands_after_failures_and_before_browser(self):
+        # The break: a message of this kind outside the budget of six a day, or listed before the
+        # server's failures or after the browser's, so that it takes the last slot of another.
+        recent = [NOW - HOUR]
+        cases = {"one slot, failures first": (5, failure_line(), ["failures"]),
+                 "one slot, backup before browser": (5, BROWSER_LINE, ["backup"]),
+                 "no slot": (6, failure_line(), []),
+                 "two slots": (4, failure_line() + BROWSER_LINE, ["failures", "backup"])}
+        for name, (before, lines, kinds) in cases.items():
+            with self.subTest(name):
+                fixture = self.stated("", messages=recent * before)
+                fixture.set_log(lines)
+                self.assert_sent(fixture.run_at(NOW), *kinds)
+        fixture = self.stated("", messages=recent * 4)
+        fixture.set_log(failure_line() + BROWSER_LINE)
+        fixture.run_at(NOW)
+        self.assertEqual(fixture.state_text(), state_text(
+            NOW, last={"failures": NOW, "backup": NOW}, messages=recent * 4 + [NOW] * 2))
+
+    def test_a_first_run_and_a_damaged_state_do_not_evaluate_it(self):
+        # The break: a missing or lost state file read as a night with no backup, which floods.
+        fresh = self.fixture()
+        fresh.write_backup_log("")
+        self.assert_quiet(fresh.run_at(T0))
+        self.assert_sent(fresh.run_at(NOW), "backup")
+        damaged = self.fixture()
+        damaged.write_backup_log("")
+        damaged.write_state("garbage\n")
+        self.assert_quiet(damaged.run_at(T0))
+
+    def test_a_deployment_lock_held_at_the_first_look_ends_the_run_and_at_the_second_drops_it(self):
+        first = self.stated("")
+        before = first.state_text()
+        first.hold_deploy_lock_from(1)
+        result, lines = self.run_logged(first, NOW)
+        self.assert_quiet(result)
+        self.assertNotIn("docker", result.tools(), result)
+        self.assertEqual(first.state_text(), before)
+        self.assertEqual(len(lines), 1, result)
+        self.assertRegex(lines[0], r"skipped", result)
+        second = self.stated("")
+        before = second.state_text()
+        second.hold_deploy_lock_from(2)
+        result, lines = self.run_logged(second, NOW)
+        self.assert_quiet(result)
+        self.assertEqual(second.state_text(), before)
+        self.assertEqual(len(lines), 1, result)
+        self.assertRegex(lines[0], r"dropped", result)
+        second.release_deploy_lock()
+        self.assert_sent(second.run_at(NOW + FIVE_MINUTES), "backup")
+
+
+STAMP = support.stamp(NOW - HOUR)
+SENT_WORDS = "loop2-backup: end: sent loop2-accounts-1.sqlite.age"
+EXACT_LINE = f"{STAMP} {SENT_WORDS}"
+
+# Lines of the log of the backup that look like the end of a sent night and are not, by what makes
+# them differ; every one of them is data, so none may count.
+LOOK_ALIKES = {
+    "the other lines of a night that sent nothing": [
+        f"{STAMP} loop2-backup: start",
+        f"{STAMP} loop2-backup: made: loop2-accounts-1.sqlite.age, 1024 bytes",
+        f"{STAMP} loop2-backup: stage stream: docker exit 1, age exit 1 (exit 6)",
+        f"{STAMP} loop2-backup: stage send: rsync exit 12 (exit 8)",
+        f"{STAMP} loop2-backup: notice: pusher exit 0",
+        f"{STAMP} loop2-backup: end: failed (exit 8)",
+        f"{STAMP} loop2-backup: end: failed (exit 1)",
+    ],
+    "the words after other text, or other text after them": [
+        f"error: {EXACT_LINE}",
+        f"x{EXACT_LINE}",
+        f" {EXACT_LINE}",
+        f"{EXACT_LINE} ",
+        f"{EXACT_LINE}x",
+        f"{EXACT_LINE} and more",
+        f"{EXACT_LINE}; {SENT_WORDS}",
+        f"docker: {STAMP} {SENT_WORDS}",
+        f"{STAMP} {EXACT_LINE}",
+        f"{STAMP} loop2-backup: {EXACT_LINE}",
+    ],
+    "another program name": [
+        f"{STAMP} loop2-deploy: end: sent loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-watch: end: sent loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-backup2: end: sent loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-backup end: sent loop2-accounts-1.sqlite.age",
+        f"{STAMP} Loop2-backup: end: sent loop2-accounts-1.sqlite.age",
+        f"{STAMP} xloop2-backup: end: sent loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-backup : end: sent loop2-accounts-1.sqlite.age",
+    ],
+    "another file name": [
+        f"{STAMP} loop2-backup: end: sent loop2-accounts-{name}"
+        for name in ("0.sqlite.age", "8.sqlite.age", "9.sqlite.age", "10.sqlite.age",
+                     "12.sqlite.age", "a.sqlite.age", "-1.sqlite.age", ".sqlite.age",
+                     "1.sqlite.age.old", "1.sqlite.ag", "1.sqlite", "1_sqlite_age", "1xsqlite.age",
+                     "1.sqlite_age", "1.SQLITE.AGE", "1.sqlite.age loop2-accounts-2.sqlite.age")
+    ] + [
+        f"{STAMP} loop2-backup: end: sent backup.sqlite.age",
+        f"{STAMP} loop2-backup: end: sent ../loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-backup: end: sent /tmp/loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-backup: end: sent loop2-account-1.sqlite.age",
+        f"{STAMP} loop2-backup: end: sent LOOP2-ACCOUNTS-1.SQLITE.AGE",
+        f"{STAMP} loop2-backup: end: sent ",
+        f"{STAMP} loop2-backup: end: sent",
+        f"{STAMP} loop2-backup: end: sent  loop2-accounts-1.sqlite.age",
+        f"{STAMP} loop2-backup: end:  sent loop2-accounts-1.sqlite.age",
+    ],
+    "a timestamp of another shape": [
+        f"{when} {SENT_WORDS}"
+        for when in (STAMP[:-1], STAMP[:-1] + "+00:00", STAMP[:-1] + "+0000", STAMP.replace("T", " "),
+                     STAMP.lower(), STAMP.replace("Z", "z"), STAMP[:10], STAMP[:-1] + ".000Z",
+                     STAMP.replace("-11-08", "-11-8"), STAMP[2:], f"[{STAMP}]", f"{STAMP}:",
+                     STAMP.replace("T", "T "), "2026-11-08T23:17Z", "Sun Nov  8 23:17:00 UTC 2026",
+                     str(NOW - HOUR), STAMP[:11] + "24" + STAMP[13:], STAMP[:14] + "60" + STAMP[16:],
+                     STAMP[:17] + "60" + STAMP[19:])
+    ],
+    "a timestamp after the run's clock": [
+        f"{support.stamp(when)} {SENT_WORDS}"
+        for when in (NOW + 1, NOW + HOUR, NOW + 10 * DAY)
+    ] + [f"2099-01-01T00:00:00Z {SENT_WORDS}"],
+    "no timestamp": [
+        SENT_WORDS, f" {SENT_WORDS}", "end: sent loop2-accounts-1.sqlite.age",
+        "sent loop2-accounts-1.sqlite.age", f"{STAMP}{SENT_WORDS}", f"{STAMP}  {SENT_WORDS}",
+        f"{STAMP}\t{SENT_WORDS}",
+    ],
+    "a control character that the reading could lose or keep": [
+        EXACT_LINE.encode() + b"\r", b"\r" + EXACT_LINE.encode(), EXACT_LINE.encode() + b"\x1b",
+        EXACT_LINE.encode().replace(b" ", b"\t", 1),
+    ] + [EXACT_LINE.encode()[:place] + b"\0" + EXACT_LINE.encode()[place:]
+         for place in range(len(EXACT_LINE) + 1)],
+}
+
+
+def joined(lines):
+    """The lines, str or bytes, as one log's bytes, each ended by a newline."""
+    return b"".join((line if isinstance(line, bytes) else line.encode()) + b"\n" for line in lines)
+
+
+def failed_night(epoch):
+    return joined([f"{support.stamp(epoch - 20)} loop2-backup: start",
+                   f"{support.stamp(epoch - 10)} loop2-backup: stage stream: docker exit 1, "
+                   "age exit 1 (exit 6); nothing was sent",
+                   f"{support.stamp(epoch)} loop2-backup: notice: pusher exit 0",
+                   f"{support.stamp(epoch)} loop2-backup: end: failed (exit 6)"])
+
+
+class TheBackupLogAsInput(WithFixture):
+    """The log of the backup is data: `docker`, `age` and `flock` write their error text into it, so
+    a line counts only when it is exactly what the backup script writes at the end of a night that
+    sent its file."""
+
+    def test_a_line_that_is_not_exactly_the_end_of_a_sent_night_counts_for_nothing(self):
+        # The break: a match anywhere in the line, a loose timestamp, a dot, a digit class or a
+        # program name read too freely, or a reading that loses a byte and so makes a line exact.
+        for name, lines in LOOK_ALIKES.items():
+            with self.subTest(name):
+                fixture = self.stated(joined(lines))
+                self.assert_sent(fixture.run_at(NOW), "backup")
+
+    def test_all_the_look_alikes_beside_one_exact_line_do_not_hide_it(self):
+        # The control of the test above: the reading is whole, not broken by a line it refuses.
+        everything = [line for lines in LOOK_ALIKES.values() for line in lines]
+        for name, lines in (("before", [EXACT_LINE] + everything),
+                            ("after", everything + [EXACT_LINE])):
+            with self.subTest(name):
+                fixture = self.stated(joined(lines))
+                self.assert_quiet(fixture.run_at(NOW))
+
+    def test_a_send_older_than_the_limit_beside_many_newer_failed_nights_counts_for_nothing(self):
+        # The break: any line of the night read as a success, or the newest night taken for the send.
+        log = support.night(NOW - 27 * HOUR).encode()
+        for step in range(30):
+            log += failed_night(NOW - 25 * HOUR + step * 40 * support.MINUTES)
+        fixture = self.stated(log)
+        self.assert_sent(fixture.run_at(NOW), "backup")
+
+    def test_a_day_that_is_not_on_the_calendar_does_not_count_and_a_leap_day_does(self):
+        # The break: a stamp read by its digits alone, so that the 29th of February of a year that
+        # has none stands in the window of the first of March. Each clock is half past midnight.
+        for year, counts in ((2027, False), (2028, True)):
+            with self.subTest(year):
+                now = calendar.timegm((year, 3, 1, 0, 30, 0))
+                fixture = self.stated(f"{year}-02-29T10:00:00Z {SENT_WORDS}\n",
+                                      window=now - FIVE_MINUTES)
+                self.assert_sent(fixture.run_at(now), *(() if counts else ("backup",)))
+
+    def test_a_log_far_longer_than_the_part_read_is_read_from_its_end(self):
+        # The break: the whole file read, which a flood of error text would turn into a slow run,
+        # or its start read, which would miss the night that has just ended.
+        limit = int(deploy_support.constants(
+            deploy_support.read_bytes(support.SCRIPT))["BACKUP_LOG_LINE_LIMIT"])
+        junk = joined([f"{STAMP} loop2-backup: stage stream: docker exit 1, age exit 1 (exit 6)"]
+                      * (10 * limit))
+        with self.subTest("a send at the start"):
+            fixture = self.stated(joined([EXACT_LINE]) + junk)
+            self.assert_sent(fixture.run_at(NOW), "backup")
+        with self.subTest("a send at the end"):
+            fixture = self.stated(junk + joined([EXACT_LINE]))
+            self.assert_quiet(fixture.run_at(NOW))
+
+    def test_a_line_of_millions_of_bytes_neither_counts_nor_stops_the_reading(self):
+        huge = b"A" * 3_000_000
+        with self.subTest("an exact line at the end of it"):
+            fixture = self.stated(huge + EXACT_LINE.encode() + b"\n")
+            self.assert_sent(fixture.run_at(NOW), "backup")
+        with self.subTest("an exact line after it"):
+            fixture = self.stated(huge + b"\n" + EXACT_LINE.encode() + b"\n")
+            self.assert_quiet(fixture.run_at(NOW))
+
+    def test_a_last_line_with_no_newline_counts_when_it_is_exact(self):
+        fixture = self.stated(EXACT_LINE)
+        self.assert_quiet(fixture.run_at(NOW))
+
+
+class TheWatcherCountsWhatTheBackupScriptWrites(WithFixture):
+    """The two scripts agree: the lines the watcher counts are the ones a run of the backup script,
+    under its own stand-ins, leaves in its log."""
+
+    BACKUP_START = calendar.timegm((2026, 10, 31, 2, 17, 0))
+
+    def log_of_a_run(self, weekday, send_exit=0):
+        backup = support.backup_support.BackupFixture()
+        self.addCleanup(backup.remove)
+        backup.set_weekday(weekday)
+        if send_exit:
+            backup.answer("rsync", exit_code=send_exit)
+        result = backup.run()
+        self.assertEqual(result.code, 0 if send_exit == 0 else 8, result)
+        return backup.log_text()
+
+    def test_the_time_the_backup_script_stamps_is_the_time_this_test_reads_it_as(self):
+        # The precondition of the tests below: the stand-in `date` answers the instant they use.
+        self.assertEqual(support.stamp(self.BACKUP_START), support.backup_support.TIMESTAMP)
+
+    def test_the_end_of_a_night_that_the_backup_script_sent_counts_for_26_hours(self):
+        # The break: a watcher and a script that word the end of a sent night differently, so a
+        # watcher that never counts a send raises its kind every day. Both ends of the week's names
+        # stand here, the first and the seventh day.
+        for weekday in ("1", "7"):
+            with self.subTest(weekday):
+                log = self.log_of_a_run(weekday)
+                self.assertIn(f"loop2-backup: end: sent loop2-accounts-{weekday}.sqlite.age", log)
+                fixture = self.stated(log, window=self.BACKUP_START)
+                self.assert_quiet(fixture.run_at(self.BACKUP_START + 26 * HOUR))
+                if weekday == "1":
+                    fixture = self.stated(log, window=self.BACKUP_START)
+                    self.assert_sent(fixture.run_at(self.BACKUP_START + 26 * HOUR + 1), "backup")
+
+    def test_a_night_whose_send_failed_does_not_count(self):
+        log = self.log_of_a_run("1", send_exit=12)
+        self.assertIn("loop2-backup: end: failed (exit 8)", log)
+        fixture = self.stated(log, window=self.BACKUP_START)
+        self.assert_sent(fixture.run_at(self.BACKUP_START + HOUR), "backup")
 
 
 class TheDeploymentLock(WithFixture):
@@ -879,6 +1206,24 @@ class TheLog(WithFixture):
         self.assertRegex(lines[0], r"\b5\b", result)
         self.assertEqual(result.stdout.splitlines()[-1], lines[0], result)
 
+    def test_an_eventful_run_names_the_state_of_the_backup_log_and_nothing_read_from_it(self):
+        # The break: a line of the backup log, or a count of its lines, quoted into the log of the
+        # watcher, which an agent may read and a human reads at a glance.
+        text = "text-of-the-log-9b2d"
+        logs = {"fresh": lambda f: f.write_backup_log(support.night(NOW - HOUR) + text + "\n"),
+                "stale": lambda f: f.write_backup_log(f"{STAMP} {text}\n"),
+                "unreadable": lambda f: f.make_backup_log_a_directory()}
+        for word, arrange in logs.items():
+            with self.subTest(word):
+                fixture = self.stated()
+                arrange(fixture)
+                fixture.set_container(support.GAME, support.GAME_ID, status="exited")
+                result, lines = self.run_logged(fixture, NOW)
+                self.assertEqual(len(lines), 1, result)
+                self.assertRegex(lines[0], rf"; backup_log={word}(;|$)", result)
+                self.assertNotIn(text, result.log + result.stdout + result.stderr)
+                self.assertNotIn(STAMP, result.log + result.stdout + result.stderr)
+
     def test_the_first_run_says_so_in_one_line(self):
         result = self.fixture().run_at(T0)
         self.assertEqual(len(result.log.splitlines()), 1, result)
@@ -931,8 +1276,14 @@ class TheConstants(unittest.TestCase):
         self.assertEqual(block["LOG_FILE"], "/var/log/loop2-watch.log")
         self.assertEqual(block["STATE_DIRECTORY"], "/var/lib/loop2-watch")
         self.assertEqual(block["OWN_LOCK_FILE"], "/run/loop2-watch.lock")
+        self.assertEqual(block["BACKUP_LOG_FILE"], "/var/log/loop2-backup.log")
         self.assertEqual(block["GAME_CONTAINER"], "loop2")
         self.assertEqual(block["TUNNEL_CONTAINER"], "loop2-cloudflared")
+
+    def test_the_log_the_watcher_reads_is_the_one_the_backup_script_writes(self):
+        backup = deploy_support.constants(deploy_support.read_bytes(support.backup_support.SCRIPT))
+        block = deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))
+        self.assertEqual(block["BACKUP_LOG_FILE"], backup["LOG_FILE"])
 
 
 if __name__ == "__main__":
