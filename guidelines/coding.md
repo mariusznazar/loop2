@@ -128,9 +128,10 @@ czyli z pierwotnym błędem, a nie z samym napisem, raz, tam gdzie kod ją
 obsługuje. W kodzie Node.js robi to `writeFailure` z `src/server/log-line.ts`,
 a porażkę bez pierwotnego błędu nazywa kodem `ReasonedFailure`.
 
-Zdanie, którym polecenie serwisowe (`account-block`, `account-previous-save`, `account-backup`) odpowiada
-operatorowi, nie jest wierszem logu (D-354). Wiersz JSON awarii i zdanie po nim
-to jeden zapis awarii: zostaw oba i nie licz zdania jako drugiego zapisu.
+Zdanie, którym polecenie serwisowe (`account-block`, `account-previous-save`,
+`account-backup`) odpowiada operatorowi, nie jest wierszem logu (D-354). Wiersz
+JSON awarii i zdanie po nim to jeden zapis awarii: zostaw oba i nie licz zdania
+jako drugiego zapisu.
 
 Inaczej jest z `account-database-check` i `measure-passwords`: to, co wypisują
 przy awarii — zdanie w logu budowania obrazu i raport dla skryptu, który je
@@ -143,12 +144,12 @@ raport `measure-passwords` zostaje takim, jaki jest.
 
 Każdy osobno działający proces ma jedną obsługę ostatniej szansy, która zapisuje
 to, czego nie obsłużył żaden kod (D-253). Procesy dotykające danych kont —
-serwer, `account-block`, `account-previous-save` i `account-backup` — mają własną, `installLastResort`,
-bo domyślny wypis mógłby zacytować wartości. W skryptach uruchamianych ręcznie
-albo przez bramkę testów, które tych danych nie dotykają, regułę spełnia domyślny
-wypis Node i Pythona, bo zapisuje to, czego nikt nie obsłużył. Reguła obowiązuje
-też `deploy/loop2-deploy`, który nie zostawia wiersza końcowego, gdy zostanie
-zabity.
+serwer, `account-block`, `account-previous-save` i `account-backup` — mają
+własną, `installLastResort`, bo domyślny wypis mógłby zacytować wartości.
+W skryptach uruchamianych ręcznie albo przez bramkę testów, które tych danych
+nie dotykają, regułę spełnia domyślny wypis Node i Pythona, bo zapisuje to,
+czego nikt nie obsłużył. Reguła obowiązuje też `deploy/loop2-deploy`, który nie
+zostawia wiersza końcowego, gdy zostanie zabity.
 
 ### Hiding a failure
 
