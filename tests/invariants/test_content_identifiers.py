@@ -46,6 +46,7 @@ DATA_DIRECTORY = "src/browser/sim/data/"
 TYPESCRIPT_EXTENSIONS = (".ts", ".tsx", ".mts", ".cts")
 # The game maps, resources and archetypes, with the identifier and the name the data gives each.
 ENTRIES = (
+    {"kind": "map", "id": "forestEdge", "name": "Skraj lasu"},
     {"kind": "map", "id": "forest", "name": "Las"},
     {"kind": "map", "id": "forestDeep", "name": "Las — głębiej"},
     {"kind": "resource", "id": "stick", "name": "patyk"},

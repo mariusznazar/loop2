@@ -24,6 +24,7 @@ import {
   ruleInRepertoire,
 } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
@@ -361,7 +362,7 @@ test("a program wholly inside the repertoire is reduced to an equal one", () => 
 
 function sent() {
   let state = setProgram(
-    newGame(),
+    withEdgeSolved(newGame()),
     programFromRules({
       condition: { kind: "always" },
       action: { kind: "wander" },
@@ -379,7 +380,10 @@ test("the editor shows the repertoire of the mage through the Understanding, out
     trees: [],
     creatures: [],
   };
-  const hq = { ...createCharacter(newGame(), "Ala").state, understanding };
+  const hq = {
+    ...createCharacter(newGame(), "Ala").state,
+    understanding,
+  };
   assert.deepEqual(editorRepertoire(hq), understanding);
   assert.deepEqual(editorRepertoire(newGame()).actions, []);
   const running = { ...sent(), understanding };
@@ -405,7 +409,7 @@ test("creating, sending, restarting, pausing, changing the program and ending le
     creatures: [],
   };
   const expected = structuredClone(understanding);
-  let state = { ...newGame(), understanding };
+  let state = { ...withEdgeSolved(newGame()), understanding };
   const steps = [
     (s) => createCharacter(s, "Ala"),
     (s) =>
@@ -451,7 +455,10 @@ test("a character's death leaves the Understanding as it is", () => {
 
 // A sent mage whose Understanding is `understanding`, running `rules` as the program.
 function sentWith(understanding, ...rules) {
-  const state = createCharacter({ ...newGame(), understanding }, "Ala").state;
+  const state = createCharacter(
+    { ...withEdgeSolved(newGame()), understanding },
+    "Ala",
+  ).state;
   const programmed = setProgram(state, programFromRules(...rules)).state;
   return send(programmed, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
 }
@@ -575,7 +582,10 @@ test("a group whose condition lies outside the repertoire is passed over with it
     nextRuleId: 3,
   };
   const run = (understanding) => {
-    const created = createCharacter({ ...newGame(), understanding }, "Ala");
+    const created = createCharacter(
+      { ...withEdgeSolved(newGame()), understanding },
+      "Ala",
+    );
     const programmed = setProgram(created.state, program).state;
     return send(programmed, { mapId: MAP_ID, characterId: 1 }, REAL_MS).state;
   };

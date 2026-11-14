@@ -17,7 +17,7 @@ import {
   conditionHolds,
 } from "../../dist/browser/sim/program.js";
 import { newMapRun } from "../../dist/browser/sim/run.js";
-import { newKnowingGame } from "./understanding-fixture.mjs";
+import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
 const mapId = "forest";
 const map = MAPS[mapId];
@@ -351,7 +351,7 @@ test("editing, deleting or transferring a started rule leaves its action running
   let state;
   assert.doesNotThrow(() => {
     state = setProgram(
-      createCharacter(newKnowingGame(), "Ala").state,
+      createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state,
       candidate,
     ).state;
   });

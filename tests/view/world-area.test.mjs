@@ -26,7 +26,10 @@ import { emptyProgram } from "../../dist/browser/sim/programs.js";
 import { TileTable } from "../../dist/browser/view/tile-table.js";
 import { WorldArea } from "../../dist/browser/view/world-area.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const STYLES = readFileSync(
   new URL("../../src/browser/styles.css", import.meta.url),
@@ -43,7 +46,7 @@ const PLAN = { take: [entry("stick", 5)], bring: [entry("stick", 3)] };
 
 /** A map run of the character „Ala” on Las under the given trip plan, a chest of ten sticks. */
 function sent(tripPlan = PLAN) {
-  let state = createCharacter(newGame(), "Ala").state;
+  let state = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   state = {
     ...state,
     team: { ...state.team, chest: { pieces: { stick: 10 } } },
@@ -55,7 +58,7 @@ function sent(tripPlan = PLAN) {
 /** The same, on a map solved before the map run started. */
 function solvedSent() {
   return send(
-    { ...sent(), run: null, solvedMaps: ["forest"] },
+    { ...sent(), run: null, solvedMaps: ["forestEdge", "forest"] },
     SENT,
     1760000000000,
   ).state;
@@ -254,7 +257,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
 /** A map run of „Ala” on Las under a program of these rules, in a game that knows every action. */
 function sentUnder(...rules) {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...rules),
   ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
@@ -794,7 +797,7 @@ test("the drawing has a tile per tile of the map run, the icons of the resources
 test("the character's tile and the step's target carry an outline each, the target apart by its class", async () => {
   await withPage(async ({ document }) => {
     const program = setProgram(
-      newKnowingGame(),
+      withEdgeSolved(newKnowingGame()),
       programFromRules({ condition: ALWAYS, action: { kind: "wander" } }),
     ).state;
     const started = send(
@@ -985,7 +988,7 @@ const FIRE_PROGRAM = [
 /** The map run of FIRE_PROGRAM, its backpack holding 9 sticks, at the given minute. */
 function fireRun(minute) {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(...FIRE_PROGRAM),
   ).state;
   const start = send(

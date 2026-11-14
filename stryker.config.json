@@ -27,6 +27,7 @@
       "tests/sim/death.test.mjs",
       "tests/sim/discovery.test.mjs",
       "tests/sim/encounters.test.mjs",
+      "tests/sim/first-map-balance.test.mjs",
       "tests/sim/flow.test.mjs",
       "tests/sim/gather.test.mjs",
       "tests/sim/hex.test.mjs",

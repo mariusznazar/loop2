@@ -16,6 +16,7 @@ import {
 import { conditionHolds } from "../../dist/browser/sim/program.js";
 import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules, programRules } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 // The conditions on the body, the backpack and the campfire (D-26, D-57, D-376). Every number below
 // is written out by hand from D-376: „Temperatura poniżej” takes 30.0 to 37.0 °C in steps of 0.1,
@@ -236,7 +237,7 @@ function heldProgram(state) {
 function held(condition) {
   const program = programFromRules(rule(condition, EXPLORE));
   const running = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     SENT,
     REAL_MS,
   ).state;
@@ -248,7 +249,7 @@ function held(condition) {
 
 function refused(condition) {
   const running = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     SENT,
     REAL_MS,
   ).state;

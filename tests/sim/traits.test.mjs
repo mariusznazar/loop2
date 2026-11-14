@@ -17,6 +17,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { newMapRun } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 // The numbers below are written out by hand: a new character carries carrying capacity 15 (D-64),
 // and the backpack's cap counts the pieces of all items together.
@@ -35,7 +36,11 @@ function emptyBackpack() {
 }
 
 function sent() {
-  return send(createCharacter(newGame(), "Ala").state, SENT, REAL_MS).state;
+  return send(
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
+    SENT,
+    REAL_MS,
+  ).state;
 }
 
 test("a sent map run's character carries carrying capacity 15 and an empty backpack with cap 15", () => {
@@ -132,7 +137,7 @@ test("a created character carries carrying capacity 15 in the team", () => {
 
 /** A game whose team's only character carries carrying capacity 4. */
 function withCarrier() {
-  const game = createCharacter(newGame(), "Ala").state;
+  const game = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   const [character] = game.team.characters;
   return {
     ...game,

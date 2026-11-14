@@ -23,7 +23,10 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
 import { createRunScreen } from "../../dist/browser/view/run-screen.js";
@@ -156,14 +159,18 @@ const textOf = (root, name) => byClass(root, name)[0]?.textContent;
 
 /** Ala's map run of Las under the copy of program 1, paused, with a second program on the list. */
 const twoPrograms = () =>
-  createProgram(createCharacter(newGame(), "Ala").state).state;
+  createProgram(createCharacter(withEdgeSolved(newGame()), "Ala").state).state;
 const pausedRun = () =>
   setPaused(send(twoPrograms(), { ...SENT, programId: 1 }, 0).state, true)
     .state;
 
 /** The game stopped at the first chill, game minute 84, where the game wrote its rule. */
 function firstChill() {
-  const sent = send(createCharacter(newGame(), "Ala").state, SENT, REAL_MS);
+  const sent = send(
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
+    SENT,
+    REAL_MS,
+  );
   const state = advanceMinutes(sent.state, 100).state;
   assert.equal(state.run.minute, 84, "precondition: the first chill");
   assert.deepEqual(
@@ -551,7 +558,7 @@ function underway() {
     { id: 1, rules: [EXPLORE] },
     { id: 2, rules: [WANDER, THREE] },
   );
-  const game = setProgram(newKnowingGame(), program).state;
+  const game = setProgram(withEdgeSolved(newKnowingGame()), program).state;
   const sentRun = send(createCharacter(game, "Ala").state, SENT, REAL_MS).state;
   return setPaused(sentRun, true).state;
 }
@@ -786,7 +793,10 @@ const completedRun = (state) => ({
 
 /** Ala's map run of Las, no rule in her program, ended in the death by cold the simulation gives. */
 function freezingRun() {
-  const program = setProgram(newKnowingGame(), programFromRules()).state;
+  const program = setProgram(
+    withEdgeSolved(newKnowingGame()),
+    programFromRules(),
+  ).state;
   return send(createCharacter(program, "Ala").state, SENT, 0).state;
 }
 

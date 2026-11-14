@@ -14,7 +14,10 @@ import {
   setProgram,
 } from "../../dist/browser/sim/game.js";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000000;
@@ -75,7 +78,10 @@ async function wired({ root }, start, mode = "run") {
 
 /** A game whose program 1 holds `groups`, the character Ala in the team, sent to the forest. */
 function sentWith(...groups) {
-  const created = createCharacter(newKnowingGame(), "Ala").state;
+  const created = createCharacter(
+    withEdgeSolved(newKnowingGame()),
+    "Ala",
+  ).state;
   const set = setProgram(created, program(...groups)).state;
   return send(set, SENT, REAL_MS).state;
 }

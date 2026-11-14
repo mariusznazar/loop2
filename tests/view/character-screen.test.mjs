@@ -18,6 +18,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { buyBranch } from "../../dist/browser/sim/skills.js";
 import { createCharacterScreen } from "../../dist/browser/view/character-screen.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 // --- the page ------------------------------------------------------------------------------
 
@@ -29,7 +30,7 @@ const ID = 1;
 
 /** The new game's state with its one character, the character's fields given over it. */
 function stateWith(character = {}, patch = {}) {
-  const base = createCharacter(newGame(), "Ala").state;
+  const base = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   return {
     ...base,
     team: {

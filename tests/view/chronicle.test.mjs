@@ -24,6 +24,7 @@ import {
   switchProgram,
 } from "../../dist/browser/sim/programs.js";
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 const SENT = { mapId: "forest", characterId: 1 };
 // A real time whose seed lays berries and moss, but no sticks, on the entrance tile.
@@ -35,7 +36,7 @@ const CHILL_BAND =
 
 /** A new game with one character, not yet sent. */
 function readyGame() {
-  return createCharacter(newGame(), "Ala").state;
+  return createCharacter(withEdgeSolved(newGame()), "Ala").state;
 }
 
 /**

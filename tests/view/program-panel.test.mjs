@@ -33,7 +33,10 @@ import {
   createProgramPanel,
 } from "../../dist/browser/view/program-panel.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const ALWAYS_EXPLORE = {
   condition: { kind: "always" },
@@ -117,7 +120,7 @@ async function wiredPanel({ root }, start = newGame(), mode = "run", folding) {
 /** A game whose program 1 holds „Zawsze → Eksploruj”, with the character Ala in the team. */
 function gameWithRule() {
   const programmed = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(ALWAYS_EXPLORE),
   ).state;
   return createCharacter(programmed, "Ala").state;
@@ -692,7 +695,7 @@ test("during a map run the copy stands first and is shown with counts; a saved p
 /** A game whose program 1 holds two rules „Zawsze → Eksploruj”, with the character Ala in the team. */
 function gameWithTwoRules() {
   const programmed = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules(ALWAYS_EXPLORE, ALWAYS_EXPLORE),
   ).state;
   return createCharacter(programmed, "Ala").state;
@@ -888,7 +891,7 @@ function runWithNumber() {
     action: { kind: "explore" },
   });
   const state = createCharacter(
-    setProgram(newKnowingGame(), program).state,
+    setProgram(withEdgeSolved(newKnowingGame()), program).state,
     "Ala",
   ).state;
   return send(state, SENT, REAL_MS).state;
@@ -973,7 +976,11 @@ test("Enter in the number field is consumed, so the press cannot reach the cell 
  * game wrote, „Zawsze → Eksploruj”.
  */
 function firstChill() {
-  const sent = send(createCharacter(newGame(), "Ala").state, SENT, REAL_MS);
+  const sent = send(
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
+    SENT,
+    REAL_MS,
+  );
   return advanceMinutes(sent.state, 100).state;
 }
 

@@ -16,7 +16,8 @@ holds a discovery (`discovery` not null). The new game of each sent character is
 Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
 `program_fixture.py` gives it, so that the rules of the program stay what the check drives and no
 game minute discovers anything; the discovery scenarios alone start from the new game `newGame()`
-gives, which knows nothing, and its program of one empty group.
+gives, which knows nothing, with Skraj lasu solved so that Las can be sent to, and its program of
+one empty group.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
@@ -275,7 +276,7 @@ let state;
 const records = [];
 for (const [name, ...args] of steps) {
   if (name === 'newGame') state = await newKnowingGame(game, gamePath);
-  else if (name === 'newBareGame') state = game.newGame();
+  else if (name === 'newBareGame') state = { ...game.newGame(), solvedMaps: ['forestEdge'] };
   else if (name === 'patchRun') state = { ...state, run: { ...state.run, ...args[0] } };
   else state = game[name](state, ...args).state;
   records.push({ step: name, minute: state.run ? state.run.minute : null, paused: state.paused,

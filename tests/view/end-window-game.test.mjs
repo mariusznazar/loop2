@@ -23,7 +23,10 @@ import {
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { loadSavedGame } from "../../dist/browser/sim/saved-game.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 // --- the page on jsdom --------------------------------------------------------------------------
 
@@ -220,7 +223,7 @@ function shownScreen(root) {
 const SENT = { mapId: "forest", characterId: 1, programId: 1 };
 /** Ala with „Program” and „Program 2” on the list. */
 const twoPrograms = () =>
-  createProgram(createCharacter(newGame(), "Ala").state).state;
+  createProgram(createCharacter(withEdgeSolved(newGame()), "Ala").state).state;
 /** Ala's map run of the forest under program 1, going on, the copy the program as it stands. */
 const going = () => send(twoPrograms(), SENT, 0).state;
 /** The copy's group renamed „Zmieniony”: a change of the copy alone, so the copy holds unsaved changes. */
@@ -258,7 +261,7 @@ const atDiscovery = () => {
  */
 function oneShort() {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules({
       condition: { kind: "always" },
       action: { kind: "explore" },
@@ -287,7 +290,10 @@ function oneShort() {
  * character waits, no discovery stops the map run, and the cold kills it as the clock passes.
  */
 function freezing() {
-  const program = setProgram(newKnowingGame(), programFromRules()).state;
+  const program = setProgram(
+    withEdgeSolved(newKnowingGame()),
+    programFromRules(),
+  ).state;
   return send(createCharacter(program, "Ala").state, SENT, 0).state;
 }
 

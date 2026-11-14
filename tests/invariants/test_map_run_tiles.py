@@ -9,8 +9,9 @@ through the public functions `newGame`, `setProgram`, `send`, `advanceMinutes`, 
 `end`, recording the map run's tiles at each start.
 The new game of each start has an Understanding that holds everything the built data
 modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the rules of the
-program stay what the check drives. Its solved maps include Las, the prerequisite for
-Las — głębiej (D-149); this input opens the map without changing its generated tiles.
+program stay what the check drives. Its solved maps include Skraj lasu and Las, the prerequisites
+for Las and Las — głębiej (D-149); this input opens the maps without changing their generated
+tiles.
 
 Reading of the sentence:
 - a map run starts: the state a `send` returns, and the state a `restart` returns;
@@ -37,7 +38,8 @@ one tile, read from the public state as the number of tiles whose stock of it is
 draw of one tile and a resource placed after a draw of none look alike there, so the control shows
 the starts reach that outcome, not which path gave it; over the starts, each resource of the list
 stands on some tile with its stock and is missing from some tile, so a layout giving every tile
-everything or nothing would show; and the comparison flags made-up tiles holding, of each
+everything or nothing would show, except on Skraj lasu, whose resources lie on every tile (density
+1, D-396), where each resource stands on every tile with its stock; and the comparison flags made-up tiles holding, of each
 resource of the list, a stock one more, one less or half the stock written out, and a resource
 off the list.
 
@@ -63,11 +65,14 @@ BUILT_DIRECTORY = "dist/browser/sim"
 # The game maps and, for each, its list of resources with the stock per tile, as
 # src/browser/sim/data/maps.ts gives them.
 MAP_RESOURCES = {
+    "forestEdge": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8}),
     "forest": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
                {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
     "forestDeep": ({"id": "stick", "stock": 12}, {"id": "berry", "stock": 8},
                    {"id": "moss", "stock": 6}, {"id": "fiber", "stock": 6}),
 }
+# The game maps whose resources lie on every tile: the density of each resource is 1 in the data.
+ON_EVERY_TILE = ("forestEdge",)
 # The name of the character sent; the first character a new game creates takes the id 1.
 CHARACTER_NAME = "Ala"
 # Real times of a send from a new game whose map run of Las holds a resource on one tile alone —
@@ -96,7 +101,7 @@ for (const mapId of config.mapIds) {
   for (const realMs of config.realTimes) {
     let state = game.setProgram(
       await newKnowingGame(game, join(simDirectory, 'game.js')), config.program).state;
-    state = { ...state, solvedMaps: ['forest'] };
+    state = { ...state, solvedMaps: ['forestEdge', 'forest'] };
     state = game.createCharacter(state, config.characterName).state;
     const record = (how) => out.starts.push({ mapId, how, realMs,
       tiles: JSON.parse(JSON.stringify(state.run.tiles)) });
@@ -241,6 +246,11 @@ class MapRunTiles(unittest.TestCase):
                 self.assertTrue(any(t["stock"].get(resource["id"]) == resource["stock"]
                                     for t in tiles),
                                 f"no tile of {map_id} holds {resource['id']}")
+                if map_id in ON_EVERY_TILE:
+                    self.assertTrue(all(t["stock"].get(resource["id"]) == resource["stock"]
+                                        for t in tiles),
+                                    f"a tile of {map_id} lacks {resource['id']}")
+                    continue
                 self.assertTrue(any(not t["stock"].get(resource["id"]) for t in tiles),
                                 f"every tile of {map_id} holds {resource['id']}")
 

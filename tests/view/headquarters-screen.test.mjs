@@ -11,6 +11,7 @@ import {
 } from "../../dist/browser/sim/data/archetypes.js";
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import { createHeadquarters } from "../../dist/browser/view/headquarters.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
 // --- the page ------------------------------------------------------------------------------
 
@@ -22,7 +23,7 @@ const ARCHETYPE = ARCHETYPES[CREATED_ARCHETYPE].name;
 
 /** Ala (1), Ola (2) and Ela (3), in the order they were created, from the new game. */
 function teamOf(count = 3) {
-  let state = newGame();
+  let state = withEdgeSolved(newGame());
   for (const name of ["Ala", "Ola", "Ela"].slice(0, count))
     state = createCharacter(state, name).state;
   return state;

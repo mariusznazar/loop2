@@ -17,6 +17,7 @@ import {
 import { actionFeasible, actionPrice } from "../../dist/browser/sim/program.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules, ruleActivity } from "./program-fixture.mjs";
+import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 // The campfire, the burning stick and eating (D-26, D-63, D-68, D-69, D-71, D-72). Every number
 // below is written out by hand from the numbers of D-387: crafting lasts 20 game minutes and uses
@@ -515,7 +516,7 @@ function heldProgram(state) {
 test("the program check takes the six actions before sending and during a map run", () => {
   const rules = NEW_ACTIONS.map((action) => rule(ALWAYS, action));
   const during = send(
-    createCharacter(newGame(), "Ala").state,
+    createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId, characterId },
     1760000000000,
   ).state;

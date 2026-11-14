@@ -34,7 +34,10 @@ import {
 } from "../../dist/browser/view/scene-picture.js";
 import { campDrawing } from "../../dist/browser/view/camp-picture.js";
 import { programFromRules } from "../sim/program-fixture.mjs";
-import { newKnowingGame } from "../sim/understanding-fixture.mjs";
+import {
+  newKnowingGame,
+  withEdgeSolved,
+} from "../sim/understanding-fixture.mjs";
 
 const SPRITES = fileURLToPath(
   new URL("../../assets/sprites/", import.meta.url),
@@ -71,7 +74,7 @@ const NO_UNDERSTANDING_ITEMS = {
 /** A new game with one character sent into its map, its program explores at once. */
 function sent() {
   const program = setProgram(
-    newKnowingGame(),
+    withEdgeSolved(newKnowingGame()),
     programFromRules({ condition: ALWAYS, action: { kind: "explore" } }),
   ).state;
   return send(createCharacter(program, "Ala").state, SENT, 1760000000000).state;
