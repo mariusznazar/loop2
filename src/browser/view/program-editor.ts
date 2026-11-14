@@ -10,7 +10,7 @@ import {
   type ConditionDef,
 } from "../sim/data/conditions.js";
 import { ITEMS } from "../sim/data/items.js";
-import { MAPS } from "../sim/data/maps.js";
+import { MAPS, type MapDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import {
   actionPrice,
@@ -35,7 +35,6 @@ import type {
   ResourceId,
   RuleGroup,
 } from "../sim/types.js";
-import { sendMaps } from "./map-lines.js";
 
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
@@ -176,17 +175,20 @@ export function offeredItems(state: GameState): ItemId[] {
 }
 
 /**
- * The resources the resource selects offer, in the map's order: those of the run's map during a map
- * run, otherwise of the first map of the list of maps (`sendMaps`), that the repertoire holds as
- * items. Pure.
+ * The resources the resource selects offer, in the order of the maps' lists, each once: those of
+ * the run's map during a map run, otherwise those of every map of the data, that the repertoire
+ * holds as items. Pure.
  */
 export function offeredResources(state: GameState): ResourceId[] {
-  const mapId = state.run ? state.run.mapId : sendMaps()[0];
-  if (mapId === undefined) return [];
+  const maps: MapDef[] = state.run
+    ? [MAPS[state.run.mapId]]
+    : Object.values(MAPS);
   const { items } = editorRepertoire(state);
-  return MAPS[mapId].resources
-    .map((resource) => resource.id)
-    .filter((id) => items.includes(id));
+  const offered: ResourceId[] = [];
+  for (const map of maps)
+    for (const { id } of map.resources)
+      if (items.includes(id) && !offered.includes(id)) offered.push(id);
+  return offered;
 }
 
 /**
