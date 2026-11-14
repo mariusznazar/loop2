@@ -1,7 +1,8 @@
 /**
- * The texts of the pull of the previous save on the screen Programy (D-395): the sentence that
- * stands next to „Wciągnij programy z poprzedniego zapisu” after each pull and the one of a failed
- * check. Pure: each function reads its arguments and draws nothing, and nothing runs when the
+ * The texts of the previous save on the screen Programy: those of the pull (D-395), the sentence
+ * that stands next to „Wciągnij programy z poprzedniego zapisu” after each pull and the one of a
+ * failed check, and those of the reset (D-396), its two sentences of failure and the one above the
+ * new game. Pure: each function reads its arguments and draws nothing, and nothing runs when the
  * module is imported. A result is in `text` and a failure in `warning`, never in `positive` or
  * `danger` (D-39, D-40); the names of skipped programs come from the document and are plain text.
  */
@@ -44,6 +45,10 @@ export const RESET_NOT_ALLOWED =
 /** The sentence of a reset that failed otherwise: the game stays, and the control is at rest (D-396). */
 export const RESET_FAILED =
   "Nie udało się zacząć gry od zera. Gra zostaje bez zmian.";
+
+/** The one-time sentence above the new game that a reset built; the old game waits as the previous save (D-396). */
+export const GAME_STARTS_ANEW =
+  "Gra zaczyna się od nowa, a poprzednia czeka jako poprzedni zapis.";
 
 /** The sentence of a document that is unreadable or gives no program at all. */
 const NOTHING_READABLE: PullLine = {

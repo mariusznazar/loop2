@@ -37,7 +37,11 @@ import {
 } from "./last-resort.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
-import { RESET_FAILED, RESET_NOT_ALLOWED } from "./previous-save-lines.js";
+import {
+  GAME_STARTS_ANEW,
+  RESET_FAILED,
+  RESET_NOT_ALLOWED,
+} from "./previous-save-lines.js";
 import { screenAddress } from "./screen-address.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
@@ -54,10 +58,6 @@ const REFUSED_LOAD: Readonly<Record<SavedGameRefusal, string>> = {
 };
 /** The sentence of a load that met an error of the code: it refused nothing, so nothing is replaced. */
 const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
-/** The one-time sentence above the new game that a reset built; the old game waits as the previous save (D-396). */
-const GAME_STARTS_ANEW =
-  "Gra zaczyna się od nowa, a poprzednia czeka jako poprzedni zapis.";
-
 /** The server's answer that this browser has no valid session: the player is signed out. */
 function signedOut(failure: AccountFailure): boolean {
   return failure.kind === "refused" && failure.status === 401;
@@ -582,6 +582,9 @@ export function startApp(
         card?.focus();
         return;
       }
+      // A reset that succeeded meanwhile built a new game: this uncertain end concerns the old one,
+      // so the new game gets neither its sentence nor a reload for the old game's lost save.
+      if (game !== view) return;
       // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
       logoutSentence = result.failure.message;
       drawBar();

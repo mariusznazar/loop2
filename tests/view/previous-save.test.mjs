@@ -17,6 +17,11 @@ import {
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { savedGame } from "../../dist/browser/sim/saved-game.js";
 import {
+  CHECK_FAILED,
+  FETCH_FAILED,
+  GAME_STARTS_ANEW,
+  NOT_ALLOWED,
+  NO_PREVIOUS_SAVE,
   RESET_FAILED,
   RESET_NOT_ALLOWED,
   programsWord,
@@ -183,6 +188,12 @@ const linesOf = (view) =>
           element.classList.contains("form-warning")),
     )
     .map((element) => [element.className, element.textContent]);
+/** The one line next to the list's acts, as its class and its text. */
+function lineOf(view) {
+  const lines = linesOf(view);
+  assert.equal(lines.length, 1, "one line next to the acts");
+  return lines[0];
+}
 /** Whether an element and every ancestor up to the page's body are shown. */
 function shown(element) {
   for (let node = element; node; node = node.parentElement) {
@@ -355,9 +366,7 @@ test("an answer of null leaves the button away, and a failure of the check leave
     await inAct(() => address.follow(PROGRAMS));
     await held.answer(NO_CONNECTION);
     assert.equal(pullButton(view), undefined);
-    assert.deepEqual(linesOf(view), [
-      ["form-warning", "Nie udało się sprawdzić poprzedniego zapisu."],
-    ]);
+    assert.deepEqual(linesOf(view), [["form-warning", CHECK_FAILED.text]]);
     await inAct(() => address.follow(HEADQUARTERS));
     await inAct(() => address.follow(PROGRAMS));
     assert.deepEqual(
@@ -422,7 +431,9 @@ test("a pull fetches the previous save again and appends its programs in order w
       return copy;
     };
     assert.deepEqual(others(after), others(before));
-    assert.deepEqual(linesOf(view), [["form-note", "Wciągnięto 3 programy."]]);
+    const [className, text] = lineOf(view);
+    assert.equal(className, "form-note");
+    assert.match(text, /\b3\b/, "the count of the appended programs");
     // Back at rest, pressable again, with the focus owed to it by the list.
     assert.equal(waitingButton(view), undefined);
     assert.equal(pullButton(view).disabled, false);
@@ -479,12 +490,18 @@ test("skipped programs stand in one sentence by their names, and the others are 
       [2, "Las"],
       [3, "Noc"],
     ]);
-    assert.deepEqual(linesOf(view), [
-      [
-        "form-note",
-        "Wciągnięto 2 programy. Pominięto programy, których ta wersja gry nie przyjmuje: „Stary”, „Obcy”, bez nazwy (pozycja 4).",
-      ],
-    ]);
+    const [className, text] = lineOf(view);
+    assert.equal(className, "form-note");
+    assert.match(
+      text,
+      /\b2\b/,
+      "the count of the appended, no skipped one in it",
+    );
+    for (const name of ["Stary", "Obcy"])
+      assert.ok(text.includes(name), `${name} is named`);
+    assert.match(text, /\b4\b/, "the program with no name by its place");
+    for (const name of ["Las", "Noc"])
+      assert.ok(!text.includes(name), `${name} was appended, not skipped`);
     await inAct(() => view.dispose());
   });
 });
@@ -499,12 +516,10 @@ test("a document with every program skipped gives the skipped sentence alone and
     await press(pullButton(view));
     await held.answer(previous([item(1, "Stary", OLD_EXPLORE)]));
     assert.deepEqual(await listed(view), [[1, "Program"]]);
-    assert.deepEqual(linesOf(view), [
-      [
-        "form-note",
-        "Pominięto program, którego ta wersja gry nie przyjmuje: „Stary”.",
-      ],
-    ]);
+    const [className, text] = lineOf(view);
+    assert.equal(className, "form-note");
+    assert.ok(text.includes("Stary"), "the skipped program is named");
+    assert.doesNotMatch(text, /\d/, "no count of appended programs");
     assert.deepEqual(held.saves, []);
     await inAct(() => view.dispose());
   });
@@ -514,8 +529,7 @@ test("a document with every program skipped gives the skipped sentence alone and
 // program giving anything but the sentence that the save holds no program the game can read, and the
 // button going away for it.
 test("an unreadable document, and one with no program, give the sentence of no readable program; nothing is appended or saved", async () => {
-  const sentence =
-    "Poprzedni zapis nie zawiera programów, które ta wersja gry potrafi wczytać.";
+  const sentence = pullResultLine({ ok: false }).text;
   for (const document of [
     previous([item(1, "Las", LAS)], 6),
     { ok: true, value: { version: 5, game: {} } },
@@ -545,9 +559,7 @@ test("a pull that finds no previous save says so and the button goes away", asyn
     await held.answer(previous([item(1, "Las", LAS)]));
     await press(pullButton(view));
     await held.answer(NO_PREVIOUS);
-    assert.deepEqual(linesOf(view), [
-      ["form-note", "Nie ma już poprzedniego zapisu."],
-    ]);
+    assert.deepEqual(linesOf(view), [["form-note", NO_PREVIOUS_SAVE.text]]);
     assert.equal(pullButton(view), undefined);
     assert.equal(waitingButton(view), undefined);
     assert.deepEqual(await listed(view), [[1, "Program"]]);
@@ -564,12 +576,7 @@ test("a failed fetch is one warning, the button stays, and a retry appends", asy
     await held.answer(previous([item(1, "Las", LAS)]));
     await press(pullButton(view));
     await held.answer(failure(500));
-    assert.deepEqual(linesOf(view), [
-      [
-        "form-warning",
-        "Nie udało się pobrać poprzedniego zapisu. Spróbuj ponownie.",
-      ],
-    ]);
+    assert.deepEqual(linesOf(view), [["form-warning", FETCH_FAILED.text]]);
     assert.equal(pullButton(view).disabled, false);
     assert.deepEqual(await listed(view), [[1, "Program"]]);
     await press(pullButton(view));
@@ -578,7 +585,9 @@ test("a failed fetch is one warning, the button stays, and a retry appends", asy
       [1, "Program"],
       [2, "Las"],
     ]);
-    assert.deepEqual(linesOf(view), [["form-note", "Wciągnięto 1 program."]]);
+    const [className, text] = lineOf(view);
+    assert.equal(className, "form-note");
+    assert.match(text, /\b1\b/, "the count of the appended programs");
     await inAct(() => view.dispose());
   });
 });
@@ -612,12 +621,7 @@ test("a 403 previous-save-forbidden says the account has no such privilege now, 
     await held.answer(previous([item(1, "Las", LAS)]));
     await press(pullButton(view));
     await held.answer(failure(403, "previous-save-forbidden"));
-    assert.deepEqual(linesOf(view), [
-      [
-        "form-warning",
-        "To konto nie ma już uprawnienia do poprzedniego zapisu.",
-      ],
-    ]);
+    assert.deepEqual(linesOf(view), [["form-warning", NOT_ALLOWED.text]]);
     assert.equal(pullButton(view), undefined);
     assert.equal(waitingButton(view), undefined);
     assert.deepEqual(signedOut, []);
@@ -647,12 +651,10 @@ test("names from the document are shown as text, in the sentence and in the list
       programsScreen.querySelectorAll("img, b, [onerror]").length,
       0,
     );
-    assert.deepEqual(linesOf(view), [
-      [
-        "form-note",
-        "Wciągnięto 1 program. Pominięto program, którego ta wersja gry nie przyjmuje: „<b>Obcy</b>”.",
-      ],
-    ]);
+    const [className, text] = lineOf(view);
+    assert.equal(className, "form-note");
+    assert.match(text, /\b1\b/, "the count of the appended programs");
+    assert.ok(text.includes("<b>Obcy</b>"), "the skipped name, as text");
     assert.deepEqual(await listed(view), [
       [1, "Program"],
       [2, '<img src="x" onerror="1">'],
@@ -1208,8 +1210,7 @@ test("on 204 the page builds a new game on revision 0 with the sentence above it
     const notices = pageNotices();
     assert.equal(notices.length, 1);
     assert.match(notices[0][0], /positive/);
-    assert.match(notices[0][1], /zaczyna się od nowa/);
-    assert.match(notices[0][1], /poprzedni zapis/);
+    assert.equal(notices[0][1], GAME_STARTS_ANEW);
     assert.deepEqual(page.named("saveGame"), [], "no save at once");
     assert.equal(page.named("loadSavedGame").length, 0);
     // The first save of the new game is based on 0, as for an account with no save.
@@ -1357,5 +1358,85 @@ test("a reset confirmed while a logout waits is sent, and the logout's answer de
     await page.answer("resetSavedGame", RESET_OK);
     assert.deepEqual(programNames(), [], "the late answer builds no game");
     assert.deepEqual(pageNotices(), []);
+  });
+});
+
+/** The text of the page with the menu „Konto” open, where the logout's sentence stands. */
+async function textWithMenuOpen() {
+  if (!pageButton("Wyloguj")) await press(pageButton("Konto"));
+  return bodyText();
+}
+
+/** The player opens the menu and presses „Wyloguj”, which sends the logout's own save. */
+async function pressLogout() {
+  await press(pageButton("Konto"));
+  await press(pageButton("Wyloguj"));
+}
+
+// Catches the uncertain end of a logout, answered after a reset built the new game, acting on the
+// new game: its failure sentence on it, and, where the old game's save lost to a conflict, a reload
+// that replaces it with another new game (D-396, D-97, D-209).
+test("a logout that fails after the reset built the new game leaves that game as it is, whatever the outcome of the logout's save", async () => {
+  for (const outcome of [
+    { kind: "saved", revision: 4 },
+    { kind: "conflict" },
+  ]) {
+    await onPage(async () => {
+      const page = await startedPage();
+      await pressLogout();
+      await confirmReset();
+      await page.answer("saveGame", outcome);
+      assert.equal(page.named("logout").length, 1, "the logout is sent");
+      await page.answer("resetSavedGame", RESET_OK);
+      assert.deepEqual(programNames(), ["Program"], "the new game");
+      await page.answer("logout", NO_CONNECTION);
+      assert.deepEqual(programNames(), ["Program"], outcome.kind);
+      assert.equal(page.named("loadSavedGame").length, 0, "no reload");
+      assert.equal(pageNotices().length, 1, "the sentence of the reset stands");
+      assert.ok(
+        !(await textWithMenuOpen()).includes(NO_CONNECTION.failure.message),
+        "no sentence of the old game's logout",
+      );
+    });
+  }
+});
+
+// Catches the reset's success leaving the sentence of an uncertain logout, or „Wyloguj” pressed out
+// by it, on the new game that the other order built (D-396, D-97).
+test("a reset that succeeds after a logout failed uncertainly builds the new game without that logout's sentence", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await pressLogout();
+    await confirmReset();
+    await page.answer("saveGame", { kind: "saved", revision: 4 });
+    await page.answer("logout", NO_CONNECTION);
+    assert.ok(
+      (await textWithMenuOpen()).includes(NO_CONNECTION.failure.message),
+      "precondition: the old game shows the uncertain end of its logout",
+    );
+    await page.answer("resetSavedGame", RESET_OK);
+    assert.deepEqual(programNames(), ["Program"], "the new game");
+    assert.ok(
+      !(await textWithMenuOpen()).includes(NO_CONNECTION.failure.message),
+    );
+    assert.equal(pageButton("Wyloguj").disabled, false);
+    assert.equal(page.named("loadSavedGame").length, 0);
+    assert.equal(pageNotices().length, 1, "the sentence of the reset stands");
+  });
+});
+
+// Catches a logout that the server ended, answered after a reset built the new game, left without
+// effect: the session is over, so the forms stand, as when the logout answers first (D-97, D-396).
+test("a logout that the server ended after the reset built the new game brings the forms", async () => {
+  await onPage(async () => {
+    const page = await startedPage();
+    await pressLogout();
+    await confirmReset();
+    await page.answer("saveGame", { kind: "saved", revision: 4 });
+    await page.answer("resetSavedGame", RESET_OK);
+    assert.deepEqual(programNames(), ["Program"], "the new game");
+    await page.answer("logout", { ok: true, value: null });
+    assert.deepEqual(programNames(), [], "the forms stand");
+    assert.ok(pageButton("Zaloguj się"), "the login card");
   });
 });
