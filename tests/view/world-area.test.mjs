@@ -45,8 +45,27 @@ const entry = (item, count) => ({ item, count });
 const PLAN = { take: [entry("stick", 5)], bring: [entry("stick", 3)] };
 
 /** A map run of the character „Ala” on Las under the given trip plan, a chest of ten sticks. */
-function sent(tripPlan = PLAN) {
+function sent(tripPlan = PLAN, practice = true) {
   let state = createCharacter(withEdgeSolved(newGame()), "Ala").state;
+  if (practice) {
+    // One practice in each skill, so that a death goes by the team's resurrection (D-190): the death of
+    // a character with no practice uses none, whatever `died` puts on the team.
+    state = {
+      ...state,
+      team: {
+        ...state.team,
+        characters: state.team.characters.map((character) => ({
+          ...character,
+          skills: Object.fromEntries(
+            Object.entries(character.skills).map(([id, skill]) => [
+              id,
+              { ...skill, practice: skill.practice + 1 },
+            ]),
+          ),
+        })),
+      },
+    };
+  }
   state = {
     ...state,
     team: { ...state.team, chest: { pieces: { stick: 10 } } },
@@ -236,7 +255,9 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
     // Dead, the resurrection not ready: no settlement line in the world area (D-216: the window
     // holds it, in its section about what the death cost); the practice of the run stays after the
     // death (D-201).
-    await show(withRun(died(sent(), 9_000_000), { lastCombat: WOLF }));
+    const notReady = died(sent(), 9_000_000);
+    assert.equal(notReady.run.deathSettlement.kind, "progressLost");
+    await show(withRun(notReady, { lastCombat: WOLF }));
     assert.deepEqual(classesOf(container), [
       "scene",
       "now-row",
@@ -247,9 +268,24 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
       "tile-line",
     ]);
     assert.ok(
-      partsOf(container).every(([, text]) => !text.includes("Wskrzeszenie")),
+      partsOf(container).every(([, text]) => !/skrzeszeni/i.test(text)),
       "the settlement stands nowhere in the world area",
     );
+
+    // Dead with no practice yet, the resurrection ready or not: the window's line of it
+    // („Postać nie miała jeszcze wprawy, więc śmierć nie zużyła wskrzeszenia drużyny.”) stands
+    // nowhere in the world area either.
+    for (const readyAtMs of [0, 9_000_000]) {
+      const bare = died(sent(PLAN, false), readyAtMs);
+      assert.deepEqual(bare.run.deathSettlement, { kind: "noPractice" });
+      await show(withRun(bare, { lastCombat: WOLF }));
+      assert.ok(
+        partsOf(container).every(
+          ([, text]) => !/skrzeszeni|wprawy/i.test(text),
+        ),
+        "the line of a death with no practice stands nowhere in the world area",
+      );
+    }
   });
 });
 
@@ -405,7 +441,9 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
 // (D-216, its section about what the death cost), or a deposit drawn at death (D-185).
 test("a death that used a resurrection shows no line of its settlement and no deposit and no preview in the world area", async () => {
   await withPage(async ({ document }) => {
-    const { container } = await draw(document, died(sent(), 0));
+    const used = died(sent(), 0);
+    assert.equal(used.run.deathSettlement.kind, "resurrectionUsed");
+    const { container } = await draw(document, used);
     const lines = partsOf(container).filter(([name]) =>
       name.startsWith("trip-result"),
     );
