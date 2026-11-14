@@ -483,8 +483,9 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
 
 test("first chill and attack in one minute keep the automatic exploration rule but never start it during combat", () => {
   const state = prepared(programFromRules());
+  // The Understanding of a new game: „Zawsze” and „Eksploruj”.
   state.understanding = {
-    actions: [],
+    actions: ["explore"],
     conditions: ["always"],
     items: [],
     trees: [],
@@ -499,10 +500,10 @@ test("first chill and attack in one minute keep the automatic exploration rule b
   assert.deepEqual(result.state.ruleCounts, { 1: 0 });
   assert.equal(result.state.run.current, null);
   assert.deepEqual(result.state.discovery, {
-    actions: ["explore", "wander", "strikeWithStick", "kick", "dodge"],
+    actions: ["wander", "strikeWithStick", "kick", "dodge"],
     conditions: ["temperatureBelow", "healthBelow", "opponentHealthBelow"],
     items: [],
-    trees: ["exploration", "oneHandedCombat", "kicking", "dodging"],
+    trees: ["oneHandedCombat", "kicking", "dodging"],
     creatures: ["wolf"],
   });
   assert.equal(

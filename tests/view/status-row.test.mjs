@@ -218,16 +218,28 @@ test("the text for the first finished exploration of a tile with sticks and berr
   );
 });
 
-test("the text for the first chill names its actions and its condition with the unit", () => {
+test("the text for the first chill names its action and its condition with the unit", () => {
   assert.equal(
     discoveryText({
-      actions: ["explore", "wander"],
+      actions: ["wander"],
       conditions: ["temperatureBelow"],
       items: [],
-      trees: ["exploration"],
+      trees: [],
       creatures: [],
     }),
-    "Odkryto: Eksploruj, Wędruj, drzewo umiejętności Eksploracja. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+    "Odkryto: Wędruj. W regułach można teraz sprawdzić: Temperatura poniżej … °C.",
+  );
+});
+
+// D-195: the tree of Eksploracja comes with the first finished exploration, beside what the
+// exploration revealed.
+test("the text for the first finished exploration names the tree Eksploracja beside the actions and items it revealed", () => {
+  assert.equal(
+    discoveryText({
+      ...EXPLORED_REVEALED,
+      trees: ["exploration", "smallItemGathering"],
+    }),
+    "Odkryto: Idź, Zbierz, Patyk, Jagoda, drzewo umiejętności Eksploracja, drzewo umiejętności Zbieranie małych przedmiotów. W regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.",
   );
 });
 

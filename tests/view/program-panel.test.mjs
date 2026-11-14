@@ -42,6 +42,10 @@ const ALWAYS_EXPLORE = {
   condition: { kind: "always" },
   action: { kind: "explore" },
 };
+const ALWAYS_WANDER = {
+  condition: { kind: "always" },
+  action: { kind: "wander" },
+};
 // The first character a new game creates takes the id 1; the forest is the first map sent to.
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000000;
@@ -972,8 +976,8 @@ test("Enter in the number field is consumed, so the press cannot reach the cell 
 
 /**
  * A new game whose first map run reached its first chill: the game pauses on the discovery
- * „Eksploruj”, „Wędruj” and „Temperatura poniżej”, and the copy's group „Program” holds the rule the
- * game wrote, „Zawsze → Eksploruj”.
+ * „Wędruj” and „Temperatura poniżej”, and the copy's group „Program” holds the rule the game wrote,
+ * „Zawsze → Eksploruj”.
  */
 function firstChill() {
   const sent = send(
@@ -991,12 +995,12 @@ const rulesOfGroup = (group) =>
 // Catches the call handing the game no edit or an edit of a saved program, the rule panel left closed,
 // opened anywhere but under the new rule's row, opened on the condition after the button filled the
 // action, the focus left outside the field, and the streak left as it stood.
-test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero", async () => {
+test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero", async () => {
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
       chilled.discovery?.actions,
-      ["explore", "wander"],
+      ["wander"],
       "precondition: the first chill holds its discovery",
     );
     assert.deepEqual(
@@ -1015,7 +1019,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
     assert.deepEqual(game.acts, [["editCopy"]]);
     const group = game.state.run.copy.program.groups[0];
     assert.equal(group.name, "Program");
-    assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_EXPLORE]);
+    assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_WANDER]);
     assert.equal(game.state.run.streak, 0);
     assert.equal(
       game.root.querySelector(".rule-panel-heading")?.textContent,
@@ -1041,7 +1045,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Eksploruj
       "Czynność",
       "the focus is in the action's pick",
     );
-    assert.equal(focused.textContent, "Eksploruj");
+    assert.equal(focused.textContent, "Wędruj");
   });
 });
 
@@ -1094,7 +1098,7 @@ test("text typed into the copy's editor and not yet committed lands in the copy 
     await inAct(() => game.panel.addDiscoveredRule());
     const group = game.state.run.copy.program.groups[0];
     assert.equal(group.name, "Las nocą");
-    assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_EXPLORE]);
+    assert.deepEqual(rulesOfGroup(group), [ALWAYS_EXPLORE, ALWAYS_WANDER]);
     assert.equal(
       game.root.querySelector(".rule-panel-heading")?.textContent,
       "Reguła 1.2",

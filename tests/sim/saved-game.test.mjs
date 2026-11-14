@@ -1254,6 +1254,28 @@ const CRAFTED = {
     document.game.understanding.items.push("stick"),
   "the Understanding without „Zawsze”": (document) =>
     document.game.understanding.conditions.shift(),
+  // D-118: a new game's Understanding holds „Eksploruj”, so a saved one that lacks it is refused,
+  // whatever else it holds and however the lack is written.
+  "the Understanding without „Eksploruj”": (document) =>
+    (document.game.understanding.actions =
+      document.game.understanding.actions.filter((kind) => kind !== "explore")),
+  "the Understanding with no action at all": (document) =>
+    (document.game.understanding.actions = []),
+  "the Understanding with „Eksploruj” named twice": (document) =>
+    document.game.understanding.actions.push("explore"),
+  "the Understanding with „Eksploruj” in place of a number": (document) =>
+    (document.game.understanding.actions = [0]),
+  "the Understanding whose actions are no list": (document) =>
+    (document.game.understanding.actions = "explore"),
+  "the Understanding with its actions missing": (document) =>
+    delete document.game.understanding.actions,
+  "the Understanding with „Eksploruj” and without „Zawsze”": (document) =>
+    (document.game.understanding.conditions =
+      document.game.understanding.conditions.filter(
+        (kind) => kind !== "always",
+      )),
+  "the Understanding with a key beside its lists": (document) =>
+    (document.game.understanding.skills = []),
   "a creature absent from the data": (document) =>
     (document.game.run.lastCombat.creatureId = "bear"),
   "the campfire burning as an item": (document) =>

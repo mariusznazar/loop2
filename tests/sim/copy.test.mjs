@@ -309,10 +309,11 @@ test("setProgram outside a map run edits the program entered with last, or else 
 // D-119 and D-126: the map run carries out the copy reduced to the character's repertoire; a rule
 // outside it is passed over and stays in the copy.
 test("a copy rule outside the character's repertoire is passed over and stays in the copy", () => {
-  // A new game knows no action, so „Zawsze → Eksploruj” is outside the repertoire until the first
-  // chill.
+  // A new game knows „Eksploruj” and not „Wędruj”, so „Zawsze → Wędruj” is outside the repertoire
+  // until the first chill.
+  const wandering = programFromRules(rule(ALWAYS, { kind: "wander" }));
   const ready = createCharacter(
-    setProgram(withEdgeSolved(newGame()), EXPLORING).state,
+    setProgram(withEdgeSolved(newGame()), wandering).state,
     "Ala",
   );
   const running = send(
@@ -321,5 +322,5 @@ test("a copy rule outside the character's repertoire is passed over and stays in
     REAL_MS,
   ).state;
   assert.deepEqual(running.run.current.activity, { kind: "wait" });
-  assert.deepEqual(running.run.copy.program, EXPLORING);
+  assert.deepEqual(running.run.copy.program, wandering);
 });

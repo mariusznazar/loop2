@@ -20,6 +20,7 @@ import { mapRunEnded } from "./run.js";
 import { MINUTE_KINDS } from "./run-record.js";
 import { skillProgress } from "./skills.js";
 import { pieceCount } from "./trip.js";
+import { newUnderstanding } from "./understanding.js";
 import type {
   Action,
   Activity,
@@ -1203,12 +1204,19 @@ const GAME_KEYS = [
  * the copy during a map run and beside the rules of the program they name after „Zakończ”, and are
  * none otherwise; without a map run nothing is paused, held as a discovery or carried. The save time
  * is a safe integer of any sign, as a moment of readiness is: every document is stamped, and a device
- * clock set before 1970 is the player's own, so a save the game wrote is never refused for it.
+ * clock set before 1970 is the player's own, so a save the game wrote is never refused for it. The
+ * Understanding holds at least what a new game's holds (D-118): a document whose Understanding lacks
+ * the condition „Zawsze” or the action „Eksploruj” is of a shape the game does not admit.
  */
 function game(value: unknown): GameState {
   const read = fields(value, GAME_KEYS);
   const known = understanding(read.understanding);
-  if (!known.conditions.includes("always")) refuse();
+  const atStart = newUnderstanding();
+  if (
+    !atStart.conditions.every((kind) => known.conditions.includes(kind)) ||
+    !atStart.actions.every((kind) => known.actions.includes(kind))
+  )
+    refuse();
   const nextProgramId = identity(read.nextProgramId);
   const programs = programList(read.programs, nextProgramId);
   const nextCharacterId = identity(read.nextCharacterId);
