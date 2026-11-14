@@ -5919,8 +5919,9 @@ the test files of such screens leave their stand-ins for the document. One harne
 case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through
 `act`, types through the input's native value setter and a bubbling `input` event, and fails a case
 on a report of React's development build through `console.error`. A test file of such a screen
-clicks a control and fires an event through the harness's `press` and `fire`, which send the event
-as a browser does inside `act`, and keeps no copy of either.
+clicks a control through the harness's `press`, which clicks inside `act`, and sends an event
+through its `fire`, which sends the event as a browser does and which the test file puts in `act`
+where React must answer, and keeps no copy of either.
 
 - **Scope:** browser-view · build-tools
 - **Based on:** react-hook-order-report · react-entry-build
@@ -5930,8 +5931,8 @@ as a browser does inside `act`, and keeps no copy of either.
     screens still in DOM included, and clicks a button with the harness's `press`; a test of another
     screen keeping its own stand-in
   - violates: a hand-made document model grown until React runs on it; a second harness for the next
-    screen; a test file of a screen in React that defines its own `press` or `fire`; a test that
-    passes while React's development build reports a changed order of hooks
+    screen; a test file of a screen in React that defines a copy of the harness's `press` or
+    `fire`; a test that passes while React's development build reports a changed order of hooks
 - **Origin:** none
 
 *Rationale:* what replaces the hand-made document model in the tests of screens that move to React
@@ -5947,9 +5948,9 @@ only the files of screens built with React leave theirs. Each rule of the harnes
 such an imitation leaves out: with the window installed after React loads a controlled field's
 change never fires and nothing fails loudly, neither imitation takes focus from a control that
 becomes disabled, and a report of React's development build stands where a broken rule of hooks
-shows. Clicking a control and firing an event inside `act` is the same work in every test of a
-screen, so it stands once in the harness that already awaits React's work through `act`, and no
-test file keeps a copy. Only the harness of one kind of test hangs on the choice, so a wrong one
+shows. Clicking a control inside `act` and sending an event as a browser does is the same work in
+every test of a screen, so it stands once in the harness that already awaits React's work through
+`act`, and no test file keeps a copy. Only the harness of one kind of test hangs on the choice, so a wrong one
 costs little.
 Accepted with it: a new development dependency, jsdom, with the packages it brings. What
 the imitation does not prove stays with a person and an agent (D-88, D-254): pressing Enter in a
