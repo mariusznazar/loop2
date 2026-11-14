@@ -3,8 +3,9 @@
 #
 # Installed root-owned, mode 0755, at /usr/local/bin/loop2-watch, outside the checkout, by a human;
 # deploy/loop2-watch.cron starts it as root every five minutes. A human may run it too. It takes no
-# argument. It only reads: docker inspect of the game and tunnel containers and docker logs of the
-# game container. It writes only its own log, its own state directory and its own lock. In order:
+# argument. It only reads: docker inspect of the game and tunnel containers, docker logs of the
+# game container and the last lines of the log of the nightly backup. It writes only its own log, its
+# own state directory and its own lock. In order:
 #   1. takes its own lock, without waiting; a run that finds it taken ends at once
 #   2. looks at the deployment's lock, which a deployment or the nightly backup holds: it opens the
 #      file for reading only, asks for a shared lock without waiting and lets it go at once, and
@@ -13,12 +14,15 @@
 #   3. reads the state file, line by line by a strict pattern; a state that is missing or damaged
 #      means "from now": this run only records the containers and reports nothing
 #   4. reads the state of the two containers, and counts the lines of the game container's log for
-#      the window since the last run, by an anchored prefix: the content of a line is never copied
+#      the window since the last run, by an anchored prefix: the content of a line is never copied;
+#      then looks in the last lines of the log of the backup for one successful send dated within
+#      the last 26 hours before the start of the run
 #   5. looks at the deployment's lock again; if it is held now, the readings are dropped and the
 #      state is not advanced, so the next run reads the longer window
-#   6. finds which of five kinds of trouble stand: down, unhealthy, restarted, failures (lines of
-#      the server's own failures) and browser (lines of failures the browsers reported), throttles
-#      them, writes the state and calls pusher once for each message
+#   6. finds which of six kinds of trouble stand: down, unhealthy, restarted, failures (lines of
+#      the server's own failures), backup (no successful send of a backup in that time) and browser
+#      (lines of failures the browsers reported), throttles them, writes the state and calls pusher
+#      once for each message
 #
 # A message is a fixed subject and a fixed sentence per kind, held in the constants below. Nothing
 # read from a log or from Docker, no number and no name of a commit or an account goes into one,
@@ -26,8 +30,16 @@
 # containers and the times of the last messages; the log of this script holds counts and statuses.
 # Nothing of the content of a line of the game's log reaches either.
 #
+# The log of the backup is data that this script reads and never writes, and docker, age and flock
+# write their error text into it. A line counts only if it is exactly a timestamp in UTC, the
+# program name of the backup script and `end: sent` with one of its seven file names; the script
+# reads a bounded number of the last lines, each cut to a bounded width, and keeps nothing of a
+# line: not its content, its time or its file name. A missing, empty or unreadable log counts as
+# no send.
+#
 # The log holds one line per run that skipped, found something or had a trouble of its own, and an
-# exit line at an abnormal end. This script never calls pusher about itself: a failing watcher that
+# exit line at an abnormal end; a line that found something names the state of the backup log by
+# one word (fresh, stale or unreadable). This script never calls pusher about itself: a failing watcher that
 # did would flood.
 #
 # Exit codes: 0 done or skipped · 2 input · 3 own lock · 4 state directory · 5 clock · 6 state file
@@ -39,8 +51,8 @@ set -uo pipefail
 shopt -s lastpipe
 
 # The constants of the messages, the names, the paths and the limits stand in this block; the
-# patterns of the state and of Docker's answer and the two anchored prefixes of the log lines stand
-# outside it. No environment variable and no argument changes one. The tests of deploy/ replace
+# patterns of the state and of Docker's answer, the two anchored prefixes of the game's log lines
+# and the pattern of the backup log's line stand outside it. No environment variable and no argument changes one. The tests of deploy/ replace
 # only the lines between the two markers.
 # >>> constants >>>
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -88,10 +100,15 @@ readonly ID_PATTERN='[0-9a-f]{64}'
 readonly START_PATTERN='[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z'
 readonly WINDOW_LINE="^window_end ($EPOCH_PATTERN)\$"
 readonly CONTAINER_LINE="^container ($GAME_CONTAINER|$TUNNEL_CONTAINER) ($ID_PATTERN) ($START_PATTERN)\$"
-readonly LAST_LINE="^last (down|unhealthy|restarted|failures|browser) ($EPOCH_PATTERN)\$"
+readonly LAST_LINE="^last (down|unhealthy|restarted|failures|backup|browser) ($EPOCH_PATTERN)\$"
 readonly MESSAGE_LINE="^message ($EPOCH_PATTERN)\$"
 readonly INSPECT_LINE="^($ID_PATTERN) (created|running|paused|restarting|removing|exited|dead) (none|starting|healthy|unhealthy) ($START_PATTERN)\$"
-readonly KINDS=(down unhealthy restarted failures browser)
+# The only line of the backup log that counts: what the backup script writes when a night's file was
+# sent, a time in UTC to the second, its program name and one of its seven weekday file names. The
+# fields of the time are checked for range here and for the calendar in calendar_day_exists.
+readonly BACKUP_LINE="^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z loop2-backup: end: sent loop2-accounts-[1-7][.]sqlite[.]age\$"
+readonly BACKUP_TIME_LENGTH=20
+readonly KINDS=(down unhealthy restarted failures backup browser)
 readonly CONTAINERS=("$GAME_CONTAINER" "$TUNNEL_CONTAINER")
 
 NOW=''
@@ -113,6 +130,9 @@ LOGS_STATUS=0
 FAILURE_COUNT=0
 BROWSER_COUNT=0
 NEW_WINDOW_END=''
+# fresh: a successful send within the limit stands in the last lines of the backup log; stale: none
+# does; unreadable: the log could not be read; skipped: it was not looked at.
+BACKUP_LOG_STATE=skipped
 
 # What this run decided.
 declare -A CONDITION=()
@@ -399,6 +419,60 @@ read_logs() {
   LOGS_STATE=counted
 }
 
+calendar_day_exists() {
+  # calendar_day_exists YEAR MONTH DAY: the day stands on the calendar, leap years included. The
+  # fields come as two or four digits with a leading zero, which arithmetic would read as octal.
+  local year=$((10#$1)) month=$((10#$2)) day=$((10#$3)) last
+  case $month in
+    4 | 6 | 9 | 11) last=30 ;;
+    2)
+      if (( year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) )); then
+        last=29
+      else
+        last=28
+      fi
+      ;;
+    *) last=31 ;;
+  esac
+  (( day <= last ))
+}
+
+find_send() {
+  # find_send OLDEST NEWEST: reads the lines of the backup log from standard input and sets the
+  # state to fresh when one is exactly a successful send whose time lies from OLDEST to NEWEST. The
+  # times are of one fixed shape, so comparing them as text orders them in time. Keeps nothing of
+  # the lines; reads them all, so that the commands before it in the pipe never meet a closed pipe.
+  local oldest=$1 newest=$2 line stamp
+  while IFS= read -r line || [[ -n $line ]]; do
+    if [[ $line =~ $BACKUP_LINE ]]; then
+      stamp=${line:0:BACKUP_TIME_LENGTH}
+      if [[ ! $stamp < $oldest && ! $stamp > $newest ]] \
+          && calendar_day_exists "${stamp:0:4}" "${stamp:5:2}" "${stamp:8:2}"; then
+        BACKUP_LOG_STATE=fresh
+      fi
+    fi
+  done
+}
+
+read_backup_log() {
+  # A NUL byte is turned into a visible one first, because `read` drops it silently and a line with
+  # one could then pass for an exact line; a line over the width is cut, and the cut line is longer
+  # than any line that counts, so it never matches. A log that cannot be read is no send.
+  local oldest newest
+  BACKUP_LOG_STATE=skipped
+  if [[ -z $STATE_OK ]]; then
+    return 0
+  fi
+  printf -v oldest '%(%Y-%m-%dT%H:%M:%SZ)T' "$((NOW - BACKUP_FRESH_SECONDS))"
+  printf -v newest '%(%Y-%m-%dT%H:%M:%SZ)T' "$NOW"
+  BACKUP_LOG_STATE=stale
+  tail -n "$BACKUP_LOG_LINE_LIMIT" -- "$BACKUP_LOG_FILE" 2>/dev/null 7>&- \
+    | tr '\0' '?' | cut -c "1-$BACKUP_LOG_LINE_WIDTH" | find_send "$oldest" "$newest"
+  if (( PIPESTATUS[0] != 0 )); then
+    BACKUP_LOG_STATE=unreadable
+  fi
+}
+
 # --- 6. the kinds, the throttles, the messages --------------------------------------------------
 
 evaluate() {
@@ -424,6 +498,9 @@ evaluate() {
   if (( FAILURE_COUNT > 0 )); then
     CONDITION[failures]=yes
   fi
+  if [[ $BACKUP_LOG_STATE == stale || $BACKUP_LOG_STATE == unreadable ]]; then
+    CONDITION[backup]=yes
+  fi
   if (( BROWSER_COUNT > 0 )); then
     CONDITION[browser]=yes
   fi
@@ -440,9 +517,10 @@ record_containers() {
 }
 
 decide() {
-  # At most one message per kind in KIND_INTERVAL_SECONDS and DAY_MESSAGE_LIMIT in all in
-  # DAY_SECONDS. The kinds due go in the order of KINDS until the day's budget ends.
-  local kind stamp recent=0
+  # At most one message per kind in KIND_INTERVAL_SECONDS (the backup kind in
+  # BACKUP_INTERVAL_SECONDS) and DAY_MESSAGE_LIMIT in all in DAY_SECONDS. The kinds due go in the
+  # order of KINDS until the day's budget ends.
+  local kind stamp interval recent=0
   DUE=()
   SENT=()
   HELD=()
@@ -457,9 +535,13 @@ decide() {
     fi
     DUE+=("$kind")
     stamp=${LAST_SENT[$kind]-}
+    interval=$KIND_INTERVAL_SECONDS
+    if [[ $kind == backup ]]; then
+      interval=$BACKUP_INTERVAL_SECONDS
+    fi
     if (( recent + ${#SENT[@]} >= DAY_MESSAGE_LIMIT )); then
       HELD+=("$kind(day)")
-    elif [[ -n $stamp ]] && (( NOW - stamp < KIND_INTERVAL_SECONDS )); then
+    elif [[ -n $stamp ]] && (( NOW - stamp < interval )); then
       HELD+=("$kind(kind)")
     else
       SENT+=("$kind")
@@ -480,6 +562,7 @@ send_message() {
     unhealthy) subject=$SUBJECT_UNHEALTHY text=$TEXT_UNHEALTHY ;;
     restarted) subject=$SUBJECT_RESTARTED text=$TEXT_RESTARTED ;;
     failures) subject=$SUBJECT_FAILURES text=$TEXT_FAILURES ;;
+    backup) subject=$SUBJECT_BACKUP text=$TEXT_BACKUP ;;
     browser) subject=$SUBJECT_BROWSER text=$TEXT_BROWSER ;;
     *) return 0 ;;
   esac
@@ -508,7 +591,8 @@ join() {
 
 report_run() {
   # One line for a run that had something to say: kind names, the container names that were not
-  # fine, exit statuses and counts of lines. Nothing else of what was read.
+  # fine, exit statuses, counts of lines and the one word for the backup log. Nothing else of what
+  # was read.
   local notes=() name faulty=()
   if [[ -z $STATE_OK ]]; then
     notes+=("first run, the state is $STATE_PROBLEM: watching from now")
@@ -537,6 +621,9 @@ report_run() {
     if [[ $LOGS_STATE == counted ]]; then
       notes+=("failure_lines=$FAILURE_COUNT browser_lines=$BROWSER_COUNT")
     fi
+    if [[ $BACKUP_LOG_STATE != skipped ]]; then
+      notes+=("backup_log=$BACKUP_LOG_STATE")
+    fi
   fi
   if (( ${#notes[@]} > 0 )); then
     log "run: $(join '; ' "${notes[@]}")"
@@ -560,6 +647,7 @@ main() {
   load_state
   read_containers
   read_logs
+  read_backup_log
   if deploy_lock_is_held; then
     log "dropped: the deployment lock $DEPLOY_LOCK_WHY after the readings; the state is not advanced"
     DONE=yes
