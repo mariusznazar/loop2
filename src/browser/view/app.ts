@@ -393,6 +393,7 @@ export function startApp(
     pendingMessage = null;
     const view: GameView = createGameView({
       client,
+      previousSaveAllowed: owner.previousSaveAllowed,
       state: start.state,
       revision: start.revision,
       afterConflict: conflict,

@@ -1,12 +1,15 @@
 /**
  * The list of programs on the screen Programy (D-165, D-166, D-167, D-169), in its React form: the
  * player's programs in the list's order, each a link to its address with the chosen one marked, and
- * under them „Nowy program”, „Zmień nazwę” and the destructive „Usuń” of the chosen program, with the
- * name field under those where „Zmień nazwę” opened it. The page holds the list behind one boundary,
+ * under them „Nowy program”, „Zmień nazwę” and the destructive „Usuń” of the chosen program, and,
+ * where the page gives it, „Wciągnij programy z poprzedniego zapisu” with the one line of its
+ * result (D-167, D-395), with the name field under those where „Zmień nazwę” opened it. The page
+ * holds the state of the pull — whether the button stands, whether it waits for the server and the
+ * line beside it — and gives it through `props.pull`. The page holds the list behind one boundary,
  * `createProgramList` (D-36), as the menu bar and the character screen do: an element of its own for
  * the page to place, a first render that is synchronous, `update(props)` and `dispose()`. The page
  * calls them from an event handler or the continuation of an answer, never from render or an effect.
- * The list's acts go to the page through `onCreate`, `onRename` and `onDelete`. The name field's
+ * The list's acts go to the page through `onCreate`, `onRename`, `onDelete` and `onPull`. The name field's
  * message is the one the program panel holds, for the same name rule. Nothing runs when the module
  * is imported.
  */
@@ -16,9 +19,24 @@ import { createRoot } from "react-dom/client";
 import { programName } from "../sim/programs.js";
 import type { ProgramId, SavedProgram } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
-import { ReactTextField } from "./controls/react-text-field.js";
+import {
+  ReactFormNote,
+  ReactFormWarning,
+  ReactTextField,
+} from "./controls/react-text-field.js";
 import { NAME_MESSAGES } from "./program-panel.js";
+import type { PullLine } from "./previous-save-lines.js";
 import { screenAddress } from "./screen-address.js";
+
+/**
+ * The pull of the previous save as the page gives it (D-395): `away` — no button, `rest` — the
+ * button, `waiting` — the button disabled while the server answers; and the one line beside it,
+ * which stands also where the button is away.
+ */
+export type PullView = {
+  control: "away" | "rest" | "waiting";
+  line: PullLine | null;
+};
 
 /** What the page gives the list; every call of `update` gives it whole. */
 export type ProgramListProps = {
@@ -26,9 +44,13 @@ export type ProgramListProps = {
   programs: readonly SavedProgram[];
   /** The program the page gives marked, the one its address names; null marks none. */
   chosenId: ProgramId | null;
+  /** The pull of the previous save: its button and the line of its result. */
+  pull: PullView;
 };
 
 export type ProgramListOptions = {
+  /** Called when the player asks for „Wciągnij programy z poprzedniego zapisu”. */
+  onPull: () => void;
   /** Called when the player asks for „Nowy program”. */
   onCreate: () => void;
   /** Called with a name the name rule takes, when the player saves „Zmień nazwę”. */
@@ -56,20 +78,25 @@ type ProgramListViewProps = Omit<ProgramListOptions, "props"> & {
 
 /** The list: the programs, the actions on the chosen one and the name field where it is open. */
 function ProgramListView({
+  onPull,
   onCreate,
   onRename,
   onDelete,
   props,
 }: ProgramListViewProps) {
-  const { programs, chosenId } = props;
+  const { programs, chosenId, pull } = props;
   const chosen = programs.find((saved) => saved.id === chosenId);
   const onlyOne = programs.length <= 1;
   const [naming, setNaming] = useState<Naming | null>(null);
   const [namedFor, setNamedFor] = useState(chosenId);
   const renameButton = useRef<HTMLButtonElement>(null);
+  const pullButton = useRef<HTMLButtonElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
   // Set by „Zmień nazwę”, so the commit that shows the field moves focus into it.
   const focusNameOnOpen = useRef(false);
+  // Set by the pull, so the commit that brings the button back from waiting moves focus to it: a
+  // disabled button loses the focus.
+  const focusPullOnRest = useRef(false);
 
   // The field leaves with the program it was open for: another program chosen closes it.
   if (namedFor !== chosenId) {
@@ -82,6 +109,12 @@ function ProgramListView({
     focusNameOnOpen.current = false;
     nameInput.current?.focus();
   }, [naming]);
+
+  useLayoutEffect(() => {
+    if (pull.control === "waiting" || !focusPullOnRest.current) return;
+    focusPullOnRest.current = false;
+    if (pull.control === "rest") pullButton.current?.focus();
+  }, [pull.control]);
 
   // The name rule judges the text for the program the field is open for; its own name is not taken.
   const checked =
@@ -114,6 +147,12 @@ function ProgramListView({
     onDelete(chosen.id);
   }
 
+  function pullPrevious(): void {
+    if (pull.control !== "rest") return;
+    focusPullOnRest.current = true;
+    onPull();
+  }
+
   return (
     <div className="program-list-view">
       <ul className="program-list-items" aria-label="Programy">
@@ -143,6 +182,19 @@ function ProgramListView({
           disabled={chosen === undefined || onlyOne}
           onClick={remove}
         />
+        {pull.control === "away" ? null : (
+          <ReactButton
+            text="Wciągnij programy z poprzedniego zapisu"
+            waitingText={pull.control === "waiting" ? "Wciąganie…" : null}
+            buttonRef={pullButton}
+            onClick={pullPrevious}
+          />
+        )}
+        {pull.line === null ? null : pull.line.role === "warning" ? (
+          <ReactFormWarning sentence={pull.line.text} />
+        ) : (
+          <ReactFormNote sentence={pull.line.text} />
+        )}
       </div>
       {naming === null ? null : (
         <div className="program-name">
@@ -180,6 +232,7 @@ export function createProgramList(options: ProgramListOptions): ProgramList {
     flushSync(() => {
       root.render(
         <ProgramListView
+          onPull={options.onPull}
           onCreate={options.onCreate}
           onRename={options.onRename}
           onDelete={options.onDelete}

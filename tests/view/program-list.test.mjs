@@ -18,7 +18,14 @@ const TWO = [
 ];
 const ONE = [{ id: 1, name: "Program", program: PROGRAM }];
 
-const propsOf = (programs, chosenId = 3) => ({ programs, chosenId });
+/** The pull of the previous save as the page gives it: no button and no line. */
+const NO_PULL = { control: "away", line: null };
+
+const propsOf = (programs, chosenId = 3, pull = NO_PULL) => ({
+  programs,
+  chosenId,
+  pull,
+});
 
 /** Builds the list in the page's body; `calls` counts what the list handed the page. */
 async function mount({ root }, props) {
@@ -26,6 +33,9 @@ async function mount({ root }, props) {
   let list = null;
   await inAct(() => {
     list = createProgramList({
+      onPull: () => {
+        calls.push(["pull"]);
+      },
       onCreate: () => {
         calls.push(["create"]);
       },
@@ -115,6 +125,154 @@ test("Usuń hands the chosen program's number to the page, and Nowy program hand
     await press(buttonNamed(page.root, "Usuń"));
     await press(buttonNamed(page.root, "Nowy program"));
     assert.deepEqual(calls, [["delete", 3], ["create"]]);
+  });
+});
+
+// --- the pull of the previous save (D-395, D-167) ---------------------------------------------
+
+const PULL_TEXT = "Wciągnij programy z poprzedniego zapisu";
+const pullButton = (root) => buttonNamed(root, PULL_TEXT);
+const sentences = (root) => [
+  ...root.querySelectorAll(
+    ".program-actions .form-note, .program-actions .form-warning",
+  ),
+];
+
+// Catches the button standing where the page gives none (an account without the privilege, or with
+// no previous save), and a line standing only with a button.
+test("with the pull away the list has no pull button and no line", async () => {
+  await withPage(async (page) => {
+    await mount(page, propsOf(TWO, 3, { control: "away", line: null }));
+    assert.equal(pullButton(page.root), undefined);
+    assert.equal(sentences(page.root).length, 0);
+  });
+});
+
+// Catches the button drawn destructive, main or disabled at rest, and a press that hands the page
+// nothing or a second act.
+test("at rest the pull is a plain enabled button, among the list's acts, and a press hands the page the pull", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(
+      page,
+      propsOf(TWO, 3, { control: "rest", line: null }),
+    );
+    const button = pullButton(page.root);
+    assert.ok(button, "the pull stands at rest");
+    assert.equal(button.className, "button");
+    assert.equal(button.disabled, false);
+    assert.equal(button.getAttribute("aria-busy"), null);
+    assert.equal(button.parentElement.className, "program-actions");
+    assert.deepEqual(
+      [...button.parentElement.querySelectorAll("button")].map(
+        (each) => each.textContent,
+      ),
+      ["Nowy program", "Zmień nazwę", "Usuń", PULL_TEXT],
+    );
+    await press(button);
+    assert.deepEqual(calls, [["pull"]]);
+  });
+});
+
+// Catches a waiting button that stays pressable, keeps its resting text or hands the page a second pull.
+test("while the pull waits the button reads „Wciąganie…”, is disabled and busy, and a press hands nothing", async () => {
+  await withPage(async (page) => {
+    const { calls } = await mount(
+      page,
+      propsOf(TWO, 3, { control: "waiting", line: null }),
+    );
+    const button = [...page.root.querySelectorAll("button")].find(
+      (each) => each.textContent === "Wciąganie…",
+    );
+    assert.ok(button, "the waiting button stands");
+    assert.equal(button.disabled, true);
+    assert.equal(button.getAttribute("aria-busy"), "true");
+    assert.equal(pullButton(page.root), undefined);
+    await press(button);
+    assert.deepEqual(calls, []);
+  });
+});
+
+// Catches a result drawn in `warning`, or a failure drawn as a result (D-39): the roles of the two
+// kinds of line, which the shared sentences carry in their classes.
+test("a result line stands next to the control as a note and a failure as a warning, each with its text", async () => {
+  await withPage(async (page) => {
+    const { list } = await mount(
+      page,
+      propsOf(TWO, 3, {
+        control: "rest",
+        line: { role: "text", text: "Wciągnięto 2 programy." },
+      }),
+    );
+    const [note] = sentences(page.root);
+    assert.equal(note.className, "form-note");
+    assert.equal(note.textContent, "Wciągnięto 2 programy.");
+    assert.equal(note.previousElementSibling, pullButton(page.root));
+    await inAct(() =>
+      list.update(
+        propsOf(TWO, 3, {
+          control: "rest",
+          line: { role: "warning", text: "Nie udało się." },
+        }),
+      ),
+    );
+    const [warning] = sentences(page.root);
+    assert.equal(sentences(page.root).length, 1);
+    assert.equal(warning.className, "form-warning");
+    assert.equal(warning.getAttribute("role"), "alert");
+    assert.equal(warning.textContent, "Nie udało się.");
+  });
+});
+
+// Catches a line that needs the button: a sentence of „no previous save” stands where the button went.
+test("a line stands also where the control is away", async () => {
+  await withPage(async (page) => {
+    await mount(
+      page,
+      propsOf(TWO, 3, {
+        control: "away",
+        line: { role: "text", text: "Nie ma już poprzedniego zapisu." },
+      }),
+    );
+    assert.equal(pullButton(page.root), undefined);
+    assert.equal(sentences(page.root).length, 1);
+  });
+});
+
+// Catches a text of the document drawn as markup: the line is a text node (D-395).
+test("a line's text is shown as text, never as markup", async () => {
+  await withPage(async (page) => {
+    const hostile = '<img src="x"><b>Las</b>';
+    await mount(
+      page,
+      propsOf(TWO, 3, {
+        control: "rest",
+        line: { role: "text", text: hostile },
+      }),
+    );
+    assert.equal(page.root.querySelector(".program-actions img"), null);
+    assert.equal(page.root.querySelector(".program-actions b"), null);
+    assert.equal(sentences(page.root)[0].textContent, hostile);
+  });
+});
+
+// jsdom keeps focus on a disabled button until the page's observer moves it; the list puts it back
+// on the control the player started from once the answer has come (styleguide, States of shared
+// controls). Real focus order is the browser check's (D-88).
+test("after the wait the focus returns to the pull button", async () => {
+  await withPage(async (page) => {
+    const { list } = await mount(
+      page,
+      propsOf(TWO, 3, { control: "rest", line: null }),
+    );
+    await press(pullButton(page.root));
+    pullButton(page.root).focus();
+    await inAct(() =>
+      list.update(propsOf(TWO, 3, { control: "waiting", line: null })),
+    );
+    await inAct(() =>
+      list.update(propsOf(TWO, 3, { control: "rest", line: null })),
+    );
+    assert.equal(page.document.activeElement, pullButton(page.root));
   });
 });
 
