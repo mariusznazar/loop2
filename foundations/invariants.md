@@ -104,7 +104,7 @@ When the account and save server's listening address is already in use, the serv
 
 ## loop2-container-isolation
 
-The loop2 instance runs in a container separate from the existing loop instance.
+The Compose file of loop2 names its own project and containers, mounts only the account volume of loop2, includes or extends no other file and shares no namespace, link, device, external network or external volume with another container, and neither that file nor the Dockerfile mounts the Docker socket or names the old loop instance.
 
 - **Method:** test
 - **Rests on:** none
@@ -114,7 +114,7 @@ The loop2 instance runs in a container separate from the existing loop instance.
 
 ## loop2-distinct-address
 
-The public address of loop2 differs from `kantarion.bieda.it`.
+The deployment workflow declares the public address of loop2 exactly once, as the value of a variable named with LOOP2, and its host name is not `kantarion.bieda.it`.
 
 - **Method:** test
 - **Rests on:** none
@@ -144,7 +144,7 @@ A deployment that stops before it starts the new containers — at its input, th
 
 ## loop2-application-port
 
-The application port is inaccessible from the Internet outside Cloudflare.
+The Compose file of loop2 publishes no port of any of its services and declares no network, network mode, link, inclusion or extension that would put a service on a network other than the one Compose creates for the project.
 
 - **Method:** test
 - **Rests on:** none
@@ -917,7 +917,7 @@ The account server hands no account message to the mail service once 30 account 
 
 ## account-email-via-outsider
 
-Player email confirmation and password-reset messages are sent from `mariusznazar.com` through Mikrus Outsider.
+The Compose file of loop2 gives the `app` service, for the messages it sends to players, a sender address under `mariusznazar.com` (`LOOP2_MAIL_FROM`) and the SMTP server `outsider.mikr.us` (`LOOP2_SMTP_HOST`).
 
 - **Method:** review
 - **Rests on:** mikrus-outsider-mail
@@ -1093,16 +1093,6 @@ No session its account held when a password reset committed authorizes a request
 - **Rests on:** express-session-end-of-request · express-session-regenerated-session-saved-again
 - **Derives from:** D-112 · D-138
 - **Part:** account-server
-- **Violated:** no
-
-## account-save-backup
-
-The account and save server's database has a completed, consistent backup stored outside the game server host.
-
-- **Method:** review
-- **Rests on:** sqlite-online-backup
-- **Derives from:** D-228
-- **Part:** account-server · deployment
 - **Violated:** no
 
 ## account-save-sqlite-upgrade
@@ -1382,3 +1372,4 @@ The reader of the programs of a previous save reads from a document only its ver
 | guidelines-form | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | guidelines-reference-current | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | eslint-configuration-rules | withdrawn: no cheap test checks that `eslint.config.mjs` keeps to D-29, so the linter's rule names no invariant for it; the review of each change to that configuration compares it with D-29 | none |
+| account-save-backup | withdrawn: the sentence is about the state of the backups on the server, which no commit of the product makes true or false and no review of a change compares with a file; that state stands as the environment fact `loop2-backup-log-nightly-sends`, read with its command and date, and D-228 rests on that fact | none |

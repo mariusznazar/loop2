@@ -16,13 +16,13 @@ In OpenSSH portable 8.9p1, the option `command=` of an authorized_keys file make
 
 The test server's authorized_keys contains exactly one entry beginning with `restrict,command="/usr/local/bin/loop2-deploy"`.
 
-- **Source:** reading: `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys` on the test server's host, grep (GNU grep) 3.7 — "1"; run 2026-11-10
+- **Source:** reading: `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys` on the test server's host, grep (GNU grep) 3.7, as `grep --version | head -1` prints it on the same host — "1"; run 2026-11-14
 
 ## loop2-host-installed-command
 
 The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755.
 
-- **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32 — "755 root:root"; run 2026-11-10
+- **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32, as `stat --version | head -1` prints it on the same host — "755 root:root"; run 2026-11-14
 
 ## loop2-host-ssh-host-key-options
 
@@ -54,19 +54,19 @@ scan() {
 scan /root/.ssh/config /root/.ssh 1
 scan /etc/ssh/ssh_config /etc/ssh 1
 echo "$n"
-'` and, in the same call, `bash --version | head -1` and `grep --version | head -1` on the test server's host, bash 5.1.16(1)-release and grep (GNU grep) 3.7 — "0" · "GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)" · "grep (GNU grep) 3.7"; run 2026-11-11
+'` and, in the same call, `bash --version | head -1` and `grep --version | head -1` on the test server's host, bash 5.1.16(1)-release and grep (GNU grep) 3.7 — "0" · "GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)" · "grep (GNU grep) 3.7"; run 2026-11-14
 
 ## mikrus-host-docker-workloads
 
 The old loop game and foundryvtt run as Docker containers on the test server's host.
 
-- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377 — "6e63d970d315   loop:latest                "docker-entrypoint.s…"   8 weeks ago     Up 8 weeks (healthy)" · "bbe6f6752113   felddy/foundryvtt:12.331   "./entrypoint.sh res…"   18 months ago   Up 5 months (healthy)"; run 2026-11-10
+- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377, as `docker --version` prints it on the same host — the container id, image, command, created and status columns of the rows of these two containers, the ports and names columns left out because the ports column holds numbers taken from the server's id: "6e63d970d315   loop:latest                "docker-entrypoint.s…"   2 months ago    Up 2 months (healthy)" · "bbe6f6752113   felddy/foundryvtt:12.331   "./entrypoint.sh res…"   18 months ago   Up 5 months (healthy)"; run 2026-11-14
 
 ## mikrus-host-swap
 
 The test server's host reports zero total swap.
 
-- **Source:** reading: `free` on the test server's host, free from procps-ng 3.3.17 — "total        used        free      shared  buff/cache   available" · "Swap:              0           0           0"; run 2026-11-10
+- **Source:** reading: `free` on the test server's host, free from procps-ng 3.3.17, as `free --version` prints it on the same host — "total        used        free      shared  buff/cache   available" · "Swap:              0           0           0"; run 2026-11-14
 
 ## game-icons-licence
 
@@ -313,7 +313,7 @@ Compose mounts a service's short-syntax secret read-only under `/run/secrets/`, 
 
 The test server host establishes an IPv4 TCP connection to `region1.v2.argotunnel.com` on port 7844; this observation establishes neither UDP nor container connectivity.
 
-- **Source:** observed: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` reports Connected before timeout exit 124; the same check on port 7845 reports a connection timeout and exit 28; run 2026-10-26
+- **Source:** reading: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` on the test server's host, curl, whose version no reading the skill allows prints — "*   Trying 198.41.192.167:7844..." · "* Connected to region1.v2.argotunnel.com (198.41.192.167) port 7844 (#0)"; run 2026-11-14
 
 ## stryker-simulation-execution
 
@@ -691,7 +691,7 @@ GitHub automatically disables the scheduled workflows of a public repository whe
 
 The GitHub repository `mariusznazar/loop2` is public.
 
-- **Source:** https://api.github.com/repos/mariusznazar/loop2 (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-08) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-08
+- **Source:** https://api.github.com/repos/mariusznazar/loop2 (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-08) § the repository object, field `visibility` — `"visibility":"public"`; read 2026-11-14
 
 ## docker-compose-recreate-removal
 
@@ -722,6 +722,12 @@ On Ubuntu 22.04, `logrotate` rotates a log `count` times, the number that the `r
 The shortest interval at which GitHub runs scheduled workflows is once every 5 minutes.
 
 - **Source:** https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (archived: https://web.archive.org/web/20261031092549/https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, 2026-10-31) § schedule — "The shortest interval you can run scheduled workflows is once every 5 minutes."; read 2026-11-09
+
+## check-address-schedule-run-times
+
+GitHub started the 17 runs of the workflow `check-address.yml` of the GitHub repository `mariusznazar/loop2` that its `schedule` event triggered, as `gh run list` lists them with a limit of 20, between 2026-11-09 19:54:50 UTC and 2026-11-14 02:14:57 UTC, and the gaps between the start times of neighbouring runs are between 3 hours 32 minutes and 8 hours 30 minutes.
+
+- **Source:** reading: `gh run list --workflow check-address.yml --event schedule --limit 20 --json createdAt,startedAt` on the author's computer, gh version 2.88.1 (2026-03-12), as `gh --version` prints it on the same computer, the answer of GitHub for a public repository — `[{"createdAt":"2026-11-14T02:14:57Z","startedAt":"2026-11-14T02:14:57Z"},{"createdAt":"2026-11-13T22:02:16Z","startedAt":"2026-11-13T22:02:16Z"},{"createdAt":"2026-11-13T16:20:34Z","startedAt":"2026-11-13T16:20:34Z"},{"createdAt":"2026-11-13T08:10:45Z","startedAt":"2026-11-13T08:10:45Z"},{"createdAt":"2026-11-13T01:20:56Z","startedAt":"2026-11-13T01:20:56Z"},{"createdAt":"2026-11-12T20:26:48Z","startedAt":"2026-11-12T20:26:48Z"},{"createdAt":"2026-11-12T12:39:58Z","startedAt":"2026-11-12T12:39:58Z"},{"createdAt":"2026-11-12T04:09:51Z","startedAt":"2026-11-12T04:09:51Z"},{"createdAt":"2026-11-11T23:35:47Z","startedAt":"2026-11-11T23:35:47Z"},{"createdAt":"2026-11-11T17:25:19Z","startedAt":"2026-11-11T17:25:19Z"},{"createdAt":"2026-11-11T09:35:11Z","startedAt":"2026-11-11T09:35:11Z"},{"createdAt":"2026-11-11T02:17:48Z","startedAt":"2026-11-11T02:17:48Z"},{"createdAt":"2026-11-10T22:45:37Z","startedAt":"2026-11-10T22:45:37Z"},{"createdAt":"2026-11-10T17:55:20Z","startedAt":"2026-11-10T17:55:20Z"},{"createdAt":"2026-11-10T10:15:50Z","startedAt":"2026-11-10T10:15:50Z"},{"createdAt":"2026-11-10T02:28:54Z","startedAt":"2026-11-10T02:28:54Z"},{"createdAt":"2026-11-09T19:54:50Z","startedAt":"2026-11-09T19:54:50Z"}]`; run 2026-11-14
 
 ## github-actions-public-runs-free
 
@@ -775,25 +781,103 @@ Playwright CLI 0.1.22 keeps the sessions of each workspace apart from those of e
 
 The GitHub repository `mariusznazar/screenshots` is public.
 
-- **Source:** https://api.github.com/repos/mariusznazar/screenshots (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-11) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-11
+- **Source:** https://api.github.com/repos/mariusznazar/screenshots (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-11) § the repository object, field `visibility` — `"visibility":"public"`; read 2026-11-14
 
 ## smoke-fire-particle-licence
 
 The page of the pack Smoke & Fire Animated Particle [16x16] on OpenGameArt gives KnoblePersona as its author and CC-BY 3.0 as its licence, the name of the licence linking to the Creative Commons Attribution 3.0 licence at http://creativecommons.org/licenses/by/3.0/.
 
-- **Source:** https://opengameart.org/content/smoke-fire-animated-particle-16x16 (archived: https://web.archive.org/web/20260929142553/https://opengameart.org/content/smoke-fire-animated-particle-16x16, 2026-09-29) § author — "KnoblePersona" · § License(s) — "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/; read 2026-11-11
+- **Source:** https://opengameart.org/content/smoke-fire-animated-particle-16x16 (archived: https://web.archive.org/web/20260929142553/https://opengameart.org/content/smoke-fire-animated-particle-16x16, 2026-09-29) § author — "KnoblePersona" · § License(s) — "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/; read 2026-11-14
 
 ## lpc-wolf-licence
 
 The page of the pack [LPC] Wolf Animation on OpenGameArt gives William.Thompsonj as its author and Redshrike as a collaborator, offers the pack under the licences CC-BY 4.0, CC-BY 3.0, GPL 3.0, GPL 2.0 and OGA-BY 3.0, the name of the licence CC-BY 3.0 linking to the Creative Commons Attribution 3.0 licence at http://creativecommons.org/licenses/by/3.0/, and asks for a credit to Stephen "Redshrike" Challener as graphic artist and to William.Thompsonj as contributor, with a link back to the page or to the OpenGameArt homepage if reasonable.
 
-- **Source:** https://opengameart.org/content/lpc-wolf-animation (archived: https://web.archive.org/web/20261030052334/https://opengameart.org/content/lpc-wolf-animation, 2026-10-30) § Author — "William.Thompsonj" · § Collaborators — "Redshrike" · § License(s) — "CC-BY 4.0" · "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/ · "GPL 3.0" · "GPL 2.0" · "OGA-BY 3.0" · § Attribution Instructions — "Attribute Stephen "Redshrike" Challener as graphic artist and William.Thompsonj as contributor. If reasonable link back to this page or the OGA homepage."; read 2026-11-12
+- **Source:** https://opengameart.org/content/lpc-wolf-animation (archived: https://web.archive.org/web/20261030052334/https://opengameart.org/content/lpc-wolf-animation, 2026-10-30) § Author — "William.Thompsonj" · § Collaborators — "Redshrike" · § License(s) — "CC-BY 4.0" · "CC-BY 3.0", a link to http://creativecommons.org/licenses/by/3.0/ · "GPL 3.0" · "GPL 2.0" · "OGA-BY 3.0" · § Attribution Instructions — "Attribute Stephen "Redshrike" Challener as graphic artist and William.Thompsonj as contributor. If reasonable link back to this page or the OGA homepage."; read 2026-11-14
 
 ## docker-desktop-start-detach
 
 `docker desktop start` starts Docker Desktop, and with the option `--detach` it does not synchronously wait for the requested operation to complete.
 
 - **Source:** https://docs.docker.com/reference/cli/docker/desktop/start/ (archived: https://web.archive.org/web/20261101133739/https://docs.docker.com/reference/cli/docker/desktop/start/, 2026-11-01) § Description — "Start Docker Desktop" · § Options, `--detach` — "Do not synchronously wait for the requested operation to complete."; read 2026-11-13
+
+## loop2-deploy-dump-to-deployed-time
+
+In the deploy log of the test server's host, the `dump:` line and the `deployed` line of each of ten consecutive deployments, the first of which ended at 2026-11-12T18:04:30Z and the last at 2026-11-14T05:26:05Z, carry times 9 to 11 seconds apart.
+
+- **Source:** reading: `tail -n 8000 /var/log/loop2-deploy.log` on the test server's host, tail, whose version no reading the skill allows prints — the `dump:` and `deployed` lines of its last ten deployments, in order: "2026-11-12T18:04:20Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 135361 to 144673 bytes" · "2026-11-12T18:04:30Z loop2-deploy: deployed 7ff7c729f60fafac1f9cd467dd68607a5f326451, previously eb7cf5d8b829b0c904b3ac30ebe3eb71522532eb" · "2026-11-12T21:43:45Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 144673 to 159027 bytes" · "2026-11-12T21:43:55Z loop2-deploy: deployed 2b4d760c517a8b399b2d9b80f77531455e32d11c, previously 7ff7c729f60fafac1f9cd467dd68607a5f326451" · "2026-11-13T17:49:23Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 159027 to 168339 bytes" · "2026-11-13T17:49:33Z loop2-deploy: deployed 1b0c8ad4466fdd6d067da7bbc27b10458d81012b, previously 2b4d760c517a8b399b2d9b80f77531455e32d11c" · "2026-11-13T20:24:07Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 168339 to 177644 bytes" · "2026-11-13T20:24:17Z loop2-deploy: deployed fc00c40652cd794f76f5ea18a2529e5c5c44c087, previously 1b0c8ad4466fdd6d067da7bbc27b10458d81012b" · "2026-11-13T21:39:37Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 177644 to 186952 bytes" · "2026-11-13T21:39:48Z loop2-deploy: deployed aa0ecd09a1037e3aff0ac2bcfc786f2707352929, previously fc00c40652cd794f76f5ea18a2529e5c5c44c087" · "2026-11-13T23:10:31Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 186952 to 196712 bytes" · "2026-11-13T23:10:42Z loop2-deploy: deployed 6ab6a32be884ac174b068b8a6a5dd1515073d2a9, previously aa0ecd09a1037e3aff0ac2bcfc786f2707352929" · "2026-11-14T00:29:06Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 196712 to 206133 bytes" · "2026-11-14T00:29:15Z loop2-deploy: deployed 6f237fb8ce26450706d8738d3d3a07298e8ec110, previously 6ab6a32be884ac174b068b8a6a5dd1515073d2a9" · "2026-11-14T00:33:48Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 206133 to 215440 bytes" · "2026-11-14T00:33:59Z loop2-deploy: deployed 5159e8c475a5faa77529020a51b21e271c695132, previously 6f237fb8ce26450706d8738d3d3a07298e8ec110" · "2026-11-14T03:19:50Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 215440 to 224752 bytes" · "2026-11-14T03:19:59Z loop2-deploy: deployed e54f23c0ea3bd1db13d2635333417eb50412d6a0, previously 5159e8c475a5faa77529020a51b21e271c695132" · "2026-11-14T05:25:54Z loop2-deploy: dump: the size of /var/log/loop2-app.log went from 224752 to 234060 bytes" · "2026-11-14T05:26:05Z loop2-deploy: deployed f0814d773b80228bd9b35caf42ca1dd6c5235c02, previously e54f23c0ea3bd1db13d2635333417eb50412d6a0"; run 2026-11-14
+
+## loop2-deploy-resource-gate-lines
+
+In the deploy log of the test server's host, the `resources:` line of each of ten consecutive deployments, the first of which ended at 2026-11-12T18:04:30Z and the last at 2026-11-14T05:26:05Z, shows MemAvailable between 3787 MiB and 3840 MiB against a minimum of 1024 MiB, and free space on the filesystem of Docker's root directory between 16047 MiB and 16113 MiB against a minimum of 4 GiB.
+
+- **Source:** reading: `tail -n 8000 /var/log/loop2-deploy.log` on the test server's host, tail, whose version no reading the skill allows prints — the `resources:` lines of its last ten deployments, in order: "2026-11-12T17:53:30Z loop2-deploy: resources: MemAvailable 3840 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16113 MiB (minimum 4 GiB)" · "2026-11-12T21:33:05Z loop2-deploy: resources: MemAvailable 3823 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16104 MiB (minimum 4 GiB)" · "2026-11-13T17:38:28Z loop2-deploy: resources: MemAvailable 3801 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16094 MiB (minimum 4 GiB)" · "2026-11-13T20:13:24Z loop2-deploy: resources: MemAvailable 3812 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16086 MiB (minimum 4 GiB)" · "2026-11-13T21:29:20Z loop2-deploy: resources: MemAvailable 3810 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16077 MiB (minimum 4 GiB)" · "2026-11-13T22:59:25Z loop2-deploy: resources: MemAvailable 3803 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16068 MiB (minimum 4 GiB)" · "2026-11-14T00:28:57Z loop2-deploy: resources: MemAvailable 3787 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16061 MiB (minimum 4 GiB)" · "2026-11-14T00:33:40Z loop2-deploy: resources: MemAvailable 3802 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16060 MiB (minimum 4 GiB)" · "2026-11-14T03:09:00Z loop2-deploy: resources: MemAvailable 3800 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16058 MiB (minimum 4 GiB)" · "2026-11-14T05:14:47Z loop2-deploy: resources: MemAvailable 3793 MiB (minimum 1024 MiB), free space on the filesystem of Docker's root directory 16047 MiB (minimum 4 GiB)"; run 2026-11-14
+
+## loop2-deploy-stage-exit-lines
+
+The last 8000 lines of the deploy log of the test server's host, read on 2026-11-14 and running from the line of 2026-11-01T22:39:06Z to the `deployed` line of 2026-11-14T05:26:05Z, hold one line that gives a stage and its exit code, a fetch stage ending at exit 6, and no line ending `(exit 5)` or `(exit 7)`.
+
+- **Source:** reading: `tail -n 8000 /var/log/loop2-deploy.log` on the test server's host, tail, whose version no reading the skill allows prints — of its 8000 lines, the one holding the text `: stage ` and the only one holding `(exit `: "2026-11-05T16:01:33Z loop2-deploy: stage fetch: git fetch from GitHub failed (git exit 128; git's message is in /var/log/loop2-deploy.log) (exit 6)"; run 2026-11-14
+
+## loop2-containers-published-ports
+
+On the test server's host, the two containers of the Compose project `loop2` publish no host port: `docker ps` and `docker compose -p loop2 ps` show for `loop2` only the exposed `3000/tcp`, with no `->` mapping, and for `loop2-cloudflared` an empty ports column.
+
+- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377 — the header and the two rows of these containers, runs of spaces collapsed to one, the rows of the four other containers left out: "CONTAINER ID IMAGE COMMAND CREATED STATUS PORTS NAMES" · "f5e9f12cbbcd loop2-app "docker-entrypoint.s…" 3 hours ago Up 3 hours (healthy) 3000/tcp loop2" · "d8830e65e49e loop2-cloudflared "cloudflared --no-au…" 3 hours ago Up 3 hours (healthy) loop2-cloudflared"; and `cd /srv/loop2 && docker compose -p loop2 ps` on the same host, Docker Compose version v2.35.1, its whole output, runs of spaces collapsed to one: "NAME IMAGE COMMAND SERVICE CREATED STATUS PORTS" · "loop2 loop2-app "docker-entrypoint.s…" app 3 hours ago Up 3 hours (healthy) 3000/tcp" · "loop2-cloudflared loop2-cloudflared "cloudflared --no-au…" cloudflared 3 hours ago Up 3 hours (healthy)"; run 2026-11-14
+
+## loop2-containers-memory-use
+
+On 2026-11-14, `docker stats --no-stream loop2 loop2-cloudflared` on the test server's host shows the container `loop2` using 77.07MiB of a limit of 512MiB and the container `loop2-cloudflared` using 23.2MiB of a limit of 256MiB.
+
+- **Source:** reading: `docker stats --no-stream loop2 loop2-cloudflared` on the test server's host, Docker version 28.1.1, build 4eba377 — its whole output, runs of spaces collapsed to one: "CONTAINER ID NAME CPU % MEM USAGE / LIMIT MEM % NET I/O BLOCK I/O PIDS" · "f5e9f12cbbcd loop2 0.00% 77.07MiB / 512MiB 15.05% 2.88kB / 1.52kB 1.83GB / 65.5kB 12" · "d8830e65e49e loop2-cloudflared 12.76% 23.2MiB / 256MiB 9.06% 1.4MB / 885kB 48.3MB / 0B 6"; run 2026-11-14
+
+## loop2-app-log-sqlite-busy-lines
+
+On 2026-11-14, neither the game's dump file `/var/log/loop2-app.log` nor its rotated copy `/var/log/loop2-app.log.1` on the test server's host holds a line with the text `"errcode":5,`, which is how a failure line of the game writes SQLite's number 5 for a busy failure; the dump holds no line with the text `"failure":`, so no failure line of any kind, and the copy holds one line, `logrotate trial`, and no line of the game.
+
+- **Source:** reading: `grep -F -m 50 -- '"errcode":5,' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — no output · and the same with `/var/log/loop2-app.log.1` in place of the file — no output · `grep -F -m 50 -- '"failure":' /var/log/loop2-app.log` — no output · and the same with `/var/log/loop2-app.log.1` — no output · `tail -n 200 /var/log/loop2-app.log.1` on the same host, tail, whose version no reading the skill allows prints — its whole output: "logrotate trial" · and, to show that a fixed string written as the game writes its lines can match in the dump, `grep -F -m 50 -- '"event":"link-issued"' /var/log/loop2-app.log` — its whole output, with the account identifier replaced by `<account>` and runs of spaces collapsed to one: "loop2 | 2026-11-13T23:03:05.952126792Z {"event":"link-issued","accountId":"<account>","linkPurpose":"password-reset"}"; run 2026-11-14
+
+## mikrus-host-docker-compose-version
+
+The test server's host runs Docker Compose version v2.35.1.
+
+- **Source:** reading: `docker compose version | head -1` on the test server's host, Docker version 28.1.1, build 4eba377 — "Docker Compose version v2.35.1"; run 2026-11-14
+
+## mikrus-host-logrotate-schedule
+
+The test server's host has the systemd timer `logrotate.timer` enabled, its unit file sets `OnCalendar=daily`, and the file `/etc/cron.daily/logrotate` exists.
+
+- **Source:** reading: `systemctl is-enabled logrotate.timer` on the test server's host, systemctl, whose version no reading the skill allows prints — "enabled" · `systemctl cat logrotate.timer` on the same host, its lines of the schedule: "# /lib/systemd/system/logrotate.timer" · "[Timer]" · "OnCalendar=daily" · "AccuracySec=1h" · "Persistent=true" · `ls /etc/cron.daily/logrotate` on the same host, ls, whose version no reading the skill allows prints — "/etc/cron.daily/logrotate"; run 2026-11-14
+
+## loop2-app-log-file-names
+
+The names that `ls -1 /var/log/loop2-app.log*` lists on the test server's host are `/var/log/loop2-app.log` and `/var/log/loop2-app.log.1`, and no other.
+
+- **Source:** reading: `ls -1 /var/log/loop2-app.log*` on the test server's host, ls, whose version no reading the skill allows prints — its whole output: "/var/log/loop2-app.log" · "/var/log/loop2-app.log.1"; run 2026-11-14
+
+## loop2-host-installed-copies-agree
+
+On the test server's host, `cmp` prints no difference between each of the six installed files `/usr/local/bin/loop2-deploy`, `/usr/local/bin/loop2-backup`, `/etc/cron.d/loop2-backup`, `/usr/local/bin/loop2-watch`, `/etc/cron.d/loop2-watch` and `/etc/logrotate.d/loop2-app` and its source `loop2-deploy`, `loop2-backup`, `loop2-backup.cron`, `loop2-watch`, `loop2-watch.cron` and `loop2-app.logrotate` in `/srv/loop2/deploy`, and the checkout in `/srv/loop2` is at the commit f0814d77.
+
+- **Source:** reading: `cmp /usr/local/bin/loop2-deploy /srv/loop2/deploy/loop2-deploy` on the test server's host, cmp, whose version no reading the skill allows prints — no output; and the same with `/usr/local/bin/loop2-backup` and `/srv/loop2/deploy/loop2-backup`, `/etc/cron.d/loop2-backup` and `/srv/loop2/deploy/loop2-backup.cron`, `/usr/local/bin/loop2-watch` and `/srv/loop2/deploy/loop2-watch`, `/etc/cron.d/loop2-watch` and `/srv/loop2/deploy/loop2-watch.cron`, `/etc/logrotate.d/loop2-app` and `/srv/loop2/deploy/loop2-app.logrotate`, each run alone — no output from any; and `git -C /srv/loop2 --no-optional-locks status` on the same host, git, whose version no reading the skill allows prints — "HEAD detached at f0814d77" · "nothing to commit, working tree clean"; run 2026-11-14
+
+## loop2-backup-log-nightly-sends
+
+On the test server's host, the backup log `/var/log/loop2-backup.log` holds for each of the 14 days from 2026-11-01 to 2026-11-14 a line `made:` naming a file `loop2-accounts-<n>.sqlite.age` of 90328 bytes and, after it, a line `end: sent` naming the same file, written at about 02:17 UTC.
+
+- **Source:** reading: `tail -n 60 /var/log/loop2-backup.log` on the test server's host, tail, whose version no reading the skill allows prints — of its 60 lines, the `made:` and `end: sent` lines of these days: "2026-11-01T02:17:01Z loop2-backup: made: loop2-accounts-7.sqlite.age, 90328 bytes" · "2026-11-01T02:17:10Z loop2-backup: end: sent loop2-accounts-7.sqlite.age" · "2026-11-02T02:17:02Z loop2-backup: made: loop2-accounts-1.sqlite.age, 90328 bytes" · "2026-11-02T02:17:05Z loop2-backup: end: sent loop2-accounts-1.sqlite.age" · "2026-11-03T02:17:02Z loop2-backup: made: loop2-accounts-2.sqlite.age, 90328 bytes" · "2026-11-03T02:17:07Z loop2-backup: end: sent loop2-accounts-2.sqlite.age" · "2026-11-04T02:17:01Z loop2-backup: made: loop2-accounts-3.sqlite.age, 90328 bytes" · "2026-11-04T02:17:05Z loop2-backup: end: sent loop2-accounts-3.sqlite.age" · "2026-11-05T02:17:01Z loop2-backup: made: loop2-accounts-4.sqlite.age, 90328 bytes" · "2026-11-05T02:17:04Z loop2-backup: end: sent loop2-accounts-4.sqlite.age" · "2026-11-06T02:17:01Z loop2-backup: made: loop2-accounts-5.sqlite.age, 90328 bytes" · "2026-11-06T02:17:16Z loop2-backup: end: sent loop2-accounts-5.sqlite.age" · "2026-11-07T02:17:02Z loop2-backup: made: loop2-accounts-6.sqlite.age, 90328 bytes" · "2026-11-07T02:17:05Z loop2-backup: end: sent loop2-accounts-6.sqlite.age" · "2026-11-08T02:17:02Z loop2-backup: made: loop2-accounts-7.sqlite.age, 90328 bytes" · "2026-11-08T02:17:05Z loop2-backup: end: sent loop2-accounts-7.sqlite.age" · "2026-11-09T02:17:01Z loop2-backup: made: loop2-accounts-1.sqlite.age, 90328 bytes" · "2026-11-09T02:17:04Z loop2-backup: end: sent loop2-accounts-1.sqlite.age" · "2026-11-10T02:17:01Z loop2-backup: made: loop2-accounts-2.sqlite.age, 90328 bytes" · "2026-11-10T02:17:04Z loop2-backup: end: sent loop2-accounts-2.sqlite.age" · "2026-11-11T02:17:01Z loop2-backup: made: loop2-accounts-3.sqlite.age, 90328 bytes" · "2026-11-11T02:17:04Z loop2-backup: end: sent loop2-accounts-3.sqlite.age" · "2026-11-12T02:17:02Z loop2-backup: made: loop2-accounts-4.sqlite.age, 90328 bytes" · "2026-11-12T02:17:05Z loop2-backup: end: sent loop2-accounts-4.sqlite.age" · "2026-11-13T02:17:01Z loop2-backup: made: loop2-accounts-5.sqlite.age, 90328 bytes" · "2026-11-13T02:17:08Z loop2-backup: end: sent loop2-accounts-5.sqlite.age" · "2026-11-14T02:17:02Z loop2-backup: made: loop2-accounts-6.sqlite.age, 90328 bytes" · "2026-11-14T02:17:09Z loop2-backup: end: sent loop2-accounts-6.sqlite.age"; run 2026-11-14
+
+## loop2-watch-log-flock-status
+
+On the test server's host, the log of the failure watcher `/var/log/loop2-watch.log` holds, for the days from 2026-11-09 to 2026-11-14, lines that give `flock exit 1` for a deployment lock that is held, and its lines that name a `flock` status name no other.
+
+- **Source:** reading: `tail -n 100 /var/log/loop2-watch.log` on the test server's host, tail, whose version no reading the skill allows prints — of its 43 lines, 40 of which are `skipped:` lines naming `flock exit 1`, three of those lines and the line of a run that went on after the lock: "2026-11-09T09:20:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-11T22:35:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-14T05:25:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-11T09:55:01Z loop2-watch: run: due=down; sent=down; pusher=down:0; containers=loop2; failure_lines=0 browser_lines=0"; run 2026-11-14
+
+## loop2-app-log-password-reset-mail-events
+
+On 2026-11-14, the game's dump file `/var/log/loop2-app.log` on the test server's host holds, for one account, a line of the event `link-issued` followed by a line of the event `message-sent`, both with `linkPurpose` `password-reset` and written within one second on 2026-11-13 at 23:03 UTC, holds no other line with the text `link-issued` or `message-sent`, and holds no line with the text `"failure":"mail"`.
+
+- **Source:** reading: `grep -F -m 50 -- 'link-issued' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:05.952126792Z {"event":"link-issued","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- 'message-sent' /var/log/loop2-app.log` — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:06.406314841Z {"event":"message-sent","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- '"failure":"mail"' /var/log/loop2-app.log` — grep printed no line; run 2026-11-14
 
 ## Withdrawn identifiers
 

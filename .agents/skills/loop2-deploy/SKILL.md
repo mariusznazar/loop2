@@ -69,10 +69,15 @@ files or requests. The MCP has full rights, so the following limits are an agree
   `restrict,command="/usr/local/bin/loop2-deploy" `, `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys`
   (expects `1`; the count only, never a line or a key).
 - Allowed, for a reading in an environment fact only: `stat --version`, `bash --version`,
-  `grep --version`, `docker --version` and `free --version`, each run alone, or piped through
+  `grep --version`, `docker --version`, `docker compose version` and `free --version`, each run alone, or piped through
   `head -1` to keep its first line, and each also allowed in the same call as the counting
   command of `references/backup_and_restore.md`; no other pipe or option. Each prints the tool's
   version, whose first line is what such a reading quotes; they expect no fixed value.
+- Allowed, the log's rotation: `systemctl is-enabled logrotate.timer` (expects `enabled`) and
+  `systemctl cat logrotate.timer` (the timer's unit file, which holds the line `OnCalendar=daily`;
+  it shows that `logrotate` is scheduled every day, not that a run happened). The server has the
+  entry of cron as well, `ls /etc/cron.daily/logrotate` (expects the path back). Also `ls -1 /var/log/loop2-app.log*`,
+  which lists the names of the dump and its rotated copies only, never their content.
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
   `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
   of the older compressed ones (`/var/log/loop2-app.log.2.gz` to `.4.gz`); a bounded `tail -n 100` of
@@ -80,7 +85,9 @@ files or requests. The MCP has full rights, so the following limits are an agree
   state file and never its content; `stat -c '%U %G %a' /var/log/loop2-app.log`;
   `docker inspect --type container --format '{{.HostConfig.LogConfig.Type}}' loop2` (expects
   `local`); `cmp` of the installed watcher script, its schedule and the logrotate file with their
-  sources in `/srv/loop2/deploy`. Locally, `gh run list --workflow check-address.yml --limit 10` and
+  sources in `/srv/loop2/deploy`. Locally, `gh run list --workflow check-address.yml --limit 10`,
+  `gh run list --workflow check-address.yml --event schedule --limit 20 --json createdAt,startedAt`
+  (the times of the scheduled runs, JSON that expects no fixed value) and
   `gh workflow view check-address.yml`.
 - Allowed: the fixed internal application probe and bounded connector readiness command below;
   `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844`
@@ -188,7 +195,7 @@ the old game's state and installed-script mismatches are also logged.
 Every night at 03:17 (server clock) the installed `loop2-backup` makes a consistent backup of the
 database, encrypts it with `age` and sends it to Mikrus Strych, which keeps seven files, one per
 weekday, each replaced a week later. A failed night calls `pusher` with the subject
-`kopia_bazy_loop2_nieudana`, which `pusher` turns into spaces in the mail's subject. A cron that did not start writes nothing. Where backups, keys and
+`kopia_bazy_loop2_nieudana`, which `pusher` turns into spaces in the mail's subject. A cron that did not start writes nothing; the watcher reports a night without a successful send after 26 hours, see "The failure record and alerts". Where backups, keys and
 the log lie, how to read the log, install, change the encryption key and restore:
 `references/backup_and_restore.md`.
 
@@ -285,11 +292,11 @@ of that data (D-252), and its lines are reported selected and redacted like othe
 **The three ways the owner learns the game failed.**
 
 1. **The watcher** (`loop2-watch`, root, cron every five minutes). It reads state and health of
-   both containers and the fresh failure lines of the game container's log, skips a run while a
-   deployment or the backup holds the deploy lock, and calls `pusher` with a fixed subject and
-   one fixed Polish sentence per kind, which name the kind and send the reader here. It never
-   puts a number, a commit, an account or any output into a message, because `pusher` may travel
-   unencrypted.
+   both containers, the fresh failure lines of the game container's log and the last lines of the
+   log of the nightly backup, skips a run while a deployment or the backup holds the deploy lock,
+   and calls `pusher` with a fixed subject and one fixed Polish sentence per kind, which name the
+   kind and send the reader here. It never puts a number, a commit, an account or any output into
+   a message, because `pusher` may travel unencrypted.
 
    | Mail subject | Kind | An agent reads |
    |---|---|---|
@@ -297,19 +304,25 @@ of that data (D-252), and its lines are reported selected and redacted like othe
    | `loop2_usluga_niezdrowa` | a health check reads `unhealthy` | the same, then bounded service logs |
    | `loop2_ponowny_start` | a container has the same id and a new start time | bounded service logs of that container |
    | `loop2_awarie_serwera` | failure lines of the server in the log of `loop2` | `grep -F -m 50 -- '"failure":"'` in the service logs, then the dump |
+   | `loop2_brak_kopii_bazy` | the log of the nightly backup holds no successful send from the last 26 hours | the last `end: sent` line of the bounded tail of `/var/log/loop2-backup.log` and the stage lines after it, as in "The log" of `references/backup_and_restore.md`; a schedule that did not start shows as a night with no line, see "Database backups" above |
    | `loop2_awarie_przegladarek` | failure lines the browsers reported (`"failure":"browser"`) | `grep -F -m 50 -- '"failure":"browser"'` in the same places |
 
-   At most one message per kind in six hours and six in all in 24 hours; a held message is
+   At most one message per kind in six hours, the backup kind at most once in 24 hours, and six in all
+   in 24 hours; a held message is
    only counted in the watcher's log, and a `pusher` call that fails still counts as sent. A
    container that was replaced (a deployment, a human's `up`) is recorded silently and raises no
    `restarted`. The browser kind comes last in the order and goes once in six hours at most, so a
    flood of browser reports takes at most four of the day's six messages and leaves at least two
    for the server kinds.
-2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). Every
-   five minutes, at minutes that are not the top of the hour, GitHub Actions opens the public
-   address, up to six attempts 20 seconds apart, and the run fails unless one answers 200.
-   GitHub then notifies the owner of the failed run. It sees what the watcher cannot: a server
-   that is off, a fallen tunnel, a Cloudflare fault.
+2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). The
+   workflow asks for a run every five minutes, at minutes that are not the top of the hour; in a
+   run, GitHub Actions opens the public address, up to six attempts 20 seconds apart, and the
+   run fails unless one answers 200. GitHub then notifies the owner of the failed run. It sees
+   what the watcher cannot: a server that is off, a fallen tunnel, a Cloudflare fault. The five
+   minutes are what the schedule asks for, not the rhythm GitHub gives: the start times of the
+   scheduled runs (the `gh run list` form that "Agent or human" allows)
+   show gaps of hours between neighbouring runs. So with the server or the tunnel down, the
+   alarm of GitHub may come only after hours. What causes the gaps is not established.
 3. **The browser's report.** The page's last-resort handling, besides its line in the console,
    sends the kind, code and place of an error no code handled to `POST /api/browser-failure`,
    once per distinct line per page load. The server accepts at most 30 reports an hour for the
@@ -327,15 +340,24 @@ state alone for that run). Its log, `/var/log/loop2-watch.log`, has a line only 
 skipped, found something, sent or held a message, or ended abnormally (`skipped:`, `run: due=...`,
 `dropped:`, `stage ...`, `end: failed (exit N)`); a quiet healthy run writes none. A second,
 different outage of the same kind within six hours is not announced by it, and the scheduled check
-still sees an unreachable game.
+still sees an unreachable game. The backup kind is heard only about a day late: a schedule of the
+backup that did not start is reported when the last successful send is 26 hours old, and that kind
+goes at most once in 24 hours. The watcher reads only the line `end: sent` of the backup log, so the
+wording of that line is not changed without the watcher. On a server without a working `flock`, the
+watcher ends with success and writes a line `skipped: flock could not take ...` to its own log, reads
+nothing, and no message of any kind comes. The backup kind works only once a human reinstalls
+`loop2-watch` from the merge commit, as "Installing a script from an exact commit" in
+`references/setup_and_secrets.md` gives; until then the installed watcher does not know the kind.
 
 **The four limits of the scheduled check.** Alone it fails in four ways. (1) When the server and
 GitHub are both down, nothing is sent. (2) GitHub disables a scheduled workflow after 60 days
 with no activity in the repository, which is public; then the check stops silently. (3) GitHub
 sends the failure notice of a scheduled run to the user who last changed the cron line, so
 notifications set off, or set on another account, give a silence taken for "it works". (4) A real
-outage brings two messages, one from the watcher and one from GitHub, and during a longer one a
-GitHub mail every five minutes.
+outage brings two messages, one from the watcher and one from GitHub, and the one from GitHub
+follows the rhythm of its scheduled runs, so it may come only after hours; during a longer outage
+the mails of GitHub follow that rhythm too, not one every five minutes. The cause of the gaps
+between the runs is not established.
 
 **What no test proves.** Docker's log driver and its `inspect` fields, the `--since` and
 `--until` windowing of `docker logs` that the watcher uses, `logrotate`, delivery by `pusher`,
