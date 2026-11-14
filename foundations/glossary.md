@@ -220,6 +220,12 @@ An earning loop is a succession of map runs that one character makes on one map 
 
 - **Not:** none
 
+## loop
+
+The loop is the predecessor game, the game that loop2 starts from.
+
+- **Not:** a succession of map runs that one character makes on one map without the player starting each — earning loop
+
 ## catch-up
 
 The catch-up is the computing of the game minutes that passed since the save time, after each load of a saved game state and after a sign-in to the same account with the unsaved game state kept in the page's memory.

@@ -827,7 +827,7 @@ The browser account client returns an account only for the success status of its
 
 ## streak-program-change
 
-A change of the program rules or rule groups of the copy a map run carries out, and every switch of the character to another program during the map run, to one holding the same rules included, sets the streak of that map run to zero, on every map.
+A change, in a map run that has not ended, of the program rules or rule groups of the copy it carries out, and every switch of the character to another program during that map run, to one holding the same rules included, sets the streak of that map run to zero, on every map.
 
 - **Method:** test
 - **Rests on:** none
@@ -1317,7 +1317,7 @@ In one run of the gate, a start of Docker Desktop that has not finished in its t
 
 ## loop-practice-payment
 
-The practice an earning loop gathers is never added to its character's skills twice, whichever of „Odbierz” and the stop of the loop pays it and whether the completion of the map run it was gathered in came between.
+The practice an earning loop gathers is never added to its character's skills twice, whichever of „Odbierz” and the stop of the earning loop pays it and whether the completion of the map run it was gathered in came between.
 
 - **Method:** test
 - **Rests on:** none
