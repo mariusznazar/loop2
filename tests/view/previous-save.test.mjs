@@ -16,6 +16,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { createProgram } from "../../dist/browser/sim/programs.js";
 import { savedGame } from "../../dist/browser/sim/saved-game.js";
+import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 import {
   CHECK_FAILED,
   FETCH_FAILED,
@@ -196,7 +197,7 @@ function shown(element) {
 
 const ALWAYS = { kind: "always" };
 
-/** A program of versions 3 to 5: one rule group under „Zawsze” with a trip plan. */
+/** A program of versions 3 to 6: one rule group under „Zawsze” with a trip plan. */
 const EXPLORE = {
   groups: [
     {
@@ -240,7 +241,7 @@ const LAS = {
 
 const item = (id, name, program) => ({ id, name, program });
 /** The answer of the client for a previous save of `version` holding `programs`. */
-const previous = (programs, version = 5) => ({
+const previous = (programs, version = 6) => ({
   ok: true,
   value: { version, game: { programs, nextProgramId: 99 } },
 });
@@ -256,10 +257,10 @@ const NO_CONNECTION = {
 
 /** The game of a new player with a second program, „Program 2”. */
 const twoPrograms = () => createProgram(newGame()).state;
-/** Ala's map run of the forest under program 1, going on. */
+/** Ala's map run of the forest under program 1, going on; Skraj lasu, which opens Las, is solved. */
 const going = () =>
   send(
-    createCharacter(twoPrograms(), "Ala").state,
+    createCharacter(withEdgeSolved(twoPrograms()), "Ala").state,
     { mapId: "forest", characterId: 1, programId: 1 },
     0,
   ).state;
@@ -521,8 +522,8 @@ test("a document with every program skipped gives the skipped sentence alone and
 test("an unreadable document, and one with no program, give the sentence of no readable program; nothing is appended or saved", async () => {
   const sentence = pullResultLine({ ok: false }).text;
   for (const document of [
-    previous([item(1, "Las", LAS)], 6),
-    { ok: true, value: { version: 5, game: {} } },
+    previous([item(1, "Las", LAS)], 7),
+    { ok: true, value: { version: 6, game: {} } },
     previous([]),
   ]) {
     await onPage(async () => {

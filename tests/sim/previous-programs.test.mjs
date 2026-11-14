@@ -9,7 +9,7 @@ import { readPreviousPrograms } from "../../dist/browser/sim/previous-programs.j
 
 const ALWAYS = { kind: "always" };
 
-/** A program of versions 3 to 5: one rule group under „Zawsze” with a trip plan. */
+/** A program of versions 3 to 6: one rule group under „Zawsze” with a trip plan. */
 const EXPLORE = {
   groups: [
     {
@@ -69,7 +69,7 @@ const LAS = {
 
 /** The document of the current version, written out with every kind of program it can hold. */
 const DOCUMENT = {
-  version: 5,
+  version: 6,
   game: {
     programs: [
       { id: 1, name: "Program", program: EXPLORE },
@@ -127,8 +127,9 @@ function deepFreeze(value) {
   return value;
 }
 
-// Versions 1 and 2 have programs with no trip plan; versions 3 to 5 have the trip plan.
-test("a document of each version from 1 to 5 gives its programs in order, a program without a trip plan skipped and named", () => {
+// Versions 1 and 2 have programs with no trip plan; versions 3 to 6 have the trip plan, and 6 is
+// the current version, so the bound of the readable versions is read in as well.
+test("a document of each version from 1 to 6, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
   const documents = {
     1: {
       version: 1,
@@ -172,6 +173,15 @@ test("a document of each version from 1 to 5 gives its programs in order, a prog
         ],
       },
     },
+    6: {
+      version: 6,
+      game: {
+        programs: [
+          { id: 1, name: "Program", program: EXPLORE },
+          { id: 2, name: "Las nocą", program: LAS },
+        ],
+      },
+    },
   };
   assert.deepEqual(readPreviousPrograms(documents[1]), {
     ok: true,
@@ -199,6 +209,13 @@ test("a document of each version from 1 to 5 gives its programs in order, a prog
     items: [{ kind: "read", name: "Las nocą", program: LAS }],
   });
   assert.deepEqual(readPreviousPrograms(documents[5]), {
+    ok: true,
+    items: [
+      { kind: "read", name: "Program", program: EXPLORE },
+      { kind: "read", name: "Las nocą", program: LAS },
+    ],
+  });
+  assert.deepEqual(readPreviousPrograms(documents[6]), {
     ok: true,
     items: [
       { kind: "read", name: "Program", program: EXPLORE },
@@ -380,7 +397,7 @@ test("a program naming an action, a resource or an item the data lacks is skippe
 // invariant: save-version
 test("a document of another version or with no whole version is unreadable", () => {
   const programs = [{ id: 1, name: "Las", program: EXPLORE }];
-  for (const version of [6, 0, 1.5, -1, "5", 2 ** 53, null, undefined]) {
+  for (const version of [7, 0, 1.5, -1, "5", 2 ** 53, null, undefined]) {
     assert.deepEqual(
       readPreviousPrograms({ version, game: { programs } }),
       { ok: false },
