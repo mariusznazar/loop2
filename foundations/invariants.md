@@ -917,7 +917,7 @@ The account server hands no account message to the mail service once 30 account 
 
 ## account-email-via-outsider
 
-Player email confirmation and password-reset messages are sent from `mariusznazar.com` through Mikrus Outsider.
+The Compose file of loop2 gives the `app` service, for the messages it sends to players, a sender address under `mariusznazar.com` (`LOOP2_MAIL_FROM`) and the SMTP server `outsider.mikr.us` (`LOOP2_SMTP_HOST`).
 
 - **Method:** review
 - **Rests on:** mikrus-outsider-mail

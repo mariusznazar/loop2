@@ -873,6 +873,12 @@ On the test server's host, the log of the failure watcher `/var/log/loop2-watch.
 
 - **Source:** reading: `tail -n 100 /var/log/loop2-watch.log` on the test server's host, tail from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — of its 43 lines, 40 of which are `skipped:` lines naming `flock exit 1`, three of those lines and the line of a run that went on after the lock: "2026-11-09T09:20:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-11T22:35:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-14T05:25:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-11T09:55:01Z loop2-watch: run: due=down; sent=down; pusher=down:0; containers=loop2; failure_lines=0 browser_lines=0"; run 2026-11-14
 
+## loop2-app-log-password-reset-mail-events
+
+On 2026-11-14, the game's dump file `/var/log/loop2-app.log` on the test server's host holds, for one account, a line of the event `link-issued` followed by a line of the event `message-sent`, both with `linkPurpose` `password-reset` and written within one second on 2026-11-13 at 23:03 UTC, holds no other line with the text `link-issued` or `message-sent`, and holds no line with the text `"failure":"mail"`.
+
+- **Source:** reading: `grep -F -m 50 -- 'link-issued' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:05.952126792Z {"event":"link-issued","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- 'message-sent' /var/log/loop2-app.log` — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:06.406314841Z {"event":"message-sent","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- '"failure":"mail"' /var/log/loop2-app.log` — grep printed no line; run 2026-11-14
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
