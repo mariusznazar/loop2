@@ -426,7 +426,7 @@ like a JSON line of the command pass into the file with the words the address ca
 A player account with the previous-save privilege can pull the programs of its previous save and
 start the game from zero; without it the server refuses both. The owner grants and revokes the
 privilege with one command run in the application container from a shell on the server. Only the
-human runs it; an agent never does (D-394). The address is the account's email address, as the
+human runs it; an agent never does (D-398). The address is the account's email address, as the
 player logs in with it; letter case and surrounding spaces do not matter.
 
 ```sh

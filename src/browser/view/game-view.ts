@@ -93,7 +93,7 @@ import {
  */
 export type GameEntry = "sign-in" | "link" | "address";
 
-/** The reset control's state as the view holds it (D-396): waiting, the sentence of a failure, and the confirmation. */
+/** The reset control's state as the view holds it (D-400): waiting, the sentence of a failure, and the confirmation. */
 type ResetState = {
   readonly waiting: boolean;
   readonly sentence: string | null;
@@ -113,13 +113,13 @@ export type GameViewOptions = {
    */
   readonly client: Pick<AccountClient, "saveGame" | "loadPreviousSavedGame">;
   /**
-   * Whether the account holds the previous-save privilege (D-394), from the account the page names;
+   * Whether the account holds the previous-save privilege (D-398), from the account the page names;
    * left out, it counts as false. Where it is false the game asks for nothing of the previous save
    * and shows no control for it.
    */
   readonly previousSaveAllowed?: boolean;
   /**
-   * The page's act of a confirmed „Zacznij od zera” (D-396): the game calls it once for each
+   * The page's act of a confirmed „Zacznij od zera” (D-400): the game calls it once for each
    * confirmation and sends no request of its own for the reset. Left out, the game shows no reset
    * control, so that no page that gives none offers the reset. Only for an account with the
    * previous-save privilege, as `previousSaveAllowed` says.
@@ -171,7 +171,7 @@ export type GameView = {
    */
   halt(): void;
   /**
-   * Sets what the reset control shows (D-396), for the page: `waiting` while the page waits for the
+   * Sets what the reset control shows (D-400), for the page: `waiting` while the page waits for the
    * server's answer, and a `sentence` beside the control for a failed reset, after which the control
    * is at rest. The view sets `waiting` itself when the player confirms, before it calls `onReset`.
    */
@@ -259,7 +259,7 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * ended; at once where the scene shows no effect, as under the system's setting for reduced motion and
  * at an entering of the screen, where it shows the last image (D-311, D-322).
  *
- * The pull of the previous save (D-395) is a memory of the view alone, like the question: for a
+ * The pull of the previous save (D-399) is a memory of the view alone, like the question: for a
  * privileged account (`previousSaveAllowed`) each entering of Programy asks the server whether a
  * previous save exists and shows „Wciągnij programy z poprzedniego zapisu” only for an answer of a
  * document, at any time that screen is shown, a manual map run waiting or going on included; an
@@ -269,7 +269,7 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * answer that comes after the player left the screen, after a later question or pull, or after
  * `dispose()` is ignored.
  *
- * The reset of the game (D-396) is a control beside the pull, for a privileged account whose page gave
+ * The reset of the game (D-400) is a control beside the pull, for a privileged account whose page gave
  * `onReset`. Its click opens a confirmation and changes nothing; the confirmed act calls `onReset`
  * once and waits until the page answers through `setReset`; leaving Programy closes the confirmation.
  *
@@ -832,7 +832,7 @@ export function createGameView(options: GameViewOptions): GameView {
   }
 
   /**
-   * The pull of the previous save as Programy shows it (D-395): a memory of the page alone, never of
+   * The pull of the previous save as Programy shows it (D-399): a memory of the page alone, never of
    * the game state or the save. It holds nothing between two showings of the screen.
    */
   const NO_PULL: PullView = { control: "away", line: null };
@@ -846,7 +846,7 @@ export function createGameView(options: GameViewOptions): GameView {
   /** Whether Programy was shown when `show` last ran, so that only an entering asks. */
   let onProgramsScreen = false;
   /**
-   * The reset control of Programy as the page and the player left it (D-396): a memory of the view
+   * The reset control of Programy as the page and the player left it (D-400): a memory of the view
    * alone, never of the game state or of a save. Each change makes a new object, so the list is
    * drawn anew only when it changed.
    */
@@ -944,7 +944,7 @@ export function createGameView(options: GameViewOptions): GameView {
    * Programy has just been shown: a privileged account's game asks the server whether a previous
    * save exists, and the button stands only for an answer of a document; while the question is open
    * the button is away, `null` leaves it away, and a failure leaves it away with one sentence. An
-   * account without the privilege asks nothing and shows nothing (D-394, D-395).
+   * account without the privilege asks nothing and shows nothing (D-398, D-399).
    */
   function askPrevious(): void {
     if (options.previousSaveAllowed !== true) return;
@@ -960,7 +960,7 @@ export function createGameView(options: GameViewOptions): GameView {
 
   /**
    * The player left Programy: what is open of the pull is dropped and its answer will be ignored, and
-   * the confirmation of the reset closes (D-396).
+   * the confirmation of the reset closes (D-400).
    */
   function leavePrograms(): void {
     pullAsk += 1;
@@ -969,7 +969,7 @@ export function createGameView(options: GameViewOptions): GameView {
       setResetState({ ...resetState, confirming: false });
   }
 
-  /** The reset control as the list draws it, or none where the page gives no reset (D-396). */
+  /** The reset control as the list draws it, or none where the page gives no reset (D-400). */
   function resetView(): ResetView | null {
     if (options.previousSaveAllowed !== true || options.onReset === undefined)
       return null;
@@ -988,7 +988,7 @@ export function createGameView(options: GameViewOptions): GameView {
 
   /**
    * „Zacznij od zera” asks for its confirmation; the click changes nothing else, and nothing shows
-   * where the control is not shown (D-396).
+   * where the control is not shown (D-400).
    */
   function askReset(): void {
     if (halted || disposed || resetView() === null) return;
@@ -996,7 +996,7 @@ export function createGameView(options: GameViewOptions): GameView {
     setResetState({ ...resetState, confirming: true });
   }
 
-  /** The confirmation's withdraw: it closes and changes nothing (D-396). */
+  /** The confirmation's withdraw: it closes and changes nothing (D-400). */
   function withdrawReset(): void {
     if (!resetState.confirming) return;
     setResetState({ ...resetState, confirming: false });
@@ -1017,7 +1017,7 @@ export function createGameView(options: GameViewOptions): GameView {
    * „Wciągnij programy z poprzedniego zapisu”: the button waits and the previous save is fetched
    * again, so that the pull works on what the server holds now; its programs are read one by one
    * and the ones the editor's check accepts are appended as one act of the player, which saves at
-   * once (D-207, D-395).
+   * once (D-207, D-399).
    */
   function pullPrevious(): void {
     if (halted || disposed || pull.control !== "rest") return;

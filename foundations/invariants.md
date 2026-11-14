@@ -821,7 +821,7 @@ The browser account client returns an account only for the success status of its
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-117 · D-394
+- **Derives from:** D-117 · D-398
 - **Part:** browser-view
 - **Violated:** no
 
@@ -991,7 +991,7 @@ A signed-in player can read and change only the saved game states, the previous 
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-109 · D-202 · D-393
+- **Derives from:** D-109 · D-202 · D-397
 - **Part:** account-server
 - **Violated:** no
 
@@ -1031,7 +1031,7 @@ The game loads no data from a saved game state whose version differs from the ga
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-206 · D-395
+- **Derives from:** D-206 · D-399
 - **Part:** simulation
 - **Violated:** no
 
@@ -1331,7 +1331,7 @@ The account server moves a stored saved game state into the previous save only a
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-210 · D-393 · D-394 · D-396
+- **Derives from:** D-210 · D-397 · D-398 · D-400
 - **Part:** account-server
 - **Violated:** no
 
@@ -1341,7 +1341,7 @@ The reader of the programs of a previous save reads from a document only its ver
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-395
+- **Derives from:** D-399
 - **Part:** simulation
 - **Violated:** no
 

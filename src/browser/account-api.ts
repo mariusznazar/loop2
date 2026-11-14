@@ -6,7 +6,7 @@ export interface Account {
   readonly id: string;
   readonly email: string;
   readonly emailConfirmed: boolean;
-  /** Whether the account holds the previous-save privilege (D-394). */
+  /** Whether the account holds the previous-save privilege (D-398). */
   readonly previousSaveAllowed: boolean;
 }
 

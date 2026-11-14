@@ -182,7 +182,7 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  // Version 5 is the current schema version (D-112, D-394), so 6 is the first
+  // Version 5 is the current schema version (D-112, D-398), so 6 is the first
   // version this code does not know.
   raw.exec("PRAGMA user_version = 6");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
@@ -2992,7 +2992,7 @@ test("the owner's command changes nothing on a usage error, an unknown address o
     );
 });
 
-// D-394 and the operator command of the spec's section 5.
+// D-398 and the operator command of the spec's section 5.
 test("the previous-save command grants and revokes by address beside an open connection and says which outcome it reached", async (t) => {
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database } = await fixture(t);

@@ -3,8 +3,8 @@
  * player's programs in the list's order, each a link to its address with the chosen one marked, and
  * under them „Nowy program”, „Zmień nazwę” and the destructive „Usuń” of the chosen program, and,
  * where the page gives it, „Wciągnij programy z poprzedniego zapisu” with the one line of its
- * result (D-167, D-395), and „Zacznij od zera” with its confirmation and the line of a failed reset
- * (D-396), with the name field under those where „Zmień nazwę” opened it. The page holds the state
+ * result (D-167, D-399), and „Zacznij od zera” with its confirmation and the line of a failed reset
+ * (D-400), with the name field under those where „Zmień nazwę” opened it. The page holds the state
  * of the pull — whether the button stands, whether it waits for the server and the line beside it —
  * and gives it through `props.pull`; the game view holds the reset's state and gives it through
  * `props.reset`. The page holds the list behind one boundary,
@@ -32,7 +32,7 @@ import type { PullLine } from "./previous-save-lines.js";
 import { screenAddress } from "./screen-address.js";
 
 /**
- * The pull of the previous save as the page gives it (D-395): `away` — no button, `rest` — the
+ * The pull of the previous save as the page gives it (D-399): `away` — no button, `rest` — the
  * button, `waiting` — the button disabled while the server answers; and the one line beside it,
  * which stands also where the button is away.
  */
@@ -42,7 +42,7 @@ export type PullView = {
 };
 
 /**
- * The reset of the game as the view gives it (D-396): the control „Zacznij od zera”, at rest or
+ * The reset of the game as the view gives it (D-400): the control „Zacznij od zera”, at rest or
  * waiting for the server, whether its confirmation stands beside it, and the sentence of a failed
  * reset under it.
  */
@@ -53,7 +53,7 @@ export type ResetView = {
   line: string | null;
 };
 
-/** The control of the reset and the words of its confirmation (D-396, D-44). */
+/** The control of the reset and the words of its confirmation (D-400, D-44). */
 const RESET_TEXT = "Zacznij od zera";
 const RESET_QUESTION =
   "Obecna gra przejdzie na miejsce poprzedniego zapisu, a gra zacznie się od zera. Poprzedni zapis, który tam jest, zostanie zastąpiony, a jego programów nie da się potem wciągnąć.";
