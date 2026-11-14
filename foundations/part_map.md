@@ -149,7 +149,8 @@ test server, appending the log of the containers it replaces to a file on the ho
 nightly backup script and its schedule, which a human installs on the host and which encrypt the
 database backup and send it off the server; it also holds the logrotate file of that log file, the
 failure watcher with its schedule, and the scheduled check of the public address, the watcher and
-the check both telling the owner when the running game fails.
+the check both telling the owner when the running game fails and the watcher also telling the owner
+when the log of the nightly backup shows no recent successful send of a backup.
 
 - **Files:** Dockerfile
   .dockerignore
