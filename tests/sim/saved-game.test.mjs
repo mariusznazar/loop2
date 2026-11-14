@@ -665,7 +665,7 @@ const DOCUMENT_V5 = {
 /** The document of the current version: version 5 with Skraj lasu solved before the Las it opens. */
 const DOCUMENT = {
   version: 6,
-  game: { ...DOCUMENT_V5.game, solvedMaps: ["forest"] },
+  game: { ...DOCUMENT_V5.game, solvedMaps: ["forestEdge", "forest"] },
 };
 
 /**
@@ -707,7 +707,7 @@ const HEADQUARTERS = {
     run: null,
     lastSeed: 99,
     paused: false,
-    solvedMaps: ["forest"],
+    solvedMaps: ["forestEdge", "forest"],
     pace: 1,
     discovery: null,
     realMsCarry: 0,
