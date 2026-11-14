@@ -154,6 +154,34 @@ from scripts import docker_gate
 print(docker_gate.daemon_gap())
 """
 
+# The same, but its first ask of the daemon is held until a file appears and then says no, as
+# an ask that began while Docker Desktop was coming up and ended after the start was done.
+ASK_HELD = f"""import os
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, {os.fspath(ROOT)!r})
+from scripts import docker_gate
+
+answers = docker_gate.daemon_answers
+held = []
+
+
+def first_ask_held(timeout=docker_gate.ANSWER_LIMIT):
+    if held:
+        return answers(timeout)
+    held.append(True)
+    Path(os.environ["LOOP2_TEST_ASKED"]).write_text("asked")
+    while not Path(os.environ["LOOP2_TEST_RELEASE"]).exists():
+        time.sleep(0.05)
+    return False
+
+
+docker_gate.daemon_answers = first_ask_held
+print(docker_gate.daemon_gap())
+"""
+
 
 class ProcessesAtOnce(unittest.TestCase):
     """`daemon_gap` in several processes of one run, which share one state file, as the processes
@@ -174,8 +202,8 @@ class ProcessesAtOnce(unittest.TestCase):
             LOOP2_DOCKER_START_LIMIT=limit,
             LOOP2_DOCKER_RUN_STATE=os.fspath(Path(state.name) / "state.json"))
 
-    def ask(self, environment):
-        process = subprocess.Popen([sys.executable, "-B", "-c", ASK], env=environment,
+    def ask(self, environment, program=ASK):
+        process = subprocess.Popen([sys.executable, "-B", "-c", program], env=environment,
                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, text=True)
         self.running.append(process)
@@ -205,6 +233,28 @@ class ProcessesAtOnce(unittest.TestCase):
         self.assertEqual(self.answer_of(second), "None")
         self.assertEqual(len(docker.starts()), 1)
         self.assertEqual(docker.stops(), [])
+
+    def test_a_process_whose_first_ask_ends_after_a_start_is_done_does_not_start_again(self):
+        # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once"
+        # Breaking it: ask the daemon again after the lock only where the process had to wait
+        # for it, so that the process that takes the lock at once starts Docker Desktop a
+        # second time, the stand-in seeing two starts.
+        docker = DockerStandIn(self, rise_after_polls=2)
+        environment = self.environment(docker, "60")
+        signals = tempfile.TemporaryDirectory(prefix="loop2-docker-signals-")
+        self.addCleanup(signals.cleanup)
+        asked, release = Path(signals.name) / "asked", Path(signals.name) / "release"
+        late = self.ask(dict(environment, LOOP2_TEST_ASKED=os.fspath(asked),
+                             LOOP2_TEST_RELEASE=os.fspath(release)), ASK_HELD)
+        deadline = time.monotonic() + 30
+        while not asked.exists():
+            self.assertLess(time.monotonic(), deadline, "the held process never asked")
+            time.sleep(0.05)
+        self.assertEqual(self.answer_of(self.ask(environment)), "None")
+        self.assertEqual(len(docker.starts()), 1)
+        release.write_text("go")
+        self.assertEqual(self.answer_of(late), "None")
+        self.assertEqual(len(docker.starts()), 1)
 
     def test_a_process_that_asks_during_a_start_that_does_not_finish_gets_its_gap_after_it(self):
         # invariant: gate-docker-start-waits-once

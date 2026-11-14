@@ -190,8 +190,8 @@ def daemon_gap():
             return gap
         if waited:
             deadline = time.monotonic() + limit
-            if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
-                return None
+        if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
+            return None
         return started_gap(limit, deadline)
 
 
