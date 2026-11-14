@@ -1095,16 +1095,6 @@ No session its account held when a password reset committed authorizes a request
 - **Part:** account-server
 - **Violated:** no
 
-## account-save-backup
-
-The account and save server's database has a completed, consistent backup stored outside the game server host.
-
-- **Method:** review
-- **Rests on:** sqlite-online-backup
-- **Derives from:** D-228
-- **Part:** account-server · deployment
-- **Violated:** no
-
 ## account-save-sqlite-upgrade
 
 A deployed Node.js release has passed a check of the account and save server's database read, write and backup operations on that release.
@@ -1342,3 +1332,4 @@ The simulation's TypeScript files are type-checked under a configuration of thei
 | guidelines-form | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | guidelines-reference-current | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | eslint-configuration-rules | withdrawn: no cheap test checks that `eslint.config.mjs` keeps to D-29, so the linter's rule names no invariant for it; the review of each change to that configuration compares it with D-29 | none |
+| account-save-backup | withdrawn: the sentence is about the state of the backups on the server, which no commit of the product makes true or false and no review of a change compares with a file; that state stands as the environment fact `loop2-backup-log-nightly-sends`, read with its command and date, and D-228 rests on that fact | none |
