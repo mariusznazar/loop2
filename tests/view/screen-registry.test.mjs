@@ -124,6 +124,7 @@ const hiddenNames = (element) =>
     .filter((child) => child.hidden)
     .map((child) => child.dataset.name);
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a screen that two entries both claim, which would be built twice, and one that no entry
 // claims, which would show nothing.
 test("a kind that two entries hold throws at creation, and so does a kind of `Screen` that no entry holds", async () => {
@@ -164,6 +165,7 @@ test("a kind that two entries hold throws at creation, and so does a kind of `Sc
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches elements placed in another order than the table's, which is the document's order, and
 // a hidden flag left on the screen that shows.
 test("the `always` instances' elements stand in table order and all but the shown one are hidden", async () => {
@@ -184,6 +186,7 @@ test("the `always` instances' elements stand in table order and all but the show
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a screen of Postać or Mapy built before it is needed, built twice for one screen, or left
 // behind when the player leaves it.
 test("a `while-shown` entry is built at the entering, kept for the same key and taken down at the leaving", async () => {
@@ -216,6 +219,7 @@ test("a `while-shown` entry is built at the entering, kept for the same key and 
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches Postać built after Mapy where the player moves from one to the other, which would put
 // both elements on the page at once for a moment.
 test("moving between two `while-shown` screens takes the first down before the second is built", async () => {
@@ -230,6 +234,7 @@ test("moving between two `while-shown` screens takes the first down before the s
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a commit of the typed text that does not come before the address changes, which would
 // carry the text to the program the player moves to, and a commit for a move that changes nothing.
 test("`commit` of every living instance comes before a change of address, and a show of the same screen commits none", async () => {
@@ -249,6 +254,7 @@ test("`commit` of every living instance comes before a change of address, and a 
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a leave that runs after the address and the current screen changed, where the entry
 // could not tell which screen the player is leaving, and one made for a move inside an entry.
 test("`leave` runs for a move to another entry, before the address changes and while the current screen is the old one", async () => {
@@ -283,6 +289,7 @@ function runningState() {
   ).state;
 }
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches an address written for a show that asks for none, and one that goes by the wrong word.
 test("the address gets the fragment with a new entry, in place of the current one or not at all", async () => {
   await onRegistry(async ({ registry, log }) => {
@@ -298,6 +305,7 @@ test("the address gets the fragment with a new entry, in place of the current on
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a draw on a reading that tells a hidden screen it is shown.
 test("a reading is drawn on every living instance, `shown` true for the screen that shows alone", async () => {
   await onRegistry(async ({ registry, log }) => {
@@ -376,6 +384,7 @@ test("the page is told its place once for each change, with the way back to a ma
   );
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a focus pulled from a field the player is typing in, or left on a hidden screen.
 test("focusIfLost moves the focus only from the body or from a hidden element of the game", async () => {
   await onRegistry(async ({ registry, element, root }) => {
@@ -406,6 +415,7 @@ test("focusIfLost moves the focus only from the body or from a hidden element of
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches an instance left alive after the game is taken down.
 test("dispose takes every living instance down", async () => {
   await onRegistry(async ({ registry, log }) => {
