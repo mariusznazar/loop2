@@ -277,6 +277,7 @@ const going = () =>
 
 // --- no control for an account without the privilege ----------------------------------------------
 
+// invariant: save-version
 // Catches the page asking the server, or drawing the button, for an account the privilege flag is
 // false or missing for (D-394): the client given has no `loadPreviousSavedGame`, so a question throws.
 test("an account without the flag, or with it false, never asks and has no button, however often the screen is shown", async () => {
@@ -770,6 +771,7 @@ test("the pull works while a manual map run goes on and while one has ended", as
 
 // --- the page -------------------------------------------------------------------------------------
 
+// invariant: save-version
 // Catches the page not giving the game the account's flag (the game then never asks, or asks for
 // every account): the flag comes from the account the server names, a missing flag counts as false.
 test("the page gives the game the account's flag: only a privileged account's game asks for the previous save", async () => {
