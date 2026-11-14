@@ -48,7 +48,10 @@ def main(arguments):
     if not arguments:
         stages = [build,
                   lambda: command("node", "--test", *NODE_TESTS),
-                  lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py"),
+                  # One directory at a time: a start of Docker Desktop that has not finished is
+                  # not yet known to a directory running beside it (D-406).
+                  lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py",
+                                  "--jobs", "1"),
                   lambda: command(sys.executable, "-B",
                                   ".the-way/elements/common/foundation_check.py")]
         for stage in stages:
