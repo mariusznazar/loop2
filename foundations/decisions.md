@@ -121,14 +121,21 @@ records what happened between two readings, such as a loss of the streak in a ga
 reading passed over or a change the player made to the copy, which one reading does not say either,
 and its previous reading and the events give it, so the chronicle does not enter the save (D-339).
 Putting the whole chronicle into the save would raise the version of the save, so a save in use
-would be lost with the programs in it (D-206), and the size of a chronicle was never measured — an
-estimate gives 50 to 60 bytes an entry and several hundred entries in a long map run — while a save
-larger than 64 KiB is not sent (D-207), so the game would stop saving. Kept in the page's memory,
-the chronicle costs one more path in the code and its test: after a load it starts from the
-paragraph of the last encounter, built from the facts the saved state already holds (the creature,
-the minute of the attack, the result), and the entries before the load are gone. That choice rests
-on two things nobody measured, the size of a chronicle and how rarely a page is refreshed in the
-middle of a map run, and both are hypotheses.
+would be lost with the programs in it (D-206), and would add the size of the chronicle to a save
+that is not sent above 64 KiB (D-207). That size was measured with the chronicle's own code fed with
+readings every 200 ms at pace 16, on 30 seeds for each variant, one character, in a game that
+already knew everything, so that no discovery was made in it: a map run of Las with a program of 17
+rules went on to game minute 1670 as a median (341 to 1816) and gave a median of 227.5 entries and
+16 990 bytes of raw JSON, at most 255 entries and 18 892 bytes, about 75 bytes an entry, and a map run of
+„Las — głębiej” with a fighting program and supplies from the chest a median of 118 entries and
+8 822 bytes, at most 186 entries and 13 853 bytes. The measurement leaves out the player's changes
+to the copy of the program, discoveries and the paragraph of the last encounter, which the screen
+composes from the game state, and every map run in it ended in a death, none in a completion. Kept
+in the page's memory, the chronicle costs one more path in the code and its test: after a load it
+starts from the paragraph of the last encounter, built from the facts the saved state already holds
+(the creature, the minute of the attack, the result), and the entries before the load are gone. That
+choice rests on one thing nobody measured, how rarely a page is refreshed in the middle of a map
+run, and it is a hypothesis.
 *Rejected:* Godot — slower to work on with AI agents; it would become sensible if movement and
 collisions became the heart of the game's fun, and rebuilding the proof of concept on another
 engine later is easier and makes more sense; a browser view that draws from the game state
@@ -147,9 +154,9 @@ the save; the chronicle in page memory with an empty chronicle after a load — 
 player could not return to why the streak dropped, and the paragraph of the last encounter would
 no longer stand after a load, so the sentence of D-147 that it stands until another attack
 replaces it or „Restart” or „Zakończ” removes its map run would stop being true for a loaded map
-run; the whole chronicle in the save — the version of the save rises and the size is unmeasured, as
-above; the whole chronicle in the save capped at a number of entries, the oldest dropped — the
-sentence of D-338 that a manual map run keeps a chronicle of what happened in it would stop being
+run; the whole chronicle in the save — the version of the save rises and the chronicle adds the size
+measured above to a save that is not sent above 64 KiB (D-207); the whole chronicle in the save
+capped at a number of entries, the oldest dropped — the sentence of D-338 that a manual map run keeps a chronicle of what happened in it would stop being
 true; raising the server's limit of 64 KiB for it — changes D-104 and D-207 and is work in the
 account server; the server's clock for the renewal of a resurrection — a new version of the
 account database with a step by a human on the server, a change of two decisions, and the open page
@@ -3049,8 +3056,8 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
   - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack; the paragraph standing in the window inside „Ostatnie minuty”, or in the window only where it is not among the last entries
 - **Origin:** none
 
-*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too: the chronicle lives in the memory of the page and not in the saved game, so after a load it begins with the paragraph of the last encounter, composed from the facts the saved state already holds — the creature, the attack minute and the result — and the entries from before the load are lost. The choice rests on two unmeasured assumptions: the size of a chronicle, for which an agent's estimate gives 50 to 60 bytes an entry and several hundred entries in a long map run, and the rarity of a refresh in the middle of a map run. The window gives the paragraph a section of its own and keeps it out of „Ostatnie minuty”, so the same paragraph does not stand twice in it. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; one more path in the code, with its test; after a load the chronicle holds the entry of the fight without the entries that preceded it; in „Ostatnie minuty” an attack does not stand among the other entries, though the paragraph gives the game minute of the attack. In the minutes of an attack „Teraz” is the inscription alone, with no icon, no number of a rule and no minutes: „Potem” right below it already says by which rule the mage fights, so a second same number would give the player nothing, and the predecessor game's round and number of the combat rule are lost without loss, since this game counts no rounds. The inscription comes from the state of the combat in progress and not from the function that picks the rule a character carries out, so the invariant on what the rows show from that function names it as an exception.
-*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter; the paragraph counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not, and after a load „Ostatnie minuty” holding one entry or none; a chronicle empty after a load — after a refresh the player cannot return to why the streak fell, and the paragraph of the last encounter stands nowhere; the whole chronicle in the saved game — the version of the saved game would rise at once, and by D-206 the saved games that hold the players' programs would be discarded, the size of a chronicle is unmeasured, a saved game over the limit is not sent, so the game would stop saving, a limit on the entries, the oldest dropped, would make untrue the sentence of D-338 that a manual map run keeps a chronicle of what happened in it, and raising the limit of the server changes D-104 and D-207 and is work in the account server; the number of the combat rule that the turn would pick standing in „Teraz” beside the inscription, with a click that scrolls to it — the same number twice, in „Teraz” and one row lower in „Potem”; no „Teraz” after the end of a map run, or „Teraz” staying on the last action — the first leaves the player, once „✕” has closed the end-of-run window, with nothing on the screen to read why the map run ended, and the second reads after a death as something the mage still does.
+*Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too: the chronicle lives in the memory of the page and not in the saved game, so after a load it begins with the paragraph of the last encounter, composed from the facts the saved state already holds — the creature, the attack minute and the result — and the entries from before the load are lost. The size of a chronicle is measured, with the chronicle's own code fed with readings every 200 ms at pace 16, on 30 seeds for each variant, one character, in a game that already knew everything, so that no discovery was made in it: a map run of Las with a program of 17 rules went on to game minute 1670 as a median (341 to 1816) and gave a median of 227.5 entries and 16 990 bytes of raw JSON, at most 255 entries and 18 892 bytes, about 75 bytes an entry, and a map run of „Las — głębiej” with a fighting program and supplies from the chest a median of 118 entries and 8 822 bytes, at most 186 entries and 13 853 bytes; the measurement leaves out the player's changes to the copy of the program, discoveries and the paragraph of the last encounter, which the screen composes from the game state, and every map run in it ended in a death, none in a completion. The choice rests on one unmeasured assumption, the rarity of a refresh in the middle of a map run. The window gives the paragraph a section of its own and keeps it out of „Ostatnie minuty”, so the same paragraph does not stand twice in it. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; one more path in the code, with its test; after a load the chronicle holds the entry of the fight without the entries that preceded it; in „Ostatnie minuty” an attack does not stand among the other entries, though the paragraph gives the game minute of the attack. In the minutes of an attack „Teraz” is the inscription alone, with no icon, no number of a rule and no minutes: „Potem” right below it already says by which rule the mage fights, so a second same number would give the player nothing, and the predecessor game's round and number of the combat rule are lost without loss, since this game counts no rounds. The inscription comes from the state of the combat in progress and not from the function that picks the rule a character carries out, so the invariant on what the rows show from that function names it as an exception.
+*Rejected:* replaying combat to draw its record — a changed program could change the account; hiding it on death — removes the evidence of defeat; the paragraph kept under the scene as well as in the chronicle — the same text in two places; every attack keeping its paragraph in the chronicle — the paragraph would no longer stand only until another attack replaces it; an entry of the chronicle for each exchange of blows, as in loop („Wilk gryzie: −7”) — a departure from the one paragraph of an encounter; the paragraph counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not, and after a load „Ostatnie minuty” holding one entry or none; a chronicle empty after a load — after a refresh the player cannot return to why the streak fell, and the paragraph of the last encounter stands nowhere; the whole chronicle in the saved game — the version of the saved game would rise at once, and by D-206 the saved games that hold the players' programs would be discarded, the chronicle would add the size measured above to a saved game that is not sent over the limit of 64 KiB (D-207), a limit on the entries, the oldest dropped, would make untrue the sentence of D-338 that a manual map run keeps a chronicle of what happened in it, and raising the limit of the server changes D-104 and D-207 and is work in the account server; the number of the combat rule that the turn would pick standing in „Teraz” beside the inscription, with a click that scrolls to it — the same number twice, in „Teraz” and one row lower in „Potem”; no „Teraz” after the end of a map run, or „Teraz” staying on the last action — the first leaves the player, once „✕” has closed the end-of-run window, with nothing on the screen to read why the map run ended, and the second reads after a death as something the mage still does.
 
 ### D-148 — Where is an attacking creature pictured today?
 
@@ -4090,7 +4097,7 @@ A save of the game state that succeeds shows nothing. When one fails, the header
     loop refused for the number of earning loops
 - **Origin:** none
 
-*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured, the headquarters with one character came to 2947 bytes and a map run of Las at game minute 300 to 6150 bytes, of „Las — głębiej” to 7075, each with the copy of the program and its basis, which puts the limit at most at about 10 earning loops on Las or 8 on „Las — głębiej”, an upper estimate that counts neither the other characters nor the report; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because the player can currently remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
+*Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured as the bytes in UTF-8 that the game sends to the server, in a game that already knew everything, so that no discovery was made in it, the headquarters with one character came to 3 202 bytes and a map run of Las at game minute 300 to a median of 9 838 bytes, of „Las — głębiej” to a median of 12 402, each with the copy of the program and its basis, and counted directly, under 64 KiB (65 536 bytes) 12 earning loops fit on Las (13 come to 67 272 bytes) and 9 on „Las — głębiej” (10 come to 66 675 bytes), with one program shared by the loops, no manual map run and an empty report of absence; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because the player can currently remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
 *Rejected:* a lasting line „Zapisano o 12:31” in `text-secondary` — it would change every 30 real seconds while a map run passes, and add text to the header; nothing shown, a failed save included — the player plays on believing the progress saved, and loses it when the tab closes; the too-large refusal counted as a failed save — endless retries, the promise „Gra spróbuje ponownie.” that would not be kept, and a „Wyloguj” that would not work, so that a player at a shared computer stays signed in; a limit of N earning loops at once — the scope lets a team hold any number of characters, so this would be a rule it does not have, and a new number to settle; a slimmer save of earning loops — more work, a more complex load and no guarantee of reaching the threshold; a higher limit — the browser sends no more than 64 KiB when a tab closes, so the last save would be lost.
 
 ### D-209 — Which browser's save of the game state does the server accept?
@@ -5360,9 +5367,11 @@ game minute of the save, and a map run ended by a completion or a death staying 
 its end. The predecessor game bounded the catch-up, and this departs from it. Accepted
 with it: after many months the page stands for some seconds per character, longer on a telephone and
 on longer map runs, and a clock moved by years gives progress in the player's own game, which D-07
-accepts. The seconds rest on one measurement, made on short map runs ended by death: about 0.0068 ms
-for a game minute of one character, a lower estimate, since the cost of a game minute grows with the
-length of a map run. A bound can be added later, once the game has matured.
+accepts. The seconds rest on a measurement of one character in an earning loop over a window of 30
+days, the median of 5 repeats: from 0.001 ms for a game minute, on short map runs ended by death,
+to 0.011 ms on „Las — głębiej” with fights with the wolf. No loop in it ran the whole 30 days, since
+the catch-up of a loop ends at a death that a resurrection does not cover, so the seconds after many
+months are those of a loop that does not die, which no loop measured was. A bound can be added later, once the game has matured.
 *Rejected:* a bound of 7 days, the rest lost; a bound of another number.
 
 ### D-248 — What is the save time?
@@ -6063,8 +6072,8 @@ no value on its error, never `node:assert`, and runs under the limit the harness
 of its process's memory, read every 100 ms by a worker thread that above it writes one sentence to
 standard error and kills the process. A file outside `tests/` that loads a document imitation
 imports `tests/view/memory-limit.mjs` first and starts that limit before it loads the imitation.
-More than ten test files on a document imitation, or memory running away in a test on none, reopens
-how the limit is held.
+More than forty test files on a document imitation, or memory running away in a test on none,
+reopens how the limit is held.
 
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Based on:** node-assert-failure-inspect · node-worker-threads · node-sigkill-termination · node-process-rss
@@ -6083,15 +6092,23 @@ from Node's source and not proved. A thread of the same process keeps running wh
 stuck in one synchronous call, stays out of reach of the cases' mocked timers and needs no branch by
 system. The harness's `assert` keeps a failure small and names its case, and the thread answers what
 that does not foresee, so neither replaces the other. Files on an imitation run side by side and add
-up, so the limit stands low and not at the memory free. D-77 stands: this limits one process's
-memory, not the time of a whole run. Accepted with it: a printed diff worse than Node's; a kill
+up, so the limit stands low and not at the memory free: measured on a computer with 20 cores and
+32 GB of memory, with two other gates running at the same time, the stage of the test run that runs
+Node's tests, with 24 test files on an imitation, peaked at about 2.9 GiB of memory, not counting
+the one case that grows to the limit on purpose, with 21 to 25 Node processes working at the peak,
+and the largest file of tests peaked at 1076 MiB, about half of the limit. The threshold counts
+files, not memory, because the count is the one measure that can be checked with no measurement, and
+it is set at forty files. D-77 stands: this limits one process's memory, not the
+time of a whole run. Accepted with it: a printed diff worse than Node's; a kill
 names the file and no case; the reading is a working set, which a machine short of memory can trim,
 so the kill can come late; a file outside `tests/` stands on a written rule that no mechanism
 enforces; other test files have no limit.
 *Rejected:* a supervisor over the test stage reading the process tree from outside — a reader for
 each system, slower readings, a wrapper on two commands with a direct run of the test runner still
 bare, and a sum it cannot pin on one file, though it stays the way to go if tests not on an imitation
-need this; a limit from the system — a Windows job object needs native code or a new package, and
+need this; a limit of 1.5 GiB — a smaller worst case, but the largest file of tests, which peaked
+at 1076 MiB, would have only 1.4 times its peak as room, so with new screens healthy files risk
+being killed; a limit from the system — a Windows job object needs native code or a new package, and
 `ulimit` and cgroups hold only on Linux; `--max-old-space-size` — it did not stop the growth;
 `timeout` — it reads time, and at that rate the machine's memory goes first; the same thread
 preloaded through `NODE_OPTIONS` — it covers tests nobody asked it to and misses a direct run; the
@@ -8408,21 +8425,24 @@ lost.
 for the chronicle and the chronicle adds nothing to a save, which is not sent above 64 KiB (D-207),
 while the facts of the last encounter that the save already holds let its paragraph stand after a
 load as D-147 gives. Accepted with it: one more way through the code, with its test, and after a
-load a chronicle holding the encounter alone, without the entries that came before it. The choice
-rests on two hypotheses: the estimate of the chronicle's size, which a measurement under narrower
-conditions (given in D-347) puts at fewer entries, and that a reload in the middle of a map run is
-rare, which nobody measured.
+load a chronicle holding the encounter alone, without the entries that came before it. The size of
+the chronicle is measured, with the chronicle's own code fed with readings every 200 ms at pace 16,
+on 30 seeds for each variant, one character, in a game that already knew everything, so that no
+discovery was made in it: a map run of Las with a program of 17 rules went on to game minute 1670 as
+a median (341 to 1816) and gave a median of 227.5 entries and 16 990 bytes of raw JSON, at most 255
+entries and 18 892 bytes, about 75 bytes an entry, and a map run of „Las — głębiej” with a fighting
+program and supplies from the chest a median of 118 entries and 8 822 bytes, at most 186 entries and
+13 853 bytes; the measurement leaves out the player's changes to the copy of the program,
+discoveries and the paragraph of the last encounter, which the screen composes from the game state,
+and every map run in it ended in a death, none in a completion. The choice rests on one hypothesis,
+that a reload in the middle of a map run is rare, which nobody measured.
 *Rejected:* the chronicle in the memory of the page and empty after a load — after a reload the
 player cannot go back to why the streak fell, and the paragraph of the last encounter would stand
 nowhere after a load, against D-147; the chronicle in the save, coming back whole after a load —
 the version of the save rises, so saved game states with the player's programs are discarded
-(D-206), the size of the chronicle was estimated when this was decided at 50 to 60 bytes an entry
-and several hundred entries in a long map run, and a save above 64 KiB is not sent (D-207), so by
-that estimate the game would stop saving; a measurement made earlier, on 30 seeds of one character
-in Las with a ready program of 17 rules and without the player's changes and the losses of the
-streak, gave at most 102 entries and 13.4 KB of raw JSON in a map run beside a save of about 9.5 KB,
-which fits the limit for one map run, while the game already accepts that with several earning
-loops a save can stand at it (D-208); with it, a limit of entries at which the oldest go would leave the chronicle
+(D-206), and the chronicle would add the size measured above to a save that is not sent above
+64 KiB (D-207), while the game already accepts that with several earning loops a save can stand at
+that limit (D-208); with it, a limit of entries at which the oldest go would leave the chronicle
 without part of what happened in the map run, against D-338, and raising the server's limit
 changes D-104 and D-207 and is work in the account and save server.
 
@@ -8676,13 +8696,19 @@ broke, not where, which the line in the console gives; the console is read only 
 the agent's own browser, and a person playing does not look there, so the agent knows there
 something other than the player; the chronicle covers a manual map run only and no failure of the
 code; and a state loaded from a save holds a chronicle only if the chronicle enters the save. The
-size of the chronicle was measured when this was weighed, on 30 seeds of one character in Las with
-a ready program of 17 rules: a map run gave a median of 48 entries of the kinds the chronicle holds
-and 102 at most, as raw JSON 8.0 KB on average and 13.4 KB at most, beside a save of about 9.5 KB;
-the count leaves out the player's changes and the losses of the streak, which the game's events did
-not then carry, so a map run with such changes or losses holds more entries. By that measurement the
-chronicle of one map run fits the limit of 64 KiB (D-207), while the game already accepts that with several earning loops a save can stand
-at that limit (D-208). Risks
+size of the chronicle is measured, with the chronicle's own code fed with readings every 200 ms at
+pace 16, on 30 seeds for each variant, one character, in a game that already knew everything, so
+that no discovery was made in it: a map run of Las with a program of 17 rules went on to game minute 1670 as a median (341 to 1816) and gave a
+median of 227.5 entries (at most 255) and 16 990 bytes of raw JSON (at most 18 892 bytes), about 75
+bytes an entry, and a map run of „Las — głębiej” with a fighting program and supplies from the chest
+gave a median of 118 entries and 8 822 bytes, at most 186 entries and 13 853 bytes. The measurement
+leaves out the player's changes to the copy of the program, discoveries and the paragraph of the
+last encounter, which the screen composes from the game state; every map run in it ended in a death,
+none in a completion. What a load takes from the chronicle, which the lack above names, is that much,
+apart from the paragraph of the last encounter: up to 255 entries and 18 892 bytes of a map run of
+Las, 186 entries and 13 853 bytes of one of „Las — głębiej”. The chronicle stays in the memory of the
+page (D-339), so it adds nothing to a save, which is not sent above 64 KiB (D-207), while the game already accepts that with several
+earning loops a save can stand at that limit (D-208). Risks
 taken, each a hypothesis: the sentence may show with no fault or blink; logs of the console kept on
 disk may hold a real password-reset token; an agent may learn to ignore a console in which the
 browser writes ordinary refusals; a tab left overnight may slow down under a growing chronicle.
