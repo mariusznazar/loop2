@@ -7,23 +7,11 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL(".", import.meta.url));
 const extensions = "{js,mjs,cjs,jsx,ts,mts,cts,tsx}";
 const typedExtensions = "{ts,mts,cts,tsx}";
-const directories = [
-  "src/browser",
-  "src/server",
-  "scripts",
-  "tests/sim",
-  "tests/view",
-  "tests/quality",
-];
+const directories = ["src/browser", "src/server", "scripts", "tests"];
 const sourceFiles = directories.map(
   (directory) => `${directory}/**/*.${extensions}`,
 );
-sourceFiles.push(
-  "tests/http.test.mjs",
-  "tests/startup.test.mjs",
-  "eslint.config.mjs",
-  "prettier.config.mjs",
-);
+sourceFiles.push("eslint.config.mjs", "prettier.config.mjs");
 const typescriptFiles = directories.map(
   (directory) => `${directory}/**/*.${typedExtensions}`,
 );
