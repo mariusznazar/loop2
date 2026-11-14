@@ -49,7 +49,11 @@ test("a new game has one empty program, a team with no character and an empty ch
   const state = newGame();
   assert.equal(state.programs.length, 1);
   assert.deepEqual(programRules(state.programs[0].program), []);
-  assert.deepEqual(state.team, { characters: [], chest: { pieces: {} } });
+  assert.deepEqual(state.team, {
+    characters: [],
+    chest: { pieces: {} },
+    resurrectionReadyAtMs: 0,
+  });
   assert.equal(state.nextCharacterId, 1);
   assert.equal(state.run, null);
   assert.equal(state.lastSeed, INITIAL_SEED);

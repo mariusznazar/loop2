@@ -42,6 +42,12 @@ function withCharacter(state, id, fields) {
   };
 }
 
+/** `state` with the team's one resurrection ready from the real moment `readyAtMs` on. */
+const withResurrection = (state, readyAtMs) => ({
+  ...state,
+  team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+});
+
 const withChest = (state, pieces) => ({
   ...state,
   team: { ...state.team, chest: { pieces } },
@@ -244,26 +250,24 @@ test("the chest heading reads the pieces and the capacity, its lines follow the 
 test("the resurrection line follows the clock's moment in the very same element, in danger until ready", async () => {
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
-    const state = withCharacter(teamOf(1), 1, {
-      resurrectionReadyAtMs: readyAt,
-    });
+    const state = withResurrection(teamOf(1), readyAt);
     const { screen } = await mount(page, propsOf(state));
     const [line] = all(page.root, ".team-member-resurrection");
     assert.equal(
       line.textContent,
-      `Wskrzeszenie za 8 godz. 0 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny za 8 godz. 0 min czasu realnego${WARNING}`,
     );
     assert.ok(line.classList.contains("danger"));
 
     await inAct(() => screen.update(propsOf(state, readyAt - 30 * MINUTE)));
     assert.equal(
       line.textContent,
-      `Wskrzeszenie za 30 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny za 30 min czasu realnego${WARNING}`,
     );
     assert.ok(line.classList.contains("danger"));
 
     await inAct(() => screen.update(propsOf(state, readyAt)));
-    assert.equal(line.textContent, "Wskrzeszenie gotowe");
+    assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe");
     assert.equal(line.classList.contains("danger"), false);
     assert.equal(all(page.root, ".team-member-resurrection")[0], line);
   });

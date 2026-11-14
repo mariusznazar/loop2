@@ -36,9 +36,23 @@ const plan = {
 };
 function sent(tripPlan = plan) {
   let state = createCharacter(withEdgeSolved(newGame()), "Tester").state;
+  // One practice in each skill, so that a death goes by the team's resurrection (D-190): the death
+  // of a character with no practice uses none, whatever `died` puts on the team.
   state = {
     ...state,
-    team: { ...state.team, chest: { pieces: { stick: 10 } } },
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) => ({
+        ...character,
+        skills: Object.fromEntries(
+          Object.entries(character.skills).map(([id, skill]) => [
+            id,
+            { ...skill, practice: skill.practice + 1 },
+          ]),
+        ),
+      })),
+      chest: { pieces: { stick: 10 } },
+    },
   };
   state = setProgram(state, { ...emptyProgram(), tripPlan }).state;
   return send(state, { mapId: "forest", characterId: 1 }, 23).state;
@@ -340,14 +354,13 @@ const completed = (state) =>
   ).state;
 /**
  * The state's run played on to the character's death and settled at a real moment; `readyAtMs`
- * sets when the character's resurrection is ready.
+ * sets when the team's resurrection is ready.
  */
 function died(state, readyAtMs) {
-  const characters = state.team.characters.map((character) => ({
-    ...character,
-    resurrectionReadyAtMs: readyAtMs,
-  }));
-  let dying = { ...state, team: { ...state.team, characters } };
+  let dying = {
+    ...state,
+    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+  };
   for (let round = 0; round < 50 && !mapRunEnded(dying.run); round += 1)
     dying = advanceMinutes(setPaused(dying, false).state, 5000).state;
   assert.ok(dying.run.death, "precondition: the run ended in a death");
@@ -402,6 +415,14 @@ test("a death not yet settled has no settlement record, and a loaded game holds 
   assert.equal(dying.run.deathSettlement, null);
   assert.equal(newGame().run, null);
   assert.equal(solvedRunText(newGame()), null);
+  assert.equal(
+    died(solvedSent(), 0).run.deathSettlement.kind,
+    "resurrectionUsed",
+  );
+  assert.equal(
+    died(sent(), 9_000_000).run.deathSettlement.kind,
+    "progressLost",
+  );
   for (const state of [
     died(solvedSent(), 0),
     died(sent(), 9_000_000),

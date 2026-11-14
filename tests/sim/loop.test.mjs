@@ -7,13 +7,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   advanceMinutes,
-  characterAfterDeath,
   createCharacter,
   end,
   newGame,
   programOf,
   send,
   setProgram,
+  settleDeath,
+  teamAfterDeath,
   withSaveTime,
 } from "../../dist/browser/sim/game.js";
 import {
@@ -114,6 +115,29 @@ function changing(state, id, change) {
   };
 }
 
+/** `state` with the team's resurrection ready from the real moment `readyAtMs` on. */
+function readyFrom(state, readyAtMs) {
+  return {
+    ...state,
+    team: { ...state.team, resurrectionReadyAtMs: readyAtMs },
+  };
+}
+
+/** `state` with the character `id` holding one practice in each skill: practice a death with no resurrection takes. */
+function practised(state, id = 1) {
+  const [character] = state.team.characters.filter(
+    (listed) => listed.id === id,
+  );
+  return changing(state, id, {
+    skills: Object.fromEntries(
+      Object.entries(character.skills).map(([skill, held]) => [
+        skill,
+        { ...held, practice: held.practice + 1 },
+      ]),
+    ),
+  });
+}
+
 /** `state` with the map run of the loop of character `id` changed by `change`. */
 function changingRun(state, id, change) {
   const loop = state.loops[id];
@@ -188,6 +212,7 @@ const MANUAL_ONLY = [
   "deposited",
   "solvedMapRun",
   "deathSettlement",
+  "completionSettlement",
 ];
 
 /** The plain map run of a manual map run. */
@@ -716,7 +741,7 @@ test("a death with a resurrection ready is settled at the moment given: used up,
   const after = result.state;
   const loop = after.loops[1];
   assert.deepEqual(result.events, [{ kind: "loopRunEnded", characterId: 1 }]);
-  assert.equal(ala(after).resurrectionReadyAtMs, T0 + RENEWAL_MS);
+  assert.equal(after.team.resurrectionReadyAtMs, T0 + RENEWAL_MS);
   assert.equal(ala(after).generation, 1);
   assert.deepEqual(ala(after).skills, skillsBefore);
   assert.deepEqual(loop.practice, { smallItemGathering: 40, eating: 3 });
@@ -736,13 +761,15 @@ test("a death with a resurrection ready is settled at the moment given: used up,
 // loop stops with what it gathered.
 test("a death with no resurrection ready takes the character's skills, raises the generation, drops the loop with its practice and leaves the chest and the moment of readiness", () => {
   let state = looping(withTrip(EMPTY, [entry("berry", 2)], []), { berry: 4 });
-  state = changing(state, 1, {
-    resurrectionReadyAtMs: T0 + 1,
-    skills: {
-      ...ala(state).skills,
-      smallItemGathering: { practice: 160, ranks: {} },
-    },
-  });
+  state = readyFrom(
+    changing(state, 1, {
+      skills: {
+        ...ala(state).skills,
+        smallItemGathering: { practice: 160, ranks: {} },
+      },
+    }),
+    T0 + 1,
+  );
   state = bought(state);
   state = holding(dyingNext(state), { smallItemGathering: 40 });
   const passed = advanceLoopRun(state, 1, 1).state;
@@ -751,7 +778,7 @@ test("a death with no resurrection ready takes the character's skills, raises th
   assert.deepEqual(result.events, [{ kind: "loopRunEnded", characterId: 1 }]);
   assert.deepEqual(after.loops, {});
   assert.equal(ala(after).generation, 2);
-  assert.equal(ala(after).resurrectionReadyAtMs, T0 + 1);
+  assert.equal(after.team.resurrectionReadyAtMs, T0 + 1);
   assert.equal(ala(after).skills.smallItemGathering.practice, 0);
   assert.equal(branchRank(ala(after).skills, "patrol"), 0);
   assert.deepEqual(
@@ -771,11 +798,8 @@ function bought(state) {
 
 test("a death at the very moment of readiness uses the resurrection, and a millisecond before it takes everything", () => {
   const dead = (readyAt) =>
-    advanceLoopRun(
-      dyingNext(changing(looping(), 1, { resurrectionReadyAtMs: readyAt })),
-      1,
-      1,
-    ).state;
+    advanceLoopRun(dyingNext(readyFrom(practised(looping()), readyAt)), 1, 1)
+      .state;
   const at = endLoopRun(dead(T0), 1, T0).state;
   assert.equal(at.loops[1].runNumber, 2);
   assert.equal(ala(at).generation, 1);
@@ -1021,9 +1045,7 @@ test("practice taken stays through a death a resurrection covers and goes with a
   const covered = passedAndEnded(dyingNext(state)).state;
   assert.equal(ala(covered).skills.smallItemGathering.practice, 30);
   assert.equal(ala(covered).generation, 1);
-  const uncovered = passedAndEnded(
-    changing(dyingNext(state), 1, { resurrectionReadyAtMs: T0 + 1 }),
-  ).state;
+  const uncovered = passedAndEnded(readyFrom(dyingNext(state), T0 + 1)).state;
   assert.equal(ala(uncovered).skills.smallItemGathering.practice, 0);
   assert.equal(ala(uncovered).generation, 2);
 });
@@ -1050,7 +1072,7 @@ test("a loop of a character other than the first that stops in passing writes th
     { mapId: "forest", characterId: 2 },
     T0,
   ).state;
-  state = changing(state, 2, { resurrectionReadyAtMs: T0 + 10 ** 9 });
+  state = readyFrom(practised(state, 2), T0 + 10 ** 9);
   state = changingRun(state, 2, { body: { ...DYING } });
   const passed = passLoops(state, T0, T0 + 5 * 60_000).state;
   assert.equal(ala(passed).generation, 1);
@@ -1092,7 +1114,7 @@ test("every state a loop makes over a whole map run, an end and the next map run
 });
 
 test("the states of a loop through a death, its settling and the next map run, and of a stopped loop, load back", () => {
-  let state = looping(EMPTY, { stick: 4 }, COLD_REAL_MS);
+  let state = practised(looping(EMPTY, { stick: 4 }, COLD_REAL_MS));
   assert.ok(state.loops[1], "precondition: the loop stands");
   const check = (name, given) => {
     assert.ok(Object.keys(given.loops).length > 0 || name === "after the stop");
@@ -1177,7 +1199,7 @@ test("no function of the loop changes a value passed to it, a loop, a death and 
     1,
   ).state;
   const dead = advanceLoopRun(dyingNext(started), 1, 1).state;
-  const uncovered = changing(dead, 1, { resurrectionReadyAtMs: T0 + 1 });
+  const uncovered = readyFrom(dead, T0 + 1);
   const states = { fresh, started, midway, completed, dead, uncovered };
   for (const [name, state] of Object.entries(states)) {
     for (const [label, call] of [
@@ -1194,11 +1216,22 @@ test("no function of the loop changes a value passed to it, a loop, a death and 
       assertPure(`${label} on ${name}`, () => call(given), given);
     }
   }
-  const character = structuredClone(fresh.team.characters[0]);
+  const practised = structuredClone(
+    changing(fresh, 1, { skills: { eating: { practice: 3, ranks: {} } } }),
+  );
+  const team = practised.team;
+  const character = team.characters[0];
   assertPure(
-    "characterAfterDeath",
-    () => characterAfterDeath(character, T0),
+    "teamAfterDeath with the resurrection ready",
+    () => teamAfterDeath(team, character, {}, T0),
+    team,
     character,
+  );
+  const used = structuredClone(readyFrom(practised, T0 + 1).team);
+  assertPure(
+    "teamAfterDeath with none ready",
+    () => teamAfterDeath(used, used.characters[0], { eating: 1 }, T0),
+    used,
   );
   const knowing = structuredClone(started);
   assertPure(
@@ -1216,18 +1249,94 @@ test("no function of the loop changes a value passed to it, a loop, a death and 
 
 // invariant: death-settled-once
 // invariant: resurrection-renewal
-test("what a death does to a character is one rule for a manual map run and a loop", () => {
-  for (const readyAt of [0, T0, T0 + 1]) {
-    const state = changing(game(), 1, { resurrectionReadyAtMs: readyAt });
-    const died = ala(state);
-    const viaFunction = characterAfterDeath(died, T0);
-    assert.equal(viaFunction.resurrectionUsed, readyAt <= T0);
+test("what a death does to the team is one rule for a manual map run and a loop", () => {
+  for (const [name, state, kind] of [
+    ["practice, ready", practised(game()), "resurrectionUsed"],
+    [
+      "practice, ready at the moment",
+      readyFrom(practised(game()), T0),
+      "resurrectionUsed",
+    ],
+    [
+      "practice, not ready",
+      readyFrom(practised(game()), T0 + 1),
+      "progressLost",
+    ],
+    ["no practice, ready", game(), "noPractice"],
+    ["no practice, not ready", readyFrom(game(), T0 + 1), "noPractice"],
+  ]) {
+    const viaFunction = teamAfterDeath(state.team, ala(state), {}, T0);
+    assert.equal(viaFunction.settlement.kind, kind, name);
     const loopDead = advanceLoopRun(
       dyingNext(startLoop(state, FOREST, T0).state),
       1,
       1,
     ).state;
-    const viaLoop = endLoopRun(loopDead, 1, T0).state;
-    assert.deepEqual(ala(viaLoop), viaFunction.character);
+    assert.deepEqual(
+      endLoopRun(loopDead, 1, T0).state.team,
+      viaFunction.team,
+      name,
+    );
+    const manualDead = advanceMinutes(
+      send(state, FOREST, T0).state,
+      1000,
+    ).state;
+    assert.ok(manualDead.run.death, `${name}: precondition`);
+    const settled = settleDeath(manualDead, T0).state;
+    assert.deepEqual(settled.team, viaFunction.team, name);
+    assert.equal(settled.run.deathSettlement.kind, kind, name);
+  }
+});
+
+// D-190: the practice gathered at the loop is practice, whatever the skills hold.
+test("a character with no practice in its skills has practice when its loop gathered some", () => {
+  const bare = game().team.characters[0];
+  const team = game().team;
+  assert.equal(
+    teamAfterDeath(team, bare, {}, T0).settlement.kind,
+    "noPractice",
+  );
+  assert.equal(
+    teamAfterDeath(team, bare, { eating: 1 }, T0).settlement.kind,
+    "resurrectionUsed",
+  );
+  assert.equal(
+    teamAfterDeath(team, bare, { eating: 0 }, T0).settlement.kind,
+    "noPractice",
+  );
+});
+
+// invariant: resurrection-renewal
+// D-190: a death of a character with no practice leaves the team and the character as they were, and
+// the loop goes on at its next map run, the run that died paying nothing.
+test("a death of a character with no practice takes the carried items only: the resurrection, the generation and the loop stay, ready or not", () => {
+  for (const readyAt of [0, T0 + 1]) {
+    const state = readyFrom(
+      changingRun(
+        dyingNext(
+          looping(withTrip(EMPTY, [entry("berry", 2)], [entry("berry", 2)]), {
+            berry: 4,
+          }),
+        ),
+        1,
+        { practice: { smallItemGathering: 9 } },
+      ),
+      readyAt,
+    );
+    const passed = advanceLoopRun(state, 1, 1).state;
+    assert.ok(passed.loops[1].run.death, "precondition: the character died");
+    const after = endLoopRun(passed, 1, T0).state;
+    assert.equal(after.team.resurrectionReadyAtMs, readyAt);
+    assert.deepEqual(ala(after), ala(passed));
+    assert.equal(after.loops[1].runNumber, 2);
+    assert.equal(after.loops[1].run.death, null);
+    assert.deepEqual(
+      after.loops[1].practice,
+      {},
+      "the run that died paid nothing",
+    );
+    // The berries of the dead run are gone, and the next one took the last two.
+    assert.deepEqual(after.team.chest.pieces, { berry: 0 });
+    assert.deepEqual(after.awayReport, []);
   }
 });

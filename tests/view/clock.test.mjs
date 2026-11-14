@@ -193,21 +193,40 @@ function holdingStore(state) {
   return store;
 }
 
-/** Ala on an empty program in Las, one game minute from dying of cold. */
-function lastMinute(readyAtMs = 0) {
-  const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
-  const [ala] = made.team.characters;
-  let state = send(
-    {
-      ...made,
-      team: {
-        ...made.team,
-        characters: [{ ...ala, resurrectionReadyAtMs: readyAtMs }],
-      },
+/** `state` with the character `id` holding one practice in each skill: a character with practice (D-190). */
+function practised(state, id) {
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      characters: state.team.characters.map((character) =>
+        character.id === id
+          ? {
+              ...character,
+              skills: Object.fromEntries(
+                Object.entries(character.skills).map(([skill, held]) => [
+                  skill,
+                  { ...held, practice: held.practice + 1 },
+                ]),
+              ),
+            }
+          : character,
+      ),
     },
-    SENT,
-    1,
-  ).state;
+  };
+}
+
+/**
+ * Ala, who has practice, on an empty program in Las, one game minute from dying of cold, the team's
+ * resurrection ready from `readyAtMs` on, `practice` false for an Ala with none.
+ */
+function lastMinute(readyAtMs = 0, practice = true) {
+  const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
+  const ready = {
+    ...made,
+    team: { ...made.team, resurrectionReadyAtMs: readyAtMs },
+  };
+  let state = send(practice ? practised(ready, 1) : ready, SENT, 1).state;
   for (let next = state; !next.run.death;) {
     state = next;
     next = advanceMinutes(state, 1).state;
@@ -266,10 +285,7 @@ test("a flush in which the character dies hands the store one result: the events
     );
     assert.deepEqual(events, passed.events);
     assert.deepEqual(handed.run.deathSettlement, { kind: "resurrectionUsed" });
-    assert.equal(
-      handed.team.characters[0].resurrectionReadyAtMs,
-      T0 + 1000 + RENEWAL_MS,
-    );
+    assert.equal(handed.team.resurrectionReadyAtMs, T0 + 1000 + RENEWAL_MS);
     clock.dispose();
   });
 });
@@ -292,6 +308,92 @@ test("a death is settled against the reading of its flush, not an earlier one", 
       assert.equal(store.state.run.deathSettlement.kind, kind);
       clock.dispose();
     }
+  });
+});
+
+// D-190, D-221: a death of a character with no practice is settled at the reading too, and leaves the
+// resurrection as it was.
+test("a flush in which a character with no practice dies settles the death as none to pay for: the resurrection stays as it was", () => {
+  withBothClocks(({ pass }) => {
+    for (const readyAtMs of [0, T0 + 10 * RENEWAL_MS]) {
+      const state = lastMinute(readyAtMs, false);
+      const store = holdingStore(state);
+      const clock = startClock(store);
+      pass(1000);
+      clock.flush();
+      assert.deepEqual(store.state.run.deathSettlement, { kind: "noPractice" });
+      assert.equal(store.state.team.resurrectionReadyAtMs, readyAtMs);
+      assert.equal(store.state.team.characters[0].generation, 1);
+      clock.dispose();
+    }
+  });
+});
+
+/** Ala sent to Las, which her team has not solved, one game minute short of solving it, the team's resurrection ready from `readyAtMs` on. */
+function oneMinuteFromSolving(readyAtMs) {
+  const made = createCharacter(withEdgeSolved(newKnowingGame()), "Ala").state;
+  const sent = send(
+    { ...made, team: { ...made.team, resurrectionReadyAtMs: readyAtMs } },
+    SENT,
+    1,
+  ).state;
+  return {
+    ...sent,
+    run: {
+      ...sent.run,
+      body: { temperature: 37, satiety: 100, health: 100 },
+      streak: 479,
+      current: {
+        activity: {
+          kind: "rule",
+          ruleId: 1,
+          action: { kind: "explore" },
+        },
+        startMinute: sent.run.minute,
+        endMinute: sent.run.minute + 1,
+        stepTo: null,
+      },
+    },
+  };
+}
+
+// invariant: resurrection-renewal
+// D-190, D-221: the first completion of a map is settled at the reading of the flush that completes it.
+test("a flush in which the map run solves its map for the first time settles the renewal at that reading, once", () => {
+  withBothClocks(({ pass }) => {
+    const store = holdingStore(oneMinuteFromSolving(T0 + 10 * RENEWAL_MS));
+    const clock = startClock(store);
+    pass(1000);
+    clock.flush();
+    assert.equal(store.results.length, 1);
+    assert.ok(
+      store.state.run.completion,
+      "precondition: the map run completed",
+    );
+    assert.deepEqual(store.state.run.completionSettlement, {
+      kind: "resurrectionRenewed",
+    });
+    // The date gives T0 to the start and a second more to this reading.
+    assert.equal(store.state.team.resurrectionReadyAtMs, T0 + 1000);
+    const settled = store.state;
+    pass(200);
+    clock.flush();
+    assert.equal(store.state, settled, "a later reading changes nothing");
+    clock.dispose();
+  });
+});
+
+test("a flush in which the map run solves its map finds a ready resurrection ready and says so", () => {
+  withBothClocks(({ pass }) => {
+    const store = holdingStore(oneMinuteFromSolving(0));
+    const clock = startClock(store);
+    pass(1000);
+    clock.flush();
+    assert.deepEqual(store.state.run.completionSettlement, {
+      kind: "resurrectionReady",
+    });
+    assert.equal(store.state.team.resurrectionReadyAtMs, 0);
+    clock.dispose();
   });
 });
 
@@ -427,7 +529,8 @@ function loopingOla(state = twoCharacters()) {
 // the store the manual run's result and the loops' as two, so a moment of saving would come twice.
 test("a reading passes the manual run, then the loops, and hands the store one result with their events together", () => {
   withBothClocks(({ pass, jump }) => {
-    let state = send(loopingOla(), SENT, 1).state;
+    // Ola has no practice: her death in the loop takes nothing and her loop goes on.
+    let state = send(loopingOla(practised(twoCharacters(), 1)), SENT, 1).state;
     for (;;) {
       const next = advanceMinutes(state, 1).state;
       if (next.run.death) break;
@@ -459,17 +562,61 @@ test("a reading passes the manual run, then the loops, and hands the store one r
   });
 });
 
+// invariant: resurrection-renewal
+// D-190, D-242: of two deaths the earlier in real time takes the team's one resurrection. A loop's end
+// lies at its minute's moment, here a millisecond before the reading, and the manual run's death at the reading.
+test("in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, earlier than the reading, takes the resurrection", () => {
+  withBothClocks(({ pass, jump }) => {
+    const both = practised(practised(twoCharacters(), 1), 2);
+    let state = send(loopingOla(both), SENT, 1).state;
+    for (;;) {
+      const next = advanceMinutes(state, 1).state;
+      if (next.run.death) break;
+      state = next;
+    }
+    const store = holdingStore(state);
+    const clock = startClock(store);
+    pass(1000);
+    // The date gave T0 to the start; the loop's minute lies at T0 + 60 s, the reading a millisecond later.
+    jump(LOOP_MINUTE_MS - 1000 + 1);
+    clock.flush();
+    const handed = store.state;
+    assert.equal(
+      handed.team.resurrectionReadyAtMs,
+      T0 + LOOP_MINUTE_MS + RENEWAL_MS,
+    );
+    assert.equal(
+      handed.team.characters[1].generation,
+      1,
+      "Ola's loop death used it",
+    );
+    assert.ok(handed.loops[2], "her loop goes on");
+    assert.equal(
+      handed.team.characters[0].generation,
+      2,
+      "Ala's death found it used",
+    );
+    assert.deepEqual(handed.run.deathSettlement, {
+      kind: "progressLost",
+      generation: 2,
+    });
+    clock.dispose();
+  });
+});
+
 // D-242: the k-th minute has the real moment fromMs plus k minutes, so a death in the loop is
 // settled at the minute's moment, never at the reading's.
 test("a loop's end is settled at the minute's own moment, not at the reading's", () => {
   withBothClocks(({ jump }) => {
-    const store = holdingStore(loopingOla());
+    const store = holdingStore(loopingOla(practised(twoCharacters(), 2)));
     const clock = startClock(store);
     // The date gave T0 to the start; this reading comes 61 s after it, one whole minute and a second.
     jump(LOOP_MINUTE_MS);
     clock.flush();
-    const ola = store.state.team.characters[1];
-    assert.equal(ola.resurrectionReadyAtMs, T0 + LOOP_MINUTE_MS + RENEWAL_MS);
+    assert.equal(
+      store.state.team.resurrectionReadyAtMs,
+      T0 + LOOP_MINUTE_MS + RENEWAL_MS,
+    );
     clock.dispose();
   });
 });

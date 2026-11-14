@@ -41,6 +41,12 @@ function stateWith(character = {}, patch = {}) {
   };
 }
 
+/** The new game's team with its one resurrection ready from the real moment `readyAtMs`. */
+function teamReadyAt(readyAtMs) {
+  const { team } = stateWith();
+  return { ...team, resurrectionReadyAtMs: readyAtMs };
+}
+
 /** A state where the player knows the tree of exploration, with 100 practice in it. */
 function knowingExploration(extra = {}) {
   return stateWith(
@@ -112,23 +118,23 @@ test("the screen names the character and its archetype, and gives the generation
 test("the resurrection line reads the time left in danger, shows the minutes below an hour, turns ready at the moment and moves with each reading of the clock", async () => {
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
-    const state = stateWith({ resurrectionReadyAtMs: readyAt });
+    const state = stateWith({}, { team: teamReadyAt(readyAt) });
     const { screen } = await mount(page, propsOf(state));
     const line = () =>
       page.root.querySelector(".character-screen-resurrection");
     assert.equal(
       line().textContent,
-      `Wskrzeszenie za 8 godz. 0 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny za 8 godz. 0 min czasu realnego${WARNING}`,
     );
     assert.ok(line().classList.contains("danger"), "not ready reads in danger");
     await inAct(() => screen.update(propsOf(state, readyAt - 30 * MINUTE)));
     assert.equal(
       line().textContent,
-      `Wskrzeszenie za 30 min czasu realnego${WARNING}`,
+      `Wskrzeszenie drużyny za 30 min czasu realnego${WARNING}`,
     );
     assert.ok(line().classList.contains("danger"));
     await inAct(() => screen.update(propsOf(state, readyAt)));
-    assert.equal(line().textContent, "Wskrzeszenie gotowe");
+    assert.equal(line().textContent, "Wskrzeszenie drużyny gotowe");
     assert.equal(line().classList.contains("danger"), false);
   });
 });

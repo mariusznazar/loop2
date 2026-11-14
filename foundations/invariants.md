@@ -1047,7 +1047,7 @@ A manual map run of a map already solved when the map run starts leaves the ches
 
 ## resurrection-renewal
 
-A resurrection used up by a death is ready again at the real moment of that death plus the renewal time in the balance data, a death with no resurrection ready leaves that moment as it stood, and a moment equal to the moment of readiness counts as ready.
+The account's resurrection used up by a death is ready again at the real moment of that death plus the renewal time in the balance data, the first completion of a map the account has not solved, and no later completion of it, makes a used-up resurrection ready at the real moment of its settling and leaves a ready one as it stood, a death with no resurrection ready or of a character with no practice leaves that moment as it stood, and a moment equal to the moment of readiness counts as ready.
 
 - **Method:** test
 - **Rests on:** none
@@ -1127,11 +1127,11 @@ Every failed step of the backup script — the command in the container, a conta
 
 ## catch-up-state
 
-For the same starting game state and real-time inputs, a character whose team's chest no other character's map run reaches during a span of game minutes has the same character and chest state after catch-up as after the game runs without a break over that span.
+For the same starting game state and real-time inputs, a character whose team's chest and resurrection no other character's map run reaches during a span of game minutes has the same character, chest and resurrection state after catch-up as after the game runs without a break over that span.
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-240
+- **Derives from:** D-190 · D-240
 - **Part:** every
 - **Violated:** no
 

@@ -1728,9 +1728,9 @@ const OTHER_ACCOUNT = {
 };
 
 /** The version of the shape of the saved game state this game writes and loads (D-206). */
-const VERSION = 6;
-/** The version before `VERSION`, which D-206 makes another version: the save of a game that began on Las. */
-const OLDER_VERSION = 5;
+const VERSION = 7;
+/** The version before `VERSION`, which D-206 makes another version: the save of a game whose characters each held a resurrection. */
+const OLDER_VERSION = 6;
 /** The moment the saves the server hands back were saved at; the load refuses a document without one. */
 const SAVED_MS = CLOCK_MS - 60_000;
 /** A new game with Ala in its team. */
@@ -2950,9 +2950,24 @@ test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” o
   });
 });
 
-/** A game whose map run passes one game minute before Ala dies of cold. */
+/** A game whose map run passes one game minute before Ala, who has practice, dies of cold. */
 function lastMinute() {
-  let state = passing();
+  const bare = passing();
+  let state = {
+    ...bare,
+    team: {
+      ...bare.team,
+      characters: bare.team.characters.map((character) => ({
+        ...character,
+        skills: Object.fromEntries(
+          Object.entries(character.skills).map(([id, skill]) => [
+            id,
+            { ...skill, practice: skill.practice + 1 },
+          ]),
+        ),
+      })),
+    },
+  };
   for (let round = 0; round < 1000; round += 1) {
     const next = advanceMinutes(setPaused(state, false).state, 1).state;
     if (mapRunEnded(next.run)) break;
@@ -2998,7 +3013,7 @@ test("a game minute that ends the map run in a death is saved at once, settled",
   });
 });
 
-/** Ala at generation 2 at the headquarters, her resurrection ready `left` ms after `at`. */
+/** Ala at generation 2 at the headquarters, the team's resurrection ready `left` ms after `at`. */
 function renewing(at, left) {
   const state = withCharacter();
   const [ala] = state.team.characters;
@@ -3006,7 +3021,8 @@ function renewing(at, left) {
     ...state,
     team: {
       ...state.team,
-      characters: [{ ...ala, generation: 2, resurrectionReadyAtMs: at + left }],
+      characters: [{ ...ala, generation: 2 }],
+      resurrectionReadyAtMs: at + left,
     },
   };
 }
@@ -3030,7 +3046,7 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       const warning = " — śmierć zabierze wprawę i wykupione stopnie";
       assert.equal(
         line.textContent,
-        `Wskrzeszenie za 1 godz. 0 min czasu realnego${warning}`,
+        `Wskrzeszenie drużyny za 1 godz. 0 min czasu realnego${warning}`,
       );
       assert.ok(line.classList.contains("danger"));
       const [label] = byClass(root, "team-member-generation");
@@ -3062,7 +3078,7 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       assert.equal(await writes(), 1);
       assert.equal(
         line.textContent,
-        `Wskrzeszenie za 59 min czasu realnego${warning}`,
+        `Wskrzeszenie drużyny za 59 min czasu realnego${warning}`,
       );
       await inAct(() => mock.timers.tick(200));
       assert.equal(
@@ -3073,7 +3089,7 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
       // At the moment of readiness the line turns ready, within one tick, and loses `danger`.
       current = T + 3_570_000;
       await inAct(() => mock.timers.tick(200));
-      assert.equal(line.textContent, "Wskrzeszenie gotowe");
+      assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe");
       assert.ok(!line.classList.contains("danger"));
       assert.equal(await writes(), 1);
       watcher.disconnect();
@@ -4774,19 +4790,19 @@ test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of
         assert.ok(shown(line), hash);
         assert.equal(
           line.textContent,
-          `Wskrzeszenie za 1 godz. 0 min czasu realnego${warning}`,
+          `Wskrzeszenie drużyny za 1 godz. 0 min czasu realnego${warning}`,
           hash,
         );
         current = T + 31_000;
         await inAct(() => mock.timers.tick(200));
         assert.equal(
           line.textContent,
-          `Wskrzeszenie za 59 min czasu realnego${warning}`,
+          `Wskrzeszenie drużyny za 59 min czasu realnego${warning}`,
           hash,
         );
         current = T + 3_570_000;
         await inAct(() => mock.timers.tick(200));
-        assert.equal(line.textContent, "Wskrzeszenie gotowe", hash);
+        assert.equal(line.textContent, "Wskrzeszenie drużyny gotowe", hash);
         assert.ok(!line.classList.contains("danger"), hash);
         await inAct(() => mock.timers.tick(60_000));
         assert.deepEqual(waitingCalls(held), [], `${hash}: nothing is saved`);

@@ -168,7 +168,7 @@ type MemberProps = {
 /** One character of the team: its lines, and „Zatrzymaj” where it is in an earning loop. */
 function TeamMember({ character, state, nowMs, onStop }: MemberProps) {
   const generation = generationLabel(character.generation);
-  const resurrection = resurrectionLine(character, nowMs);
+  const resurrection = resurrectionLine(state.team, nowMs);
   const loop = state.loops[character.id];
   const stoppedPractice =
     loop === undefined ? state.stoppedLoops[character.id] : undefined;
@@ -364,11 +364,7 @@ function drawnOf({ state, nowMs }: HeadquartersProps): Drawn {
     loops: state.loops,
     stoppedLoops: state.stoppedLoops,
     awayReport: state.awayReport,
-    resurrection: JSON.stringify(
-      state.team.characters.map((character) =>
-        resurrectionLine(character, nowMs),
-      ),
-    ),
+    resurrection: JSON.stringify(resurrectionLine(state.team, nowMs)),
   };
 }
 

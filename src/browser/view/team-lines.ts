@@ -3,13 +3,13 @@ import { MAPS } from "../sim/data/maps.js";
 import { SKILLS, type SkillId } from "../sim/data/skills.js";
 import { resurrectionReady } from "../sim/game.js";
 import type {
-  Character,
   Chest,
   EarningLoop,
   ItemId,
   MapId,
   Practice,
   SavedProgram,
+  Team,
 } from "../sim/types.js";
 
 /**
@@ -59,27 +59,27 @@ export function generationLabel(generation: number): string | null {
   return generation >= 2 ? `pokolenie ${generation}` : null;
 }
 
-/** A character's resurrection line: its text, and whether it stands in `danger`. */
+/** The resurrection line of the team: its text, and whether it stands in `danger`. */
 export type ResurrectionLine = {
   text: string;
   danger: boolean;
 };
 
 /**
- * The resurrection line of a character at the real moment `nowMs` (D-217): „Wskrzeszenie gotowe”
- * once ready, else a warning with the time left, „za {g} godz. {m} min czasu realnego” and below an
- * hour „za {m} min czasu realnego”. The time left is rounded up to whole minutes first, then divided
- * into hours and minutes, so the line never promises sooner than the real time. A clock set back
- * gives more time left. Pure.
+ * The resurrection line that stands at each character, from the team's one resurrection at the real
+ * moment `nowMs` (D-217): „Wskrzeszenie drużyny gotowe” once ready, else a warning with the time
+ * left, „za {g} godz. {m} min czasu realnego” and below an hour „za {m} min czasu realnego”. The
+ * time left is rounded up to whole minutes first, then divided into hours and minutes, so the line
+ * never promises sooner than the real time. A clock set back gives more time left. Pure.
  */
 export function resurrectionLine(
-  character: Character,
+  team: Pick<Team, "resurrectionReadyAtMs">,
   nowMs: number,
 ): ResurrectionLine {
-  if (resurrectionReady(character, nowMs))
-    return { text: "Wskrzeszenie gotowe", danger: false };
+  if (resurrectionReady(team, nowMs))
+    return { text: "Wskrzeszenie drużyny gotowe", danger: false };
   const minutes = Math.ceil(
-    (character.resurrectionReadyAtMs - nowMs) / MS_PER_MINUTE,
+    (team.resurrectionReadyAtMs - nowMs) / MS_PER_MINUTE,
   );
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const left =
@@ -87,7 +87,7 @@ export function resurrectionLine(
       ? `za ${minutes} min czasu realnego`
       : `za ${hours} godz. ${minutes % MINUTES_PER_HOUR} min czasu realnego`;
   return {
-    text: `Wskrzeszenie ${left} — śmierć zabierze wprawę i wykupione stopnie`,
+    text: `Wskrzeszenie drużyny ${left} — śmierć zabierze wprawę i wykupione stopnie`,
     danger: true,
   };
 }

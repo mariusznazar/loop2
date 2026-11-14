@@ -1,5 +1,5 @@
 import { newTraits } from "./character.js";
-import { newSkills, paidPractice } from "./skills.js";
+import { hasNoPractice, newSkills, paidPractice } from "./skills.js";
 import { takeFromNowhere, takeTrip, tripLoot } from "./trip.js";
 import { ARCHETYPES, CREATED_ARCHETYPE } from "./data/archetypes.js";
 import {
@@ -44,6 +44,7 @@ import type {
   CharacterSkills,
   CreatureId,
   DeathCause,
+  DeathSettlement,
   GameMapRun,
   GameState,
   MapId,
@@ -51,8 +52,10 @@ import type {
   Pace,
   Program,
   ProgramCopy,
+  Practice,
   ProgramId,
   RuleId,
+  Team,
   Traits,
   Understanding,
 } from "./types.js";
@@ -71,14 +74,14 @@ function mapOf(mapId: MapId): MapDef {
 }
 
 /**
- * Whether the character's resurrection is ready at the real moment `nowMs`: from the moment of
- * readiness on, that moment included.
+ * Whether the team's resurrection, the one all its characters share, is ready at the real moment
+ * `nowMs`: from the moment of readiness on, that moment included.
  */
 export function resurrectionReady(
-  character: Character,
+  team: Pick<Team, "resurrectionReadyAtMs">,
   nowMs: number,
 ): boolean {
-  return character.resurrectionReadyAtMs <= nowMs;
+  return team.resurrectionReadyAtMs <= nowMs;
 }
 
 /** Whether a map's prerequisite maps are all in this game's solved-map record. */
@@ -317,6 +320,7 @@ function startRun(
         deposited: null,
         solvedMapRun,
         deathSettlement: null,
+        completionSettlement: null,
       },
       paused: false,
       discovery: null,
@@ -328,8 +332,8 @@ function startRun(
 
 /**
  * The game as it stands before anything is done: program 1, „Program”, with the empty rule group
- * „Program” under „Zawsze” and the next program number 2, a team with no character and an empty
- * chest, no map run.
+ * „Program” under „Zawsze” and the next program number 2, a team with no character, an empty chest
+ * and its resurrection ready, no map run.
  */
 export function newGame(): GameState {
   return {
@@ -341,7 +345,7 @@ export function newGame(): GameState {
     understanding: newUnderstanding(),
     ruleCounts: null,
     countsProgram: null,
-    team: { characters: [], chest: { pieces: {} } },
+    team: { characters: [], chest: { pieces: {} }, resurrectionReadyAtMs: 0 },
     nextCharacterId: 1,
     run: null,
     lastSeed: INITIAL_SEED,
@@ -400,8 +404,8 @@ export function characterName(text: string): string | null {
 
 /**
  * Creates a character named `name`, trimmed as `characterName` gives it, in the archetype of created
- * characters and with the traits of a new character, at the end of the team's list; throws on a
- * name that is empty once trimmed.
+ * characters and with the traits of a new character, at the end of the team's list, bringing no
+ * resurrection of its own (the team's is shared); throws on a name that is empty once trimmed.
  */
 export function createCharacter(state: GameState, name: string): GameResult {
   const trimmed = typeof name === "string" ? characterName(name) : null;
@@ -413,7 +417,6 @@ export function createCharacter(state: GameState, name: string): GameResult {
     traits: newTraits(),
     skills: newSkills(ARCHETYPES[CREATED_ARCHETYPE].predispositions),
     generation: 1,
-    resurrectionReadyAtMs: 0,
   };
   return {
     state: {
@@ -567,42 +570,60 @@ export function setPace(state: GameState, pace: Pace): GameResult {
 }
 
 /**
- * What a death at the real moment `nowMs` does to the character, the one rule both a manual map run
- * and an earning loop settle by. With a resurrection ready it is used up: it is ready again the
- * renewal after `nowMs`, and the character stays as it is. With none ready the character loses all
- * its practice and ranks and its generation number grows by one, its moment of readiness
- * unchanged. `nowMs` is taken as a safe integer; the caller checks it.
+ * What a death of the character `died` at the real moment `nowMs` does to the team, the one rule both
+ * a manual map run and an earning loop settle by; `gathered` is the practice gathered at the
+ * character's earning loop, `{}` where it has none. A character with no practice yet — none in any
+ * skill, no rank bought, none in `gathered` — loses nothing the resurrection would have guarded, so
+ * its death leaves the team as it is, the resurrection ready or not. Otherwise, with the team's
+ * resurrection ready it is used up: it is ready again the renewal after `nowMs`, and the character
+ * stays as it is. With none ready the character loses all its practice and ranks and its generation
+ * number grows by one, the moment of readiness unchanged. `nowMs` is taken as a safe integer; the
+ * caller checks it.
  */
-export function characterAfterDeath(
+export function teamAfterDeath(
+  team: Team,
   died: Character,
+  gathered: Practice,
   nowMs: number,
-): { character: Character; resurrectionUsed: boolean } {
-  const resurrectionUsed = resurrectionReady(died, nowMs);
+): { team: Team; settlement: DeathSettlement } {
+  if (hasNoPractice(died.skills, gathered))
+    return { team, settlement: { kind: "noPractice" } };
+  if (resurrectionReady(team, nowMs))
+    return {
+      team: {
+        ...team,
+        resurrectionReadyAtMs:
+          nowMs + BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
+      },
+      settlement: { kind: "resurrectionUsed" },
+    };
+  const generation = died.generation + 1;
+  const lost: Character = {
+    ...died,
+    skills: newSkills(ARCHETYPES[died.archetypeId].predispositions),
+    generation,
+  };
   return {
-    character: resurrectionUsed
-      ? {
-          ...died,
-          resurrectionReadyAtMs:
-            nowMs + BALANCE.resurrectionRenewalRealMinutes * MS_PER_MINUTE,
-        }
-      : {
-          ...died,
-          skills: newSkills(ARCHETYPES[died.archetypeId].predispositions),
-          generation: died.generation + 1,
-        },
-    resurrectionUsed,
+    team: {
+      ...team,
+      characters: team.characters.map((character) =>
+        character === died ? lost : character,
+      ),
+    },
+    settlement: { kind: "progressLost", generation },
   };
 }
 
 /**
  * Settles the death of the map run at the real moment `nowMs`, once. Called by whoever knows real
- * time, never by the functions that pass game time. With a resurrection ready it is used up: it is
- * ready again the renewal after `nowMs`, and the character stays as it is. With none ready the
- * character loses all its practice and ranks and its generation number grows by one, its moment of
- * readiness unchanged. The map run holds how it went; its own skills, the chest, the programs, the
- * Understanding and the solved maps are out of reach, and the mark of a solved map plays no part.
- * With no map run, no death or a death settled, returns the very state it got, without reading
- * `nowMs`; otherwise a `nowMs` that is no safe integer is a RangeError.
+ * time, never by the functions that pass game time. It settles as `teamAfterDeath` does, a manual map
+ * run's character having no earning loop and so no practice gathered at one: a character with no
+ * practice leaves the team and itself as they were; otherwise, with the team's resurrection ready it
+ * is used up, ready again the renewal after `nowMs`, and with none ready the character loses all its
+ * practice and ranks and its generation number grows by one. The map run holds how it went; its own
+ * skills, the chest, the programs, the Understanding and the solved maps are out of reach, and the
+ * mark of a solved map plays no part. With no map run, no death or a death settled, returns the very
+ * state it got, without reading `nowMs`; otherwise a `nowMs` that is no safe integer is a RangeError.
  */
 export function settleDeath(state: GameState, nowMs: number): GameResult {
   const run = state.run;
@@ -615,25 +636,47 @@ export function settleDeath(state: GameState, nowMs: number): GameResult {
   const died = state.team.characters.find(
     (character) => character.id === run.character.id,
   )!;
-  const { character: settled, resurrectionUsed: ready } = characterAfterDeath(
-    died,
-    nowMs,
-  );
-  const generation = settled.generation;
+  const settled = teamAfterDeath(state.team, died, {}, nowMs);
   return {
     state: {
       ...state,
-      team: {
-        ...state.team,
-        characters: state.team.characters.map((character) =>
-          character === died ? settled : character,
-        ),
-      },
+      team: settled.team,
+      run: { ...run, deathSettlement: settled.settlement },
+    },
+    events: [],
+  };
+}
+
+/**
+ * Settles the completion of the map run at the real moment `nowMs`, once, as `settleDeath` settles a
+ * death: called by whoever knows real time, never by the functions that pass game time. A completion
+ * of a map the account had not solved when the run started (the run is not marked, D-189) makes the
+ * team's resurrection ready at `nowMs` where it was not ready then, and leaves a ready one as it is;
+ * the run holds which it was. With no map run, no completion, a completion of a solved map or a
+ * completion settled, returns the very state it got, without reading `nowMs`; otherwise a `nowMs`
+ * that is no safe integer is a RangeError.
+ */
+export function settleCompletion(state: GameState, nowMs: number): GameResult {
+  const run = state.run;
+  if (!run?.completion || run.solvedMapRun || run.completionSettlement)
+    return { state, events: [] };
+  if (!Number.isSafeInteger(nowMs)) {
+    throw new RangeError(
+      `settleCompletion: ${String(nowMs)} is not a safe integer moment`,
+    );
+  }
+  const renewed = !resurrectionReady(state.team, nowMs);
+  return {
+    state: {
+      ...state,
+      team: renewed
+        ? { ...state.team, resurrectionReadyAtMs: nowMs }
+        : state.team,
       run: {
         ...run,
-        deathSettlement: ready
-          ? { kind: "resurrectionUsed" }
-          : { kind: "progressLost", generation },
+        completionSettlement: {
+          kind: renewed ? "resurrectionRenewed" : "resurrectionReady",
+        },
       },
     },
     events: [],
@@ -704,7 +747,8 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * also a discovery's, the game holds the discovery and is not paused. A map run that has ended
  * changes nothing. A death stays unsettled here: this function knows no real time, and whoever
  * passes it game time then calls `settleDeath`, as a saved document holding a death unsettled is
- * refused at the load.
+ * refused at the load; the renewal of the team's resurrection at the first completion of a map is
+ * settled by `settleCompletion` in the same way.
  */
 export function advanceMinutes(state: GameState, minutes: number): GameResult {
   if (
@@ -812,6 +856,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
     deposited: null,
     solvedMapRun: state.run.solvedMapRun,
     deathSettlement: null,
+    completionSettlement: null,
   };
   const deposited = completed
     ? tripLoot(endedRun, current.team.chest, map)

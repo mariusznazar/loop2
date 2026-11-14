@@ -41,6 +41,7 @@ import type {
   CombatOutcome,
   CombatResult,
   Completion,
+  CompletionSettlement,
   CurrentActivity,
   Death,
   DeathCause,
@@ -78,7 +79,7 @@ import type {
  * of the ordinary actions of the data, whose kinds are the keys of `minutesByAction` in the
  * record of a manual map run: a new action or a removed one changes those keys.
  */
-export const SAVED_GAME_VERSION = 6;
+export const SAVED_GAME_VERSION = 7;
 
 /** The document the game saves: the version of its shape beside the game state. */
 export type SavedGame = { version: number; game: GameState };
@@ -496,13 +497,16 @@ function programList(value: unknown, nextProgramId: ProgramId): SavedProgram[] {
   return programs;
 }
 
-/** The team: its characters, numbers each once and below the next one, and its chest. */
+/**
+ * The team: its characters, numbers each once and below the next one, its chest and the moment its
+ * one resurrection is ready.
+ */
 function team(
   value: unknown,
   nextCharacterId: CharacterId,
   trees: readonly SkillId[],
 ): Team {
-  const read = fields(value, ["characters", "chest"]);
+  const read = fields(value, ["characters", "chest", "resurrectionReadyAtMs"]);
   const ids = new Set<CharacterId>();
   const characters = list(read.characters).map((item): Character => {
     const character = fields(item, [
@@ -512,7 +516,6 @@ function team(
       "traits",
       "skills",
       "generation",
-      "resurrectionReadyAtMs",
     ]);
     const id = identity(character.id);
     if (id >= nextCharacterId || ids.has(id)) refuse();
@@ -525,11 +528,15 @@ function team(
       traits: traits(character.traits),
       skills: characterSkills(character.skills, archetypeId, trees),
       generation: identity(character.generation),
-      // Any safe integer: the moment is real time of a past death, and no clock is read here.
-      resurrectionReadyAtMs: integer(character.resurrectionReadyAtMs),
     };
   });
-  return { characters, chest: chest(read.chest) };
+  return {
+    characters,
+    chest: chest(read.chest),
+    // Any safe integer: the moment is real time of a past death or first solving, and no clock is
+    // read here (D-386).
+    resurrectionReadyAtMs: integer(read.resurrectionReadyAtMs),
+  };
 }
 
 /** The tiles of a map run: row-major, as many as the map's layout has, each at its place. */
@@ -813,6 +820,10 @@ const SETTLEMENTS: {
       generation: lostGeneration(read.generation, currentGeneration),
     };
   },
+  noPractice: (value) => {
+    fields(value, ["kind"]);
+    return { kind: "noPractice" };
+  },
 };
 
 /**
@@ -834,6 +845,30 @@ function deathSettlement(
     value,
     currentGeneration,
   );
+}
+
+const COMPLETION_SETTLEMENTS: {
+  [K in CompletionSettlement["kind"]]: CompletionSettlement;
+} = {
+  resurrectionRenewed: { kind: "resurrectionRenewed" },
+  resurrectionReady: { kind: "resurrectionReady" },
+};
+
+/**
+ * How the first completion of a map was settled: none on a run that has no such completion, and on
+ * one that has it either none yet, which the next reading of the clock settles, or one of the closed
+ * list.
+ */
+function completionSettlement(
+  value: unknown,
+  firstSolving: boolean,
+): CompletionSettlement | null {
+  if (value === null) return null;
+  if (!firstSolving) refuse();
+  const read = fields(value, ["kind"]);
+  return {
+    ...COMPLETION_SETTLEMENTS[oneOf(read.kind, COMPLETION_SETTLEMENTS)],
+  };
 }
 
 /** The keys of a `MapRun`, exactly those of the map run of an earning loop. */
@@ -872,6 +907,7 @@ const GAME_MAP_RUN_KEYS = [
   "deposited",
   "solvedMapRun",
   "deathSettlement",
+  "completionSettlement",
 ] as const;
 
 /**
@@ -1012,7 +1048,8 @@ function record(
  * Its mark says whether the map was solved when it started: a run that has not completed holds the
  * mark exactly when the solved maps hold its map, which one manual map run at a time keeps true
  * (D-55); a run that completed has its map among the solved maps, whatever its mark. A death is
- * settled, so no load settles one.
+ * settled, so no load settles one; the first completion of a map is settled or not yet, and the next
+ * reading of the clock settles one that is not (D-386).
  */
 function mapRun(value: unknown, records: Records): GameMapRun {
   const read = fields(value, GAME_MAP_RUN_KEYS);
@@ -1037,6 +1074,10 @@ function mapRun(value: unknown, records: Records): GameMapRun {
       read.deathSettlement,
       run.death !== null,
       records.characters.get(run.character.id)!.generation,
+    ),
+    completionSettlement: completionSettlement(
+      read.completionSettlement,
+      run.completion !== null && !solvedMapRun,
     ),
   };
 }

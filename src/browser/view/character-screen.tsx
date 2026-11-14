@@ -71,7 +71,7 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
   if (character === undefined) return null;
 
   const generation = generationLabel(character.generation);
-  const resurrection = resurrectionLine(character, nowMs);
+  const resurrection = resurrectionLine(state.team, nowMs);
   const loop = state.loops[characterId];
   const stoppedPractice =
     loop === undefined ? state.stoppedLoops[characterId] : undefined;
