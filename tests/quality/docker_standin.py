@@ -72,7 +72,10 @@ try:
     code, output, error = answer(arguments, state)
     state_file.write_text(json.dumps(state), encoding="utf-8")
 finally:
-    (folder / "lock").rmdir()
+    try:
+        (folder / "lock").rmdir()
+    except FileNotFoundError:  # taken over as stale by a call that waited too long
+        pass
 sys.stdout.write(output)
 sys.stderr.write(error)
 sys.exit(code)
