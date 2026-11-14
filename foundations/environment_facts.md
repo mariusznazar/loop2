@@ -723,6 +723,12 @@ The shortest interval at which GitHub runs scheduled workflows is once every 5 m
 
 - **Source:** https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (archived: https://web.archive.org/web/20261031092549/https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, 2026-10-31) § schedule — "The shortest interval you can run scheduled workflows is once every 5 minutes."; read 2026-11-09
 
+## check-address-schedule-run-times
+
+GitHub started the 17 runs of the workflow `check-address.yml` of the GitHub repository `mariusznazar/loop2` that its `schedule` event triggered, as `gh run list` lists them with a limit of 20, between 2026-11-09 19:54:50 UTC and 2026-11-14 02:14:57 UTC, and the gaps between the start times of neighbouring runs are between 3 hours 32 minutes and 8 hours 30 minutes.
+
+- **Source:** reading: `gh run list --workflow check-address.yml --event schedule --limit 20 --json createdAt,startedAt` on the author's computer, gh version 2.88.1 (2026-03-12), as `gh --version` prints it on the same computer, the answer of GitHub for a public repository — `[{"createdAt":"2026-11-14T02:14:57Z","startedAt":"2026-11-14T02:14:57Z"},{"createdAt":"2026-11-13T22:02:16Z","startedAt":"2026-11-13T22:02:16Z"},{"createdAt":"2026-11-13T16:20:34Z","startedAt":"2026-11-13T16:20:34Z"},{"createdAt":"2026-11-13T08:10:45Z","startedAt":"2026-11-13T08:10:45Z"},{"createdAt":"2026-11-13T01:20:56Z","startedAt":"2026-11-13T01:20:56Z"},{"createdAt":"2026-11-12T20:26:48Z","startedAt":"2026-11-12T20:26:48Z"},{"createdAt":"2026-11-12T12:39:58Z","startedAt":"2026-11-12T12:39:58Z"},{"createdAt":"2026-11-12T04:09:51Z","startedAt":"2026-11-12T04:09:51Z"},{"createdAt":"2026-11-11T23:35:47Z","startedAt":"2026-11-11T23:35:47Z"},{"createdAt":"2026-11-11T17:25:19Z","startedAt":"2026-11-11T17:25:19Z"},{"createdAt":"2026-11-11T09:35:11Z","startedAt":"2026-11-11T09:35:11Z"},{"createdAt":"2026-11-11T02:17:48Z","startedAt":"2026-11-11T02:17:48Z"},{"createdAt":"2026-11-10T22:45:37Z","startedAt":"2026-11-10T22:45:37Z"},{"createdAt":"2026-11-10T17:55:20Z","startedAt":"2026-11-10T17:55:20Z"},{"createdAt":"2026-11-10T10:15:50Z","startedAt":"2026-11-10T10:15:50Z"},{"createdAt":"2026-11-10T02:28:54Z","startedAt":"2026-11-10T02:28:54Z"},{"createdAt":"2026-11-09T19:54:50Z","startedAt":"2026-11-09T19:54:50Z"}]`; run 2026-11-14
+
 ## github-actions-public-runs-free
 
 GitHub charges nothing for the use of standard GitHub-hosted runners in public repositories.
