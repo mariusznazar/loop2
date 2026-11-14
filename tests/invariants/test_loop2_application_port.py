@@ -1,7 +1,12 @@
-"""The source side of loop2-application-port: no published port or network bypass.
+"""Invariant loop2-application-port: The Compose file of loop2 publishes no port of any of its
+services and declares no network, network mode, link, inclusion or extension that would put a
+service on a network other than the one Compose creates for the project.
 
-The real host's routing is outside this check; acceptance also requests the
-application's old IPv6 host port from outside the host while the public site works.
+The check reads `compose.yaml` as it stands and runs nothing.
+
+Does NOT cover: what the host really publishes, which the fact loop2-containers-published-ports
+carries, and what Cloudflare routes to the host, which no check of the repository reaches.
+
 The reader refuses network configuration it cannot establish as a private Compose
 network, including an external/default-network override and a service namespace.
 """

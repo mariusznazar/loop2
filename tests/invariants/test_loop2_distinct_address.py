@@ -1,12 +1,13 @@
-"""Invariant loop2-distinct-address: The public address of loop2 differs from
+"""Invariant loop2-distinct-address: The deployment workflow declares the public address of loop2
+exactly once, as the value of a variable named with LOOP2, and its host name is not
 `kantarion.bieda.it`.
 
 The check reads the public address of loop2 where the repository declares it — once, as a
 variable of the deployment workflow `.github/workflows/deploy.yml` — and runs nothing.
 
 Reading of the sentence:
-- the public address of loop2: the value of the one variable of the workflow whose name holds
-  `LOOP2` (in any case) and whose value is an absolute `http://` or `https://` address — set as
+- the public address of loop2 the workflow declares: the value of the one variable of the
+  workflow whose name holds `LOOP2` (in any case) and whose value is an absolute `http://` or `https://` address — set as
   a YAML key (`LOOP2_URL: https://…`) or as a shell assignment (`LOOP2_URL=https://…`). Exactly
   one such declaration must exist: none means the address is not declared in the repository (a
   value taken from a GitHub variable or secret is not), and two mean it is not declared once;

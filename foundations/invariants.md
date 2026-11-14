@@ -104,7 +104,7 @@ When the account and save server's listening address is already in use, the serv
 
 ## loop2-container-isolation
 
-The loop2 instance runs in a container separate from the existing loop instance.
+The Compose file of loop2 names its own project and containers, mounts only the account volume of loop2, includes or extends no other file and shares no namespace, link, device, external network or external volume with another container, and neither that file nor the Dockerfile mounts the Docker socket or names the old loop instance.
 
 - **Method:** test
 - **Rests on:** none
@@ -114,7 +114,7 @@ The loop2 instance runs in a container separate from the existing loop instance.
 
 ## loop2-distinct-address
 
-The public address of loop2 differs from `kantarion.bieda.it`.
+The deployment workflow declares the public address of loop2 exactly once, as the value of a variable named with LOOP2, and its host name is not `kantarion.bieda.it`.
 
 - **Method:** test
 - **Rests on:** none
@@ -144,7 +144,7 @@ A deployment that stops before it starts the new containers — at its input, th
 
 ## loop2-application-port
 
-The application port is inaccessible from the Internet outside Cloudflare.
+The Compose file of loop2 publishes no port of any of its services and declares no network, network mode, link, inclusion or extension that would put a service on a network other than the one Compose creates for the project.
 
 - **Method:** test
 - **Rests on:** none
