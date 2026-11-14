@@ -4,7 +4,7 @@
 // section „Kto idzie” with each character's lines and buttons, and what the buttons hand the page.
 // Real focus order and rendering are the browser check's (D-88), so a focus case here holds only
 // what jsdom shows.
-import { assert, inAct, withPage } from "./page-document.mjs";
+import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
@@ -93,17 +93,6 @@ async function mount({ root }, props, reaction = {}) {
     root.append(screen.element);
   });
   return { screen, calls };
-}
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks inside act; React's work on an event shows only through act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
 }
 
 const all = (root, selector) => [...root.querySelectorAll(selector)];

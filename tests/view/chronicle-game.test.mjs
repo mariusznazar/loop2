@@ -6,7 +6,7 @@
 // encounter shows the paragraph in the chronicle alone. The setup follows
 // tests/view/end-question.test.mjs. Real events, the look and scrolling are checked in the browser
 // (D-88). Every comparison is of plain data or of a handful of words (D-268).
-import { assert, inAct, withPage } from "./page-document.mjs";
+import { assert, inAct, press, withPage } from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
   createCharacter,
@@ -67,16 +67,6 @@ const buttonIn = (root, text) =>
   all(root).find(
     (element) => element.localName === "button" && element.textContent === text,
   );
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
 
 /** The address of the page with a history of its own, as the page's tests build it. */
 function fakeAddress(hash) {

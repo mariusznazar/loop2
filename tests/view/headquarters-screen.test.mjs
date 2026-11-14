@@ -3,7 +3,7 @@
 // shows of the game state and of the clock's moment, what its acts hand the page, and that
 // nothing on it sends a character. Real focus order, Enter in a field and rendering are the browser
 // check's (D-88), so a focus case here holds only what jsdom shows.
-import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
+import { assert, inAct, press, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import {
   ARCHETYPES,
@@ -81,17 +81,6 @@ async function mount({ root }, props) {
     root.append(screen.element);
   });
   return { screen, calls };
-}
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks inside act; React's work on an event shows only through act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
 }
 
 /** Presses a key in a field, inside act. */

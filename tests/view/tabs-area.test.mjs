@@ -8,7 +8,7 @@
 // with events written out by hand where the case is about words, so each case states the words it
 // expects (D-73). Real events, the look and scrolling are checked in the browser (D-88). Every
 // comparison is of plain data or of a handful of words (D-268).
-import { assert, inAct, withPage } from "./page-document.mjs";
+import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
@@ -71,16 +71,6 @@ const buttonNamed = (root, text) =>
   all(root).find(
     (element) => element.localName === "button" && element.textContent === text,
   );
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
 
 /** A new game with one character, not yet sent, and the game after the send. */
 const readyGame = () => createCharacter(newGame(), "Ala").state;

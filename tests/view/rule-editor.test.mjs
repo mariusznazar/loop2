@@ -2,7 +2,7 @@
 // elements the list and the panel build, what they hand the page and which element holds the focus;
 // the real drag, the real focus ring and the look are the browser check's (D-88), so a drag case here
 // sends the events a drag sends.
-import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
+import { assert, inAct, press, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
@@ -86,16 +86,6 @@ async function mount({ root }, program, extra = {}) {
     root.append(list.element);
   });
   return { list, calls, props };
-}
-
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  const { Event } = target.ownerDocument.defaultView;
-  return inAct(() =>
-    target.dispatchEvent(
-      new Event("click", { bubbles: true, cancelable: true }),
-    ),
-  );
 }
 
 /** Sends a drag event of the browser's kind, with the data transfer a drag carries. */

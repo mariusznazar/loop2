@@ -5,7 +5,15 @@
 // player presses, the game state read back from the document the view keeps (`keep`). Real events,
 // the look and the focus ring are checked in the browser (D-88). Every comparison is of plain data
 // or of a handful of words (D-268).
-import { assert, inAct, settle, typeInto, withPage } from "./page-document.mjs";
+import {
+  assert,
+  fire,
+  inAct,
+  press,
+  settle,
+  typeInto,
+  withPage,
+} from "./page-document.mjs";
 import { mock, test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
@@ -91,17 +99,6 @@ const buttonIn = (root, text) =>
   all(root).find(
     (element) => element.localName === "button" && element.textContent === text,
   );
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks `target` inside act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
-}
 
 /** The address of the page with a history of its own, as the page's tests build it. */
 function fakeAddress(hash) {
