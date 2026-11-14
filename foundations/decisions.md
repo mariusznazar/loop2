@@ -180,8 +180,10 @@ and proxy routing but adds another process to start, monitor and update, plus it
 ### D-06 — How are the browser and server built together?
 
 The browser and server share one npm package and lockfile, and have separate TypeScript
-compilation configurations and output directories. Building the application compiles both
-configurations and bundles the browser's code, React included, into the files the server hands out.
+compilation configurations and output directories. Building the application type-checks the
+simulation's files under a third configuration of their own that emits nothing, compiles the browser
+and server configurations and bundles the browser's code, React included, into the files the server
+hands out.
 
 - **Scope:** build-tools, browser-view, simulation, account-server
 - **Based on:** react-entry-format
@@ -192,8 +194,9 @@ configurations and bundles the browser's code, React included, into the files th
 
 *Rationale:* a shared installation keeps the local starting point small, while separate compiler
 environments keep browser and server types apart. The simulation is browser code, compiled by the
-browser's configuration and held in the shared package. The browser cannot load React's packages by
-itself, so the build takes one more build step, which also runs at each deployment. The compiler
+browser's configuration and held in the shared package; its types are also checked under the
+configuration of its own that D-393 gives, which emits nothing. The browser cannot load React's
+packages by itself, so the build takes one more build step, which also runs at each deployment. The compiler
 alone does not do it: a `.tsx` file passes strict mode with TypeScript 7.0.2, but the compiler leaves
 the package names in `import`, and a browser cannot resolve such a name, so a tool that bundles the
 files, such as esbuild or Vite, or a map of imports is needed. Without a library the build is only
@@ -9612,3 +9615,46 @@ The gate starts Docker Desktop whatever the free memory of the computer is; it k
 
 *Rationale:* the start puts no new load on the computer, it changes only who starts Docker, and a gate with Docker running is the state in which these tests are meant to run anyway.
 *Rejected:* no start where the free memory is below a threshold — the number has to be settled, and a new reason appears for which a test is skipped.
+
+### D-393 — What keeps the simulation from using names outside the JavaScript language?
+
+Two checks keep the simulation's files from using the page, a timer, the console or any other name that the browser or Node.js adds to those of the JavaScript language, and both stay: the compiler, which type-checks the simulation's files under a configuration of their own that covers every file of the simulation, holds the library of the language alone and no ambient types, and emits nothing; and the test of `simulation-isolation`, which keeps its whole scan of the sources and its run of the built simulation in a cut-off environment. Neither check is shortened because the other covers part of it.
+
+- **Scope:** simulation, build-tools
+- **Based on:** none
+- **Relations:** derives from D-04
+- **Verification:** invariants: simulation-isolation · simulation-type-check
+- **Origin:** none
+
+*Rationale:* the compiler refuses a use of the page, a timer, the console or the structured copy within seconds of a change, where the test of isolation comes late in the gate. The compiler does not take the test's place: the type `Date` belongs to the language, so it does not refuse `Date.now()` or `new Date()`, and it does not refuse an import of a package that brings types of its own, while the test checks the system clock, the imports and a run of the built simulation. A configuration that only checks leaves the compiling of the simulation's files to the browser's configuration, so the files are built once.
+*Rejected:* cutting from the test of isolation the part of its scan of sources that the compiler takes over — a shorter test, but it has to be cut exactly so that the system clock and the imports are not lost, it changes what the test checks of `simulation-isolation`, the work grows and a gap may open; moving the simulation into a directory of its own with its own configuration — the path of the simulation changes in the tests, the guidelines, the foundation and the configuration and the build is rebuilt, for a gain that a separate configuration gives without the move, and the move would make sense if the server computed the game, while D-07 says the server computes nothing of the game.
+
+### D-394 — Does the simulation keep `actionFeasible`, which the game does not call?
+
+The simulation keeps `actionFeasible`, the function that tells whether an action can start now, though the game does not call it: tests use it as their point of observation of whether an action is allowed. A clean-up does not remove it because the game has no caller of it.
+
+- **Scope:** simulation
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test that asks `actionFeasible` whether an action can start; a clean-up that leaves it in place
+  - violates: a change that removes `actionFeasible` because no code of the game calls it
+- **Origin:** none
+
+*Rationale:* the tests that call it need no other public function of the simulation to tell whether an action is allowed, and a function of the simulation that is the simplest point of observation of a rule is worth keeping where the game has no use for it.
+*Rejected:* removing it — the tests that call it are rewritten onto another public function of the simulation, the work grows, and the tests lose the simplest point of observing whether an action is allowed.
+
+### D-395 — What does a shared control of the browser view know of the screens that use it?
+
+A shared control in `src/browser/view/controls/` imports no module of a screen that uses it, and a rule that belongs to one screen, such as the rule of the numbers a field takes, the control receives from that screen.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-265
+- **Verification:** an agent compares a change with the decision:
+  - complies: the number field taking the rule of its numbers as a function that each screen gives it
+  - violates: a shared control that imports `program-editor.ts` or `trip-editor.ts`; a shared control that picks the rule of a screen by a value of one of its parameters
+- **Origin:** none
+
+*Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
+*Rejected:* unknown
