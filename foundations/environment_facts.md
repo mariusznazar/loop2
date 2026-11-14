@@ -16,13 +16,13 @@ In OpenSSH portable 8.9p1, the option `command=` of an authorized_keys file make
 
 The test server's authorized_keys contains exactly one entry beginning with `restrict,command="/usr/local/bin/loop2-deploy"`.
 
-- **Source:** reading: `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys` on the test server's host, grep (GNU grep) 3.7 — "1"; run 2026-11-10
+- **Source:** reading: `grep -c -e '^restrict,command="/usr/local/bin/loop2-deploy" ' ~/.ssh/authorized_keys` on the test server's host, grep (GNU grep) 3.7, as `grep --version | head -1` prints it on the same host — "1"; run 2026-11-14
 
 ## loop2-host-installed-command
 
 The installed `/usr/local/bin/loop2-deploy` is owned by root:root with mode 0755.
 
-- **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32 — "755 root:root"; run 2026-11-10
+- **Source:** reading: `stat -c '%a %U:%G' /usr/local/bin/loop2-deploy` on the test server's host, stat (GNU coreutils) 8.32, as `stat --version | head -1` prints it on the same host — "755 root:root"; run 2026-11-14
 
 ## loop2-host-ssh-host-key-options
 
@@ -54,19 +54,19 @@ scan() {
 scan /root/.ssh/config /root/.ssh 1
 scan /etc/ssh/ssh_config /etc/ssh 1
 echo "$n"
-'` and, in the same call, `bash --version | head -1` and `grep --version | head -1` on the test server's host, bash 5.1.16(1)-release and grep (GNU grep) 3.7 — "0" · "GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)" · "grep (GNU grep) 3.7"; run 2026-11-11
+'` and, in the same call, `bash --version | head -1` and `grep --version | head -1` on the test server's host, bash 5.1.16(1)-release and grep (GNU grep) 3.7 — "0" · "GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)" · "grep (GNU grep) 3.7"; run 2026-11-14
 
 ## mikrus-host-docker-workloads
 
 The old loop game and foundryvtt run as Docker containers on the test server's host.
 
-- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377 — "6e63d970d315   loop:latest                "docker-entrypoint.s…"   8 weeks ago     Up 8 weeks (healthy)" · "bbe6f6752113   felddy/foundryvtt:12.331   "./entrypoint.sh res…"   18 months ago   Up 5 months (healthy)"; run 2026-11-10
+- **Source:** reading: `docker ps` on the test server's host, Docker version 28.1.1, build 4eba377, as `docker --version` prints it on the same host — the container id, image, command, created and status columns of the rows of these two containers, the ports and names columns left out because the ports column holds numbers taken from the server's id: "6e63d970d315   loop:latest                "docker-entrypoint.s…"   2 months ago    Up 2 months (healthy)" · "bbe6f6752113   felddy/foundryvtt:12.331   "./entrypoint.sh res…"   18 months ago   Up 5 months (healthy)"; run 2026-11-14
 
 ## mikrus-host-swap
 
 The test server's host reports zero total swap.
 
-- **Source:** reading: `free` on the test server's host, free from procps-ng 3.3.17 — "total        used        free      shared  buff/cache   available" · "Swap:              0           0           0"; run 2026-11-10
+- **Source:** reading: `free` on the test server's host, free from procps-ng 3.3.17, as `free --version` prints it on the same host — "total        used        free      shared  buff/cache   available" · "Swap:              0           0           0"; run 2026-11-14
 
 ## game-icons-licence
 
@@ -313,7 +313,7 @@ Compose mounts a service's short-syntax secret read-only under `/run/secrets/`, 
 
 The test server host establishes an IPv4 TCP connection to `region1.v2.argotunnel.com` on port 7844; this observation establishes neither UDP nor container connectivity.
 
-- **Source:** observed: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` reports Connected before timeout exit 124; the same check on port 7845 reports a connection timeout and exit 28; run 2026-10-26
+- **Source:** reading: `timeout 8 curl -4 -v --connect-timeout 5 -o /dev/null telnet://region1.v2.argotunnel.com:7844` on the test server's host, curl, whose version no reading the skill allows prints — "*   Trying 198.41.192.167:7844..." · "* Connected to region1.v2.argotunnel.com (198.41.192.167) port 7844 (#0)"; run 2026-11-14
 
 ## stryker-simulation-execution
 
@@ -848,6 +848,24 @@ The test server's host has the systemd timer `logrotate.timer` enabled, its unit
 The names that `ls -1 /var/log/loop2-app.log*` lists on the test server's host are `/var/log/loop2-app.log` and `/var/log/loop2-app.log.1`, and no other.
 
 - **Source:** reading: `ls -1 /var/log/loop2-app.log*` on the test server's host, ls from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — its whole output: "/var/log/loop2-app.log" · "/var/log/loop2-app.log.1"; run 2026-11-14
+
+## loop2-host-installed-copies-agree
+
+On the test server's host, `cmp` prints no difference between each of the six installed files `/usr/local/bin/loop2-deploy`, `/usr/local/bin/loop2-backup`, `/etc/cron.d/loop2-backup`, `/usr/local/bin/loop2-watch`, `/etc/cron.d/loop2-watch` and `/etc/logrotate.d/loop2-app` and its source `loop2-deploy`, `loop2-backup`, `loop2-backup.cron`, `loop2-watch`, `loop2-watch.cron` and `loop2-app.logrotate` in `/srv/loop2/deploy`, and the checkout in `/srv/loop2` is at the commit f0814d77.
+
+- **Source:** reading: `cmp /usr/local/bin/loop2-deploy /srv/loop2/deploy/loop2-deploy` on the test server's host, cmp, whose version no reading the skill allows prints — no output; and the same with `/usr/local/bin/loop2-backup` and `/srv/loop2/deploy/loop2-backup`, `/etc/cron.d/loop2-backup` and `/srv/loop2/deploy/loop2-backup.cron`, `/usr/local/bin/loop2-watch` and `/srv/loop2/deploy/loop2-watch`, `/etc/cron.d/loop2-watch` and `/srv/loop2/deploy/loop2-watch.cron`, `/etc/logrotate.d/loop2-app` and `/srv/loop2/deploy/loop2-app.logrotate`, each run alone — no output from any; and `git -C /srv/loop2 --no-optional-locks status` on the same host, git, whose version no reading the skill allows prints — "HEAD detached at f0814d77" · "nothing to commit, working tree clean"; run 2026-11-14
+
+## loop2-backup-log-nightly-sends
+
+On the test server's host, the backup log `/var/log/loop2-backup.log` holds for each of the 14 days from 2026-11-01 to 2026-11-14 a line `made:` naming a file `loop2-accounts-<n>.sqlite.age` of 90328 bytes and, after it, a line `end: sent` naming the same file, written at about 02:17 UTC.
+
+- **Source:** reading: `tail -n 60 /var/log/loop2-backup.log` on the test server's host, tail from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — of its 60 lines, the `made:` and `end: sent` lines of these days: "2026-11-01T02:17:01Z loop2-backup: made: loop2-accounts-7.sqlite.age, 90328 bytes" · "2026-11-01T02:17:10Z loop2-backup: end: sent loop2-accounts-7.sqlite.age" · "2026-11-02T02:17:02Z loop2-backup: made: loop2-accounts-1.sqlite.age, 90328 bytes" · "2026-11-02T02:17:05Z loop2-backup: end: sent loop2-accounts-1.sqlite.age" · "2026-11-03T02:17:02Z loop2-backup: made: loop2-accounts-2.sqlite.age, 90328 bytes" · "2026-11-03T02:17:07Z loop2-backup: end: sent loop2-accounts-2.sqlite.age" · "2026-11-04T02:17:01Z loop2-backup: made: loop2-accounts-3.sqlite.age, 90328 bytes" · "2026-11-04T02:17:05Z loop2-backup: end: sent loop2-accounts-3.sqlite.age" · "2026-11-05T02:17:01Z loop2-backup: made: loop2-accounts-4.sqlite.age, 90328 bytes" · "2026-11-05T02:17:04Z loop2-backup: end: sent loop2-accounts-4.sqlite.age" · "2026-11-06T02:17:01Z loop2-backup: made: loop2-accounts-5.sqlite.age, 90328 bytes" · "2026-11-06T02:17:16Z loop2-backup: end: sent loop2-accounts-5.sqlite.age" · "2026-11-07T02:17:02Z loop2-backup: made: loop2-accounts-6.sqlite.age, 90328 bytes" · "2026-11-07T02:17:05Z loop2-backup: end: sent loop2-accounts-6.sqlite.age" · "2026-11-08T02:17:02Z loop2-backup: made: loop2-accounts-7.sqlite.age, 90328 bytes" · "2026-11-08T02:17:05Z loop2-backup: end: sent loop2-accounts-7.sqlite.age" · "2026-11-09T02:17:01Z loop2-backup: made: loop2-accounts-1.sqlite.age, 90328 bytes" · "2026-11-09T02:17:04Z loop2-backup: end: sent loop2-accounts-1.sqlite.age" · "2026-11-10T02:17:01Z loop2-backup: made: loop2-accounts-2.sqlite.age, 90328 bytes" · "2026-11-10T02:17:04Z loop2-backup: end: sent loop2-accounts-2.sqlite.age" · "2026-11-11T02:17:01Z loop2-backup: made: loop2-accounts-3.sqlite.age, 90328 bytes" · "2026-11-11T02:17:04Z loop2-backup: end: sent loop2-accounts-3.sqlite.age" · "2026-11-12T02:17:02Z loop2-backup: made: loop2-accounts-4.sqlite.age, 90328 bytes" · "2026-11-12T02:17:05Z loop2-backup: end: sent loop2-accounts-4.sqlite.age" · "2026-11-13T02:17:01Z loop2-backup: made: loop2-accounts-5.sqlite.age, 90328 bytes" · "2026-11-13T02:17:08Z loop2-backup: end: sent loop2-accounts-5.sqlite.age" · "2026-11-14T02:17:02Z loop2-backup: made: loop2-accounts-6.sqlite.age, 90328 bytes" · "2026-11-14T02:17:09Z loop2-backup: end: sent loop2-accounts-6.sqlite.age"; run 2026-11-14
+
+## loop2-watch-log-flock-status
+
+On the test server's host, the log of the failure watcher `/var/log/loop2-watch.log` holds, for the days from 2026-11-09 to 2026-11-14, lines that give `flock exit 1` for a deployment lock that is held, and its lines that name a `flock` status name no other.
+
+- **Source:** reading: `tail -n 100 /var/log/loop2-watch.log` on the test server's host, tail from the package whose version `stat --version | head -1` prints on the same host as "stat (GNU coreutils) 8.32" — of its 43 lines, 40 of which are `skipped:` lines naming `flock exit 1`, three of those lines and the line of a run that went on after the lock: "2026-11-09T09:20:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-11T22:35:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-14T05:25:01Z loop2-watch: skipped: the deployment lock is held (flock exit 1); nothing was read" · "2026-11-11T09:55:01Z loop2-watch: run: due=down; sent=down; pusher=down:0; containers=loop2; failure_lines=0 browser_lines=0"; run 2026-11-14
 
 ## Withdrawn identifiers
 
