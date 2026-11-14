@@ -5,7 +5,14 @@
 // covers (D-88). A browser reports an error to the window's `error` event and a
 // rejection to `unhandledrejection`; jsdom reports neither of a timer or a promise of Node, so a
 // case reports to the window what the browser would.
-import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
+import {
+  assert,
+  fire,
+  inAct,
+  press,
+  typeInto,
+  withPage,
+} from "./page-document.mjs";
 import { mock, test } from "node:test";
 import {
   createCharacter,
@@ -133,16 +140,6 @@ const buttonNamed = (root, text) =>
   all(root).find(
     (element) => element.localName === "button" && element.textContent === text,
   );
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-async function press(target) {
-  assert.ok(target, "what the case presses stands");
-  await inAct(() => fire(target, "click"));
-}
 
 /** Gives the page's continuations their turns, outside `act`. */
 async function turns() {

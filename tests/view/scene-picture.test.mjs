@@ -5,7 +5,6 @@ import { inflateSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   CAMP,
   SCENE,
@@ -41,7 +40,7 @@ const SPRITES = fileURLToPath(
   new URL("../../assets/sprites/", import.meta.url),
 );
 const SENT = {
-  mapId: Object.keys(MAPS)[0],
+  mapId: "forest",
   // The first character a new game creates takes the id 1.
   characterId: 1,
 };
@@ -885,7 +884,7 @@ test("the tint is the streak's share of the required streak times 0.8, and 1 at 
   assert.equal(tintAt({ streak: 100000 }), 0.8);
   assert.equal(tintAt({ streak: 480, completion: { minute: 480 } }), 1);
   assert.equal(tintAt({ streak: 0, completion: { minute: 1 } }), 1);
-  const deep = Object.keys(MAPS)[1];
+  const deep = "forestDeep";
   assert.equal(tintAt({ mapId: deep, streak: 270 }), 0.4);
   assert.equal(tintAt({ mapId: deep, streak: 540 }), 0.8);
   assert.equal(

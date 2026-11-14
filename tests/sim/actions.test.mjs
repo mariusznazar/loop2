@@ -15,7 +15,8 @@ import { streamState } from "../../dist/browser/sim/random.js";
 import { newMapRun, stepMinute } from "../../dist/browser/sim/run.js";
 import { programFromRules } from "./program-fixture.mjs";
 
-const [mapId, map] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const map = MAPS[mapId];
 // The id of a character of the team, which the map run carries.
 const characterId = 1;
 const [stick] = map.resources.map((resource) => resource.id);
@@ -97,7 +98,7 @@ test("combat actions cannot be selected as ordinary map activities", () => {
     { kind: "kick" },
     { kind: "dodge" },
   ]) {
-    assert.equal(actionFeasible(run, map, action), false, action.kind);
+    assert.equal(actionFeasible(run, action), false, action.kind);
     const program = programFromRules(rule(ALWAYS, action));
     assert.deepEqual(
       stepMinute(freeNextMinute(run), map, program).run.current.activity,
@@ -152,7 +153,7 @@ test("explore takes 20 minutes, reveals the tile and brings nothing", () => {
 
 test("explore is not feasible on a revealed tile, so the next choice is a wait", () => {
   const at20 = steps(start().run, 20, EXPLORING).run;
-  assert.equal(actionFeasible(at20, map, EXPLORE), false);
+  assert.equal(actionFeasible(at20, EXPLORE), false);
   assert.deepEqual(at20.current, {
     activity: { kind: "wait" },
     startMinute: 20,
@@ -269,9 +270,9 @@ test("starting Wędruj consumes exactly one draw", () => {
 test("Wędruj is not feasible with no neighbour on the map", () => {
   // D-375.
   const run = start().run;
-  assert.equal(actionFeasible(run, map, WANDER), true);
+  assert.equal(actionFeasible(run, WANDER), true);
   const alone = { ...run, tiles: [hereOf(run)] };
-  assert.equal(actionFeasible(alone, map, WANDER), false);
+  assert.equal(actionFeasible(alone, WANDER), false);
 });
 
 test("a step lasts the target tile stepMinutes and moves the character at its end", () => {
@@ -327,7 +328,7 @@ test("Idź targets the nearest revealed tile with stock and gives the first step
     revealed: true,
     stock: sameHex(tile.at, far) ? { [stick]: 3 } : {},
   }));
-  assert.equal(actionFeasible(prepared, map, walkTo(stick)), true);
+  assert.equal(actionFeasible(prepared, walkTo(stick)), true);
   const expected = nearestTile(
     prepared.tiles,
     entrance,
@@ -359,16 +360,16 @@ test("Idź is not feasible with no known tile in stock", () => {
       stock: sameHex(tile.at, other) ? { [stick]: count } : {},
     }));
   assert.equal(
-    actionFeasible(withStock(false, 3), map, walkTo(stick)),
+    actionFeasible(withStock(false, 3), walkTo(stick)),
     false,
     "unrevealed",
   );
   assert.equal(
-    actionFeasible(withStock(true, 0), map, walkTo(stick)),
+    actionFeasible(withStock(true, 0), walkTo(stick)),
     false,
     "used up",
   );
-  assert.equal(actionFeasible(withStock(true, 1), map, walkTo(stick)), true);
+  assert.equal(actionFeasible(withStock(true, 1), walkTo(stick)), true);
 });
 
 test("Idź is not feasible standing on the target", () => {
@@ -377,7 +378,7 @@ test("Idź is not feasible standing on the target", () => {
     revealed: true,
     stock: sameHex(tile.at, entrance) ? { [stick]: 3 } : {},
   }));
-  assert.equal(actionFeasible(run, map, walkTo(stick)), false);
+  assert.equal(actionFeasible(run, walkTo(stick)), false);
 });
 
 test("walking by program reaches the stock step by step and stays there", () => {

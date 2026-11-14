@@ -4,7 +4,6 @@ import { ACTIONS, type ActionDef } from "./data/actions.js";
 import { CONDITIONS, type ConditionDef } from "./data/conditions.js";
 import { ITEMS } from "./data/items.js";
 import { nearestTile, neighbours, sameHex, tileAt } from "./hex.js";
-import type { MapDef } from "./data/maps.js";
 import { RESOURCES } from "./data/resources.js";
 import { actionMinutes, branchActionAvailable, skillBonus } from "./skills.js";
 import {
@@ -200,7 +199,6 @@ function nearestCampfireMinutes(run: RunView): number {
 /** Whether a condition of a program rule holds now. */
 export function conditionHolds(
   run: RunView,
-  _map: MapDef,
   condition: Condition,
   context?: ConditionContext,
 ): boolean {
@@ -288,11 +286,7 @@ function firstItemFor(use: ItemUse): ItemId {
  * energy a spell costs, then a branch the character did not buy. Never draws: the wander generator
  * is left as it is.
  */
-export function actionRefusal(
-  run: RunView,
-  _map: MapDef,
-  action: Action,
-): string | null {
+export function actionRefusal(run: RunView, action: Action): string | null {
   const refusal = worldRefusal(run, action);
   if (refusal !== null) return refusal;
   const cost = natureEnergyCost(action);
@@ -380,12 +374,8 @@ function worldRefusal(run: RunView, action: Action): string | null {
  * Whether an action can start now. A spell needs at least the nature energy it costs, as the other
  * actions need their pieces. Never draws: the wander generator is left as it is.
  */
-export function actionFeasible(
-  run: RunView,
-  map: MapDef,
-  action: Action,
-): boolean {
-  return actionRefusal(run, map, action) === null;
+export function actionFeasible(run: RunView, action: Action): boolean {
+  return actionRefusal(run, action) === null;
 }
 
 /**
@@ -439,7 +429,6 @@ export type JudgeOptions = {
 /** What one rule of a group that holds shows. */
 function judgeRule(
   run: RunView,
-  map: MapDef,
   rule: ProgramRule,
   options: JudgeOptions,
 ): RuleJudgement {
@@ -448,11 +437,11 @@ function judgeRule(
     const outside = outsideReason(reach.repertoire, reach.known, rule);
     if (outside !== null) return { bar: "blocked", reason: outside };
   }
-  if (!conditionHolds(run, map, rule.condition, combat))
+  if (!conditionHolds(run, rule.condition, combat))
     return { bar: "unmet", reason: null };
   const reason = combat
     ? combatRefusal(run, rule.action)
-    : actionRefusal(run, map, rule.action);
+    : actionRefusal(run, rule.action);
   return reason === null
     ? { bar: "go", reason: null }
     : { bar: "blocked", reason };
@@ -466,7 +455,6 @@ function judgeRule(
  */
 export function judgeProgram(
   run: RunView,
-  map: MapDef,
   program: Program,
   options: JudgeOptions = {},
 ): ProgramJudgement {
@@ -478,7 +466,7 @@ export function judgeProgram(
     if (throughWinner && winner !== null) break;
     const holds =
       (!reach || conditionInRepertoire(reach.repertoire, group.condition)) &&
-      conditionHolds(run, map, group.condition, combat);
+      conditionHolds(run, group.condition, combat);
     if (!holds) {
       groups[group.id] = "unmet";
       for (const rule of group.rules)
@@ -488,7 +476,7 @@ export function judgeProgram(
     let goes = false;
     for (const rule of group.rules) {
       if (throughWinner && winner !== null) break;
-      const judged = judgeRule(run, map, rule, options);
+      const judged = judgeRule(run, rule, options);
       rules[rule.id] = judged;
       if (judged.bar !== "go") continue;
       goes = true;
@@ -500,12 +488,8 @@ export function judgeProgram(
 }
 
 /** The first feasible rule of the first qualifying group, both conditions holding; else a wait. */
-export function chooseActivity(
-  run: RunView,
-  map: MapDef,
-  program: Program,
-): Activity {
-  const { winner } = judgeProgram(run, map, program, { throughWinner: true });
+export function chooseActivity(run: RunView, program: Program): Activity {
+  const { winner } = judgeProgram(run, program, { throughWinner: true });
   return winner
     ? { kind: "rule", ruleId: winner.id, action: { ...winner.action } }
     : { kind: "wait" };
@@ -514,12 +498,11 @@ export function chooseActivity(
 /** The first feasible combat rule at the actor's current health, or no action this exchange. */
 export function chooseCombatRule(
   run: RunView,
-  map: MapDef,
   program: Program,
   health: number,
   opponentHealth: number,
 ): ProgramRule | null {
-  const { winner } = judgeProgram(run, map, program, {
+  const { winner } = judgeProgram(run, program, {
     combat: { health, opponentHealth },
     throughWinner: true,
   });

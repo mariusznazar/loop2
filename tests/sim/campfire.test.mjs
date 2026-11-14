@@ -27,7 +27,8 @@ import { programFromRules, ruleActivity } from "./program-fixture.mjs";
 // minute; a burning campfire warms the character on its tile by 0.5 °C and a burning stick by
 // 0.15 °C a minute.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const [stick, berry, moss] = forest.resources.map((resource) => resource.id);
@@ -165,32 +166,28 @@ test("the six actions are on the closed list with their labels and minutes", () 
 });
 
 test("„Wytwórz — ognisko” is feasible on a revealed tile without a campfire, with 6 sticks", () => {
-  assert.equal(actionFeasible(at({ [stick]: 6 }), forest, CRAFT), true);
-  assert.equal(actionFeasible(at({ [stick]: 9 }), forest, CRAFT), true);
+  assert.equal(actionFeasible(at({ [stick]: 6 }), CRAFT), true);
+  assert.equal(actionFeasible(at({ [stick]: 9 }), CRAFT), true);
   assert.equal(
-    actionFeasible(at({ [stick]: 5, [berry]: 4 }), forest, CRAFT),
+    actionFeasible(at({ [stick]: 5, [berry]: 4 }), CRAFT),
     false,
     "5 sticks",
   );
   assert.equal(
-    actionFeasible(at({ [stick]: 6 }, [], false), forest, CRAFT),
+    actionFeasible(at({ [stick]: 6 }, [], false), CRAFT),
     false,
     "a tile not revealed",
   );
   for (const minutesLeft of [0, 30]) {
     assert.equal(
-      actionFeasible(at({ [stick]: 6 }, burning(minutesLeft)), forest, CRAFT),
+      actionFeasible(at({ [stick]: 6 }, burning(minutesLeft)), CRAFT),
       false,
       `a campfire with ${minutesLeft} minutes already stands here`,
     );
   }
   const away = neighbours(handMade().tiles, entrance)[0].at;
   assert.equal(
-    actionFeasible(
-      at({ [stick]: 6 }, [{ at: away, minutesLeft: 0 }]),
-      forest,
-      CRAFT,
-    ),
+    actionFeasible(at({ [stick]: 6 }, [{ at: away, minutesLeft: 0 }]), CRAFT),
     true,
     "a campfire on another tile",
   );
@@ -198,21 +195,21 @@ test("„Wytwórz — ognisko” is feasible on a revealed tile without a campfi
 
 test("„Zapal — ognisko” is feasible at a campfire here that is not burning, with 2 sticks", () => {
   assert.equal(
-    actionFeasible(at({ [stick]: 2 }, burning(0)), forest, LIGHT_CAMPFIRE),
+    actionFeasible(at({ [stick]: 2 }, burning(0)), LIGHT_CAMPFIRE),
     true,
   );
   assert.equal(
-    actionFeasible(at({ [stick]: 1 }, burning(0)), forest, LIGHT_CAMPFIRE),
+    actionFeasible(at({ [stick]: 1 }, burning(0)), LIGHT_CAMPFIRE),
     false,
     "1 stick",
   );
   assert.equal(
-    actionFeasible(at({ [stick]: 2 }, burning(12)), forest, LIGHT_CAMPFIRE),
+    actionFeasible(at({ [stick]: 2 }, burning(12)), LIGHT_CAMPFIRE),
     false,
     "already burning",
   );
   assert.equal(
-    actionFeasible(at({ [stick]: 2 }), forest, LIGHT_CAMPFIRE),
+    actionFeasible(at({ [stick]: 2 }), LIGHT_CAMPFIRE),
     false,
     "no campfire",
   );
@@ -220,7 +217,6 @@ test("„Zapal — ognisko” is feasible at a campfire here that is not burning
   assert.equal(
     actionFeasible(
       at({ [stick]: 2 }, [{ at: away, minutesLeft: 0 }]),
-      forest,
       LIGHT_CAMPFIRE,
     ),
     false,
@@ -229,65 +225,54 @@ test("„Zapal — ognisko” is feasible at a campfire here that is not burning
 });
 
 test("„Zapal — patyk” is feasible on a revealed tile with a stick, and nowhere else", () => {
-  assert.equal(actionFeasible(at({ [stick]: 1 }), forest, LIGHT_ITEM), true);
+  assert.equal(actionFeasible(at({ [stick]: 1 }), LIGHT_ITEM), true);
   assert.equal(
-    actionFeasible(at({ [stick]: 1 }, burning(30)), forest, LIGHT_ITEM),
+    actionFeasible(at({ [stick]: 1 }, burning(30)), LIGHT_ITEM),
     true,
     "beside a campfire too",
   );
   assert.equal(
-    actionFeasible(at({ [stick]: 1 }, [], false), forest, LIGHT_ITEM),
+    actionFeasible(at({ [stick]: 1 }, [], false), LIGHT_ITEM),
     false,
     "a tile not revealed",
   );
   assert.equal(
-    actionFeasible(at({ [berry]: 3, [moss]: 2 }), forest, LIGHT_ITEM),
+    actionFeasible(at({ [berry]: 3, [moss]: 2 }), LIGHT_ITEM),
     false,
     "nothing that can be lit",
   );
 });
 
 test("„Zasil — ognisko” is feasible at a burning campfire here, with a piece of fuel", () => {
+  assert.equal(actionFeasible(at({ [stick]: 1 }, burning(1)), FEED), true);
   assert.equal(
-    actionFeasible(at({ [stick]: 1 }, burning(1)), forest, FEED),
-    true,
-  );
-  assert.equal(
-    actionFeasible(at({ [stick]: 1 }, burning(0)), forest, FEED),
+    actionFeasible(at({ [stick]: 1 }, burning(0)), FEED),
     false,
     "extinguished",
   );
   assert.equal(
-    actionFeasible(at({ [berry]: 2 }, burning(30)), forest, FEED),
+    actionFeasible(at({ [berry]: 2 }, burning(30)), FEED),
     false,
     "no fuel",
   );
-  assert.equal(
-    actionFeasible(at({ [stick]: 1 }), forest, FEED),
-    false,
-    "no campfire",
-  );
+  assert.equal(actionFeasible(at({ [stick]: 1 }), FEED), false, "no campfire");
   const away = neighbours(handMade().tiles, entrance)[0].at;
   assert.equal(
-    actionFeasible(
-      at({ [stick]: 1 }, [{ at: away, minutesLeft: 30 }]),
-      forest,
-      FEED,
-    ),
+    actionFeasible(at({ [stick]: 1 }, [{ at: away, minutesLeft: 30 }]), FEED),
     false,
     "a campfire on another tile",
   );
 });
 
 test("„Zjedz — jagoda” is feasible with a piece of food, and not without", () => {
-  assert.equal(actionFeasible(at({ [berry]: 1 }), forest, EAT), true);
+  assert.equal(actionFeasible(at({ [berry]: 1 }), EAT), true);
   assert.equal(
-    actionFeasible(at({ [berry]: 1 }, [], false), forest, EAT),
+    actionFeasible(at({ [berry]: 1 }, [], false), EAT),
     true,
     "on a tile not revealed too",
   );
-  assert.equal(actionFeasible(at({ [stick]: 5 }), forest, EAT), false);
-  assert.equal(actionFeasible(at(), forest, EAT), false);
+  assert.equal(actionFeasible(at({ [stick]: 5 }), EAT), false);
+  assert.equal(actionFeasible(at(), EAT), false);
 });
 
 test("each action lasts its minutes and takes nothing from the backpack at its start", () => {
@@ -471,10 +456,10 @@ test("„Idź — ognisko” walks to a far campfire step by step and stays ther
 
 test("„Idź — ognisko” cannot be carried out where there is no campfire or on a campfire's tile", () => {
   const away = neighbours(handMade().tiles, entrance)[0].at;
-  assert.equal(actionFeasible(at(), forest, TO_CAMPFIRE), false, "none");
+  assert.equal(actionFeasible(at(), TO_CAMPFIRE), false, "none");
   for (const minutesLeft of [0, 30]) {
     assert.equal(
-      actionFeasible(at({}, [{ at: away, minutesLeft }]), forest, TO_CAMPFIRE),
+      actionFeasible(at({}, [{ at: away, minutesLeft }]), TO_CAMPFIRE),
       true,
       `a campfire with ${minutesLeft} minutes on another tile`,
     );
@@ -484,7 +469,6 @@ test("„Idź — ognisko” cannot be carried out where there is no campfire or
           { at: away, minutesLeft: 30 },
           { at: entrance, minutesLeft },
         ]),
-        forest,
         TO_CAMPFIRE,
       ),
       false,
@@ -574,7 +558,7 @@ test("Płomyk can be cast with nature energy reaching its price of 10, and not w
       [0, false],
     ])
       assert.equal(
-        actionFeasible(withEnergy(run, energy), forest, action),
+        actionFeasible(withEnergy(run, energy), action),
         feasible,
         `${action.kind} with ${energy}`,
       );
@@ -585,11 +569,7 @@ test("Płomyk can be cast with nature energy reaching its price of 10, and not w
     [FEED, at({ [stick]: 1 }, burning(30))],
     [EAT, at({ [berry]: 1 })],
   ])
-    assert.equal(
-      actionFeasible(withEnergy(run, 0), forest, action),
-      true,
-      action.kind,
-    );
+    assert.equal(actionFeasible(withEnergy(run, 0), action), true, action.kind);
 });
 
 test("with too little nature energy the program passes over a „Zapal” rule to the next one", () => {

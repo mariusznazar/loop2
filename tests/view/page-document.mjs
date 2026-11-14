@@ -117,6 +117,25 @@ export async function inAct(action) {
   return result;
 }
 
+/**
+ * Sends `target` an event of `type` as a browser does, bubbling and cancelable; `init` adds its
+ * fields. A pointerout goes as a mouse event. The event is of the window the target stands in, an
+ * element or a document, so a case needs no window beside the target.
+ */
+export function fire(target, type, init = {}) {
+  const { Event, MouseEvent } = (target.ownerDocument ?? target).defaultView;
+  const Kind = type === "pointerout" ? MouseEvent : Event;
+  target.dispatchEvent(
+    new Kind(type, { bubbles: true, cancelable: true, ...init }),
+  );
+}
+
+/** Clicks `target` inside act, as a browser clicks it; React's work on an event shows only through act. */
+export function press(target) {
+  assert.ok(target, "what the case presses stands");
+  return inAct(() => fire(target, "click"));
+}
+
 /** Lets the page act on an answer that has just come. */
 export function settle() {
   return inAct(async () => {

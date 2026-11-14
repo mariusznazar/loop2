@@ -25,7 +25,8 @@ import {
 // With „Zapal” the spell Płomyk of D-63, paid with 10 nature energy besides its sticks (D-177), the
 // same program passes the 480 game minutes alive on the same seed, paying for its lightings.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const [stick, berry] = forest.resources.map((resource) => resource.id);

@@ -12,7 +12,11 @@ import {
   withSaveTime,
 } from "../../dist/browser/sim/game.js";
 import { emptyProgram } from "../../dist/browser/sim/programs.js";
-import { tripCount, tripChoices } from "../../dist/browser/view/trip-editor.js";
+import {
+  readTripCount,
+  tripCount,
+  tripChoices,
+} from "../../dist/browser/view/trip-editor.js";
 import {
   emptyLoopMark,
   entersLine,
@@ -58,6 +62,10 @@ test("trip input rejects invalid counts and offers each list's unused items in s
   assert.equal(tripCount("9007199254740991"), 9007199254740991);
   assert.equal(tripCount("12"), 12);
   assert.equal(tripCount("1000000000"), 1000000000);
+  // The number field's rule: a count is committed every time, also one equal to the count held (D-181).
+  assert.deepEqual(readTripCount("12"), { value: 12, commit: true });
+  assert.equal(readTripCount("0"), null);
+  assert.equal(readTripCount("2.4"), null);
   assert.deepEqual(
     tripChoices(["stick", "berry", "moss"], [entry("berry", 2)]),
     ["stick", "moss"],

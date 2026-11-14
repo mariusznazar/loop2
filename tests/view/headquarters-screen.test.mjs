@@ -3,13 +3,12 @@
 // shows of the game state and of the clock's moment, what its acts hand the page, and that
 // nothing on it sends a character. Real focus order, Enter in a field and rendering are the browser
 // check's (D-88), so a focus case here holds only what jsdom shows.
-import { assert, inAct, typeInto, withPage } from "./page-document.mjs";
+import { assert, inAct, press, typeInto, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import {
   ARCHETYPES,
   CREATED_ARCHETYPE,
 } from "../../dist/browser/sim/data/archetypes.js";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import { createCharacter, newGame, send } from "../../dist/browser/sim/game.js";
 import { createHeadquarters } from "../../dist/browser/view/headquarters.js";
 
@@ -82,17 +81,6 @@ async function mount({ root }, props) {
     root.append(screen.element);
   });
   return { screen, calls };
-}
-
-function fire(target, type) {
-  const { Event } = globalThis.window;
-  target.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
-}
-
-/** Clicks inside act; React's work on an event shows only through act. */
-function press(target) {
-  assert.ok(target, "what the case presses stands");
-  return inAct(() => fire(target, "click"));
 }
 
 /** Presses a key in a field, inside act. */
@@ -623,7 +611,7 @@ const campMembers = (root) => all(root, ".camp .camp-member");
 
 /** `state` with its character `id` sent into a map run, going. */
 const sentInto = (state, id) =>
-  send(state, { mapId: Object.keys(MAPS)[0], characterId: id }, NOW).state;
+  send(state, { mapId: "forest", characterId: id }, NOW).state;
 
 // Catches the band standing inside the screen's panel (narrower than the content, with its padding), under
 // the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the

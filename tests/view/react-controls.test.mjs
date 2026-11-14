@@ -36,6 +36,8 @@ import { createSelectList } from "../../dist/browser/view/controls/select-list.j
 import { createNumberField } from "../../dist/browser/view/controls/number-field.js";
 import { ReactSelectList } from "../../dist/browser/view/controls/react-select-list.js";
 import { ReactNumberField } from "../../dist/browser/view/controls/react-number-field.js";
+import { readNumberField } from "../../dist/browser/view/program-editor.js";
+import { readTripCount } from "../../dist/browser/view/trip-editor.js";
 
 // --- the element tree as plain data ------------------------------------------------------------
 
@@ -969,6 +971,8 @@ const SELECT_OPTIONS = [
 
 // The range of a number field: the condition kind's number, which the commit rule reads too.
 const RANGE = { defaultValue: 1, min: 0, max: 10, step: 1 };
+// The rule the program editor gives the field: `readNumberField` over the range of the number.
+const RANGE_RULE = (text, held) => readNumberField(text, held, RANGE);
 // A trip count: a safe integer from 1 up (D-181).
 const TRIP_RANGE = {
   defaultValue: 1,
@@ -1062,6 +1066,7 @@ test("a number field is the same element tree in both forms", async () => {
       createElement(ReactNumberField, {
         label: "Liczba",
         number: RANGE,
+        rule: RANGE_RULE,
         value: 3,
         onCommit: () => {},
       }),
@@ -1084,6 +1089,7 @@ test("a number field in the error state is the same element tree in both forms",
       createElement(ReactNumberField, {
         label: "Liczba",
         number: RANGE,
+        rule: RANGE_RULE,
         value: 3,
         error: "Liczba jest poza zakresem.",
         onCommit: () => {},
@@ -1107,6 +1113,7 @@ test("a disabled number field is the same element tree in both forms", async () 
       createElement(ReactNumberField, {
         label: "Liczba",
         number: RANGE,
+        rule: RANGE_RULE,
         value: 3,
         disabled: true,
         onCommit: () => {},
@@ -1135,6 +1142,7 @@ test("a number field keeps the text typed into it through ten renders and commit
       createElement(ReactNumberField, {
         label: "Liczba",
         number: RANGE,
+        rule: RANGE_RULE,
         value,
         onCommit: (committed) => commits.push(committed),
       });
@@ -1166,6 +1174,7 @@ test("a number field takes a new value from its props only while it has no focus
       createElement(ReactNumberField, {
         label: "Liczba",
         number: RANGE,
+        rule: RANGE_RULE,
         value,
         onCommit: (committed) => commits.push(committed),
       });
@@ -1200,6 +1209,7 @@ test("a number field commits the clamped number when left after typing, and noth
       createElement(ReactNumberField, {
         label: "Liczba",
         number: RANGE,
+        rule: RANGE_RULE,
         value,
         onCommit: (committed) => commits.push(committed),
       });
@@ -1220,9 +1230,10 @@ test("a number field commits the clamped number when left after typing, and noth
   });
 });
 
-// The trip count rule (D-181) of the opt-in `rule="trip"`: text that is no whole count from 1 commits
-// nothing, keeps the number shown and the draft in the field, and is reported through `onReject`, so
-// the screen can show its message. Breaks: the range rule rounds "2.4" to 2 and clamps "0" to 1, so
+// The trip count rule (D-181), which the trip plan gives the field as `readTripCount`: text that is no
+// whole count from 1 commits nothing, keeps the number shown and the draft in the field, and is
+// reported through `onReject`, so the screen can show its message. Breaks: the range rule rounds
+// "2.4" to 2 and clamps "0" to 1, so
 // both commit here; a field that drops the draft on blur shows "3" in place of "0" and fails the
 // draft check; a field that reports a count equal to the number shown as a rejection fails too.
 test("a number field under the trip count rule commits nothing on text that is no whole count from 1, keeps its draft and reports it", async () => {
@@ -1234,7 +1245,7 @@ test("a number field under the trip count rule commits nothing on text that is n
         label: "Liczba",
         number: TRIP_RANGE,
         value,
-        rule: "trip",
+        rule: readTripCount,
         onCommit: (committed) => commits.push(committed),
         onReject: () => {
           rejects += 1;

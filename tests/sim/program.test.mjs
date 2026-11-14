@@ -19,7 +19,8 @@ import {
 import { newMapRun } from "../../dist/browser/sim/run.js";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-const [mapId, map] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const map = MAPS[mapId];
 // The id of a character of the team, which the map run carries.
 const characterId = 1;
 const [stick, berry] = map.resources.map((resource) => resource.id);
@@ -32,7 +33,7 @@ const walkTo = (resource) => ({ kind: "walkTo", resource });
 const rule = (condition, action) => ({ condition, action });
 const program = programFromRules;
 
-/** A fresh map run of the first map at minute 0, its first activity chosen by `startProgram`. */
+/** A fresh map run of Las at minute 0, its first activity chosen by `startProgram`. */
 function freshRun(seed = 3, startProgram = program()) {
   return newMapRun(map, seed, startProgram, { mapId, characterId }).run;
 }
@@ -56,7 +57,7 @@ function cleared(run, revealed) {
 }
 
 test("always holds", () => {
-  assert.equal(conditionHolds(freshRun(), map, ALWAYS), true);
+  assert.equal(conditionHolds(freshRun(), ALWAYS), true);
 });
 
 test("hereBelow reads 0 on an unrevealed tile, whatever lies there", () => {
@@ -65,7 +66,7 @@ test("hereBelow reads 0 on an unrevealed tile, whatever lies there", () => {
     revealed: false,
     stock: { [stick]: 12 },
   }));
-  assert.equal(conditionHolds(run, map, below(stick, 1)), true);
+  assert.equal(conditionHolds(run, below(stick, 1)), true);
 });
 
 test("hereBelow compares the true stock of a revealed tile", () => {
@@ -74,10 +75,10 @@ test("hereBelow compares the true stock of a revealed tile", () => {
     revealed: true,
     stock: { [stick]: 12 },
   }));
-  assert.equal(conditionHolds(run, map, below(stick, 12)), false);
-  assert.equal(conditionHolds(run, map, below(stick, 13)), true);
+  assert.equal(conditionHolds(run, below(stick, 12)), false);
+  assert.equal(conditionHolds(run, below(stick, 13)), true);
   assert.equal(
-    conditionHolds(run, map, below(berry, 1)),
+    conditionHolds(run, below(berry, 1)),
     true,
     "a lacking resource counts 0",
   );
@@ -89,14 +90,13 @@ test("hereBelow with N = 0 never holds", () => {
     revealed: true,
     stock: {},
   }));
-  assert.equal(conditionHolds(run, map, below(stick, 0)), false);
+  assert.equal(conditionHolds(run, below(stick, 0)), false);
 });
 
 test("the first rule whose condition holds and whose action is feasible wins", () => {
   const run = freshRun();
   const chosen = chooseActivity(
     run,
-    map,
     program(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)),
   );
   assert.deepEqual(chosen, { kind: "rule", ruleId: 1, action: EXPLORE });
@@ -106,7 +106,6 @@ test("a rule whose condition does not hold is skipped", () => {
   const run = freshRun();
   const chosen = chooseActivity(
     run,
-    map,
     program(rule(below(stick, 0), WANDER), rule(ALWAYS, EXPLORE)),
   );
   assert.deepEqual(chosen, { kind: "rule", ruleId: 2, action: EXPLORE });
@@ -116,7 +115,6 @@ test("a rule whose action is not feasible is skipped", () => {
   const run = withHere(freshRun(), (tile) => ({ ...tile, revealed: true }));
   const chosen = chooseActivity(
     run,
-    map,
     program(rule(ALWAYS, EXPLORE), rule(ALWAYS, WANDER)),
   );
   assert.deepEqual(chosen, { kind: "rule", ruleId: 2, action: WANDER });
@@ -124,11 +122,10 @@ test("a rule whose action is not feasible is skipped", () => {
 
 test("with no applicable rule the character waits", () => {
   const run = cleared(freshRun(), true);
-  assert.deepEqual(chooseActivity(run, map, program()), { kind: "wait" });
+  assert.deepEqual(chooseActivity(run, program()), { kind: "wait" });
   assert.deepEqual(
     chooseActivity(
       run,
-      map,
       program(rule(ALWAYS, EXPLORE), rule(ALWAYS, walkTo(stick))),
     ),
     {
@@ -151,16 +148,16 @@ test("a wait lasts waitMinutes, one game minute", () => {
 test("feasibility and choice do not draw from the wander generator", () => {
   const run = freshRun();
   const before = JSON.stringify(run);
-  actionFeasible(run, map, WANDER);
-  actionFeasible(run, map, WANDER);
-  chooseActivity(run, map, program(rule(ALWAYS, WANDER)));
-  chooseActivity(run, map, program(rule(ALWAYS, WANDER)));
+  actionFeasible(run, WANDER);
+  actionFeasible(run, WANDER);
+  chooseActivity(run, program(rule(ALWAYS, WANDER)));
+  chooseActivity(run, program(rule(ALWAYS, WANDER)));
   assert.equal(JSON.stringify(run), before);
 });
 
 test("the chosen action is a copy, not the program rule itself", () => {
   const rules = program(rule(ALWAYS, EXPLORE));
-  const chosen = chooseActivity(freshRun(), map, rules);
+  const chosen = chooseActivity(freshRun(), rules);
   assert.notEqual(chosen.action, rules.groups[0].rules[0].action);
 });
 
@@ -210,7 +207,7 @@ test("group order skips false, empty and infeasible groups and then takes the fi
   assert.doesNotThrow(() => {
     accepted = setProgram(newGame(), candidate).state.programs[0].program;
   });
-  assert.deepEqual(chooseActivity(freshRun(), map, accepted), {
+  assert.deepEqual(chooseActivity(freshRun(), accepted), {
     kind: "rule",
     ruleId: 24,
     action: EXPLORE,
@@ -226,7 +223,7 @@ test("all empty groups and an empty list of groups leave the character waiting",
     assert.doesNotThrow(() => {
       accepted = setProgram(newGame(), candidate).state.programs[0].program;
     });
-    assert.deepEqual(chooseActivity(freshRun(), map, accepted), {
+    assert.deepEqual(chooseActivity(freshRun(), accepted), {
       kind: "wait",
     });
   }
@@ -243,12 +240,12 @@ test("identical rule contents keep distinct identities when groups and rules mov
   assert.doesNotThrow(() => {
     accepted = setProgram(newGame(), candidate).state.programs[0].program;
   });
-  assert.equal(chooseActivity(freshRun(), map, accepted).ruleId, 91);
+  assert.equal(chooseActivity(freshRun(), accepted).ruleId, 91);
   const moved = {
     ...accepted,
     groups: [group(7, ALWAYS, [second]), group(3, ALWAYS, [first])],
   };
-  assert.equal(chooseActivity(freshRun(), map, moved).ruleId, 17);
+  assert.equal(chooseActivity(freshRun(), moved).ruleId, 17);
   assert.deepEqual(
     accepted.groups[0].rules.map((entry) => entry.id),
     [91, 17],

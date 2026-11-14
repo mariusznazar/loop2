@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -14,7 +13,7 @@ import {
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-const mapId = Object.keys(MAPS)[0];
+const mapId = "forest";
 // The first character a new game creates takes the id 1.
 const SENT = { mapId, characterId: 1 };
 const REAL_MS = 1760000000000;
@@ -24,7 +23,7 @@ const EXPLORING = programFromRules({
   action: { kind: "explore" },
 });
 
-/** A game sent to the first map with a program that explores; the run stands at minute 0. */
+/** A game sent to Las with a program that explores; the run stands at minute 0. */
 function sent(program = EXPLORING) {
   const game = createCharacter(
     setProgram(newKnowingGame(), program).state,

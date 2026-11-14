@@ -24,7 +24,8 @@ import {
 // minute, health falls by 0.35 for chilled (below 35.0 °C) and 0.35 for starving (below 30), and
 // rises by 0.05 otherwise.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const SENT = { mapId, characterId };

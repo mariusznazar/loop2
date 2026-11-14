@@ -337,9 +337,12 @@ test("S2: no file of the simulation outside sim/data, of the view or main.ts wri
 });
 
 test("S2 control: literal ids, names and closed unions are flagged; reading them from data is not", () => {
-  const [mapId, map] = Object.entries(MAPS)[0];
-  const [resourceId, resource] = Object.entries(RESOURCES)[0];
-  const [archetypeId, archetype] = Object.entries(ARCHETYPES)[0];
+  const mapId = "forest";
+  const map = MAPS[mapId];
+  const resourceId = "stick";
+  const resource = RESOURCES[resourceId];
+  const archetypeId = "elementalMage";
+  const archetype = ARCHETYPES[archetypeId];
   const flagged = [
     `const map = MAPS['${mapId}'];`,
     `const map = MAPS.${mapId};`,

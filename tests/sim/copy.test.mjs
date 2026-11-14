@@ -2,7 +2,6 @@
 // come from D-91, D-93, D-123, D-164, D-165 and D-170 in foundations/decisions.md.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -15,7 +14,7 @@ import {
 import { programFromRules } from "./program-fixture.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
-const MAP_ID = Object.keys(MAPS)[0];
+const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
 const ALWAYS = { kind: "always" };
 const rule = (condition, action) => ({ condition, action });
@@ -34,7 +33,7 @@ const EMPTY = {
   nextRuleId: 1,
 };
 
-/** A knowing game whose program 1 holds `program`, with Ala, character 1, sent to the first map. */
+/** A knowing game whose program 1 holds `program`, with Ala, character 1, sent to Las. */
 function sent(program = EXPLORING) {
   const ready = createCharacter(
     setProgram(newKnowingGame(), program).state,

@@ -4,7 +4,6 @@
 // stays).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
@@ -26,7 +25,7 @@ import {
 } from "../../dist/browser/sim/understanding.js";
 import { programFromRules } from "./program-fixture.mjs";
 
-const MAP_ID = Object.keys(MAPS)[0];
+const MAP_ID = "forest";
 const REAL_MS = 1760000000000;
 
 const ALL_SKILLS = [

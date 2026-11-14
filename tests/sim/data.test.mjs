@@ -508,9 +508,10 @@ test("the campfire is revealed by the first gathered stick and has an identifier
 });
 
 // Validation of ids and programs against the data: the ids come from the data files.
-const [firstMapId, firstMap] = Object.entries(MAPS)[0];
+const forestId = "forest";
+const forestMap = MAPS[forestId];
 // The first character a new game creates takes the id 1.
-const SENT = { mapId: firstMapId, characterId: 1 };
+const SENT = { mapId: forestId, characterId: 1 };
 const REAL_MS = 1760000000000;
 const ALWAYS = { kind: "always" };
 const EXPLORE = { kind: "explore" };
@@ -528,7 +529,7 @@ function heldProgram(state) {
 test("setProgram accepts every resource of the map data list, in conditions and in walks", async () => {
   const { createCharacter, newGame, send, setProgram } =
     await import("../../dist/browser/sim/game.js");
-  const rules = firstMap.resources.flatMap(({ id }) => [
+  const rules = forestMap.resources.flatMap(({ id }) => [
     rule(below(id, 3), EXPLORE),
     rule(ALWAYS, walkTo(id)),
   ]);
@@ -545,7 +546,7 @@ test("setProgram accepts every resource of the map data list, in conditions and 
 test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async () => {
   const { newGame, setProgram } =
     await import("../../dist/browser/sim/game.js");
-  const [resource] = firstMap.resources.map(({ id }) => id);
+  const [resource] = forestMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   for (const program of [
     programFromRules(),
@@ -599,7 +600,7 @@ test("setProgram rejects a resource id outside the map data list", async () => {
 test("setProgram rejects kinds outside the closed list and values outside the data range", async () => {
   const { newGame, setProgram } =
     await import("../../dist/browser/sim/game.js");
-  const [resource] = firstMap.resources.map(({ id }) => id);
+  const [resource] = forestMap.resources.map(({ id }) => id);
   const { min, max } = CONDITIONS.hereBelow;
   const invalid = [
     null,
@@ -645,15 +646,15 @@ test("send rejects a map id not in the data and a character id not in the team",
     { mapId: "nowhere", characterId: 1 },
     { mapId: "toString", characterId: 1 },
     { mapId: undefined, characterId: 1 },
-    { mapId: firstMapId, characterId: 2 },
-    { mapId: firstMapId, characterId: 0 },
-    { mapId: firstMapId, characterId: "1" },
-    { mapId: firstMapId, characterId: undefined },
+    { mapId: forestId, characterId: 2 },
+    { mapId: forestId, characterId: 0 },
+    { mapId: forestId, characterId: "1" },
+    { mapId: forestId, characterId: undefined },
   ]) {
     assert.throws(() => send(game, ids, REAL_MS), Error, JSON.stringify(ids));
   }
   assert.throws(() => send(newGame(), SENT, REAL_MS), Error, "an empty team");
-  assert.equal(send(game, SENT, REAL_MS).state.run.mapId, firstMapId);
+  assert.equal(send(game, SENT, REAL_MS).state.run.mapId, forestId);
 });
 
 // Every activity must last at least one game minute (D-18: a map can be added through data alone).
@@ -680,7 +681,7 @@ test("every map step and every fixed action duration is a whole number of minute
 test("an activity of 0 minutes from faulty data still finishes in the next minute", async () => {
   const { newMapRun, stepMinute } =
     await import("../../dist/browser/sim/run.js");
-  const map = { ...firstMap, stepMinutes: 0 };
+  const map = { ...forestMap, stepMinutes: 0 };
   const program = programFromRules(rule(ALWAYS, { kind: "wander" }));
   const started = newMapRun(map, 1, program, SENT).run;
   assert.equal(started.current.endMinute, started.minute + 1);

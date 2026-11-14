@@ -21,7 +21,8 @@ import { programFromRules } from "./program-fixture.mjs";
 // The numbers below are written out by hand: a new character carries carrying capacity 15 (D-64),
 // and the backpack's cap counts the pieces of all items together.
 
-const [mapId, forest] = Object.entries(MAPS)[0];
+const mapId = "forest";
+const forest = MAPS[mapId];
 // The first character a new game creates takes the id 1.
 const characterId = 1;
 const SENT = { mapId, characterId };
@@ -83,7 +84,7 @@ test("a restart keeps the traits of a character that carries other traits", () =
 
 test("a restart gives the new map run an empty backpack", () => {
   const game = sent();
-  const [first] = Object.keys(ITEMS);
+  const first = "stick";
   const filled = {
     ...game,
     run: {
