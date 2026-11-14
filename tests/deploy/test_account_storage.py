@@ -116,9 +116,12 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
             "email": EMAIL, "password": password, "passwordConfirmation": password})
         self.assertEqual(created["status"], 201, created["body"])
         # The registration answer also carries its confirmation message's outcome
-        # (D-157); the account reads that follow carry only the account's fields.
-        account = {key: created["body"][key] for key in ("id", "email", "emailConfirmed")}
+        # (D-157); the account reads that follow carry only the account's fields,
+        # among them the previous-save privilege, which a new account lacks (D-400).
+        account = {key: created["body"][key]
+                   for key in ("id", "email", "emailConfirmed", "previousSaveAllowed")}
         self.assertEqual(account["email"], EMAIL)
+        self.assertIs(account["previousSaveAllowed"], False)
         cookie = created["cookie"]
         self.assertIsNotNone(cookie, "registration set no session cookie")
         before = self.request(first, "/api/account", cookie=cookie)

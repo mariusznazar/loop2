@@ -1,4 +1,8 @@
-import type { AccountClient } from "../account-api.js";
+import type {
+  AccountClient,
+  AccountResult,
+  PreviousSavedGame,
+} from "../account-api.js";
 import {
   createCharacter,
   end,
@@ -12,6 +16,7 @@ import {
   type GameResult,
 } from "../sim/game.js";
 import {
+  appendPrograms,
   copyHasUnsavedChanges,
   createProgram,
   deleteProgram,
@@ -26,6 +31,10 @@ import {
   switchProgram,
 } from "../sim/programs.js";
 import { closeAwayReport, stopLoop, takeLoopPractice } from "../sim/loop.js";
+import {
+  readPreviousPrograms,
+  type PreviousItem,
+} from "../sim/previous-programs.js";
 import { savedGame, type SavedGame } from "../sim/saved-game.js";
 import type { CharacterId, GameState, MapId, ProgramId } from "../sim/types.js";
 import { buyBranch } from "../sim/skills.js";
@@ -47,7 +56,18 @@ import {
   type MapsScreen,
   type MapsScreenControls,
 } from "./maps-screen.js";
-import { createProgramList } from "./program-list.js";
+import {
+  CHECK_FAILED,
+  FETCH_FAILED,
+  NO_PREVIOUS_SAVE,
+  NOT_ALLOWED,
+  pullResultLine,
+} from "./previous-save-lines.js";
+import {
+  createProgramList,
+  type PullView,
+  type ResetView,
+} from "./program-list.js";
 import {
   createFolding,
   createProgramPanel,
@@ -73,6 +93,13 @@ import {
  */
 export type GameEntry = "sign-in" | "link" | "address";
 
+/** The reset control's state as the view holds it (D-402): waiting, the sentence of a failure, and the confirmation. */
+type ResetState = {
+  readonly waiting: boolean;
+  readonly sentence: string | null;
+  readonly confirming: boolean;
+};
+
 /** Where the player is: the screen, and the bar's way back to a map run the player left. */
 export type ScreenPlace = {
   readonly screen: Screen;
@@ -80,8 +107,24 @@ export type ScreenPlace = {
 };
 
 export type GameViewOptions = {
-  /** The account client the game's saver saves through. */
-  readonly client: Pick<AccountClient, "saveGame">;
+  /**
+   * The account client the game's saver saves through, and the pull of the previous save fetches
+   * through; only a privileged account's game ever calls `loadPreviousSavedGame`.
+   */
+  readonly client: Pick<AccountClient, "saveGame" | "loadPreviousSavedGame">;
+  /**
+   * Whether the account holds the previous-save privilege (D-400), from the account the page names;
+   * left out, it counts as false. Where it is false the game asks for nothing of the previous save
+   * and shows no control for it.
+   */
+  readonly previousSaveAllowed?: boolean;
+  /**
+   * The page's act of a confirmed „Zacznij od zera” (D-402): the game calls it once for each
+   * confirmation and sends no request of its own for the reset. Left out, the game shows no reset
+   * control, so that no page that gives none offers the reset. Only for an account with the
+   * previous-save privilege, as `previousSaveAllowed` says.
+   */
+  readonly onReset?: () => void;
   /** The game state the game starts from: a new game, or the state a load returned. */
   readonly state: GameState;
   /** The revision of the saved game state `state` came from; 0 when the server held none. */
@@ -127,6 +170,12 @@ export type GameView = {
    * and D-97 give, with the state the game held. Calling it again does nothing.
    */
   halt(): void;
+  /**
+   * Sets what the reset control shows (D-402), for the page: `waiting` while the page waits for the
+   * server's answer, and a `sentence` beside the control for a failed reset, after which the control
+   * is at rest. The view sets `waiting` itself when the player confirms, before it calls `onReset`.
+   */
+  setReset(next: { waiting: boolean; sentence: string | null }): void;
   /**
    * Ends this game in the page: its clock and its saver stop, it stops listening to the address,
    * and its elements leave the page, taking their event handlers with them. It changes no screen
@@ -209,6 +258,20 @@ function samePlace(one: ScreenPlace, other: ScreenPlace): boolean {
  * effect of that end, so that the effect is seen, and stands once the scene tells that the effect has
  * ended; at once where the scene shows no effect, as under the system's setting for reduced motion and
  * at an entering of the screen, where it shows the last image (D-311, D-322).
+ *
+ * The pull of the previous save (D-401) is a memory of the view alone, like the question: for a
+ * privileged account (`previousSaveAllowed`) each entering of Programy asks the server whether a
+ * previous save exists and shows „Wciągnij programy z poprzedniego zapisu” only for an answer of a
+ * document, at any time that screen is shown, a manual map run waiting or going on included; an
+ * account without the flag asks nothing. Pressed, the button fetches the previous save again,
+ * reads its programs one by one (`readPreviousPrograms`) and appends the accepted ones as an act
+ * of the player, so that it is saved at once; one line beside the button tells the result. An
+ * answer that comes after the player left the screen, after a later question or pull, or after
+ * `dispose()` is ignored.
+ *
+ * The reset of the game (D-402) is a control beside the pull, for a privileged account whose page gave
+ * `onReset`. Its click opens a confirmation and changes nothing; the confirmed act calls `onReset`
+ * once and waits until the page answers through `setReset`; leaving Programy closes the confirmation.
  *
  * Every act of the player whose result changed the state, every game minute that ends the map run
  * in a death or a completion and every result in which a loop's map run ended is a moment of saving
@@ -768,9 +831,46 @@ export function createGameView(options: GameViewOptions): GameView {
     return programById(state.programs, named) ? named : state.programs[0].id;
   }
 
+  /**
+   * The pull of the previous save as Programy shows it (D-401): a memory of the page alone, never of
+   * the game state or the save. It holds nothing between two showings of the screen.
+   */
+  const NO_PULL: PullView = { control: "away", line: null };
+  let pull: PullView = NO_PULL;
+  /**
+   * Numbers each question of the screen and each pull, and the leaving of the screen; an answer
+   * counts only while its number is the last, so an answer that comes after the player left the
+   * screen, or after a later question or pull, is ignored.
+   */
+  let pullAsk = 0;
+  /** Whether Programy was shown when `show` last ran, so that only an entering asks. */
+  let onProgramsScreen = false;
+  /**
+   * The reset control of Programy as the page and the player left it (D-402): a memory of the view
+   * alone, never of the game state or of a save. Each change makes a new object, so the list is
+   * drawn anew only when it changed.
+   */
+  let resetState: ResetState = {
+    waiting: false,
+    sentence: null,
+    confirming: false,
+  };
+
   // The list of programs on Programy. A pick is a link to the program's address, which the address
   // listener below turns into the screen; the list's acts go to the simulation (D-166, D-167, D-169).
   const programList = createProgramList({
+    onPull() {
+      pullPrevious();
+    },
+    onResetAsk() {
+      askReset();
+    },
+    onResetConfirm() {
+      confirmReset();
+    },
+    onResetWithdraw() {
+      withdrawReset();
+    },
     onCreate() {
       clock.flush();
       const programId = state.nextProgramId;
@@ -790,7 +890,12 @@ export function createGameView(options: GameViewOptions): GameView {
       if (!sameScreen(nearest, current)) show(nearest, "replace");
       focusShownScreen();
     },
-    props: { programs: state.programs, chosenId: null },
+    props: {
+      programs: state.programs,
+      chosenId: null,
+      pull,
+      reset: resetView(),
+    },
   });
   programList.element.classList.add("screen-area");
   // Programy has two areas, the list and the program panel; an open rule's panel stands in the panel's
@@ -800,6 +905,8 @@ export function createGameView(options: GameViewOptions): GameView {
   let drawnPrograms: {
     programs: GameState["programs"];
     chosenId: ProgramId;
+    pull: PullView;
+    reset: ResetState;
   } | null = null;
 
   /** Gives the program panel and the list of Programy the program they show. */
@@ -808,11 +915,159 @@ export function createGameView(options: GameViewOptions): GameView {
     programsPanel.showProgram(chosenId);
     if (
       drawnPrograms?.programs === state.programs &&
-      drawnPrograms.chosenId === chosenId
+      drawnPrograms.chosenId === chosenId &&
+      drawnPrograms.pull === pull &&
+      drawnPrograms.reset === resetState
     )
       return;
-    drawnPrograms = { programs: state.programs, chosenId };
-    programList.update({ programs: state.programs, chosenId });
+    drawnPrograms = {
+      programs: state.programs,
+      chosenId,
+      pull,
+      reset: resetState,
+    };
+    programList.update({
+      programs: state.programs,
+      chosenId,
+      pull,
+      reset: resetView(),
+    });
+  }
+
+  /** Changes what the list shows of the pull. */
+  function setPull(next: PullView): void {
+    pull = next;
+    drawPrograms();
+  }
+
+  /**
+   * Programy has just been shown: a privileged account's game asks the server whether a previous
+   * save exists, and the button stands only for an answer of a document; while the question is open
+   * the button is away, `null` leaves it away, and a failure leaves it away with one sentence. An
+   * account without the privilege asks nothing and shows nothing (D-400, D-401).
+   */
+  function askPrevious(): void {
+    if (options.previousSaveAllowed !== true) return;
+    const mine = ++pullAsk;
+    setPull(NO_PULL);
+    void options.client.loadPreviousSavedGame().then((result) => {
+      if (disposed || mine !== pullAsk) return;
+      if (!result.ok) setPull({ control: "away", line: CHECK_FAILED });
+      else if (result.value === null) setPull(NO_PULL);
+      else setPull({ control: "rest", line: null });
+    });
+  }
+
+  /**
+   * The player left Programy: what is open of the pull is dropped and its answer will be ignored, and
+   * the confirmation of the reset closes (D-402).
+   */
+  function leavePrograms(): void {
+    pullAsk += 1;
+    if (pull !== NO_PULL) setPull(NO_PULL);
+    if (resetState.confirming)
+      setResetState({ ...resetState, confirming: false });
+  }
+
+  /** The reset control as the list draws it, or none where the page gives no reset (D-402). */
+  function resetView(): ResetView | null {
+    if (options.previousSaveAllowed !== true || options.onReset === undefined)
+      return null;
+    return {
+      control: resetState.waiting ? "waiting" : "rest",
+      confirming: resetState.confirming,
+      line: resetState.sentence,
+    };
+  }
+
+  /** Changes the reset control's state and draws the list from it. */
+  function setResetState(next: ResetState): void {
+    resetState = next;
+    drawPrograms();
+  }
+
+  /**
+   * „Zacznij od zera” asks for its confirmation; the click changes nothing else, and nothing shows
+   * where the control is not shown (D-402).
+   */
+  function askReset(): void {
+    if (halted || disposed || resetView() === null) return;
+    if (resetState.waiting || resetState.confirming) return;
+    setResetState({ ...resetState, confirming: true });
+  }
+
+  /** The confirmation's withdraw: it closes and changes nothing (D-402). */
+  function withdrawReset(): void {
+    if (!resetState.confirming) return;
+    setResetState({ ...resetState, confirming: false });
+  }
+
+  /**
+   * The confirmed reset: the control waits, and the page is told once. The game sends no save and
+   * no request for the reset of its own; the page makes the request and answers it through `setReset`.
+   */
+  function confirmReset(): void {
+    if (halted || disposed || resetView() === null) return;
+    if (!resetState.confirming || resetState.waiting) return;
+    setResetState({ waiting: true, sentence: null, confirming: false });
+    options.onReset?.();
+  }
+
+  /**
+   * „Wciągnij programy z poprzedniego zapisu”: the button waits and the previous save is fetched
+   * again, so that the pull works on what the server holds now; its programs are read one by one
+   * and the ones the editor's check accepts are appended as one act of the player, which saves at
+   * once (D-207, D-401).
+   */
+  function pullPrevious(): void {
+    if (halted || disposed || pull.control !== "rest") return;
+    const mine = ++pullAsk;
+    setPull({ control: "waiting", line: null });
+    void options.client.loadPreviousSavedGame().then((result) => {
+      if (disposed || mine !== pullAsk) return;
+      answerPull(result);
+    });
+  }
+
+  /** What the page does with the answer of the fetch a pull made. */
+  function answerPull(result: AccountResult<PreviousSavedGame | null>): void {
+    if (halted) {
+      setPull({ control: "rest", line: null });
+      return;
+    }
+    if (!result.ok) {
+      const { failure } = result;
+      if (failure.kind === "refused" && failure.status === 401) {
+        // No session: the page keeps the game state for a sign-in to the same account (D-211).
+        setPull({ control: "rest", line: null });
+        options.onSignedOut();
+      } else if (
+        failure.kind === "refused" &&
+        failure.status === 403 &&
+        failure.code === "previous-save-forbidden"
+      ) {
+        setPull({ control: "away", line: NOT_ALLOWED });
+      } else {
+        setPull({ control: "rest", line: FETCH_FAILED });
+      }
+      return;
+    }
+    if (result.value === null) {
+      setPull({ control: "away", line: NO_PREVIOUS_SAVE });
+      return;
+    }
+    const read = readPreviousPrograms(result.value);
+    const accepted = read.ok
+      ? read.items.filter(
+          (item): item is Extract<PreviousItem, { kind: "read" }> =>
+            item.kind === "read",
+        )
+      : [];
+    if (accepted.length > 0) {
+      clock.flush();
+      act({ state: appendPrograms(state, accepted), events: [] });
+    }
+    setPull({ control: "rest", line: pullResultLine(read) });
   }
   /** The place the page was last told. */
   let told: ScreenPlace | null = null;
@@ -894,6 +1149,11 @@ export function createGameView(options: GameViewOptions): GameView {
     runScreen.element.hidden = holder !== runScreen.element;
     // After the screen shows, so the window takes the focus on a screen that is there to take it.
     syncWindow();
+    // Only an entering of Programy asks about the previous save; a change of program on it does not.
+    const onPrograms = next.kind === "programs" || next.kind === "program";
+    if (onPrograms && !onProgramsScreen) askPrevious();
+    else if (!onPrograms && onProgramsScreen) leavePrograms();
+    onProgramsScreen = onPrograms;
     drawPrograms();
     tellPlace();
   }
@@ -1008,6 +1268,14 @@ export function createGameView(options: GameViewOptions): GameView {
         document: savedGame(withSaveTime(state, clock.moment())),
         revision: saver.revision(),
       };
+    },
+    setReset(next: { waiting: boolean; sentence: string | null }): void {
+      if (disposed) return;
+      setResetState({
+        waiting: next.waiting,
+        sentence: next.sentence,
+        confirming: resetState.confirming,
+      });
     },
     halt(): void {
       halted = true;

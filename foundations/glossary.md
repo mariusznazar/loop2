@@ -256,3 +256,15 @@ stands under that form, a button drawn as underlined text without a frame.
 The chronicle is the record a manual map run keeps for the player to read, each entry with its game minute.
 
 - **Not:** the events a function of the simulation returns, which a screen reads as they pass and which no map run keeps — "events"
+
+## previous save
+
+A previous save is the one saved game state the server keeps beside an account's current one: the one an accepted save of a higher version or a reset replaced.
+
+- **Not:** none
+
+## previous-save privilege
+
+The previous-save privilege is the flag the operator sets on a player account that allows the account to pull the programs of its previous save and to start the game from zero.
+
+- **Not:** none

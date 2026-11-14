@@ -246,7 +246,8 @@ private note. The agent reads the file's metadata only and never its content.
 - **The first delivery (M4):** the human deploys the branch commit, creates an account with an
   address on an external mailbox, receives the message and opens its link. That deployment
   also moves the database to schema version 3 (see Rollback). The first deployment of the commit
-  with saved game states moves it on to version 4.
+  with saved game states moves it on to version 4, and the first deployment of the commit with
+  previous saves moves it on to version 5.
 
 ## The failure record and alerts
 
@@ -262,8 +263,9 @@ private note. The agent reads the file's metadata only and never its content.
   whole log of both services as Compose prints it, with Docker's timestamps. The lines under a
   header are those of the containers of its previous commit. Find the generations with
   `grep -n -F -m 20 -- 'loop2-deploy |' /var/log/loop2-app.log`.
-- **The `account-block` lines**, which the human appends to the same file with the command in
-  "Blocking a player account". Nothing else reaches it.
+- **The `account-block` and `account-previous-save` lines**, which the human appends to the same
+  file with the commands in "Blocking a player account" and "The previous-save privilege". Nothing
+  else reaches it.
 
 **How long each lives.** A running container's log: until the next deployment, and not above
 about 100 MB. The dump: `logrotate` rotates it weekly, or sooner when it passes 100 MiB, and
@@ -277,7 +279,7 @@ seconds between the copy and the stop of the old container.
 deployment, `grep -F -m 50 -- '"failure":"' /var/log/loop2-app.log /var/log/loop2-app.log.1`
 (`-m` limits each file), then `zgrep -F -m 50` on the older ones. A line of the game begins with
 its JSON object after the service's name and Docker's time. The file holds the game's lines for
-those weeks, with `accountId` values, and the human's `account-block` lines: it is the retention
+those weeks, with `accountId` values, and the human's `account-block` and `account-previous-save` lines: it is the retention
 of that data (D-252), and its lines are reported selected and redacted like other service logs.
 
 **The three ways the owner learns the game failed.**
@@ -419,6 +421,71 @@ like a JSON line of the command pass into the file with the words the address ca
   registered again; the person can still register with another address. A login of the
   blocked account does not count towards the limit of failed logins.
 
+## The previous-save privilege
+
+A player account with the previous-save privilege can pull the programs of its previous save and
+start the game from zero; without it the server refuses both. The owner grants and revokes the
+privilege with one command run in the application container from a shell on the server. Only the
+human runs it; an agent never does (D-400). The address is the account's email address, as the
+player logs in with it; letter case and surrounding spaces do not matter.
+
+```sh
+docker exec loop2 node dist/server/account-previous-save.js grant <email>
+docker exec loop2 node dist/server/account-previous-save.js revoke <email>
+```
+
+These plain commands are allowed and leave the event out of the failure record, since the command
+runs by `docker exec` and its lines reach only the terminal. To keep the event in
+`/var/log/loop2-app.log`, the human runs this instead (`grant` shown, `revoke` the same), in bash,
+as the account that owns the dump file or as root. The address goes between the single quotes of
+`email=` (a single quote inside it is written `'\''`):
+
+```sh
+email='<email>'
+case $email in
+  *$'\n'* | *$'\r'*)
+    echo "refused: the address holds a line feed or a carriage return; nothing was run" >&2 ;;
+  *)
+    out=$(docker exec loop2 node dist/server/account-previous-save.js grant "$email" 2>&1); status=$?
+    printf '%s\n' "$out"
+    printf '%s\n' "$out" | while IFS= read -r line; do
+      case $line in
+        '{"event":"account-'*'}' | '{"failure":"account-previous-save"'*'}')
+          printf '%s account-previous-save | %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$line" ;;
+      esac
+    done >> /var/log/loop2-app.log
+    echo "exit $status" ;;
+esac
+```
+
+The refusal of an address with a line feed or a carriage return, the terminal output, the `exit`
+line and the file's lines follow the shape of the block command's run above, with the tag
+`account-previous-save` in front of each line the file gets. The residual risk of the check is the
+same as in "Blocking a player account".
+
+- **`grant`** gives the privilege: the account can pull the programs of its previous save and start
+  the game from zero. **`revoke`** takes it away: from the next request on, the server refuses both
+  with the code `previous-save-forbidden`.
+- **What it does not do.** It ends no session and stops no emailed link, unlike the block. A game
+  page already open keeps the privilege it was given until it reloads; the server decides at each
+  request, so a revoked privilege stops the next fetch of the previous save and the next reset. The
+  previous save stays in place while the privilege is off, and a grant again makes it available.
+- **What it prints.** One sentence: that the privilege was granted or revoked, that the account
+  already held it or already did not hold it (nothing changed), or that no account has the address
+  (nothing changed). After a change also one JSON line of the event with the account's number; at
+  exit 1 also one JSON line of the error's kind and code. Wrong arguments print the usage line,
+  `Usage: node dist/server/account-previous-save.js grant|revoke <email address>`, and under it
+  `Nothing changed.`. Exit 0 means the account is now in the state asked for: granted, already
+  granted, revoked, or did not hold it. Every other exit changed nothing: 1 the database could not
+  be opened or changed, for example because it stayed busy longer than the wait (run the command
+  again); 2 wrong arguments, or an address without a single `@` with text on both sides; 3
+  `LOOP2_DATABASE_PATH` names no existing database file (the command never creates one); 4 no
+  account has that address.
+- **What it touches.** It opens the account database beside the running application, makes one
+  short change to the privilege of that account and closes it; the application keeps serving. It
+  prints no password hash or session identifier, and of a database error only its kind and code.
+  The address stays in the server's shell history.
+
 ## Rollback
 
 An ordinary rollback within the same route is one deployment: merge a revert request, or the
@@ -447,7 +514,9 @@ database to schema version 2, so from then on a rollback to a commit from before
 blocking fails health with exit 8. The first deployment of the commit with address
 confirmation, including the human's trial deployment of its branch (M4) before the merge,
 moves the database to schema version 3: an earlier commit, `main` included, then refuses it
-and fails health with exit 8, and only the human repairs the database.
+and fails health with exit 8, and only the human repairs the database. The current code writes
+schema version 5; the first deployment that moves the database to it is the paragraph "The first
+deployment of the commit with previous saves" below.
 
 **The first deployment of the commit with saved game states, including the human's deployment
 of its branch (S1) before the merge, moves the database to schema version 4,** which adds the
@@ -455,6 +524,15 @@ table of saved game states. From then on a commit that knows only version 3 or o
 before this change included, refuses the database and fails health with exit 8: a rollback to it
 cannot start, and only the human repairs the database. Until the branch is merged, a merge of
 anything else to `main` deploys that older code and takes the test server down. Details and recovery: "Rollback and the accounts" in
+`references/troubleshooting.md`.
+
+**The first deployment of the commit with previous saves, including the human's trial deployment
+of its branch before the merge, moves the database to schema version 5,** which adds the
+previous-save privilege of each account, off, and the table of previous saves. From then on a
+commit that knows only version 4 or older, `main` before this change included, refuses the database
+and fails health with exit 8: a rollback to it cannot start, and only the human repairs the
+database. Until the branch is merged, a merge of anything else to `main` deploys that older code
+and takes the test server down. Details and recovery: "Rollback and the accounts" in
 `references/troubleshooting.md`.
 
 **Crossing the tunnel transition also requires the matching installed script and Cloudflare

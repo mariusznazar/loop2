@@ -127,11 +127,14 @@ const calls = {
   requestPasswordReset: (c) => c.requestPasswordReset("a@x.pl"),
   setPassword: (c) =>
     c.setPassword("tok-1_a", "new twelve chars", "new twelve chars"),
+  loadPreviousSavedGame: (c) => c.loadPreviousSavedGame(),
+  resetSavedGame: (c) => c.resetSavedGame(),
 };
 
-const accountJson = '{"id":"u1","email":"a@x.pl","emailConfirmed":false}';
+const accountJson =
+  '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":false}';
 const registeredJson =
-  '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"confirmationMessage":"sent"}';
+  '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":false,"confirmationMessage":"sent"}';
 
 // invariant: account-client-requests
 test("each call sends its documented method, relative path and JSON body", async () => {
@@ -221,7 +224,7 @@ test("a redirect is not followed, so nothing is sent to its target", async () =>
 // invariant: account-client-outcomes
 test("the success status of each call with an account body gives that account and no other property", async () => {
   const body =
-    '{"id":"u1","email":"a@x.pl","emailConfirmed":true,"confirmationMessage":"sent","passwordHash":"leak","sessionId":"leak"}';
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":true,"previousSaveAllowed":true,"confirmationMessage":"sent","passwordHash":"leak","sessionId":"leak"}';
   for (const [name, status, value] of [
     [
       "register",
@@ -230,14 +233,29 @@ test("the success status of each call with an account body gives that account an
         id: "u1",
         email: "a@x.pl",
         emailConfirmed: true,
+        previousSaveAllowed: true,
         confirmationMessage: "sent",
       },
     ],
-    ["login", 200, { id: "u1", email: "a@x.pl", emailConfirmed: true }],
+    [
+      "login",
+      200,
+      {
+        id: "u1",
+        email: "a@x.pl",
+        emailConfirmed: true,
+        previousSaveAllowed: true,
+      },
+    ],
     [
       "currentAccount",
       200,
-      { id: "u1", email: "a@x.pl", emailConfirmed: true },
+      {
+        id: "u1",
+        email: "a@x.pl",
+        emailConfirmed: true,
+        previousSaveAllowed: true,
+      },
     ],
   ]) {
     respond = (_request, response) => reply(response, status, body);
@@ -284,6 +302,11 @@ test("a success status other than the call's own is no success, whatever the bod
     ["sendConfirmationMessage", 201, message],
     ["sendConfirmationMessage", 202, message],
     ["sendConfirmationMessage", 204, ""],
+    ["loadPreviousSavedGame", 201, '{"previous":null}'],
+    ["loadPreviousSavedGame", 204, ""],
+    ["resetSavedGame", 200, "{}"],
+    ["resetSavedGame", 201, ""],
+    ["resetSavedGame", 202, ""],
   ]) {
     respond = (_request, response) => reply(response, status, body);
     const result = await within(calls[name](client()), name);
@@ -317,6 +340,13 @@ test("a success status with a body that is not an account with string id and ema
     '{"id":"u1","email":"a@x.pl","emailConfirmed":"false"}',
     '{"id":"u1","email":"a@x.pl","emailConfirmed":0}',
   ];
+  // The confirmed flag is valid here, so only the privilege's flag can fail these.
+  const noPreviousFlag = [
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":false}',
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":null}',
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":"true"}',
+    '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":1}',
+  ];
   for (const [name, status] of [
     ["register", 201],
     ["login", 200],
@@ -328,7 +358,7 @@ test("a success status with a body that is not an account with string id and ema
       assert.equal(result.ok, false, `${name} with body ${body}`);
       assert.equal(result.failure.kind, "unexpected", `${name} ${body}`);
     }
-    for (const body of noConfirmedFlag) {
+    for (const body of [...noConfirmedFlag, ...noPreviousFlag]) {
       // The register body also carries a valid message, so only the flag can fail it.
       const withMessage = body.replace(/}$/, ',"confirmationMessage":"sent"}');
       respond = (_request, response) => reply(response, status, withMessage);
@@ -346,7 +376,7 @@ test("register gives the confirmation message outcome it is told and nothing els
       reply(
         response,
         201,
-        `{"id":"u1","email":"a@x.pl","emailConfirmed":false,"confirmationMessage":"${outcome}"}`,
+        `{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":false,"confirmationMessage":"${outcome}"}`,
       );
     assert.deepEqual(await within(calls.register(client()), outcome), {
       ok: true,
@@ -354,6 +384,7 @@ test("register gives the confirmation message outcome it is told and nothing els
         id: "u1",
         email: "a@x.pl",
         emailConfirmed: false,
+        previousSaveAllowed: false,
         confirmationMessage: outcome,
       },
     });
@@ -371,7 +402,7 @@ test("register gives the confirmation message outcome it is told and nothing els
       reply(
         response,
         201,
-        `{"id":"u1","email":"a@x.pl","emailConfirmed":false,"confirmationMessage":${value}}`,
+        `{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":false,"confirmationMessage":${value}}`,
       );
     const result = await within(calls.register(client()), value);
     assert.equal(result.ok, false, value);
@@ -484,6 +515,30 @@ test("an error status is a refusal carrying the server's code and message, even 
     ],
     [
       "sendConfirmationMessage",
+      401,
+      "unauthenticated",
+      "Sesja wygasła albo nie istnieje.",
+    ],
+    [
+      "loadPreviousSavedGame",
+      403,
+      "previous-save-forbidden",
+      "Konto nie ma uprawnienia do poprzedniego zapisu.",
+    ],
+    [
+      "resetSavedGame",
+      403,
+      "previous-save-forbidden",
+      "Konto nie ma uprawnienia do poprzedniego zapisu.",
+    ],
+    [
+      "loadPreviousSavedGame",
+      401,
+      "unauthenticated",
+      "Sesja wygasła albo nie istnieje.",
+    ],
+    [
+      "resetSavedGame",
       401,
       "unauthenticated",
       "Sesja wygasła albo nie istnieje.",
@@ -877,6 +932,230 @@ test("a save body over 65 536 bytes is never sent and comes back too large", asy
     kind: "too-large",
   });
   assert.deepEqual(seen, []);
+});
+
+// Previous save routes (D-400, D-401, D-402).
+
+// invariant: account-client-requests
+test("loadPreviousSavedGame sends a bodiless GET to the relative previous-save path, and resetSavedGame a JSON POST of the empty object to the reset path", async () => {
+  respond = (request, response) =>
+    request.url === "/api/saved-game-reset"
+      ? response.writeHead(204).end()
+      : reply(response, 200, '{"previous":null}');
+  const loaded = await within(client().loadPreviousSavedGame(), "load");
+  const reset = await within(client().resetSavedGame(), "reset");
+  // Precondition: both answers were successes, so both requests were fully sent.
+  assert.deepEqual(loaded, { ok: true, value: null });
+  assert.deepEqual(reset, { ok: true, value: null });
+  assert.deepEqual(
+    seen.map(({ method, url }) => ({ method, url })),
+    [
+      { method: "GET", url: "/api/previous-saved-game" },
+      { method: "POST", url: "/api/saved-game-reset" },
+    ],
+  );
+  assert.equal(seen[0].body, "");
+  assert.ok(seen[1].contentType?.startsWith("application/json"));
+  assert.deepEqual(JSON.parse(seen[1].body), {});
+});
+
+// invariant: account-client-requests
+test("a redirect of the previous-save routes is not followed, so nothing is sent to its target", async () => {
+  const target = `http://127.0.0.1:${elsewhere.address().port}/api/saved-game-reset`;
+  respond = (_request, response) =>
+    response.writeHead(307, { location: target }).end();
+  const loaded = await within(client().loadPreviousSavedGame(), "load");
+  const reset = await within(client().resetSavedGame(), "reset");
+  // Precondition: both requests reached the local server, which then redirected them.
+  assert.deepEqual(
+    seen.map(({ url }) => url),
+    ["/api/previous-saved-game", "/api/saved-game-reset"],
+  );
+  assert.equal(loaded.ok, false);
+  assert.equal(reset.ok, false);
+  assert.deepEqual(elsewhereSeen, []);
+});
+
+// invariant: account-client-outcomes
+test("loadPreviousSavedGame gives the previous save as received, or null for an account with none", async () => {
+  respond = (_request, response) =>
+    reply(
+      response,
+      200,
+      '{"previous":{"version":2,"game":{"program":[1,2],"note":"zażółć"}}}',
+    );
+  assert.deepEqual(await within(client().loadPreviousSavedGame(), "document"), {
+    ok: true,
+    value: { version: 2, game: { program: [1, 2], note: "zażółć" } },
+  });
+  respond = (_request, response) => reply(response, 200, '{"previous":null}');
+  assert.deepEqual(await within(client().loadPreviousSavedGame(), "null"), {
+    ok: true,
+    value: null,
+  });
+});
+
+// invariant: account-client-outcomes
+test("loadPreviousSavedGame is no success for another status or for a body that is not exactly previous, null or version and game", async () => {
+  const game = '{"a":1}';
+  const bodies = [
+    "",
+    "not json",
+    "null",
+    "[]",
+    "{}",
+    '{"previous":1}',
+    '{"previous":[]}',
+    '{"previous":"x"}',
+    '{"previous":{}}',
+    '{"previous":null,"extra":1}',
+    `{"previous":{"version":1,"game":${game}},"extra":1}`,
+    `{"previous":{"version":1,"game":${game},"extra":1}}`,
+    `{"previous":{"version":1,"revision":1,"game":${game}}}`,
+    `{"previous":{"game":${game}}}`,
+    '{"previous":{"version":1}}',
+    `{"previous":{"version":0,"game":${game}}}`,
+    `{"previous":{"version":-1,"game":${game}}}`,
+    `{"previous":{"version":1.5,"game":${game}}}`,
+    `{"previous":{"version":"1","game":${game}}}`,
+    `{"previous":{"version":9007199254740993,"game":${game}}}`,
+    '{"previous":{"version":1,"game":null}}',
+    '{"previous":{"version":1,"game":[]}}',
+    '{"previous":{"version":1,"game":"x"}}',
+    '{"code":"unauthenticated","error":"A refusal body at a success status"}',
+  ];
+  // Precondition: the exact shape with no document is a success, so the refusals below are the shape's.
+  respond = (_request, response) => reply(response, 200, '{"previous":null}');
+  assert.deepEqual(await within(client().loadPreviousSavedGame(), "null"), {
+    ok: true,
+    value: null,
+  });
+  for (const body of bodies) {
+    respond = (_request, response) => reply(response, 200, body);
+    const result = await within(client().loadPreviousSavedGame(), body);
+    assert.equal(result.ok, false, body);
+    assert.equal(result.failure.kind, "unexpected", body);
+  }
+});
+
+// invariant: account-client-outcomes
+test("loadPreviousSavedGame turns the refusals, a dead connection and a silent server into failures", async () => {
+  respond = (_request, response) =>
+    reply(
+      response,
+      403,
+      '{"code":"previous-save-forbidden","error":"Konto nie ma uprawnienia do poprzedniego zapisu."}',
+    );
+  assert.deepEqual(await within(client().loadPreviousSavedGame(), "403"), {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 403,
+      code: "previous-save-forbidden",
+      message: "Konto nie ma uprawnienia do poprzedniego zapisu.",
+    },
+  });
+  respond = (_request, response) =>
+    reply(response, 409, '{"error":"Słowa serwera bez kodu"}');
+  const noCode = await within(client().loadPreviousSavedGame(), "409");
+  assert.deepEqual(
+    [noCode.failure.kind, noCode.failure.status, noCode.failure.code],
+    ["refused", 409, null],
+  );
+  assert.doesNotMatch(noCode.failure.message, /Słowa/);
+  respond = (_request, response) => reply(response, 500, "<html>words</html>");
+  const server500 = await within(client().loadPreviousSavedGame(), "500");
+  assert.deepEqual(
+    [server500.failure.kind, server500.failure.status, server500.failure.code],
+    ["refused", 500, null],
+  );
+  respond = (request) => request.socket.destroy();
+  const dead = await within(client().loadPreviousSavedGame(), "dead");
+  assert.deepEqual(
+    [dead.failure.kind, dead.failure.reason],
+    ["unreachable", "network"],
+  );
+  respond = () => {};
+  const silent = await within(
+    createAccountClient({ timeoutMs: 150 }).loadPreviousSavedGame(),
+    "silent",
+  );
+  assert.deepEqual(
+    [silent.failure.kind, silent.failure.reason],
+    ["unreachable", "timeout"],
+  );
+  respond = (_request, response) => {
+    response.writeHead(200, {
+      "content-type": "application/json",
+      "content-length": "100",
+    });
+    response.write('{"previous":');
+  };
+  const stalled = await within(
+    createAccountClient({ timeoutMs: 150 }).loadPreviousSavedGame(),
+    "stalled",
+  );
+  assert.deepEqual(
+    [stalled.failure.kind, stalled.failure.reason],
+    ["unreachable", "timeout"],
+  );
+});
+
+// invariant: account-client-outcomes
+test("resetSavedGame is a success only for 204, with no body", async () => {
+  respond = (_request, response) => response.writeHead(204).end();
+  assert.deepEqual(await within(client().resetSavedGame(), "204"), {
+    ok: true,
+    value: null,
+  });
+});
+
+// invariant: account-client-outcomes
+test("resetSavedGame turns the refusals, a dead connection and a silent server into failures", async () => {
+  respond = (_request, response) =>
+    reply(
+      response,
+      403,
+      '{"code":"previous-save-forbidden","error":"Konto nie ma uprawnienia do poprzedniego zapisu."}',
+    );
+  assert.deepEqual(await within(client().resetSavedGame(), "403"), {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 403,
+      code: "previous-save-forbidden",
+      message: "Konto nie ma uprawnienia do poprzedniego zapisu.",
+    },
+  });
+  respond = (_request, response) =>
+    reply(response, 409, '{"error":"Słowa serwera bez kodu"}');
+  const noCode = await within(client().resetSavedGame(), "409");
+  assert.deepEqual(
+    [noCode.failure.kind, noCode.failure.status, noCode.failure.code],
+    ["refused", 409, null],
+  );
+  assert.doesNotMatch(noCode.failure.message, /Słowa/);
+  respond = (_request, response) => reply(response, 503, "<html>words</html>");
+  const server503 = await within(client().resetSavedGame(), "503");
+  assert.deepEqual(
+    [server503.failure.kind, server503.failure.status, server503.failure.code],
+    ["refused", 503, null],
+  );
+  respond = (request) => request.socket.destroy();
+  const dead = await within(client().resetSavedGame(), "dead");
+  assert.deepEqual(
+    [dead.failure.kind, dead.failure.reason],
+    ["unreachable", "network"],
+  );
+  respond = () => {};
+  const silent = await within(
+    createAccountClient({ timeoutMs: 150 }).resetSavedGame(),
+    "silent",
+  );
+  assert.deepEqual(
+    [silent.failure.kind, silent.failure.reason],
+    ["unreachable", "timeout"],
+  );
 });
 
 /**

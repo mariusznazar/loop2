@@ -773,6 +773,27 @@ header .failure-line {
   align-items: flex-start;
 }
 
+/*
+ * The confirmation of „Zacznij od zera” under the list's acts (D-402, D-44): its sentence in `warning`
+ * with a bar at its left in the colour of that text (D-39, D-279), as the question „Zapisać, odrzucić,
+ * wrócić?” writes its text, then the destructive confirm and the plain withdraw.
+ */
+.program-reset-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.program-reset-text {
+  margin: 0;
+  margin-right: auto;
+  padding-left: var(--space-s);
+  border-left: var(--bar-width) solid currentColor;
+  color: var(--warning);
+}
+
 /* The name of the list „Program:”, a field name in `text-label` (D-40). */
 .program-list-label {
   color: var(--text-label);
