@@ -1996,9 +1996,9 @@ A signed-out visitor sees one card on a picture of the game: the game's name, on
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-51 · derives from D-53
-- **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. An agent compares a change with the decision:
-  - complies: a signed-out visitor seeing one card with the game's name, the sentence read from the game's data, the switch, one form and the folded credits; the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built; a reload at `#/postac/2` while the saved game state holds a manual map run staying on the screen Postać of character 2; signing in with the form while the saved game state holds a paused manual map run of Las opening that map run's screen, paused
-  - violates: the sentence about the game written in the code of the view; a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands; a reload at `#/programy` leading to the manual map run the saved game state holds; signing in leading to the screen of the address another player left in the tab
+- **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. tests: the signed-out card with the game's name, its sentence about the game, the switch, the fields of „Zaloguj się” and of „Załóż konto”, „Nie pamiętam hasła” under the first and the folded credits last in every state, with no game; that button putting in the card its form with an empty field „Adres e-mail”, „Wyślij odnośnik” and „Wróć do logowania”, the last bringing back „Zaloguj się”; a page opened by a password-reset link showing „Ustaw nowe hasło” in the card with no request sent, whoever is signed in, and no game built; signing in with the form and a reload with no fragment leading to Siedziba or to the manual map run the saved game state holds, at a reload paused while it goes on and on its screen after a death, a reload at another address staying on that address's screen and an emailed link opening Siedziba; no game built before the server confirms the session and answers about the saved game state; a failed or uncertain answer to either request and an error of the code in the load showing their sentence and „Spróbuj ponownie” with no game built and nothing saved, the retry asking both again; a saved game state of another version, naming an archetype missing from the data or of a shape the game does not admit starting a new game with its sentence above it, the sentence of another version for the first two and of a damaged save for the last, which does not come back. An agent compares a change with the part no invariant and no test holds:
+  - complies: the card standing on a picture of the game, its sentence about the game read from the game's data; a created account entering Siedziba; signing in with the form while the saved game state holds a manual map run of Las that goes on opening that map run's screen, paused; „Nie udało się wczytać gry. Spróbuj ponownie.” and the sentence of a discarded saved game state in `warning`
+  - violates: the sentence about the game written in the code of the view; the card on a plain background with no picture of the game; a created account entering the screen Programy; signing in leading to a manual map run that goes on, running; „Nie udało się wczytać gry. Spróbuj ponownie.” or the sentence of a discarded saved game state in `text` or `danger`
 - **Origin:** none
 
 *Rationale:* An account provides the entry to the game and Siedziba its starting place. The first screen says what the game is in one sentence and shows a picture of it, and one card holds every state, so a visitor sees one form at a time; the third state, the request for a reset link, costs the screen two new buttons. A player who signs in again or opens the game at an address with no fragment comes back to a manual map run as it stood, and a reload keeps the screen its address leads to, since the map run waits safely in its pause and „Wróć do przejścia” leads back to it. The map run returns at the minute of the save, stopped by the pause, at the pace of the save, and the time away does not move it; the player starts it with „Wznów”. Accepted with it: one click after each load that finds a map run in progress, and one click of „Wróć do przejścia” after a reload. A page opened by a password-reset link shows its form even to a player signed in in that browser, in place of the game and the account forms, since the link itself entitles to the change. A game built before the server has answered about the saved game state would save itself over the real one at its first save, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state. A player whose saved game state is discarded learns that it was and why, and a saved game state of a wrong shape has a sentence of its own, since the version is not the cause; accepted with it: one more message in the code and in the tests.
@@ -3363,9 +3363,7 @@ A signed-in player whose email address is unconfirmed sees in the menu „Konto�
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-152 · derives from D-105
-- **Verification:** an agent compares a change with the decision:
-  - complies: the answer to a registration carries the outcome of its sending, and the menu „Konto” holds that outcome's sentence above „Wyślij ponownie” with no mark on the menu bar
-  - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed; „Adres e-mail niepotwierdzony.” on a line of its own under the menu bar
+- **Verification:** tests: „Adres e-mail niepotwierdzony.” in `text-secondary` and „Wyślij ponownie” in the open menu „Konto” of an unconfirmed address, neither for a confirmed one nor once the address is confirmed; a request for another message refused without a valid session of an unblocked account, refused with a field naming an address or an account, and sent only to the session account's own address; after registration and after each sending asked for, the sentence of each outcome — „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` naming the address, the sentences of the limit and of the failed sending, and the account client's sentence for any other failure but an address already confirmed, the last three in `warning` — beside „Wyślij ponownie”.
 - **Origin:** none
 
 *Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The first line of the game is no place for a request about an address, which matters only for a reset of a password, so it stands where the account stands. The limit of D-105 covers the sending at registration too, so the sentence after registration can report it. The answer to a registration carries the outcome of its sending, so the browser needs no request of its own to learn it. Accepted with it: that answer waits for the sending, so entering the headquarters is delayed by a few seconds, and by the time limit of the sending when the mail service does not answer; a request for another message is a new route that changes state, guarded by D-104, and the session alone authorizes it (D-109); the shared button reads „Wysyłanie…” while it waits (D-44); and the sentence stands in the closed menu „Konto” with no mark on the menu bar, so a player does not see even „Nie udało się wysłać wiadomości.” before opening „Konto”.
@@ -4809,11 +4807,15 @@ address and sends it only with the form „Ustaw nowe hasło”, in a request me
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-30
 - **Relations:** derives from D-104 · derives from D-152 · derives from D-156
-- **Verification:** an agent compares a change with the decision:
-  - complies: the page reading the token from the fragment and sending it in the JSON body of a
-    `POST` only when the form is sent
-  - violates: a link carrying its token in its path or query; a token kept in clear in the database
-    or written to a log
+- **Verification:** tests: the link of a password-reset message as the configured public origin,
+  `/#reset-password=` and 43 base64url characters, the account database holding the SHA-256 digest
+  of its token; the page reading the token from the fragment, sending nothing when the form shows
+  and the token with both passwords in the JSON body of a `POST` when the form is sent. An agent
+  compares a change with the part no test holds:
+  - complies: a token of 32 bytes drawn from a cryptographic source of random bytes, its digest the
+    only form of it the database keeps
+  - violates: a token kept in clear in a column of the database beside its digest; a token made of
+    a counter or a time
 - **Origin:** none
 
 *Rationale:* the link is built as a confirmation link is (D-156), for the same reasons: a fragment
@@ -4835,14 +4837,15 @@ connection or a full password gate leaves the form, one sentence under it and th
 - **Scope:** browser-view, account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "The user should confirm the password they set by writing it twice."; read 2026-10-30
 - **Relations:** derives from D-96 · derives from D-98 · derives from D-156 · derives from D-224
-- **Verification:** an agent compares a change with the decision:
-  - complies: the fragment removed before the page goes on, with `history.replaceState`, so neither a
-    reload nor the back button returns to the token; the sentence of a refused link above the game for
-    a signed-in player; „Anuluj” disabled while the form waits; „Anuluj” of a signed-in player whose
-    saved game state holds a manual map run opening Siedziba
-  - violates: a request sent when the page opens; the fragment kept after a refusal of the link; the
-    form closed by a 429 or by a lost connection; „Anuluj” of a signed-in player opening the screen
-    of a manual map run
+- **Verification:** tests: the form with „Nowe hasło”, „Powtórz hasło”, „Ustaw hasło” and „Anuluj”,
+  shown with no request sent; „Anuluj” removing the fragment first and opening Siedziba for a
+  signed-in player, whatever the saved game state holds, and the account forms for a signed-out one;
+  after the password is set the fragment removed first and „Hasło zmienione. Zaloguj się nowym
+  hasłem.” in `positive` above the account forms; after a refusal of the link, whatever its reason,
+  the fragment removed first, the session check run and „Odnośnik jest nieważny albo wygasł.” in
+  `warning` above the account forms or the game; no connection, a timeout, a full password gate, an
+  error of the server or a password the server refuses leaving the form, one sentence under it, the
+  fragment and the link, which sends the token again.
 - **Origin:** none
 
 *Rationale:* a form shown without a question to the server gives nobody a way of asking whether a
@@ -6112,11 +6115,10 @@ switch, and the ways out of them are „Wróć do logowania” and „Anuluj”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-225
-- **Verification:** an agent compares a change with the decision:
-  - complies: a first visit showing „Zaloguj się” with the switch above the form and no heading; a
-    page opened by a password-reset link showing the heading „Ustaw nowe hasło”, no switch and
-    „Anuluj”
-  - violates: the switch in the form „Nie pamiętam hasła”; a heading „Załóż konto” under the switch
+- **Verification:** tests: the card opening on „Zaloguj się” at a first visit, after a logout, a
+  set password, a refused link and an expired session; the switch above the forms of „Zaloguj się”
+  and „Załóż konto”, which have no heading; the headings „Nie pamiętam hasła” and „Ustaw nowe hasło”
+  with no switch, their ways out „Wróć do logowania” and „Anuluj”.
 - **Origin:** none
 
 *Rationale:* the switch offers the two forms a visitor comes for, and a heading beside it would say
@@ -6137,11 +6139,9 @@ pamiętam hasła” does, and the page's one sentence (D-261) stays.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
-- **Verification:** an agent compares a change with the decision:
-  - complies: a visitor who typed an address under „Zaloguj się” and switched finding the address
-    field of „Załóż konto” empty, with focus in it
-  - violates: a password kept for the way back to the other state; a refusal under the form still
-    standing after the switch
+- **Verification:** tests: a press of the switch either way, and the button „Nie pamiętam hasła”,
+  emptying every field, removing every refusal, field message and sentence of the reset, and moving
+  focus to the address field of the form it opened, while the page's sentence stays.
 - **Origin:** none
 
 *Rationale:* one rule for every change between the card's forms leaves no password in a field nobody
@@ -6161,10 +6161,10 @@ while the card changes state and leaves only at a change between the card and th
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-97 · derives from D-156 · derives from D-160 ·
   derives from D-211 · derives from D-225
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Gra została zaktualizowana. Odśwież stronę.” standing in the card above the switch and
-    still there after the visitor switches to „Załóż konto”
-  - violates: that sentence standing outside the card; a press of the switch removing it
+- **Verification:** tests: the sentence of a refused link, of a set password and of an updated game
+  standing in the card above the switch, and above the heading and the form of „Nie pamiętam hasła”
+  and of „Ustaw nowe hasło”; the sentence staying through every change of the card's state and
+  leaving when the game comes, and the one above the game leaving when the card comes.
 - **Origin:** none
 
 *Rationale:* the sentence tells the visitor what happened to the page, so one click on another form
@@ -6187,11 +6187,15 @@ handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” sta
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · narrows D-156
-- **Verification:** an agent compares a change with the decision:
-  - complies: a reload showing „Sprawdzanie logowania…” with the header, and then the card alone or
-    the game; a card whose drawing threw replaced by „Coś w grze się zepsuło — odśwież stronę.”
-    alone, with no header
-  - violates: the card standing under the header; „Sprawdzanie logowania…” written inside the card
+- **Verification:** tests: the card of the account forms and of a reset link standing alone in the
+  page's body, the header and the place of the screen hidden; „Sprawdzanie logowania…” at a reload,
+  after a sign-in and after a way out of the reset form, and the warning with „Spróbuj ponownie”,
+  each with the header shown and no card; a card that React takes down, alone and on the page,
+  leaving „Coś w grze się zepsuło — odśwież stronę.” alone in its place. An agent compares a change
+  with the part no test holds:
+  - complies: a page opened by a confirmation link showing „Potwierdzanie adresu…” with the header
+    and no card, for a signed-in and a signed-out player alike
+  - violates: „Potwierdzanie adresu…” written inside the card, or on a screen with no header
 - **Origin:** none
 
 *Rationale:* a signed-in player passes through the waiting screens at every reload, and they say
@@ -9257,12 +9261,10 @@ then does what a page opened by that link does.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-156 · derives from D-224 · derives from D-281
-- **Verification:** an agent compares a change with the decision:
-  - complies: a link from a mail typed into the address bar of a signed-in tab with the game open
-    reloading the page, which then shows the confirmation of D-156 or the form „Ustaw nowe hasło”
-    of D-225
-  - violates: the fragment of such a link resolved as the address of a screen and replaced with
-    Siedziba; the open game handling the link itself, without a reload
+- **Verification:** tests: a confirmation link and a password-reset link appearing in the address of
+  an open game reloading the page, the fragment left for the reloaded page to read and no screen
+  replacing the one shown; any other change of the address, a fragment that only resembles a link's
+  included, reloading nothing.
 - **Origin:** none
 
 *Rationale:* a page opened by a link already confirms the address or shows the form of a reset, so
@@ -9716,9 +9718,7 @@ The page opens the login card as an object it creates, focuses and closes: an el
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-260
-- **Verification:** an agent compares a change with the decision:
-  - complies: a card found in its element as soon as it is created; the address field of „Zaloguj się” holding focus after a confirmed logout, and focus left where it was after a session check opened the card; „Zaloguj się” sent twice in a row before the page has drawn the lock sending once; „Zaloguj się” pressed on the card that stands on „Zaloguj się” leaving the typed text and the focus as they are; focus on the button of a form after a refusal that unlocked it
-  - violates: an autofocus on the opening of a card; a card kept hidden behind the game with a typed password in it; the closing of the card called from the code that draws it; a lock that leaves the switch or „Nie pamiętam hasła” usable while a form waits; focus left on the page body after the lock lifts
+- **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after a session check or an expired save, focus in the first field after a confirmed logout, a logout answered with no session and a set password; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts.
 - **Origin:** none
 
 *Rationale:* the page around the card is built another way than the card, so the two meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
