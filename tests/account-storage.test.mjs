@@ -824,10 +824,7 @@ test("a version-5 database opens as version 6 with every row and value kept and 
     ],
   );
   assert.deepEqual(
-    rows(
-      raw,
-      "SELECT account_id, version, revision, game FROM previous_saves",
-    ),
+    rows(raw, "SELECT account_id, version, revision, game FROM previous_saves"),
     [
       {
         account_id: "account-a",
@@ -877,10 +874,9 @@ test("a version-5 database opens as version 6 with every row and value kept and 
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
   assert.equal(reopened.findAccountById(created.id).role, "player");
   assert.equal(reopened.findAccountById("account-b").role, "player");
-  assert.deepEqual(
-    rows(raw, "SELECT DISTINCT role FROM accounts"),
-    [{ role: "player" }],
-  );
+  assert.deepEqual(rows(raw, "SELECT DISTINCT role FROM accounts"), [
+    { role: "player" },
+  ]);
 });
 
 // invariant: account-schema-lifecycle
@@ -924,17 +920,23 @@ test("a failing step 6 leaves a version-5 database at version 5 with its rows, c
     "sessions",
   ]);
   assert.deepEqual(
-    rows(raw, "SELECT id, previous_save_allowed AS privileged FROM accounts ORDER BY id"),
+    rows(
+      raw,
+      "SELECT id, previous_save_allowed AS privileged FROM accounts ORDER BY id",
+    ),
     versionFiveAccounts.map(({ id, privileged }) => ({ id, privileged })),
   );
-  assert.deepEqual(rows(raw, "SELECT account_id, version, revision, game FROM previous_saves"), [
-    {
-      account_id: "account-a",
-      version: 1,
-      revision: 2,
-      game: '{"previous":true}',
-    },
-  ]);
+  assert.deepEqual(
+    rows(raw, "SELECT account_id, version, revision, game FROM previous_saves"),
+    [
+      {
+        account_id: "account-a",
+        version: 1,
+        revision: 2,
+        game: '{"previous":true}',
+      },
+    ],
+  );
 });
 
 function tableNames(raw) {
