@@ -8307,21 +8307,14 @@ player's own has been carried out to give (D-123), the band leaves that sentence
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-123
-- **Verification:** an agent compares a change with the decision:
-  - complies: at the first chill of a new game the band reading „Gra dopisała regułę w grupie
-    „Program”: Zawsze → Eksploruj.” after what was discovered; with the copy's groups „Ogień” and
-    „Głód”, „Głód” holding no rule „Zawsze → Eksploruj”, the first chill writing the rule into
-    „Ogień” and the player dragging „Głód” above it while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
-    Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
-    the rule deleted while the band stands and no other group holding „Zawsze → Eksploruj”, the band
-    keeping what was discovered with no sentence about the rule; the first chill of a copy holding
-    a rule „Eksploruj” of the player's own, which its character has carried out, the band keeping
-    what was discovered with no sentence about a rule
-  - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
-    „Głód”: Zawsze → Eksploruj.” while „Głód” holds no rule „Zawsze → Eksploruj”; the sentence still
-    standing after the rule or its group was deleted while no other group holds „Zawsze →
-    Eksploruj”; the sentence in the band of a discovery in a map run whose record holds a minute of
-    exploring; „Gra dopisała regułę 1.1”; the group named from the saved program rather than from the copy
+- **Verification:** tests: the sentence „Gra dopisała regułę w grupie „{nazwa grupy}”: Zawsze →
+  Eksploruj.” with no number of the rule in the band of the discovery at which the game wrote the
+  rule, and none in the band of another discovery; the group it names the first group of the copy,
+  in the copy's order, holding a rule „Zawsze → Eksploruj”, after the first group renamed before
+  the chill, a group renamed or dragged above it while the band stands, the rule moved into another
+  group, another group's own such rule dragged above it, and a load of the paused game; the
+  sentence left out where no group of the copy holds such a rule and where the record of the map
+  run holds a minute of exploring.
 - **Origin:** none
 
 *Rationale:* the band stands above the program the map run carries out, the copy, so it names the
@@ -8368,18 +8361,16 @@ stands in the end-of-run window where the window names a discovery of the game m
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-124 · derives from D-306
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — patyk” at the end of the copy's
-    first rule group, with the rule panel open on the action; at the first chill of a new game
-    „Zawsze → Wędruj” added at the end of the copy's group „Program” with the panel on the action
-    and the streak at zero (D-131); a discovery of an item alone adding „Zawsze → Eksploruj” with the
-    panel on the condition; a discovery of „Idź” and „Wędruj” while the rule panel offers no target
-    for „Idź” giving „Zawsze → Wędruj”; the window of a completion in the game minute of the discovery „Zbierz, Patyk” with the button, which closes the window and gives „Zawsze → Zbierz — patyk” with the rule panel open on the action
-  - violates: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — jagoda”; the rule added to a rule
-    group of its own or to the saved program; the panel opened on the condition after the button
-    filled the action; the button adding a rule group while the copy holds none; the window of a
-    completion in the game minute of a discovery with the text of the discovery and no button, or with
-    the button leaving the window open over the rule panel
+- **Verification:** tests: the rule „Zawsze → {the first action}” added at the end of the copy's
+  first rule group, not to a group of its own nor to a saved program, its target the first item of
+  the discovery that matches it or else the first target the rule panel offers, an action no one
+  can pick a target for giving way to the next, and the panel opened under the new rule on the
+  action; where the discovery holds no such action, „{the first condition} → Eksploruj” with the
+  number and target a pick of that condition gives, a condition no one can pick a target for giving
+  way to the next, and the panel opened on the condition; „Zawsze → Eksploruj” with the panel on the
+  condition where the discovery holds neither; the button disabled where the copy holds no rule
+  group, in the band and in the end-of-run window; the same button in the end-of-run window that
+  names a discovery, closing the window and then adding the rule with its panel open.
 - **Origin:** none
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
@@ -9274,13 +9265,10 @@ the world on the screen.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the chronicle of a manual map run of Las holding „Zbierz — Patyk”, the text of the
-    band of a discovery and „Passa 391 przerwana: zdrowie spadło od zimna”, each with its game
-    minute, and the player picking „Passa” to read the losses of the streak alone
-  - violates: an entry of the chronicle with no game minute; a streak above zero falling to zero
-    with no entry of the chronicle; a change of the copy leaving no entry of the chronicle; the
-    chronicle standing in the world area of the screen of a map run
+- **Verification:** tests: the entries of a manual map run's discoveries, of the character's
+  actions, of combat, of the player's changes of the copy and of each loss of the streak with its
+  cause, each with its game minute; the filters by these kinds in the area with the tabs, which
+  holds the chronicle, and no chronicle in the world area.
 - **Origin:** none
 
 *Rationale:* a line of discoveries that goes at „Wznów” and a streak that falls without a word leave
@@ -9308,15 +9296,14 @@ lost.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338
-- **Verification:** an agent compares a change with the decision:
-  - complies: the chronicle of a map run of Las whole after the player opens Siedziba and comes
-    back; after a reload at game minute 300 of a map run a wolf attacked at game minute 212, the
-    chronicle holding the paragraph of that encounter alone, at game minute 212; after a reload of
-    a map run with no attack, an empty chronicle; the saved game state holding no entry of the
-    chronicle, and the chronicle bringing no new version of the save
-  - violates: an entry of the chronicle written into the game state or the save; the chronicle
-    emptied by a visit to Siedziba; the entries of the chronicle from before a reload standing after
-    it; after a reload, no paragraph of an encounter the saved game state holds
+- **Verification:** tests: the chronicle whole after the player leaves the screen of the map run
+  for Siedziba and comes back; after a load, the chronicle holding the paragraph of the last
+  encounter alone, at the game minute of the attack, nothing where the loaded map run had no
+  attack, and no entry for a wait under way at the load. For the chronicle kept out of the game
+  state and the save, an agent compares a change with the part no invariant and no test holds:
+  - complies: the saved game state holding no entry of the chronicle, and the chronicle bringing
+    no new version of the save
+  - violates: an entry of the chronicle written into the game state or the save
 - **Origin:** none
 
 *Rationale:* the chronicle leaves the shape and the version of the save as they are, so no player's saved game state is discarded
@@ -9355,12 +9342,10 @@ for the game minutes it lasts.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-334
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage starting to gather a stick at game minute 212 giving „Zbierz — Patyk” at 212
-    once, however many game minutes the gathering lasts; a wait from game minute 40 to 47 giving one
-    entry „Czeka — żadna reguła nie pasuje” at 40
-  - violates: „Zbiera: patyk” in the chronicle; „Zbierz — Patyk · reguła 2.1”; an entry „Wrócił z
-    niczym: patyk” at the end of an action; an entry of the wait in every game minute it lasts
+- **Verification:** tests: the entry of the start of an action in the words of its rule's row, with
+  no number of a rule, and no entry at the end of an action; one entry „Czeka — żadna reguła nie
+  pasuje” when a wait starts and none for the game minutes it lasts, a wait after an attack and a
+  wait after a load in an action each giving its entry.
 - **Origin:** none
 
 *Rationale:* the player reads in the chronicle the words of „Teraz” and of the row of the rule, so an
@@ -9388,14 +9373,12 @@ under its own filter, and a game minute of lost health while the streak stands a
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-39 · derives from D-131
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Passa 391 przerwana: zdrowie spadło od zimna” in `danger` in the game minute the mage
-    loses health from cold at a streak of 391; a program rule deleted at a streak of 120 giving its
-    entry under „Moje zmiany” and „Passa 120 przerwana: zmiana programu” under „Passa” in the same
-    game minute; the next game minutes of cold at a streak of zero giving no entry
-  - violates: an entry of a loss of the streak in each game minute of cold; „Passa przerwana:
-    zdrowie spadło od zimna” with no number; the loss written in `text`; an entry of a loss where
-    „↑” on the first program rule left the streak as it stood
+- **Verification:** tests: a loss only where a streak above zero falls to zero, in the game minute
+  of the loss, a death of cold or hunger included, and at an edit, a discard or a switch of the
+  program, none where an act leaves the streak as it stood; the entry „Passa {passa} przerwana:
+  {przyczyna}” in `danger`, with the streak before the loss and each of the five causes; an edit of
+  the copy giving its entry and the loss in the same game minute, each under its own filter; no
+  loss in the game minutes of lost health after it or at a streak of zero.
 - **Origin:** none
 
 *Rationale:* the player sees what was lost, how much and why, in the game minute it happened, and
@@ -9422,14 +9405,15 @@ gives none.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-39 · derives from D-173 · derives from D-292
-- **Verification:** an agent compares a change with the decision:
-  - complies: a program rule „Zawsze → Wędruj” added after the two rules of group 2 giving
-    „Dodano regułę 2.3: Zawsze → Wędruj” in `player-change`; a program rule fixed after a death of
-    cold at game minute 312 giving its entry at 312; „Program 2” edited during a map run on the copy
-    of „Program” giving no entry
-  - violates: one entry „Zmieniono kopię programu” for every change; the entry of a change in
-    `discovery`; „Porzuć zmiany” giving no entry; an edit of the copy after a completion giving no
-    entry; an edit of „Program 2” giving an entry while the copy belongs to „Program”
+- **Verification:** tests: the entry in `player-change` of each change of the copy — a program rule
+  added, removed, changed or moved with its number and its sentence at the moment of the change, a
+  rule group added, removed, changed or moved with its name, a changed trip plan, a discard, a save,
+  a save as a new program and a switch with the program's name; an edit of the copy after a death
+  at the game minute of the death; no entry for an edit of a saved program. For the edits of the
+  copy after a completion, an agent compares a change with the part no invariant and no test holds:
+  - complies: a program rule fixed after a completion at game minute 480 giving its entry at 480
+  - violates: an edit of the copy after a completion giving no entry, or giving one at another game
+    minute
 - **Origin:** none
 
 *Rationale:* the player reads what was changed in the program and when, as in loop, so a loss of the
@@ -9456,14 +9440,18 @@ chronicle and a filter that shows no entry read „Nic tu jeszcze nie ma.”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-39 · derives from D-40 · derives from D-130
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Passa” picked among the seven filter buttons, each made with the shared button
-    selected in its group, showing the losses of the streak alone, the newest at the top; „212” in
-    `text-label` in the column beside „Zbierz — Patyk” in `text`; the text of the band of a discovery
-    in `discovery`; „Nic tu jeszcze nie ma.” under „Walka” before any attack
-  - violates: two filters picked at once; the filter buttons drawn as tabs (D-276); the newest entry
-    at the bottom; „Minuta 212” or „03:32” beside an entry; every entry in one colour; an empty list
-    with no sentence
+- **Verification:** tests: the seven filter buttons in the look of the pace buttons and not as tabs,
+  one picked at a time, „Wszystko” picked at a send, each but „Wszystko” showing the entries of its
+  kind alone and „Wszystko” all of them; the entries newest at the top, the game minute a number
+  alone beside the text, and the text in the role of its kind — a discovery in `discovery`, a change
+  of the player in `player-change`, a loss of the streak in `danger`, an action and combat in
+  `text`; „Nic tu jeszcze nie ma.” for an empty chronicle and a filter that shows no entry. For the
+  place of the row of filters, the role and the column of the game minute and the background of the
+  list, an agent compares a change with the part no invariant and no test holds:
+  - complies: the row of filter buttons over the list; „212” in `text-label` in a column on the left
+    beside „Zbierz — Patyk”; the list on the background `panel`
+  - violates: the row of filter buttons under the list; the game minute in the role of its entry's
+    text, or after the text; the list on another background
 - **Origin:** none
 
 *Rationale:* one filter at a time, as in loop, and the newest entry on top, as in loop, so the
@@ -9487,13 +9475,12 @@ entries of a death and of „Ognisko wygasło” in `text`.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-334 · derives from D-132 · derives from D-39
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Ognisko wygasło” under „Świat” in the game minute the last minute of burning of a
-    campfire passes; „Mag zamarzł” in `text` in the game minute „Teraz” reads it, beside „Passa 391
-    przerwana: zdrowie spadło od zimna” where the streak stood at 391; „Las rozwiązany” in
-    `positive` at game minute 480
-  - violates: „Postać zamarzła.” in the chronicle while „Teraz” reads „Mag zamarzł”; the entry of a
-    death in `danger`; „Ognisko wygasło” under „Odkrycia”; the entry of a completion in `text`
+- **Verification:** tests: the entries „Ognisko wygasło”, one for each campfire, „Mag zamarzł”,
+  „Mag umarł z głodu”, „Mag zginął w walce”, „Las rozwiązany” and „Las — głębiej rozwiązany” under
+  the filter „Świat” alone; a campfire's event in the game minute its last minute of burning passes,
+  in a minute of an encounter too, and none for a campfire unlit or already out or in the minute of
+  a death; the entry of a completion in `positive` and those of a death and of „Ognisko wygasło” in
+  `text`.
 - **Origin:** none
 
 *Rationale:* a chronicle with no entry of a campfire going out is worse than loop's, which had one,
@@ -9522,12 +9509,9 @@ Eksploruj.”
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-122 · derives from D-312
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first chill of a new game giving one entry with what was discovered and „Gra
-    dopisała regułę w grupie „Program”: Zawsze → Eksploruj.”, standing after „Wznów”
-  - violates: „Odkryto: Patyk” and „Odkryto: Zbierz” as two entries of one game minute; „Dodaj
-    regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery whose
-    band holds it
+- **Verification:** tests: one entry for the discoveries of the game minute of the first chill,
+  holding the whole text of its band and no button, with the sentence of the rule the game wrote
+  where the band has it and without it where the band has none.
 - **Origin:** none
 
 *Rationale:* the entry keeps the division of the band the player has just read, one game minute in
@@ -9545,13 +9529,10 @@ run stays picked through the whole map run, through leaving its screen and comin
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-311
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Teren” picked, then Siedziba and back to the map run, „Teren” still picked; „Teren”
-    picked before „Restart” and still picked after it; a rule panel opened and closed with „✕”
-    with „Teren” still picked and its table still standing; „Teren” picked, then the page reloaded, with „Kronika” picked
-  - violates: „Kronika” picked again after „Restart” where the player had picked „Teren”; the pick
-    lost at a return from the headquarters; the tabs replaced by the rule panel while it is open and
-    „Teren” given back when it closes
+- **Verification:** tests: the tab picked kept through leaving the screen for Siedziba and coming
+  back, through „Restart”, through a rule panel opened and closed in the program and through the
+  end-of-run window, the tab the page's memory holds being the one the area shows; „Kronika” picked
+  in the chronicle built after a load.
 - **Origin:** none
 
 *Rationale:* the area under the world keeps what the player chose to read through the map run and
@@ -9637,18 +9618,20 @@ enters the simulation, and no event of the simulation describes such a change.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-147 · derives from D-341 · derives from D-342 · derives from D-344
-- **Verification:** an agent compares a change with the decision:
-  - complies: at 16× a game minute of cold taking a streak of 391 to zero inside one reading of the
-    clock that passes several game minutes, the simulation returning one event of the loss at that
-    game minute with 391 and cold; a campfire burning out in a game minute of an encounter returning
-    its event; „↓” on program rule 2.1 giving „Przesunięto regułę 2.1 na 2.2: …” alone, though the
-    copies alone could read the rule below it moving up; „Porzuć zmiany” giving „Porzucono zmiany
-    kopii” alone, whatever it reverted
-  - violates: the view finding a loss of the streak or a campfire gone out by comparing two readings
-    of the game state; a field of the game state, and with it of the save, holding the losses of the
-    streak; an edit of the copy returning from the simulation an event that describes the change; the
-    hint of a move passed to a function of the simulation; a new way of setting a streak above zero
-    to zero that returns no event of the loss
+- **Verification:** tests: the losses of the streak returned by the simulation as events in their
+  game minute, with the streak before the loss and its cause, from the body step and from an edit, a
+  discard and a switch of the copy, the same whether a span of game minutes is passed whole or
+  split; a campfire's event in the game minute its burning runs out; the paragraph of the last
+  encounter composed from the facts the map run keeps; the entries of an act on the copy written
+  from what the act was and, for an edit, from the copy before and after it, with the rule or group
+  the editor names as moved, which the editor hands over for a move alone; the acts on the copy
+  returning no event of the simulation but the loss of the streak. For the events kept out of the
+  game state and the hint of a move kept out of the simulation, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the game state and the save holding no loss of the streak and no campfire gone out;
+    the hint of a move handed to the chronicle alone
+  - violates: a field of the game state, and with it of the save, holding the losses of the streak;
+    the hint of a move passed to a function of the simulation
 - **Origin:** none
 
 *Rationale:* when the choice was open, the simulation returned no event of a loss of the streak, of
@@ -10331,9 +10314,9 @@ The list of the chronicle draws the entries of the filter picked, newest first, 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-339 · derives from D-343 · derives from D-345
-- **Verification:** an agent compares a change with the decision:
-  - complies: a chronicle of 400 entries drawn at first with fewer rows than entries, the newest on top, the window growing by a scroll near its end until the oldest entry stands and not by a scroll far from it, and drawn with the first window again after „Czynności” is picked or after „Restart”; a new entry arriving while the window is grown leaving the window as it was; the entry of the first chill of a new game still reading „Gra dopisała regułę w grupie „Program”: Zawsze → Eksploruj.” after the group is renamed „Ogień”; a draw at the next reading of the clock with nothing changed reading no window from the memory and composing no paragraph
-  - violates: every entry of a long chronicle drawn at once; the window starting anew whenever an entry arrives; the entry of a discovery naming „Ogień” after the group was renamed; the paragraph of the last encounter composed again at each draw while the encounter stands as it was; the rows of a long chronicle drawn again at each reading of the clock
+- **Verification:** tests: the window of the filter picked, newest first, drawn at first with fewer rows than a chronicle of 400 entries, grown by a scroll near its end until the oldest entry stands and not by a scroll far from it, started anew by a filter picked, a send and „Restart” and not by an entry arriving; the entry of a discovery still naming the group it named after the group is renamed; the paragraph of the last encounter composed once for an encounter however often the list draws, and again when the encounter changes; no read of the window, no change of the chronicle's number and no call to the screen where nothing changed. For the rows already drawn when an entry is added above them, an agent compares a change with the part no invariant and no test holds:
+  - complies: a new entry at the top of a grown window drawing its own row alone, the rows under it standing as they were drawn
+  - violates: every row of the window drawn again whenever an entry arrives
 - **Origin:** none
 
 *Rationale:* the screen of a map run is drawn again at each reading of the clock, up to five times a second (D-03), and the chronicle only grows through a map run (D-339), so drawing every entry would make each draw cost more the longer the map run lasts, which is the risk D-347 names of a tab left overnight slowing down under a growing chronicle. A window bounds the rows drawn and leaves every entry reachable by a scroll; a row not drawn again keeps the list from jumping under a player who is reading. An entry is a record of what was said or done at its game minute, so it is composed then and kept; the band of a discovery follows a rename only while it stands (D-312), and the entry that remains after it does not. Accepted with it: a player who scrolls far reads the older entries in more steps, and the size of the window is a value of the code, tuned there.
@@ -10346,9 +10329,9 @@ The filter the player picks above the list of the chronicle stays picked through
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-343 · derives from D-346
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked; „Czynności” picked before „Restart” and still picked after it, over the entries of the new map run alone; a character sent after „Zakończ” with „Wszystko” picked; the page reloaded with „Czynności” picked, then „Wszystko” picked
-  - violates: „Wszystko” picked again after „Restart” where the player had picked „Czynności”; the pick lost at a return from Siedziba; „Czynności” still picked at a send after „Zakończ”
+- **Verification:** tests: the filter picked held by the page's memory and kept through „Restart”; „Wszystko” picked at a send, a send after „Zakończ” included, and in the chronicle built after a load. For the filter kept through leaving the screen of the map run and coming back, an agent compares a change with the part no invariant and no test holds:
+  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked
+  - violates: the pick lost at a return from Siedziba
 - **Origin:** none
 
 *Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives. Accepted with it: a reload of the page loses the pick, as it does that of the tab (D-346), and the player picks again.
