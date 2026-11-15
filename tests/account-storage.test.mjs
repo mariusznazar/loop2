@@ -882,7 +882,9 @@ test("a version-5 database opens as version 6 with every row and value kept and 
 // invariant: account-schema-lifecycle
 test("a failing step 6 leaves a version-5 database at version 5 with its rows, columns and tables unchanged", async (t) => {
   // A column of the new name already there makes step 6 fail after the
-  // transaction has begun, so the rollback has to leave the database as it was.
+  // transaction has begun, so the database has to be left as it was. Step 6 is
+  // one statement, so the next case, which makes it fail after step 5 has run,
+  // is the one that shows a rollback.
   const { path, raw } = await olderDatabaseFixture(
     t,
     `${versionFiveDatabase}
@@ -937,6 +939,114 @@ test("a failing step 6 leaves a version-5 database at version 5 with its rows, c
       },
     ],
   );
+});
+
+// invariant: account-schema-lifecycle
+test("a step 6 that fails after step 5 has run rolls step 5 back too, and leaves a version-4 database as it was", async (t) => {
+  // Step 6 is one statement, so a failure of it alone cannot tell a rollback from a step that
+  // changed nothing. In a version-4 database step 5 runs first, adds the privilege column and
+  // creates the table of the previous saves; a column `role` already there then makes step 6 fail,
+  // and the rollback has to take step 5's work away as well.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionFourDatabase}
+      ALTER TABLE accounts ADD COLUMN role TEXT;`,
+    4,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /duplicate column/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.deepEqual(
+    rows(raw, "SELECT name FROM pragma_table_info('accounts') ORDER BY cid"),
+    [
+      "id",
+      "email",
+      "password_hash",
+      "created_at",
+      "blocked",
+      "email_confirmed_at",
+      "role",
+    ].map((name) => ({ name })),
+  );
+  assert.deepEqual(tableNames(raw), [
+    "accounts",
+    "emailed_links",
+    "saved_games",
+    "sessions",
+  ]);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+});
+
+// A stored value of the account row that no code writes: the constraint of its column refuses it, and
+// a row that holds it all the same, written with the checks of constraints switched off, is read by
+// no reader of the accounts (D-410, D-112).
+const unknownStoredValues = [
+  ["role", "'admin'"],
+  ["role", "''"],
+  ["role", "'Owner'"],
+  ["blocked", "2"],
+  ["previous_save_allowed", "2"],
+];
+
+// invariant: account-database-schema
+test("the role of an account, its blocked mark and its privilege take no value the code does not write", async (t) => {
+  const { raw, account } = await fixture(t);
+  for (const [column, value] of unknownStoredValues) {
+    assert.throws(
+      () =>
+        raw.exec(
+          `UPDATE accounts SET ${column} = ${value} WHERE id = '${account.id}'`,
+        ),
+      /CHECK constraint failed/,
+      `${column} = ${value}`,
+    );
+  }
+  assert.deepEqual(
+    rows(raw, "SELECT role, blocked, previous_save_allowed FROM accounts"),
+    [{ role: "player", blocked: 0, previous_save_allowed: 0 }],
+    "a refused change leaves the row as it was",
+  );
+});
+
+test("an account row that holds a role, a blocked mark or a privilege no code writes is read by none of the readers of accounts", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  const readers = [
+    ["findAccountByEmail", () => database.findAccountByEmail(account.email)],
+    ["findAccountById", () => database.findAccountById(account.id)],
+    ["listAccounts", () => database.listAccounts()],
+  ];
+  const restored = {
+    role: "'player'",
+    blocked: "0",
+    previous_save_allowed: "0",
+  };
+  for (const [column, value] of unknownStoredValues) {
+    raw.exec("PRAGMA ignore_check_constraints = ON");
+    raw.exec(
+      `UPDATE accounts SET ${column} = ${value} WHERE id = '${account.id}'`,
+    );
+    raw.exec("PRAGMA ignore_check_constraints = OFF");
+    for (const [name, read] of readers)
+      assert.throws(
+        read,
+        /Invalid stored account/,
+        `${name}: ${column} = ${value}`,
+      );
+    raw.exec(
+      `UPDATE accounts SET ${column} = ${restored[column]} WHERE id = '${account.id}'`,
+    );
+    assert.equal(
+      database.findAccountById(account.id).role,
+      "player",
+      "the row is read again once its value is one the code writes",
+    );
+  }
 });
 
 function tableNames(raw) {
