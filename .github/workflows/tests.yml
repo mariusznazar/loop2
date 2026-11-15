@@ -5,8 +5,9 @@ name: tests
 # requires this check names it.
 #
 # It runs on Linux. The reason stands in D-413 of `foundations/decisions.md`, "How does CI check a
-# pull request into `main`?". A test of containers that finds no Docker daemon is skipped, with a
-# message in the log (D-390), so the log of a run shows whether those tests ran.
+# pull request into `main`?". A test of containers is skipped, with a message in the log, where no
+# Docker daemon answers and there is no Docker Desktop to start (D-390), so the log of a run shows
+# whether those tests ran.
 #
 # The trigger is `pull_request`, never `pull_request_target`: the code of a request runs with a
 # read-only token and no secret, and no step uses the text of the request (its title, its branch

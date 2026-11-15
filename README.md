@@ -85,7 +85,7 @@ W przeglądarce, po `npm run local` i założeniu konta, sprawdź, że `/main.js
 
 Jeden plik testu: `npm test -- tests/sim/hex.test.mjs` albo `npm test -- tests/quality/test_audit_dependencies.py`. Bramka przyjmuje dokładnie jeden plik: Node uruchamia po budowaniu, Python bez budowania, bez pozostałych testów, kontroli fundamentu i sprawdzenia plików instrukcji. Błędny plik lub przebieg bez wykonanego testu kończy się porażką. Przed requestem wymagany jest pełny `npm test` bez argumentów.
 
-Na GitHubie to samo `npm test` biegnie na Linuksie przy każdej prośbie o scalenie do `main` (`.github/workflows/tests.yml`, zadanie `tests`), z `.the-way` na commicie, który przypina repozytorium. Powód wyboru Linuksa opisuje D-413 w `foundations/decisions.md`. Test kontenerów, który nie znajdzie demona Dockera, jest pominięty z komunikatem w logu (D-390), więc log przebiegu pokazuje, czy te testy biegły; ścieżki Windowsa sprawdza lokalna bramka.
+Na GitHubie to samo `npm test` biegnie na Linuksie przy każdej prośbie o scalenie do `main` (`.github/workflows/tests.yml`, zadanie `tests`), z `.the-way` na commicie, który przypina repozytorium. Powód wyboru Linuksa opisuje D-413 w `foundations/decisions.md`. Test kontenerów jest pominięty z komunikatem w logu, gdy demon Dockera nie odpowiada, a komputer nie ma Docker Desktop do uruchomienia (D-390), więc log przebiegu pokazuje, czy te testy biegły; ścieżki Windowsa sprawdza lokalna bramka.
 
 Testy mutacyjne symulacji uruchamia recenzent na zmienionych plikach: `node node_modules/@stryker-mutator/core/bin/stryker.js run --mutate "src/browser/sim/hex.ts"`. Zakres, ocenę ocalałych zmian i warunek usunięcia narzędzia opisuje reguła Mutation testing w `guidelines/testing.md`. To osobna kontrola, poza zwykłym `npm test`.
 
