@@ -31,7 +31,7 @@ async function fixture(t, options = {}) {
     database,
     raw,
     path,
-    // A second connection on the same file, standing in for the owner's
+    // A second connection on the same file, standing in for the operator's
     // command beside the server.
     operator() {
       const connection = new AccountDatabase(path, { now: () => now });
