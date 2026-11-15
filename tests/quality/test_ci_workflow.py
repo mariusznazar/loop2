@@ -1,5 +1,5 @@
 """The workflow that runs the one command of tests on every pull request into `main`,
-`.github/workflows/tests.yml` (D-412, and the five points of the process the repository pins).
+`.github/workflows/tests.yml` (D-413, D-412).
 
 The workflow is read as text, like those of `tests/deploy/`: no real run is possible before the
 pull request that carries it, and no test reaches GitHub.
@@ -54,9 +54,10 @@ def steps():
 class TestsWorkflow(unittest.TestCase):
 
     def test_it_runs_on_a_pull_request_into_main_and_on_nothing_else(self):
-        # Breaking it: add a trigger, such as `pull_request_target` or `push`, or aim the
-        # pull request at another branch; a request from outside could then run its code with
-        # a secret, or the check would not stand on the requests that reach `main`.
+        # decision: D-413 "The workflow starts on the event `pull_request`, never on `pull_request_target`"
+        # decision: D-413 "On every pull request into `main`, GitHub Actions runs the one command of tests"
+        # Breaking it: add a trigger, such as `pull_request_target` or `push`, or aim the pull
+        # request at another branch.
         text = code()
         match = re.search(r"^on:\s*\n((?:[ \t]+.*\n?|\n)+)", text, re.MULTILINE)
         self.assertIsNotNone(match, "no `on:` block")
@@ -66,8 +67,8 @@ class TestsWorkflow(unittest.TestCase):
         self.assertNotIn("pull_request_target", text)
 
     def test_the_token_reads_and_the_job_holds_no_secret(self):
-        # Breaking it: widen `permissions` or name a secret; the code of a request from outside
-        # would run with a token that writes or with a secret it could print.
+        # decision: D-413 "The workflow starts on the event `pull_request`, never on `pull_request_target`, and its token only reads and it holds no secret"
+        # Breaking it: widen `permissions` or name a secret.
         text = code()
         self.assertRegex(text, r"(?m)^permissions:\s*\n  contents:\s*read\s*$")
         self.assertEqual(len(re.findall(r"(?m)^\s*permissions:", text)), 1)
@@ -75,8 +76,8 @@ class TestsWorkflow(unittest.TestCase):
         self.assertNotIn("write", text)
 
     def test_the_text_of_the_request_reaches_no_command(self):
-        # Breaking it: put an expression of the request, such as its title or its branch name,
-        # inside a command; a crafted text would then run as shell.
+        # decision: D-413 "No text of the request stands in a command"
+        # Breaking it: put an expression of the request, such as its title, inside a command.
         for line in code_lines():
             if "${{" in line:
                 self.assertRegex(line, r"^\s+group:\s*tests-\$\{\{\s*github\.ref\s*\}\}\s*$")
@@ -84,10 +85,11 @@ class TestsWorkflow(unittest.TestCase):
             self.assertNotIn("${{", step.get("run", ""))
 
     def test_the_one_command_of_tests_is_the_last_step_and_no_checking_command_stands_beside_it(self):
+        # decision: D-413 "On every pull request into `main`, GitHub Actions runs the one command of tests on a Linux machine, in a job named `tests`, a name that stays as it is, and no other checking command stands beside it"
+        # decision: D-413 "The steps before the one command only set the machine up"
         # decision: D-412 "The CI of the repository and the one command of tests add no scanner of secrets"
-        # Breaking it: add a step that runs a linter, a scanner of secrets or an action that is
-        # none of the three the file uses; a second checking command would stand in CI beside
-        # the one command.
+        # Breaking it: add a step that runs a linter or a scanner of secrets, or an action that is
+        # none of the three the file uses.
         commands = [step["run"] for step in steps() if "run" in step]
         self.assertEqual(commands[-1], ONE_COMMAND)
         self.assertEqual(commands.count(ONE_COMMAND), 1)
@@ -97,20 +99,20 @@ class TestsWorkflow(unittest.TestCase):
         self.assertEqual(used, ACTIONS)
 
     def test_no_step_and_not_the_job_lets_the_run_pass_when_it_fails(self):
-        # Breaking it: put `continue-on-error: true` on the step of `npm test` or on the job; the
-        # run would report success whatever `npm test` ends with, and the required check could
-        # never turn red.
+        # decision: D-413 "No text of the request stands in a command, and no step or job lets a failing run pass"
+        # Breaking it: put `continue-on-error: true` on the step of `npm test` or on the job.
         self.assertNotIn("continue-on-error", code())
 
     def test_the_actions_stand_at_the_commits_of_their_releases(self):
-        # Breaking it: name an action by a tag; a moved tag would change what runs.
+        # decision: D-413 "The actions stand at the commits of their releases"
+        # Breaking it: name an action by a tag.
         for step in steps():
             if "uses" in step:
                 self.assertRegex(step["uses"], r"^[\w./-]+@[0-9a-f]{40}$")
 
     def test_the_checkout_takes_the_submodule_at_its_gitlink_and_the_whole_history(self):
-        # Breaking it: drop `submodules: true` and `.the-way` is missing; drop `fetch-depth: 0`
-        # and the foundation check has no merge base to compare with and passes without it.
+        # decision: D-413 "The job has `.the-way` at the commit the gitlink of the repository records and never moves it to a branch of the-way, the whole history of the request's branch and of `main`"
+        # Breaking it: drop `submodules: true` or `fetch-depth: 0`, or move the submodule to a branch.
         checkout = [s for s in steps() if s.get("uses", "").startswith("actions/checkout@")]
         self.assertEqual(len(checkout), 1)
         self.assertEqual(checkout[0]["with"].get("submodules"), "true")
@@ -120,24 +122,24 @@ class TestsWorkflow(unittest.TestCase):
         self.assertNotIn("git submodule", code())
 
     def test_origin_head_names_main_after_the_checkout_and_before_the_tests(self):
-        # Breaking it: set `origin/HEAD` after `npm test`, or not at all; the foundation check
-        # would then skip its comparison and the run would pass without it.
+        # decision: D-413 "The job has `.the-way` at the commit the gitlink of the repository records and never moves it to a branch of the-way, the whole history of the request's branch and of `main`, `refs/remotes/origin/HEAD` naming `main` before the one command runs"
+        # Breaking it: set `origin/HEAD` after `npm test`, or not at all.
         order = [step.get("uses", "").split("@")[0] or step.get("run") for step in steps()]
         head = order.index("git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main")
         self.assertEqual(order.index("actions/checkout") + 1, head)
         self.assertLess(head, order.index(ONE_COMMAND))
 
     def test_python_is_the_version_the_pinned_process_declares(self):
-        # Breaking it: name a version in the file; it would drift from the one the scripts of
-        # the pinned process run on.
+        # decision: D-413 "The job has `.the-way` at the commit the gitlink of the repository records and never moves it to a branch of the-way, the whole history of the request's branch and of `main`, `refs/remotes/origin/HEAD` naming `main` before the one command runs, the Python that `.the-way/.python-version` declares"
+        # Breaking it: name a version in the file.
         setup = [s for s in steps() if s.get("uses", "").startswith("actions/setup-python@")]
         self.assertEqual(len(setup), 1)
         self.assertEqual(setup[0]["with"], {"python-version-file": ".the-way/.python-version"})
         self.assertTrue((ROOT / ".the-way/.python-version").is_file())
 
     def test_node_is_the_release_package_json_asks_for(self):
-        # Breaking it: name a version in the file or lose `engines` from `package.json`; Node
-        # would drift from what the repository declares.
+        # decision: D-413 "The job has `.the-way` at the commit the gitlink of the repository records and never moves it to a branch of the-way, the whole history of the request's branch and of `main`, `refs/remotes/origin/HEAD` naming `main` before the one command runs, the Python that `.the-way/.python-version` declares, the Node.js release that `engines` of `package.json` asks for"
+        # Breaking it: name a version in the file or lose `engines` from `package.json`.
         setup = [s for s in steps() if s.get("uses", "").startswith("actions/setup-node@")]
         self.assertEqual(len(setup), 1)
         self.assertEqual(setup[0]["with"], {"node-version-file": "package.json"})
@@ -145,9 +147,9 @@ class TestsWorkflow(unittest.TestCase):
         self.assertIn("node", package["engines"])
 
     def test_the_job_has_the_fixed_name_on_a_linux_machine_and_a_limit_of_time(self):
-        # Breaking it: rename the job, and the rule that requires the check by its name stops
-        # matching; run it on Windows, and the tests of containers are skipped for want of a
-        # Linux daemon; drop the limit, and a hanging run holds the pull request for six hours.
+        # decision: D-413 "On every pull request into `main`, GitHub Actions runs the one command of tests on a Linux machine, in a job named `tests`, a name that stays as it is"
+        # decision: D-413 "The job has `.the-way` at the commit the gitlink of the repository records and never moves it to a branch of the-way, the whole history of the request's branch and of `main`, `refs/remotes/origin/HEAD` naming `main` before the one command runs, the Python that `.the-way/.python-version` declares, the Node.js release that `engines` of `package.json` asks for, and a time limit"
+        # Breaking it: rename the job, run it on Windows or drop the time limit.
         text = code()
         self.assertRegex(text, r"(?m)^  tests:\s*\n    name: tests\s*$")
         self.assertRegex(text, r"(?m)^    runs-on: ubuntu-[\d.]+\s*$")

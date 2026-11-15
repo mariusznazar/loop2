@@ -10926,9 +10926,9 @@ The screen of the list of accounts, at `#/konta` for an account with the owner r
 
 The built-in scan of GitHub for secrets, Secret Protection, with push protection, is what looks for secrets in the repository. The CI of the repository and the one command of tests add no scanner of secrets.
 
-- **Scope:** build-tools
+- **Scope:** agent-workflow, build-tools
 - **Based on:** TODO — the source, with its address, the quoted passage and the date it was read, of GitHub's scan for secrets with push protection on a repository, which the owner turned on for the repository on 2026-11-14
-- **Relations:** derives from D-13
+- **Relations:** derives from D-13 · derives from D-413
 - **Verification:** tests: the workflow that runs on a pull request holding one command of checking, the one command of tests, and no scanner of secrets. An agent compares a change with the part no test holds:
   - complies: a pull request that changes the code of the game and adds no scanner of secrets to the workflow or to the one command of tests
   - violates: a second workflow file that runs a scanner of secrets on each pull request; a stage of the one command of tests that runs a scanner of secrets
@@ -10936,6 +10936,23 @@ The built-in scan of GitHub for secrets, Secret Protection, with push protection
 
 *Rationale:* GitHub scans the whole history of the repository and every push, and refuses a push that holds a secret, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no file and no test of the repository shows that it is on.
 *Rejected:* a separate workflow with a scanner, such as gitleaks — a second CI file and a foreign tool fetched at every run, and a departure from the rule of the process the repository pins that no other checking command stands in CI beside the one command of tests; the scanner as a test of the one command of tests — a tool added to the local installation, repeating what GitHub already does over the whole history of the repository.
+
+### D-413 — How does CI check a pull request into `main`?
+
+On every pull request into `main`, GitHub Actions runs the one command of tests on a Linux machine, in a job named `tests`, a name that stays as it is, and no other checking command stands beside it. The workflow starts on the event `pull_request`, never on `pull_request_target`, and its token only reads and it holds no secret. No text of the request stands in a command, and no step or job lets a failing run pass.
+
+The actions stand at the commits of their releases. The job has `.the-way` at the commit the gitlink of the repository records and never moves it to a branch of the-way, the whole history of the request's branch and of `main`, `refs/remotes/origin/HEAD` naming `main` before the one command runs, the Python that `.the-way/.python-version` declares, the Node.js release that `engines` of `package.json` asks for, and a time limit. The steps before the one command only set the machine up.
+
+- **Scope:** agent-workflow, build-tools
+- **Based on:** none
+- **Relations:** derives from D-77
+- **Verification:** tests: the workflow of the pull request, read as text: its event, its branch, its read-only token, no secret and no expression of the request inside a command; the one command as its last step with only the set-up steps before it and the three actions it uses; no `continue-on-error` in the file; the actions at commits; the checkout with the submodule, the whole history and no stored credential, and nothing that moves the submodule; `origin/HEAD` set right after the checkout and before the one command; the Python and the Node.js release taken from the files that declare them; the job's name, a Linux machine and a time limit. An agent compares a change with the part no test holds:
+  - complies: a change that adds a step setting up a tool the one command needs, with the list of set-up commands and of actions in the test extended in the same change
+  - violates: a second workflow file or a second job that runs a check of the code on a pull request, such as a linter or a scanner, beside the one command
+- **Origin:** none
+
+*Rationale:* a result of the one command counted on a machine other than the one the change was made on shows before the merge, whether the author ran it or not. The event `pull_request` runs the code of a request from outside in a job that holds no secret and reads only, so there is nothing for that code to read or write. The job's name stays because the rule of the repository that requires this check names it: a rename leaves the rule waiting for a check that never reports. The system is Linux because a Docker daemon answers there, so the tests of containers run instead of being skipped; the paths of Windows are checked by the gate run on the computer where the work is made. With a shallow history, or with no `origin/HEAD`, the foundation check has nothing to compare the branch with and passes without comparing. A step that lets a failing run pass would leave the required check green whatever the one command ends with. Accepted with it: the check stands beside the gate run before a request and does not replace it.
+*Rejected:* the event `pull_request_target` — the process the repository pins names `pull_request` and never `pull_request_target`, so that a request from outside cannot read a secret; a Windows machine, or both systems at once — GitHub does not run Linux containers on a Windows machine, so the tests of containers would not run there.
 
 ## Withdrawn identifiers
 
