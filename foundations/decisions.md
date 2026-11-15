@@ -2148,7 +2148,15 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
 - **Scope:** account-server, browser-view
 - **Based on:** fetch-origin-header
 - **Relations:** derives from D-101
-- **Verification:** invariants: account-mutation-request-guards.
+- **Verification:** invariants: account-mutation-request-guards. tests: the session cookie issued,
+  renewed and cleared with SameSite=Strict; a missing, null, foreign, suffixed, path-bearing or
+  duplicate Origin refused also when the Host and forwarded host headers name the foreign one; a
+  body of text, form or parameterized media, a compressed one, one over 16 KiB and one that is empty,
+  broken or no object refused, while JSON with a charset passes; a save body with a field missing,
+  added, naming an account or of another type, and a reset body with any field, refused with nothing
+  stored or moved; a stored game text of at most 65 536 bytes counted after re-serializing, a larger
+  one refused with nothing stored, and neither the table of saved game states nor that of previous
+  saves holding a text over 65 536 bytes.
 - **Origin:** none
 
 *Rationale:* An explicit expected origin and JSON boundary constrain state changes made with a browser cookie; clients that omit the origin are refused, and valid-looking content still needs field checks. The save route takes a whole saved game state, which grows with what later work adds to the game state, so it takes a limit of its own, while the other routes keep the small one their bodies need; at the full stored limit a thousand accounts take about 65 MB in each copy of the database, and the place for copies of the database holds about three such copies, so with that many players it would have to hold fewer copies or move; the previous save adds a second such document per player, which doubles those figures at the full limit.
@@ -2249,9 +2257,21 @@ In the private Cloudflare Tunnel topology of D-10, account requests require exac
 - **Scope:** account-server, deployment
 - **Based on:** cloudflare-tunnel-transport
 - **Relations:** derives from D-10 · derives from D-102
-- **Verification:** invariants: account-request-transport · local-start-access. An agent compares a change with the decision:
-  - complies: target acceptance checks actual cookie issuance and client-address handling through the tunnel, including provider transformations
-  - violates: treating synthetic header tests as proof of the deployed provider route
+- **Verification:** invariants: account-request-transport · local-start-access. tests: a client
+  address written in equivalent spellings read as one normalized address, and the limit of
+  registrations counting it as one whatever forwarding chain the caller adds; forwarded host headers
+  choosing no expected origin; in local loopback-proxy mode the peer's own address as identity, and
+  in direct mode an account request with forwarded metadata refused; public files and the start page
+  served with no proxy metadata and with metadata an account request is refused for; the browser
+  report refused without forwarded protocol or client address. An agent compares a change with the
+  part no invariant and no test holds:
+  - complies: target acceptance checks actual cookie issuance and client-address handling through
+    the tunnel, including provider transformations; Express trusting the forwarded protocol of the
+    immediate hop alone; loopback-proxy mode refusing an account request from a peer other than
+    loopback or without forwarded https
+  - violates: treating synthetic header tests as proof of the deployed provider route; `trust proxy`
+    set to trust every hop or more than one; loopback-proxy mode taking forwarded metadata from a
+    peer other than loopback
 - **Origin:** none
 
 *Rationale:* The closed origin topology makes the connector's information usable while a header name alone cannot establish trust. Provider transformations or a newly exposed origin can invalidate that assumption, and synthetic local headers prove parsing rather than the real route. The owner tried the real route on 2026-11-14 through `https://loop2.mariusznazar.com/` and gave this result: a wrong password gave „Nieprawidłowy adres e-mail lub hasło.” and not „Serwer nie mógł obsłużyć żądania.” (the refusal `Invalid request transport`); the right password signed him in and the session survived a reload of the page; so the tunnel passes `X-Forwarded-Proto` and `CF-Connecting-IP` as this decision requires, and the session cookie passes.
@@ -2265,6 +2285,19 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 - **Based on:** session-secret-rotation
 - **Relations:** derives from D-13 · derives from D-107 · derives from D-153
 - **Verification:** invariants: account-server-default-address · account-startup-configuration.
+  tests: wholly unconfigured non-production answering every known account route with JSON 503; the
+  configured origin, the signing file, the sender, the SMTP host, port and login and the password
+  file each refused in its invalid forms, a byte-order mark followed by a password accepted with the
+  mark dropped and a password file of 1 KiB read whole; every refusal naming its setting or path and
+  nothing of the value or the file's content, also for a database of an unknown schema or one that
+  cannot be opened; a full valid set of settings starting without contacting the mail service; the
+  runtime releasing its database connection when closed, and the started process exiting promptly
+  at shutdown. An agent compares a change with the part no invariant and no test holds:
+  - complies: a start that fails after its database opened closing that connection before the
+    process exits; the password file read once at startup; wholly unconfigured non-production
+    holding no account state of its own
+  - violates: an unconfigured start that makes a signing key, opens an in-memory database or keeps
+    sessions in a MemoryStore; the password file read again for each message
 - **Origin:** none
 
 *Rationale:* Failing before readiness prevents an apparently healthy production process from operating without durable identity or a signing key. An explicitly unconfigured development mode still allows static work, while partial configuration remains an error rather than silently losing account behavior. The mail settings count as account settings, so a server that holds accounts can always send their confirmation messages, and every local run or test that configures accounts supplies them; the mail service is not reached at startup, so its failure never keeps the game down. A byte-order mark is invisible and the decoding of the file drops a leading one, so a file of marks and nothing else holds no password anyone can see, and the mistake shows at startup, not only when the file has no byte; a mark followed by a password still gives that password.
@@ -2290,9 +2323,9 @@ The account server opens one application-owned SQLite connection before readines
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · sqlite-wal-concurrency · express-session-regenerated-session-saved-again
 - **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-138 · derives from D-155 · derives from D-156 · derives from D-161 · derives from D-205 · derives from D-399 · derives from D-400
-- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage · password-reset-link · password-reset-ends-sessions. An agent compares a change with the decision:
-  - complies: every route that makes a session naming, in the write of that session, the password hash its password was checked against or the hash it just made
-  - violates: a new way of making a session that stores it without naming a password hash; a reset that deletes the sessions and replaces the hash in two transactions
+- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage · password-reset-link · password-reset-ends-sessions. tests: the commands for the block and for the privilege and a backup working beside an open connection, and a database of an unknown schema refusing the start; an account's opaque identifier kept across reopening, one account for one normalized address across two connections with SQL characters kept as data, a session refused for an unknown account, WAL, and a busy write and the opening of a database succeeding or failing within the busy timeout; a saved game state and a previous save of at most 65 536 bytes, each removed with its account; expired sessions and links pruned at startup and periodically with a timer stopped at disposal, links in bounded batches and only once expired and an hour old; blocking deleting the account's sessions and stopping its links, a link recorded for a blocked account recording nothing and a new link stopping the earlier one of its purpose; a save writing nothing for a blocked account or one D-209 or D-210 refuses, a save of a higher version moving the stored one into the previous save in its transaction and a write that fails taking the move back; the reset moving the saved game state only for an unblocked account with the privilege and a saved game state, a block committed before it moving nothing; the privilege write reporting each outcome by the account's address; blocking, unblocking, granting and revoking keeping the saved game state and the previous save. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new schema version added as one migration step at the end of the list, the deployed steps unchanged; a password check, a message or an HTTP response between two short transactions
+  - violates: an edit of a migration step a deployed version already ran; a transaction held open across password hashing, the sending of a message or an HTTP response; synchronization lowered below full; an index of the account or the expiry of sessions, or of the account or the creation time of emailed links, dropped
 - **Origin:** none
 
 *Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from an operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. A login or a registration stores its session twice, once in its route and once as the library ends the request, and a registration waits on its message between the two, so a reset committed there would see the second store put back what it deleted; the comparison of password hashes in the statement that writes holds for every store, as the block's does, however far apart they stand and whichever connection commits. The hash travels beside the session and never in its stored data; a session written without naming one is unguarded, and the guard rests on the library handing both stores the same session object. Reading the link in the transaction that sets the password means a block, a later link or an expiry during the hashing either comes first, so the finished hash is dropped, or comes after and finds the password changed. A reset removes every session of the account in the same transaction as the change of the hash and signs nobody in, so whoever took over the old password does not go on playing, and the player signs in with the new one; accepted with it: a player playing in a second browser sees „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” (D-211) at the next save, the unsaved state waiting in that tab for a sign-in. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it. Emailed links stay after their use until they have expired and are an hour old, because they also count account messages against D-105 (D-161), and their purpose admits password reset already, because a constraint of a table cannot be widened without rebuilding it. Reading the block in the transaction that records a link means a block either comes first, so nothing is recorded or sent, or comes after and marks the recorded link as no longer working, so a message already on its way carries a link that does not work. A saved game state in a table of its own stays out of the rows every login reads, and reading the block, the version and the revision in the transaction that writes it means no save lands between the check and the write; a blocked player's saved game state waits for the unblock. The previous save, in a table of its own as well, outlives the reset of the game that removes the current row; its move is one copy and the usual write in one transaction, so a thrown error leaves the stored saved game state and the previous save as they were, and reading the block, the privilege and the saved game state in the transaction of the reset of the game means no save lands between the check and the move. The privilege is one column of the row every login reads, so the account's answer carries it with no second read.
@@ -4040,6 +4073,10 @@ using the game.
 - **Based on:** none
 - **Relations:** derives from D-07
 - **Verification:** invariants: player-self-registration · player-save-isolation · blocked-account-access.
+  tests: a visitor's registration answered with the account and a session of the browser, also
+  whatever its confirmation message did, and the page entering the game at once; the operator's
+  command blocking an account by its address, and a block through a second connection making the
+  account's next save store nothing.
 - **Origin:** none
 
 *Rationale:* open registration lets players enter without the operator creating or approving each
@@ -4080,12 +4117,14 @@ whose body holds the version of the shape, the revision the browser last saw and
 - **Scope:** browser-view, account-server
 - **Based on:** HTTP Semantics, request and response model (https://www.rfc-editor.org/rfc/rfc9110.html, read 2026-10-04) · JSON data interchange format (https://www.rfc-editor.org/rfc/rfc8259.html, read 2026-10-04) · Fetch Standard, browser request API (https://fetch.spec.whatwg.org/, read 2026-10-04) · GraphQL September 2025 specification, schema and operations (https://spec.graphql.org/September2025/, read 2026-10-04) · WebSocket Protocol, persistent bidirectional connection (https://www.rfc-editor.org/rfc/rfc6455.html, read 2026-10-04)
 - **Relations:** derives from D-07 · derives from D-108
-- **Verification:** invariants: saved-state-http-exchange. For the public HTTPS endpoint and the
-  answer of an account with no saved game state, an agent compares the change with the decision:
-  - complies: the browser loads the game and exchanges saved states through an HTTPS address; an
-    account with no saved game state answered with a success that says so
-  - violates: a deployed game sends saved states to an HTTP address visible to the browser; an
-    account with no saved game state answered with 404
+- **Verification:** invariants: saved-state-http-exchange. tests: `GET /api/saved-game` answering
+  `null` for an account with none and otherwise the saved game state with its version and revision,
+  and `PUT /api/saved-game` taking the version, the basis and the game, on the server and in the
+  browser's client, which sends the load with no body and the save with exactly those three fields.
+  An agent compares a change with the part no invariant and no test holds, the public HTTPS
+  endpoint:
+  - complies: the browser loads the game and exchanges saved states through an HTTPS address
+  - violates: a deployed game sends saved states to an HTTP address visible to the browser
 - **Origin:** none
 
 *Rationale:* the browser computes the game and only needs to load and submit a whole save.
@@ -4111,7 +4150,10 @@ layer.
 - **Scope:** account-server, deployment
 - **Based on:** loop2-app-log-sqlite-busy-lines · SQLite documentation, appropriate for an application-specific server and one writer at a time (https://www.sqlite.org/whentouse.html, read 2026-10-04) · SQLite documentation, risks of a database file on a network filesystem (https://www.sqlite.org/useovernet.html, read 2026-10-04) · Docker documentation, volumes persist beyond a container's lifecycle (https://docs.docker.com/engine/storage/volumes/, read 2026-10-04) · PostgreSQL 18 documentation, separate server process (https://www.postgresql.org/docs/18/tutorial-arch.html, read 2026-10-04) · MongoDB documentation, 16 MiB document limit (https://www.mongodb.com/docs/manual/core/document/, read 2026-10-04)
 - **Relations:** derives from D-07
-- **Verification:** invariants: account-save-sqlite-store · account-save-durable-storage.
+- **Verification:** invariants: account-save-sqlite-store · account-save-durable-storage. tests: an
+  account written through the server's database code kept in the SQLite file across reopening; an
+  account and its session outliving the replacement of the application container, on the volume and
+  at the database path `compose.yaml` gives.
 - **Origin:** none
 
 *Rationale:* SQLite lets the one account and save server hold accounts and whole saved game states
@@ -4269,12 +4311,15 @@ plays on from the loaded state, saving as D-207 gives.
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: two tabs of one account, the first saving on revision 4 and getting 5, the second's
-    save based on 4 refused, and the second tab then loading revision 5 with its map run paused and
-    the sentence in the header
-  - violates: a save based on an earlier revision replacing the stored one; the tab whose save was
-    refused saving its own game state again; a refused tab that stops saving until a reload
+- **Verification:** tests: revisions counted from 1, a save accepted only on the revision the server
+  holds or on 0 where the account has none, also after a reset, and every other basis refused with
+  nothing changed; the saver handing such a refusal to the page and sending nothing more, and the
+  page dropping its game, loading the server's saved game state with its map run paused, showing
+  the sentence on the header line until the first successful save and saving on from the loaded
+  state on its revision. An agent compares a change with the part no test holds:
+  - complies: the sentence of a save refused for another browser's save standing on the header line
+    in `warning`
+  - violates: that sentence in `text`, `positive` or `danger`
 - **Origin:** none
 
 *Rationale:* with saving that runs by itself, a tab left open on one device would otherwise overwrite
@@ -4313,15 +4358,14 @@ the two numbers and reading nothing of the game.
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-206
-- **Verification:** invariants: previous-save-slot. An agent compares a change with the decision:
-  - complies: a tab opened before a deployment that raised the version, its save refused with the
-    sentence standing and its later acts sending nothing; an old tab whose basis is also stale told
-    to reload rather than loading the newer saved game state; a save of version 6 accepted over a
-    stored saved game state of version 5, which then stands as the previous save
-  - violates: an old tab's save of a lower version replacing the stored one; the server reading the
-    version from inside the game; a save of the same version as the stored one, or a refused save,
-    putting the stored saved game state into the previous save; an accepted save of a higher version
-    replacing the stored saved game state and leaving no copy of it
+- **Verification:** invariants: previous-save-slot. tests: a save of a lower version refused as
+  outdated on the current basis and on a stale one alike, with nothing changed; the saver showing
+  the sentence of the update after that refusal and sending nothing more, also at logout, the game
+  staying on its screen. An agent compares a change with the part no invariant and no test holds:
+  - complies: the server comparing the version field of the save with the stored version and
+    reading nothing of the game; the sentence of the update on the header line in `warning`
+  - violates: the server reading the version from inside the game; the sentence of the update in
+    `text`, `positive` or `danger`
 - **Origin:** none
 
 *Rationale:* the server compares one number and computes nothing of the game (D-07), at the cost of
@@ -9976,9 +10020,9 @@ The server keeps for every account, with the previous-save privilege (D-400) or 
 - **Scope:** account-server, simulation
 - **Based on:** none
 - **Relations:** derives from D-07 · derives from D-205 · derives from D-206
-- **Verification:** invariants: previous-save-slot · player-save-isolation. An agent compares a change with the decision:
-  - complies: a save of version 6 accepted over a stored saved game state of version 5, which then stands as the previous save of the account whether or not the account holds the privilege; a second such move replacing the previous save with the later document; a save of the same version as the stored one leaving the previous save as it was; the previous save standing while the privilege is off and there again when it is granted
-  - violates: a previous save written by a save of the same version, by a first save, by a refused save, by a block or by a load; a previous save kept for accounts with the privilege only; the load of the game reading the previous save; a history of previous saves
+- **Verification:** invariants: previous-save-slot · player-save-isolation. tests: one previous save kept also for an account without the privilege, a later move by a save of a higher version or by a reset replacing it; the previous save holding the version, the revision and the game as stored, at most 65 536 bytes, removed with its account; blocking, unblocking, granting and revoking the privilege writing nothing into it, and the previous save standing while the privilege is off and there again when it is granted. An agent compares a change with the part no invariant and no test holds:
+  - complies: the load of the game reading the saved game state of `GET /api/saved-game` alone; the server copying the stored text into the previous save without reading the game
+  - violates: the load of the game reading the previous save or falling back to it; a previous save written by a load; the server parsing the game of the previous save
 - **Origin:** none
 
 *Rationale:* a version of the save that changes makes the game discard the saved game state of its players (D-206), and the programs in it are the work a player writes again; keeping the replaced document where a later act can read its programs costs a table and up to 64 KiB more per player (D-104). The server keeps it for every account, so an account that is granted the privilege later has something to pull, and keeps one, so the cost stays bounded and the server holds no history to explain. The two moves are the acts that replace a player's saved game state with another game, and each is a copy of stored text made by comparing numbers of versions, reading nothing of the game (D-07). Accepted with it: two raisings of the version before the pull, or a reset before it, replace the older previous save and its programs; the programs of saved game states replaced before the server kept previous saves cannot be recovered.
@@ -9991,9 +10035,9 @@ The previous-save privilege is a flag on the player account, off when the accoun
 - **Scope:** account-server, browser-view, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-109 · derives from D-137 · derives from D-399
-- **Verification:** invariants: previous-save-slot · account-client-outcomes. An agent compares a change with the decision:
-  - complies: the owner runs `docker exec loop2 node dist/server/account-previous-save.js grant <email>` and the next `GET /api/account` of that account answers `previousSaveAllowed` true while the running server keeps serving; `GET /api/previous-saved-game` of an account without the privilege answered 403 `previous-save-forbidden` with its previous save present
-  - violates: an HTTP route of the account server that grants or revokes the privilege; a skill instruction in which an agent runs the command through the `mikrus` MCP server; a 404 or an empty success for an account without the privilege; an account's answer that tells whether a previous save exists; a privilege read once at login and trusted for the life of the session
+- **Verification:** invariants: previous-save-slot · account-client-outcomes. tests: the flag off for a new account, the command granting and revoking it by the address normalized as at login beside an open connection and reporting each outcome, an unknown address included, and changing nothing on a usage error, an unknown address or an unusable database; both routes answering JSON 403 `previous-save-forbidden` to a signed-in account without the privilege whatever its previous save holds, a revoke stopping the next read and reset; the answers of `GET /api/account`, the login and the registration holding the boolean `previousSaveAllowed` and nothing of the previous save, and the page showing no reset control and asking for no previous save where the flag is false or missing. An agent compares a change with the part no invariant and no test holds:
+  - complies: the owner runs `docker exec loop2 node dist/server/account-previous-save.js grant <email>` on the server by hand
+  - violates: an HTTP route of the account server that grants or revokes the privilege; a skill instruction in which an agent runs the command through the `mikrus` MCP server
 - **Origin:** none
 
 *Rationale:* the flag stands on the account like the block of D-137 and is set by a command in the container, since the owner already reaches the server through SSH and the command adds no new way into it. The command ends no session and stops no link, unlike the block: a page that is open keeps the flag it was given until it reloads, and the server decides at each request, so a revoked privilege stops the next fetch or reset. One flag covers both acts because both act on the previous save and the reset is what puts a document there. The 403 with a code of its own says that the account lacks the privilege and not that a route is missing (D-05, D-204), and it is the same whatever the previous save holds, so it tells an account without the privilege nothing about it. The account's answer carries the flag, so the page shows the control with no failing request, and carries nothing of the previous save, whose existence changes at the first save after a raising of the version in a page that is already open. Price if the contract is wrong: before the first deployment it is cheap to change, and afterwards the page and the server change together in one deployment, an old tab only ignoring the new field.
@@ -10021,9 +10065,9 @@ An account with the previous-save privilege has in the game the control „Zaczn
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-399 · derives from D-400
-- **Verification:** invariants: previous-save-slot. An agent compares a change with the decision:
-  - complies: a confirmed reset of an account with the privilege sending `POST /api/saved-game-reset` with no save before it, the page building a new game with revision 0 on 204, and the next pull appending the programs of the game that was reset; the click that opens the confirmation sending nothing; the reset of an account with no saved game state answered 204 with the previous save as it was
-  - violates: the control „Zacznij od zera” on the page of an account without the privilege; the reset answered 204 to an account without the privilege with its saved game state moved; a reset that leaves the saved game state in place beside the previous save or deletes the previous save; a save sent by the page before the reset; the new game saved at once after the reset; „Wyloguj” pressable while the reset waits
+- **Verification:** invariants: previous-save-slot. tests: the control „Zacznij od zera” only for an account with the privilege, the click that opens the confirmation sending and changing nothing, and the confirmation naming the previous save, its replacement and the start from zero; the confirmed reset sent as the next request with no save before it, the control disabled and „Wyloguj” not pressable while it waits, and the old saver's outcomes held then and acted on only if the reset fails; the server reading the block, the privilege and the saved game state in the transaction of the move, leaving the account with no saved game state and answering 204 also when nothing moved; on 204 a new game on revision 0 with its sentence above it and no save sent at once, and a later save on another revision refused. An agent compares a change with the part no invariant and no test holds:
+  - complies: the confirmation saying that the programs of a previous save already there can no longer be pulled
+  - violates: a confirmation that names the replacement of the previous save but not the loss of its programs
 - **Origin:** none
 
 *Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
