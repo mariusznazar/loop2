@@ -8475,9 +8475,15 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-53 · derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on the right the card of Las with its parts and under it the section „Kto idzie” holding each character with its „Program:”, „Wejdzie: …”, „Wejdź” and, as Las is solved, „Puść w pętlę”
-  - violates: a map that is not open yet standing on the list, locked or inactive; a card of a map without its section „Kto idzie”
+- **Verification:** tests: the list of the screen Mapy holding the maps open to the player alone,
+  Skraj lasu in a new game and Las and Las — głębiej once their openers are solved; the card of the
+  map the address names, with what it asks, its terrain, what lies there, what lurks there and what
+  it takes; the section „Kto idzie” with each character, its list „Program:”, „Wejdzie: …”, „Wejdź”
+  and „Puść w pętlę”. For the list standing on the left and the card on the right, an agent
+  compares a change with the part no test holds:
+  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on
+    the right the card of Las with the section „Kto idzie” under it
+  - violates: the list of the maps standing on the right of the card or under it
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which; here empty places wait for maps the game does not have yet, until there is content behind them, because a counter of maps makes sense only with content beyond the second map or with a small number; of what the review proposed, only the card of demands is taken here.
@@ -8490,9 +8496,13 @@ Where the bring list of the program picked is empty, „Pętla nic nie zarobi do
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-243
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character at a solved Las whose program picked has an empty list „Wynieś”, with „Pętla nic nie zarobi do skrzynki” in `warning` beside its „Puść w pętlę”, and a click on that button starting the earning loop
-  - violates: the sentence standing beside „Puść w pętlę” where the list „Wynieś” holds an item; „Puść w pętlę” inactive, or asking a question, where the list „Wynieś” is empty; the sentence in a role other than `warning`
+- **Verification:** tests: „Pętla nic nie zarobi do skrzynki” standing beside „Puść w pętlę” where
+  the list „Wynieś” of the program picked is empty and nowhere else, and „Puść w pętlę” acting with
+  it. For the role the sentence is drawn in, an agent compares a change with the part no test
+  holds:
+  - complies: „Pętla nic nie zarobi do skrzynki” beside „Puść w pętlę” drawn in `warning`
+  - violates: the sentence drawn in a role other than `warning`, such as `text-secondary` or
+    `danger`
 - **Origin:** none
 
 *Rationale:* a week of an earning loop with an empty list brings nothing into the chest, and the player who missed the list learns of it only afterwards. Measured on 2026-10-31 in a simulation of the earning loop, before it was merged, on Las and with programs tuned by the person measuring: after 168 hours the chest held 0 items with an empty list and 58 with a full one.
@@ -8505,9 +8515,21 @@ The card of a map follows the card of the predecessor game, loop, with its numbe
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-133 · derives from D-134 · derives from D-136 · derives from D-187 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: the card of Las with „Żąda” reading „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu”, in „Teren” „siatka 4 × 4”, „wejście stałe”, „krok 5 min” and „bez ognia 83 min — otoczenie 25 °C”, in „Leży tu” „patyk — ≈ 11 z 16 kafelków, po 12, +1 co 30 min”, and neither „Czyha” nor „Odbiera”; the card of Las — głębiej with the heading naming „odsłania ją Las”, „bez ognia 33 min — otoczenie 7 °C”, „wilk · 24 zdrowia · cios 7” and under it „1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min”
-  - violates: a part the map lacks standing empty; the line of an attack giving the quiet time and the mean gap after it apart; „otwarta” beside the name of an unsolved map; „gasi: {umiejętność}” in „Odbiera”; „nie odnawia się” in a role other than `warning`
+- **Verification:** tests: the heading naming the map, with „rozwiązana” once it is solved and
+  „odsłania ją {mapa}” with the opener's name from the data, and no „otwarta” at an unsolved map;
+  „Żąda” holding the one sentence of the solving condition from the data; „Teren” with the grid,
+  the entrance, the step with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other
+  than the usual one, and the minutes without fire with the temperature of the surroundings;
+  „Leży tu” with each resource's icon, its approximate number of tiles, its stock and its renewal,
+  or „nie odnawia się” marked as a warning; „Czyha” with the creature's health and blow, the
+  creature with no icon, and one line of the chance, the quiet time and the one total mean gap;
+  „Odbiera” with the entry and the exit cap, each marked as a warning, and nothing else; a part the
+  map lacks drawn nowhere. For the colours the marks and the words of the card are drawn in, an
+  agent compares a change with the part no test holds:
+  - complies: „rozwiązana” in the heading in `positive`, „odsłania ją Las” and „— drożej niż
+    zwykle” in `text-secondary`, and „nie odnawia się” and „wnosisz najwyżej 5” in `warning`
+  - violates: „nie odnawia się” or a cap drawn in `text` or `danger`; „rozwiązana” in the heading
+    drawn in `text-secondary`; „odsłania ją {mapa}” drawn in `text-strong`
 - **Origin:** none
 
 *Rationale:* the player reads on the card what a map asks before sending a character, and a number such as „bez ognia 33 min” tells the player that without supplies the fire will not be made in time, where otherwise the player would find it out by losing progress. The card follows the card of the predecessor game, because the screens and solutions of the predecessor game are the minimum that the screens of this game take and they are departed from only where the result is better, never worse; the numbers come from the data of the map, and a part that the map lacks stands nowhere. The card has no „gasi: {umiejętność}” because the data of the maps hold no field for it, and the creature has no icon because the creatures have none. Accepted with it: the game computes new numbers from the map's data — the minutes without fire, the approximate number of tiles that hold a resource and the mean gap between attacks with the quiet time — which follow a change of balance by themselves; „≈ 11 z 16” and „≈ 280 min” are means, so a given map run may fall out otherwise; the card runs to a dozen or so lines; the player knows the health and the blow of the wolf before its first attack.
@@ -8520,9 +8542,14 @@ The card of a map shows all that the map's data holds, whatever the player has d
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: the card of Las — głębiej showing „wilk · 24 zdrowia · cios 7” to a player whose Understanding holds no wolf, the Understanding still holding no wolf afterwards and the program editor offering no condition about the wolf
-  - violates: a resource or a creature missing from the card because the player has not met it; the card writing a creature or an item into the Understanding
+- **Verification:** tests: the card showing every resource of the map's data and the wolf with its
+  health and blow to a player whose Understanding holds none of them, and the Understanding standing
+  as it was after the card is drawn. For what the program editor offers after the card, an agent
+  compares a change with the part no test holds:
+  - complies: after the card of Las — głębiej shows the wolf to a player who has not met it, the
+    program editor offering no condition about the wolf
+  - violates: the card handing the program editor, by a way other than the Understanding, an
+    action or a condition the player has not discovered
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, so the card says in text what the discovery of D-118 leaves to play; the card writes nothing into the Understanding, so D-118 stays as it is. Accepted with it: the player knows the names and the strength of the wolf before meeting it, so the first wolf surprises less.
@@ -8535,9 +8562,16 @@ At each character in the section „Kto idzie” stand, from the top, the name a
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-54 · derives from D-170 · derives from D-180 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character at a solved Las whose program picked takes patyk 6 and jagoda 4 showing from the top its name as a link, „Wskrzeszenie drużyny gotowe”, „Program:”, „Wejdzie: patyk 6, jagoda 4”, „Wejdź” and „Puść w pętlę”; the same character with an empty take list showing „Wejdzie: nic”; a click on „Puść w pętlę” leaving the player on the card; a team with no character reading „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.” in the section
-  - violates: „Wejdzie: …” standing only where the plan enters clipped; a section with its heading alone for a team with no character; „Puść w pętlę” taking the player to the screen of a map run
+- **Verification:** tests: at each character in „Kto idzie”, the characters in the order of their
+  creation, from the top: the name as a link to its screen Postać, the line of the resurrection,
+  the line of the earning loop at a character in an earning loop alone, „Program:” with its list,
+  „Wejdzie: …” always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” with the
+  warning of a rehearsal under it and „Puść w pętlę” with „Pętla nic nie zarobi do skrzynki” beside
+  it; „Wejdź” opening the screen of the map run and „Puść w pętlę” leaving the player on the card;
+  the sentence of a team with no character in the section. For the role „Wejdzie: …” is drawn in,
+  an agent compares a change with the part no test holds:
+  - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`
+  - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped
 - **Origin:** none
 
 *Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243), the sentence of a rehearsal under „Wejdź” (D-251) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the three warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
@@ -8550,9 +8584,9 @@ The first of the three clicks from Siedziba to a first map run (D-280) is the it
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: a player with one character reaching the first map run from Siedziba by „Mapy”, the row of Skraj lasu and „Wejdź”; a character in Siedziba holding its name as a link to the screen Postać and no button that leads to the screen Mapy
-  - violates: a button „Wybierz mapę” at a character in Siedziba that leads to the screen Mapy
+- **Verification:** tests: a player with one character reaching the first map run from Siedziba by
+  the item „Mapy” of the menu bar, the row of Skraj lasu and „Wejdź”, and no button at a character
+  in Siedziba leading to the screen Mapy or sending it.
 - **Origin:** none
 
 *Rationale:* the way to the maps is one item of the menu bar, with no new button. In the predecessor game the way to a first map run had two „Wejdź” with a window for picking the character between them, which a review of its layout counted among its weaknesses not to copy. Accepted with it: from a character in Siedziba the player goes to the maps through the menu bar.
@@ -8565,9 +8599,16 @@ Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stan
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-134 · derives from D-281 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: `#/mapy` with the list of the open maps on the left and „Wybierz mapę z listy.” on the right; at `#/mapy/forest` the row of Las with its text in `text-strong` and a bar in `selected` at its left
-  - violates: `#/mapy` showing the card of the first map of the list; the right area empty before a pick; a row of the list that is no link
+- **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the right area, with no
+  card and no row picked; a row of the list a link to `#/mapy/{map}` with the name of the map and,
+  at a solved map, „rozwiązana” after it, and the row of the map the address names the one marked
+  as picked. For the roles of the sentence and of „rozwiązana” and for the look of the picked row,
+  an agent compares a change with the part no test holds:
+  - complies: „Wybierz mapę z listy.” in `text-secondary`; at `#/mapy/forest` the row of Las with
+    its text in `text-strong` and a bar in `selected` at its left; „rozwiązana” after the name of a
+    solved map in `positive`
+  - violates: the picked row marked by a background in `highlight` alone, or by a bar in
+    `positive`; „rozwiązana” on the list drawn in `text-secondary`
 - **Origin:** none
 
 *Rationale:* the player sees at once that the list is for picking from, and the card stands only after a pick. Accepted with it: one more sentence on the screen.
@@ -8580,9 +8621,11 @@ In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it s
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-281
-- **Verification:** an agent compares a change with the decision:
-  - complies: `#/mapy/forest` and `#/mapy/forestDeep` for Las and Las — głębiej, built from the identifiers the data gives
-  - violates: `#/mapy/forest-deep`; `#/mapy/las-glebiej`; a TypeScript file of the view outside the game's data naming a map by its identifier to build an address
+- **Verification:** tests: `#/mapy/forest` and `#/mapy/forestDeep` read as the screens of Las and
+  Las — głębiej and written back from them; an address with a hyphen, a capital letter or the
+  Polish name of a map in place of its identifier read as no screen; the rows of the list linking
+  to the identifiers the data gives; no TypeScript file of the view outside the game's data naming
+  a map by its identifier.
 - **Origin:** none
 
 *Rationale:* the view names no map by its identifier, since the invariant `content-identifiers` lets no code of the view outside the game's data name a map by it, so an address built from the data needs nothing in the code of the view and nothing new in the data. Accepted with it: an English word with a capital letter in an address that is otherwise Polish and in lower case.
@@ -8595,9 +8638,19 @@ The numbers of the card of a map that follow a rule of the game are computed by 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-142 · derives from D-327
-- **Verification:** an agent compares a change with the decision:
-  - complies: Las with „bez ognia 83 min” and Las — głębiej with „bez ognia 33 min”, the minute in which a mage is first chilled being 84 and 34; „patyk — ≈ 11 z 16 kafelków” at Las, from the density 0.7 and the 16 tiles of its grid; „średnio co ≈ 280 min” for the wolf, from the cooldown 180 and the chance 0.01; the step 5 min of both maps usual, so no note stands beside it; a map whose ambient temperature does not cool the body below the threshold of chill with no item „bez ognia”
-  - violates: the view counting the minutes without fire from the ambient temperature of a map by a formula of its own; the mean gap counted as the cooldown alone or as the reciprocal of the chance alone; the usual step a number written in the view or in the balance data
+- **Verification:** tests: the minutes without fire as the game minutes a body goes through from
+  its starting temperature with no warmth before the minute in which it is first chilled, 83 on Las
+  and 33 on Las — głębiej, and none given, the item left out, where the map does not cool the body
+  below the threshold of chill; the tiles that hold a resource as its density times the tiles of
+  the grid, rounded to the nearest whole; the mean gap between attacks as the cooldown plus the
+  reciprocal of the chance, rounded to a whole minute; the usual step as the step most maps give,
+  the first of the data's order on a tie. For where these numbers are counted, an agent compares a
+  change with the part no test holds:
+  - complies: the card of Las — głębiej writing out „bez ognia 33 min” and „średnio co ≈ 280 min”
+    as the functions of the simulation beside the cooling of the body and the spacing of attacks
+    return them
+  - violates: the view counting the minutes without fire from the ambient temperature of a map by a
+    formula of its own; the usual step a number written in the view or in the balance data
 - **Origin:** none
 
 *Rationale:* the player reads on the card what a map asks, and the numbers come out of the rules of the game, the cooling of the body and the spacing of attacks, which stand in the simulation. Counted there once, the card follows a change of balance by itself. Accepted with it: the simulation holds functions that only the card uses, and a usual step that is the step most maps give changes when a map with another step arrives, the notes beside the steps moving with it.
@@ -9855,9 +9908,13 @@ Las is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an amb
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-24 · derives from D-136
-- **Verification:** an agent compares a change with the decision:
-  - complies: Las with 16 tiles, a tile holding a stick holding 12 and gaining one in 30 game minutes, and sticks lying on 70 % of the tiles, about 11 of 16; the character entering Las on column 1, row 1 on every seed; Las — głębiej with 25 tiles and its entrance drawn from the seed, solved at a streak of 540 game minutes with two beaten attacks and not at 540 with one; the body on Las — głębiej first chilled in game minute 34, against 84 on Las
-  - violates: Las on a grid of 5 × 5 tiles or solved at a streak of 540; Las — głębiej with a fixed entrance or solved by a streak alone; moss renewing in 30 game minutes; a berry stock of 12; a step between tiles of 10 game minutes
+- **Verification:** tests: Las a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1 on
+  every seed, an ambient temperature of 25 °C, a step of 5 game minutes and the requirement of a
+  streak of 480; Las — głębiej a grid of 5 × 5 tiles with its entrance drawn from the seed, 7 °C, a
+  step of 5 game minutes, the resources of Las and the wolf with a chance of 0.01 and a cooldown of
+  180, open once Las is solved, and solved at a streak of 540 with two beaten attacks and not at
+  540 with one; the density, the stock per tile and the renewal of sticks, berries, moss and fiber;
+  these numbers held in the data of the maps.
 - **Origin:** none
 
 *Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the third map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
@@ -10045,7 +10102,8 @@ A new game opens the map Skraj lasu, and solving it opens Las.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-149
-- **Verification:** invariants: first-map-stock · first-map-balance
+- **Verification:** invariants: first-map-stock · first-map-balance. tests: a new game opening
+  Skraj lasu alone, and the solving of Skraj lasu opening Las, which a send then reaches.
 - **Origin:** none
 
 *Rationale:* on Las the tile a character enters decides more than the program can make up for, so a loss on the first map has to mean a fault in the program. Measured by an agent with programs an agent wrote, over 300 seeds: a program of seven rules solves Las on 107 seeds, and on 280 of them on Las whose sticks and berries alone are made denser; on Las about four map runs in ten of a good program are lost through no fault of the player, and about one player in five loses the gains in the first day of the earning loop, while on that denser Las none of 60 simulated earning loops of 14 days lost the gains. The measurement did not check whether the next map then seems too hard. The predecessor game, loop, opens on a tutorial map of the same name with resources on every tile, since its first map run is a tutorial and may not depend on where the character landed. Las becomes the second step. Accepted with it: an easier start and one more map than the game had.
@@ -10058,9 +10116,11 @@ Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1,
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-24 · derives from D-136 · derives from D-397
-- **Verification:** invariants: first-map-balance. An agent compares a change with the decision:
-  - complies: Skraj lasu with 16 tiles, each holding 12 sticks, which gain one in 30 game minutes, and 8 berries, which gain one in 40; the character entering it on column 1, row 1 on every seed; the body first chilled in game minute 84; the map solved at a streak of 480 game minutes and not at 479
-  - violates: moss or fiber on Skraj lasu; sticks on 70 % of its tiles; an ambient temperature of 34 °C; a streak of 720 game minutes; a wolf that attacks on it
+- **Verification:** invariants: first-map-balance. tests: Skraj lasu a grid of 4 × 4 tiles with its
+  entrance fixed at column 1, row 1, an ambient temperature of 25 °C, a step of 5 game minutes, no
+  attacking creature and no cap, solved by a streak of 480 game minutes; sticks with a stock of 12
+  renewed in 30 game minutes and berries with a stock of 8 renewed in 40, on every one of its tiles
+  whatever the seed, and no moss and no fiber; these numbers held in the data of the map.
 - **Origin:** none
 
 *Rationale:* Skraj lasu is the map a new game opens on (D-397), so its numbers are those under which a loss on it is a fault in the program. Its streak is 480 game minutes, as that of Las, so that the first map asks no longer streak than the second. Its air is 25 °C, as that of Las, so that the body is first chilled in game minute 84; at 34 °C the first chilling comes in game minute 333, and a new player waits 333 game minutes for anything to happen. Its resources are sticks and berries alone, as in the first map of the predecessor game, with a density of 1, so that the tile a character enters decides nothing; moss and fiber are met first in Las. A measurement on a copy of the game's engine, over 500 seeds, with every action and condition discovered, in a manual map run, gave for this shape at 480 game minutes and 25 °C: a naive program of six rules solved the map on 16.8 % of the seeds, a decent program of twelve rules on 96.4 % and the best program tried on 97 %; at 720 game minutes and 25 °C, on 16.8 %, 91.2 % and 97 %; at 34 °C and 480 or 720 game minutes, on 83.6 %, 100 % and 100 %. Accepted with it: at 25 °C a program that stands still is no longer forgiven on the first map; the shares were measured in a copy of the engine, so the game may give others.
@@ -10177,12 +10237,13 @@ when the balance is worked on.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-121 · derives from D-397 · derives from D-398
-- **Verification:** invariants: new-account-first-pass. An agent compares a change with the decision:
-  - complies: the program of the test solving Skraj lasu on at least 289 of the 300 seeds from a
-    game of an account with nothing discovered
-  - violates: the program of the test solving Skraj lasu on fewer than 289 of the 300 seeds from a
-    game of an account with nothing discovered; the figure 289 kept after the balance has been
-    worked on and the measurement has moved
+- **Verification:** invariants: new-account-first-pass. For the revision of the figure when the
+  balance is worked on, an agent compares a change with the part no invariant and no test holds:
+  - complies: a change of the balance that moves the number of seeds the program of the test solves
+    from a game of an account with nothing discovered, bringing the figure 289 to the new
+    measurement the human accepts
+  - violates: the figure 289 kept after the balance has been worked on and the measurement has
+    moved
 - **Origin:** none
 
 *Rationale:* a player who writes a program from the start of a new account meets the first map with
