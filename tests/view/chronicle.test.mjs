@@ -395,6 +395,7 @@ test("a load in the middle of a wait gives that wait no entry, and a load in an 
 // chill at minute 84 (tests/view/discovery-band.test.mjs), its streak growing by one in each of the
 // minutes 1 to 83.
 test("the first chill gives one entry of the discovery holding the band's text, the loss of the streak, and no entry of a change", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours, and what it named enters the chronicle"
   const { chronicle, state } = advanced(100);
   assert.equal(
     state.run.minute,
@@ -419,6 +420,8 @@ test("the first chill gives one entry of the discovery holding the band's text, 
 // the copy holds the player's own rule „Eksploruj” at the first chill, so the game writes nothing
 // (D-123, D-345).
 test("the first chill of a copy that holds a rule „Eksploruj” of the player's own gives an entry of the discovery with no sentence about a rule", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours, and what it named enters the chronicle"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
   const own = withRuleAdded(newGame().programs[0].program);
   const before = createCharacter(
     setProgram(withEdgeSolved(newGame()), own).state,
@@ -444,6 +447,7 @@ test("the first chill of a copy that holds a rule „Eksploruj” of the player'
 // Catches an entry that follows the group's later rename, as the band does while it stands (D-312
 // binds the band alone; D-382).
 test("the entry of a discovery keeps the group the band named at the discovery after the group is renamed", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours, and what it named enters the chronicle"
   const { chronicle, state } = advanced(100);
   const program = structuredClone(state.run.copy.program);
   program.groups[0].name = "Ogień";

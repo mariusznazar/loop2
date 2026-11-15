@@ -542,6 +542,7 @@ test("„Odrzuć” ends the map run with no save, the program as it was, and le
 // was paused before the question, that leaves the question standing, or that drops the copy's
 // changes or the map run's minute.
 test("„Wróć” closes the question and puts the map run back as it was: one that went on goes on, one that was paused stays paused", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   await onPage(async ({ root, pass, reading }) => {
     const { view } = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));
@@ -637,6 +638,7 @@ test("the question lives in the page alone: a game built from the kept document 
 // over a map run that goes on, „Restart” that keeps it over the restarted map run, and the pace
 // buttons and a second „Zakończ” that close it or stack a second one.
 test("„Wznów” of the header and of the band and „Restart” close the question and do their own act; the pace buttons and a second „Zakończ” leave it", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(paused()));
     await press(headerButton(root, "Zakończ"));
@@ -806,6 +808,8 @@ function placeOf(root) {
 // of a discovery, where no band stands at the end (D-122): the question stands in the panel, just above
 // the heading of the copy „Kopia: …” and its line.
 test("the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program"
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”, and the band does not stand"
   const order = [
     "program-list",
     "program-actions",

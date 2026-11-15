@@ -307,6 +307,7 @@ test("the practice a dying character gathered reaches no skill, a resurrection r
 
 // D-190: the programs, the chest, the Understanding and the solved maps survive every death.
 test("the programs, the chest, the Understanding and the solved maps survive every death", () => {
+  // decision: D-119 "The Understanding belongs to the player"
   for (const readyAtMs of [0, T0 + 1]) {
     const state = died(onSolvedMap(readyFrom(team(), readyAtMs)));
     const settled = settleDeath(state, T0).state;
@@ -433,6 +434,7 @@ test("a death that takes everything leaves the map run on the screen as it was",
 // D-190: what a character can do follows it, and
 // what the player knows stays. Catches a „Restart” giving the run back the ranks the death took.
 test("„Restart” after a death that took everything starts from the team: a branch action drops out of the run and stays in the Understanding and the copy", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved"
   const program = setProgram(team(), PATROLLING).state;
   const start = send(program, SENT, T0).state;
   assert.ok(actionsStarted(start).includes("patrol"), "precondition");

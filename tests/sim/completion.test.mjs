@@ -163,6 +163,7 @@ test("real time that ends in a completion stops there and drops the whole carry"
 });
 
 test("the completion in the minute of a discovery leaves the state holding the discovery, not paused", () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery"
   const unknowing = {
     ...withEdgeSolved(newGame()),
     understanding: {

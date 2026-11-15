@@ -107,6 +107,7 @@ test("each resource's data gives its icon's title as the icon's page on game-ico
 });
 
 test("actions carry their labels, status texts and the fixed explore duration", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature, and a condition or an action the Understanding holds from the start of a new game has none there"
   assert.deepEqual(ACTIONS.explore, {
     label: "Eksploruj",
     group: "move",
@@ -136,6 +137,7 @@ test("actions carry their labels, status texts and the fixed explore duration", 
 });
 
 test("combat actions carry the accepted damage, item requirement and attack revelation", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   assert.deepEqual(ACTIONS.strikeWithStick, {
     label: "Uderz — patyk",
     group: "foodAndCombat",
@@ -169,6 +171,7 @@ test("combat actions carry the accepted damage, item requirement and attack reve
 });
 
 test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   assert.deepEqual(CREATURES.wolf, {
     name: "wilk",
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -231,6 +234,7 @@ test("each action names its group and each condition its section and place in th
 
 test("conditions carry labels and the value range of hereBelow", () => {
   // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   assert.equal(CONDITIONS.always.label, "Zawsze");
   assert.deepEqual(CONDITIONS.hereBelow, {
     label: "Tu leży mniej niż",
@@ -247,6 +251,7 @@ test("conditions carry labels and the value range of hereBelow", () => {
 
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
   // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   assert.deepEqual(CONDITIONS.healthBelow, {
     label: "Zdrowie poniżej",
     section: "body",
@@ -404,6 +409,7 @@ test("the archetype and the pace are in data", () => {
 
 test("the character skills grow the listed pairs of verb and target, and the walks stand in none", () => {
   // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapal — ognisko” and „Zapal — patyk”"
+  // decision: D-120 "An action that no character skill grows, such as a move onto a neighbouring tile"
   // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
@@ -506,6 +512,9 @@ const ROWS = [
 ];
 
 test("each revealing event reveals exactly the actions, conditions and items of its row", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   for (const row of ROWS) {
     const label = JSON.stringify(row.event);
     const is = (def) => JSON.stringify(def.revealedBy) === label;
@@ -529,6 +538,8 @@ test("each revealing event reveals exactly the actions, conditions and items of 
 });
 
 test("every action and condition stands in exactly one row, and Zawsze and Eksploruj in none", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature, and a condition or an action the Understanding holds from the start of a new game has none there"
   // D-121 is the table; D-118: „Zawsze” and „Eksploruj” are known from the start.
   const revealing = (def) =>
     ROWS.filter(
@@ -561,6 +572,8 @@ test("every action and condition stands in exactly one row, and Zawsze and Ekspl
 });
 
 test("the campfire is revealed by the first gathered stick and has an identifier outside the items", () => {
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   // D-121: the first gathered stick reveals the campfire.
   assert.deepEqual(CAMPFIRE.revealedBy, { kind: "gathered", item: "stick" });
   assert.equal(CAMPFIRE.id, "campfire");

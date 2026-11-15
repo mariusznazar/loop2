@@ -411,6 +411,8 @@ test("combat filters unavailable actions and group conditions through the curren
 
 test("a creature-only discovery pauses before turns and does not write a combat rule", () => {
   // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   const state = prepared();
   state.understanding.creatures = [];
   const result = passRealTime(state, 10000);
@@ -435,6 +437,8 @@ test("a creature-only discovery pauses before turns and does not write a combat 
 // next attack must use that very knowledge, not an independently knowing game.
 // Sources: foundations/decisions.md:2008, :2032, :2575.
 test("the discovered wolf stays known through another attack, restart and end", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-119 "The Understanding belongs to the player"
   const initial = prepared();
   initial.understanding.creatures = [];
   const discovered = advanceMinutes(initial, 1).state;
@@ -469,6 +473,8 @@ test("the discovered wolf stays known through another attack, restart and end", 
 test("an ending exploration and first wolf produce one catalog-ordered discovery", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
   // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band"
   const state = prepared();
   state.understanding = {
     actions: ["explore", "wander"],
@@ -507,6 +513,9 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
 test("first chill and attack in one minute keep the automatic exploration rule but never start it during combat", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
   // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   const state = prepared(programFromRules());
   // The Understanding of a new game: „Zawsze” and „Eksploruj”.
   state.understanding = {
@@ -553,6 +562,7 @@ test("a departed creature starts cooldown but adds no defeated attack", () => {
 });
 
 test("known attacks do not pause and restart clears combat while reproducing its attack stream", () => {
+  // decision: D-119 "The Understanding belongs to the player"
   const attacked = advanceMinutes(prepared(), 1).state;
   assert.equal(attacked.paused, false);
   const restarted = restart(attacked).state;

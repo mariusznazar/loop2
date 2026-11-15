@@ -2199,6 +2199,7 @@ const CRAFTED = {
 
 // invariant: save-version
 test("a crafted document of the current version is refused whole as shape", () => {
+  // decision: D-403 "The load refuses a saved game state whose Understanding does not hold the condition „Zawsze” and the action „Eksploruj”, as a saved game state of a shape the game does not admit"
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
 });

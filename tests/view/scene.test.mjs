@@ -352,6 +352,7 @@ function filterOf(element) {
 // whole scene instead of the mage, a completion that greys the mage, and an extinguished fire left
 // in colour. The two values are those D-322 and D-316 give.
 test("the greys: the whole scene at the player's pause, the mage after a death, the extinguished fire; every other stop in colour", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
   await withPage(async (page) => {
     const PAUSE = "grayscale(1) brightness(0.5)";
     const OUT = "grayscale(1) brightness(0.55)";
@@ -1920,6 +1921,7 @@ test("a discovery shows a plaque for each icon on the clearing, each coming from
 
 // D-322, D-122. Catches a discovery of conditions alone that stands a layer of plaques of nothing.
 test("a discovery whose things have no icon shows no plaque, and the scene stays in colour", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
   await withPage(async (page) => {
     const found = { conditions: ["always"], creatures: ["wolf"] };
     const scene = await drawn(page, discoveredOf(found));

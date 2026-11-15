@@ -224,6 +224,7 @@ test("the renewal line stands only after a first completion that made a used-up 
 // Catches a discovery shown with no band text, a rule offered on a program with no group to hold it, or
 // a discovery line standing with no discovery (D-122, D-312, D-313).
 test("the discovery line gives the band text of the discovery, and says whether its rule can be added", () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band"
   const discovered = {
     ...RUNNING,
     discovery: {

@@ -223,6 +223,9 @@ test("Zakończ clears the counts where the copy's program is gone", () => {
 
 // D-123: the rule of the first chill (minute 84, see tests/sim/discovery.test.mjs).
 test("the first chill writes „Zawsze → Eksploruj” into the copy, its base and the copy's program, and into no other program", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to, while that program is on the player's list, and where either holds no rule group, the game adds the rule group „Program” with the condition „Zawsze” and writes the rule into it; the other programs of the list stay as they were"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
   const state = {
     ...twoPrograms({}, withEdgeSolved(newGame())),
     programs: [
@@ -255,6 +258,8 @@ test("the first chill writes „Zawsze → Eksploruj” into the copy, its base 
 });
 
 test("the first chill writes the rule into the copy and its base alone where the copy's program is gone", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to, while that program is on the player's list"
+  // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
   const running = send(
     createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { mapId: MAP_ID, characterId: 1 },

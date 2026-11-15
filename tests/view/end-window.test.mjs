@@ -226,6 +226,7 @@ test("nothing is drawn for a state without an ended map run", async () => {
 // anything but the bar of the header's requirement; a discovery that keeps „Wznów”; a sentence in
 // the wrong role (D-135, D-185, D-216, D-122, D-39).
 test("the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery with „Dodaj regułę z tym” and no „Wznów”, then the cost line", async () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”, and the band does not stand"
   await withPage(async ({ document }) => {
     const state = { ...DIED, discovery: DISCOVERED };
     const { container } = await draw(document, state);

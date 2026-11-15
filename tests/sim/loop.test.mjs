@@ -459,6 +459,8 @@ test("a loop's map run through a death and its next map run still leaves the Und
 // D-249, D-119: the repertoire is computed on each call that passes minutes, so what a manual
 // map run discovers meanwhile widens a loop's repertoire.
 test("an action a manual map run discovers meanwhile enters the loop's next pick, and not before", () => {
+  // decision: D-119 "The Understanding belongs to the player and is one for all characters, and what any character discovers enters it for every character"
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved"
   // „Wędruj” is no action of a new game: the first chill of a manual map run discovers it.
   let state = setProgram(
     newGame(),
@@ -546,6 +548,8 @@ test("a rank bought during a loop reaches the next map run and not the one going
 // D-119: a character's repertoire comes from the branches that character has bought, so it is
 // computed from the loop's own skills, not from the manual map run's.
 test("a loop picks its rules by the skills of its own character, whatever the manual map run beside it has bought", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved; an action or item of a bought branch is open only to the character that bought it"
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
   const patrolling = programFromRules(
     rule(ALWAYS, { kind: "patrol", resource: "berry" }),
   );

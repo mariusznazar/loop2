@@ -148,6 +148,7 @@ test("a paused map run gets „ (pauza)” appended, and loses it when resumed",
 // stopped by the simulation at the first chill, game minute 84 (the minute the case of the screen
 // of a map run, tests/view/run-screen.test.mjs, relies on).
 test("at a stop at a discovery the clock reads „ (pauza)” as at the player's pause, and loses it at „Wznów”", () => {
+  // decision: D-122 "When something is discovered in a map run the player starts, the map run stops in the same pause as after „Pauza”: the clock in the header reads „Minuta {game minute} (pauza)”, and the player goes on with „Wznów”"
   const started = send(
     createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { ...SENT, mapId: "forest" },
@@ -212,6 +213,7 @@ const EXPLORED_REVEALED = {
 };
 
 test("the text for the first finished exploration of a tile with sticks and berries is the example of D-122", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText(EXPLORED_REVEALED),
     "Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.",
@@ -219,6 +221,7 @@ test("the text for the first finished exploration of a tile with sticks and berr
 });
 
 test("the text for the first chill names its action and its condition with the unit", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: ["wander"],
@@ -234,6 +237,7 @@ test("the text for the first chill names its action and its condition with the u
 // D-195: the tree of Eksploracja comes with the first finished exploration, beside what the
 // exploration revealed.
 test("the text for the first finished exploration names the tree Eksploracja beside the actions and items it revealed", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       ...EXPLORED_REVEALED,
@@ -244,6 +248,7 @@ test("the text for the first finished exploration names the tree Eksploracja bes
 });
 
 test("a discovery of an action alone has no second sentence, and the campfire is named with a capital letter", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: ["lightItem"],
@@ -257,6 +262,7 @@ test("a discovery of an action alone has no second sentence, and the campfire is
 });
 
 test("a discovered creature is named from the creature data", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: [],
@@ -270,6 +276,7 @@ test("a discovered creature is named from the creature data", () => {
 });
 
 test("a condition that takes no number is named without a unit, and a discovery of conditions alone has no first sentence", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: [],

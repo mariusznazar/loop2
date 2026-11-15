@@ -140,6 +140,7 @@ const click = (element) =>
   });
 
 test("the first finished exploration of a tile with sticks and berries gives the band its text and no sentence about a rule", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”"
   await withPage(async ({ document }) => {
     const state = { ...chilled(), discovery: EXPLORED };
     const { container } = await draw(document, state);
@@ -152,6 +153,7 @@ test("the first finished exploration of a tile with sticks and berries gives the
 });
 
 test("the first chill of a new game gives the text of the discovery and the sentence naming the group Program, with no number of the rule", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, chilled());
     assert.equal(textOf(container), `${CHILL_TEXT} ${SENTENCE}`);
@@ -163,6 +165,8 @@ test("the first chill of a new game gives the text of the discovery and the sent
 // speaks of a rule only where the game wrote one. The copy of this program holds the player's own
 // rule from minute 0, carried out up to the first finished exploration in minute 20.
 test("the first chill of a copy that holds a rule „Eksploruj” of the player's own gives the text of the discovery and no sentence about a rule", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
   await withPage(async ({ document }) => {
     const own = programOfGroups(
       group(1, "Ogień", [
@@ -188,6 +192,7 @@ test("the first chill of a copy that holds a rule „Eksploruj” of the player'
 });
 
 test("a renamed first group gives its name, and a group dragged above the one holding the rule leaves the sentence on the group that holds it", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote"
   await withPage(async ({ document }) => {
     const first = chilled(programOfGroups(group(1, "Ogień"), group(2, "Głód")));
     const sentence = (name) =>
@@ -225,6 +230,7 @@ test("the rule deleted while the band stands leaves the text of the discovery wi
 });
 
 test("there is no band without a discovery, and none once the player goes on", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   await withPage(async ({ document }) => {
     const stopped = chilled();
     const { container, show } = await draw(document, {
@@ -249,6 +255,7 @@ test("there is no band without a discovery, and none once the player goes on", a
 // Catches a band drawn once the map run has ended in a completion or a death: the window of the end
 // names the discovery of its game minute instead (D-122, „Dodaj regułę z tym” in the window, D-313).
 test("a discovery of an ended map run, in a completion or a death, draws no band, and a run that goes on keeps the band with „Wznów”", async () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”, and the band does not stand"
   await withPage(async ({ document }) => {
     const discovery = {
       actions: ["explore"],
@@ -276,6 +283,7 @@ test("a discovery of an ended map run, in a completion or a death, draws no band
 });
 
 test("each button calls its own callback and nothing else", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”"
   await withPage(async ({ document }) => {
     const { container, asked } = await draw(document, chilled());
     await click(buttonNamed(container, "Wznów"));

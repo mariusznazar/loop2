@@ -78,6 +78,8 @@ const OPEN_TO_ALL = ["wander", "walkTo", "walkToCampfire"];
 
 // D-118: „Zawsze” and „Eksploruj” are all a new game knows (written out, not read from the data).
 test("a new game's Understanding holds the condition Zawsze and the action Eksploruj alone", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game"
+  // decision: D-121 "The Understanding of a new game holds the action „Eksploruj”"
   const atStart = {
     actions: ["explore"],
     conditions: ["always"],
@@ -98,6 +100,7 @@ test("two new Understandings share no array, so a change of one reaches no other
 });
 
 test("the mage, with all five skills, has the Understanding as its repertoire", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions"
   assert.deepEqual(repertoireOf(FULL, ALL_SKILLS), FULL);
 });
 
@@ -129,6 +132,9 @@ test("the repertoire of the mage keeps the order of the Understanding", () => {
 
 for (const skill of ALL_SKILLS) {
   test(`without the skill ${skill} the actions it grows leave the repertoire, the rest stays`, () => {
+    // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions"
+    // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+    // decision: D-120 "An action that no character skill grows, such as a move onto a neighbouring tile, is open to every character, and an archetype never filters items"
     const predispositions = ALL_SKILLS.filter((each) => each !== skill);
     const repertoire = repertoireOf(FULL, predispositions);
     assert.deepEqual(
@@ -141,6 +147,9 @@ for (const skill of ALL_SKILLS) {
 }
 
 test("with no predisposition only the actions no skill grows stay, and conditions and items stay", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions"
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype"
+  // decision: D-120 "An action that no character skill grows, such as a move onto a neighbouring tile, is open to every character, and an archetype never filters items"
   const repertoire = repertoireOf(FULL, []);
   assert.deepEqual(repertoire.actions, OPEN_TO_ALL);
   assert.deepEqual(repertoire.conditions, ALL_CONDITIONS);
@@ -148,6 +157,7 @@ test("with no predisposition only the actions no skill grows stay, and condition
 });
 
 test("an action is in the repertoire only where the Understanding holds it", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions"
   const understanding = {
     actions: ["wander", "gather"],
     conditions: [],
@@ -399,6 +409,7 @@ test("a map run of a character the team does not list falls back to the archetyp
 });
 
 test("creating, sending, restarting, pausing, changing the program and ending leave the Understanding as it is", () => {
+  // decision: D-119 "The Understanding belongs to the player"
   const understanding = {
     actions: ["explore", "walkTo"],
     conditions: ["always", "hereBelow"],
@@ -431,6 +442,7 @@ test("creating, sending, restarting, pausing, changing the program and ending le
 });
 
 test("a character's death leaves the Understanding as it is", () => {
+  // decision: D-119 "The Understanding belongs to the player"
   // The Understanding already holds what the first chill reveals, so the chill on the way to
   // death discovers nothing and only death could change it.
   const understanding = {
@@ -541,6 +553,7 @@ test("a rule outside the repertoire is passed over in each game minute of the ma
 });
 
 test("an action leaving the Understanding in the middle of a map run is passed over when the character next picks", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved"
   const state = sentWith(FULL, WANDER_RULE, EXPLORE_RULE);
   assert.equal(state.run.current.activity.ruleId, 1);
   const end = state.run.current.endMinute;

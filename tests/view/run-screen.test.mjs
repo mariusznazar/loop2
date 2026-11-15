@@ -262,6 +262,7 @@ test("the header stands above three areas of their own in the order world, progr
 // D-122. Catches the band standing in the world area, under the program panel, or
 // outside the program's area.
 test("at a discovery the band stands in the program's area, above the program panel", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
     const [world, program, tabs] = areasOf(screen.element);
@@ -421,6 +422,7 @@ test("an open rule panel stands in the program under its header, the tabs and th
 // opened outside the program, not under the new rule's row, or on the condition, the tabs taken away
 // by it, and the streak left as it stood.
 test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero", async () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -479,6 +481,8 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
 // D-122. Catches the band's „Wznów” doing anything other than the header's one
 // resumption, and the band standing after it.
 test("„Wznów” of the band goes on as the header's „Wznów” does, and the band goes", async () => {
+  // decision: D-122 "When something is discovered in a map run the player starts, the map run stops in the same pause as after „Pauza”: the clock in the header reads „Minuta {game minute} (pauza)”, and the player goes on with „Wznów”"
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   await withPage(async (page) => {
     const game = await wiredScreen(page, firstChill());
     const [, program] = areasOf(game.screen.element);

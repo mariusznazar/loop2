@@ -727,6 +727,8 @@ const AFTER_FIRST_CHILL = {
 const gameKnowing = (understanding) => ({ ...newGame(), understanding });
 
 test("the offer is the repertoire: a new game offers „Eksploruj” and no resource and no item, the first chill adds „Wędruj”", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game"
+  // decision: D-121 "The Understanding of a new game holds the action „Eksploruj”"
   const offered = (state) =>
     actionPick(state, EXPLORE).flatMap((section) =>
       section.cells.map((cell) => cell.value),
@@ -1130,6 +1132,8 @@ test("the conditions of the pick stand in four sections with no names, in the or
 });
 
 test("a section holds only what the Understanding holds: a new game's condition pick is „Zawsze” alone", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game"
+  // decision: D-121 "The Understanding of a new game holds the action „Eksploruj”"
   const sections = conditionPick(newGame(), ALWAYS);
   assert.deepEqual(
     sections.map((section) => section.cells.map((cell) => cell.label)),
@@ -1157,6 +1161,7 @@ test("every action names a group and every condition a section of the data, with
 });
 
 test("a branch action known and not bought stands greyed: „gałąź niewykupiona” in a map run, „wybierzesz w przejściu…” with none", () => {
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
   const during = cellsOf(actionPick(runningGame(), EXPLORE));
   assert.equal(during.patrol.greyed, true);
   assert.equal(during.patrol.reason, NOT_BOUGHT);

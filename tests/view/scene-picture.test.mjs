@@ -442,6 +442,7 @@ test("a loaded map run comes back paused, so it stands as at a pause", () => {
 });
 
 test("a stop at a discovery stands in colour: the discovery is held with the pause", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
   const state = {
     ...doing({ kind: "explore" }),
     paused: true,

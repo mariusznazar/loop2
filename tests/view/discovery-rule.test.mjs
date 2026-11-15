@@ -146,6 +146,8 @@ test("a first action that needs a target nobody can pick yet gives way to the ne
 });
 
 test("the first chill adds „Zawsze → Wędruj” at the end of the group „Program” and opens the panel on the action", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   // The real first chill of a new game: the discovery holds „Wędruj” and „Temperatura poniżej”, and
   // the copy already holds the rule the game wrote, „Zawsze → Eksploruj” (D-123).
   let state = createCharacter(withEdgeSolved(newGame()), "Ala").state;

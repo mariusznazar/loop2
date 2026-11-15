@@ -372,6 +372,9 @@ test("a switch is allowed where the copy's program is gone, to any program of th
 });
 
 test("the rule the first chill writes is neither an unsaved change nor a change the save announces", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
   const found = pausedAtDiscovery();
   assert.deepEqual(found.programs[0].program.groups[0].rules, [
     { id: 1, condition: ALWAYS, action: { kind: "explore" } },

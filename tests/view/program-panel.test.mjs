@@ -998,6 +998,7 @@ const rulesOfGroup = (group) =>
 // opened anywhere but under the new rule's row, opened on the condition after the button filled the
 // action, the focus left outside the field, and the streak left as it stood.
 test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero", async () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(

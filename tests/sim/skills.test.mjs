@@ -598,6 +598,9 @@ test("completion pays this minute's practice once to the runner of a run begun b
 });
 
 test("Obchód is known with its tree but offered only in its owner's run; an unavailable rule stays and is skipped", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved; an action or item of a bought branch is open only to the character that bought it"
+  // decision: D-119 "That one computation is at once what the program editor offers and what the simulation lets the character carry out"
+  // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   assert.ok(hq.understanding.actions.includes("patrol"));
   assert.equal(editorRepertoire(hq).actions.includes("patrol"), false);
