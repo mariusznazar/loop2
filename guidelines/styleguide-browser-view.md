@@ -997,22 +997,19 @@ of shared controls:
   pod kursorem i przy fokusie; czekając na serwer, jest wyłączony i zachowuje
   napis. Przy koncie z rolą właściciela, także przy własnym, go nie ma.
 
-Po kliknięciu „Zablokuj” pod wierszem stoi jedno zdanie w `warning`, które mówi
-o skutkach blokady wymienionych w D-411: sesje gracza kończą się w każdej
-przeglądarce, a odnośniki z maili przestają działać, i odblokowanie tego nie
-przywraca. Potwierdzenie nie wysyła nic bez kolejnego kliknięcia.
+Potwierdzenie „Zablokuj” stoi tak jak potwierdzenie „Zacznij od zera” (D-402):
+pod wierszem, a w nim jedno zdanie o skutkach blokady w `warning` (sesje gracza
+kończą się w każdej przeglądarce, odnośniki z maili przestają działać, a
+odblokowanie tego nie przywraca), przycisk potwierdzający „Tak, zablokuj” jako
+przycisk niszczący w tym samym wyglądzie co „Zablokuj”, i akcja poboczna „Wróć”
+(D-275). Klik „Zablokuj”, który otwiera potwierdzenie, nic nie wysyła. Przycisk
+„Tak, zablokuj” wysyła blokadę. „Wróć” zamyka potwierdzenie i nic nie zmienia.
 
 Lista bez kont stoi bez pozycji, z jednym zdaniem w `text-secondary`, jak puste
 listy na ekranie Mapy (D-331). Odmowa serwera albo brak połączenia przy
 wczytaniu listy stoi nad nią jednym zdaniem w `warning`, jak odmowa przy
-formularzu (D-44).
-
-Otwarte dla człowieka:
-
-- które przyciski stoją przy potwierdzeniu „Zablokuj” i czy przy nim ma stać
-  akcja poboczna, która zamyka potwierdzenie bez blokady (D-275);
-- treść zdania przy pustej liście i zdania przy odmowie wczytania listy, bo
-  reguła nie ustala ich słów.
+formularzu (D-44). Każde z tych dwóch zdań to jedno zdanie, w podanej roli;
+słowa pisze autor ekranu.
 
 ## Examples
 
