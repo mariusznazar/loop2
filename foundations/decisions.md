@@ -7722,11 +7722,9 @@ program rule the number of its group and its own number in that group, such as �
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first rule of the second group numbered „2.1”, and the numbers following the
-    order after a rule moves
-  - violates: rules numbered through the whole program as „1”, „2”, „3” across their groups; a
-    rule group with no number
+- **Verification:** tests: a rule group numbered by its place in the program and a program rule by
+  the number of its group and its place in it, such as „2.1”, computed and shown in the header of a
+  group and in the row of a rule.
 - **Origin:** none
 
 *Rationale:* a number gives a reference to a rule something to point at, such as „reguła 2.1”
@@ -7742,10 +7740,10 @@ run the time of a step on that map, and nothing for a movement outside a map run
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zbierz — Patyk” with its time in its row and beside „Zbierz” in the rule panel;
-    „Kopnij” with „tura”; „Idź” on Programy with no map run in the game showing no time
-  - violates: a time in the row and none in the panel; a time beside „Idź” outside a map run
+- **Verification:** tests: the time of one execution — the minutes of the data, „tura” for an
+  action of combat, the step of the map for a movement during a map run and nothing for a movement
+  outside one — computed, shown in a rule's row, beside the cells of the actions in the rule panel
+  and beside the value of its field of the action.
 - **Origin:** none
 
 *Rationale:* with the time the player compares actions without playing them, also in the panel,
@@ -7762,9 +7760,13 @@ does not hold it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: a group folded on Programy still folded after a visit to Siedziba, and unfolded after
-    a reload; a save of the game state carrying nothing of folding
+- **Verification:** tests: one memory of the page holding the folding, so that a group folded on
+  Programy stands folded on the screen of a map run for the same program, the other screen redrawn
+  at once; a new memory with every rule group unfolded. For the folding going with a reload and
+  staying out of the saved game state, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: a group folded on Programy unfolded after a reload; a save of the game state carrying
+    nothing of folding
   - violates: folding kept in the browser's storage; a field of folding in the saved game state
 - **Origin:** none
 
@@ -7782,10 +7784,13 @@ program rule dropped on it lands at its end while the group stays folded.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: a folded group of three rules showing its name, its condition and the number three; a
-    rule dropped on it becoming its fourth while it stays folded
-  - violates: the group unfolding at the drop; the rule landing at the group's start
+- **Verification:** tests: a folded group showing its header alone, with its name and the number of
+  its rules; a rule dropped on a folded group landing at its end, the line standing under its header
+  and the group staying folded. For the condition a folded group shows, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: a folded group under „Temperatura poniżej 35” showing that condition in its header
+    beside its name and „3 reguły”
+  - violates: the condition left out of the header of a folded group
 - **Origin:** none
 
 *Rationale:* a group that stays folded keeps the list where it stood under the pointer.
@@ -7799,11 +7804,10 @@ the group's „✕” stands in its header.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: a click on the header of „Program” opening the rule panel on its name and „Zawsze”;
-    „✕” of the group in that header
-  - violates: a select list of conditions or a text field of the name in the header of a rule
-    group
+- **Verification:** tests: a click on the header of a rule group asking to open the group, on
+  Programy and on the screen of a map run, and the panel then standing under that header with the
+  field of the group's name; the panel of a group holding the fields of its name and its condition;
+  „✕” of the group in its header.
 - **Origin:** none
 
 *Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
@@ -7819,11 +7823,10 @@ first rule and „↓” only on its last.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „↓” on rule 1.3, the last of group 1, making it rule 2.1; „↑” on rule 2.1 making it the
-    last rule of group 1
-  - violates: „↓” disabled on the last rule of a group that has a next group; the rule landing at the
-    end of the next group
+- **Verification:** tests: „↓” on the last rule of a group moving it to the start of the next
+  group, an empty one too, and „↑” on the first rule of a group to the end of the previous one,
+  computed and from the buttons of the list; „↑” disabled only on the program's first rule and „↓”
+  only on its last, the border of a group being no end.
 - **Origin:** none
 
 *Rationale:* arrows suit moving a single rule (D-288), and across the edge of a group the rule lands
@@ -7839,10 +7842,12 @@ Beside the rule groups of a program that holds more than one rule group stands a
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-275 · derives from D-294
-- **Verification:** an agent compares a change with the decision:
-  - complies: the button made with the shared button beside a program of two groups, and absent
-    beside a program of one
-  - violates: „zwiń wszystkie” drawn as underlined text; the button beside a program of one group
+- **Verification:** tests: „zwiń wszystkie” folding every rule group, „rozwiń wszystkie” standing
+  in its place once every group is folded and unfolding every group, and neither standing beside a
+  program of one group. For the button being a plain button, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the button made with the shared button beside a program of two groups
+  - violates: „zwiń wszystkie” drawn as underlined text
 - **Origin:** none
 
 *Rationale:* folding five groups one by one takes five clicks. The button neither opens nor leaves a
@@ -7857,9 +7862,13 @@ The pick of the rule panel holds no search field and no row of recent picks.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the pick of a game with every action discovered standing whole without scrolling
-  - violates: a search field above the cells; a row „ostatnio” above the grid
+- **Verification:** tests: no field to type in and no row „ostatnio” in the rule panel open on the
+  pick of conditions. For the picks of actions and of targets, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the pick of actions of a game with every action discovered standing whole without
+    scrolling, with no field above its cells
+  - violates: a search field above the cells of the actions; a row „ostatnio” above the grid of
+    targets
 - **Origin:** none
 
 *Rationale:* when this was settled every cell of the pick fitted without scrolling, so neither a
@@ -7875,9 +7884,12 @@ The program editor shows no current value beside a condition, such as „teraz 3
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run
-  - violates: „teraz 3” beside a condition in a rule's row or in the rule panel
+- **Verification:** tests: no „teraz” in the rule panel open on the pick of conditions outside a
+  map run. For a rule's row, and for the rule panel during a map run, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run, in its row and in
+    the rule panel
+  - violates: „teraz 3” beside a condition in a rule's row, or in the rule panel during a map run
 - **Origin:** none
 
 *Rationale:* a current value takes another reading of the game state and an answer to what to show
@@ -7893,9 +7905,8 @@ A rule group that holds no program rule shows „Pusta grupa — przepuszcza dal
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: the rule group „Program” of a new game showing „Pusta grupa — przepuszcza dalej.”
-  - violates: an empty rule group with nothing under its header
+- **Verification:** tests: „Pusta grupa — przepuszcza dalej.” in a rule group that holds no rule,
+  and not in a group that holds rules.
 - **Origin:** none
 
 *Rationale:* the sentence says what the character does with such a group: it passes on to the next.
@@ -7925,9 +7936,8 @@ A program rule and a rule group are deleted at once, at the click, with no quest
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „✕” of a rule group removing the group at the click
-  - violates: a window asking whether to delete a program rule
+- **Verification:** tests: „Usuń” of a program rule and „✕” of a rule group each handing over, at
+  the click, the program without that rule or group, with no question between.
 - **Origin:** none
 
 *Rationale:* a question costs a click more at every deletion.
@@ -7941,9 +7951,13 @@ the list.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-124
-- **Verification:** an agent compares a change with the decision:
-  - complies: „+ dodaj grupę” at the foot of the list, under the last rule group
-  - violates: „Dodaj grupę” at the foot of the list
+- **Verification:** tests: the button „+ dodaj grupę” adding an empty rule group with the next
+  number, and no button „Dodaj grupę”. For where the button stands, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: „+ dodaj grupę” at the foot of the list, under the last rule group, also when that
+    group is folded
+  - violates: „+ dodaj grupę” above the rule groups, or on one line with „+ reguła” of the last
+    group
 - **Origin:** none
 
 *Rationale:* the two buttons that add are written in one notation; „+ dodaj grupę” stands once under
@@ -7959,10 +7973,11 @@ rule or a rule group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-93
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: no „⊘”, no „nie zadziała” and no element of the class `warning` in a
+  rule list whose rules all fired 0 times. For an amber „0×” drawn by a style of the count itself,
+  an agent compares a change with the part no invariant and no test holds:
   - complies: a rule that has not fired in the map run showing „Wykonano 0×” as any count does
-  - violates: „⊘” beside a rule; „2 reguły nie zadziała” in the header of a rule group; „0×” in
-    `warning`
+  - violates: a style rule of the count giving „Wykonano 0×” the colour `warning`
 - **Origin:** none
 
 *Rationale:* the state a program rule shows during a map run is given by its backgrounds and its bar
