@@ -96,6 +96,12 @@ class TestsWorkflow(unittest.TestCase):
         used = {step["uses"].split("@")[0] for step in steps() if "uses" in step}
         self.assertEqual(used, ACTIONS)
 
+    def test_no_step_and_not_the_job_lets_the_run_pass_when_it_fails(self):
+        # Breaking it: put `continue-on-error: true` on the step of `npm test` or on the job; the
+        # run would report success whatever `npm test` ends with, and the required check could
+        # never turn red.
+        self.assertNotIn("continue-on-error", code())
+
     def test_the_actions_stand_at_the_commits_of_their_releases(self):
         # Breaking it: name an action by a tag; a moved tag would change what runs.
         for step in steps():
