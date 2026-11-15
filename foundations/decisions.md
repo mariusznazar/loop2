@@ -1363,9 +1363,9 @@ A character's warmth is its body temperature in degrees Celsius, counted with te
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the cell of temperature of the body row reading „Temperatura 36,8 °C”; a program rule whose condition „Temperatura poniżej N °C” takes 35.5;
-  - violates: warmth shown as points or as a percentage; a condition on warmth that refuses 35.5 as no whole number.
+- **Verification:** tests: warmth as the body temperature in degrees Celsius, shown cut down to
+  tenths in the body row, and a condition on warmth taking a number with tenths and holding it as
+  the decimal the player reads.
 - **Origin:** none
 
 *Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from. Accepted with it: a condition on warmth takes a number with tenths — in loop its default is 36.5 and its step 0.1 — so the check of a program takes tenths in that condition, not whole numbers only.
@@ -1378,9 +1378,10 @@ A character's body cools in each game minute outside combat by more, the further
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-24
-- **Verification:** an agent compares a change with the decision:
-  - complies: Las given its ambient temperature in its row of the game maps' data; a game map with a lower ambient temperature cooling the body faster than Las;
-  - violates: one ambient temperature in the data of the game's balance, shared by every game map; a body cooling by the same amount on two game maps of different ambient temperatures.
+- **Verification:** tests: the body cooling in each game minute outside combat, faster on Las —
+  głębiej than on Las and not at all on a map whose ambient temperature is the body's starting
+  temperature or above it, as the minutes the body lasts, the notes of the body row and the card
+  of a map read it; the ambient temperature standing in each game map's data.
 - **Origin:** none
 
 *Rationale:* The cold of a game map is among what makes it hard, so a colder game map is made by a change of its own data, as D-18 sets for the game's content, and one rule of cooling makes a mild game map gentle and a cold one harsh. The list of what a game map's data holds in D-24 does not name the ambient temperature, and does not rule it out.
@@ -1393,9 +1394,8 @@ Warming raises a character's body temperature up to its starting body temperatur
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage at 36.9 °C beside a burning campfire reaching 37.0 °C and staying there; a berry eaten at satiety 90 bringing it to 100;
-  - violates: a mage warmed to 37.4 °C beside a campfire; satiety above 100 after a meal.
+- **Verification:** tests: the warmth of a burning campfire, of a burning stick and of both
+  together stopping at the starting body temperature; eating stopping at the starting satiety.
 - **Origin:** none
 
 *Rationale:* Warmth and satiety are needs that fall with time, and their starting values are the state of a character in want of nothing. A surplus stored above them would let a program stay away from a campfire and from berries for longer than the game map's numbers say, which decides how hard Las is to pass.
@@ -1408,9 +1408,10 @@ Outside combat, a character loses health in each game minute in which it is chil
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage both chilled and starving losing in a game minute the loss of chill and the loss of hunger together; health rising in a game minute in which the mage is warm and fed, and stopping at full health;
-  - violates: a mage both chilled and starving losing no more than a mage that is chilled; health coming back in a game minute in which the mage is starving.
+- **Verification:** tests: outside combat, a loss of health in each game minute the body is
+  chilled and another, apart, in each game minute it is starving, both read after the minute's
+  fall; health coming back in a game minute that is neither, up to full health; the body and its
+  health standing still in the game minutes of combat until the combat turns change its health.
 - **Origin:** none
 
 *Rationale:* Cold and hunger are two wants, so a program that neglects both pays for both, and health that comes back by itself in a game minute free of both lets a program recover by tending to the character's needs. A streak of game minutes free of a loss to cold or hunger, and the wounds of combat, build on this rule.
@@ -1423,9 +1424,11 @@ A character dies in the game minute in which its health reaches zero, also durin
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the map run ending in the game minute health reaches zero while a gathering started five game minutes before is still under way; a mage both chilled and starving in the game minute of death dying of cold;
-  - violates: death waiting for the character's action in progress to end; a starving mage that is not chilled dying of cold.
+- **Verification:** tests: death in the game minute health reaches zero, also during an action in
+  progress that stays as it stood, the map run then ended in death with its cause and passing no
+  further minute; the cause cold where the body is chilled in that minute, both chilled and
+  starving included, and hunger otherwise; a death through combat with the cause of combat in the
+  game minute of the combat turns.
 - **Origin:** none
 
 *Rationale:* Health at zero ends the map run in the game minute it happens, whatever the character is doing, so the state the player reads after death is the state of that minute. Death ends the map run and any action in progress, as the player ending a map run does; an attack can also cut an action short while the map run goes on. The rule that an action in progress lasts its full duration concerns an action of a map run that goes on, so a death that ends the map run during an action leaves it as it is, as ending the map run does. A death names one cause, so the player reads one reason for it, and combat has its own cause rather than borrowing cold or hunger from the body's state.
@@ -1483,9 +1486,15 @@ The backpack's cap counts the pieces of all items together, and its height is th
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a backpack holding 5 sticks and 10 berries full at a carrying capacity of 15; „Plecak 7/15” taking its 15 from the character's carrying capacity;
-  - violates: a cap for each kind of item; the backpack's cap taken from a game map's data or from a number of the map run in place of the character's carrying capacity.
+- **Verification:** tests: the backpack's cap counting the pieces of all items together — in
+  gathering, „Obchód” included, in what a map run takes in and in „Plecak 7/15” under the scene —
+  and standing at the character's carrying capacity, also where it is other than 15; a new
+  character's carrying capacity of 15. For the character skill trees having no branch that raises
+  carrying capacity, an agent compares a change with the part no invariant and no test holds:
+  - complies: a branch of the gathering tree that shortens a gathering, carrying capacity staying
+    15
+  - violates: „Mocne plecy”, a branch of the gathering tree that raises carrying capacity by 5
+    pieces for each rank
 - **Origin:** none
 
 *Rationale:* The scope accepted for the first version of the game caps the backpack at 15 pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character as a trait, a number that acts always; a number that acts in one action alone belongs to the tree of that action's character skill, never to a trait. A character founded in a team carries it too. The team's chest takes the same rule of counting. Accepted with it: the growth of a trait through a branch, which the game's concept describes, waits for a change of that scope.
@@ -1498,9 +1507,9 @@ A character carries out a gathering while its backpack holds fewer pieces than i
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: a program rule „Zbierz — patyk” passed over with 15 pieces of 15 in the backpack, and the next program rule carried out;
-  - violates: a gathering carried out with a full backpack, its piece thrown away.
+- **Verification:** tests: „Zbierz” feasible with fewer pieces in the backpack than its cap and
+  not with a full backpack; the program passing over a gathering rule with a full backpack to the
+  next rule, or to waiting where „Obchód” has none after it.
 - **Origin:** none
 
 *Rationale:* A gathering that could bring nothing is no action of the character to carry out, so the program moves on to a program rule that does something, as a group of program rules passes on to the next, and as packing for a trip takes as many items from the top of the list as fit.
@@ -1513,9 +1522,8 @@ A gathering may miss, and a missed gathering leaves the tile's stock as it was a
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a missed gathering on a tile with 3 sticks leaving 3 sticks there and the backpack as it was;
-  - violates: a missed gathering taking a stick from the tile.
+- **Verification:** tests: a gathering missing where its draw gives a miss, and a missed gathering
+  leaving the tile's stock and the backpack as they were.
 - **Origin:** none
 
 *Rationale:* Gathering with a miss belongs to the scope accepted for the first version of the game. A miss costs the character the time of the gathering, and the stock stays for the next try, so luck changes how long gathering takes rather than how much a tile gives.
@@ -1528,9 +1536,17 @@ A tile holding fewer pieces of a resource than its starting stock gains one piec
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-24
-- **Verification:** an agent compares a change with the decision:
-  - complies: a tile of Las missing two sticks of its starting stock since game minute 45 gaining a stick in game minute 60 and another in game minute 90, sticks renewing one piece in 30 game minutes; a tile at its starting stock gaining nothing;
-  - violates: a tile growing above its starting stock; a tile refilled to its starting stock at once; a tile whose sticks fall below its starting stock in game minute 45 waiting for its own 30 game minutes and gaining its first stick in game minute 75.
+- **Verification:** tests: a tile below its starting stock gaining one piece in each game minute
+  that is a whole multiple of the time to renew its game map's data gives each resource, sticks
+  and berries apart, up to its starting stock and never above it; a tile at its starting stock
+  gaining nothing; a resource with no time to renew in the data never renewing; a renewal in a
+  game minute of combat and in the minute an exploration ends. For a tile that falls below its
+  starting stock after game minute zero, an agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a tile of Las missing a stick of its starting stock since game minute 45 gaining it
+    in game minute 60
+  - violates: a tile whose sticks fall below its starting stock in game minute 45 waiting for its
+    own 30 game minutes and gaining its first stick in game minute 75
 - **Origin:** none
 
 *Rationale:* A gathered tile recovers at the pace its game map sets, so gathering is a choice of where and when. The data of a game map give only the time to renew one piece, so the bound is set here, and it keeps a tile from growing past what the layout gave it, also over the hours of a player's absence that the game counts later. Counted from the start of the map run, renewal needs no record of its own for each tile, and the pieces a span of game minutes brings follow from the span by arithmetic, as counting the hours of a player's absence needs. Accepted with it: a tile that falls below its starting stock shortly before a multiple of the time to renew gains its piece back sooner than that time.
@@ -9732,9 +9748,13 @@ A condition that takes a number accepts it from a minimum to a maximum, both inc
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-23 · derives from D-175
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Temperatura poniżej” taking 36.6 and refusing 36.55, 29.9 and 37.1; „Energia natury poniżej” taking 0 and 100 and refusing −1, 101 and 0.5; „Energia natury poniżej 30” holding with 29.5 nature energy and not with 30
-  - violates: „Zostało mniej niż — ognisko” taking 121; „Sytość poniżej” taking 50.5; „Energia natury poniżej 0” holding with 0 nature energy
+- **Verification:** tests: each condition that takes a number holding while the value it reads is
+  below the number and not at it; the program check taking each such condition's numbers from its
+  minimum to its maximum on its step, refusing a number off the step, outside the range or no
+  finite number, and keeping a temperature as the decimal with tenths, in a rule and in a group's
+  condition; the number field of the rule panel taking each condition's range and step; the number
+  each condition starts with in the program editor and in the rule a discovery adds; „Zdrowie
+  poniżej” and „Przeciwnik ma poniżej” taking 0 to 100 by 1, from 50 and 10.
 - **Origin:** none
 
 *Rationale:* the ranges, the steps and the numbers a condition starts with are those of the old loop game's data, the energy's included, whose range reaches the cap of nature energy (D-176). Each condition's numbers stand in its row of the game's data (D-18), so a new condition names its own, and the check of a program and the number field of the rule panel read the same range and step. The check keeps the number as the player reads it, so the program holds the number the player wrote.
@@ -9895,9 +9915,13 @@ These numbers are requirements of the game, held in its data (D-18), that tests 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-58 · derives from D-60
-- **Verification:** an agent compares a change with the decision:
-  - complies: on Las, which holds the air at 25 °C, a body with no fire cooling by 0.024 °C a game minute, so that it stands at 35.008 °C in game minute 83 and is first chilled at 34.984 °C in game minute 84, while on Las — głębiej, at 7 °C, it cools by 0.06; satiety at 30.4 in game minute 116 and starving at 29.8 in game minute 117; a game minute in which the body is chilled alone taking 0.35 health, chilled and starving together 0.7, and neither giving back 0.05 up to 100; „Wytwórz — ognisko” lasting 20 game minutes and taking 6 sticks; „Zapal — ognisko” lasting 5 game minutes, taking 2 sticks and leaving 60 minutes of burning; „Zasil — ognisko” taking one stick and adding 20 minutes; „Zjedz — jagoda” at 50 satiety giving 75 and at 90 giving 100
-  - violates: a campfire made from 5 sticks or in 15 game minutes; a campfire lit for 30 minutes of burning; a feeding that adds 10 minutes of burning; a berry that gives 20 satiety; a body chilled below 36.0 °C or starving below 25 satiety; health regained in a game minute in which the body is starving; a gathering that always succeeds
+- **Verification:** tests: the body's start and caps of 37.0 °C, 100 satiety and 100 health, its
+  cooling by 0.002 °C for each degree of its map's air below 37.0 on Las and on Las — głębiej,
+  its fall of 0.6 satiety, its thresholds of chill and hunger, its losses of 0.35 health each and
+  its regaining of 0.05; a gathering's 10 game minutes and chance of 0.7; the game minutes,
+  sticks and minutes of burning of making, lighting and feeding a campfire and of lighting a
+  stick, the warmth of a burning campfire and of a burning stick, and the game minutes, berry and
+  satiety of eating.
 - **Origin:** none
 
 *Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The numbers of nature energy are D-176's, D-177's and D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning them later is a change of this decision as well as of data and tests (D-18).
