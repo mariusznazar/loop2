@@ -724,6 +724,7 @@ test("a run started before another character solved the map still pays practice 
 
 test("the preview of a marked run is empty whatever its backpack and the chest hold", () => {
   // invariant: solved-map-manual-run
+  // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
   const run = sent(solvedForest()).run;
   assert.deepEqual(tripLoot(run, { pieces: {} }, MAPS.forest), []);
   assert.deepEqual(

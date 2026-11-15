@@ -314,6 +314,7 @@ test("a map run entered with an empty backpack keeps an empty list", () => {
 });
 
 test("a map run of a solved map keeps what it took from nowhere, and the chest stays as it was", () => {
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   const state = sentWithChest(
     taking([{ item: "stick", count: 4 }], {
       condition: ALWAYS,
