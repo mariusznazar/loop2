@@ -17,6 +17,7 @@ const refusal = (status, code, message) => ({
 });
 
 test("the fragment's token is read as it stands, and any other fragment yields none", () => {
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   const cases = [
     ["a fragment with a token", `#reset-password=${TOKEN}`, TOKEN],
     ["no fragment", "", null],
@@ -35,6 +36,8 @@ test("the fragment's token is read as it stands, and any other fragment yields n
 });
 
 test("only a success is a change and only the code invalid-link is a refused link, whatever its reason or status", () => {
+  // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
+  // decision: D-225 "No connection or a full password gate leaves the form, one sentence under it and the link working."
   const unreachable = (reason, message) => ({
     ok: false,
     failure: { kind: "unreachable", reason, message },

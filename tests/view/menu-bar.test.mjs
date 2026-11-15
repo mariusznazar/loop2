@@ -377,6 +377,7 @@ test("the controls of the open menu stand after „Konto” in the order Tab wal
 // --- the sentence about the address and „Wyślij ponownie” (D-157, D-44) ------------------------
 
 test("an unconfirmed address shows its sentence in text-secondary above „Wyślij ponownie”; a confirmed one shows neither", async () => {
+  // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: UNCONFIRMED }) });
     await press(buttonNamed(page.root, "Konto"));
@@ -395,6 +396,9 @@ test("an unconfirmed address shows its sentence in text-secondary above „Wyśl
 
 test("right after registration the sentence is the outcome of the registration's message", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
     await withPage(async (page) => {
       await openBar(page, {
@@ -414,6 +418,9 @@ test("right after registration the sentence is the outcome of the registration's
 
 test("a send waits with the button disabled as Wysyłanie…, the menu stays open, then the outcome stands, the button is restored and focused", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
     await withPage(async (page) => {
       const { held } = await openBar(page, {
@@ -450,6 +457,9 @@ test("a send waits with the button disabled as Wysyłanie…, the menu stays ope
 });
 
 test("the menu stays open after the answer to „Wyślij ponownie” until the player closes it", async () => {
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   await withPage(async (page) => {
     const { held, outside } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -470,6 +480,8 @@ test("the menu stays open after the answer to „Wyślij ponownie” until the p
 });
 
 test("a failure of the client stands in warning with its own sentence, and the button stays", async () => {
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   await withPage(async (page) => {
     const { held } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -496,6 +508,8 @@ test("a failure of the client stands in warning with its own sentence, and the b
 });
 
 test("a refusal other than an address already confirmed is a failure too: its sentence in warning and the button stays", async () => {
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   await withPage(async (page) => {
     const { held } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -510,6 +524,7 @@ test("a refusal other than an address already confirmed is a failure too: its se
 });
 
 test("the server's answer that the address is already confirmed removes the sentence and the button, and keeps the address, „Wyloguj” and the open menu", async () => {
+  // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
   await withPage(async (page) => {
     const { held } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -530,6 +545,7 @@ test("the server's answer that the address is already confirmed removes the sent
 });
 
 test("the page's account turning confirmed removes the sentence and the button", async () => {
+  // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
   await withPage(async (page) => {
     const { bar } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -545,6 +561,8 @@ test("the page's account turning confirmed removes the sentence and the button",
 
 test("an answer that comes while the menu is closed is there when the player opens it, and takes no focus", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
   await withPage(async (page) => {
     const { held, field } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),

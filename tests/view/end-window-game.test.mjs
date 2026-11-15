@@ -588,6 +588,7 @@ test("the window opens again at every entering of the screen of an ended map run
 // address, after a sign-in, at another address of the page — with no window, and a window standing
 // under the other screen.
 test("a game built on an ended map run opens the window: at a reload at its address, after a sign-in, and at the entering from another address", async () => {
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   await onPage(async ({ root }) => {
     const reload = await viewOf(dead(going()));
     assert.ok(windowOf(root), "a reload at the address of the map run");

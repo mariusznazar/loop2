@@ -844,6 +844,8 @@ const NO_CONNECTION = {
 // D-323, D-208, D-96, D-213. Catches the sentence of the failure
 // standing beside the sentence a failure the game foresees already has, or its line written for it.
 test("a failure the game foresees keeps its own sentence alone: a lost connection, a refused sign-in and a load that meets an error of the code", async () => {
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
+  // decision: D-96 "Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać."
   await onPage(async ({ root, lines }) => {
     const held = heldClient();
     await startPage(held);
@@ -944,6 +946,7 @@ test("an error in the drawing of a root of the game reaches the page through the
 test("a card that React takes down after an error is replaced by the sentence alone in its place, and the page hears of the error", async () => {
   // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262)"
   // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
+  // decision: D-262 "When React takes the card down after an exception no code of the game handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” stands alone in the card's place (D-323)."
   await onPage(async ({ lines }) => {
     await outsideAct(async () => {
       const heard = [];
@@ -980,6 +983,7 @@ test("a card taken down on the page leaves the sentence alone in the card's plac
   // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262)"
   // decision: D-323 "The page writes the line of the error as D-253 gives it"
   // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
+  // decision: D-262 "When React takes the card down after an exception no code of the game handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” stands alone in the card's place (D-323)."
   await onPage(async ({ root, lines }) => {
     await outsideAct(async () => {
       const held = heldClient();

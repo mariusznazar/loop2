@@ -434,6 +434,7 @@ async function registerPage(held) {
 
 test("until the server names an account the page has neither the game nor a running clock", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”"
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await startPage(held);
@@ -470,6 +471,8 @@ test("until the server names an account the page has neither the game nor a runn
 
 // D-259: one form at a time, the card opening on „Zaloguj się” with „Załóż konto” behind the switch.
 test("an answer of no session shows the card on „Zaloguj się”, and the switch „Załóż konto”, each with visible labels, and no game", async () => {
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
   await onPage(async ({ root, intervals }) => {
     const shownForms = await signedOutPage(heldClient());
     assert.deepEqual(Object.keys(shownForms), ["Zaloguj się"]);
@@ -501,6 +504,7 @@ test("an answer of no session shows the card on „Zaloguj się”, and the swit
 });
 
 test("an answer that names no account and is not a refusal of the session shows one warning with retry, neither forms nor game", async () => {
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
   const answers = {
     "no connection": NO_CONNECTION,
     "a server error": {
@@ -561,6 +565,7 @@ test("an answer that names no account and is not a refusal of the session shows 
 
 // D-381: one form stands, so the lock of the whole card holds its field, its button and the switch.
 test("a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { "Zaloguj się": login } = await signedOutPage(held);
@@ -604,6 +609,7 @@ test("a sent login waits with the whole card locked, and a refusal leaves one wa
 });
 
 test("a lost connection on registration leaves one warning under that form and focus on its button", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const register = await registerPage(held);
@@ -629,6 +635,7 @@ test("a lost connection on registration leaves one warning under that form and f
 // fields.
 test("a created account enters the game at once, and the page keeps no password", async () => {
   // decision: D-202 "Anyone can create a player account and start playing without approval"
+  // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const register = await registerPage(held);
@@ -756,6 +763,8 @@ async function requestPage(held) {
 
 // D-96: the button puts the form in the card, in place of the one form that stands.
 test("the button under „Zaloguj się” puts in its place one form with an empty address, „Wyślij odnośnik” and „Wróć do logowania”", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const before = await signedOutPage(held);
@@ -787,6 +796,7 @@ test("the button under „Zaloguj się” puts in its place one form with an emp
 });
 
 test("a request waits with its field and every button of the screen locked, and sends nothing twice", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -812,6 +822,7 @@ test("a request waits with its field and every button of the screen locked, and 
 
 // D-381: one form stands, so the button locks with it.
 test("while a login waits, the button „Nie pamiętam hasła” is locked with the form and opens nothing", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { "Zaloguj się": login } = await signedOutPage(held);
@@ -855,6 +866,7 @@ test("a well-formed address gets the one sentence of the reset under the form in
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222"
   // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
   // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -886,6 +898,7 @@ test("a well-formed address gets the one sentence of the reset under the form in
 });
 
 test("a refusal or a lost connection on a request stands as the form's warning, keeps the address and returns focus to where it was sent from", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -915,6 +928,8 @@ test("a refusal or a lost connection on a request stands as the form's warning, 
 
 // D-96: „Wróć do logowania” brings back „Zaloguj się”, the one form that goes back to it.
 test("„Wróć do logowania” brings back „Zaloguj się”, and nothing typed, no sentence and no warning survives a second visit", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -977,6 +992,9 @@ async function signedInPage(held) {
 test("a confirmed logout or an expired session removes the game and its clock and brings back the card, with focus in its first field", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
   // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers"
+  // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-259 "The login card opens on „Zaloguj się”."
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
     "an expired session": NO_SESSION,
@@ -1084,6 +1102,7 @@ async function unconfirmedPart(root) {
 const barText = (root) => byClass(root, "menu-bar")[0].textContent;
 
 test("a reload or sign-in with an unconfirmed address shows the sentence and Wyślij ponownie in the open menu „Konto”, before Wyloguj, and leaves them at logout", async () => {
+  // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -1127,6 +1146,7 @@ test("a reload or sign-in with an unconfirmed address shows the sentence and Wy�
 });
 
 test("a confirmed address shows no sentence and no Wyślij ponownie in the open menu, which holds the address and Wyloguj", async () => {
+  // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -1145,6 +1165,9 @@ test("a confirmed address shows no sentence and no Wyślij ponownie in the open 
 
 test("a created account starts the sentence of its menu with the outcome of its first message, and the closed bar shows no mark of it", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   const outcomes = {
     sent: "Wysłaliśmy odnośnik potwierdzający na ala@example.com.",
     limited: "Za dużo wiadomości. Spróbuj ponownie za godzinę.",
@@ -1187,6 +1210,8 @@ test("a created account starts the sentence of its menu with the outcome of its 
 
 test("Wyślij ponownie sends one request for the signed-in account and shows its outcome in the menu, which stays open", async () => {
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -1276,6 +1301,8 @@ test("with a token in the address the page confirms first, saying so, and checks
 // D-259: the card shows one form.
 test("the result stands as one sentence above the game for a signed-in player and leaves at the next change between forms and game", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-261 "It stays while the card changes state and leaves only at a change between the card and the game."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(LINK));
@@ -1303,6 +1330,8 @@ test("the result stands as one sentence above the game for a signed-in player an
 test("a refused link stands in warning above the form in the card for a player who is not signed in, and the fragment goes", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
   // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game"
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -1462,6 +1491,9 @@ function fieldMessage(input) {
 }
 
 test("with a reset token in the address the page shows the form at once, asking nothing, building no game and saving nothing", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
+  // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const address = fakeAddress(RESET_LINK);
@@ -1506,6 +1538,8 @@ test("with a reset token in the address the page shows the form at once, asking 
 });
 
 test("a sent form waits with its fields and „Anuluj” locked, sends the token and both passwords once and keeps the fragment", async () => {
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(RESET_LINK);
@@ -1574,6 +1608,11 @@ test("a password the server would refuse sends nothing, marks the field at fault
 // it, above its switch.
 test("a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks about no session and focuses the address field", async () => {
   // decision: D-138 "The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password and signs nobody in, so the player signs in with the new password on the form"
+  // decision: D-225 "After the password is set, „Hasło zmienione."
+  // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const address = resetAddress(root);
@@ -1607,6 +1646,9 @@ test("a change clears the fragment first, then shows a new card with the sentenc
 // D-261: where the check leads to the forms, the sentence stands in the card.
 test("a refused link, whatever its reason, clears the fragment first and then checks the session: the card or the game with the sentence in warning above the form or the game", async () => {
   // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game"
+  // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
   const reasons = {
     "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
     "a link of a blocked account": "Konto jest zablokowane.",
@@ -1664,6 +1706,8 @@ test("a refused link, whatever its reason, clears the fragment first and then ch
 
 // D-259: the card shows one form.
 test("„Anuluj” clears the fragment first and opens the page as usual with the session check and no sentence", async () => {
+  // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
+  // decision: D-259 "The login card opens on „Zaloguj się”."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = resetAddress(root);
@@ -1691,6 +1735,8 @@ test("„Anuluj” clears the fragment first and opens the page as usual with th
 });
 
 test("a failure that is no change and no refused link keeps the form, the fragment and the link, with the client's sentence under the form and focus back where the player sent it from", async () => {
+  // decision: D-225 "No connection or a full password gate leaves the form, one sentence under it and the link working."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   for (const [name, failure] of Object.entries(KEEPING_FAILURES)) {
     await onPage(async ({ root }) => {
       const held = heldClient();
@@ -1819,6 +1865,7 @@ async function expiredPage(held) {
 test("a 401 on a save keeps the state, and a sign-in to the same account sends it and returns to the game from it", async () => {
   // decision: D-211 "When the server answers a save of the game state that there is no session, whatever ended it — an expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”"
   // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give"
+  // decision: D-259 "The login card opens on „Zaloguj się”."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const kept = await expiredPage(held);
@@ -1908,6 +1955,8 @@ function faultInLoad(quoted) {
 // console, which may quote what the save holds. The sentence and the button are D-96's, and that the
 // retry saves nothing is D-207's: nothing the player did changed.
 test("an error of the code in the load of a downloaded save keeps the save, builds no game, and the retry loads it", async () => {
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
+  // decision: D-96 "Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await startPage(held);
@@ -1948,6 +1997,8 @@ test("an error of the code in the load of a downloaded save keeps the save, buil
 // retry finds no state and the next load brings the older save; the state left for another account.
 test("an error of the code in the load of the kept state keeps it for the retry, and only then is it sent", async () => {
   // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give; after a sign-in to another account the state is dropped and the game loads that account's saved game state"
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
+  // decision: D-96 "Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const kept = await expiredPage(held);
@@ -2028,6 +2079,7 @@ const pageNotices = (root) =>
 // saved by itself over nothing.
 test("after the session check the page keeps „Sprawdzanie logowania…” until the saved game state answers, and none gives a new game that saves nothing by itself", async () => {
   // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -2054,6 +2106,7 @@ test("after the session check the page keeps „Sprawdzanie logowania…” unti
 // headquarters, an ended one closed, and a loaded game saved again by itself.
 test("a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on its screen after the end", async () => {
   // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   const passingAt8 = { ...passing(), pace: 8 };
   for (const [name, game, expected] of [
     ["going on", passingAt8, { pause: "Wznów", pace: "8×" }],
@@ -3141,6 +3194,8 @@ test("a clock tick rewrites the resurrection line of the headquarters at the clo
 // D-96. Catches a new game built when the saved game state cannot be had, a retry that asks for the
 // save alone, and a 401 read as a failure. D-259: the card shows one form.
 test("a failed or uncertain answer for the saved game state shows the warning with retry, which asks both again; no session shows the forms", async () => {
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
+  // decision: D-259 "The login card opens on „Zaloguj się”."
   const answers = {
     "no connection": NO_CONNECTION,
     "a server error": {
@@ -3196,6 +3251,9 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
 test("a refused save starts a new game with its one-time sentence above it, after a confirmation notice, and saves the new game at once on the server's revision", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
   // decision: D-208 "A save of the game state that succeeds shows nothing"
+  // decision: D-96 "Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać."
+  // decision: D-96 "Zaczynasz od nowa.” for the first two and „Zapis był uszkodzony i nie dał się wczytać."
+  // decision: D-96 "Zaczynasz od nowa.” for the last."
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
@@ -3376,6 +3434,7 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
   // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives"
   // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure"
   // decision: D-211 "When the server answers a save of the game state that there is no session, whatever ended it — an expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”"
+  // decision: D-259 "The login card opens on „Zaloguj się”."
   const outcomes = [
     ["saved", { kind: "saved", revision: 5 }, null],
     ["a conflict", { kind: "conflict" }, null],
@@ -3442,6 +3501,8 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving"
   // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them"
   // decision: D-210 "The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in `warning` on the header line of D-208 and saves nothing more, while the game stays on its screen"
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -3840,6 +3901,7 @@ const RUN_ADDRESS = "#/postac/1/przejscie";
 // manual map run of the save not opened after a sign-in or a reload with no fragment, and a reload
 // at an address taken to the map run.
 test("the first screen of each entry: the sign-in form and a reload with no fragment lead to Siedziba or to the save's map run, a reload at an address to its screen", async () => {
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   // After the sign-in form, whatever the tab's address was.
   for (const [name, game, screen, hash] of [
     ["a save with a map run going on", passing(), "run", RUN_ADDRESS],
@@ -3890,6 +3952,7 @@ test("the first screen of each entry: the sign-in form and a reload with no frag
 // saved game state holds a manual map run staying on the screen Postać of character 2”. Catches
 // the save's map run winning over the address, and the screen Postać not built for the address.
 test("a reload at #/postac/1 while the save holds a map run opens the screen Postać of Ala, with the bar marking Siedziba and „Wróć do przejścia”", async () => {
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/postac/1", passing());
@@ -3910,6 +3973,7 @@ test("a reload at #/postac/1 while the save holds a map run opens the screen Pos
 // D-281. Catches an address of the five that opens another screen, or one the page
 // rewrites although it names an existing screen.
 test("a reload at each of the seven addresses opens its screen and leaves the address as it is", async () => {
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   for (const [hash, screen] of [
     ["#/", "headquarters"],
     ["#/postac/1", "character"],
@@ -3933,6 +3997,7 @@ test("a reload at each of the seven addresses opens its screen and leaves the ad
 // screen, a map picked at `#/mapy` before the player picks one, a card that is not the map the
 // address names, and the name of a character in „Kto idzie” that is no link to its screen Postać.
 test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none, and the name of a character is a link to its screen Postać", async () => {
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/mapy/forest", fullGame());
@@ -4319,6 +4384,9 @@ test("„Wyloguj” on the screen of a map run going on saves it as it goes and 
 test("after an emailed link — a confirmation, „Anuluj” of „Ustaw nowe hasło” or a refused link — a signed-in player opens Siedziba, whatever the save holds", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one, whatever screen the game opens on"
   // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game"
+  // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
+  // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
+  // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -4748,6 +4816,7 @@ test("after „Zakończ” `#/programy` shows the first program once the copy's 
 // reload, and one that comes back on the return to Siedziba.
 test("the page's sentence above the first screen leaves at the first change of screen and does not come back", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
+  // decision: D-96 "Spróbuj ponownie.” in `warning`; a saved game state that the game discards — of another version, naming an archetype missing from the data or of a shape the game does not admit — starts a new game, above which stands once, in `warning`, „Zapis pochodził z innej wersji gry i nie dał się wczytać."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -4919,6 +4988,7 @@ test("the screens Postać and Mapy are built on entering them and gone on leavin
 // and one that rewrites the fragment before the reload, which would send the reloaded page to
 // Siedziba with no token.
 test("a fragment of an emailed link that appears in the address of an open game reloads the page, which keeps the fragment and the screen as they were", async () => {
+  // decision: D-352 "When the fragment of an emailed link (D-156, D-224), `#confirm-email=<token>` or `#reset-password=<token>`, appears in the address of a tab whose game is open, the page reloads and then does what a page opened by that link does."
   for (const [name, link] of [
     ["a confirmation link", LINK],
     ["a password-reset link", RESET_LINK],
@@ -4948,6 +5018,7 @@ test("a fragment of an emailed link that appears in the address of an open game 
 // Catches a listener that reloads at every change of the address, and one that takes a fragment that
 // only begins like a link, with no token sign, for one.
 test("any other change of the address of an open game goes on as before and reloads nothing", async () => {
+  // decision: D-352 "When the fragment of an emailed link (D-156, D-224), `#confirm-email=<token>` or `#reset-password=<token>`, appears in the address of a tab whose game is open, the page reloads and then does what a page opened by that link does."
   await onPage(async ({ root }) => {
     const address = fakeAddress("#/");
     const { view } = await viewOf(withCharacter(), address);
@@ -5049,6 +5120,8 @@ const waitingText = (root) =>
 // header. D-27, D-262: catches a footer, whatever it holds, standing at the page's body on a waiting
 // screen or over the game.
 test("the card stands alone in the page's body, and the screens before and after it keep the header and have no footer", async () => {
+  // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
+  // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -5134,6 +5207,9 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
 // D-96, D-225, D-262, D-381 (on what closes a card). Catches a card left
 // standing over a waiting screen, or under it the page still hidden.
 test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
+  // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
+  // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(RESET_LINK));
@@ -5167,6 +5243,9 @@ test("the card of a reset link stands alone at once, and each way out of it show
 // D-96, D-213, D-381. Catches a failed load of the kept state that leaves the card
 // standing, its sentence and „Spróbuj ponownie” out of sight, since no waiting screen comes first.
 test("an error of the code in the load of the kept state closes the card, so its warning and retry show", async () => {
+  // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
+  // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await expiredPage(held);
@@ -5186,6 +5265,7 @@ test("an error of the code in the load of the kept state closes the card, so its
 // waiting screen before it, leaving the card over the game.
 test("a sign-in that goes straight back to the kept game closes the card", async () => {
   // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give"
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await expiredPage(held);
@@ -5199,6 +5279,7 @@ test("a sign-in that goes straight back to the kept game closes the card", async
 // D-381: focus() is called after a confirmed logout and after a password was set, and no other
 // opening of the card moves focus. Catches a call of focus() added to `showForms` itself.
 test("a card opened by the session check or by an expired save takes no focus", async () => {
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async () => {
     const held = heldClient();
     await signedOutPage(held);
@@ -5216,6 +5297,9 @@ test("a card opened by the session check or by an expired save takes no focus", 
 // a sentence lost at a press, and a pending sentence that also comes back above the game.
 test("the page's sentence stays in the card through a press of the switch, in warning as an alert, and leaves when the game comes", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player"
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
+  // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
+  // decision: D-261 "It stays while the card changes state and leaves only at a change between the card and the game."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await loggingOutPage(held);
@@ -5372,6 +5456,9 @@ async function waitingLogin(root, held, options) {
 // D-259. Catches a state other than „Zaloguj się” at the opening, a
 // heading beside the switch, a request sent by the opening and another order in the card.
 test("the card opens on „Zaloguj się” with the name, the sentence, the switch, a form without a heading, „Nie pamiętam hasła” and the folded credits, in that order", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-259 "The login card opens on „Zaloguj się”."
+  // decision: D-259 "The switch stands only in „Zaloguj się” and „Załóż konto”, where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no switch, and the ways out of them are „Wróć do logowania” and „Anuluj”."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5413,6 +5500,8 @@ test("the card opens on „Zaloguj się” with the name, the sentence, the swit
 // D-96, D-259. Catches the form of another state, a heading under the switch, and
 // „Nie pamiętam hasła” standing under „Załóż konto”.
 test("„Załóż konto” shows address, password and repeated password, with no heading and no „Nie pamiętam hasła”, and the switch says so", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-259 "The switch stands only in „Zaloguj się” and „Załóż konto”, where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no switch, and the ways out of them are „Wróć do logowania” and „Anuluj”."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5437,6 +5526,9 @@ test("„Załóż konto” shows address, password and repeated password, with n
 // D-96, D-259. Catches the switch in the state, a field not empty, the heading or a
 // way back missing, and a way back to another state than „Zaloguj się”.
 test("„Nie pamiętam hasła” shows its heading and an empty address with „Wyślij odnośnik” and „Wróć do logowania”, no switch, and the way back opens „Zaloguj się”", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-259 "The switch stands only in „Zaloguj się” and „Załóż konto”, where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no switch, and the ways out of them are „Wróć do logowania” and „Anuluj”."
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5464,6 +5556,9 @@ test("„Nie pamiętam hasła” shows its heading and an empty address with „
 // D-225, D-259. Catches the switch in the form of a link, whose press would have to
 // remove the link, the heading or „Anuluj” missing, and a request sent at the opening.
 test("a card opened with a reset link shows „Ustaw nowe hasło” with its heading, its two fields, „Ustaw hasło” and „Anuluj”, no switch, and asks nothing", async () => {
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
+  // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
+  // decision: D-259 "The switch stands only in „Zaloguj się” and „Załóż konto”, where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no switch, and the ways out of them are „Wróć do logowania” and „Anuluj”."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { address, reset } = resetLink();
@@ -5485,6 +5580,8 @@ test("a card opened with a reset link shows „Ustaw nowe hasło” with its hea
 // Each break here lets a browser correct or refuse an address, or fill the wrong password, with
 // nothing else showing it.
 test("every field keeps its label, hint and autocomplete token, the address its keyboard and no spell check, and no form checks itself", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
   const states = [
     {
       name: "„Zaloguj się”",
@@ -5550,6 +5647,7 @@ test("every field keeps its label, hint and autocomplete token, the address its 
 // D-260. Catches a password kept for the way back, a refusal or a field's message left
 // standing after the switch, focus left behind, and a press that takes the page's sentence too.
 test("a press of the switch empties every field, removes every message, moves focus to the address field and leaves the page's sentence", async () => {
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client, { sentence: POSITIVE_NOTICE });
@@ -5587,6 +5685,7 @@ test("a press of the switch empties every field, removes every message, moves fo
 // D-381. Catches a press that clears what is typed although nothing was
 // switched, and one that takes focus.
 test("a press of the state already shown clears nothing and moves no focus", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5609,6 +5708,9 @@ test("a press of the state already shown clears nothing and moves no focus", asy
 // D-261, and the roles of createConfirmationNotice. Catches a sentence outside the card,
 // below the switch or the heading, gone at a change of state, or in another role.
 test("the page's sentence stands in the card above the switch, or above the form where none stands, in its role, through every change of state", async () => {
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
+  // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
+  // decision: D-261 "It stays while the card changes state and leaves only at a change between the card and the game."
   for (const [notice, role] of [
     [POSITIVE_NOTICE, "status"],
     [WARNING_NOTICE, "alert"],
@@ -5649,6 +5751,8 @@ test("the page's sentence stands in the card above the switch, or above the form
 // D-96. Catches credits missing from a state, not last, unfolded at the opening,
 // remounted by a change of state, which folds them again, or caught by the lock.
 test("the folded credits stand last in all four states, stay open across a change of state and stay usable while the card waits", async () => {
+  // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5693,6 +5797,7 @@ test("the folded credits stand last in all four states, stay open across a chang
 // D-381: the page places the card and calls focus() at once. Catches an asynchronous
 // render, which leaves the element empty when the function returns.
 test("the card stands in its element when createAccountCard returns", async () => {
+  // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
   await onPage(async () => {
     const held = heldClient();
     const inputs = await inAct(() => {
@@ -5711,6 +5816,8 @@ test("the card stands in its element when createAccountCard returns", async () =
 // D-381: no opening of the card moves focus but a call of focus(). Catches an autofocus,
 // and a focus() that holds the first state's field after a change of state.
 test("the card takes no focus when it opens, and focus() moves it to the first field of the state it stands in", async () => {
+  // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const outside = pageDocument().createElement("button");
@@ -5744,6 +5851,7 @@ test("the card takes no focus when it opens, and focus() moves it to the first f
 // D-381. Catches an element left in the page, a typed password left behind in it, and an
 // answer that still signs in, ends the form or clears the link's fragment after the card has gone.
 test("dispose() takes the element out with what it holds, and an answer still awaited is ignored", async () => {
+  // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { card, entered } = await waitingLogin(root, held);
@@ -5772,6 +5880,7 @@ test("dispose() takes the element out with what it holds, and an answer still aw
 // unmounted while it renders, and the harness fails the case on that report; called from render or
 // an effect these would do so. Catches those two places.
 test("signedIn and finished may dispose the card, from the answer and from the click", async () => {
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const opened = await waitingLogin(root, held, {
@@ -5808,6 +5917,7 @@ test("signedIn and finished may dispose the card, from the answer and from the c
 // control left open by the lock, a second request, a warning elsewhere, and focus lost at the
 // unlock: it may return only after the commit, since a disabled control cannot take it.
 test("a sent login locks the whole card, and a refusal leaves one warning under the form and focus where the player sent it from", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5851,6 +5961,7 @@ test("a sent login locks the whole card, and a refusal leaves one warning under 
 // D-381: state shows only after a commit. Catches the guard
 // held in state alone, which lets a second send through before the lock is drawn.
 test("two sends and a switch before the lock is drawn send once and change nothing", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5873,6 +5984,7 @@ test("two sends and a switch before the lock is drawn send once and change nothi
 // D-96: the entry to the game. Catches a confirmation's outcome lost or invented, a field
 // of the answer passed on beyond the account, a value trimmed, and a password left in the field.
 test("a sign-in and a registration hand the account on with the outcome of the message, and keep no password", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { entered } = await waitingLogin(root, held);
@@ -5917,6 +6029,7 @@ test("a sign-in and a registration hand the account on with the outcome of the m
 // D-44. Catches a warning that does not show, a warning kept through the next send, and
 // focus not returned to the button, which is the origin when the field holds no focus.
 test("a lost connection on a registration leaves one warning, removed by the next send, and focus on the button it was sent from", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5992,6 +6105,7 @@ test("a registration the server would refuse sends nothing, marks each field at 
 // state: the field, „Wyślij odnośnik” and „Wróć do logowania” alike.
 test("a request checks its address first and waits with its field and every button locked", async () => {
   // decision: D-222 "An address not so written gets „Podaj adres e-mail w postaci nazwa@domena.” under the field and nothing is sent: the form holds that condition"
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6024,6 +6138,7 @@ test("a request checks its address first and waits with its field and every butt
 test("a well-formed address gets the one sentence under the form in a status, with the field empty and focus back, and the form stays", async () => {
   // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
   // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6054,6 +6169,7 @@ test("a well-formed address gets the one sentence under the form in a status, wi
 // D-44. Catches a refusal taken for the sentence of the reset, an address lost, and focus
 // not back on the control the player sent from, field or button.
 test("a refusal or a lost connection on a request stands as the warning, keeps the address and returns focus", async () => {
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6084,6 +6200,7 @@ test("a refusal or a lost connection on a request stands as the warning, keeps t
 // D-260, „as the button „Nie pamiętam hasła” does”. Catches a typed address or a sentence that
 // comes back at the next visit to the state.
 test("nothing typed and no sentence survives leaving „Nie pamiętam hasła” and coming back", async () => {
+  // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6104,6 +6221,8 @@ test("nothing typed and no sentence survives leaving „Nie pamiętam hasła” 
 // D-44, D-225. Catches a token left out of the request, a second request, „Anuluj” open
 // while the form waits, and a fragment cleared before the answer.
 test("a sent „Ustaw nowe hasło” waits with the whole card locked, sends the token and both passwords once and keeps the fragment", async () => {
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { steps, address, reset } = resetLink();
@@ -6166,6 +6285,7 @@ test("a new password the server would refuse sends nothing, stands under its fie
 // ending of a change told as a refusal.
 test("a change and a refused link, whatever its reason, clear the fragment first and then end the form with their ending", async () => {
   // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.”"
+  // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
   const refused = (message) => ({
     ok: false,
     failure: { kind: "refused", status: 400, code: "invalid-link", message },
@@ -6191,6 +6311,7 @@ test("a change and a refused link, whatever its reason, clear the fragment first
 // D-225; the form's own `ended`. Catches „Anuluj” that leaves the fragment, and a form
 // that ends twice or sends after its end while the page has not yet closed the card.
 test("„Anuluj” clears the fragment first and ends the form, which then ends no second time and sends nothing", async () => {
+  // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { steps, address, reset } = resetLink();
@@ -6211,6 +6332,8 @@ test("„Anuluj” clears the fragment first and ends the form, which then ends 
 // D-225: no connection or a full gate leaves the form, one sentence and the link working.
 // Catches a failure read as an end, a lost field, focus not returned, and a token not sent again.
 test("a failure that is no change and no refused link keeps the form and the link, with the sentence under the form and focus back", async () => {
+  // decision: D-225 "No connection or a full password gate leaves the form, one sentence under it and the link working."
+  // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
   for (const [name, failure] of Object.entries(KEEPING_FAILURES)) {
     await onPage(async ({ root }) => {
       const held = heldClient();

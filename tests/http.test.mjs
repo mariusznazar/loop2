@@ -2373,6 +2373,7 @@ test(
     // invariant: account-session-authorization
     // invariant: blocked-account-access
     // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
+    // decision: D-157 "Only a signed-in player asks for another confirmation message, and it goes only to the address of that player's own account."
     // Faults: a resend without the session guard; an address or account taken
     // from the request; a blocked account's session still sending; a
     // confirmed account sent another message.
@@ -3142,6 +3143,7 @@ test(
     // decision: D-155 "A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded"
     // decision: D-155 "Recording a new link for an account, which comes before its message is handed to the mail service, stops in the same transaction every earlier link of the same kind for that account, so a message whose sending then fails leaves no earlier link working"
     // decision: D-227 "The password-reset message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Ustaw nowe hasło w loop2”"
+    // decision: D-224 "The link of a password-reset message is the configured public origin followed by `/#reset-password=<token>`, its token 32 random bytes written in base64url, of which the account database keeps only the SHA-256 digest."
     // Faults: a lifetime other than one hour; an earlier link left working
     // beside the newest; the route handing on another message than the
     // password-reset message (its subject, D-227).

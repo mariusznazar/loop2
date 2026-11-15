@@ -138,6 +138,7 @@ const registeredJson =
 
 // invariant: account-client-requests
 test("each call sends its documented method, relative path and JSON body", async () => {
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   respond = (request, response) => {
     if (
       request.url === "/api/logout" ||
