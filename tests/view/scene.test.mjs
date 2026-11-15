@@ -221,6 +221,7 @@ test("the mage stands where the activity leads it: the sticks, the fire, the rig
 test("the badge over the mage holds the icon of the action as a mask and a fill as long as the progress", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   // decision: D-320 "Over the mage's head stands a badge"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
   await withPage(async (page) => {
     const state = {
       ...withRun(sent(), { current: current(GATHER_STICK), minute: 4 }),

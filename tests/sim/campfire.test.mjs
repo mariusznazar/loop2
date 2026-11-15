@@ -740,6 +740,7 @@ test("the price of an action names the pieces it uses up and the nature energy i
   // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk"
   // decision: D-63 "With the bought branch „Czysty płomień”, „Zapal — ognisko” requires and consumes no sticks and costs the nature energy of ordinary lighting"
   // decision: D-175 "Each spell costs the mage nature energy"
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const price = (kind, skills = {}) => actionPrice(kind, skills);
   assert.deepEqual(price("craftCampfire"), {
     pieces: [{ item: "stick", count: 6 }],

@@ -200,6 +200,8 @@ test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", (
 // D-290: the group of each action and the section and place of each condition in the pick of the
 // rule panel, written out in the order the pick shows them.
 test("each action names its group and each condition its section and place in the pick", () => {
+  // decision: D-290 "The pick of the rule panel sets the actions in four named groups"
+  // decision: D-290 "It sets the conditions in two columns, in sections with no names set apart by a line"
   assert.deepEqual(
     Object.entries(ACTIONS).map(([id, action]) => [id, action.group]),
     [

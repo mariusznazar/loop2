@@ -232,6 +232,7 @@ test("group conditions offer the same kinds and editable fields while preserving
 
 test("native drop targets place a rule before the target after removal, or append to a group", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const input = {
     ...THREE,
     groups: [
@@ -409,6 +410,7 @@ test("the number field: a temperature is clamped to 30.0–37.0", () => {
 });
 
 test("„Dodaj regułę” appends a fresh „Zawsze → Eksploruj” to the named group", () => {
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
   assert.deepEqual(addRule(newGame().programs[0].program, 1).groups[0].rules, [
     ALWAYS_EXPLORE,
   ]);
@@ -442,6 +444,7 @@ test("„Usuń” removes the rule at its position without reassigning identitie
 });
 
 test("„↑” and „↓” swap a rule with its neighbour; past either end nothing is committed", () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const before = copy(THREE);
   assert.deepEqual(moveRule(THREE, 1, 1, -1).groups[0].rules, [
     BELOW_WANDER,
@@ -698,6 +701,7 @@ test("choosing a resource or a number changes only that rule; the same choice co
 });
 
 test("the resource lists offer the resources of every map before sending and the run's map's during a run, in order", () => {
+  // decision: D-289 "While the game holds no map run every discovered target may be picked, the actions of combat may be picked outside combat too, and a rule holding a value outside what may be picked shows it in the panel as picked and greyed, with its reason where one of those above fits and with none otherwise, and the player can change it"
   // D-289: with no map run every discovered target may be picked, whichever maps are open.
   const game = newKnowingGame();
   assert.deepEqual(game.solvedMaps, []);
@@ -731,6 +735,7 @@ const gameKnowing = (understanding) => ({ ...newGame(), understanding });
 test("the offer is the repertoire: a new game offers „Eksploruj” and no resource and no item, the first chill adds „Wędruj”", () => {
   // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game"
   // decision: D-121 "The Understanding of a new game holds the action „Eksploruj”"
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const offered = (state) =>
     actionPick(state, EXPLORE).flatMap((section) =>
       section.cells.map((cell) => cell.value),
@@ -746,6 +751,7 @@ test("the offer is the repertoire: a new game offers „Eksploruj” and no reso
 });
 
 test("target lists follow the Understanding's items: resources of the shown map in the map's order, backpack items in the data's order, the campfire in neither", () => {
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const state = gameKnowing({
     actions: [],
     conditions: ["always"],
@@ -924,6 +930,8 @@ test("every program the editor builds passes setProgram, before sending and duri
 // D-90 and the group-bound arrows of D-297: edits target a group identity, never its position.
 test("rule edits preserve other groups, group boundaries and identities", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const first = {
     id: 8,
     name: "First",
@@ -1068,6 +1076,10 @@ function cellsOf(sections) {
 
 test("the actions of the pick stand in four named groups, in the order of D-290, the combat ones picked outside combat", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
+  // decision: D-289 "While the game holds no map run every discovered target may be picked, the actions of combat may be picked outside combat too, and a rule holding a value outside what may be picked shows it in the panel as picked and greyed, with its reason where one of those above fits and with none otherwise, and the player can change it"
+  // decision: D-290 "The pick of the rule panel sets the actions in four named groups"
+  // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const sections = actionPick(newKnowingGame(), EXPLORE);
   assert.deepEqual(
     sections.map((section) => [
@@ -1098,6 +1110,7 @@ test("the actions of the pick stand in four named groups, in the order of D-290,
 });
 
 test("the conditions of the pick stand in four sections with no names, in the order of D-290", () => {
+  // decision: D-290 "It sets the conditions in two columns, in sections with no names set apart by a line"
   const sections = conditionPick(newKnowingGame(), ALWAYS);
   assert.deepEqual(
     sections.map((section) => [
@@ -1136,6 +1149,7 @@ test("the conditions of the pick stand in four sections with no names, in the or
 test("a section holds only what the Understanding holds: a new game's condition pick is „Zawsze” alone", () => {
   // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game"
   // decision: D-121 "The Understanding of a new game holds the action „Eksploruj”"
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const sections = conditionPick(newGame(), ALWAYS);
   assert.deepEqual(
     sections.map((section) => section.cells.map((cell) => cell.label)),
@@ -1165,6 +1179,7 @@ test("every action names a group and every condition a section of the data, with
 test("a branch action known and not bought stands greyed: „gałąź niewykupiona” in a map run, „wybierzesz w przejściu…” with none", () => {
   // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
   // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const during = cellsOf(actionPick(runningGame(), EXPLORE));
   assert.equal(during.patrol.greyed, true);
   assert.equal(during.patrol.reason, NOT_BOUGHT);
@@ -1182,6 +1197,7 @@ test("a branch action known and not bought stands greyed: „gałąź niewykupio
 });
 
 test("„Idź”, „Zbierz”, „Obchód”, „Tu leży mniej niż” and „Zapas poniżej” with no target to name stand greyed: „nie znasz jeszcze celu”", () => {
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const bare = withBought(knowing(runningGame(), { items: [] }), "patrol");
   const actions = cellsOf(actionPick(bare, EXPLORE));
   for (const kind of ["walkTo", "gather", "patrol"]) {
@@ -1207,6 +1223,8 @@ test("„Idź”, „Zbierz”, „Obchód”, „Tu leży mniej niż” and „
 });
 
 test("a known resource the map of the map run lacks stands greyed: „nie ma go na tej mapie”; with no map run every known resource may be picked", () => {
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
+  // decision: D-289 "While the game holds no map run every discovered target may be picked, the actions of combat may be picked outside combat too, and a rule holding a value outside what may be picked shows it in the panel as picked and greyed, with its reason where one of those above fits and with none otherwise, and the player can change it"
   const map = MAPS[SENT.mapId];
   const resources = map.resources;
   map.resources = resources.filter((resource) => resource.id !== "fiber");
@@ -1274,6 +1292,7 @@ test("a known resource the map of the map run lacks stands greyed: „nie ma go 
 
 test("a target is picked from the resources of the Understanding alone, and an action with no target has no target field", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const state = knowing(newKnowingGame(), {
     items: ["berry", "stick"],
   });
@@ -1296,6 +1315,8 @@ test("a target is picked from the resources of the Understanding alone, and an a
 });
 
 test("a value the rule holds outside the pick stands chosen and greyed: with its reason where one fits, with none where none does", () => {
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
+  // decision: D-289 "While the game holds no map run every discovered target may be picked, the actions of combat may be picked outside combat too, and a rule holding a value outside what may be picked shows it in the panel as picked and greyed, with its reason where one of those above fits and with none otherwise, and the player can change it"
   // Fits „nie ma go na tej mapie”: shown above. Fits „gałąź niewykupiona”: a held „Obchód”.
   const held = actionPick(runningGame(), { kind: "patrol", resource: "stick" });
   const patrol = cellsOf(held).patrol;
@@ -1337,12 +1358,14 @@ test("a value the rule holds outside the pick stands chosen and greyed: with its
 
 test("the offer follows the character of the map run: a bought branch opens its action in the pick", () => {
   // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const state = withBought(runningGame(), "patrol");
   assert.equal(cellsOf(actionPick(state, EXPLORE)).patrol.greyed, false);
   assert.equal(cellsOf(actionPick(runningGame(), EXPLORE)).patrol.greyed, true);
 });
 
 test("a „Obchód” with no target to name and its branch bought stands greyed „nie znasz jeszcze celu”", () => {
+  // decision: D-289 "The pick of the rule panel holds nothing undiscovered, and what is discovered but may not be picked stands greyed with its reason"
   const state = withBought(knowing(runningGame(), { items: [] }), "patrol");
   const patrol = cellsOf(actionPick(state, EXPLORE)).patrol;
   assert.deepEqual([patrol.greyed, patrol.reason], [true, NO_TARGET]);
@@ -1350,6 +1373,7 @@ test("a „Obchód” with no target to name and its branch bought stands greyed
 
 test("the fields of a rule: the number only where the condition takes one, a target only where one is named", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
+  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   const rule = (condition, action) => ({ id: 1, condition, action });
   assert.deepEqual(ruleFields(rule(ALWAYS, EXPLORE)), ["condition", "action"]);
   assert.deepEqual(
@@ -1389,6 +1413,8 @@ test("the fields of a rule: the number only where the condition takes one, a tar
 
 test("the field after a pick follows the order condition, number, target, action, target, and none follows the last", () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
+  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
+  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   const written = [
     "condition",
     "number",
@@ -1433,6 +1459,7 @@ test("the time of one execution: minutes from the data, „tura” in combat, a 
 // sticks, lighting it 2 sticks and 10 nature energy, lighting a stick 1 stick and 10, feeding 1
 // stick, eating 1 berry.
 test("the price of an action: the pieces it uses up, then nature energy, each name in the form its count takes", () => {
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const outside = newKnowingGame();
   assert.equal(actionPriceText(outside, "craftCampfire"), "6 patyków");
   assert.equal(
@@ -1448,6 +1475,7 @@ test("the price of an action: the pieces it uses up, then nature energy, each na
 });
 
 test("an action that uses up nothing has no price: a strike leaves its stick in the backpack, and walking, gathering and combat take nothing", () => {
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const outside = newKnowingGame();
   for (const kind of [
     "explore",
@@ -1464,6 +1492,7 @@ test("an action that uses up nothing has no price: a strike leaves its stick in 
 });
 
 test("the price follows the character of the map run: „Czysty płomień” lights a campfire for nature energy alone, and outside a map run the price is the data's", () => {
+  // decision: D-363 "During a map run the price follows the character of the map run, as the time does (D-293)"
   const during = runningGame();
   assert.equal(
     actionPriceText(during, "lightCampfire"),
@@ -1485,6 +1514,7 @@ test("the price follows the character of the map run: „Czysty płomień” lig
 });
 
 test("a name takes the form of its count in Polish: 1 the singular, 2 to 4 and 22 to 24 the few, 0, 5 to 21, 25 and 112 the many", () => {
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const forms = { one: "patyk", few: "patyki", many: "patyków" };
   const expected = [
     [0, "patyków"],
@@ -1506,12 +1536,14 @@ test("a name takes the form of its count in Polish: 1 the singular, 2 to 4 and 2
 });
 
 test("the nature energy takes the form of its count in a price: 1 energia natury, 2 energie natury, 10 energii natury", () => {
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   assert.equal(countedName(1, NATURE_ENERGY_NAME), "energia natury");
   assert.equal(countedName(2, NATURE_ENERGY_NAME), "energie natury");
   assert.equal(countedName(10, NATURE_ENERGY_NAME), "energii natury");
 });
 
 test("every resource of the data has the forms of its name that its count takes in a price", () => {
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const forms = {
     stick: ["patyk", "patyki", "patyków"],
     berry: ["jagoda", "jagody", "jagód"],
@@ -1526,6 +1558,8 @@ test("every resource of the data has the forms of its name that its count takes 
 });
 
 test("a cell of the action pick carries its price in brackets after its name, a greyed cell too, and the sentence of a rule's row never does", () => {
+  // decision: D-363 "The rule panel shows beside an action what it costs, read from the game's data, in brackets after the action's name"
+  // decision: D-363 "During a map run the price follows the character of the map run, as the time does (D-293)"
   const cells = cellsOf(actionPick(newKnowingGame(), EXPLORE));
   assert.equal(cells.craftCampfire.label, "Wytwórz — ognisko (6 patyków)");
   assert.equal(cells.gather.label, "Zbierz");
@@ -1552,6 +1586,7 @@ test("a rule is numbered by its group and its place in it, a group by its place 
 });
 
 test("a row reads as a sentence: the condition with its number and target, then the action with its target", () => {
+  // decision: D-288 "A rule's row reads as a sentence"
   const rule = {
     id: 1,
     condition: { kind: "itemBelow", item: "stick", value: 8 },
@@ -1609,6 +1644,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
 });
 
 test("the arrows are off only on the program's first and last rule, a group's edge being no end", () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const second = {
     id: 2,
     name: "Dwa",
@@ -1633,6 +1669,7 @@ test("the arrows are off only on the program's first and last rule, a group's ed
 
 test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const rules = (program) =>
     program.groups.map((group) => group.rules.map((rule) => rule.id));
   const program = {
@@ -1673,6 +1710,7 @@ test("„↓” on the last rule of a group makes it the first of the next, „�
 });
 
 test("a rule group is dropped before another group or at the end, and a drop that changes nothing commits nothing", () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const group = (id) => ({ id, name: `G${id}`, condition: ALWAYS, rules: [] });
   const program = {
     ...THREE,
@@ -1704,6 +1742,7 @@ test("a rule group is dropped before another group or at the end, and a drop tha
 });
 
 test("a rule dropped on a folded group, which shows no rule to go before, lands at the group's end", () => {
+  // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   const program = {
     ...THREE,
     groups: [

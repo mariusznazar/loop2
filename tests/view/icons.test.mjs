@@ -271,6 +271,7 @@ test("each icon the data names, the campfire's included, exists as a file", () =
 
 test("each action of the data names an icon and its title, and the icon file exists", () => {
   // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
   for (const [id, action] of Object.entries(ACTIONS)) {
     assert.ok(action.icon, `${id} names no icon`);
     assert.ok(action.iconTitle, `${id} names no icon title`);
