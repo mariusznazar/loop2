@@ -210,7 +210,14 @@ function accountOf({
   previousSaveAllowed,
   role,
 }: Account): Account {
-  return { id, email, emailConfirmed, previousSaveAllowed, role };
+  // Only the exact word `owner` makes an owner; any other value is a player's (D-410).
+  return {
+    id,
+    email,
+    emailConfirmed,
+    previousSaveAllowed,
+    role: role === "owner" ? "owner" : "player",
+  };
 }
 
 /** A text input with the keyboard of an address; the browser's own check is stricter than the server's. */

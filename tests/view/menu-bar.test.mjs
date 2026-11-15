@@ -757,3 +757,62 @@ test("the page giving no account while „Wyloguj” waits turns the bar into th
     assert.equal(active(), field);
   });
 });
+
+// --- the owner's link „Panel właściciela” (D-280, D-281, D-410) -----------------------------
+
+const OWNER = { ...SIGNED_IN, role: "owner" };
+const PLAYER = { ...SIGNED_IN, role: "player" };
+const PANEL_TEXT = "Panel właściciela";
+const BAR_ITEMS = [
+  ["Siedziba", "#/"],
+  ["Mapy", "#/mapy"],
+  ["Programy", "#/programy"],
+];
+const menuLinksOf = (root) => all(blockOf(root), "a");
+const barItemsOf = (root) =>
+  all(root, ".menu-bar-items a").map((link) => [
+    link.textContent,
+    link.getAttribute("href"),
+  ]);
+
+// decision: D-280 "the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela”"
+test("the open menu of an owner holds the link „Panel właściciela” to #/konta, after the address and before the buttons", async () => {
+  await withPage(async (page) => {
+    await openBar(page, { props: propsOf({ account: OWNER }) });
+    await press(buttonNamed(page.root, "Konto"));
+    const links = menuLinksOf(page.root);
+    assert.equal(links.length, 1, "one link in the menu");
+    assert.equal(links[0].textContent, PANEL_TEXT);
+    assert.equal(links[0].getAttribute("href"), "#/konta");
+    const children = [...blockOf(page.root).children];
+    assert.equal(children[0].className, "account-menu-address", "the address");
+    assert.equal(children[1], links[0], "the link right after the address");
+    assert.ok(buttonNamed(children[2], "Wyloguj"), "„Wyloguj” after the link");
+  });
+});
+
+// decision: D-280 "the menu „Konto” of a player holds no such link"
+test("the open menu of a player holds no link „Panel właściciela”", async () => {
+  await withPage(async (page) => {
+    await openBar(page, { props: propsOf({ account: PLAYER }) });
+    await press(buttonNamed(page.root, "Konto"));
+    assert.equal(menuLinksOf(page.root).length, 0);
+    assert.ok(buttonNamed(blockOf(page.root), "Wyloguj"), "„Wyloguj” stays");
+  });
+});
+
+// decision: D-280 "The items of the bar and the bar itself are the same for a player and for an account with the owner role"
+test("following „Panel właściciela” closes the menu, and the bar's items are the same for an owner and a player", async () => {
+  await withPage(async (page) => {
+    await openBar(page, { props: propsOf({ account: OWNER }) });
+    await press(buttonNamed(page.root, "Konto"));
+    await press(menuLinksOf(page.root)[0]);
+    assert.equal(isOpen(page.root), false, "the menu is closed");
+    assert.equal(blockOf(page.root), null);
+    assert.deepEqual(barItemsOf(page.root), BAR_ITEMS, "an owner's bar");
+  });
+  await withPage(async (page) => {
+    await openBar(page, { props: propsOf({ account: PLAYER }) });
+    assert.deepEqual(barItemsOf(page.root), BAR_ITEMS, "a player's bar");
+  });
+});

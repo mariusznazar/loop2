@@ -225,6 +225,17 @@ function AccountMenu({
       {open ? (
         <div className="account-menu-block">
           <p className="account-menu-address">{account.email}</p>
+          {account.role === "owner" ? (
+            <a
+              className="account-menu-panel-link"
+              href={screenAddress({ kind: "accounts" })}
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              Panel właściciela
+            </a>
+          ) : null}
           {unconfirmed ? (
             <div className="account-menu-unconfirmed">
               <p

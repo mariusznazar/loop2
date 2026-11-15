@@ -6130,7 +6130,10 @@ test("a sign-in and a registration hand the account on with the outcome of the m
       ok: true,
       value: { ...ACCOUNT.value, role: "admin" },
     });
-    assert.deepEqual(entered, [{ account: ACCOUNT.value, message: null }]);
+    // A role other than `owner` is a player's: the page hands on `player` (D-410).
+    assert.deepEqual(entered, [
+      { account: { ...ACCOUNT.value, role: "player" }, message: null },
+    ]);
     assert.deepEqual(
       inputsIn(root).map((input) => input.value),
       ["", ""],
@@ -6155,7 +6158,10 @@ test("a sign-in and a registration hand the account on with the outcome of the m
     assert.equal(lockOf(root)[0], true);
     await held.answer("register", REGISTERED);
     assert.deepEqual(entered, [
-      { account: UNCONFIRMED_ACCOUNT.value, message: "limited" },
+      {
+        account: { ...UNCONFIRMED_ACCOUNT.value, role: "player" },
+        message: "limited",
+      },
     ]);
     assert.deepEqual(
       inputsIn(root).map((input) => input.value),
