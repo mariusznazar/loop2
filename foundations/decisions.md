@@ -2167,7 +2167,7 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 - **Scope:** account-server, deployment
 - **Based on:** none
 - **Relations:** derives from D-102
-- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. tests: a login
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking · password-operation-gate. tests: a login
   for an unknown address refused by a full password gate as a login for a known one is. An agent
   compares a change with the part no invariant and no test holds:
   - complies: at most 10,000 live email keys and 10,000 live client-address keys in the process's memory, an email key kept as a digest of fixed size, each history no longer than its threshold, all of them gone at a restart; the cap of the password gate changed only together with a measurement of it within the container's memory budget
@@ -3403,7 +3403,7 @@ The account server sends email confirmation and password-reset messages from an 
 - **Based on:** mikrus-outsider-mail · loop2-app-log-password-reset-mail-events · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
 - **Relations:** derives from D-152
 - **Verification:** invariants: account-email-via-outsider. tests: a message handed to the SMTP server
-  only after a login with the configured login and password. An agent compares the launch with the decision:
+  only after a login with the configured login and password. An agent compares the launch with the part no invariant and no test holds:
   - complies: both message types from the intended container reach external inboxes before public self-service account recovery is enabled
   - violates: recovery is enabled after only SMTP connection or relay acceptance succeeds
 - **Origin:** none
@@ -10399,7 +10399,7 @@ The load of a saved game state admits every game state the game's own functions 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-213 · derives from D-221 · derives from D-248
-- **Verification:** tests: game states the game's own functions make — of manual map runs going on and ended, earning loops through a death, a stop and the next map run, the report of the catch-up, a settled death, an append of programs, a discovery and the largest trip count — loading back from their saved documents as they were; a save time and the team's moment of readiness at zero or below zero loading, and stored as given when a death or a first completion is settled; the function that stamps a save time, the one that settles a death, the one that settles a first completion and the end of a map run of an earning loop refusing a moment that is no safe integer with a RangeError, and the settling of a death or of a first completion returning the very game state, whatever the moment, where there is nothing to settle. For the load comparing no moment with a clock and for the game states no test plays, an agent compares a change with the part no test holds:
+- **Verification:** tests: game states the game's own functions make — of manual map runs going on and ended, earning loops through a death, a stop and the next map run, the report of the catch-up, a settled death, an append of programs, a discovery and the largest trip count — loading back from their saved documents as they were; a save time and the team's moment of readiness at zero or below zero loading, and stored as given when a death or a first completion is settled; the function that stamps a save time, the ones that settle a death, of a manual map run and of an earning loop's map run, and the one that settles a first completion refusing a moment that is no safe integer with a RangeError, and the settling of a death or of a first completion returning the very game state, whatever the moment, where there is nothing to settle. For the load comparing no moment with a clock and for the game states no test plays, an agent compares a change with the part no test holds:
   - complies: a save time far beyond the present loaded as it stands; a new kind of game state a function of the game makes loading back from its saved document
   - violates: a load that compares a moment with the clock; a game state made by the game's own functions in a play that the load refuses
 - **Origin:** none
