@@ -86,7 +86,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, checks the simulation's types under a configuration of their own, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the owner's computer, starts the game on the developer's machine over HTTPS with a database made for that start, builds and serves the browser view's kitchen-sink page on the developer's machine, and starts Docker Desktop, where it is installed, for a test of the test gate that needs a Docker daemon when none answers.
+The part installs dependencies, runs the test gate and mutation analysis, runs the one command of tests on every pull request into `main` in a workflow of GitHub Actions on Linux, checks code quality and types, checks the simulation's types under a configuration of their own, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the owner's computer, starts the game on the developer's machine over HTTPS with a database made for that start, builds and serves the browser view's kitchen-sink page on the developer's machine, and starts Docker Desktop, where it is installed, for a test of the test gate that needs a Docker daemon when none answers.
 
 - **Files:** /package.json
   /package-lock.json
@@ -104,6 +104,7 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   requirements-quality.txt
   .gitignore
   README.md
+  .github/workflows/tests.yml
   tests/invariants/account_container_support.py
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py
