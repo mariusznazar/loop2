@@ -638,6 +638,7 @@ test(
   "a block of an account with the owner role, the caller's own included, is answered 409 owner-not-blockable and changes nothing, also where the role was given just before",
   { timeout: 20000 },
   async (t) => {
+    // invariant: owner-panel-authorization
     // decision: D-137 "The panel never blocks an account that has the owner role, the caller's own included: the transaction of the block reads the role and the server answers JSON 409 with the code `owner-not-blockable`, also where a second connection gave the role just before the block"
     // Faults: a block that blocks an owner; one that refuses only another
     // owner's account and blocks the caller's own; a role read in one
