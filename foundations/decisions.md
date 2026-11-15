@@ -2161,9 +2161,16 @@ The account server sends at most 30 account messages per hour in total and at mo
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: account-message-limits. An agent compares a change with the decision:
-  - complies: confirmation and password-recovery send paths share both limits and refuse an excess message; a request for a password-reset link above a limit getting the answer every other request gets, with no message sent
-  - violates: either mail path sends after a limit is reached or adds an unapproved monthly cap
+- **Verification:** invariants: account-message-limits. tests: a registration and a request for another
+  confirmation message above a limit answered with the outcome `limited` and nothing handed on, an
+  outcome the page says as „Za dużo wiadomości. Spróbuj ponownie za godzinę.” in `warning`; a request
+  for a password-reset link above a limit getting the one answer every well-formed address gets, with
+  nothing handed on, the page's sentence of that answer ending „Gdy wiadomość nie przyjdzie, spróbuj
+  ponownie później.”. An agent compares a change with the part no invariant and no test holds:
+  - complies: the two hourly limits the only bound on sending, so that hour after hour at the limits
+    every message they allow goes out
+  - violates: a monthly cap, or any count over a span longer than an hour, that refuses a message the
+    two hourly limits would let through
 - **Origin:** none
 
 *Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance, and accepts through D-223 that the hourly limit too can be exhausted by requests for password-reset links. A player above a limit reads in the one answer only its condition and its ending, because a sentence of its own would tell anyone that the address has a confirmed account.
@@ -3244,7 +3251,8 @@ The account server sends email confirmation and password-reset messages from an 
 - **Scope:** account-server, deployment
 - **Based on:** mikrus-outsider-mail · loop2-app-log-password-reset-mail-events · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
 - **Relations:** derives from D-152
-- **Verification:** invariants: account-email-via-outsider. An agent compares the launch with the decision:
+- **Verification:** invariants: account-email-via-outsider. tests: a message handed to the SMTP server
+  only after a login with the configured login and password. An agent compares the launch with the decision:
   - complies: both message types from the intended container reach external inboxes before public self-service account recovery is enabled
   - violates: recovery is enabled after only SMTP connection or relay acceptance succeeds
 - **Origin:** none
@@ -3272,9 +3280,16 @@ A link of an email confirmation message works for 24 hours and a link of a passw
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Email Ownership Verification, Recommendations — "Single-use" · "Time-limited"; read 2026-10-29 · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Introduction — "Single use and expire after an appropriate period."; read 2026-10-29
 - **Relations:** derives from D-152
-- **Verification:** invariants: email-confirmation-link · password-reset-link · password-reset-verified-email. An agent compares a change with the decision:
-  - complies: a resend leaves only its own link of the account working, whether its sending succeeds or fails; a password-reset link still working after a password the server refused
-  - violates: a confirmation link that confirms twice, or still confirms 24 hours after it was recorded; a password-reset link that works longer than one hour; earlier links stopped only after the mail service has accepted the new message; a password-reset link spent when its page opens or when its form is sent, before the new password is written
+- **Verification:** invariants: email-confirmation-link · password-reset-link · password-reset-verified-email.
+  tests: a confirmation link recorded to expire 24 hours after it is recorded and a password-reset
+  link one hour after; a password-reset link spent in the operation that writes the new password and
+  left working when the hashing of the new password fails; no message handed on for a link whose
+  recording failed, and a later message whose sending failed still stopping the earlier link of its
+  kind. An agent compares a change with the part no invariant and no test holds:
+  - complies: the earlier links of the kind stopped by a statement run in the transaction that
+    inserts the new link
+  - violates: the earlier links stopped in a transaction of their own after the new link is
+    committed, so that a fault between the two leaves them working beside the new one
 - **Origin:** none
 
 *Rationale:* a link that works once and for a bounded time limits what an intercepted or forgotten message can do, and only the newest message's link works, so the player knows which one to open. A player who forgot the password holds nothing but the link, so the link lasts until the new password stands. Stopping the earlier links in the transaction that records the new one leaves no moment, a database fault included, in which an earlier link outlives a newer one; a sending that fails leaves no working link, and the player asks for the message again. Whoever opens an older message after a newer one was sent sees that its link no longer works and opens the newest, and whoever does not read the mail within a day asks for the message again. The sources it rests on name a single use and a time limit and give no number of hours, so 24 hours and one hour are the choice made here.
@@ -3287,9 +3302,21 @@ The link of a confirmation message is the configured public origin followed by `
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · samesite-strict-cookie · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-29
 - **Relations:** derives from D-152 · derives from D-104
-- **Verification:** invariants: email-confirmation-link. An agent compares a change with the decision:
-  - complies: the page reads the token from the fragment of its address, sends it in the JSON body of a `POST` and removes the fragment once the server's answer is definitive
-  - violates: a link carrying its token in its path or query; a token kept in clear in the database or written to a log; an address confirmed by the request that opens the link
+- **Verification:** invariants: email-confirmation-link. tests: the link of the message as the
+  configured public origin, `/#confirm-email=` and 43 base64url characters alone on its line; the
+  page sending the token before it checks the session, saying „Potwierdzanie adresu…” meanwhile,
+  then „Adres e-mail potwierdzony.” in `positive` or „Odnośnik jest nieważny albo wygasł.” in
+  `warning`, or the client's sentence of its failure in `warning` with the token kept in the
+  address, as one sentence above the game for a signed-in player and above the form in the card for
+  one who is not; one and the same refusal for a malformed, unknown, used, expired, other-kind and
+  blocked token; a confirmation stopping the account's other confirmation links. An agent compares a
+  change with the part no invariant and no test holds:
+  - complies: a token drawn from a cryptographically secure source and kept in the database only as
+    the SHA-256 digest of its text; „Potwierdzanie adresu…” in `text-secondary`; the confirmation
+    made whatever screen of the game the address names
+  - violates: a token kept in clear in the database, beside or instead of its digest; a token from a
+    counter, a clock or a source that is not cryptographically secure; the waiting sentence in
+    another role; a link that confirms nothing because the address names a screen of the game
 - **Origin:** none
 
 *Rationale:* the page confirms with a request of its own, so a mail client or a spam filter that opens a link by itself uses up nothing, and the link works in any browser because it needs no session; the link alone, with no session, then authorizes the confirmation (D-109), and the request meets D-104 with no exception. A navigation from the player's webmail page on another site brings no session cookie, but the page's own requests do, so a signed-in player sees the result above the game. A fragment reaches no server, no request log and no `Referer`, a digest in the database yields no working link to whoever reads it, and one refusal for every bad token tells nothing about which it was. The start of the game page gains one more state.
@@ -3317,9 +3344,10 @@ The email confirmation message comes from `loop2@mariusznazar.com` with the disp
 - **Scope:** account-server, deployment
 - **Based on:** none
 - **Relations:** derives from D-153 · derives from D-155
-- **Verification:** an agent compares a change with the decision:
-  - complies: a message composed for one recipient with the fixed sender, display name and subject and a text body with the link on a line of its own
-  - violates: an HTML body beside the text; the recipient's address written into a header other than the recipient's
+- **Verification:** tests: the message from the configured sender, which the Compose file of the game
+  sets to `loop2@mariusznazar.com`, with the display name „loop2”, as plain text with no HTML part,
+  with the subject „Potwierdź adres e-mail w loop2” and the four paragraphs, the link alone on its
+  line.
 - **Origin:** none
 
 *Rationale:* the message says who sent it, why it came, what confirming the address gives the player and what to do if it was not asked for, and the replies of players reach the sender's mailbox, which is worth looking through now and then.
@@ -3348,6 +3376,14 @@ An emailed link of a blocked account, of an email confirmation or of a password-
 - **Based on:** none
 - **Relations:** derives from D-137
 - **Verification:** invariants: email-confirmation-link · unblock-restores-no-link · password-reset-link.
+  tests: the refusal „Odnośnik jest nieważny albo wygasł.” for a confirmation link and a
+  password-reset link of a blocked account, shown in `warning` above the form in the card or above
+  the game; a confirmation link recorded after the unblock working. An agent compares a change with
+  the part no invariant and no test holds:
+  - complies: the player of an unblocked account, signed in again with the address still
+    unconfirmed, finding „Wyślij ponownie” in the menu „Konto” and getting a working link by it
+  - violates: an unblocked account whose unconfirmed address offers no „Wyślij ponownie”, or whose
+    request for another confirmation message is refused because of the past block
 - **Origin:** none
 
 *Rationale:* a block stops what the account can do through its links as it stops its sessions, and unblocking brings back neither. A blocked player learns from a link only that it does not work, and learns why at the next sign-in. Accepted with it: the block has to stop the account's links as well as its sessions, and the check of a link has to read the block, since a link needs no session.
@@ -4824,10 +4860,13 @@ się nie zmieni.”. After a change of password the player gets no message about
 - **Scope:** account-server, deployment
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Send the user an email informing them that their password has been reset (do not send the password in the email!)."; read 2026-10-30
 - **Relations:** derives from D-153 · derives from D-155 · derives from D-158
-- **Verification:** an agent compares a change with the decision:
-  - complies: a message composed for one recipient with the fixed sender, display name and subject
-    and a text body with the link on a line of its own
-  - violates: an HTML body beside the text; a message handed to the mail service after a password is
+- **Verification:** tests: the message from the configured sender, which the Compose file of the game
+  sets to `loop2@mariusznazar.com`, with the display name „loop2”, as plain text with no HTML part,
+  with the subject „Ustaw nowe hasło w loop2” and the three paragraphs, the link alone on its line;
+  the route that asks for a link handing on that message. An agent compares a change with the part no
+  test holds:
+  - complies: a password set through a link with no message handed to the mail service
+  - violates: a message about the change of password handed to the mail service after a password is
     set
 - **Origin:** none
 
