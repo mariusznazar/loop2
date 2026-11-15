@@ -202,6 +202,7 @@ class NodeMajorInDeployment(unittest.TestCase):
     def test_deployment_files_name_only_node_24(self):
         # invariant: account-server-runtime
         # decision: D-02 "The account and save server uses Express 5 on Node.js 24"
+        # decision: D-10 "Deployment pins the official connector image by version and digest"
         problems = []
         for relative in support.deployment_files():
             text = support.read_text(os.path.join(support.ROOT, *relative.split("/")))

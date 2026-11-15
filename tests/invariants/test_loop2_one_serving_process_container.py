@@ -193,6 +193,7 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
 
     def test_running_container_has_one_listening_node_process(self):
         # invariant: loop2-one-serving-process
+        # decision: D-08 "The game and its account and save server run in a dedicated loop2 container"
         support.read_required(DOCKERFILE)
         support.read_required(COMPOSE_FILE)
         docker_gate.require_daemon(self, "the container part of loop2-one-serving-process stays "

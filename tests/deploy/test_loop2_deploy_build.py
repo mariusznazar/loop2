@@ -56,6 +56,7 @@ class DeployBuildTestCase(unittest.TestCase):
 class InstalledScriptComparison(DeployBuildTestCase):
 
     def test_installed_copy_equal_to_the_source_gives_no_warning(self):
+        # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.fixture.answer_passing_run()
@@ -64,6 +65,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
         self.assertNotIn("warning", result.output)
 
     def test_difference_warns_with_the_rollback_wording_and_continues(self):
+        # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
         sha = self.fixture.deployable_commit()
         self.fixture.install(support.read_bytes(support.SCRIPT) + b"# a line only installed\n")
         self.fixture.answer_passing_run()
@@ -80,6 +82,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
         self.assertLess(self.index_of("differs"), self.index_of("build of"))
 
     def test_commit_without_the_sources_warns_for_each_pair_then_fails_the_build_with_7(self):
+        # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
         # One warning for each of the six installed copies: the deploy script, the backup script
         # and its schedule, the watcher and its schedule, and the logrotate file.
         sha = self.fixture.commit("main", "from before the deployment existed")
@@ -153,6 +156,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
                 self.assertIn(os.path.basename(getattr(self.fixture, name)), warning[0])
 
     def test_all_six_differing_warn_six_times(self):
+        # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
         sha = self.fixture.deployable_commit()
         self.fixture.install(b"# a\n", b"# b\n", b"# c\n", b"# d\n", b"# e\n", b"# f\n")
         self.fixture.answer_passing_run()
@@ -175,6 +179,7 @@ class ResourceGate(DeployBuildTestCase):
         return self.log_lines()[self.index_of("MemAvailable")]
 
     def test_memory_below_1024_mib_exits_5_without_a_build(self):
+        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.set_mem_available_kb(1024 * MIB_KB - 1)
@@ -186,6 +191,7 @@ class ResourceGate(DeployBuildTestCase):
         self.assertIn(f"{22 * 1024} MiB", line, "the disk value is not logged on a refusal")
 
     def test_disk_below_4_gib_exits_5_without_a_build(self):
+        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.fixture.answer("df", stdout=f"Avail\n{4 * GIB_KB - 1}\n")
@@ -197,6 +203,7 @@ class ResourceGate(DeployBuildTestCase):
         self.assertIn("MemAvailable 3700 MiB", line, "the memory value is not logged on a refusal")
 
     def test_exact_thresholds_pass(self):
+        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.set_mem_available_kb(1024 * MIB_KB)
@@ -222,6 +229,7 @@ class ResourceGate(DeployBuildTestCase):
         self.assertLess(self.index_of("MemAvailable"), self.index_of("build of"))
 
     def test_unreadable_values_exit_5(self):
+        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
         cases = {
             "docker info fails": lambda: self.fixture.answer("docker", exit_code=1,
                                                              match="info *"),
@@ -258,6 +266,9 @@ class ResourceGate(DeployBuildTestCase):
 class Build(DeployBuildTestCase):
 
     def test_build_command_and_commit(self):
+        # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit"
+        # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
+        # decision: D-14 "The loop2 container is a Docker container"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.fixture.answer_passing_run()

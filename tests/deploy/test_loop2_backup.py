@@ -132,6 +132,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(set(names) & (IN_PLACE | LISTING), set(), result)
 
     def test_rsync_is_called_once_with_one_file_to_one_computed_name_and_no_login(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
         # With no destination rsync lists; a login or a port in the destination is an access value.
         fixture = self.fixture()
         fixture.set_weekday("3")
@@ -166,6 +167,7 @@ class WhatEachToolIsHanded(WithFixture):
                 self.assertEqual(result.code, 9, result)
 
     def test_the_host_key_options_stand(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
         fixture = self.fixture()
         result = fixture.run()
         program, options = ssh_options(result.of("rsync")[0])
@@ -179,6 +181,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertNotIn("User", options, result)
 
     def test_the_constants_name_the_design_s_own_files(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server; runtime credentials live outside the checkout in `/etc/loop2/cloudflared-token` for the tunnel, `/etc/loop2/session-secrets` for session signing, `/etc/loop2/smtp-password` for the mail service and `/etc/loop2/backup-encryption-key`"
         # The seam replaces these, so a wrong path would show nowhere else.
         block = support.deploy_support.constants(support.deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(block["LOG_FILE"], "/var/log/loop2-backup.log")

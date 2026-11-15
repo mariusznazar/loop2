@@ -103,6 +103,7 @@ class LogrotateStanza(unittest.TestCase):
     def test_the_stanza_holds_exactly_the_directives_of_a3(self):
         # D-355, A3: weekly or past 100 MiB, four files, copy and truncate, owner root, and no
         # create and no user name
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository"
         body = self.lines[1:-1]
         self.assertEqual(sorted(body), LOGROTATE_DIRECTIVES)
 

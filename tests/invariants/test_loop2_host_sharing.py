@@ -374,6 +374,7 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
 
     def test_old_deployment_is_only_read(self):
         # invariant: loop2-host-sharing
+        # decision: D-08 "The existing loop container remains untouched"
         problems = []
         docker_lines = {}
         for number, words in self.docker:
@@ -393,6 +394,7 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
 
     def test_every_docker_command_is_one_a_deployment_may_run(self):
         # invariant: loop2-host-sharing
+        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         problems = [f"line {number}: docker {' '.join(words)}: {p}"
                     for number, words in self.docker for p in docker_problems(words)]
         self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} runs a Docker command, option or object "
@@ -434,15 +436,21 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
 
     def test_runtime_secrets_are_granted_only_to_their_consumers(self):
         # invariant: loop2-host-sharing
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server; runtime credentials live outside the checkout in `/etc/loop2/cloudflared-token` for the tunnel, `/etc/loop2/session-secrets` for session signing, `/etc/loop2/smtp-password` for the mail service"
+        # decision: D-13 "Compose grants the tunnel file only to `cloudflared` as the read-only secret `/run/secrets/cloudflare_tunnel_token`, preserving the host directory's deployment-account ownership, group 65532 and mode 0750 and the tunnel file's same owner/group and mode 0640, grants the root-owned session file with group 1000 and mode 0440 only to the application as `/run/secrets/loop2_session_secrets`, and grants the root-owned SMTP password file with group 1000 and mode 0440 only to the application"
         self.assertEqual(secret_problems(self.top, self.services), [])
 
     def test_account_volume_is_owned_and_mounted_only_by_the_application(self):
         # invariant: loop2-host-sharing
+        # decision: D-13 "Automation secrets and server access values"
         self.assertEqual(volume_problems(self.top, self.services), [])
 
     def test_production_account_configuration_is_fixed(self):
         # D-111, D-13: missing or drifting settings must not reach deployment unnoticed; the SMTP
         # password stays out of the environment, only the path of its secret file stands.
+        # decision: D-13 "Compose grants the tunnel file only to `cloudflared` as the read-only secret `/run/secrets/cloudflare_tunnel_token`, preserving the host directory's deployment-account ownership, group 65532 and mode 0750 and the tunnel file's same owner/group and mode 0640, grants the root-owned session file with group 1000 and mode 0440 only to the application as `/run/secrets/loop2_session_secrets`, and grants the root-owned SMTP password file with group 1000 and mode 0440 only to the application as `/run/secrets/loop2_smtp_password`, while the sender address and the mail service's host, port and login stand as plain values in `compose.yaml`"
+        # decision: D-13 "Repository files and requests name credentials by secret name or private note rather than value"
+        # decision: D-17 "The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`"
         environment = self.services["app"].get("environment")
         self.assertIsNotNone(environment, "application account settings are missing")
         fields = support._yaml_mapping(environment.block, environment.line + 1)
