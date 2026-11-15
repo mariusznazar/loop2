@@ -6322,13 +6322,19 @@ the one place of the look of both.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · narrows D-03
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new attribute of the button written in both forms in one change; a DOM screen left
-    on the DOM form by a change that moves another screen; a new section of the waiting screen of
-    the sign-in check built in DOM; a new screen in React that imports a pure function of a DOM module
-  - violates: a React component that wraps the DOM function; a class that only the React form sets;
-    a React form with no case in the test that compares the two; a new screen that builds its
-    DOM elements with `document.createElement` after the pattern of a DOM module
+- **Verification:** tests: the React form and the DOM form of the button, the text field, the
+  password field, the sentence under a form, the pick cell, the select list and the number field
+  drawing one element tree, with the same tag, classes, attributes and text, the input's `value`
+  attribute apart, in each kind and state the tests compare. An agent compares a change with the
+  part no test holds:
+  - complies: a DOM screen left on the DOM form by a change that moves another screen; a new section
+    of the waiting screen of the sign-in check built in DOM; a new screen in React that imports a
+    pure function of a DOM module; a new state of a control that a React screen uses, given its
+    case in the test that compares the two forms in the same change
+  - violates: a React component that wraps the DOM function; a React form, or a state of it that a
+    React screen uses, with no case in the test that compares the two; a new screen that builds its
+    DOM elements with `document.createElement` after the pattern of a DOM module; the look of a
+    control written outside `src/browser/styles.css`, as a `style` attribute both forms set
 - **Origin:** none
 
 *Rationale:* the screens move to React one at a time, so for a while both kinds stand on one
@@ -6361,11 +6367,15 @@ bundle, the page and the static files. A build that writes them first removes bo
 - **Scope:** build-tools · browser-view · simulation · account-server
 - **Based on:** none
 - **Relations:** derives from D-06
-- **Verification:** an agent compares a change with the decision:
-  - complies: a test importing one module from `dist/browser/`; the page loading the one bundle from
+- **Verification:** tests: the build compiling every TypeScript file of the browser's source into a
+  module at the same path below `dist/browser/`, and leaving in `dist/public/` no JavaScript file
+  but the one bundle the page loads; a build removing a module an earlier build left in
+  `dist/public/` or in `dist/browser/`. An agent compares a change with the part no test holds:
+  - complies: a test importing one module from `dist/browser/`; the bundler taking its entry from
+    `dist/browser/`
+  - violates: a test importing the bundle; a bundler reading the sources; a file other than the
+    bundle, the page and the static files, such as a copy of a TypeScript source, written into
     `dist/public/`
-  - violates: a compiled module written into `dist/public/`; a test importing the bundle; a bundler
-    reading the sources
 - **Origin:** none
 
 *Rationale:* what the server hands out is what a player can reach, so that directory holds nothing
@@ -6513,12 +6523,12 @@ browser-view-framework in the same change.
 - **Scope:** browser-view · build-tools
 - **Based on:** npm-lock-peer-dependencies
 - **Relations:** derives from D-03
-- **Verification:** invariants: browser-view-framework. An agent compares a change with the
-  decision:
-  - complies: a screen built with React and the browser's APIs alone; a library for dragging taken
-    in by a change that names it here and lets it through that check
-  - violates: a component library on React added to the runtime dependencies; a library on React
-    taken as a development dependency and imported by a screen
+- **Verification:** invariants: browser-view-framework. For how a library built on React is let
+  in, an agent compares a change with the part no invariant holds:
+  - complies: a library for dragging taken in by a change that names it in this decision and lets it
+    through the check of browser-view-framework
+  - violates: a library on React let through the check of browser-view-framework by a change that
+    leaves this decision without its name
 - **Origin:** none
 
 *Rationale:* with React allowed, a library on React is the likely way another way of drawing comes
@@ -9990,9 +10000,9 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-265
-- **Verification:** an agent compares a change with the decision:
-  - complies: the number field taking the rule of its numbers as a function that each screen gives it
-  - violates: a shared control that imports `program-editor.ts` or `trip-editor.ts`; a shared control that picks the rule of a screen by a value of one of its parameters
+- **Verification:** tests: the number field committing by the rule of its numbers the screen gives it, the trip count rule of the trip plan included, and not by a range rule of its own. An agent compares a change with the part no test holds:
+  - complies: a new shared control that takes the rule of a screen as a function the screen gives it and imports no module of a screen
+  - violates: a shared control that imports `program-editor.ts` or `trip-editor.ts`; a shared control that picks the rule of a screen by a value of one of its parameters, such as the trip count rule for a field whose least number is 1
 - **Origin:** none
 
 *Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
@@ -10209,9 +10219,9 @@ The browser view keeps React roots of its own for each screen and for the menu b
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-03
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the question „Zapisać, odrzucić, wrócić?” and the end-of-run window held outside the screen Przejście, which draws each only while the game view tells it to and asks the game view to close the window, and outside the game state and the document it saves; the folding of the rule groups as one memory of the page given to the program panels of Programy and Przejście, a fold on one shown on the other at once, with no update of its own. An agent compares a change with the part no test holds:
   - complies: a new screen built as a root of its own, whose factory receives the game state from the store and the memory of its unfolded trees, shared with another screen, as a memory of the page read through `useSyncExternalStore`; a setting only that screen reads kept in its component
-  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a memory two screens share held in the component of one of them
+  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a new memory two screens share held in the component of one of them; the state of the screen Przejście moved from `run-screen-state.ts` into the game view's controller, `game-view.ts`
 - **Origin:** none
 
 *Rationale:* the store and the state of the screen Przejście stay as they are under any later choice of one root for the view, so a change of mind costs only the table of screens. Separate roots change nothing the player sees just before the next screen is added, and the question of one root stays open until the view is wholly in React. Accepted with it: the menu bar and the account card stay roots of their own beside the screens, a panel that the page moves by hand between two places stays moved by hand, outside what React knows, and a context of React reaches only the inside of one root.
@@ -10224,7 +10234,7 @@ A new screen of the game is added as a module of its own, one entry in the regis
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-281
-- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries, and refuses a table that leaves a kind of screen without an entry. An agent compares a change with the part no test holds:
+- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries, and refuses a table that leaves a kind of screen without an entry or gives a kind two entries. An agent compares a change with the part no test holds:
   - complies: the screen Wiedza added as its module, an entry file, one line of the registry's table with that entry's import, its address in the module of addresses and its place on the menu bar
   - violates: a new screen that names its kind in a function of the game view outside its entry and the line of the table, or that the registry shows, draws, focuses or takes down by a branch written for it
 - **Origin:** none
