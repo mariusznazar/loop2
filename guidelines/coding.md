@@ -233,6 +233,8 @@ Zdarzenia biznesowe:
 - konto odblokowane (`account-unblocked`);
 - uprawnienie do poprzedniego zapisu nadane (`account-previous-save-granted`);
 - uprawnienie do poprzedniego zapisu odebrane (`account-previous-save-revoked`);
+- rola właściciela nadana (`account-owner-granted`);
+- rola właściciela odebrana (`account-owner-revoked`);
 - kopia bazy wykonana;
 - wdrożenie.
 
