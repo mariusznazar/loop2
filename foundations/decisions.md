@@ -518,14 +518,18 @@ character's tile, never on the drawing.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: terrain-drawing-numbers. For hovering and for everything else the
-  player does on the drawing, since what the player sees and what the drawing does in answer is
-  shown only by a real browser, which the repository does not declare, an agent compares the change
-  with the decision:
-  - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
-    marks the tile, while the tab „Teren” of the area under the world on the screen of a map run is
-    picked (D-311)
-  - violates: a click on a tile that sends the character there or changes the program
+- **Verification:** invariants: terrain-drawing-numbers. tests: a click on a tile of the drawing
+  changing nothing, and nothing in the drawing a control; hovering a tile marking its row in the
+  list of revealed tiles, and hovering a row marking its tile; the numbers of stock standing in the
+  rows of the list and in the line under the drawing, which gives the hovered tile, or the
+  character's tile where none is hovered or the key names no tile. For hovering as a real browser
+  delivers it, and for what the player does on the drawing other than a click, an agent compares a
+  change with the part no invariant and no test holds:
+  - complies: in a browser, hovering a tile marks its row in the list of revealed tiles, and
+    hovering that row marks the tile, while the tab „Teren” of the area under the world on the
+    screen of a map run is picked (D-311)
+  - violates: a double click or a drag on a tile that sends the character there or changes the
+    program
 - **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
@@ -1593,9 +1597,11 @@ A campfire shows on the drawing of the game map as an icon on its tile, one icon
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-19
-- **Verification:** an agent compares a change with the decision:
-  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and on that tile of the drawing the burning campfire's icon; the same campfire once its minutes run out, and a campfire crafted and not yet lit, drawn with the extinguished campfire's icon;
-  - violates: the minutes left written on the drawing beside the campfire's icon; one icon for a burning and for an extinguished campfire.
+- **Verification:** tests: the campfire's icon on its tile and on no other, within the tile beside
+  the icons of the resources; one icon for a burning campfire and another, in the same place, for
+  an extinguished one, a campfire crafted and not yet lit and one with no minutes left included;
+  its minutes left in its tile's row of the list of revealed tiles, and no number of them on the
+  drawing.
 - **Origin:** none
 
 *Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list. A campfire crafted and not yet lit is extinguished, which a new player does not expect, so the drawing tells the player that too. The extinguished campfire's icon, like the other icons of the map, holds its colour in its file, and the scene of a map run already tells an extinguished campfire from a burning one, by the same picture without colour and motion.
@@ -2693,10 +2699,15 @@ game map show every item they hold.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the body row of a new game's first map run showing satiety from game minute zero
-  - violates: the body row hiding satiety until „Sytość poniżej” is discovered; an item of the
-    backpack or of a revealed tile drawn or listed as unknown until it is discovered
+- **Verification:** tests: with an Understanding that holds no item and of the conditions only
+  „Zawsze”, the body row showing satiety from game minute zero, the backpack listing the items it
+  holds, the list of revealed tiles giving the stock of every resource of the map, and the drawing
+  of the game map drawing the icon of every resource a revealed tile holds. For a campfire and a
+  burning item, an agent compares a change with the part no test holds:
+  - complies: a campfire and a burning stick on a revealed tile drawn and listed in its row while
+    the Understanding holds neither the campfire nor the stick
+  - violates: the drawing or the list of revealed tiles leaving out a campfire or a burning stick
+    until the Understanding holds it
 - **Origin:** none
 
 *Rationale:* the Understanding decides what a program can name, while the body row, the backpack,
@@ -3760,12 +3771,13 @@ from game minute zero, in the role `text` at every value of the energy, zero inc
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-125
-- **Verification:** an agent compares a change with the decision:
-  - complies: the body row in Las with the cells „Temperatura 36,9 °C” with the note „bez ognia 79
-    min”, „Sytość 82 %” with the note „bez jedzenia 86 min”, „Zdrowie 100” and „Energia natury 90”;
-    „Energia natury 0” in the role `text`
-  - violates: „Energia natury 0” in the role `danger`; 89.5 nature energy shown as „Energia natury
-    90”; the energy left out of the body row until „Energia natury poniżej” is discovered
+- **Verification:** tests: the body row ending with „Energia natury {n}”, from game minute zero,
+  before „Energia natury poniżej” is discovered; the energy cut down to a whole number, 89.5 shown
+  as „Energia natury 89”; the energy never in `danger`, at 0, 90 and 100. For the role the energy
+  stands in other than `danger`, an agent compares a change with the part no test holds:
+  - complies: „Energia natury 0” and „Energia natury 100” in the colour of `text`, as „Zdrowie 40”
+    is
+  - violates: „Energia natury” in `warning` or `positive` at some value of the energy
 - **Origin:** none
 
 *Rationale:* the player reads the energy that opens and closes the spells beside the values of the
@@ -9903,9 +9915,13 @@ An item burning on a revealed tile, such as a lit stick, stands in that tile's r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-70 · derives from D-72
-- **Verification:** an agent compares a change with the decision:
-  - complies: a tile holding a campfire with 55 minutes left and a stick with 3 minutes left, its row reading „ognisko — płonie, zostało 55 min” and then „patyk — płonie, zostało 3 min”; the same tile after the stick's last minute, its row reading the campfire's text alone
-  - violates: an icon of a burning stick on the drawing of the game map; the text of the burning stick before the campfire's; the name „patyk” written in the code of the list instead of read from the game's data
+- **Verification:** tests: a lit stick standing in its tile's row after the campfire's text, as
+  „patyk — płonie, zostało 3 min” with its minutes left, while it burns and not after its last
+  minute; no icon of it on the drawing of the game map. For the name of a burning item, an agent
+  compares a change with the part no test holds:
+  - complies: the name of a burning item in its tile's row read from the item's name in the game's
+    data, so that an item renamed in the data shows under its new name
+  - violates: the name „patyk” written in the code of the list instead of read from the game's data
 - **Origin:** none
 
 *Rationale:* a burning stick is shown only in the row of its tile, not on the drawing, and its minutes of burning are a number, which stands in the row of the tile as the campfire's do (D-70). A stick lit on a revealed tile (D-72) then shows in the list after the campfire's text, in the same words.
