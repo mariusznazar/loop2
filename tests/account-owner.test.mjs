@@ -77,7 +77,8 @@ function snapshot(raw) {
 }
 
 test("the list of accounts holds every account sorted by address, each with its address, role, blocked state and previous-save privilege and nothing else", async (t) => {
-  // The owner panel's list (D-411) and its four fields: the address, the role, the blocked state and the privilege.
+  // decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+  // The list holds the four fields of D-411: the address, the role, the blocked state and the privilege.
   const { database } = await fixture(t);
   assert.deepEqual(database.listAccounts(), []);
   database.createAccount("charlie@example.test", "hash");
@@ -257,14 +258,29 @@ function holdWriteLock(t, path, email, holdMs) {
     { eval: true, workerData: { path, email, holdMs } },
   );
   t.after(() => worker.terminate());
-  const reportOf = (word) =>
-    new Promise((resolve, reject) => {
+  // A report that has not come when the worker ends fails with the word it waited for and the
+  // exit code; the worker's own error, which comes first, is the cause where there is one.
+  const reportOf = (word) => {
+    const report = new Promise((resolve, reject) => {
+      let reported = false;
       worker.on("message", (message) => {
-        if (message === word) resolve();
+        if (message === word) {
+          reported = true;
+          resolve();
+        }
       });
       worker.once("error", reject);
-      worker.once("exit", () => reject(new Error("lock holder exited")));
+      worker.once("exit", (code) => {
+        if (!reported)
+          reject(
+            new Error(`lock holder exited with ${code} before it said ${word}`),
+          );
+      });
     });
+    // A report nobody awaits yet is no unhandled rejection that hides the one that is awaited.
+    report.catch(() => {});
+    return report;
+  };
   return { locked: reportOf("locked"), committed: reportOf("committed") };
 }
 
@@ -525,8 +541,10 @@ test("the role command changes nothing on a usage error, an unknown address or a
     ["no address", ["owner"], 2],
     ["an extra argument", ["owner", "player@example.test", "now"], 2],
     ["an unknown role", ["block", "player@example.test"], 2],
+    ["a role word in capitals", ["Owner", "player@example.test"], 2],
     ["an address without a valid form", ["owner", "player-example.test"], 2],
     ["an unknown address", ["owner", "nobody@example.test"], 4],
+    ["an address with a space inside it", ["owner", "player @example.test"], 4],
   ]) {
     const run = await runCommand(roleCommand, args, path);
     assert.equal(run.code, exitCode, label);

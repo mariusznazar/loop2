@@ -789,8 +789,9 @@ test(
     // decision: D-400 "The address in the body of those routes is normalized as at login, and an address written as no address is the address of no account"
     // decision: D-252 "A change of the role of an account and each operation of the owner panel are such changes: each leaves one line with the number of the account changed, written after a change only, and no address and no number of the account of the owner who acted"
     // Faults: a grant that ends the target's session or stops its link; a revoke
-    // that leaves the next read open; a route that refuses an owner as a target;
-    // a line for an outcome that changed nothing or that names the acting owner.
+    // that leaves the next read or the next reset open; a route that refuses an
+    // owner as a target; a line for an outcome that changed nothing or that
+    // names the acting owner.
     const f = await panelFixture(t);
     const ownerCookie = seed(f, "grant-owner", f.owner);
     const playerCookie = seed(f, "grant-player", f.player);
@@ -804,12 +805,23 @@ test(
       "previous-save-forbidden",
       "precondition: no privilege",
     );
+    assertRefusal(
+      await postTo(f, "/api/saved-game-reset", {}, playerCookie),
+      403,
+      "previous-save-forbidden",
+      "precondition: no privilege, so no reset",
+    );
 
     assertOutcome(await grant("player@example.test"), "granted", "grant");
     assert.equal(
       (await getFrom(f, "/api/previous-saved-game", playerCookie)).status,
       200,
       "the next read is open",
+    );
+    assert.equal(
+      (await postTo(f, "/api/saved-game-reset", {}, playerCookie)).status,
+      204,
+      "the next reset is open",
     );
     assert.equal(
       JSON.parse((await getFrom(f, "/api/account", playerCookie)).body)
@@ -827,6 +839,12 @@ test(
       403,
       "previous-save-forbidden",
       "the next read is closed",
+    );
+    assertRefusal(
+      await postTo(f, "/api/saved-game-reset", {}, playerCookie),
+      403,
+      "previous-save-forbidden",
+      "the next reset is closed",
     );
     assertOutcome(await revoke("player@example.test"), "not-granted", "again");
     assert.deepEqual(sessionIds(f, f.player.id), ["grant-player"]);

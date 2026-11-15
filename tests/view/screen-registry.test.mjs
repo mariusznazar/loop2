@@ -459,7 +459,7 @@ test("a table that leaves out the entry of the list of accounts is refused when 
   });
 });
 
-// decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens, its address and its position on the menu bar"
+// decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens"
 // decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba."
 // Catches a list that is never built for its address, or one left standing after the player leaves it.
 test("the list of accounts is built on entering its address and taken down on leaving it", async () => {
