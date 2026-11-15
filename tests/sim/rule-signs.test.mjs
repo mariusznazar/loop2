@@ -599,6 +599,7 @@ test("the winner the signs show is the rule the pick takes, minute after minute,
 });
 
 test("the repertoire the signs read is the editor's, and the knowledge is what the Understanding holds of the archetype with every branch bought", () => {
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
   const state = sentWith([group(1, ALWAYS, [])]);
   assert.equal(editorRepertoire(state).actions.includes("patrol"), false);
   assert.equal(knownRepertoire(state).actions.includes("patrol"), true);
