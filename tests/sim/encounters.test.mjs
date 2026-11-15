@@ -522,6 +522,7 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
   // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
   // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
   // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   const state = prepared();
   state.understanding = {
     actions: ["explore", "wander"],
@@ -566,6 +567,7 @@ test("first chill and attack in one minute keep the automatic exploration rule b
   // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
   // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
   // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   const state = prepared(programFromRules());
   // The Understanding of a new game: „Zawsze” and „Eksploruj”.
   state.understanding = {

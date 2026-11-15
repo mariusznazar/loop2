@@ -326,6 +326,7 @@ test("the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)", () =>
 
 test("a new character's traits hold carrying capacity 15, apart from the archetype", () => {
   // decision: D-64 "Carrying capacity is 15 pieces"
+  // decision: D-192 "A number that acts in one action only belongs to the tree of that action's character skill, never to a trait"
   assert.deepEqual(TRAITS, { carryingCapacity: 15 });
   for (const archetype of Object.values(ARCHETYPES)) {
     assert.ok(!("carryingCapacity" in archetype));
@@ -454,6 +455,7 @@ test("the elemental mage has all listed skills as predispositions", () => {
 });
 
 test("the tree of Eksploracja, whose first action is held from the start, is revealed by the first finished exploration, and no other tree has an event of its own", () => {
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   // D-195: every other tree enters with the first action it grows.
   assert.deepEqual(SKILLS.exploration.revealedBy, { kind: "explored" });
   assert.deepEqual(
@@ -530,6 +532,7 @@ test("each revealing event reveals exactly the actions, conditions and items of 
   // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   for (const row of ROWS) {
     const label = JSON.stringify(row.event);
     const is = (def) => JSON.stringify(def.revealedBy) === label;

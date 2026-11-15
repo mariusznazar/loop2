@@ -86,6 +86,7 @@ function headquarters() {
 }
 
 test("new characters own independent zero practice and empty ranks, with level one and no points", () => {
+  // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
   const state = createCharacter(
     createCharacter(newGame(), "Ala").state,
     "Ola",
@@ -105,6 +106,9 @@ test("new characters own independent zero practice and empty ranks, with level o
 });
 
 test("all cumulative thresholds of D-379 grant exactly one point and level each, then stop", () => {
+  // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
+  // decision: D-191 "Each level gives points that buy ranks of branches of its own tree, at prices that differ from branch to branch, and each next level needs more practice than the one before"
+  // decision: D-379 "The eight character skills give a level and a point at each of these amounts of practice"
   const expected = {
     smallItemGathering: [30, 80, 160, 280, 450],
     campfireCrafting: [20, 55, 110, 190],
@@ -135,6 +139,9 @@ test("all cumulative thresholds of D-379 grant exactly one point and level each,
 });
 
 test("purchases charge successive costs in one skill, cannot overspend or exceed rank, and never affect another character", () => {
+  // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
+  // decision: D-191 "Each level gives points that buy ranks of branches of its own tree, at prices that differ from branch to branch, and each next level needs more practice than the one before"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   let state = headquarters();
   const input = state;
   const original = structuredClone(state);
@@ -165,6 +172,7 @@ test("purchases charge successive costs in one skill, cannot overspend or exceed
 });
 
 test("Mocniejszy cios has four ranks at one point each, and its fifth purchase is refused", () => {
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   let state = headquarters();
   for (let count = 0; count < 4; count++)
     state = buyBranch(state, 1, "strongerStrike").state;
@@ -180,6 +188,7 @@ test("Mocniejszy cios has four ranks at one point each, and its fifth purchase i
 });
 
 test("unknown trees, unknown characters, no skill and every retained run refuse purchase", () => {
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   const state = headquarters();
   assert.equal(buyBranch(state, 99, "keenEye").state, state);
   const unknown = {
@@ -235,6 +244,7 @@ test("every walking action with Długi krok rank three lasts at least one minute
 });
 
 test("numeric branches shorten exploration, crafting, both spells and eating at action start", () => {
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   for (const [action, skill, purchased, expected] of [
     [{ kind: "explore" }, "exploration", { practicedStep: 3 }, 11],
     [
@@ -269,6 +279,7 @@ test("numeric branches shorten exploration, crafting, both spells and eating at 
 });
 
 test("meal and walking bonuses apply to their own actions when both are bought", () => {
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   // D-379: Szybki posiłek 1 shortens eating 5 - 1 = 4;
   // Długi krok 1 shortens walking 5 - 2 = 3, not both by their sum.
   const skills = {
@@ -299,6 +310,7 @@ test("meal and walking bonuses apply to their own actions when both are bought",
 });
 
 test("send and restart take independent rank snapshots and a restart discards run practice", () => {
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   const before = structuredClone(hq);
   const sent = send(hq, ids, 1).state;
@@ -321,6 +333,8 @@ test("send and restart take independent rank snapshots and a restart discards ru
 test("practice appears at the effect minute, once for all tiles of Zwiad, and never on an already revealed tile", () => {
   // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
   // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-198 "With the bought branch „Zwiad”, exploration reveals the current tile and its neighbours together, while still requiring the current tile to be unrevealed"
   const run = base(ranks("exploration", { scout: 1 }));
   const started = pickActivity(run, program({ kind: "explore" })).run;
   let current = started;
@@ -337,6 +351,10 @@ test("practice appears at the effect minute, once for all tiles of Zwiad, and ne
 
 test("gather miss grants none, an improved chance hits, and full hand respects stock and backpack limits", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-191 "A character skill grows by practice, which counts only its actions that ended in effect"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-197 "„Pełna garść” likewise takes no more pieces than remain on the tile or fit in the backpack"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   const action = { kind: "gather", resource: "stick" };
   const miss = { ...ready(action), gatherRandom: randomBetween(0.71, 0.74) };
   assert.deepEqual(landed(miss).practice, {});
@@ -379,6 +397,9 @@ test("Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock
   // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // decision: D-65 "A character carries out a gathering while its backpack holds fewer pieces than its cap"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-197 "The gathering tree has the branch „Obchód”, which opens „Obchód — {zasób}”: a guaranteed batch of the chosen resource from the current tile, up to the amount in the data, the tile’s remaining stock and the backpack’s remaining capacity"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   const action = { kind: "patrol", resource: "stick" };
   for (const [stock, carried, expected] of [
     [20, 0, 12],
@@ -416,6 +437,7 @@ test("clean flame needs no stick but still costs ten energy; item lighting still
   // decision: D-63 "With the bought branch „Czysty płomień”, „Zapal — ognisko” requires and consumes no sticks and costs the nature energy of ordinary lighting"
   // decision: D-177 "A mage carries out Płomyk while its nature energy reaches the spell's price"
   // decision: D-175 "Each spell costs the mage nature energy"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
   const action = { kind: "lightCampfire" };
   const run = ready(action, ranks("flameSpell", { cleanFlame: 1 }));
   const fixture = {
@@ -436,6 +458,10 @@ test("clean flame needs no stick but still costs ten energy; item lighting still
 });
 
 test("crafting, feeding, item lighting and eating grant one only when their effect lands, even eating at full satiety", () => {
+  // decision: D-191 "A character skill grows by practice, which counts only its actions that ended in effect"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-193 "Eating has its effect when the berry is eaten, even at full satiety"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   for (const [kind, skill, pieces] of [
     ["craftCampfire", "campfireCrafting", 6],
     ["feedCampfire", "campfireCrafting", 1],
@@ -476,6 +502,10 @@ test("crafting, feeding, item lighting and eating grant one only when their effe
 test("combat practice counts damaging effects and effective dodges, not last or unused dodge requests", () => {
   // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   // decision: D-144 "Another dodge refreshes that reduction, the strike consumes it with damage floored at zero"
+  // decision: D-191 "A character skill grows by practice, which counts only its actions that ended in effect"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-193 "Eating has its effect when the berry is eaten, even at full satiety; a dodge has its effect when it removes some damage from an enemy strike, counted in the turn of that strike"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   const stick = {
     ...base(ranks("oneHandedCombat", { strongerStrike: 4 })),
     character: {
@@ -513,6 +543,8 @@ test("combat practice counts damaging effects and effective dodges, not last or 
 
 test("the combat resolution minute adds its successful strikes to the run's earlier practice", () => {
   // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   // D-379: 6 + 4*2 = 14 damage, so two strikes defeat the 24-health wolf.
   // The two effects add to three earlier strikes, while seven gathers stay seven.
   const run = newMapRun(
@@ -552,6 +584,8 @@ test("the combat resolution minute adds its successful strikes to the run's earl
 // A run that holds no mark pays even when its map has been solved since it started (D-194, D-214).
 // A marked run pays nothing: tests/sim/trip.test.mjs.
 test("completion pays this minute's practice once to the runner of a run begun before its map was solved; death and early exits pay nothing", () => {
+  // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
+  // decision: D-194 "A run cut short by „Restart” or „Zakończ” before completion leaves the character’s practice and bought ranks as they were"
   const sent = send(headquarters(), ids, 1).state;
   const fixture = {
     ...sent,
@@ -604,6 +638,8 @@ test("Obchód is known with its tree but offered only in its owner's run; an una
   // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved; an action or item of a bought branch is open only to the character that bought it"
   // decision: D-119 "That one computation is at once what the program editor offers and what the simulation lets the character carry out"
   // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
+  // decision: D-196 "Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer"
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
   const hq = buyBranch(headquarters(), 1, "patrol").state;
   assert.ok(hq.understanding.actions.includes("patrol"));
   assert.equal(editorRepertoire(hq).actions.includes("patrol"), false);
@@ -626,6 +662,9 @@ test("Obchód is known with its tree but offered only in its owner's run; an una
 });
 
 test("scout discovers neighboring resources and the gathering tree with Obchód in the same paused minute", () => {
+  // decision: D-193 "An action ending in effect adds one practice to the character skill its pair of verb and target grows, in the game minute of that effect, even if the effect includes several pieces or tiles"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
+  // decision: D-198 "Items on all tiles revealed in that game minute enter the Understanding together in its discovery pause"
   const hq = createCharacter(withEdgeSolved(newGame()), "Ala").state;
   const sent = send(hq, ids, 1).state;
   const run = base(ranks("exploration", { scout: 1 }));

@@ -381,6 +381,7 @@ function sent() {
 }
 
 test("the editor shows the repertoire of the mage through the Understanding, outside a map run and in a map run", () => {
+  // decision: D-196 "Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer"
   const understanding = {
     actions: ["explore", "wander", "eat"],
     conditions: ["always"],

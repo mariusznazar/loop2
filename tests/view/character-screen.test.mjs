@@ -174,6 +174,7 @@ test("a running loop shows its line with „Zatrzymaj”, which acts through onS
 });
 
 test("the section „Umiejętności” is absent before a tree is known, then shows the known tree's row alone", async () => {
+  // decision: D-199 "The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is absent"
   await withPage(async (page) => {
     const state = knowingExploration();
     const { screen } = await mount(page, propsOf(withTrees(state, [])));
@@ -190,6 +191,9 @@ test("the section „Umiejętności” is absent before a tree is known, then sh
 });
 
 test("unknown trees are hidden, purchases update existing buttons and refuse unaffordable and maximum ranks", async () => {
+  // decision: D-199 "Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   await withPage(async (page) => {
     let state = withTrees(knowingExploration(), ["exploration"]);
     const { screen, calls } = await mount(page, propsOf(state));
@@ -224,6 +228,7 @@ test("unknown trees are hidden, purchases update existing buttons and refuse una
 test("„Kup” is inactive with the sentence under the heading beside a waiting map run and beside an ended one", async () => {
   // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
   // decision: D-287 "Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   await withPage(async (page) => {
     const started = send(
       withTrees(knowingExploration(), ["exploration"]),
@@ -256,6 +261,8 @@ test("„Kup” is inactive with the sentence under the heading beside a waiting
 });
 
 test("a purchase leaves focus on its button, which stays buyable after it", async () => {
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   await withPage(async (page) => {
     let state = withTrees(knowingExploration(), ["exploration"]);
     const { screen, calls } = await mount(page, propsOf(state));

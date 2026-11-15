@@ -532,6 +532,7 @@ test("editing or deleting the program after the start leaves the loop on the con
 // D-200: a rank bought during the loop acts from the next map run; the one going on keeps the
 // skills of its start.
 test("a rank bought during a loop reaches the next map run and not the one going on", () => {
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   let state = looping(EMPTY);
   state = changing(state, 1, {
     skills: {

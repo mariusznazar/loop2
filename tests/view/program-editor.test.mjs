@@ -1164,6 +1164,7 @@ test("every action names a group and every condition a section of the data, with
 
 test("a branch action known and not bought stands greyed: „gałąź niewykupiona” in a map run, „wybierzesz w przejściu…” with none", () => {
   // decision: D-120 "An archetype opens character skills, not actions: an action is open to a character when the character skill that its pair of verb and target grows is among the predispositions of the character's archetype and, for an action opened by a branch, the character has bought that branch"
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
   const during = cellsOf(actionPick(runningGame(), EXPLORE));
   assert.equal(during.patrol.greyed, true);
   assert.equal(during.patrol.reason, NOT_BOUGHT);
@@ -1335,6 +1336,7 @@ test("a value the rule holds outside the pick stands chosen and greyed: with its
 });
 
 test("the offer follows the character of the map run: a bought branch opens its action in the pick", () => {
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
   const state = withBought(runningGame(), "patrol");
   assert.equal(cellsOf(actionPick(state, EXPLORE)).patrol.greyed, false);
   assert.equal(cellsOf(actionPick(runningGame(), EXPLORE)).patrol.greyed, true);

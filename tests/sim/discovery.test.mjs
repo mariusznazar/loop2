@@ -360,6 +360,7 @@ test("a character of a new game whose program holds Zawsze → Eksploruj from th
 test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej, the items of the tile, read from the tile, and the tree Eksploracja beside the gathering tree", () => {
   // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
   // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   const explored = advanceMinutes(advanceMinutes(sentNew(), 84).state, 20);
   const run = explored.state.run;
   assert.equal(run.minute, 104);
@@ -510,6 +511,7 @@ for (const row of ROWS) {
   test(`${row.name} reveals exactly its row of the table, between the finish and the pick`, () => {
     // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
     // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
+    // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
     const result = advanceMinutes(prepared(START, row.prepare), 1);
     assert.deepEqual(discoveries(result.events), [
       {

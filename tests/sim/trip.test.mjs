@@ -71,6 +71,9 @@ test("a bought branch acts on entry equipment and completion pays practice and l
   // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
   // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   let state = equipped();
   state = {
     ...state,
@@ -672,6 +675,7 @@ test("a run records at its start whether its map was solved, and a restart after
 
 test("completing a manual run of a solved map pays no practice and deposits nothing, and the practice stays with the run", () => {
   // invariant: solved-map-manual-run
+  // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
   const started = sent(solvedForest());
   const fixture = aboutToComplete({
     ...started,
@@ -699,6 +703,7 @@ test("completing a manual run of a solved map pays no practice and deposits noth
 
 test("a run started before another character solved the map still pays practice and deposits at its completion", () => {
   // invariant: solved-map-manual-run
+  // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
   const started = sent();
   const fixture = aboutToComplete({
     ...started,

@@ -51,6 +51,8 @@ function createdKnowing(...names) {
 
 // Generation 1 and no resurrection of its own: the team's is shared (D-220).
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
+  // decision: D-192 "A character is described by traits, character skills and the predispositions of its archetype"
+  // decision: D-192 "A number that acts in one action only belongs to the tree of that action's character skill, never to a trait"
   const state = created("Ala", "Ola", "Ela");
   assert.deepEqual(state.team.characters, [
     {
