@@ -1189,10 +1189,10 @@ The chest belongs to a team and has a cap on the total count of pieces, by the s
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: character-team · trip-transfer. For the chest, an agent compares a change with the
-  decision:
-  - complies: a lone character shown with the chest of its one-member team
-  - violates: a character with a personal chest beside the team's; a character outside every team; a chest capped per kind of item
+- **Verification:** invariants: character-team · trip-transfer. tests: the chest held by the team,
+  with a cap on the count of the pieces of all its items together, a chest above it refused at a
+  load and a completion depositing no more than the room the pieces of another item leave; a
+  character holding no chest of its own.
 - **Origin:** none
 
 *Rationale:* a team of one behaves exactly as a lone character with a chest of its own, as the single
@@ -1213,10 +1213,9 @@ headquarters before sending any character to a game map.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new game whose state holds a team with no character, the headquarters showing the
-    team as empty beside the creation of a character
-  - violates: a new game whose team holds a ready-made elemental mage
+- **Verification:** tests: a new game whose team holds no character; the headquarters of an empty
+  team saying so beside the creation of a character, and the section „Kto idzie” of the card of a
+  map holding no character to send and sending the player to the creation in Siedziba.
 - **Origin:** none
 
 *Rationale:* every character of the team is then one the player created and named, the first one
@@ -1234,12 +1233,10 @@ characters may bear the same name.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: „ Ala ” typed creating a character named „Ala”; two characters named „Ala” on the
-    team's list; a name of spaces alone creating no character, with the message under the name
-    field in `warning`
-  - violates: a character created with an empty name; a second „Ala” refused; a map run or a saved
-    game that names its character by its name
+- **Verification:** tests: the name the player types at the headquarters becoming the character's
+  name, trimmed of the white space at its start and end; a name empty once trimmed creating no
+  character, with „Wpisz imię postaci.” under the field; two characters bearing one name staying
+  two characters.
 - **Origin:** none
 
 *Rationale:* the name is what the player tells characters apart by on the team's list, and a name
@@ -1261,15 +1258,12 @@ screen Postać of that character. „Otwarte: {mapa} →” of the end-of-run wi
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wejdź” beside each character in the section „Kto idzie” of the card of a
-    map; „Zakończ” of a map run opening the screen Postać of the character that made it; after a
-    completion of Las „Otwarte: Las — głębiej →” in the window opening the screen Mapy with the
-    card of Las — głębiej
-  - violates: a panel for sending characters standing apart from the card of a map; a button that
-    sends a character standing in the headquarters; „Zakończ” leading to the headquarters or to any
-    screen other than the screen Postać of that character; „Otwarte: {mapa} →” leading to any screen
-    other than the screen Mapy with the card of the map it opened
+- **Verification:** tests: „Wejdź” at each character in „Kto idzie” of the card of a map on the
+  screen Mapy sending that character, and no control of sending on Siedziba; „Zakończ” of the
+  header and of the end-of-run window, with and without the question about unsaved changes,
+  opening the screen Postać of the character of the map run; „Otwarte: {mapa} →” standing only
+  after a completion of a map that opens another and opening the screen Mapy with the card of that
+  map.
 - **Origin:** none
 
 *Rationale:* a character goes out from the card that says what the map asks, on a screen where the
@@ -1292,10 +1286,9 @@ The characters of the team stand on its list in the order they were created.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the character created third standing third on the team's list, in the game state and
-    in the headquarters
-  - violates: the list sorted by name; a character created last put at the head of the list
+- **Verification:** tests: the characters standing in the order of their creation on the team's
+  list in the game state, on Siedziba, in „Kto idzie” of the card of a map and in the camp of
+  Siedziba.
 - **Origin:** none
 
 *Rationale:* the order of creation is one the player sets by creating characters, which no other
@@ -1341,14 +1334,11 @@ by that number.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-52
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first character of a game carrying the number 1; the third character created
-    carrying the number 3, whatever its name; a map run of
-    that character holding the number 3; a saved game that keeps the number the game state gives
-    next
-  - violates: a character found by its name or by its position number on the team's list; a map run holding
-    a copy of the character's name or archetype in place of its number; a number given anew to a
-    character created after another left the team
+- **Verification:** tests: the characters of a game numbered 1, 2 and 3 in the order of their
+  creation, the next number 4, two characters of one name holding two numbers; a saved game state
+  with two characters of one number, or with a character's number reaching the next one, refused;
+  a map run carrying its character by that number, a send of a number no character of the team
+  holds refused, and a saved game state whose map run carries a number outside the team refused.
 - **Origin:** none
 
 *Rationale:* two characters may bear one name, and a character's position number on the list
@@ -1445,9 +1435,16 @@ After a character's death the screen stays on the state of the game minute of de
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a death of cold in game minute 312 „Teraz” reads „Mag zamarzł” and the clock „Minuta 312”, „Pauza” and the pace buttons are gone, the game minute stays at 312, the window opens over the screen with the title „Mag zamarzł” and the menu bar standing above it, and „Restart” starts game minute zero on the same seed;
-  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive; what the death took and why it came standing in the world area instead of the window.
+- **Verification:** tests: after a death, game time passing no minute of that map run and the
+  clock standing at the game minute of the death; the end-of-run window opening of itself over the
+  header and the three areas of the screen; „Restart”, of the window and of the simulation,
+  starting the map run again on the same seed from game minute zero; „Zakończ” of the window
+  opening the screen Postać; „Restart” and „Zakończ” standing in the header while „Pauza” and the
+  pace buttons are gone. For the menu bar while the window stands, an agent compares a change with
+  the part no test holds:
+  - complies: the end-of-run window after a death opening below the menu bar, which stays above it
+    and works
+  - violates: the end-of-run window after a death covering the menu bar too
 - **Origin:** none
 
 *Rationale:* The player sees what the character had and where it stood at the moment of death, reads in the window why it died, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen D-53 gives, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on. The time that stands still is that of this map run alone: the screen after a death stops no earning loop of another character, as a pause stops none. The end stands in a window over the screen, which puts it where nothing that stood there before has to move, and the menu bar with the row of warnings stays above the window and works, so a failed save and a broken game are seen while it stands. Accepted with it: the window hides the scene while it stands, and does not cover the whole page as the end of loop does.
@@ -4130,9 +4127,20 @@ A character's death takes what it carried and pays nothing of its map run; when 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · narrows D-189
-- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once · catch-up-death-moment. An agent compares a change with the decision:
-  - complies: a character dying without a resurrection ready coming back with empty trees, its archetype and its place in the team unchanged; a death with a resurrection ready in an earning loop using it up, the map run paying nothing, the practice gathered at the earning loop staying and the next map run starting at once; a death with none stopping the earning loop and taking the practice gathered at it; a character created while the resurrection is used up finding it used up; the death of a second character while the first one's death has used it up taking everything of the second; a character with no practice and no practice gathered at its earning loop dying with the resurrection ready, or not, and leaving the resurrection, its generation number and its earning loop as they were; the first completion of Las making a used-up resurrection ready and its second completion by a restart making none
-  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills; a new character bringing a ready resurrection of its own; the death of a character with no practice using the resurrection up, raising the generation number or stopping its earning loop; a completion of a map the account has solved renewing the resurrection
+- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once ·
+  catch-up-death-moment. tests: a death taking what was carried and paying nothing of its map run,
+  a resurrection ready or not and on a solved map too; with none ready, all practice, the practice
+  gathered at the earning loop included, every rank bought and one more generation taken, the
+  name, archetype, traits and place in the team kept, and the earning loop stopped; the death of a
+  character with no practice in any skill, no rank bought and none gathered at its earning loop
+  taking nothing more and leaving its generation, the resurrection and its earning loop as they
+  were; the programs, the chest, the Understanding and the solved maps surviving every death, the
+  map run on the screen kept as it was, and a „Restart” after a death with none ready starting from
+  the character as the death left it; one resurrection for the team, used up by the death of any
+  character with practice while ready, in a manual map run, an earning loop and a catch-up alike,
+  a character created while it is used up bringing none, its renewal 480 real minutes in the
+  balance data, a ready one staying ready at a first completion, and a second solving of a map
+  renewing nothing.
 - **Origin:** none
 
 *Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice leaves every character without it until it is renewed. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would leave the whole team without the resurrection for the span of its renewal, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death without a resurrection ready takes it, so a new character that has gathered practice at its loop is guarded. The renewal at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map renews the resurrection at most once, and a ready resurrection gains nothing from it. Accepted with it: each new map gives the account one protection for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes it from the others; the catch-up gives it to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
@@ -4887,7 +4895,13 @@ after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
-- **Verification:** none
+- **Verification:** tests: after a death, in the part of the end-of-run window saying what the end
+  cost, the line of a resurrection used up, with the hours of the balance data, in
+  `text-secondary`, the line of none ready, with the generation number that death gave, in
+  `danger`, and the line of a character with no practice in `text-secondary` in place of both,
+  none while the death is unsettled, and each after a load too; after a first completion that made
+  a used-up resurrection ready, the renewal line in `text-secondary` below the deposit line, after
+  a load too, and none where the completion found the resurrection ready.
 - **Origin:** none
 
 *Rationale:* the player learns what the death took before pressing „Restart”, in words that agree
@@ -4919,7 +4933,15 @@ The card and the screen of a character, and that character in the section „Kto
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
-- **Verification:** none
+- **Verification:** tests: at the card of a character on Siedziba, on the screen Postać and at each
+  character in „Kto idzie”, the line of the time left in `danger` while the resurrection is not
+  ready, minutes alone below an hour, and „Wskrzeszenie drużyny gotowe” out of `danger` from the
+  moment of readiness and in a new game, rewritten at each reading of the clock; the minutes
+  rounded up to a whole minute before the split into hours and minutes. For the role of the line of
+  a ready resurrection, an agent compares a change with the part no test holds:
+  - complies: „Wskrzeszenie drużyny gotowe” in `text-secondary` at a character on Siedziba, on the
+    screen Postać and in „Kto idzie”
+  - violates: „Wskrzeszenie drużyny gotowe” in `text` or in `positive`
 - **Origin:** none
 
 *Rationale:* the player sees the stake before paying it, that the resurrection is the whole team's before a death shows it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „za 8 godz. 0 min”, 59 min 30 s reads „za 1 godz. 0 min”, and exactly 59 min reads „za 59 min”; and the word „drużyny” to be thought over once a player may hold more than one team.
@@ -4933,7 +4955,12 @@ The headquarters shows „pokolenie {n}” beside a character's name from genera
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-40 · derives from D-190
-- **Verification:** none
+- **Verification:** tests: „pokolenie {n}” beside the name of a character on Siedziba from
+  generation number 2 up, and no label at generation 1. For the role of the label, an agent
+  compares a change with the part no test holds:
+  - complies: „pokolenie 2” beside a name on Siedziba in `text-secondary`, as the archetype beside
+    it
+  - violates: „pokolenie 2” beside a name on Siedziba in `text` or in `danger`
 - **Origin:** none
 
 *Rationale:* the label stands once the number has something to say, and `text-secondary` is the role
@@ -4950,7 +4977,10 @@ pace of a map run and while the game is closed.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-190
-- **Verification:** invariants: resurrection-renewal.
+- **Verification:** invariants: resurrection-renewal. tests: the renewal counted from the reading
+  of the browser's clock at which a death is settled, and the lines of the time left following
+  that clock; the moment of readiness the same at every pace of a map run, and a resurrection used
+  up ready again at its moment after a save and a load.
 - **Origin:** none
 
 *Rationale:* the moment of a save is to go by the same clock, so the game holds one; the browser's
@@ -4968,7 +4998,9 @@ A new character has generation number 1 and brings no resurrection of its own; a
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-190
-- **Verification:** none
+- **Verification:** tests: a created character of generation 1, the second one too, holding no
+  resurrection of its own; a new game's resurrection ready from the start; a character created
+  while the resurrection is used up leaving it used up.
 - **Origin:** none
 
 *Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1.
@@ -4989,9 +5021,17 @@ holds a death unsettled.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-190 · derives from D-219
-- **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
-  - complies: the reading of the clock in which a character dies reaching the game as one result, the events of the game time passed with the death settled at that reading
-  - violates: a caller of the functions that pass game time drawing or saving what they return with the death unsettled; a load that settles a death
+- **Verification:** invariants: death-settled-once. tests: a death left unsettled by the functions
+  that pass game time, of a manual map run and of an earning loop, and settled by a function of its
+  own; each reading of the browser's clock handing the game state one result with a death of that
+  reading settled against it, a death standing on the screen settled at the first reading, and a
+  death saved at once settled; a load refusing a saved game state that holds a death unsettled.
+  For the functions that pass game time taking no real moment, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: `advanceMinutes` and `passRealTime` taking the game state and a span alone, the
+    moment of a death given to `settleDeath` only
+  - violates: `passRealTime` taking a reading of the browser's clock and settling with it a death it
+    meets
 - **Origin:** none
 
 *Rationale:* the functions that pass game time stay as D-04 gives them and know no real moment, so
