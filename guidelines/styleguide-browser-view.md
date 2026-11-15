@@ -1006,8 +1006,10 @@ kończą się w każdej przeglądarce, odnośniki z maili przestają działać, 
 odblokowanie tego nie przywraca), przycisk potwierdzający „Tak, zablokuj” jako
 przycisk niszczący w tym samym wyglądzie co „Zablokuj”, i zwykły przycisk
 „Wróć” (D-44), tak jak przy „Zacznij od zera”; potwierdzenie nie jest formularzem,
-więc „Wróć” nie jest akcją poboczną (D-275). Przyciski stoją obok zdania, w oknie
-szerokim tak samo jak w oknie wąskim, a nie na końcu wiersza. Klik „Zablokuj”,
+więc „Wróć” nie jest akcją poboczną (D-275). Zdanie i dwa przyciski stoją w jednym
+rzędzie, który się zawija: w oknie szerokim przyciski stoją zaraz po zdaniu,
+w wąskim, gdy zdanie nie zostawia im miejsca, pod nim; zdanie nie ma marginesu,
+który spychałby przyciski na koniec szerokiego wiersza. Klik „Zablokuj”,
 który otwiera potwierdzenie, nic nie wysyła. Przycisk „Tak, zablokuj” wysyła
 blokadę. „Wróć” zamyka potwierdzenie i nic nie zmienia.
 
