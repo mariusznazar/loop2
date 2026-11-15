@@ -628,6 +628,7 @@ test("a lost connection on registration leaves one warning under that form and f
 // D-381: no state outlives the card, so a typed password leaves with it; the next card opens with empty
 // fields.
 test("a created account enters the game at once, and the page keeps no password", async () => {
+  // decision: D-202 "Anyone can create a player account and start playing without approval"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const register = await registerPage(held);
@@ -3284,6 +3285,7 @@ test("a failed save shows its line under the menu bar, outside the menu „Konto
 // for, the sentence missing or not leaving at the first successful save, and a refused save on that
 // path read as a conflict.
 test("a conflict drops the game, asks for the server's save and builds from it with its sentence in the header until a save succeeds; a refused one there starts anew", async () => {
+  // decision: D-209 "The browser whose save it refuses so drops its unsaved game state, loads the server's saved game state — a manual map run that went on coming back paused (D-212) — shows „Gra została zapisana w innej przeglądarce. Wczytano ten zapis.” in `warning` on the header line of D-208 until its first successful save, and plays on from the loaded state, saving as D-207 gives"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await startPage(held);
@@ -3422,6 +3424,7 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
 test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the form in the card", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving"
   // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them"
+  // decision: D-210 "The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in `warning` on the header line of D-208 and saves nothing more, while the game stays on its screen"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);

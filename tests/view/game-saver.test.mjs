@@ -261,6 +261,7 @@ function sentenceOf(saver) {
 }
 
 test("a save that succeeds keeps its revision for the next save and takes away the sentence that stood from a conflict", async () => {
+  // decision: D-209 "The browser whose save it refuses so drops its unsaved game state, loads the server's saved game state — a manual map run that went on coming back paused (D-212) — shows „Gra została zapisana w innej przeglądarce. Wczytano ten zapis.” in `warning` on the header line of D-208 until its first successful save"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -375,6 +376,7 @@ test("a save refused as too large shows its sentence and is not retried; a momen
 });
 
 test("a conflict and a missing session go to the page's callback, and the saver sends nothing more", async () => {
+  // decision: D-209 "The browser whose save it refuses so drops its unsaved game state"
   for (const [kind, call] of [
     ["conflict", "conflict"],
     ["signed-out", "signedOut"],
@@ -404,6 +406,7 @@ test("a conflict and a missing session go to the page's callback, and the saver 
 });
 
 test("a save refused as outdated shows its sentence, tells the page, and nothing is sent any more", async () => {
+  // decision: D-210 "The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in `warning` on the header line of D-208 and saves nothing more"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(passing());
@@ -705,6 +708,7 @@ test("before logout a request in flight that fails is followed by the logout's o
 
 test("a saver stopped as outdated reports so before logout without sending anything", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving"
+  // decision: D-210 "The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in `warning` on the header line of D-208 and saves nothing more"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());

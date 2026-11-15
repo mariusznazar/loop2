@@ -271,6 +271,7 @@ const going = () =>
 // Catches the page asking the server, or drawing the button, for an account the privilege flag is
 // false or missing for (D-400): the client given has no `loadPreviousSavedGame`, so a question throws.
 test("an account without the flag, or with it false, never asks and has no button, however often the screen is shown", async () => {
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege and sends no request for the previous save or the reset where the flag is false"
   for (const allowed of [undefined, false]) {
     await onPage(async () => {
       const saves = [];
@@ -765,6 +766,7 @@ test("the pull works while a manual map run goes on and while one has ended", as
 // Catches the page not giving the game the account's flag (the game then never asks, or asks for
 // every account): the flag comes from the account the server names, a missing flag counts as false.
 test("the page gives the game the account's flag: only a privileged account's game asks for the previous save", async () => {
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege and sends no request for the previous save or the reset where the flag is false"
   const { startApp } = await import("../../dist/browser/view/app.js");
   for (const allowed of [true, false, undefined]) {
     await onPage(async () => {
@@ -908,6 +910,8 @@ const confirmation = (view) =>
 // Catches the control on an account the page gives no privilege, or a game given no callback for a
 // confirmed reset: the control then stands in the page of no one who may not reset (D-402).
 test("the reset control stands only for a privileged account whose page gives the game a callback", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control"
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege"
   const cases = [
     [undefined, undefined],
     [false, () => {}],
@@ -942,6 +946,7 @@ test("the reset control stands only for a privileged account whose page gives th
 // Catches a click that resets, saves or changes the game before the player confirms (D-402): the
 // click that opens the confirmation sends nothing and changes nothing.
 test("the click that opens the confirmation sends nothing and changes nothing", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];
@@ -963,6 +968,7 @@ test("the click that opens the confirmation sends nothing and changes nothing", 
 // Catches a confirmation that does not say that an earlier previous save is replaced and that its
 // programs can no longer be pulled, and a withdraw that changes anything (D-402).
 test("the confirmation names the replacement of an earlier previous save, and withdrawing changes nothing", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];
@@ -990,6 +996,7 @@ test("the confirmation names the replacement of an earlier previous save, and wi
 // waits, a save sent before the page's act, and a failure that does not return the control to rest
 // with its sentence (D-402, D-44).
 test("a confirmed reset calls the page once, waits for its answer, and a failure returns the control to rest with its sentence", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];
@@ -1141,6 +1148,8 @@ async function confirmReset() {
 // without the privilege or with the flag missing (D-400), and a page that asks the server before the
 // player confirms (D-402).
 test("the page gives the reset control to a privileged account alone, and sends nothing for it before the confirmation", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control"
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege and sends no request for the previous save or the reset where the flag is false"
   for (const allowed of [false, undefined]) {
     await onPage(async () => {
       const page = await startedPage({ allowed });
@@ -1164,6 +1173,7 @@ test("the page gives the reset control to a privileged account alone, and sends 
 // Catches a save of the page's own before the reset (D-402, D-207), a reset sent more than once, and a
 // "Wyloguj" that stays pressable while the reset waits (the logout would save and end the session).
 test("a confirmed reset is the next call after the confirmation, with no save before it, and „Wyloguj” cannot be pressed while it waits", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable"
   await onPage(async () => {
     const page = await startedPage();
     await confirmReset();
@@ -1192,6 +1202,7 @@ test("a confirmed reset is the next call after the confirmation, with no save be
 // Catches a new game built on a revision other than 0, one saved at once, one that loads the server's
 // save again, a missing sentence above it, and the game left on another screen (D-402, D-209).
 test("on 204 the page builds a new game on revision 0 with the sentence above it, and sends no save at once", async () => {
+  // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save"
   await onPage(async () => {
     const page = await startedPage();
     assert.deepEqual(programNames(), ["Program", "Program 2"]);
@@ -1250,6 +1261,7 @@ const HELD_OUTCOMES = [
 // D-211): the outcome waits, and a failure acts on it.
 for (const held of HELD_OUTCOMES) {
   test(`${held.name} of the old saver during the reset waits, and a failed reset acts on it`, async () => {
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
     await onPage(async () => {
       const page = await startedPage();
       await press(pageButton("Nowy program"));
@@ -1263,6 +1275,7 @@ for (const held of HELD_OUTCOMES) {
   });
 
   test(`${held.name} of the old saver during the reset is dropped when the reset succeeds`, async () => {
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
     await onPage(async () => {
       const page = await startedPage();
       await press(pageButton("Nowy program"));
@@ -1279,6 +1292,7 @@ for (const held of HELD_OUTCOMES) {
 // Catches a conflict from the old game's saver, answered after the reset, that the page acts on: it
 // would load the server's save (none) and replace the new game with another new one (D-402, D-209).
 test("a conflict that the old saver gets after the reset is not acted on", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
   await onPage(async () => {
     const page = await startedPage();
     await press(pageButton("Nowy program"));

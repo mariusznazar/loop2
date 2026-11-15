@@ -654,6 +654,7 @@ function submissionOfBytes(bytes) {
 // invariant: saved-state-http-exchange
 // invariant: account-client-requests
 test("loadSavedGame sends a bodiless GET on the relative saved-game path and the save call a JSON PUT of exactly version, basedOn and game", async () => {
+  // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
   respond = (request, response) =>
     request.method === "GET"
       ? reply(response, 200, saveJson)
@@ -700,6 +701,7 @@ test("a redirect of the saved-game routes is not followed, so nothing is sent to
 // invariant: saved-state-http-exchange
 // invariant: account-client-outcomes
 test("loadSavedGame gives the save exactly as received, or null for an account with none", async () => {
+  // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none"
   respond = (_request, response) => reply(response, 200, saveJson);
   assert.deepEqual(await within(client().loadSavedGame(), "save"), {
     ok: true,
@@ -938,6 +940,7 @@ test("a save body over 65 536 bytes is never sent and comes back too large", asy
 
 // invariant: account-client-requests
 test("loadPreviousSavedGame sends a bodiless GET to the relative previous-save path, and resetSavedGame a JSON POST of the empty object to the reset path", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`"
   respond = (request, response) =>
     request.url === "/api/saved-game-reset"
       ? response.writeHead(204).end()
