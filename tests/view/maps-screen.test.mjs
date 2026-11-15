@@ -481,6 +481,7 @@ test("the characters stand in the order of their creation, each with its lines f
   // decision: D-180 "The card of a map shows what of the plan enters"
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -680,6 +681,7 @@ test("a map that cuts the plan shows the clipped-plan line and what enters cut",
 test("„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program", async () => {
   // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
   // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   await withPage(async (page) => {
     const unsolved = teamOf("Ala");
     const { screen, calls } = await mount(page, propsOf(unsolved, "forest"));
@@ -742,6 +744,7 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
 test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
   await withPage(async (page) => {
     const plan = { take: [{ item: "stick", count: 3 }], bring: [] };
     const state = withChest(withPlan(teamOf("Ala"), plan), { stick: 2 });
@@ -776,6 +779,9 @@ test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solve
 test("a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
+  // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   await withPage(async (page) => {
     const state = solved({
       ...teamOf("Ala", "Bob"),

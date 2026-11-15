@@ -165,6 +165,7 @@ test("the label of a generation is „pokolenie {n}” from 2 up and nothing at 
 // D-244. Catches a number of the line read from the wrong place (the run's number for the
 // minute, the completed runs for the run's number) and a map name written into the view.
 test("the line of a character in a loop names the map, the run, its minute and the runs completed", () => {
+  // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   assert.equal(
     loopLine({
       runNumber: 3,
@@ -186,6 +187,7 @@ test("the line of a character in a loop names the map, the run, its minute and t
 // D-245. Catches a stop that gathered nothing reading „wprawa: nic”, a skill with
 // zero practice listed, and an order other than the skills' data.
 test("the line after a stop lists the practice gathered in the skills' order, and is the bare words where none was", () => {
+  // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   assert.equal(stoppedLoopLine({}), "Pętla zatrzymana");
   assert.equal(stoppedLoopLine({ eating: 0 }), "Pętla zatrzymana");
   assert.equal(

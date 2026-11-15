@@ -212,6 +212,7 @@ function openGame(state, fromMs, minutes) {
 // `catch-up-minutes` at its smallest: the span of real time as whole minutes, the rest waiting.
 test("the span gives whole minutes and the clock's new value, the rest waiting, and a clock turned back gives none and the reading", () => {
   // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   const from = 5_000_000;
   assert.deepEqual(loopSpan(from, from + 90_000), {
     minutes: 1,
@@ -279,6 +280,7 @@ test("the catch-up passes a loop one game minute for each whole real minute from
 
 // invariant: catch-up-minutes
 test("a clock turned back before the save time passes nothing, takes nothing and starts the clock from the reading", () => {
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   const state = looping({ stick: 4 });
   for (const now of [S - 1, S - 100 * MIN, 0, -5 * MIN]) {
     const result = catchUp(state, now);
@@ -301,6 +303,7 @@ test("a negative save time catches up as arithmetic gives it", () => {
 });
 
 test("with no loop, a save time of null or no whole minute the catch-up returns the very state and a clock set to the reading", () => {
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   const fresh = withSaveTime(game(), S);
   const noLoop = catchUp(fresh, S + 50 * MIN);
   assert.equal(noLoop.state, fresh);
@@ -322,6 +325,7 @@ test("with no loop, a save time of null or no whole minute the catch-up returns 
 
 test("the open game passes no minute before a whole one: the very state, the clock where it stood", () => {
   // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   const state = looping();
   const result = passLoops(state, S, S + MIN - 1);
   assert.equal(result.state, state);
@@ -387,6 +391,7 @@ test("a resurrection ready exactly at the moment of the death covers it, and a m
 
 // invariant: catch-up-death-moment
 test("the moment of a death is the same in one call and in calls split at any minute", () => {
+  // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
   const state = aloneLooping();
   const death = S + COLD_DEATH_MINUTE * MIN;
   const split = openGame(state, S, 300).state;
@@ -486,6 +491,7 @@ test("a catch-up across the first chill leaves the Understanding and the program
 // D-242: one minute step, the moments counted from the loop clock, the open game
 // minute by minute, so every split of a span agrees, through the ends of map runs.
 test("the open game over a span gives the same state and events in calls of any size", () => {
+  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths on the account's one resurrection in the open game the earlier in real time takes it"
   let state = shortBy(looping({ moss: 50 }), 1, 1, { stick: 4 });
   state = withProgram(
     state,
@@ -526,6 +532,7 @@ test("the open game over a span gives the same state and events in calls of any 
 });
 
 test("the open game passes minute by minute, the characters in the team's order, and gives one event for each end", () => {
+  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths on the account's one resurrection in the open game the earlier in real time takes it"
   let state = looping();
   state = dyingNext(dyingNext(state, 1), 2);
   const result = passLoops(state, S, S + MIN);
@@ -549,6 +556,8 @@ test("the open game passes minute by minute, the characters in the team's order,
 test("with room in the chest for one, the open game gives it to whoever completes first and the catch-up to the earlier character of the team", () => {
   // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
   // decision: D-240 "Characters meet only at the borders of map runs and at the account's resurrection: an item reaches the chest when a map run completes, and the next map run takes what it finds there; when the chest has room for one character's loot only, the character earlier on the list takes it; the death of each character finds the resurrection as the characters earlier on the list left it, so with one resurrection for two deaths the character earlier on the list takes it, even when it died later in real time"
+  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths on the account's one resurrection in the open game the earlier in real time takes it"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   let state = looping({ moss: 57 });
   state = shortBy(state, 1, 2, { stick: 5 });
   state = shortBy(state, 2, 1, { berry: 5 });
@@ -575,6 +584,9 @@ test("each character's line holds its own change of the chest with no zero kept,
   // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-240 "Characters meet only at the borders of map runs and at the account's resurrection: an item reaches the chest when a map run completes, and the next map run takes what it finds there; when the chest has room for one character's loot only, the character earlier on the list takes it; the death of each character finds the resurrection as the characters earlier on the list left it, so with one resurrection for two deaths the character earlier on the list takes it, even when it died later in real time"
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   let state = looping({ moss: 57 });
   state = shortBy(state, 1, 1, { stick: 5 }, { smallItemGathering: 9 });
   state = shortBy(state, 2, 1, {}, {});
@@ -604,6 +616,7 @@ test("a covered death in the catch-up gives the loop its next map run with nothi
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // Ala's loop starts on a program that takes 2 sticks, so the chest holds 3 at the save.
   let taking = game({ stick: 5 });
   taking = setProgram(taking, withTrip(EMPTY, [entry("stick", 2)], [])).state;
@@ -630,6 +643,8 @@ test("a loop that stops in the catch-up writes its line with the minutes it work
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // Ola has no practice, so its death in minute 243 takes nothing and stops nothing (D-190).
   let state = withoutPractice(notReadyUntil(looping(), S + 10_000 * MIN), 2);
   state = changingLoop(state, 1, { practice: { eating: 3 } });
@@ -655,6 +670,7 @@ test("a loop that stops in the catch-up writes its line with the minutes it work
 
 test("a loop that stops in the first minute of the catch-up opens the report at one minute", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   const state = notReadyUntil(dyingNext(looping(), 1), S + 99 * MIN);
   const result = catchUp(state, S + MIN);
   assert.deepEqual(result.state.awayReport, [
@@ -665,6 +681,7 @@ test("a loop that stops in the first minute of the catch-up opens the report at 
 });
 
 test("a catch-up with no whole minute writes no line", () => {
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   const state = looping();
   assert.deepEqual(catchUp(state, S + MIN - 1).state.awayReport, []);
 });
@@ -672,6 +689,7 @@ test("a catch-up with no whole minute writes no line", () => {
 // D-246: a further return before „Zamknij” adds to the report.
 test("a further return adds to the line of a loop still going, and its chest changes add up with no zero kept", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   let state = looping({ stick: 1 });
   state = withSaveTime(state, S);
   state = {
@@ -701,6 +719,7 @@ test("a further return adds to the line of a loop still going, and its chest cha
 
 test("a later loop of a character whose line stopped opens a line of its own", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   const stopped = line(2, {
     minutes: 40,
     stop: { generation: 2, away: true },
@@ -724,6 +743,7 @@ test("a loop that stops in the open game writes a line of 0 minutes, and a cover
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
+  // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   const stopping = notReadyUntil(dyingNext(looping(), 1), S + 99 * MIN);
   const stopped = passLoops(stopping, S, S + MIN + 5);
   assert.equal(stopped.state.loops[1], undefined);
@@ -743,6 +763,7 @@ test("a loop that stops in the open game writes a line of 0 minutes, and a cover
 
 test("a loop that stops in the open game closes the line of an earlier return, which then reads without minutes", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   const earlier = line(1, {
     minutes: 10,
     chest: { stick: 2 },
@@ -765,6 +786,7 @@ test("a loop that stops in the open game closes the line of an earlier return, w
 
 test("a stop in the catch-up closes the line of an earlier return with the minutes added", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   const earlier = line(1, { minutes: 10, chest: { stick: 2 } });
   const state = {
     ...notReadyUntil(looping(), S + 9_999 * MIN),
@@ -781,6 +803,7 @@ test("a stop in the catch-up closes the line of an earlier return with the minut
 
 // D-246: one button closes the whole section.
 test("closing the report empties it and nothing else, and an empty report is the very state", () => {
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   const state = {
     ...looping(),
     awayReport: [line(1, { minutes: 2 }), line(2, { minutes: 5 })],
@@ -850,6 +873,8 @@ test("with one resurrection for two deaths the catch-up gives it to the characte
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
   // decision: D-240 "Characters meet only at the borders of map runs and at the account's resurrection: an item reaches the chest when a map run completes, and the next map run takes what it finds there; when the chest has room for one character's loot only, the character earlier on the list takes it; the death of each character finds the resurrection as the characters earlier on the list left it, so with one resurrection for two deaths the character earlier on the list takes it, even when it died later in real time"
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   const state = oneEarlyOneLate();
   const caught = catchUp(state, S + 300 * MIN).state;
   const [first, second] = caught.team.characters;
@@ -870,6 +895,8 @@ test("with one resurrection for two deaths the catch-up gives it to the characte
 test("in the open game the death earlier in time takes the shared resurrection, and of two in one game minute the character earlier in the team's order", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+  // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
+  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths on the account's one resurrection in the open game the earlier in real time takes it"
   const opened = openGame(oneEarlyOneLate(), S, COLD_DEATH_MINUTE).state;
   assert.equal(opened.team.characters[0].generation, 2);
   assert.equal(opened.team.characters[1].generation, 1);

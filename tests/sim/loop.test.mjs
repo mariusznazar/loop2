@@ -227,6 +227,7 @@ const ala = (state) => state.team.characters[0];
 test("the first map run of a loop goes on the program of its row, from the seed a send takes, and the loop holds the content of the program and nothing of its copy", () => {
   // decision: D-22 "The first map run of an earning loop, with none before it, takes a new seed, as a send of a character does"
   // decision: D-241 "The game state holds its earning loops beside the one manual map run, by character number, so a character has at most one, each with the content of the program taken at its start, its map run going on, the number of that map run, the count of its completions and the practice gathered from those completions since the player last took the practice waiting with „Odbierz”"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   const state = game(withTrip(EMPTY, [], []));
   const result = startLoop(state, FOREST, T0);
   const loop = result.state.loops[1];
@@ -255,6 +256,9 @@ test("the first map run of a loop goes on the program of its row, from the seed 
 });
 
 test("starting a loop makes its program the one used last and last entered, clears the pick, drops the stopped line and leaves the counts, the manual map run and other characters as they were", () => {
+  // decision: D-243 "For that list the start counts as a send: the program becomes the one the character used last and the one with which a character last entered a map, and the pick clears"
+  // decision: D-244 "The game opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were"
+  // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   const program = programFromRules(rule(ALWAYS, EXPLORE));
   let state = game(program);
   // A manual map run of Ola ended by „Zakończ” leaves counts beside the first program.
@@ -290,6 +294,7 @@ test("a loop starts beside a manual map run of another character, which it leave
 
 test("without a program number a loop takes the program of the character's row: the pick, else the one used last", () => {
   // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   let state = game();
   state = editProgram(
     state,
@@ -327,6 +332,7 @@ test("a start the map, the character or the program does not allow returns the v
   // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   // decision: D-239 "Solving a map unlocks its earning loop without certifying that the chosen program survives every seed"
   // decision: D-241 "The game state holds its earning loops beside the one manual map run, by character number, so a character has at most one, each with the content of the program taken at its start, its map run going on, the number of that map run, the count of its completions and the practice gathered from those completions since the player last took the practice waiting with „Odbierz”"
+  // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
   const state = game();
   const refused = [
     ["a map the data lacks", state, { ...FOREST, mapId: "nowhere" }],
@@ -420,6 +426,7 @@ test("two loops from one state at one moment go the same map runs, ends and seed
 test("a loop's map run through the first chill leaves the Understanding, the programs and the counts as it found them, and its copy empty", () => {
   // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
   // decision: D-249 "A map run of an earning loop discovers nothing: the Understanding and the program stay as they stand, game time goes on, and the game writes no program rule at a discovery, and the player discovers what the character met in a manual map run"
+  // decision: D-244 "The game opens no map of an earning loop's map run, so what the map-run view and the program editor show during a map run stands for a manual map run; the firing counts cover a manual map run, and the start of an earning loop leaves the counts a manual map run left as they were"
   let state = setProgram(newGame(), EMPTY).state;
   state = {
     ...createCharacter(state, "Ala").state,
@@ -884,6 +891,7 @@ test("taking an end reads the moment only when there is an end to settle, and th
 // run going on are paid, the loot of that map run stays out.
 test("stopping a loop pays the loop's practice and the map run's into the skills, records the sum, drops the loop and deposits nothing", () => {
   // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   const program = withTrip(EMPTY, [], [entry("stick", 3)]);
   let state = holding(looping(program, { berry: 1 }), {
     smallItemGathering: 40,
@@ -916,6 +924,7 @@ test("stopping a loop pays the loop's practice and the map run's into the skills
 });
 
 test("stopping a loop that gathered nothing writes an empty sum, and stopping a loop of one character leaves another's", () => {
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   const state = startLoop(
     looping(),
     { mapId: "forest", characterId: 2 },
@@ -931,6 +940,7 @@ test("stopping a loop that gathered nothing writes an empty sum, and stopping a 
 test("stopping a loop whose map run ended in death pays only the loop's own practice, and a character with no loop leaves the very state", () => {
   // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   const state = holding(
     changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
     { smallItemGathering: 40 },
@@ -1121,6 +1131,8 @@ test("after a death a resurrection covers the loop waits for none of the practic
 test("a loop of a character other than the first that stops in passing writes that character's own generation", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+  // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+  // decision: D-246 "Teraz to pokolenie {n}.”"
   let state = startLoop(
     game(EMPTY),
     { mapId: "forest", characterId: 2 },
@@ -1136,6 +1148,8 @@ test("a loop of a character other than the first that stops in passing writes th
 });
 
 test("a send throws for a character in a loop, and clears the stopped line of the character it sends and no other", () => {
+  // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
+  // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   const state = looping();
   assert.throws(() => send(state, FOREST, T0));
   // Ola is not in a loop: her send goes, and Ala's loop stays.
@@ -1170,6 +1184,7 @@ test("every state a loop makes over a whole map run, an end and the next map run
 
 test("the states of a loop through a death, its settling and the next map run, and of a stopped loop, load back", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   let state = practised(looping(EMPTY, { stick: 4 }, COLD_REAL_MS));
   assert.ok(state.loops[1], "precondition: the loop stands");
   const check = (name, given) => {

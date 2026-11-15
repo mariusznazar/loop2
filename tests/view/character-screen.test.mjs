@@ -141,6 +141,9 @@ test("the resurrection line reads the time left in danger, shows the minutes bel
 });
 
 test("a running loop shows its line with „Zatrzymaj”, which acts through onStop; a stopped loop shows its line in its place", async () => {
+  // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
+  // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   await withPage(async (page) => {
     // The line reads the map, the run number, the minute and the runs completed of the loop.
     const loop = {
