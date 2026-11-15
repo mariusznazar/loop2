@@ -470,6 +470,7 @@ test(
   async (t) => {
     // invariant: account-session-authorization
     // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
+    // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save"
     // Faults: reading the account from a query, header or body identifier; a
     // store looked up by account ID; logout acting on a supplied account.
     const f = await accountFixture(t);
@@ -857,6 +858,7 @@ test(
     // decision: D-106 "Its cost parameters are set explicitly"
     // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards"
     // decision: D-202 "Anyone can create a player account and start playing without approval"
+    // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save"
     // Faults: hashing a trimmed or otherwise changed password; a hash outside
     // the package's Argon2id profile; registration without a signed-in session.
     const f = await accountFixture(t);
