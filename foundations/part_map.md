@@ -136,7 +136,7 @@ The part directs and records the work performed on this repository, and holds th
   src/browser/AGENTS.md
   .github/workflows/tests.yml
 - **Depends on:** product-foundation · deployment · build-tools
-- **Trust boundary:** none
+- **Trust boundary:** .github/workflows/tests.yml
 
 ## product-foundation
 
