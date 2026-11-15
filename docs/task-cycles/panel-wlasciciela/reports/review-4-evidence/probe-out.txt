@@ -1,0 +1,25 @@
+player, block, good body => 403 application/json; charset=utf-8 cc=no-store {"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}
+player, list => 403 application/json; charset=utf-8 cc=no-store {"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}
+player, foreign origin => 403 application/json; charset=utf-8 cc=no-store {"error":"Invalid request origin"}
+owner, __proto__ body => 400 application/json; charset=utf-8 cc=no-store {"code":"invalid-request","error":"Nieprawidłowe żądanie."}
+owner, duplicate keys => 200 application/json; charset=utf-8 cc=no-store {"outcome":"blocked"}
+player, upper-case path => 403 application/json; charset=utf-8 cc=no-store {"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}
+player, trailing slash list => 403 application/json; charset=utf-8 cc=no-store {"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}
+player, HEAD list => 403 application/json; charset=utf-8 cc=no-store 
+owner, HEAD list => 200 application/json; charset=utf-8 cc=no-store 
+owner, OPTIONS block => 200 text/plain cc=no-store POST
+two cookies, player first => 403 application/json; charset=utf-8 cc=no-store {"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}
+two cookies, owner first => 200 application/json; charset=utf-8 cc=no-store {"accounts":[{"email":"owner@example.test","role":"owner","blocked":false,"previousSaveAllowed":false},{"email":"player@example.test","role":"player","blocked":
+player, query string email => 403 application/json; charset=utf-8 cc=no-store {"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}
+owner, dotless-I address => 404 application/json; charset=utf-8 cc=no-store {"code":"unknown-account","error":"Żadne konto nie ma tego adresu."}
+owner, charset => 200 application/json; charset=utf-8 cc=no-store {"outcome":"unblocked"}
+owner, jsonx => 415 application/json; charset=utf-8 cc=no-store {"error":"JSON required"}
+owner, 40 KiB => 413 application/json; charset=utf-8 cc=no-store {"error":"Invalid request body"}
+owner, list with foreign origin (GET) => 200 application/json; charset=utf-8 cc=no-store {"accounts":[{"email":"owner@example.test","role":"owner","blocked":false,"previousSaveAllowed":false},{"email":"player@example.test","role":"player","blocked":
+accounts before block-by-owner: [[0,"owner",0],[0,"player",0],[0,"player",0]]
+owner self block => 409 application/json; charset=utf-8 cc=no-store {"code":"owner-not-blockable","error":"Konta właściciela nie można zablokować."}
+accounts after self block: [[0,"owner",0],[0,"player",0],[0,"player",0]]
+owner blocks victim => 200 application/json; charset=utf-8 cc=no-store {"outcome":"blocked"}
+accounts after victim block: [[0,"owner",0],[0,"player",0],[1,"player",0]]
+blocked owner list => 401 application/json; charset=utf-8 cc=no-store {"code":"unauthenticated","error":"Sesja wygasła albo nie istnieje. Zaloguj się."}
+accounts end: [[1,"owner",0],[0,"player",0],[1,"player",0]]

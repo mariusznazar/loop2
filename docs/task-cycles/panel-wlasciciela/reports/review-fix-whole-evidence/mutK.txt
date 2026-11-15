@@ -1,0 +1,63 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/owner-routes.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the list answers a session of an owner every account sorted by address, with its address, role, blocked state and privilege and nothing more (258.4836ms)
+✔ a session of a player is answered 403 owner-forbidden on each of the five routes, whatever the body, and nothing changes (338.3725ms)
+✔ no session, a forged, unknown, expired or ended session and a session of a blocked owner are answered 401 on each of the five routes, and nothing changes (300.5587ms)
+{"event":"account-created","accountId":"c7cb27e7-9b2d-457c-a468-abc25f3641f9"}
+{"event":"signed-in","accountId":"c7cb27e7-9b2d-457c-a468-abc25f3641f9"}
+{"event":"link-issued","accountId":"c7cb27e7-9b2d-457c-a468-abc25f3641f9","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"c7cb27e7-9b2d-457c-a468-abc25f3641f9","linkPurpose":"email-confirmation"}
+{"event":"account-previous-save-granted","accountId":"a4ced72c-e7d4-4a02-b3de-73e49d6751e2"}
+{"event":"signed-in","accountId":"c7cb27e7-9b2d-457c-a468-abc25f3641f9"}
+✔ the role is read from the database at each request: an account made a player is refused on its next request and one made an owner after its sign-in is served (561.087ms)
+✔ a block of an account with the owner role, the caller's own included, is answered 409 owner-not-blockable and changes nothing, also where the role was given just before (254.183ms)
+✔ a block ends the target's sessions in every browser and stops its links, an unblock restores none, and each change leaves one line with the target's number and nothing of the owner (295.7164ms)
+✖ a grant and a revoke of the previous-save privilege act on a player and on an owner, end no session, stop no link and leave one line each with the target's number (232.6307ms)
+✔ an address no account has, or none that is written as an address, is answered 404 unknown-account on each of the four routes and nothing changes or is logged (313.5711ms)
+✔ a body of anything but exactly the address is answered 400 invalid-request and changes nothing, also from an owner (520.7579ms)
+✔ a foreign Origin, a body that is no JSON, a compressed one and one over 16 KiB are refused before the session on the four POST routes, and the transport before every route (534.4969ms)
+✔ where accounts are not configured the five routes answer 503 JSON, and a method the routes do not serve is no operation (302.8268ms)
+{"event":"account-created","accountId":"f6aabf4a-28a6-4445-8a4d-a3f8e94dba61"}
+{"event":"signed-in","accountId":"f6aabf4a-28a6-4445-8a4d-a3f8e94dba61"}
+{"event":"link-issued","accountId":"f6aabf4a-28a6-4445-8a4d-a3f8e94dba61","linkPurpose":"email-confirmation"}
+{"event":"message-sent","accountId":"f6aabf4a-28a6-4445-8a4d-a3f8e94dba61","linkPurpose":"email-confirmation"}
+{"event":"signed-in","accountId":"f6aabf4a-28a6-4445-8a4d-a3f8e94dba61"}
+{"event":"signed-in","accountId":"f6aabf4a-28a6-4445-8a4d-a3f8e94dba61"}
+✔ the answers that carry the account hold the role of an owner and no role field for a player (627.7016ms)
+✔ an owner plays like a player: its own saved game state is its own, and the previous-save routes ask it for the privilege (228.7555ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5084.2547
+
+✖ failing tests:
+
+test at tests\owner-routes.test.mjs:784:1
+✖ a grant and a revoke of the previous-save privilege act on a player and on an owner, end no session, stop no link and leave one line each with the target's number (232.6307ms)
+  AssertionError [ERR_ASSERTION]: precondition: no privilege, so no reset
+  
+  204 !== 403
+  
+      at assertJson (file:///.runs/review-whole/wt/tests/owner-routes.test.mjs:319:10)
+      at assertRefusal (file:///.runs/review-whole/wt/tests/owner-routes.test.mjs:326:16)
+      at TestContext.<anonymous> (file:///.runs/review-whole/wt/tests/owner-routes.test.mjs:808:5)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 204,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,9 @@
+# Handoff — the fix of slice 1's findings ("panel właściciela")
+
+You are the executor of slice 1, resumed. Variant of `make-change`: **"the fix of a review's findings"**. Method: `.the-way/task-cycle/change/SKILL.md`, already read; read again only the part of the variant.
+
+- Worktree: `the task's worktree`, branch `task/panel-wlasciciela`, reviewed head `55e3b8e83a5875cbf3de161411f2ae2b71e2f1f4`. Your fix's range runs from that head. Commit by explicit paths, in English.
+- Findings: `.runs/task-cycles/panel-wlasciciela/reports/fix-1-findings.md` (the review: `.runs/task-cycles/panel-wlasciciela/reports/review-1-report.md`). One blocking finding, I1: the layout of `tests/account-storage.test.mjs` is not Prettier's.
+- Fix it with the formatter itself and no option added: `npx prettier --write tests/account-storage.test.mjs`, then check that the diff of the file against the reviewed head changed only the regions the finding names (the lines your slice added) and nothing of the base's lines; run `npx prettier --check` on every file of your slice's *Change* (`src/server/database.ts`, `tests/account-storage.test.mjs`, `tests/account-backup.test.mjs`, `tests/deploy/test_account_backup_stream.py` is Python: leave it) and `npx eslint src/server/database.ts tests/account-storage.test.mjs tests/account-backup.test.mjs`, and run again `npm test -- tests/account-storage.test.mjs`, `npm run typecheck` and `python -B .the-way/elements/common/foundation_check.py`. Each with its command and exit code in the report. Do not fix the Minor findings M1–M3 or O1; they are not yours here. Never run the gate.
+- Working copies: the paragraph of your first handoff holds; your directory is `.runs/executor-1/`.
+- Report: `.runs/task-cycles/panel-wlasciciela/reports/fix-1-report.md`, as `make-change` gives for a fix: status, commits, checks with command and exit code, **Unread material**, **Searches not found or unclear**, working copies.

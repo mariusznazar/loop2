@@ -1,0 +1,23 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/account-owner.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the list of accounts holds every account sorted by address, each with its address, role, blocked state and previous-save privilege and nothing else (53.1409ms)
+✔ a block for the panel of a player ends its sessions and stops its links, and touches no other account (77.3817ms)
+✔ a block for the panel of an account with the owner role changes nothing, its own sessions and links included (58.6608ms)
+✔ a role given or taken by a second connection just before the block is read by the block, which refuses an owner and blocks a player (65.351ms)
+✔ a block reads the role after it takes the write lock, so a role another connection holds uncommitted makes it refuse an owner (415.3551ms)
+✔ the role change answers made owner, already owner, made player, already player and unknown, each with the account's identifier, and changes nothing else (40.6788ms)
+✔ a role change leaves the block, the previous-save privilege, the sessions, the links and the saved games as they were (71.9462ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 864.5903

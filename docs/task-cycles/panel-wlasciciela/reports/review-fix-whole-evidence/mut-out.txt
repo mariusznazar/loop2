@@ -1,0 +1,32 @@
+== A I-1 secondary back: exit 1
+ℹ pass 21
+ℹ fail 1
+== B M-15 heading removed: exit 1
+ℹ pass 21
+ℹ fail 1
+== C M-1 read two sentences: exit 1
+ℹ pass 21
+ℹ fail 1
+== C2 M-1 op two sentences: exit 1
+ℹ pass 21
+ℹ fail 1
+== D M-6 reader check dropped: exit 1
+ℹ pass 86
+ℹ fail 1
+== E M-6 CHECK widened: exit 1
+ℹ pass 86
+ℹ fail 1
+== F M-7 step-by-step commit: exit 1
+ℹ pass 85
+ℹ fail 2
+== G M-14 role case-insensitive: exit 1
+ℹ pass 12
+ℹ fail 1
+== H M-14 spaces stripped: exit 1
+ℹ pass 12
+ℹ fail 1
+== I M-11 misspelled outcome key: exit 1
+src/server/owner-routes.ts(146,7): error TS2561: Object literal may only specify known properties, but 'bloked' does not exist in type 'Readonly<Partial<Record<"already-blocked" | "already-granted" | "blocked" | "granted" | "not-blocked" | "not-granted" | "revoked" | "unblocked", PanelEvent>>>'. Did you mean to write 'blocked'?
+== J M-11 misspelled event: exit 1
+src/server/owner-routes.ts(167,7): error TS2820: Type '"account-previous-save-revokd"' is not assignable to type 'PanelEvent | undefined'. Did you mean '"account-previous-save-revoked"'?
+K M-19 reset privilege check dropped: SKIPPED (set by hand)
