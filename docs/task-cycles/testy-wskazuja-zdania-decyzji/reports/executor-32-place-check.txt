@@ -1,0 +1,71 @@
+ok  tests/sim/catch-up.test.mjs:214 <- test("the span gives whole minutes and the clock's new value, the rest waiting, and a clock turned back gives 
+ok  tests/sim/catch-up.test.mjs:258 <- test("the catch-up passes a loop one game minute for each whole real minute from the save time, and the rest w
+ok  tests/sim/catch-up.test.mjs:324 <- test("the open game passes no minute before a whole one: the very state, the clock where it stood", () => {
+ok  tests/sim/catch-up.test.mjs:335 <- test("the catch-up and the open game read neither the manual map run nor the pause, and leave them as they sta
+ok  tests/sim/catch-up.test.mjs:336 <- test("the catch-up and the open game read neither the manual map run nor the pause, and leave them as they sta
+ok  tests/sim/catch-up.test.mjs:431 <- test("a character whose chest and resurrection no other loop reaches ends the catch-up as the open game does, 
+ok  tests/sim/catch-up.test.mjs:432 <- test("a character whose chest and resurrection no other loop reaches ends the catch-up as the open game does, 
+ok  tests/sim/catch-up.test.mjs:463 <- test("a catch-up across the first chill leaves the Understanding and the programs as they were", () => {
+ok  tests/sim/catch-up.test.mjs:550 <- test("with room in the chest for one, the open game gives it to whoever completes first and the catch-up to th
+ok  tests/sim/catch-up.test.mjs:551 <- test("with room in the chest for one, the open game gives it to whoever completes first and the catch-up to th
+ok  tests/sim/catch-up.test.mjs:577 <- test("each character's line holds its own change of the chest with no zero kept, and the practice stays at the
+ok  tests/sim/catch-up.test.mjs:605 <- test("a covered death in the catch-up gives the loop its next map run with nothing back from the dead one, and
+ok  tests/sim/catch-up.test.mjs:606 <- test("a covered death in the catch-up gives the loop its next map run with nothing back from the dead one, and
+ok  tests/sim/catch-up.test.mjs:631 <- test("a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the
+ok  tests/sim/catch-up.test.mjs:632 <- test("a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the
+ok  tests/sim/catch-up.test.mjs:725 <- test("a loop that stops in the open game writes a line of 0 minutes, and a covered death or a completion write
+ok  tests/sim/catch-up.test.mjs:726 <- test("a loop that stops in the open game writes a line of 0 minutes, and a covered death or a completion write
+ok  tests/sim/catch-up.test.mjs:851 <- test("with one resurrection for two deaths the catch-up gives it to the character earlier on the list, though 
+ok  tests/sim/catch-up.test.mjs:852 <- test("with one resurrection for two deaths the catch-up gives it to the character earlier on the list, though 
+ok  tests/sim/catch-up.test.mjs:891 <- test("a loop of a character with no practice dies on and on with no loss: the resurrection, the generation and
+ok  tests/sim/catch-up.test.mjs:892 <- test("a loop of a character with no practice dies on and on with no loss: the resurrection, the generation and
+ok  tests/sim/data.test.mjs:405 <- test("an earning loop goes one game minute in 60 real seconds, a whole number of seconds", () => {
+ok  tests/sim/loop.test.mjs:229 <- test("the first map run of a loop goes on the program of its row, from the seed a send takes, and the loop hol
+ok  tests/sim/loop.test.mjs:282 <- test("a loop starts beside a manual map run of another character, which it leaves as it stands", () => {
+ok  tests/sim/loop.test.mjs:327 <- test("a start the map, the character or the program does not allow returns the very state", () => {
+ok  tests/sim/loop.test.mjs:328 <- test("a start the map, the character or the program does not allow returns the very state", () => {
+ok  tests/sim/loop.test.mjs:329 <- test("a start the map, the character or the program does not allow returns the very state", () => {
+ok  tests/sim/loop.test.mjs:398 <- test("two loops from one state at one moment go the same map runs, ends and seeds included", () => {
+ok  tests/sim/loop.test.mjs:422 <- test("a loop's map run through the first chill leaves the Understanding, the programs and the counts as it fou
+ok  tests/sim/loop.test.mjs:450 <- test("a loop's map run through a death and its next map run still leaves the Understanding and the programs as
+ok  tests/sim/loop.test.mjs:511 <- test("editing or deleting the program after the start leaves the loop on the content it took, in every later m
+ok  tests/sim/loop.test.mjs:545 <- test("a rank bought during a loop reaches the next map run and not the one going on", () => {
+ok  tests/sim/loop.test.mjs:681 <- test("a completion deposits the bring list's clipped loot, counts the map run, adds its practice to the loop a
+ok  tests/sim/loop.test.mjs:682 <- test("a completion deposits the bring list's clipped loot, counts the map run, adds its practice to the loop a
+ok  tests/sim/loop.test.mjs:733 <- test("the seeds of the successive map runs of a loop follow the draw of the fifth generator, and the last seed
+ok  tests/sim/loop.test.mjs:756 <- test("a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried ite
+ok  tests/sim/loop.test.mjs:837 <- test("a death at the very moment of readiness uses the resurrection, and a millisecond before it takes everyth
+ok  tests/sim/loop.test.mjs:854 <- test("a death is settled once: the state the end leaves holds no end, a further end changes nothing, and a loa
+ok  tests/sim/loop.test.mjs:954 <- test("taking the practice pays what the loop and its map run going on gathered, empties both and changes nothi
+ok  tests/sim/loop.test.mjs:1002 <- test("practice taken is paid once: the completion of the map run it was taken in adds only what came after, an
+ok  tests/sim/loop.test.mjs:1205 <- test("a loop beside a manual map run of another character loads back", () => {
+ok  tests/sim/loop.test.mjs:1376 <- test("a death of a character with no practice takes the carried items only: the resurrection, the generation a
+ok  tests/sim/saved-game.test.mjs:2222 <- test("a crafted document of the current version is refused whole as shape", () => {
+ok  tests/sim/saved-game.test.mjs:2223 <- test("a crafted document of the current version is refused whole as shape", () => {
+ok  tests/sim/saved-game.test.mjs:2224 <- test("a crafted document of the current version is refused whole as shape", () => {
+ok  tests/sim/saved-game.test.mjs:2225 <- test("a crafted document of the current version is refused whole as shape", () => {
+ok  tests/sim/saved-game.test.mjs:2602 <- test("a new game holds no earning loop, no stopped loop, no report and no save time", () => {
+ok  tests/sim/saved-game.test.mjs:2612 <- test("a state with its save time is a copy holding the moment, the state passed left as it was", () => {
+ok  tests/sim/saved-game.test.mjs:2639 <- test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
+ok  tests/sim/saved-game.test.mjs:2654 <- test("the saved document of a state never stamped is refused as shape", () => {
+ok  tests/sim/time.test.mjs:177 <- test("at 16x each whole 62.5 ms of real time moves the run on by one game minute", () => {
+ok  tests/sim/time.test.mjs:192 <- test("each pace of the data gives its multiple of a game minute per real second", () => {
+ok  tests/view/account-screen.test.mjs:2185 <- test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once
+ok  tests/view/account-screen.test.mjs:2186 <- test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once
+ok  tests/view/account-screen.test.mjs:2187 <- test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once
+ok  tests/view/account-screen.test.mjs:2188 <- test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once
+ok  tests/view/account-screen.test.mjs:2189 <- test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once
+ok  tests/view/account-screen.test.mjs:2210 <- test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caug
+ok  tests/view/account-screen.test.mjs:2211 <- test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caug
+ok  tests/view/account-screen.test.mjs:2547 <- test("the document kept for the same account holds the moment of its reading and loads, and the view's state s
+ok  tests/view/account-screen.test.mjs:2548 <- test("the document kept for the same account holds the moment of its reading and loads, and the view's state s
+ok  tests/view/account-screen.test.mjs:2594 <- test("each act of the player that changes the game state is saved at once, and one that changes nothing sends 
+ok  tests/view/clock.test.mjs:540 <- test("a reading passes the manual run, then the loops, and hands the store one result with their events togeth
+ok  tests/view/clock.test.mjs:541 <- test("a reading passes the manual run, then the loops, and hands the store one result with their events togeth
+ok  tests/view/clock.test.mjs:690 <- test("a loop started by the clock gets a full first minute, and its first run is seeded by the reading it took
+ok  tests/view/clock.test.mjs:735 <- test("the catch-up spans from the save time to the date it reads, which is the clock's moment, and the rest wa
+ok  tests/view/game-saver.test.mjs:284 <- test("a failed save shows that the game retries, and the retries follow after 5, 10 and 20 s and then every 30
+ok  tests/view/game-saver.test.mjs:543 <- test("each document holds the moment of the reading made for it and loads, and the state held stays what it wa
+ok  tests/view/game-saver.test.mjs:544 <- test("each document holds the moment of the reading made for it and loads, and the state held stays what it wa
+ok  tests/view/game-saver.test.mjs:587 <- test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden p
+ok  tests/view/game-saver.test.mjs:588 <- test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden p

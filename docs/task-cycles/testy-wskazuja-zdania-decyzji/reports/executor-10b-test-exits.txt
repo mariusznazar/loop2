@@ -1,0 +1,4 @@
+menu-bar exit 0
+account-screen exit 0
+foundation_check exit 0, 0 errors, 11 held by nothing (D-181..D-220, none of slice 10)
+prettier --check account-screen.test.mjs menu-bar.test.mjs exit 0

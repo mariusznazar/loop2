@@ -1,0 +1,247 @@
+tests/account-storage.test.mjs:2274	renewal	test("out-of-order renewal preserves the later expiry and never changes identity", async (t) => {
+tests/account-storage.test.mjs:2296	renewal	test("a delayed touch after destroy cannot recreate a session or revoke another browser", async (t) => {
+tests/account-storage.test.mjs:2372	renewal	test("persisted cookies must be usable after database expiry replacement and package renewal", async (t) => {
+tests/account-storage.test.mjs:2448	renewal	test("set and touch refuse unusable cookie input without changing stored sessions", async (t) => {
+tests/http.test.mjs:204	renewal	test("unconfigured accounts answer the canonical account routes as unavailable JSON", async () => {
+tests/http.test.mjs:548	renewal	test(
+tests/http.test.mjs:652	renewal	test(
+tests/http.test.mjs:682	renewal	test(
+tests/http.test.mjs:3689	renewal	test(
+tests/http.test.mjs:5231	renewal	test(
+tests/http.test.mjs:5294	renewal	test(
+tests/http.test.mjs:5308	renewal	test(
+tests/http.test.mjs:5326	renewal	test(
+tests/http.test.mjs:5951	renewal	test(
+tests/invariants/test_program_closed_lists.py:242	condition numbers	def test_group_conditions_accept_listed_values_and_refuse_unlisted_kinds(self):
+tests/invariants/test_program_rule_pick.py:321	condition numbers	def test_a_group_whose_condition_lies_outside_the_repertoire_is_passed_over(self):
+tests/invariants/test_program_world_reference.py:277	condition numbers	def test_control_grouped_metadata_is_not_a_world_reference(self):
+tests/invariants/test_simulation_randomness.py:495	gather chance	def test_control_gathering_draws_follow_the_seed(self):
+tests/sim/acceptance.test.mjs:118	condition numbers	test("the program holds every kind of condition and action of the closed list", () => {
+tests/sim/body.test.mjs:69	ambient	test("Las is the map these numbers are worked out for", () => {
+tests/sim/body.test.mjs:365	satiety cap	test("nature energy comes back by 0.5 in a game minute whose satiety after its fall is 60 or above", () => {
+tests/sim/body.test.mjs:399	ambient,satiety cap	test("nature energy stays between 0 and its cap of 100 at every game minute", () => {
+tests/sim/body.test.mjs:548	satiety cap	test("the note of satiety reads starving below 30 and minutes at 30", () => {
+tests/sim/campfire.test.mjs:526	death cause	test("the action ending in the minute of death takes no effect", () => {
+tests/sim/campfire.test.mjs:546	satiety cap	test("the program check takes the six actions before sending and during a map run", () => {
+tests/sim/campfire.test.mjs:813	renewal	test("a campfire going out in a minute of an encounter gives its event too", () => {
+tests/sim/campfire.test.mjs:839	death cause	test("the minute of a death gives no event, and the campfire keeps its minutes", () => {
+tests/sim/catch-up.test.mjs:351	renewal	test("a death in game minute 243 of the catch-up is settled at the save time plus 243 minutes, whatever the re
+tests/sim/catch-up.test.mjs:424	renewal	test("a character whose chest and resurrection no other loop reaches ends the catch-up as the open game does, 
+tests/sim/catch-up.test.mjs:834	renewal	test("in the open game the death earlier in time takes the shared resurrection, and of two in one game minute 
+tests/sim/completion.test.mjs:367	death cause	test("the requirements of a map run that ended stand on the stopped minute: the streak 0 after a death of cold
+tests/sim/completion.test.mjs:458	renewal	test("an actual program edit resets the streak and defeated attacks; cold loss keeps defeated attacks", () => 
+tests/sim/completion.test.mjs:529	renewal	test("the first completion of a map leaves a ready resurrection as it was, ready from the moment it was, and s
+tests/sim/completion.test.mjs:546	renewal	test("the completion of a map the account had solved before renews nothing, whatever the resurrection", () => 
+tests/sim/completion.test.mjs:560	renewal	test("a restart after a first completion starts a map run of a solved map, whose completion renews nothing", (
+tests/sim/conditions.test.mjs:360	condition numbers	test("„Zapas poniżej” takes every item of the data, and nothing else", () => {
+tests/sim/data.test.mjs:17	renewal	test("the map Las has the size, entrance, step and resources of D-388", () => {
+tests/sim/data.test.mjs:35	renewal,ambient	test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () => {
+tests/sim/data.test.mjs:59	renewal,ambient	test("Las — głębiej has the map data, attacker, solving requirements and opening map of D-388", () => {
+tests/sim/data.test.mjs:187	condition numbers	test("each action names its group and each condition its section and place in the pick", () => {
+tests/sim/data.test.mjs:364	renewal	test("every item and every item of the campfire names an item of the data", () => {
+tests/sim/data.test.mjs:376	renewal	test("the resurrection renews 480 real minutes after the death that used it", () => {
+tests/sim/data.test.mjs:433	condition numbers	test("the tree of Eksploracja, whose first action is held from the start, is revealed by the first finished ex
+tests/sim/data.test.mjs:560	condition numbers	test("the campfire is revealed by the first gathered stick and has an identifier outside the items", () => {
+tests/sim/data.test.mjs:604	condition numbers	test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async 
+tests/sim/data.test.mjs:658	condition numbers	test("setProgram rejects kinds outside the closed list and values outside the data range", async () => {
+tests/sim/death.test.mjs:92	renewal	test("a resurrection is not ready before its moment, is ready at it and stays ready after it", () => {
+tests/sim/death.test.mjs:126	renewal	test("a new character is of generation 1, and a created second one too", () => {
+tests/sim/death.test.mjs:137	renewal	test("a death with a resurrection ready uses it up: ready again 8 hours after the death, and practice, ranks a
+tests/sim/death.test.mjs:191	renewal	test("a death that takes everything leaves the name, the archetype, the place in the team and the character be
+tests/sim/death.test.mjs:206	renewal	test("a death at the very moment of readiness uses the resurrection, and a death a millisecond before takes ev
+tests/sim/death.test.mjs:215	renewal	test("the renewal does not depend on the pace of the map run", () => {
+tests/sim/death.test.mjs:225	renewal	test("a resurrection used up is ready again at its moment after a save and a load, and the next death goes by 
+tests/sim/death.test.mjs:480	renewal	test("„Restart” after a death that took everything reads the character that died", () => {
+tests/sim/death.test.mjs:550	renewal	test("a character with practice in one skill, or one rank bought, has practice: its death goes by the resurrec
+tests/sim/discovery.test.mjs:128	death cause,condition numbers	test("a new game sent with its one empty group waits until the minute of the first chill, which learns Wędruj 
+tests/sim/discovery.test.mjs:233	condition numbers	test("the rule is appended to the first group only, after its rules, with an identity no rule or group had", (
+tests/sim/discovery.test.mjs:309	condition numbers	test("a copy whose rule „Eksploruj” stands under a condition that does not hold, in any group, gets no second 
+tests/sim/discovery.test.mjs:345	condition numbers	test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej, the items of the t
+tests/sim/discovery.test.mjs:382	gather chance,condition numbers	test("a later revealed tile adds its new items only, and a tile of known items reveals nothing", () => {
+tests/sim/discovery.test.mjs:520	gather chance	test("a gathering that misses reveals nothing", () => {
+tests/sim/discovery.test.mjs:550	gather chance	test("a known item and its actions, revealed again, reveal nothing", () => {
+tests/sim/discovery.test.mjs:569	death cause,gather chance	test("a gathering ending in the minute of the character's death reveals nothing, and the same gathering withou
+tests/sim/discovery.test.mjs:591	death cause	test("the first chill in the minute of death still reveals what the body step reveals", () => {
+tests/sim/discovery.test.mjs:602	condition numbers	test("the Understanding stands after death, Restart and Zakończ, and stands for the next character sent", () =
+tests/sim/discovery.test.mjs:671	condition numbers	test("what the chill reveals is exactly its row, and the condition Zawsze and the action Eksploruj, which noth
+tests/sim/discovery.test.mjs:688	gather chance	test("a revealing event reveals what of its row is still new, though its actions outnumber or equal the new it
+tests/sim/discovery.test.mjs:716	condition numbers	test("a map run ended in death passes no further minute at the level of the run", () => {
+tests/sim/discovery.test.mjs:814	gather chance	test("real time passed over a minute that gave events but no discovery keeps its carry and does not pause", ()
+tests/sim/discovery.test.mjs:957	condition numbers	test("a rule that is not Zawsze → Eksploruj does not name its group", () => {
+tests/sim/encounters.test.mjs:127	death cause	test("death, completion and a map without attackers consume no attack draw", () => {
+tests/sim/encounters.test.mjs:467	condition numbers	test("an ending exploration and first wolf produce one catalog-ordered discovery", () => {
+tests/sim/encounters.test.mjs:505	condition numbers	test("first chill and attack in one minute keep the automatic exploration rule but never start it during comba
+tests/sim/encounters.test.mjs:595	ambient	test("two different ordinary programs on a shared seed meet their first attack in the same minute", () => {
+tests/sim/encounters.test.mjs:717	death cause	test(`combat time splitting preserves every state and ordered event: ${scenario.name}`, () => {
+tests/sim/gather.test.mjs:170	gather chance	test("a map run starts its gathering generator from its seed, apart from the other streams", () => {
+tests/sim/gather.test.mjs:181	gather chance	test("a hit moves one piece from the tile into the backpack, as the item of that resource", () => {
+tests/sim/gather.test.mjs:209	gather chance	test("a hit on a tile of several resources takes only the gathered one, for each resource of the map", () => {
+tests/sim/gather.test.mjs:248	gather chance	test("a tile gathered to 0 pieces keeps the key of its resource", () => {
+tests/sim/gather.test.mjs:335	gather chance	test("a map run restart starts the gathering generator anew from the seed", () => {
+tests/sim/gather.test.mjs:384	gather chance	test("the character stays on its tile while gathering", () => {
+tests/sim/loop.test.mjs:585	death cause	test("a map run of a loop is passed minute by minute as in one go, and stops at its end with the minute of the
+tests/sim/loop.test.mjs:1195	renewal	test("no function of the loop changes a value passed to it, a loop, a death and a completion included", () => 
+tests/sim/loop.test.mjs:1296	renewal	test("a character with no practice in its skills has practice when its loop gathered some", () => {
+tests/sim/map-card.test.mjs:33	ambient	test("a body that reaches exactly the chill threshold at minute 1000 is still at or above it there", () => {
+tests/sim/map-card.test.mjs:40	ambient	test("a map at or above the body's starting temperature does not cool the body below the threshold, so no minu
+tests/sim/program-counts.test.mjs:60	condition numbers	test("minute zero counts once; a multi-minute action, its finish and later waits add nothing", () => {
+tests/sim/program-counts.test.mjs:80	condition numbers	test("an initial wait leaves every rule at zero", () => {
+tests/sim/program-counts.test.mjs:137	condition numbers	test("identical rules count independently and keep their counts after group reorder and transfer", () => {
+tests/sim/program-counts.test.mjs:164	condition numbers	test("every condition/action content field resets only its edited rule, also after Stop", () => {
+tests/sim/program-counts.test.mjs:237	condition numbers	test("canonical equivalent content preserves history despite key order, extra fields and floating rounding", (
+tests/sim/program-counts.test.mjs:282	condition numbers	test("editing an active rule resets it immediately and its old completion adds no count", () => {
+tests/sim/program.test.mjs:63	condition numbers	test("hereBelow reads 0 on an unrevealed tile, whatever lies there", () => {
+tests/sim/program.test.mjs:72	condition numbers	test("hereBelow compares the true stock of a revealed tile", () => {
+tests/sim/program.test.mjs:87	condition numbers	test("hereBelow with N = 0 never holds", () => {
+tests/sim/program.test.mjs:260	condition numbers	test("group conditions use the same legal number, resource and item values as rules", () => {
+tests/sim/program.test.mjs:282	condition numbers	test("group conditions refuse unknown kinds and invalid fields while accepting a legal control", () => {
+tests/sim/repertoire.test.mjs:92	condition numbers	test("two new Understandings share no array, so a change of one reaches no other", () => {
+tests/sim/repertoire.test.mjs:119	condition numbers	test("the repertoire of the mage keeps the order of the Understanding", () => {
+tests/sim/repertoire.test.mjs:167	condition numbers	test("computing a repertoire changes neither argument and shares no array with the Understanding", () => {
+tests/sim/repertoire.test.mjs:203	condition numbers	test("a condition outside the repertoire puts its rule outside it", () => {
+tests/sim/repertoire.test.mjs:219	condition numbers	test("a rule whose condition, action and targets lie in the repertoire lies in it", () => {
+tests/sim/repertoire.test.mjs:238	condition numbers	test("a target outside the items of the repertoire puts the condition or the action outside it", () => {
+tests/sim/repertoire.test.mjs:287	condition numbers	test("the reduced program keeps identities and order and drops exactly the rules and groups outside the repert
+tests/sim/repertoire.test.mjs:401	condition numbers	test("creating, sending, restarting, pausing, changing the program and ending leave the Understanding as it is
+tests/sim/repertoire.test.mjs:433	condition numbers	test("a character's death leaves the Understanding as it is", () => {
+tests/sim/repertoire.test.mjs:501	condition numbers	test("a rule whose condition lies outside the repertoire is passed over at the start of the map run", () => {
+tests/sim/repertoire.test.mjs:517	condition numbers	test("a rule whose target lies outside the repertoire is passed over at the start of the map run", () => {
+tests/sim/repertoire.test.mjs:562	condition numbers	test("a group whose condition lies outside the repertoire is passed over with its rules, and stays in the prog
+tests/sim/rule-signs.test.mjs:441	condition numbers	test("a rule outside the repertoire is amber with its reason, whether or not its own condition holds", () => {
+tests/sim/rule-signs.test.mjs:484	condition numbers	test("an undiscovered condition or action is named by its label", () => {
+tests/sim/rule-signs.test.mjs:510	condition numbers	test("a group whose condition lies outside the repertoire shows dark with its rules, which give no reason thou
+tests/sim/rule-signs.test.mjs:563	condition numbers	test("the winner the signs show is the rule the pick takes, minute after minute, over the program as the chara
+tests/sim/rule-signs.test.mjs:639	death cause	test("no map run, no signs", () => {
+tests/sim/rule-signs.test.mjs:742	death cause	test("after a death in combat no action is running", () => {
+tests/sim/rule-signs.test.mjs:894	death cause	test("Teraz names the cause of a death of cold, of hunger and in combat", () => {
+tests/sim/rule-signs.test.mjs:925	death cause	test("a death after an encounter names its cause, not the fight", () => {
+tests/sim/rule-signs.test.mjs:1061	death cause	test("after a death Potem names the rule that wins at the stopped minute", () => {
+tests/sim/run-record.test.mjs:110	death cause	test("the game minute of a death counts like any other, and the counts sum to the map run's game minute", () =
+tests/sim/saved-game.test.mjs:780	death cause	test("the server's save of the current version loads into the game it holds, its revision left out", () => {
+tests/sim/saved-game.test.mjs:963	backpack cap	test("the load changes nothing passed to it, and the state it gives shares nothing with it", () => {
+tests/sim/saved-game.test.mjs:1127	death cause,condition numbers	test("a value that is no object with a whole version is refused as shape", () => {
+tests/sim/saved-game.test.mjs:2619	condition numbers	test("the saved document of a state is the current version beside a copy of the state, shared nowhere", () => 
+tests/sim/saved-game.test.mjs:2846	death cause,renewal	test("a game state the simulation made loads back from its saved document", () => {
+tests/sim/skills.test.mjs:182	death cause	test("unknown trees, unknown characters, no skill and every retained run refuse purchase", () => {
+tests/sim/skills.test.mjs:435	satiety cap	test("crafting, feeding, item lighting and eating grant one only when their effect lands, even eating at full 
+tests/sim/streak.test.mjs:106	death cause	test("a map run ended in death holds a streak of 0", () => {
+tests/sim/streak.test.mjs:132	death cause	test("a game minute of loss to cold at a streak above zero gives one event of the loss, with the streak and th
+tests/sim/streak.test.mjs:141	death cause	test("a game minute of loss to hunger at a streak above zero gives one event of the loss with the cause hunger
+tests/sim/streak.test.mjs:158	death cause	test("the loss is reported in the game minute it happens, after a streak grown by the game minutes before it",
+tests/sim/streak.test.mjs:193	death cause	test("a death of cold at a streak above zero reports the loss in its minute, before the death", () => {
+tests/sim/streak.test.mjs:211	death cause	test("a death of hunger at a streak above zero reports the loss with the cause hunger, before the death", () =
+tests/sim/team.test.mjs:53	backpack cap	test("a created character joins the end of the team's list as an elemental mage, in the order of creation", ()
+tests/sim/traits.test.mjs:167	backpack cap	test("the map run holds its own copy of the traits, so changing the team's traits leaves it alone", () => {
+tests/sim/trip.test.mjs:226	backpack cap	test("exit spends chest room and map capacity in snapshot order, with partial rows", () => {
+tests/sim/trip.test.mjs:404	gather chance	test("zero map entry cap still allows gathering, and completion clips that minute's gathered loot", () => {
+tests/sim/trip.test.mjs:515	condition numbers	test("the first action already sees entry equipment and transfers preserve their input state", () => {
+tests/sim/world.test.mjs:52	renewal,ambient	test("Las and its campfire and stick are the ones these numbers are worked out for", () => {
+tests/sim/world.test.mjs:155	renewal	test("a campfire and a stick on another tile do not warm, and burn down there", () => {
+tests/sim/world.test.mjs:283	death cause,renewal	test("in the minute of death nothing burns down and no tile renews", () => {
+tests/sim/world.test.mjs:344	renewal	test("the one-minute step changes no campfire, burning item or tile passed to it", () => {
+tests/transport.test.mjs:521	renewal	test(
+tests/transport.test.mjs:773	renewal	test(
+tests/transport.test.mjs:908	renewal	test(
+tests/view/account-screen.test.mjs:3085	death cause,renewal	test("a game minute that ends the map run in a death is saved at once, settled", async () => {
+tests/view/account-screen.test.mjs:3139	renewal	test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line onl
+tests/view/account-screen.test.mjs:4948	renewal	test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run wa
+tests/view/body-row.test.mjs:120	backpack cap	test("an empty backpack reads „Plecak 0/15”", () => {
+tests/view/body-row.test.mjs:221	ambient	test("on a map that does not cool the body the note under temperature reads „nie stygnie”", () => {
+tests/view/camp-picture.test.mjs:61	death cause	test("the character of a manual map run is away while the run goes, is paused or has ended", () => {
+tests/view/character-screen.test.mjs:99	renewal	test("the screen names the character and its archetype, and gives the generation from 2 up only", async () => 
+tests/view/chronicle-entries.test.mjs:59	condition numbers	test("a rule whose action or condition changed gives the whole sentence before, an arrow and the whole sentenc
+tests/view/chronicle-entries.test.mjs:143	condition numbers	test("a group renamed or given another condition gives its name after the act", () => {
+tests/view/chronicle.test.mjs:214	death cause	test("a campfire going out, a death and a completion give entries of the kind Świat in the words of „Teraz”", 
+tests/view/chronicle.test.mjs:537	death cause	test("an edit of the copy after a death stands at the game minute of the death", () => {
+tests/view/chronicle.test.mjs:560	death cause	test("a filter's window holds its newest entries up to its size, newest first, and says whether more stand bey
+tests/view/chronicle.test.mjs:703	death cause	test("the entries up to the death end with its entry, oldest first, leave out the paragraph of the last encoun
+tests/view/chronicle.test.mjs:731	death cause	test("the entries up to the death are empty while no death is recorded and after a load", () => {
+tests/view/clock.test.mjs:121	renewal	test("the clock's send carries the program number to the simulation's send", () => {
+tests/view/clock.test.mjs:253	renewal	test("a send takes the one reading of its flush", () => {
+tests/view/clock.test.mjs:272	renewal	test("a flush in which the character dies hands the store one result: the events of the passing of time with t
+tests/view/clock.test.mjs:316	renewal	test("a flush in which a character with no practice dies settles the death as none to pay for: the resurrectio
+tests/view/clock.test.mjs:362	renewal	test("a flush in which the map run solves its map for the first time settles the renewal at that reading, once
+tests/view/clock.test.mjs:530	renewal	test("a reading passes the manual run, then the loops, and hands the store one result with their events togeth
+tests/view/discovery-rule.test.mjs:148	condition numbers	test("the first chill adds „Zawsze → Wędruj” at the end of the group „Program” and opens the panel on the acti
+tests/view/discovery-rule.test.mjs:172	condition numbers	test("a discovery of conditions alone adds „{first condition} → Eksploruj” with the number a pick of that cond
+tests/view/discovery-rule.test.mjs:187	condition numbers	test("the first condition is the first the discovery holds", () => {
+tests/view/discovery-rule.test.mjs:202	condition numbers	test("a condition that names a target takes the target a pick of that condition gives", () => {
+tests/view/discovery-rule.test.mjs:237	condition numbers	test("a condition that needs a target nobody can pick yet gives way to the next condition of the discovery", (
+tests/view/discovery-rule.test.mjs:252	condition numbers	test("a discovery that holds an action and a condition writes the action, with the condition „Zawsze”", () => 
+tests/view/discovery-rule.test.mjs:298	condition numbers	test("the rule stands last in the first group, takes the copy's next rule identity, and every other group and 
+tests/view/end-window-game.test.mjs:1021	renewal	test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what
+tests/view/end-window-game.test.mjs:1093	renewal	test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal a
+tests/view/end-window-lines.test.mjs:160	death cause,renewal	test("after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a mi
+tests/view/end-window-lines.test.mjs:180	death cause,renewal	test("after the death of a character with no practice the cost line says the team's resurrection was not used,
+tests/view/end-window-lines.test.mjs:194	death cause,renewal	test("the renewal line stands only after a first completion that made a used-up resurrection ready", () => {
+tests/view/end-window-lines.test.mjs:385	death cause	test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completi
+tests/view/end-window.test.mjs:273	renewal	test("a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a dis
+tests/view/end-window.test.mjs:322	renewal	test("the window shows the line of a death with no practice, and the renewal line after the deposit line of a 
+tests/view/end-window.test.mjs:362	death cause	test("after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounte
+tests/view/map-lines.test.mjs:79	renewal	test("the terrain lines give the grid, the entrance, the step and the minutes without fire", () => {
+tests/view/map-lines.test.mjs:100	renewal,ambient	test("a step above the usual costs more, one below costs less, the note standing apart, and a map that does no
+tests/view/map-lines.test.mjs:127	renewal	test("each resource gives its name, the tiles that hold it, its stock and its renewal", () => {
+tests/view/map-lines.test.mjs:176	renewal	test("a resource that does not renew says so apart, in warning, in place of its renewal", () => {
+tests/view/maps-screen.test.mjs:388	renewal	test("a step other than the usual one, a resource that does not renew and the entry and exit caps stand in the
+tests/view/now-lines.test.mjs:171	death cause	test("Potem does not depend on what Teraz says: after a death it still names the winning rule", () => {
+tests/view/program-editor.test.mjs:329	condition numbers	test("the number field: a number is clamped to the data's range 0–50", () => {
+tests/view/program-editor.test.mjs:530	condition numbers	test("„Zapas poniżej” offers every item of the data, and its item and number can be chosen", () => {
+tests/view/program-editor.test.mjs:553	condition numbers	test("the number of the body's and the campfire's conditions can be chosen; „Z dala od” takes none", () => {
+tests/view/program-editor.test.mjs:571	condition numbers	test("switching the condition to „Zawsze” drops its resource and number; the same kind commits nothing", () =>
+tests/view/program-editor.test.mjs:664	condition numbers	test("choosing a resource or a number changes only that rule; the same choice commits nothing", () => {
+tests/view/program-editor.test.mjs:698	condition numbers	test("the resource lists offer the resources of every map before sending and the run's map's during a run, in 
+tests/view/program-editor.test.mjs:765	condition numbers	test("a condition switching to „Zapas poniżej” takes the first of the offered items; with none offered nothing
+tests/view/program-editor.test.mjs:810	condition numbers	test("every program the editor builds passes setProgram, before sending and during a run", () => {
+tests/view/program-editor.test.mjs:921	condition numbers	test("rule edits preserve other groups, group boundaries and identities", () => {
+tests/view/program-editor.test.mjs:1176	condition numbers	test("„Idź”, „Zbierz”, „Obchód”, „Tu leży mniej niż” and „Zapas poniżej” with no target to name stand greyed: 
+tests/view/program-editor.test.mjs:1201	condition numbers	test("a known resource the map of the map run lacks stands greyed: „nie ma go na tej mapie”; with no map run e
+tests/view/program-editor.test.mjs:1290	condition numbers	test("a value the rule holds outside the pick stands chosen and greyed: with its reason where one fits, with n
+tests/view/program-editor.test.mjs:1342	condition numbers	test("the fields of a rule: the number only where the condition takes one, a target only where one is named", 
+tests/view/program-editor.test.mjs:1545	condition numbers	test("a row reads as a sentence: the condition with its number and target, then the action with its target", (
+tests/view/program-editor.test.mjs:1581	condition numbers	test("a group's summary: its name, condition, number of rules and the sum of their counts where counts stand",
+tests/view/program-panel.test.mjs:793	death cause	test("„Restart” and a death show the copy with counts; „Zakończ” shows the copy's program with them", async ()
+tests/view/program-panel.test.mjs:868	condition numbers	test("time passing keeps what is typed in the name field and in an editor field, and the focus", async () => {
+tests/view/program-panel.test.mjs:909	condition numbers	test("a number typed into the panel on the screen of a map run at 16× keeps its text, its cursor field and the
+tests/view/program-panel.test.mjs:1389	death cause	test("on the screen after a death the copy's buttons work and there is no switch button", async () => {
+tests/view/program-panel.test.mjs:1411	death cause	test("after „Zakończ” with unsaved changes the copy's section is gone", async () => {
+tests/view/program-panel.test.mjs:1612	death cause	test("the offer of Programy follows the character of the map run held by the game state, an ended one included
+tests/view/rule-editor.test.mjs:176	condition numbers	test("a header shows its number, name, condition and number of rules, and a row its number, sentence and time"
+tests/view/rule-editor.test.mjs:927	condition numbers	test("after a drop the focus goes to the dropped rule's row, and to a folded group's header when the rule is o
+tests/view/rule-editor.test.mjs:1098	condition numbers	test("a number typed in the panel keeps its text and the focus while the game at 16× redraws the panel, and En
+tests/view/rule-editor.test.mjs:1132	condition numbers	test("the number field of the panel takes the range and the step of the condition kind", async () => {
+tests/view/rule-editor.test.mjs:1212	condition numbers	test("the fields of a rule stand in the order condition, number, target of the condition, action, target of th
+tests/view/rule-editor.test.mjs:1567	condition numbers	test("the panel of a group holds its name and its condition with its number and target, and no action", async 
+tests/view/rule-signs.test.mjs:214	death cause	test("the signs stand on the screen after a death and go with „Zakończ”", async () => {
+tests/view/run-screen.test.mjs:494	condition numbers	test("a hovered tile of the drawing marks its row in the table of the area under the drawing and the line give
+tests/view/run-screen.test.mjs:714	death cause	test("a row that names no rule is no control: the keyboard does not reach it and it scrolls nothing", async ()
+tests/view/scene-picture.test.mjs:182	death cause	test("after a death or a completion the mage stays where it stands", () => {
+tests/view/scene-picture.test.mjs:367	death cause	test("no badge while waiting, in combat, after a death and after a completion", () => {
+tests/view/scene-picture.test.mjs:453	death cause	test("a death stops the scene, the mage then grey", () => {
+tests/view/scene-picture.test.mjs:528	death cause	test("the mage bends while it gathers, whichever the target, and at nothing else", () => {
+tests/view/scene-picture.test.mjs:1040	death cause	test("a moment has just begun where the events of the call carry its discovery, death or completion", () => {
+tests/view/scene-picture.test.mjs:1056	death cause	test("the end effect begins at the game minute of a death or a completion, not at a discovery", () => {
+tests/view/scene-picture.test.mjs:1116	condition numbers	test("a discovery of conditions and creatures alone shows no plaque", () => {
+tests/view/scene-picture.test.mjs:1176	death cause	test("a death or a completion in the game minute of a discovery shows the effect of the end alone", () => {
+tests/view/scene-picture.test.mjs:1327	death cause	test("the wolf stays after the mage's death in the fight and after a map run solved in a combat, and after no 
+tests/view/scene.test.mjs:253	death cause	test("no badge while waiting, in combat, after a death and after a completion", async () => {
+tests/view/scene.test.mjs:276	death cause	test("the fire is absent without a campfire on the tile, burning with minutes left and the same picture exting
+tests/view/scene.test.mjs:608	death cause	test("where the activity leaves the mage standing, it keeps the place of the previous reading, in combat and a
+tests/view/scene.test.mjs:832	death cause	test("the mage bends while it gathers, „Zbierz” and „Obchód”, fibre included, and stands otherwise", async () 
+tests/view/scene.test.mjs:1558	death cause	test("at a death, a completion, a map run started and a first draw the tint stands at once where the streak pu
+tests/view/scene.test.mjs:1686	death cause	test("the pause greys the tint and the frost with the whole scene, because they lie inside it", async () => {
+tests/view/scene.test.mjs:1857	death cause	test("a moment that has played does not play again, and the next one after the scene went on does", async () =
+tests/view/scene.test.mjs:1933	death cause	test("a death or a completion in the game minute of a discovery shows no plaque", async () => {
+tests/view/scene.test.mjs:2001	death cause	test("a dead mage falls toward the middle of the frame, whichever way it faced", async () => {
+tests/view/scene.test.mjs:2376	death cause	test("the wolf stands still in its idle frame, with no cloud, beside the mage that died in the fight and after
+tests/view/scene.test.mjs:2421	death cause	test("a defeated wolf falls and a departing one runs off to the right, each an effect of 300 ms at the place t
+tests/view/scene.test.mjs:2595	death cause	test("a death or a completion in the 300 ms of the run in leaves the wolf standing beside the mage, not held o
+tests/view/screen-address.test.mjs:324	death cause	test("a map run ended in death and waiting for „Restart” or „Zakończ” keeps the return entry, with its minute 
+tests/view/status-row.test.mjs:193	death cause,condition numbers	test("a mage left without a program dies, and the clock reads the minute of its death", () => {
+tests/view/status-row.test.mjs:221	condition numbers	test("the text for the first chill names its action and its condition with the unit", () => {
+tests/view/tabs-area.test.mjs:266	death cause	test("the list holds the entries newest first, each the minute alone beside the text in the role of its kind, 
+tests/view/tabs-area.test.mjs:360	death cause	test("an empty chronicle and a filter that shows nothing say „Nic tu jeszcze nie ma.”, and the sentence goes w
+tests/view/team-lines.test.mjs:105	renewal	test("below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min", () =
+tests/view/team-lines.test.mjs:141	renewal	test("a clock set back lengthens the time left: the moment an hour earlier reads 9 godz. 0 min for 8 hours of 
+tests/view/world-area.test.mjs:354	condition numbers	test("Teraz says the wait alone, and Potem with no winning rule says the character will stand in the role warn
+tests/view/world-area.test.mjs:516	backpack cap	test("only the value below its threshold stands in danger, and the backpack reads its pieces of the cap", asyn
+tests/view/world-area.test.mjs:664	death cause	test("the notes stand after the end of a map run, on the state at the stopped minute", async () => {

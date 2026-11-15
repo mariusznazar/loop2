@@ -1,0 +1,7 @@
+scene-frost-contrast exit 0
+camp-picture exit 0
+icons exit 0
+headquarters-screen exit 0
+scene-picture exit 0
+world-area exit 0
+scene exit 0

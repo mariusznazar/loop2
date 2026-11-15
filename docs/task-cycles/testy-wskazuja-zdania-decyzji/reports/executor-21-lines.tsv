@@ -1,0 +1,135 @@
+D-57	tests/sim/conditions.test.mjs	273	the check takes a temperature with tenths and holds it as the decimal the player reads	A character's warmth is its body temperature in degrees Cels
+D-57	tests/sim/conditions.test.mjs	292	the check refuses a temperature off the step of 0.1 or outside 30.0–37.0	A character's warmth is its body temperature in degrees Cels
+D-57	tests/view/body-row.test.mjs	82	temperature is cut down to tenths, never rounded up	A character's warmth is its body temperature in degrees Cels
+D-58	tests/sim/body.test.mjs	82	on Las the body at named minutes is the one worked out by hand	A character's body cools in each game minute outside combat
+D-58	tests/sim/body.test.mjs	476	from the starting temperature a body lasts 83 game minutes on Las and 33 on Las — głębiej before it is chilled	A character's body cools in each game minute outside combat 
+D-58	tests/sim/body.test.mjs	497	a map that does not cool the body below the threshold gives no minutes until chilled	A character's body cools in each game minute outside combat 
+D-58	tests/sim/body.test.mjs	595	a map at the body's starting temperature gives not cooling, and fire is read before it	A character's body cools in each game minute outside combat 
+D-58	tests/sim/data.test.mjs	35	Skraj lasu has the map data of D-398, no opening map, and opens Las	A character's body cools in each game minute outside combat 
+D-58	tests/sim/data.test.mjs	60	Las — głębiej has the map data, attacker, solving requirements and opening map of D-388	A character's body cools in each game minute outside combat 
+D-58	tests/sim/data.test.mjs	274	Las has an ambient temperature of 25 degrees in its map data	A character's body cools in each game minute outside combat 
+D-58	tests/sim/map-card.test.mjs	18	Las, at 25 °C with no warmth, keeps the body at or above the chill threshold for 83 game minutes	A character's body cools in each game minute outside combat 
+D-58	tests/sim/map-card.test.mjs	28	Las — głębiej, at 7 °C with no warmth, keeps the body at or above the chill threshold for 33 game minutes	A character's body cools in each game minute outside combat 
+D-58	tests/sim/map-card.test.mjs	37	a body that reaches exactly the chill threshold at minute 1000 is still at or above it there	A character's body cools in each game minute outside combat 
+D-58	tests/sim/map-card.test.mjs	46	a map at or above the body's starting temperature does not cool the body below the threshold, so no minutes are given	A character's body cools in each game minute outside combat 
+D-58	tests/view/body-row.test.mjs	221	on a map that does not cool the body the note under temperature reads „nie stygnie”	A character's body cools in each game minute outside combat 
+D-58	tests/view/map-lines.test.mjs	100	a step above the usual costs more, one below costs less, the note standing apart, and a map that does not cool leaves the minutes out	A character's body cools in each game minute outside combat 
+D-59	tests/sim/body.test.mjs	191	the warmth on the tile warms the body, capped at 37.0 °C on the sum	Warming raises a character's body temperature up to its star
+D-59	tests/sim/campfire.test.mjs	419	eating adds 25 satiety at its end, not above 100, and uses a berry	Warming raises a character's body temperature up to its star
+D-59	tests/sim/world.test.mjs	108	a character at a burning campfire stays at 37.0 °C	Warming raises a character's body temperature up to its star
+D-59	tests/sim/world.test.mjs	118	the cap of 37.0 °C applies to the warmth of a campfire and a stick together	Warming raises a character's body temperature up to its star
+D-60	tests/sim/acceptance.test.mjs	172	on the same seed the empty program dies in game minute 243, of cold	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	82	on Las the body at named minutes is the one worked out by hand	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	152	a map run that is warm but hungry dies of hunger	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	165	a map run both chilled and starving loses both and dies of cold	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	174	health rises by 0.05 where neither chilled nor starving, not above 100	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	208	a value the decimal arithmetic puts exactly on a threshold does not cross it	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	311	the body step reports a loss only when the character is chilled or starving after it	Outside combat, a character loses health in each game minute
+D-60	tests/sim/body.test.mjs	329	the body step names the cause of its loss from the same reading: cold, hunger, both, or none	Outside combat, a character loses health in each game minute
+D-60	tests/sim/encounters.test.mjs	185	five combat minutes freeze needs and recovery while fire, renewal and streak advance once each	During the game minutes of combat the character's needs and 
+D-61	tests/sim/acceptance.test.mjs	172	on the same seed the empty program dies in game minute 243, of cold	A character dies in the game minute in which its health reac
+D-61	tests/sim/acceptance.test.mjs	172	on the same seed the empty program dies in game minute 243, of cold	For a death of cold or hunger, the cause is cold where the c
+D-61	tests/sim/body.test.mjs	104	on Las a program of today's closed list is alive in minute 242 and dies of cold in minute 243	A character dies in the game minute in which its health reac
+D-61	tests/sim/body.test.mjs	104	on Las a program of today's closed list is alive in minute 242 and dies of cold in minute 243	For a death of cold or hunger, the cause is cold where the c
+D-61	tests/sim/body.test.mjs	130	death falls during an action in progress, which gives no activityFinished	A character dies in the game minute in which its health reac
+D-61	tests/sim/body.test.mjs	130	death falls during an action in progress, which gives no activityFinished	For a death of cold or hunger, the cause is cold where the c
+D-61	tests/sim/body.test.mjs	152	a map run that is warm but hungry dies of hunger	A character dies in the game minute in which its health reac
+D-61	tests/sim/body.test.mjs	152	a map run that is warm but hungry dies of hunger	For a death of cold or hunger, the cause is cold where the c
+D-61	tests/sim/body.test.mjs	165	a map run both chilled and starving loses both and dies of cold	For a death of cold or hunger, the cause is cold where the c
+D-61	tests/sim/body.test.mjs	276	a map run ended in death passes no minute	A character dies in the game minute in which its health reac
+D-61	tests/sim/encounters.test.mjs	286	combat death in M+5 wins over completion and keeps the streak	A character whose health reaches zero through combat dies wi
+D-61	tests/sim/run-record.test.mjs	214	the minutes of a fight count to the fight, the minute of the attack to what the character was doing, and the last minute of a death in the fight too	A character whose health reaches zero through combat dies wi
+D-64	tests/sim/data.test.mjs	310	a new character's traits hold carrying capacity 15, apart from the archetype	Carrying capacity is 15 pieces
+D-64	tests/sim/gather.test.mjs	109	„Zbierz” is feasible on a revealed tile holding the resource, with room in the backpack	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/gather.test.mjs	140	„Zbierz” is not feasible with a full backpack of 15 pieces of any items	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/gather.test.mjs	263	a gathering takes no more than lies on the tile, nor beyond the backpack's cap, at its end	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/skills.test.mjs	338	gather miss grants none, an improved chance hits, and full hand respects stock and backpack limits	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/skills.test.mjs	377	Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock and free space, and leaves random stream alone	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/traits.test.mjs	46	a sent map run's character carries carrying capacity 15 and an empty backpack with cap 15	The backpack's cap counts the pieces of all items together, 
+D-64	tests/sim/traits.test.mjs	46	a sent map run's character carries carrying capacity 15 and an empty backpack with cap 15	Carrying capacity is 15 pieces
+D-64	tests/sim/traits.test.mjs	64	the traits of a character are its own copy, not the data's object	Carrying capacity is 15 pieces
+D-64	tests/sim/traits.test.mjs	79	a restart keeps the traits of a character that carries other traits	The backpack's cap counts the pieces of all items together, 
+D-64	tests/sim/traits.test.mjs	111	the count of a hand-made backpack is the pieces of all items together	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/traits.test.mjs	119	the cap of a hand-made character is its carrying capacity	The backpack's cap counts the pieces of all items together, 
+D-64	tests/sim/traits.test.mjs	125	newMapRun takes the traits it is given, and a new character's without them	Carrying capacity is 15 pieces
+D-64	tests/sim/traits.test.mjs	136	a created character carries carrying capacity 15 in the team	Carrying capacity is 15 pieces
+D-64	tests/sim/traits.test.mjs	159	the map run of a sent character carries that character's traits, also where they differ from a new character's	The backpack's cap counts the pieces of all items together, 
+D-64	tests/sim/trip.test.mjs	124	entry spends one budget in order, shortages leave room and partial rows fit	The backpack's cap counts the pieces of all items together, 
+D-64	tests/sim/trip.test.mjs	555	a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is	The backpack's cap counts the pieces of all items together, 
+D-64	tests/sim/trip.test.mjs	587	takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else	The backpack's cap counts the pieces of all items together
+D-64	tests/sim/trip.test.mjs	783	the backpack of a solved map's run is the entries sendTake gives from nowhere	The backpack's cap counts the pieces of all items together
+D-64	tests/view/body-row.test.mjs	124	a backpack holding items reads its count, its cap and each held item in the data's order	The backpack's cap counts the pieces of all items together
+D-64	tests/view/body-row.test.mjs	136	the cap is the character's carrying capacity	The backpack's cap counts the pieces of all items together, 
+D-64	tests/view/world-area.test.mjs	516	only the value below its threshold stands in danger, and the backpack reads its pieces of the cap	The backpack's cap counts the pieces of all items together
+D-65	tests/sim/gather.test.mjs	109	„Zbierz” is feasible on a revealed tile holding the resource, with room in the backpack	A character carries out a gathering while its backpack holds
+D-65	tests/sim/gather.test.mjs	140	„Zbierz” is not feasible with a full backpack of 15 pieces of any items	A character carries out a gathering while its backpack holds
+D-65	tests/sim/gather.test.mjs	285	the wander stream gives the same draws with and without gathering	A character carries out a gathering while its backpack holds
+D-65	tests/sim/skills.test.mjs	377	Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock and free space, and leaves random stream alone	A character carries out a gathering while its backpack holds
+D-66	tests/sim/gather.test.mjs	196	a miss takes no piece and leaves the backpack as it was	A gathering may miss, and a missed gathering leaves the tile
+D-66	tests/sim/gather.test.mjs	230	each gathering hits exactly where its draw lies below 0.7	A gathering may miss, and a missed gathering leaves the tile
+D-67	tests/sim/encounters.test.mjs	185	five combat minutes freeze needs and recovery while fire, renewal and streak advance once each	A tile holding fewer pieces of a resource than its starting 
+D-67	tests/sim/world.test.mjs	200	a tile below its stock of sticks gains one piece at minute 30 and none above its stock; a tile at 0 keeps its resource	A tile holding fewer pieces of a resource than its starting 
+D-67	tests/sim/world.test.mjs	238	a resource whose map data gives no time to renew does not renew, while the others renew	A tile holding fewer pieces of a resource than its starting 
+D-67	tests/sim/world.test.mjs	314	an exploring that ends in a minute of renewal reveals its tile and keeps the renewal	A tile holding fewer pieces of a resource than its starting 
+D-376	tests/sim/conditions.test.mjs	98	„Temperatura poniżej N °C” holds below N and not at N, also for tenths	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	107	„Sytość poniżej N %” holds below N and not at N	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	116	„Energia natury poniżej N” reads the mage's nature energy, holding below N and not at N	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	127	„Zapas poniżej N szt.” counts only the named item of the backpack	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	149	„Zostało mniej niż N min — ognisko” reads 0 where there is no campfire	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	155	„Zostało mniej niż N min — ognisko” reads the minutes left to a campfire on the character's tile	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	165	„Zostało mniej niż N min — ognisko” reads the nearest campfire, extinguished or not, not a farther one	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	194	„Zostało mniej niż N min — ognisko” counts nearness in game minutes of walking, not in tiles	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	273	the check takes a temperature with tenths and holds it as the decimal the player reads	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	273	the check takes a temperature with tenths and holds it as the decimal the player reads	The program check refuses a number that is no finite number,
+D-376	tests/sim/conditions.test.mjs	292	the check refuses a temperature off the step of 0.1 or outside 30.0–37.0	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	292	the check refuses a temperature off the step of 0.1 or outside 30.0–37.0	The program check refuses a number that is no finite number,
+D-376	tests/sim/conditions.test.mjs	301	the check takes the whole numbers of „Tu leży mniej niż” as before, and only those	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	301	the check takes the whole numbers of „Tu leży mniej niż” as before, and only those	The program check refuses a number that is no finite number,
+D-376	tests/sim/conditions.test.mjs	311	the check takes each new kind's numbers from its minimum to its maximum on its step	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/conditions.test.mjs	311	the check takes each new kind's numbers from its minimum to its maximum on its step	The program check refuses a number that is no finite number,
+D-376	tests/sim/conditions.test.mjs	311	the check takes each new kind's numbers from its minimum to its maximum on its step	„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbe
+D-376	tests/sim/conditions.test.mjs	335	the check refuses a number that is no finite number, for every kind that takes one	The program check refuses a number that is no finite number,
+D-376	tests/sim/data.test.mjs	232	conditions carry labels and the value range of hereBelow	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/data.test.mjs	248	health conditions use the approved thresholds and are revealed by an attack	„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbe
+D-376	tests/sim/data.test.mjs	606	setProgram accepts the empty program, both actions without a resource and the ends of the range	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/data.test.mjs	661	setProgram rejects kinds outside the closed list and values outside the data range	The program check refuses a number that is no finite number,
+D-376	tests/sim/program.test.mjs	72	hereBelow compares the true stock of a revealed tile	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/program.test.mjs	88	hereBelow with N = 0 never holds	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/program.test.mjs	262	group conditions use the same legal number, resource and item values as rules	A condition that takes a number accepts it from a minimum to
+D-376	tests/sim/program.test.mjs	285	group conditions refuse unknown kinds and invalid fields while accepting a legal control	The program check refuses a number that is no finite number,
+D-376	tests/view/discovery-rule.test.mjs	172	a discovery of conditions alone adds „{first condition} → Eksploruj” with the number a pick of that condition gives, and opens the panel on the condition	A condition that takes a number accepts it from a minimum to
+D-376	tests/view/program-editor.test.mjs	162	group conditions offer the same kinds and editable fields while preserving rules and counts	A condition that takes a number accepts it from a minimum to
+D-376	tests/view/program-editor.test.mjs	459	switching the condition to „Tu leży mniej niż” takes the map's first resource and the data's default N	A condition that takes a number accepts it from a minimum to
+D-376	tests/view/program-editor.test.mjs	477	switching the condition to a new kind puts in the kind's default number, and the first item for „Zapas poniżej”	A condition that takes a number accepts it from a minimum to
+D-376	tests/view/rule-editor.test.mjs	1132	the number field of the panel takes the range and the step of the condition kind	A condition that takes a number accepts it from a minimum to
+D-376	tests/view/rule-editor.test.mjs	1132	the number field of the panel takes the range and the step of the condition kind	„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbe
+D-387	tests/sim/acceptance.test.mjs	172	on the same seed the empty program dies in game minute 243, of cold	These numbers are requirements of the game, held in its data
+D-387	tests/sim/body.test.mjs	74	a map run starts at 37.0 °C, satiety 100, health 100, alive	These numbers are requirements of the game, held in its data
+D-387	tests/sim/body.test.mjs	82	on Las the body at named minutes is the one worked out by hand	These numbers are requirements of the game, held in its data
+D-387	tests/sim/body.test.mjs	174	health rises by 0.05 where neither chilled nor starving, not above 100	These numbers are requirements of the game, held in its data
+D-387	tests/sim/body.test.mjs	191	the warmth on the tile warms the body, capped at 37.0 °C on the sum	These numbers are requirements of the game, held in its data
+D-387	tests/sim/body.test.mjs	208	a value the decimal arithmetic puts exactly on a threshold does not cross it	These numbers are requirements of the game, held in its data
+D-387	tests/sim/body.test.mjs	476	from the starting temperature a body lasts 83 game minutes on Las and 33 on Las — głębiej before it is chilled	These numbers are requirements of the game, held in its data
+D-387	tests/sim/campfire.test.mjs	150	the six actions are on the closed list with their labels and minutes	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	291	each action lasts its minutes and takes nothing from the backpack at its start	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	318	crafting puts an unlit campfire on the tile at its end and uses 6 sticks	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	330	a campfire lit in minute m warms from minute m + 1 for 60 minutes and uses 2 sticks	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	379	a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3 and is used	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	391	feeding a burning campfire adds 20 minutes, without a cap, and uses one stick	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	419	eating adds 25 satiety at its end, not above 100, and uses a berry	These numbers are requirements of the game, held in its data
+D-387	tests/sim/campfire.test.mjs	419	eating adds 25 satiety at its end, not above 100, and uses a berry	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/campfire.test.mjs	718	the price of an action names the pieces it uses up and the nature energy it takes, nothing for what takes none	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/data.test.mjs	284	the body starts at its caps, with the rates and thresholds of D-387	These numbers are requirements of the game, held in its data
+D-387	tests/sim/data.test.mjs	284	the body starts at its caps, with the rates and thresholds of D-387	A gathering lasts 10 game minutes and succeeds with the chan
+D-387	tests/sim/data.test.mjs	302	the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)	These numbers are requirements of the game, held in its data
+D-387	tests/sim/data.test.mjs	320	the items are the four resources of Las, with their uses	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/data.test.mjs	346	the campfire holds its name, costs, burning minutes, warmth and icon	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/gather.test.mjs	152	a gathering lasts 10 game minutes, takes nothing at its start and draws nothing then	A gathering lasts 10 game minutes and succeeds with the chan
+D-387	tests/sim/gather.test.mjs	230	each gathering hits exactly where its draw lies below 0.7	A gathering lasts 10 game minutes and succeeds with the chan
+D-387	tests/sim/map-card.test.mjs	18	Las, at 25 °C with no warmth, keeps the body at or above the chill threshold for 83 game minutes	These numbers are requirements of the game, held in its data
+D-387	tests/sim/map-card.test.mjs	28	Las — głębiej, at 7 °C with no warmth, keeps the body at or above the chill threshold for 33 game minutes	These numbers are requirements of the game, held in its data
+D-387	tests/sim/map-card.test.mjs	37	a body that reaches exactly the chill threshold at minute 1000 is still at or above it there	These numbers are requirements of the game, held in its data
+D-387	tests/sim/world.test.mjs	52	Las and its campfire and stick are the ones these numbers are worked out for	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/world.test.mjs	81	a campfire with 60 minutes on the character's tile warms in exactly 60 minutes, then is extinguished and stays	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/world.test.mjs	118	the cap of 37.0 °C applies to the warmth of a campfire and a stick together	Making a campfire lasts 20 game minutes and uses 6 sticks
+D-387	tests/sim/world.test.mjs	136	a stick lit with 3 minutes warms in 3 minutes and is gone	Making a campfire lasts 20 game minutes and uses 6 sticks

@@ -1,0 +1,35 @@
+57	D-57	A character's warmth is its body temperature in degrees Celsius, counted with tenths
+58	D-58	A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data
+58a	D-58	A character's body cools in each game minute outside combat
+58b	D-58	A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature
+59	D-59	Warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety
+59a	D-59	Warming raises a character's body temperature up to its starting body temperature
+60	D-60	Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health
+60a	D-60	Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger
+60c	D-60	During the game minutes of combat the character's needs and health stand still until the combat actions change its health
+61a	D-61	A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause
+61b	D-61	For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise
+61c	D-61	A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns
+64	D-64	The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity
+64a	D-64	The backpack's cap counts the pieces of all items together
+64b	D-64	Carrying capacity is 15 pieces
+65	D-65	A character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then
+65a	D-65	A character carries out a gathering while its backpack holds fewer pieces than its cap
+66	D-66	A gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack
+67	D-67	A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock
+67a	D-67	A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece
+376a	D-376	A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it
+376b	D-376	The program check refuses a number that is no finite number, lies outside the range or off the step, and keeps a number on the step as the decimal with as many places as the step has, 36.6 and not 36.60000000000001
+376c	D-376	The program check refuses a number that is no finite number, lies outside the range or off the step
+376d	D-376	„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives
+387a	D-387	These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect
+387b	D-387	A gathering lasts 10 game minutes and succeeds with the chance 0.7
+387c	D-387	Making a campfire lasts 20 game minutes and uses 6 sticks
+tests/sim/data.test.mjs	setProgram accepts the empty program, both actions without a resource and the ends of the range	376a
+tests/sim/data.test.mjs	setProgram rejects kinds outside the closed list and values outside the data range	376c
+tests/sim/program.test.mjs	hereBelow compares the true stock of a revealed tile	376a
+tests/sim/program.test.mjs	hereBelow with N = 0 never holds	376a
+tests/sim/program.test.mjs	group conditions use the same legal number, resource and item values as rules	376a
+tests/sim/program.test.mjs	group conditions refuse unknown kinds and invalid fields while accepting a legal control	376c
+tests/view/rule-editor.test.mjs	the number field of the panel takes the range and the step of the condition kind	376a,376d
+tests/view/discovery-rule.test.mjs	a discovery of conditions alone adds „{first condition} → Eksploruj” with the number a pick of that condition gives, and opens the panel on the condition	376a

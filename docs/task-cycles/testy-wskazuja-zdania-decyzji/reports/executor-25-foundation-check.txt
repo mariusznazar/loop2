@@ -1,0 +1,11 @@
+foundations/decisions.md:3836: listed: `D-181` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:3849: listed: `D-182` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:3875: listed: `D-184` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:3888: listed: `D-185` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:3901: listed: `D-186` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:3927: listed: `D-188` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:4648: listed: `D-216` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:4691: listed: `D-217` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:4704: listed: `D-218` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+foundations/decisions.md:4740: listed: `D-220` is held by nothing: no invariant after `invariants:`, no test with a line `decision:` that names it, no pair of `- complies:` and `- violates:` lines
+0 errors

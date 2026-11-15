@@ -1,0 +1,151 @@
+D-50	Each character belongs to exactly	tests/sim/team.test.mjs:53	a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
+D-50	The chest belongs to a	tests/sim/flow.test.mjs:48	a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed an
+D-50	The chest belongs to a	tests/sim/loop.test.mjs:708	a completion deposits no more than the chest has room for", () => {
+D-50	The chest belongs to a	tests/sim/saved-game.test.mjs:2202	a crafted document of the current version is refused whole as shape", () => {
+D-50	The chest belongs to a	tests/sim/saved-game.test.mjs:2281	a chest holding exactly its capacity loads, and one piece beyond it is refused as shape", () => {
+D-51	A new game starts with	tests/sim/flow.test.mjs:48	a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed an
+D-51	A new game starts with	tests/view/headquarters-screen.test.mjs:213	an empty team says „Drużyna nie ma jeszcze postaci.” and still offers the creation of a character", async () =
+D-51	A new game starts with	tests/view/maps-screen.test.mjs:461	a team with no character reads the sentence under the heading of „Kto idzie”", async () => {
+D-52	A character has a name,	tests/invariants/test_character_team.py:149	test_every_character_of_every_state_belongs_to_one_team(self):
+D-52	A character has a name,	tests/sim/team.test.mjs:104	the name loses the white space at its start and end, and keeps the white space inside", () => {
+D-52	A character has a name,	tests/sim/team.test.mjs:115	a name empty once trimmed creates no character", () => {
+D-52	A character has a name,	tests/sim/team.test.mjs:91	two characters may share a name and stay two characters", () => {
+D-52	A character has a name,	tests/view/headquarters-screen.test.mjs:554	„Załóż” hands the page the trimmed name and empties the field; Enter in the field does the same", async () => 
+D-52	A character has a name,	tests/view/headquarters-screen.test.mjs:579	a name empty once trimmed creates nothing and says „Wpisz imię postaci.” under the field until the player type
+D-53	The player sends a character	tests/view/account-screen.test.mjs:3831	a manual map run hides the report with Siedziba, „Zakończ” opens Postać without it, and Siedziba shows it on b
+D-53	The player sends a character	tests/view/account-screen.test.mjs:4228	a send leads to the screen of the map run and „Zakończ” to the screen Postać of that character, each with a ne
+D-53	The player sends a character	tests/view/account-screen.test.mjs:4290	a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu 
+D-53	The player sends a character	tests/view/end-question.test.mjs:395	„Zakończ” without unsaved changes ends the map run at once and opens Postać of its character", async () => {
+D-53	The player sends a character	tests/view/end-question.test.mjs:425	„Zapisz” saves the copy into its program, replacing what the program had since, ends the map run and leads to 
+D-53	The player sends a character	tests/view/end-question.test.mjs:469	„Zapisz” of a copy whose program was deleted saves it as a new program under the first free name with no name 
+D-53	The player sends a character	tests/view/end-question.test.mjs:537	„Odrzuć” ends the map run with no save, the program as it was, and leads to Postać", async () => {
+D-53	The player sends a character	tests/view/end-window-game.test.mjs:813	„Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać", async () => {
+D-53	The player sends a character	tests/view/end-window-game.test.mjs:871	the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć”", async () => 
+D-53	The player sends a character	tests/view/end-window-game.test.mjs:967	after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte”", async () => {
+D-53	The player sends a character	tests/view/headquarters-screen.test.mjs:767	nothing on the screen sends a character or leads to the screen Mapy", async () => {
+D-53	The player sends a character	tests/view/maps-screen.test.mjs:680	„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the 
+D-53	„Otwarte: {mapa} →” of the	tests/view/end-window-game.test.mjs:902	„Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of t
+D-53	„Otwarte: {mapa} →” of the	tests/view/end-window-game.test.mjs:925	the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć
+D-53	„Otwarte: {mapa} →” of the	tests/view/end-window-lines.test.mjs:392	the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of 
+D-54	The characters of the team	tests/sim/team.test.mjs:53	a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
+D-54	The characters of the team	tests/view/camp-picture.test.mjs:47	only the characters in Siedziba stand in the camp, in the order of creation", () => {
+D-54	The characters of the team	tests/view/camp-picture.test.mjs:78	the camp draws as many characters as the widest band holds, the first in the order of creation", () => {
+D-54	The characters of the team	tests/view/headquarters-screen.test.mjs:181	each character stands in the order of creation with its name as a link to its screen Postać, its generation fr
+D-54	The characters of the team	tests/view/maps-screen.test.mjs:477	the characters stand in the order of their creation, each with its lines from the top", async () => {
+D-56	A map run names the	tests/invariants/test_character_team.py:149	test_every_character_of_every_state_belongs_to_one_team(self):
+D-56	A map run names the	tests/invariants/test_character_team.py:166	test_a_send_of_a_character_no_team_holds_is_refused(self):
+D-56	A map run names the	tests/sim/flow.test.mjs:69	a send starts a map run at minute 0 with the seed mixed from the last seed and the real time", () => {
+D-56	A map run names the	tests/sim/saved-game.test.mjs:2202	a crafted document of the current version is refused whole as shape", () => {
+D-56	A map run names the	tests/sim/team.test.mjs:142	the send sends the chosen character of the team, and a restart keeps it", () => {
+D-56	Each character carries a number	tests/sim/saved-game.test.mjs:2202	a crafted document of the current version is refused whole as shape", () => {
+D-56	Each character carries a number	tests/sim/team.test.mjs:53	a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
+D-56	Each character carries a number	tests/sim/team.test.mjs:91	two characters may share a name and stay two characters", () => {
+D-62	After a character's death the	tests/sim/body.test.mjs:276	a map run ended in death passes no minute", () => {
+D-62	After a character's death the	tests/sim/body.test.mjs:292	restart and end take a map run ended in death as one in progress", () => {
+D-62	After a character's death the	tests/sim/discovery.test.mjs:750	a map run ended in death passes no further minute at the level of the run", () => {
+D-62	After a character's death the	tests/view/end-window-game.test.mjs:408	the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers
+D-62	After a character's death the	tests/view/end-window-game.test.mjs:768	„Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with th
+D-62	After a character's death the	tests/view/end-window-game.test.mjs:813	„Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać", async () => {
+D-62	After a character's death the	tests/view/run-header.test.mjs:248	after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the pac
+D-62	After a character's death the	tests/view/run-header.test.mjs:248	after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the pac
+D-62	After a character's death the	tests/view/status-row.test.mjs:167	after a death the clock stands at the minute of the death, with no cause and no „ (pauza)”, paused or not", ()
+D-190	A character's death takes what	tests/sim/catch-up.test.mjs:611	a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the other
+D-190	A character's death takes what	tests/sim/catch-up.test.mjs:820	with one resurrection for two deaths the catch-up gives it to the character earlier on the list, though it die
+D-190	A character's death takes what	tests/sim/catch-up.test.mjs:840	in the open game the death earlier in time takes the shared resurrection, and of two in one game minute the ch
+D-190	A character's death takes what	tests/sim/catch-up.test.mjs:858	a loop of a character with no practice dies on and on with no loss: the resurrection, the generation and the l
+D-190	A character's death takes what	tests/sim/catch-up.test.mjs:880	a character with no practice in its skills but practice gathered at its loop is guarded by the resurrection, a
+D-190	A character's death takes what	tests/sim/catch-up.test.mjs:902	the practice of the map run that dies is no practice gathered at the loop", () => {
+D-190	A character's death takes what	tests/sim/death.test.mjs:141	a death with a resurrection ready uses it up: ready again 8 hours after the death, and practice, ranks and gen
+D-190	A character's death takes what	tests/sim/death.test.mjs:156	a death with no resurrection ready takes all practice and ranks, the generation grows by one and the moment st
+D-190	A character's death takes what	tests/sim/death.test.mjs:179	the settlement of a later death with no resurrection ready holds the number that death gave", () => {
+D-190	A character's death takes what	tests/sim/death.test.mjs:199	a death that takes everything leaves the name, the archetype, the place in the team and the character behind i
+D-190	A character's death takes what	tests/sim/death.test.mjs:269	a death ends the map run, pays nothing and takes what it carried, a resurrection ready or not, on a solved map
+D-190	A character's death takes what	tests/sim/death.test.mjs:305	the practice a dying character gathered reaches no skill, a resurrection ready or not", () => {
+D-190	A character's death takes what	tests/sim/death.test.mjs:501	„Restart” after a death that took everything reads the character that died", () => {
+D-190	A character's death takes what	tests/sim/death.test.mjs:553	the death of a character with no practice leaves the character, the generation and the team's resurrection as 
+D-190	A character's death takes what	tests/sim/death.test.mjs:574	a character with practice in one skill, or one rank bought, has practice: its death goes by the resurrection",
+D-190	A character's death takes what	tests/sim/death.test.mjs:605	the death of any character with practice uses up the one resurrection, and the next death of any other takes e
+D-190	A character's death takes what	tests/sim/death.test.mjs:643	the death of a character with no practice, settled after one that used the resurrection, leaves the used-up re
+D-190	A character's death takes what	tests/sim/loop.test.mjs:1070	practice taken stays through a death a resurrection covers and goes with a death with none ready", () => {
+D-190	A character's death takes what	tests/sim/loop.test.mjs:1101	a loop of a character other than the first that stops in passing writes that character's own generation", () =
+D-190	A character's death takes what	tests/sim/loop.test.mjs:1286	what a death does to the team is one rule for a manual map run and a loop", () => {
+D-190	A character's death takes what	tests/sim/loop.test.mjs:1328	a character with no practice in its skills has practice when its loop gathered some", () => {
+D-190	A character's death takes what	tests/sim/loop.test.mjs:1349	a death of a character with no practice takes the carried items only: the resurrection, the generation and the
+D-190	A character's death takes what	tests/sim/loop.test.mjs:738	a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried items gon
+D-190	A character's death takes what	tests/sim/loop.test.mjs:781	a death with no resurrection ready takes the character's skills, raises the generation, drops the loop with it
+D-190	A character's death takes what	tests/sim/loop.test.mjs:820	a death at the very moment of readiness uses the resurrection, and a millisecond before it takes everything", 
+D-190	A character's death takes what	tests/view/clock.test.mjs:319	a flush in which a character with no practice dies settles the death as none to pay for: the resurrection stay
+D-190	A character's death takes what	tests/view/clock.test.mjs:537	a reading passes the manual run, then the loops, and hands the store one result with their events together", (
+D-190	A character's death takes what	tests/view/clock.test.mjs:577	in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, earlier th
+D-190	The account has one resurrection,	tests/sim/catch-up.test.mjs:589	a covered death in the catch-up gives the loop its next map run with nothing back from the dead one, and marks
+D-190	The account has one resurrection,	tests/sim/catch-up.test.mjs:611	a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the other
+D-190	The account has one resurrection,	tests/sim/catch-up.test.mjs:820	with one resurrection for two deaths the catch-up gives it to the character earlier on the list, though it die
+D-190	The account has one resurrection,	tests/sim/catch-up.test.mjs:840	in the open game the death earlier in time takes the shared resurrection, and of two in one game minute the ch
+D-190	The account has one resurrection,	tests/sim/catch-up.test.mjs:880	a character with no practice in its skills but practice gathered at its loop is guarded by the resurrection, a
+D-190	The account has one resurrection,	tests/sim/completion.test.mjs:552	the first completion of a map leaves a ready resurrection as it was, ready from the moment it was, and says so
+D-190	The account has one resurrection,	tests/sim/completion.test.mjs:584	a restart after a first completion starts a map run of a solved map, whose completion renews nothing", () => {
+D-190	The account has one resurrection,	tests/sim/data.test.mjs:396	the resurrection renews 480 real minutes after the death that used it", () => {
+D-190	The account has one resurrection,	tests/sim/death.test.mjs:120	a character created while the team's resurrection is used up does not make it ready", () => {
+D-190	The account has one resurrection,	tests/sim/death.test.mjs:141	a death with a resurrection ready uses it up: ready again 8 hours after the death, and practice, ranks and gen
+D-190	The account has one resurrection,	tests/sim/death.test.mjs:574	a character with practice in one skill, or one rank bought, has practice: its death goes by the resurrection",
+D-190	The account has one resurrection,	tests/sim/death.test.mjs:605	the death of any character with practice uses up the one resurrection, and the next death of any other takes e
+D-190	The account has one resurrection,	tests/sim/loop.test.mjs:1101	a loop of a character other than the first that stops in passing writes that character's own generation", () =
+D-190	The account has one resurrection,	tests/sim/loop.test.mjs:1286	what a death does to the team is one rule for a manual map run and a loop", () => {
+D-190	The account has one resurrection,	tests/sim/loop.test.mjs:738	a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried items gon
+D-190	The account has one resurrection,	tests/sim/loop.test.mjs:781	a death with no resurrection ready takes the character's skills, raises the generation, drops the loop with it
+D-190	The account has one resurrection,	tests/sim/loop.test.mjs:820	a death at the very moment of readiness uses the resurrection, and a millisecond before it takes everything", 
+D-190	The account has one resurrection,	tests/view/clock.test.mjs:391	a flush in which the map run solves its map finds a ready resurrection ready and says so", () => {
+D-190	The account has one resurrection,	tests/view/clock.test.mjs:577	in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, earlier th
+D-190	The programs, the chest, the	tests/sim/death.test.mjs:323	the programs, the chest, the Understanding and the solved maps survive every death", () => {
+D-190	The programs, the chest, the	tests/sim/death.test.mjs:442	a death that takes everything leaves the map run on the screen as it was", () => {
+D-190	The programs, the chest, the	tests/sim/death.test.mjs:454	„Restart” after a death that took everything starts from the team: a branch action drops out of the run and st
+D-190	The programs, the chest, the	tests/sim/death.test.mjs:501	„Restart” after a death that took everything reads the character that died", () => {
+D-216	After a character's death, in	tests/view/end-window-game.test.mjs:1044	a reload of the screen of an ended map run opens the window with its longest streak and the line of what the e
+D-216	After a character's death, in	tests/view/end-window-game.test.mjs:1119	a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a fi
+D-216	After a character's death, in	tests/view/end-window-lines.test.mjs:163	after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a missing 
+D-216	After a character's death, in	tests/view/end-window-lines.test.mjs:184	after the death of a character with no practice the cost line says the team's resurrection was not used, in te
+D-216	After a character's death, in	tests/view/end-window.test.mjs:229	the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery wi
+D-216	After a character's death, in	tests/view/end-window.test.mjs:277	a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery
+D-216	After a character's death, in	tests/view/end-window.test.mjs:329	the window shows the line of a death with no practice, and the renewal line after the deposit line of a first 
+D-216	After the first completion of	tests/view/end-window-game.test.mjs:1119	a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a fi
+D-216	After the first completion of	tests/view/end-window-lines.test.mjs:199	the renewal line stands only after a first completion that made a used-up resurrection ready", () => {
+D-216	After the first completion of	tests/view/end-window.test.mjs:329	the window shows the line of a death with no practice, and the renewal line after the deposit line of a first 
+D-217	The card and the screen	tests/view/account-screen.test.mjs:3143	a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when
+D-217	The card and the screen	tests/view/account-screen.test.mjs:4970	a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, a
+D-217	The card and the screen	tests/view/character-screen.test.mjs:118	the resurrection line reads the time left in danger, shows the minutes below an hour, turns ready at the momen
+D-217	The card and the screen	tests/view/headquarters-screen.test.mjs:258	the resurrection line follows the clock's moment in the very same element, in danger until ready", async () =>
+D-217	The card and the screen	tests/view/maps-screen.test.mjs:477	the characters stand in the order of their creation, each with its lines from the top", async () => {
+D-217	The card and the screen	tests/view/maps-screen.test.mjs:529	a resurrection not ready reads the time left in danger at each character and turns ready with the clock", asyn
+D-217	The card and the screen	tests/view/team-lines.test.mjs:109	below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min", () => {
+D-217	The card and the screen	tests/view/team-lines.test.mjs:128	the line turns ready at the moment of readiness itself and not a millisecond before, and a ready line is not d
+D-217	The card and the screen	tests/view/team-lines.test.mjs:141	a character of a new game, whose moment is 0, reads ready at any real moment", () => {
+D-217	The card and the screen	tests/view/team-lines.test.mjs:149	a clock set back lengthens the time left: the moment an hour earlier reads 9 godz. 0 min for 8 hours of renewa
+D-217	The card and the screen	tests/view/team-lines.test.mjs:75	7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min", () => 
+D-217	The card and the screen	tests/view/team-lines.test.mjs:92	hours and minutes split after the rounding up: 60 min is 1 godz. 0 min, 61 min is 1 godz. 1 min, 2 h 1 s is 2 
+D-217	The minutes are rounded up	tests/view/account-screen.test.mjs:3143	a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when
+D-217	The minutes are rounded up	tests/view/account-screen.test.mjs:4970	a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, a
+D-217	The minutes are rounded up	tests/view/team-lines.test.mjs:109	below an hour only minutes stand, and 1 ms or 30 s left still reads one whole minute, never 0 min", () => {
+D-217	The minutes are rounded up	tests/view/team-lines.test.mjs:75	7 h 59 min 30 s reads 8 godz. 0 min, 59 min 30 s reads 1 godz. 0 min, and exactly 59 min reads 59 min", () => 
+D-217	The minutes are rounded up	tests/view/team-lines.test.mjs:92	hours and minutes split after the rounding up: 60 min is 1 godz. 0 min, 61 min is 1 godz. 1 min, 2 h 1 s is 2 
+D-218	The headquarters shows „pokolenie {n}”	tests/view/account-screen.test.mjs:3143	a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when
+D-218	The headquarters shows „pokolenie {n}”	tests/view/headquarters-screen.test.mjs:181	each character stands in the order of creation with its name as a link to its screen Postać, its generation fr
+D-218	The headquarters shows „pokolenie {n}”	tests/view/team-lines.test.mjs:158	the label of a generation is „pokolenie {n}” from 2 up and nothing at 1", () => {
+D-219	The browser's clock counts the	tests/sim/death.test.mjs:224	the renewal does not depend on the pace of the map run", () => {
+D-219	The browser's clock counts the	tests/sim/death.test.mjs:235	a resurrection used up is ready again at its moment after a save and a load, and the next death goes by it", (
+D-219	The browser's clock counts the	tests/view/account-screen.test.mjs:3143	a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when
+D-219	The browser's clock counts the	tests/view/account-screen.test.mjs:4970	a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, a
+D-219	The browser's clock counts the	tests/view/clock.test.mjs:272	a flush in which the character dies hands the store one result: the events of the passing of time with the dea
+D-220	A new character has generation	tests/sim/death.test.mjs:107	a new game's resurrection is ready from the start, at the first moment there is, and a created character bring
+D-220	A new character has generation	tests/sim/death.test.mjs:120	a character created while the team's resurrection is used up does not make it ready", () => {
+D-220	A new character has generation	tests/sim/death.test.mjs:129	a new character is of generation 1, and a created second one too", () => {
+D-220	A new character has generation	tests/sim/team.test.mjs:53	a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
+D-221	A character's death is settled	tests/sim/death.test.mjs:412	game time settles no death: a death stands unsettled after advanceMinutes and passRealTime", () => {
+D-221	A character's death is settled	tests/sim/loop.test.mjs:615	passing the minutes of a death leaves it unsettled: the character, the chest and the loop stand as they did", 
+D-221	A load refuses a saved	tests/sim/loop.test.mjs:836	a death is settled once: the state the end leaves holds no end, a further end changes nothing, and a load of i
+D-221	A load refuses a saved	tests/sim/saved-game.test.mjs:2202	a crafted document of the current version is refused whole as shape", () => {
+D-221	Whoever passes game time gives	tests/view/account-screen.test.mjs:3088	a game minute that ends the map run in a death is saved at once, settled", async () => {
+D-221	Whoever passes game time gives	tests/view/clock.test.mjs:272	a flush in which the character dies hands the store one result: the events of the passing of time with the dea
+D-221	Whoever passes game time gives	tests/view/clock.test.mjs:298	a death is settled against the reading of its flush, not an earlier one", () => {
+D-221	Whoever passes game time gives	tests/view/clock.test.mjs:319	a flush in which a character with no practice dies settles the death as none to pay for: the resurrection stay
+D-221	Whoever passes game time gives	tests/view/clock.test.mjs:407	a death standing on the screen is settled once, at the first reading", () => {
+D-221	Whoever passes game time gives	tests/view/clock.test.mjs:537	a reading passes the manual run, then the loops, and hands the store one result with their events together", (

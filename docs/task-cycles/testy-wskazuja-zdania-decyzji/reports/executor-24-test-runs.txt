@@ -1,0 +1,25 @@
+npm test -- tests/sim/completion.test.mjs exit=0
+npm test -- tests/sim/copy.test.mjs exit=0
+npm test -- tests/sim/data.test.mjs exit=0
+npm test -- tests/sim/discovery.test.mjs exit=0
+npm test -- tests/sim/encounters.test.mjs exit=0
+npm test -- tests/sim/loop.test.mjs exit=0
+npm test -- tests/sim/repertoire.test.mjs exit=0
+npm test -- tests/sim/saved-game.test.mjs exit=0
+npm test -- tests/sim/skills.test.mjs exit=0
+npm test -- tests/view/chronicle.test.mjs exit=0
+npm test -- tests/view/discovery-band.test.mjs exit=0
+npm test -- tests/view/discovery-rule.test.mjs exit=0
+npm test -- tests/view/end-question.test.mjs exit=0
+npm test -- tests/view/end-window-game.test.mjs exit=0
+npm test -- tests/view/end-window-lines.test.mjs exit=0
+npm test -- tests/view/end-window.test.mjs exit=0
+npm test -- tests/view/program-editor.test.mjs exit=0
+npm test -- tests/view/program-panel.test.mjs exit=0
+npm test -- tests/view/run-screen.test.mjs exit=0
+npm test -- tests/view/scene-picture.test.mjs exit=0
+npm test -- tests/view/scene.test.mjs exit=0
+npm test -- tests/view/status-row.test.mjs exit=0
+done
+npm test -- tests/sim/copy-actions.test.mjs exit=0
+npm test -- tests/sim/death.test.mjs exit=0

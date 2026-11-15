@@ -1,0 +1,404 @@
+id	first_line	last_line	paragraphs	sentences	chars	verification	n_cite_files	cite_files
+D-01	3	16	1	2	132	inv	0	
+D-02	17	38	1	1	105	inv	0	
+D-03	39	51	1	1	197	inv	5	src/browser/view/scene.tsx;tests/view/program-panel.test.mjs;tests/view/react-controls.test.mjs;tests/view/rule-editor.test.mjs;tests/view/scene.test.mjs
+D-04	52	164	1	3	878	inv+pair	13	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/view/camp.tsx;src/browser/view/character-entry.ts;src/browser/view/game-view.ts;src/browser/view/run-screen.tsx;src/browser/view/scene-picture.ts;src/browser/view/scene.tsx;src/browser/view/state-store.ts;src/browser/view/world-area.tsx;tests/sim/rules.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs;tests/view/state-store.test.mjs
+D-05	165	186	1	2	221	inv	1	tests/deploy/test_loop2_image_icons.py
+D-06	187	218	1	2	391	inv	0	
+D-07	219	252	1	2	243	pair	4	src/server/account-routes.ts;src/server/database.ts;tests/sim/death.test.mjs;tests/sim/saved-game.test.mjs
+D-08	253	276	1	2	190	inv+pair	0	
+D-09	277	300	1	1	266	inv+pair	0	
+D-10	301	316	1	3	604	inv+pair	1	tests/deploy/test_loop2_tunnel_image.py
+D-11	317	338	1	2	213	inv+pair	0	
+D-12	339	358	1	2	187	pair	0	
+D-13	359	374	1	3	2021	pair	3	tests/deploy/test_loop2_log_storage.py;tests/deploy/test_loop2_tunnel_image.py;tests/invariants/test_loop2_host_sharing.py
+D-14	375	390	1	1	42	pair	1	tests/deploy/test_loop2_image_icons.py
+D-15	391	411	1	3	477	inv+pair	0	
+D-16	412	437	1	2	326	pair	0	
+D-17	438	464	1	3	913	inv+pair	2	tests/deploy/test_account_storage.py;tests/invariants/test_loop2_container_isolation.py
+D-18	465	487	1	2	219	inv+pair	21	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/view/tile-list.ts;tests/invariants/test_action_in_progress.py;tests/invariants/test_exploring_reveal.py;tests/invariants/test_map_run_layout.py;tests/invariants/test_map_run_repeatability.py;tests/invariants/test_minute_span_split.py;tests/invariants/test_move_reach.py;tests/invariants/test_player_map_run_pace.py;tests/invariants/test_program_closed_lists.py;tests/invariants/test_program_rule_pick.py;tests/invariants/test_program_world_reference.py;tests/invariants/test_restart_seed.py;tests/invariants/test_simulation_inputs.py;tests/invariants/test_simulation_isolation.py;tests/invariants/test_simulation_randomness.py;tests/invariants/test_terrain_drawing_numbers.py;tests/invariants/test_walk_feasibility.py;tests/invariants/test_walk_target.py;tests/sim/data.test.mjs;tests/sim/rules.test.mjs
+D-19	488	526	1	2	313	inv+pair	12	src/browser/styles.css;src/browser/view/run-screen.tsx;src/browser/view/terrain-drawing.tsx;src/browser/view/terrain-picture.ts;src/browser/view/tile-list.ts;src/browser/view/tile-table.tsx;src/browser/view/world-area.tsx;tests/invariants/test_terrain_drawing_numbers.py;tests/view/run-screen.test.mjs;tests/view/terrain-picture.test.mjs;tests/view/tile-list.test.mjs;tests/view/world-area.test.mjs
+D-20	527	542	1	2	291	inv	1	tests/sim/program.test.mjs
+D-21	543	582	1	2	309	inv+pair	3	tests/sim/data.test.mjs;tests/sim/time.test.mjs;tests/view/state-store.test.mjs
+D-22	583	628	1	3	605	inv+pair	7	src/browser/sim/layout.ts;src/browser/sim/random.ts;tests/sim/encounters.test.mjs;tests/sim/layout.test.mjs;tests/sim/loop.test.mjs;tests/sim/random.test.mjs;tests/sim/rules.test.mjs
+D-23	629	670	1	4	689	inv+pair	4	tests/invariants/test_action_in_progress.py;tests/invariants/test_simulation_randomness.py;tests/sim/combat.test.mjs;tests/sim/program.test.mjs
+D-24	671	705	1	3	497	inv+pair	2	tests/invariants/test_action_in_progress.py;tests/view/terrain-picture.test.mjs
+D-25	706	734	1	2	340	inv+pair	3	tests/invariants/test_action_in_progress.py;tests/invariants/test_simulation_randomness.py;tests/sim/gather.test.mjs
+D-26	735	769	1	4	417	inv+pair	3	tests/invariants/test_simulation_randomness.py;tests/sim/campfire.test.mjs;tests/sim/conditions.test.mjs
+D-27	770	817	1	3	572	inv+pair	8	src/browser/styles.css;src/browser/view/credits-section.tsx;src/browser/view/headquarters.tsx;tests/deploy/test_loop2_image_icons.py;tests/invariants/test_icon_credits.py;tests/view/account-screen.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/icons.test.mjs
+D-28	818	832	1	3	731	pair	0	
+D-29	833	847	1	3	1156	inv+pair	3	tests/quality/eslint-rule-sets.mjs;tests/quality/test_quality_invariants.py;tests/quality/test_source_tool_scope.py
+D-30	848	860	1	4	814	inv	1	ruff.toml
+D-31	861	875	1	4	607	inv+pair	1	tests/quality/test_quality_invariants.py
+D-32	876	890	1	3	935	inv+pair	2	tests/quality/test_quality_invariants.py;tests/quality/test_source_tool_scope.py
+D-33	891	903	1	3	1011	inv	1	scripts/audit_dependencies.py
+D-34	904	918	1	2	335	pair	0	
+D-35	919	933	1	2	340	pair	0	
+D-36	934	948	1	2	419	pair	9	src/browser/view/account-card.tsx;src/browser/view/character-screen.tsx;src/browser/view/headquarters.tsx;src/browser/view/maps-screen.tsx;src/browser/view/menu-bar.tsx;src/browser/view/program-list.tsx;src/browser/view/program-panel.tsx;tests/view/headquarters-screen.test.mjs;tests/view/program-panel.test.mjs
+D-37	949	963	1	2	356	pair	0	
+D-38	964	978	1	2	238	inv+pair	0	
+D-39	979	993	1	7	1518	inv+pair	21	src/browser/styles.css;src/browser/view/body-row.ts;src/browser/view/chronicle-entries.ts;src/browser/view/discovery-band.tsx;src/browser/view/email-confirmation.ts;src/browser/view/email-status.ts;src/browser/view/end-question.tsx;src/browser/view/end-window-lines.ts;src/browser/view/end-window.tsx;src/browser/view/previous-save-lines.ts;src/browser/view/world-area.tsx;tests/invariants/test_browser_view_token_values.py;tests/view/body-row.test.mjs;tests/view/email-confirmation.test.mjs;tests/view/email-status.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/program-list.test.mjs;tests/view/react-controls.test.mjs;tests/view/run-header.test.mjs;tests/view/status-row.test.mjs
+D-40	994	1008	1	5	1522	inv+pair	10	src/browser/styles.css;src/browser/view/chronicle-entries.ts;src/browser/view/email-status.ts;src/browser/view/previous-save-lines.ts;src/browser/view/status-row.ts;tests/invariants/test_browser_view_token_values.py;tests/view/run-header.test.mjs;tests/view/scene.test.mjs;tests/view/status-row.test.mjs;tests/view/world-area.test.mjs
+D-41	1009	1023	1	2	592	inv+pair	6	src/browser/styles.css;src/browser/view/terrain-drawing.tsx;src/browser/view/terrain-picture.ts;tests/invariants/test_browser_view_token_values.py;tests/view/terrain-picture.test.mjs;tests/view/world-area.test.mjs
+D-42	1024	1038	1	3	827	inv+pair	2	src/browser/tokens.css;tests/view/account-screen.test.mjs
+D-43	1039	1053	1	2	1153	inv+pair	9	src/browser/kitchen-sink/kitchen-sink.css;src/browser/styles.css;src/browser/view/camp.tsx;src/browser/view/controls/pick-cell.ts;src/browser/view/scene.tsx;src/browser/view/terrain-drawing.tsx;tests/invariants/test_browser_view_token_values.py;tests/view/scene.test.mjs;tests/view/world-area.test.mjs
+D-44	1054	1068	1	3	1805	pair	29	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/account-card.tsx;src/browser/view/camp.tsx;src/browser/view/controls/button.ts;src/browser/view/controls/number-field.ts;src/browser/view/controls/react-button.tsx;src/browser/view/controls/react-number-field.tsx;src/browser/view/controls/react-select-list.tsx;src/browser/view/controls/react-text-field.tsx;src/browser/view/controls/select-list.ts;src/browser/view/controls/text-field.ts;src/browser/view/discovery-band.tsx;src/browser/view/end-question.tsx;src/browser/view/end-window.tsx;src/browser/view/program-list.tsx;src/browser/view/program-panel.tsx;src/browser/view/run-header.tsx;src/browser/view/scene.tsx;tests/view/account-screen.test.mjs;tests/view/discovery-band.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/menu-bar.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs;tests/view/react-controls.test.mjs;tests/view/run-header.test.mjs
+D-45	1069	1083	1	2	462	inv+pair	4	scripts/kitchen-sink.mjs;src/browser/kitchen-sink/kitchen-sink.css;src/browser/kitchen-sink/kitchen-sink.ts;tests/invariants/test_application_build_output.py
+D-46	1084	1098	1	2	460	inv+pair	4	src/browser/styles.css;src/browser/view/run-header.tsx;src/browser/view/tabs-area.tsx;tests/view/run-header.test.mjs
+D-47	1099	1113	1	2	457	inv+pair	4	src/browser/kitchen-sink/kitchen-sink.css;src/browser/styles.css;src/browser/view/credits-section.tsx;tests/invariants/test_browser_view_focus_outline.py
+D-48	1114	1128	1	1	282	pair	0	
+D-49	1129	1143	1	3	503	pair	1	tests/invariants/loop2_invariant_support.py
+D-50	1144	1166	1	2	221	inv+pair	0	
+D-51	1167	1186	1	1	144	pair	2	src/browser/view/headquarters.tsx;tests/view/headquarters-screen.test.mjs
+D-52	1187	1214	1	1	210	pair	0	
+D-53	1215	1246	1	3	325	pair	9	src/browser/view/end-window-lines.ts;src/browser/view/headquarters.tsx;src/browser/view/maps-entry.ts;src/browser/view/run-entry.ts;src/browser/view/run-screen.tsx;tests/sim/body.test.mjs;tests/view/account-screen.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs
+D-54	1247	1268	1	1	76	pair	6	src/browser/sim/data/scene.ts;src/browser/view/camp-picture.ts;src/browser/view/headquarters.tsx;tests/view/camp-picture.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs
+D-55	1269	1292	1	2	133	pair	3	src/browser/sim/saved-game.ts;tests/sim/saved-game.test.mjs;tests/view/maps-screen.test.mjs
+D-56	1293	1321	1	2	307	pair	3	src/browser/sim/saved-game.ts;src/browser/view/character-entry.ts;src/browser/view/character-screen.tsx
+D-57	1322	1336	1	1	85	pair	3	src/browser/view/body-row.ts;tests/sim/conditions.test.mjs;tests/view/body-row.test.mjs
+D-58	1337	1351	1	1	218	pair	0	
+D-59	1352	1366	1	1	140	pair	1	src/browser/sim/run.ts
+D-60	1367	1381	1	2	469	pair	0	
+D-61	1382	1396	1	3	419	pair	2	tests/sim/death.test.mjs;tests/sim/trip.test.mjs
+D-62	1397	1411	1	2	523	pair	7	src/browser/view/run-entry.ts;src/browser/view/run-header.tsx;src/browser/view/status-row.ts;tests/sim/body.test.mjs;tests/view/end-window-game.test.mjs;tests/view/run-header.test.mjs;tests/view/status-row.test.mjs
+D-63	1412	1441	1	4	494	inv+pair	4	src/browser/sim/program.ts;tests/sim/acceptance.test.mjs;tests/sim/campfire.test.mjs;tests/sim/encounters.test.mjs
+D-64	1442	1456	1	2	205	pair	3	tests/sim/gather.test.mjs;tests/sim/traits.test.mjs;tests/view/body-row.test.mjs
+D-65	1457	1471	1	1	240	pair	0	
+D-66	1472	1486	1	1	115	pair	5	src/browser/sim/run.ts;src/browser/view/scene-picture.ts;tests/sim/gather.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-67	1487	1501	1	1	294	pair	1	tests/invariants/test_walk_feasibility.py
+D-68	1502	1516	1	1	80	pair	1	tests/sim/campfire.test.mjs
+D-69	1517	1531	1	1	245	pair	2	src/browser/sim/run.ts;tests/sim/campfire.test.mjs
+D-70	1532	1546	1	1	212	pair	9	src/browser/styles.css;src/browser/view/terrain-drawing.tsx;src/browser/view/terrain-picture.ts;src/browser/view/tile-list.ts;src/browser/view/tile-table.tsx;src/browser/view/world-area.tsx;tests/view/terrain-picture.test.mjs;tests/view/tile-list.test.mjs;tests/view/world-area.test.mjs
+D-71	1547	1561	1	4	1542	inv+pair	11	src/browser/sim/game.ts;src/browser/sim/run.ts;src/browser/sim/world.ts;tests/invariants/test_walk_feasibility.py;tests/sim/campfire.test.mjs;tests/sim/completion.test.mjs;tests/sim/discovery.test.mjs;tests/sim/encounters.test.mjs;tests/sim/gather.test.mjs;tests/sim/run-record.test.mjs;tests/view/scene.test.mjs
+D-72	1562	1576	1	1	192	pair	3	src/browser/view/terrain-picture.ts;tests/sim/campfire.test.mjs;tests/view/tile-list.test.mjs
+D-73	1577	1589	1	2	290	none	6	tests/view/chronicle-entries.test.mjs;tests/view/chronicle.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/now-lines.test.mjs;tests/view/tabs-area.test.mjs
+D-74	1590	1602	1	2	249	none	0	
+D-75	1603	1615	1	2	297	none	0	
+D-76	1616	1628	1	3	584	none	0	
+D-77	1629	1643	1	3	549	inv+pair	2	scripts/test.py;tests/quality/test_test_gate.py
+D-78	1644	1656	1	2	322	none	0	
+D-79	1657	1669	1	3	234	none	0	
+D-81	1670	1682	1	3	363	none	0	
+D-82	1683	1697	1	2	634	pair	0	
+D-83	1698	1710	1	2	270	inv	2	tests/quality/test_node_test_selection.py;tests/quality/test_source_tool_scope.py
+D-84	1711	1723	1	3	632	none	3	tests/account-backup.test.mjs;tests/account-database-check.test.mjs;tests/deploy/backup_script_support.py
+D-85	1724	1736	1	3	656	none	0	
+D-86	1737	1749	1	2	240	inv	0	
+D-87	1750	1762	1	2	343	none	0	
+D-88	1763	1775	1	2	416	none	28	tests/view/account-screen.test.mjs;tests/view/camp-picture.test.mjs;tests/view/character-screen.test.mjs;tests/view/chronicle-game.test.mjs;tests/view/discovery-band.test.mjs;tests/view/email-confirmation.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window.test.mjs;tests/view/game-saver.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/menu-bar.test.mjs;tests/view/password-reset.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs;tests/view/rule-signs.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen-state.test.mjs;tests/view/run-screen.test.mjs;tests/view/scene.test.mjs;tests/view/screen-registry.test.mjs;tests/view/state-store.test.mjs;tests/view/tabs-area.test.mjs;tests/view/uncaught-failure.test.mjs;tests/view/world-area.test.mjs
+D-89	1776	1788	1	1	232	none	0	
+D-90	1789	1807	1	1	170	pair	3	tests/invariants/test_program_world_reference.py;tests/sim/program.test.mjs;tests/view/program-editor.test.mjs
+D-91	1808	1825	1	1	89	pair	4	src/browser/sim/programs.ts;tests/sim/copy.test.mjs;tests/sim/flow.test.mjs;tests/sim/program.test.mjs
+D-92	1826	1847	1	1	219	pair	1	tests/sim/program-counts.test.mjs
+D-93	1848	1912	1	3	1329	inv+pair	15	src/browser/styles.css;src/browser/view/end-window-lines.ts;src/browser/view/program-editor.ts;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;src/browser/view/rule-list.tsx;tests/sim/completion.test.mjs;tests/sim/copy-actions.test.mjs;tests/sim/copy.test.mjs;tests/sim/program-counts.test.mjs;tests/view/account-screen.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/program-editor.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs
+D-94	1913	1927	1	3	344	inv+pair	0	
+D-95	1928	1942	1	1	213	pair	0	
+D-96	1943	1957	1	7	2152	inv+pair	8	src/browser/styles.css;src/browser/view/account-card.tsx;src/browser/view/app.ts;src/browser/view/game-view.ts;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/end-window-game.test.mjs;tests/view/uncaught-failure.test.mjs
+D-97	1958	1972	1	5	1187	pair	13	src/browser/styles.css;src/browser/view/app.ts;src/browser/view/game-saver.ts;src/browser/view/game-view.ts;src/browser/view/menu-bar.tsx;src/browser/view/state-store.ts;tests/http.test.mjs;tests/view/account-screen.test.mjs;tests/view/clock.test.mjs;tests/view/game-saver.test.mjs;tests/view/menu-bar.test.mjs;tests/view/previous-save.test.mjs;tests/view/uncaught-failure.test.mjs
+D-98	1973	1987	1	2	532	pair	3	src/server/account-policy.ts;tests/http.test.mjs;tests/view/account-screen.test.mjs
+D-99	1988	2002	1	2	285	pair	7	src/server/account-block.ts;src/server/account-mail.ts;src/server/account-previous-save.ts;src/server/configuration.ts;tests/account-storage.test.mjs;tests/http.test.mjs;tests/view/account-screen.test.mjs
+D-100	2003	2017	1	2	542	pair	2	src/browser/kitchen-sink/kitchen-sink.ts;tests/http.test.mjs
+D-101	2018	2030	1	3	477	inv	2	tests/http.test.mjs;tests/transport.test.mjs
+D-102	2031	2045	1	4	831	inv+pair	3	src/browser/kitchen-sink/kitchen-sink.ts;src/server/account-policy.ts;tests/http.test.mjs
+D-103	2046	2060	1	3	613	inv+pair	0	
+D-104	2061	2073	1	3	886	inv	7	src/server/account-routes.ts;src/server/database.ts;src/server/transport.ts;tests/account-storage.test.mjs;tests/http.test.mjs;tests/transport.test.mjs;tests/view/email-confirmation.test.mjs
+D-105	2074	2088	1	2	410	inv+pair	5	src/server/account-policy.ts;src/server/account-routes.ts;src/server/database.ts;tests/account-storage.test.mjs;tests/http.test.mjs
+D-106	2089	2101	1	2	251	inv	0	
+D-107	2102	2114	1	2	230	inv	0	
+D-108	2115	2127	1	2	180	inv	0	
+D-109	2128	2140	1	3	1694	inv	2	src/server/account-routes.ts;tests/http.test.mjs
+D-110	2141	2155	1	3	723	inv+pair	3	scripts/local-start.mjs;tests/deploy/test_account_storage.py;tests/http.test.mjs
+D-111	2156	2168	1	3	1807	inv	4	tests/http.test.mjs;tests/invariants/test_account_server_default_address.py;tests/invariants/test_loop2_host_sharing.py;tests/startup.test.mjs
+D-113	2169	2181	1	2	336	inv	1	tests/password-measurement.test.mjs
+D-112	2182	2196	1	3	3985	inv+pair	7	src/server/account-backup.ts;src/server/account-routes.ts;src/server/database.ts;src/server/session-store.ts;tests/account-backup.test.mjs;tests/account-storage.test.mjs;tests/deploy/test_account_storage.py
+D-114	2197	2211	1	2	318	pair	0	
+D-115	2212	2226	1	2	356	inv+pair	1	src/server/session-store.ts
+D-116	2227	2241	1	2	438	inv+pair	0	
+D-117	2242	2256	1	2	503	inv+pair	0	
+D-118	2257	2295	1	2	334	inv+pair	8	src/browser/sim/saved-game.ts;src/browser/sim/understanding.ts;tests/sim/data.test.mjs;tests/sim/discovery.test.mjs;tests/sim/encounters.test.mjs;tests/sim/repertoire.test.mjs;tests/sim/saved-game.test.mjs;tests/view/program-editor.test.mjs
+D-119	2296	2321	1	3	497	pair	4	tests/sim/copy.test.mjs;tests/sim/encounters.test.mjs;tests/sim/loop.test.mjs;tests/sim/repertoire.test.mjs
+D-120	2322	2344	1	3	429	pair	2	tests/sim/data.test.mjs;tests/sim/repertoire.test.mjs
+D-121	2345	2386	1	3	857	inv+pair	5	tests/invariants/test_minute_span_split.py;tests/invariants/test_player_map_run_pace.py;tests/sim/data.test.mjs;tests/sim/discovery.test.mjs;tests/view/program-editor.test.mjs
+D-122	2387	2459	1	4	934	inv+pair	23	src/browser/styles.css;src/browser/view/discovery-band-text.ts;src/browser/view/discovery-band.tsx;src/browser/view/end-question.tsx;src/browser/view/end-window.tsx;src/browser/view/run-header.tsx;src/browser/view/run-screen.tsx;src/browser/view/scene-picture.ts;src/browser/view/status-row.ts;tests/sim/completion.test.mjs;tests/sim/discovery.test.mjs;tests/view/account-screen.test.mjs;tests/view/chronicle.test.mjs;tests/view/discovery-band.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs;tests/view/status-row.test.mjs
+D-123	2460	2493	1	3	680	pair	6	tests/invariants/test_player_map_run_pace.py;tests/sim/copy.test.mjs;tests/sim/discovery.test.mjs;tests/view/chronicle.test.mjs;tests/view/discovery-band.test.mjs;tests/view/discovery-rule.test.mjs
+D-124	2494	2516	1	1	198	pair	5	src/browser/view/discovery-rule.ts;tests/view/discovery-rule.test.mjs;tests/view/program-editor.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs
+D-125	2517	2539	1	2	336	pair	4	src/browser/view/body-row.ts;src/browser/view/terrain-drawing.tsx;src/browser/view/tile-table.tsx;tests/view/world-area.test.mjs
+D-126	2540	2564	1	1	277	inv+pair	2	tests/sim/copy.test.mjs;tests/sim/repertoire.test.mjs
+D-127	2565	2589	1	1	266	inv+pair	1	tests/sim/repertoire.test.mjs
+D-128	2590	2624	1	2	579	pair	0	
+D-129	2625	2649	1	1	199	pair	1	tests/sim/flow.test.mjs
+D-130	2650	2676	1	1	204	pair	4	src/browser/view/run-header.tsx;src/browser/view/tabs-area.tsx;tests/view/run-header.test.mjs;tests/view/tabs-area.test.mjs
+D-131	2677	2711	1	3	956	inv+pair	7	src/browser/view/program-panel.tsx;tests/invariants/test_streak_program_change.py;tests/sim/copy-actions.test.mjs;tests/view/discovery-rule.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs;tests/view/run-screen.test.mjs
+D-132	2712	2771	1	3	903	pair	14	src/browser/styles.css;src/browser/view/end-window-lines.ts;src/browser/view/end-window.tsx;src/browser/view/run-entry.ts;src/browser/view/run-header.tsx;src/browser/view/status-row.ts;tests/sim/completion.test.mjs;tests/sim/streak.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/run-header.test.mjs;tests/view/status-row.test.mjs;tests/view/world-area.test.mjs
+D-133	2772	2812	1	4	717	pair	14	src/browser/sim/data/maps.ts;src/browser/sim/run.ts;src/browser/styles.css;src/browser/view/end-window.tsx;src/browser/view/run-header.tsx;src/browser/view/status-row.ts;tests/invariants/test_minute_span_split.py;tests/invariants/test_player_map_run_pace.py;tests/sim/completion.test.mjs;tests/sim/streak.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/run-header.test.mjs;tests/view/status-row.test.mjs
+D-134	2813	2831	1	1	165	pair	3	src/browser/styles.css;tests/sim/completion.test.mjs;tests/view/maps-screen.test.mjs
+D-135	2832	2848	1	1	252	pair	11	src/browser/view/end-window-lines.ts;src/browser/view/end-window.tsx;src/browser/view/run-header.tsx;src/browser/view/status-row.ts;tests/sim/run-record.test.mjs;tests/sim/saved-game.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/run-header.test.mjs;tests/view/status-row.test.mjs
+D-136	2849	2880	1	3	632	inv+pair	5	tests/invariants/test_minute_span_split.py;tests/invariants/test_player_map_run_pace.py;tests/sim/completion.test.mjs;tests/sim/copy-actions.test.mjs;tests/view/end-window-lines.test.mjs
+D-137	2881	2900	1	3	634	inv+pair	4	src/server/account-routes.ts;src/server/database.ts;tests/account-storage.test.mjs;tests/http.test.mjs
+D-138	2901	2913	1	2	438	inv	0	
+D-139	2914	2928	1	3	433	inv+pair	2	tests/account-api.test.mjs;tests/http.test.mjs
+D-140	2929	2960	1	3	449	inv+pair	1	tests/sim/encounters.test.mjs
+D-141	2961	2975	1	3	585	pair	0	
+D-142	2976	2990	1	3	841	pair	4	src/browser/sim/map-card.ts;src/browser/view/map-lines.ts;tests/sim/map-card.test.mjs;tests/view/map-lines.test.mjs
+D-143	2991	3005	1	2	430	pair	1	tests/sim/encounters.test.mjs
+D-144	3006	3020	1	3	716	pair	2	tests/sim/combat.test.mjs;tests/sim/encounters.test.mjs
+D-145	3021	3035	1	1	123	pair	3	src/browser/sim/program.ts;src/browser/view/program-editor.ts;tests/sim/campfire.test.mjs
+D-146	3036	3050	1	4	589	pair	0	
+D-147	3051	3065	1	5	1131	inv+pair	14	src/browser/sim/game.ts;src/browser/view/chronicle-entries.ts;src/browser/view/chronicle.ts;src/browser/view/end-window.tsx;src/browser/view/tabs-area.tsx;src/browser/view/world-area.tsx;tests/sim/encounters.test.mjs;tests/sim/rule-signs.test.mjs;tests/view/chronicle-game.test.mjs;tests/view/chronicle.test.mjs;tests/view/end-window.test.mjs;tests/view/run-screen.test.mjs;tests/view/tabs-area.test.mjs;tests/view/world-area.test.mjs
+D-148	3066	3080	1	1	117	pair	0	
+D-149	3081	3095	1	2	328	pair	7	src/browser/view/maps-screen.tsx;src/browser/view/screen-address.ts;tests/invariants/test_map_run_tiles.py;tests/sim/saved-game.test.mjs;tests/sim/understanding-fixture.mjs;tests/view/end-window-lines.test.mjs;tests/view/maps-screen.test.mjs
+D-150	3096	3110	1	1	172	pair	0	
+D-151	3111	3125	1	3	617	pair	0	
+D-152	3126	3138	1	3	329	inv	0	
+D-153	3139	3153	1	2	393	inv+pair	0	
+D-154	3154	3166	1	2	225	inv	0	
+D-155	3167	3181	1	2	484	inv+pair	5	src/server/account-policy.ts;src/server/account-routes.ts;src/server/database.ts;tests/account-storage.test.mjs;tests/http.test.mjs
+D-156	3182	3196	1	3	980	inv+pair	8	src/browser/view/email-confirmation.ts;src/browser/view/game-view.ts;src/browser/view/screen-address.ts;src/server/account-policy.ts;src/server/account-routes.ts;src/server/database.ts;tests/http.test.mjs;tests/view/account-screen.test.mjs
+D-157	3197	3211	1	6	913	pair	9	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/app.ts;src/browser/view/email-status.ts;src/browser/view/menu-bar.tsx;tests/deploy/test_account_storage.py;tests/view/account-screen.test.mjs;tests/view/email-status.test.mjs;tests/view/menu-bar.test.mjs
+D-158	3212	3226	1	3	545	pair	3	src/server/account-mail.ts;src/server/account-routes.ts;tests/account-mail.test.mjs
+D-159	3227	3241	1	1	191	pair	2	src/server/account-policy.ts;src/server/database.ts
+D-160	3242	3254	1	2	532	inv	1	src/server/account-routes.ts
+D-161	3255	3267	1	2	391	inv	3	src/server/account-policy.ts;src/server/account-routes.ts;src/server/database.ts
+D-162	3268	3282	1	2	427	pair	0	
+D-163	3283	3297	1	3	492	pair	2	tests/http.test.mjs;tests/transport.test.mjs
+D-164	3298	3312	1	3	1101	inv+pair	11	src/browser/sim/types.ts;tests/invariants/program_fixture.py;tests/invariants/test_program_closed_lists.py;tests/invariants/test_program_rule_pick.py;tests/invariants/test_program_world_reference.py;tests/invariants/test_simulation_inputs.py;tests/invariants/test_streak_program_change.py;tests/sim/copy-actions.test.mjs;tests/sim/copy.test.mjs;tests/sim/flow.test.mjs;tests/sim/program-list.test.mjs
+D-165	3313	3327	1	2	543	pair	10	src/browser/sim/programs.ts;src/browser/sim/saved-game.ts;src/browser/sim/types.ts;src/browser/view/program-list.tsx;src/browser/view/program-panel.tsx;tests/sim/copy.test.mjs;tests/sim/program-list.test.mjs;tests/sim/saved-game.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs
+D-166	3328	3347	1	4	591	pair	8	src/browser/view/program-list.tsx;src/browser/view/program-panel-acts.ts;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;tests/view/account-screen.test.mjs;tests/view/program-list.test.mjs;tests/view/program-panel.test.mjs;tests/view/run-screen.test.mjs
+D-167	3348	3362	1	3	418	pair	6	src/browser/view/program-list.tsx;src/browser/view/programs-entry.ts;tests/view/account-screen.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs;tests/view/program-panel.test.mjs
+D-168	3363	3377	1	3	377	pair	5	src/browser/sim/saved-game.ts;tests/sim/program-list.test.mjs;tests/view/account-screen.test.mjs;tests/view/end-question.test.mjs;tests/view/program-panel.test.mjs
+D-169	3378	3392	1	2	612	pair	8	src/browser/sim/programs.ts;src/browser/view/program-list.tsx;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;tests/sim/program-list.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs;tests/view/program-panel.test.mjs
+D-170	3393	3407	1	4	531	pair	8	src/browser/sim/game.ts;src/browser/sim/programs.ts;src/browser/sim/types.ts;src/browser/view/team-lines.ts;tests/sim/copy.test.mjs;tests/sim/program-list.test.mjs;tests/view/account-screen.test.mjs;tests/view/maps-screen.test.mjs
+D-171	3408	3422	1	4	700	inv+pair	4	src/browser/view/run-entry.ts;tests/sim/copy-actions.test.mjs;tests/view/end-question.test.mjs;tests/view/program-panel.test.mjs
+D-172	3423	3437	1	1	351	pair	5	src/browser/styles.css;src/browser/view/end-question.tsx;src/browser/view/run-entry.ts;tests/view/end-question.test.mjs;tests/view/program-panel.test.mjs
+D-173	3438	3452	1	6	1787	pair	16	src/browser/styles.css;src/browser/view/end-question.tsx;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;src/browser/view/run-entry.ts;src/browser/view/run-screen-state.ts;src/browser/view/run-screen.tsx;tests/sim/flow.test.mjs;tests/view/account-screen.test.mjs;tests/view/chronicle.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/program-panel.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen-state.test.mjs;tests/view/run-screen.test.mjs
+D-174	3453	3467	1	2	409	pair	4	src/browser/view/program-panel.tsx;tests/sim/copy-actions.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-signs.test.mjs
+D-175	3468	3487	1	2	234	pair	2	src/browser/sim/program.ts;tests/sim/campfire.test.mjs
+D-176	3488	3510	1	1	103	pair	2	tests/sim/body.test.mjs;tests/sim/campfire.test.mjs
+D-177	3511	3540	1	1	280	inv+pair	3	tests/sim/acceptance.test.mjs;tests/sim/campfire.test.mjs;tests/view/program-editor.test.mjs
+D-178	3541	3564	1	1	184	pair	3	src/browser/view/body-row.ts;tests/view/body-row.test.mjs;tests/view/world-area.test.mjs
+D-179	3565	3579	1	5	779	inv+pair	4	src/browser/sim/saved-game.ts;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/sim/trip.test.mjs
+D-180	3580	3594	1	3	330	pair	6	src/browser/view/program-panel.tsx;src/browser/view/trip-plan.tsx;tests/view/maps-screen.test.mjs;tests/view/program-panel.test.mjs;tests/view/trip-plan.test.mjs;tests/view/trip.test.mjs
+D-181	3595	3607	1	2	518	none	9	src/browser/sim/programs.ts;src/browser/sim/saved-game.ts;src/browser/view/trip-editor.ts;src/browser/view/trip-plan.tsx;tests/sim/saved-game.test.mjs;tests/sim/trip.test.mjs;tests/view/react-controls.test.mjs;tests/view/trip-plan.test.mjs;tests/view/trip.test.mjs
+D-182	3608	3620	1	1	81	none	0	
+D-183	3621	3633	1	2	258	inv	1	tests/sim/loop.test.mjs
+D-184	3634	3646	1	1	176	none	3	src/browser/view/headquarters.tsx;tests/view/camp-picture.test.mjs;tests/view/headquarters-screen.test.mjs
+D-185	3647	3659	1	2	223	none	8	src/browser/view/end-window-lines.ts;src/browser/view/end-window.tsx;src/browser/view/world-area.tsx;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/trip.test.mjs;tests/view/world-area.test.mjs
+D-186	3660	3672	1	4	428	none	2	src/browser/view/world-area.tsx;tests/view/world-area.test.mjs
+D-187	3673	3685	1	2	324	inv	1	tests/sim/trip.test.mjs
+D-188	3686	3698	1	3	457	none	6	src/browser/styles.css;src/browser/view/end-window.tsx;src/browser/view/run-header.tsx;tests/view/end-window.test.mjs;tests/view/maps-screen.test.mjs;tests/view/run-header.test.mjs
+D-189	3699	3713	1	4	949	inv+pair	15	src/browser/sim/game.ts;src/browser/sim/loop.ts;src/browser/sim/saved-game.ts;src/browser/sim/trip.ts;src/browser/sim/types.ts;src/browser/view/headquarters.tsx;src/browser/view/trip-lines.ts;tests/sim/catch-up.test.mjs;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/sim/trip.test.mjs;tests/view/account-screen.test.mjs;tests/view/away-report.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/trip.test.mjs
+D-190	3714	3728	1	4	1282	inv+pair	15	src/browser/sim/loop.ts;tests/sim/catch-up.test.mjs;tests/sim/completion.test.mjs;tests/sim/data.test.mjs;tests/sim/death.test.mjs;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/sim/trip.test.mjs;tests/view/clock.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/maps-screen.test.mjs;tests/view/trip.test.mjs;tests/view/world-area.test.mjs
+D-191	3729	3743	1	3	486	pair	3	src/browser/sim/saved-game.ts;tests/sim/saved-game.test.mjs;tests/sim/skills.test.mjs
+D-192	3744	3758	1	2	204	pair	0	
+D-193	3759	3773	1	2	368	pair	3	src/browser/sim/saved-game.ts;tests/sim/saved-game.test.mjs;tests/sim/skills.test.mjs
+D-194	3774	3788	1	2	387	pair	2	tests/sim/death.test.mjs;tests/sim/skills.test.mjs
+D-195	3789	3803	1	3	543	pair	5	tests/sim/data.test.mjs;tests/sim/discovery.test.mjs;tests/sim/saved-game.test.mjs;tests/sim/skills.test.mjs;tests/view/status-row.test.mjs
+D-196	3804	3818	1	2	460	pair	1	tests/view/program-panel.test.mjs
+D-197	3819	3833	1	3	328	pair	1	tests/sim/skills.test.mjs
+D-198	3834	3848	1	2	259	pair	1	tests/sim/skills.test.mjs
+D-199	3849	3863	1	3	757	pair	5	src/browser/styles.css;src/browser/view/character-screen.tsx;tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs;tests/view/character-skills.test.mjs
+D-200	3864	3878	1	2	429	pair	6	src/browser/view/character-screen.tsx;tests/sim/death.test.mjs;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs
+D-201	3879	3893	1	3	321	pair	3	src/browser/view/world-area.tsx;tests/view/character-skills.test.mjs;tests/view/world-area.test.mjs
+D-202	3894	3915	1	3	212	inv	0	
+D-203	3916	3932	1	2	181	inv	1	tests/view/account-screen.test.mjs
+D-204	3933	3965	1	2	468	inv+pair	3	tests/account-api.test.mjs;tests/http.test.mjs;tests/sim/saved-game.test.mjs
+D-205	3966	3991	1	1	201	inv	0	
+D-206	3992	4035	1	3	568	inv+pair	5	tests/sim/previous-programs.test.mjs;tests/sim/program-list.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/previous-save.test.mjs
+D-207	4036	4099	1	3	1168	pair	14	src/browser/view/app.ts;src/browser/view/game-saver.ts;src/browser/view/game-view.ts;src/browser/view/maps-entry.ts;src/browser/view/programs-entry.ts;src/browser/view/run-entry.ts;src/browser/view/state-store.ts;tests/account-api.test.mjs;tests/view/account-screen.test.mjs;tests/view/clock.test.mjs;tests/view/game-saver.test.mjs;tests/view/previous-save.test.mjs;tests/view/state-store.test.mjs;tests/view/uncaught-failure.test.mjs
+D-208	4100	4119	1	6	922	pair	9	src/browser/styles.css;src/browser/view/app.ts;src/browser/view/game-saver.ts;src/browser/view/game-view.ts;src/browser/view/state-store.ts;tests/view/account-screen.test.mjs;tests/view/game-saver.test.mjs;tests/view/previous-save.test.mjs;tests/view/uncaught-failure.test.mjs
+D-209	4120	4163	1	3	642	pair	12	src/browser/view/app.ts;src/browser/view/game-saver.ts;src/browser/view/game-view.ts;src/browser/view/state-store.ts;src/server/account-routes.ts;src/server/database.ts;tests/account-api.test.mjs;tests/account-storage.test.mjs;tests/http.test.mjs;tests/view/account-screen.test.mjs;tests/view/game-saver.test.mjs;tests/view/previous-save.test.mjs
+D-210	4164	4199	1	4	650	inv+pair	8	src/browser/view/game-saver.ts;src/server/account-routes.ts;src/server/database.ts;tests/account-api.test.mjs;tests/account-storage.test.mjs;tests/http.test.mjs;tests/view/account-screen.test.mjs;tests/view/game-saver.test.mjs
+D-211	4200	4235	1	3	742	inv+pair	10	src/browser/view/app.ts;src/browser/view/game-saver.ts;src/browser/view/game-view.ts;src/browser/view/programs-entry.ts;src/browser/view/state-store.ts;tests/view/account-screen.test.mjs;tests/view/game-saver.test.mjs;tests/view/previous-save.test.mjs;tests/view/state-store.test.mjs;tests/view/uncaught-failure.test.mjs
+D-212	4236	4292	1	2	677	inv+pair	9	src/browser/sim/saved-game.ts;src/browser/view/game-view.ts;src/browser/view/program-panel.tsx;tests/sim/run-record.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/program-panel.test.mjs
+D-213	4293	4332	1	4	816	pair	6	src/browser/sim/saved-game.ts;src/browser/view/app.ts;tests/sim/previous-programs.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/uncaught-failure.test.mjs
+D-214	4333	4350	1	3	301	inv	4	src/browser/sim/trip.ts;tests/sim/saved-game.test.mjs;tests/sim/skills.test.mjs;tests/sim/trip.test.mjs
+D-215	4351	4366	1	2	301	none	3	src/browser/view/world-area.tsx;tests/view/trip.test.mjs;tests/view/world-area.test.mjs
+D-216	4367	4409	1	8	1155	none	9	src/browser/view/end-window.tsx;src/browser/view/world-area.tsx;tests/sim/death.test.mjs;tests/sim/saved-game.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/trip.test.mjs;tests/view/world-area.test.mjs
+D-217	4410	4422	1	3	487	none	11	src/browser/styles.css;src/browser/view/character-screen.tsx;src/browser/view/game-view.ts;src/browser/view/headquarters-entry.ts;src/browser/view/headquarters.tsx;src/browser/view/team-lines.ts;tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/team-lines.test.mjs
+D-218	4423	4439	1	1	114	none	3	src/browser/styles.css;src/browser/view/headquarters.tsx;tests/view/headquarters-screen.test.mjs
+D-219	4440	4458	1	1	147	inv	2	src/browser/sim/data/balance.ts;tests/sim/death.test.mjs
+D-220	4459	4475	1	1	127	none	3	tests/sim/death.test.mjs;tests/sim/saved-game.test.mjs;tests/sim/team.test.mjs
+D-221	4476	4505	1	3	416	inv+pair	7	src/browser/sim/loop.ts;tests/sim/completion.test.mjs;tests/sim/death.test.mjs;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/clock.test.mjs
+D-222	4506	4561	1	5	999	pair	5	src/browser/view/account-card.tsx;src/browser/view/controls/text-field.ts;src/server/account-routes.ts;tests/http.test.mjs;tests/view/account-screen.test.mjs
+D-223	4562	4588	1	2	272	pair	0	
+D-224	4589	4610	1	2	360	pair	6	src/browser/view/email-confirmation.ts;src/browser/view/game-view.ts;src/browser/view/screen-address.ts;src/server/account-routes.ts;tests/view/account-screen.test.mjs;tests/view/password-reset.test.mjs
+D-225	4611	4649	1	4	853	pair	6	src/browser/view/account-card.tsx;src/browser/view/app.ts;src/browser/view/game-view.ts;src/browser/view/screen-address.ts;tests/view/account-screen.test.mjs;tests/view/password-reset.test.mjs
+D-226	4650	4691	1	3	929	inv+pair	2	src/server/account-routes.ts;tests/http.test.mjs
+D-227	4692	4721	1	5	583	pair	4	src/server/account-mail.ts;src/server/account-routes.ts;tests/account-mail.test.mjs;tests/http.test.mjs
+D-228	4722	4752	1	2	387	pair	0	
+D-229	4753	4777	1	2	275	inv+pair	3	src/server/account-database-check.ts;tests/account-backup.test.mjs;tests/account-database-check.test.mjs
+D-230	4778	4814	1	3	470	pair	1	tests/deploy/test_loop2_backup.py
+D-231	4815	4874	1	3	1122	pair	4	src/server/account-backup.ts;tests/account-backup.test.mjs;tests/deploy/test_account_backup_stream.py;tests/deploy/test_loop2_backup.py
+D-232	4875	4911	1	2	321	inv+pair	1	tests/deploy/test_loop2_backup.py
+D-233	4912	4961	1	3	938	inv+pair	4	tests/account-backup.test.mjs;tests/deploy/test_loop2_backup.py;tests/deploy/test_loop2_watch.py;tests/invariants/test_account_save_backup_failure_notice.py
+D-234	4962	5000	1	3	550	pair	2	scripts/restore-trial.mjs;tests/deploy/test_restore_trial.py
+D-235	5001	5024	1	3	285	pair	7	tests/deploy/backup_script_support.py;tests/deploy/test_loop2_backup.py;tests/deploy/test_loop2_watch.py;tests/deploy/test_loop2_watch_message.py;tests/deploy/watch_script_support.py;tests/invariants/test_account_save_backup_encrypted.py;tests/invariants/test_account_save_backup_failure_notice.py
+D-236	5025	5057	1	1	224	pair	3	src/server/account-database-check.ts;src/server/database.ts;tests/account-backup.test.mjs
+D-237	5058	5092	1	2	461	pair	0	
+D-238	5093	5127	1	3	698	pair	1	deploy/loop2-backup
+D-239	5128	5157	1	3	388	pair	2	tests/sim/catch-up.test.mjs;tests/sim/data.test.mjs
+D-240	5158	5195	1	3	691	inv+pair	2	src/browser/sim/loop.ts;tests/sim/catch-up.test.mjs
+D-241	5196	5233	1	3	551	inv+pair	6	src/browser/sim/loop.ts;src/browser/sim/saved-game.ts;src/browser/sim/types.ts;tests/sim/catch-up.test.mjs;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs
+D-242	5234	5286	1	4	911	inv+pair	4	src/browser/sim/loop.ts;src/browser/view/clock.ts;tests/sim/catch-up.test.mjs;tests/view/clock.test.mjs
+D-243	5287	5314	1	4	535	pair	4	src/browser/view/maps-screen.tsx;tests/sim/loop.test.mjs;tests/view/account-screen.test.mjs;tests/view/maps-screen.test.mjs
+D-244	5315	5333	1	3	547	pair	10	src/browser/styles.css;src/browser/view/character-screen.tsx;src/browser/view/headquarters.tsx;src/browser/view/maps-screen.tsx;src/browser/view/team-lines.ts;tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/team-lines.test.mjs
+D-245	5334	5366	1	4	539	inv+pair	13	src/browser/sim/loop.ts;src/browser/sim/types.ts;src/browser/styles.css;src/browser/view/character-screen.tsx;src/browser/view/headquarters.tsx;src/browser/view/team-lines.ts;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/team-lines.test.mjs
+D-246	5367	5431	1	13	1784	inv+pair	11	src/browser/sim/loop.ts;src/browser/sim/types.ts;src/browser/styles.css;src/browser/view/away-report.ts;src/browser/view/headquarters.tsx;tests/sim/catch-up.test.mjs;tests/sim/loop.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/away-report.test.mjs;tests/view/headquarters-screen.test.mjs
+D-247	5432	5465	1	3	373	inv+pair	8	src/browser/sim/loop.ts;src/browser/view/clock.ts;src/browser/view/game-view.ts;src/browser/view/state-store.ts;tests/sim/catch-up.test.mjs;tests/view/clock.test.mjs;tests/view/state-store.test.mjs;tests/view/uncaught-failure.test.mjs
+D-248	5466	5501	1	3	320	pair	9	src/browser/sim/game.ts;src/browser/sim/types.ts;src/browser/view/game-saver.ts;tests/sim/catch-up.test.mjs;tests/sim/death.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/game-saver.test.mjs;tests/view/trip.test.mjs
+D-249	5502	5526	1	2	241	inv+pair	3	src/browser/sim/loop.ts;tests/sim/catch-up.test.mjs;tests/sim/loop.test.mjs
+D-250	5527	5551	1	1	162	pair	1	tests/sim/catch-up.test.mjs
+D-251	5552	5575	1	1	318	pair	7	src/browser/styles.css;src/browser/view/maps-screen.tsx;src/browser/view/trip-lines.ts;tests/sim/trip.test.mjs;tests/view/account-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/trip.test.mjs
+D-252	5576	5629	1	3	1347	pair	8	src/browser/view/last-resort.ts;src/server/log-line.ts;tests/account-backup.test.mjs;tests/account-mail.test.mjs;tests/account-storage.test.mjs;tests/http.test.mjs;tests/startup.test.mjs;tests/view/uncaught-failure.test.mjs
+D-253	5630	5679	1	4	1080	pair	7	scripts/local-start.mjs;src/browser/view/last-resort.ts;src/server/log-line.ts;tests/account-backup.test.mjs;tests/account-storage.test.mjs;tests/startup.test.mjs;tests/view/uncaught-failure.test.mjs
+D-255	5680	5744	1	2	345	inv+pair	1	tests/invariants/test_local_start_access.py
+D-256	5745	5767	1	3	353	pair	1	tests/invariants/test_local_start_access.py
+D-257	5768	5792	1	2	175	pair	1	tests/invariants/test_local_start_access.py
+D-258	5793	5812	1	1	93	pair	1	tests/invariants/test_local_start_access.py
+D-259	5813	5837	1	2	265	pair	2	src/browser/view/account-card.tsx;tests/view/account-screen.test.mjs
+D-260	5838	5860	1	1	259	pair	2	src/browser/view/account-card.tsx;tests/view/account-screen.test.mjs
+D-261	5861	5884	1	2	281	pair	4	src/browser/styles.css;src/browser/view/account-card.tsx;src/browser/view/app.ts;tests/view/account-screen.test.mjs
+D-262	5885	5922	1	3	484	pair	6	src/browser/styles.css;src/browser/view/account-card.tsx;src/browser/view/app.ts;src/browser/view/menu-bar.tsx;tests/view/account-screen.test.mjs;tests/view/uncaught-failure.test.mjs
+D-263	5923	5942	1	1	65	pair	0	
+D-264	5943	5993	1	4	828	pair	27	tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs;tests/view/chronicle-game.test.mjs;tests/view/discovery-band.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/menu-bar.test.mjs;tests/view/page-document.mjs;tests/view/page-document.test.mjs;tests/view/password-reset.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs;tests/view/program-panel.test.mjs;tests/view/react-controls.test.mjs;tests/view/rule-editor.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen.test.mjs;tests/view/scene.test.mjs;tests/view/screen-registry.test.mjs;tests/view/state-store.test.mjs;tests/view/tabs-area.test.mjs;tests/view/trip-plan.test.mjs;tests/view/uncaught-failure.test.mjs;tests/view/world-area.test.mjs
+D-265	5994	6038	1	3	815	pair	12	src/browser/view/controls/pick-cell.ts;src/browser/view/controls/react-number-field.tsx;src/browser/view/controls/react-pick-cell.tsx;src/browser/view/controls/react-select-list.tsx;src/browser/view/discovery-band.tsx;src/browser/view/end-question.tsx;src/browser/view/end-window.tsx;src/browser/view/run-header.tsx;src/browser/view/terrain-drawing.tsx;src/browser/view/tile-table.tsx;src/browser/view/world-area.tsx;tests/view/react-controls.test.mjs
+D-266	6039	6070	1	3	292	pair	2	scripts/build.mjs;tests/invariants/test_application_build_output.py
+D-267	6071	6099	1	3	725	pair	1	tests/view/run-screen.test.mjs
+D-268	6100	6152	1	4	694	inv+pair	19	tests/view/chronicle-game.test.mjs;tests/view/discovery-band.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window.test.mjs;tests/view/memory-limit.mjs;tests/view/page-document.mjs;tests/view/page-document.test.mjs;tests/view/program-panel.test.mjs;tests/view/react-controls.test.mjs;tests/view/rule-signs.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen.test.mjs;tests/view/scene.test.mjs;tests/view/screen-registry.test.mjs;tests/view/state-store.test.mjs;tests/view/tabs-area.test.mjs;tests/view/trip-plan.test.mjs;tests/view/world-area.test.mjs
+D-269	6153	6181	1	3	349	pair	2	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/view/email-status.ts
+D-270	6182	6210	1	2	418	inv+pair	4	src/browser/styles.css;src/browser/view/rule-list.tsx;tests/invariants/test_browser_view_framework.py;tests/view/rule-editor.test.mjs
+D-271	6211	6310	1	4	1411	inv+pair	8	src/browser/sim/data/scene.ts;src/browser/styles.css;src/browser/view/credits.ts;tests/view/camp-picture.test.mjs;tests/view/icons.test.mjs;tests/view/scene-frost-contrast.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-272	6311	6336	1	1	161	pair	8	src/browser/styles.css;src/browser/view/camp.tsx;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/camp-picture.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/scene.test.mjs;tests/view/world-area.test.mjs
+D-273	6337	6369	1	2	459	pair	1	tests/view/scene-picture.test.mjs
+D-274	6370	6413	1	4	524	pair	6	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/controls/button.ts;src/browser/view/controls/react-button.tsx;tests/view/maps-screen.test.mjs;tests/view/react-controls.test.mjs
+D-275	6414	6442	1	3	380	pair	2	src/browser/kitchen-sink/kitchen-sink.ts;tests/view/react-controls.test.mjs
+D-276	6443	6484	1	3	461	pair	5	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/account-card.tsx;src/browser/view/tabs-area.tsx;tests/view/tabs-area.test.mjs
+D-277	6485	6503	1	2	155	pair	6	src/browser/styles.css;src/browser/view/menu-bar.tsx;src/browser/view/screen-address.ts;tests/view/account-screen.test.mjs;tests/view/menu-bar.test.mjs;tests/view/screen-address.test.mjs
+D-278	6504	6528	1	1	212	pair	0	
+D-279	6529	6553	1	2	390	pair	3	src/browser/styles.css;src/browser/view/discovery-band.tsx;tests/view/discovery-band.test.mjs
+D-280	6554	6616	1	6	1091	pair	17	src/browser/styles.css;src/browser/view/app.ts;src/browser/view/camp.tsx;src/browser/view/character-entry.ts;src/browser/view/game-view.ts;src/browser/view/headquarters-entry.ts;src/browser/view/menu-bar.tsx;src/browser/view/programs-entry.ts;src/browser/view/run-screen.tsx;src/browser/view/screen-address.ts;src/browser/view/screen-registry.ts;tests/view/account-screen.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/menu-bar.test.mjs;tests/view/scene-picture.test.mjs;tests/view/screen-address.test.mjs;tests/view/screen-registry.test.mjs
+D-281	6617	6661	1	5	856	pair	13	src/browser/view/app.ts;src/browser/view/email-confirmation.ts;src/browser/view/game-view.ts;src/browser/view/maps-entry.ts;src/browser/view/programs-entry.ts;src/browser/view/run-entry.ts;src/browser/view/run-screen.tsx;src/browser/view/screen-address.ts;src/browser/view/screen-registry.ts;tests/view/account-screen.test.mjs;tests/view/run-screen.test.mjs;tests/view/screen-address.test.mjs;tests/view/screen-registry.test.mjs
+D-282	6662	6694	1	1	223	pair	12	src/browser/styles.css;src/browser/view/headquarters.tsx;src/browser/view/maps-screen.tsx;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;src/browser/view/rule-panel.tsx;src/browser/view/run-screen.tsx;tests/view/account-screen.test.mjs;tests/view/headquarters-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/program-panel.test.mjs;tests/view/run-screen.test.mjs
+D-283	6695	6714	1	1	65	pair	6	src/browser/view/run-entry.ts;src/browser/view/run-screen-state.ts;src/browser/view/screen-registry.ts;tests/view/account-screen.test.mjs;tests/view/end-question.test.mjs;tests/view/screen-registry.test.mjs
+D-284	6715	6736	1	1	172	pair	3	src/browser/view/run-entry.ts;tests/view/account-screen.test.mjs;tests/view/end-question.test.mjs
+D-285	6737	6761	1	2	333	pair	4	src/browser/view/app.ts;tests/view/account-screen.test.mjs;tests/view/end-window.test.mjs;tests/view/menu-bar.test.mjs
+D-286	6762	6783	1	1	216	pair	2	src/browser/view/app.ts;tests/view/account-screen.test.mjs
+D-287	6784	6815	1	3	609	pair	8	src/browser/styles.css;src/browser/view/character-screen.tsx;src/browser/view/maps-screen.tsx;src/browser/view/team-lines.ts;tests/view/account-screen.test.mjs;tests/view/character-screen.test.mjs;tests/view/maps-screen.test.mjs;tests/view/team-lines.test.mjs
+D-288	6816	6888	1	4	693	pair	14	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/controls/pick-cell.ts;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;src/browser/view/rule-list.tsx;src/browser/view/rule-panel.tsx;src/browser/view/run-screen.tsx;tests/view/account-screen.test.mjs;tests/view/program-editor.test.mjs;tests/view/program-panel.test.mjs;tests/view/react-controls.test.mjs;tests/view/rule-editor.test.mjs;tests/view/run-screen.test.mjs
+D-289	6889	6931	1	3	845	pair	8	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/controls/pick-cell.ts;src/browser/view/program-editor.ts;src/browser/view/rule-panel.tsx;tests/view/program-editor.test.mjs;tests/view/react-controls.test.mjs;tests/view/rule-editor.test.mjs
+D-290	6932	6956	1	4	542	pair	5	src/browser/styles.css;src/browser/view/rule-panel.tsx;tests/sim/data.test.mjs;tests/view/program-editor.test.mjs;tests/view/rule-editor.test.mjs
+D-291	6957	6986	1	1	248	pair	5	src/browser/styles.css;src/browser/view/controls/pick-cell.ts;src/browser/view/now-rows.tsx;tests/view/now-lines.test.mjs;tests/view/react-controls.test.mjs
+D-292	6987	7005	1	1	178	pair	5	src/browser/styles.css;src/browser/view/now-rows.tsx;src/browser/view/rule-list.tsx;tests/view/chronicle-entries.test.mjs;tests/view/now-lines.test.mjs
+D-293	7006	7025	1	1	279	pair	3	src/browser/styles.css;src/browser/view/rule-list.tsx;src/browser/view/rule-panel.tsx
+D-294	7026	7046	1	1	215	pair	0	
+D-295	7047	7063	1	1	166	pair	8	src/browser/styles.css;src/browser/view/game-view.ts;src/browser/view/program-panel.tsx;src/browser/view/programs-entry.ts;src/browser/view/rule-list.tsx;src/browser/view/run-entry.ts;tests/view/program-panel.test.mjs;tests/view/run-screen.test.mjs
+D-296	7064	7082	1	1	137	pair	1	src/browser/view/rule-panel.tsx
+D-297	7083	7103	1	1	237	pair	5	src/browser/styles.css;src/browser/view/program-editor.ts;src/browser/view/rule-list.tsx;tests/view/chronicle-entries.test.mjs;tests/view/program-editor.test.mjs
+D-298	7104	7122	1	1	189	pair	0	
+D-299	7123	7140	1	1	76	pair	1	src/browser/view/rule-panel.tsx
+D-300	7141	7158	1	1	80	pair	1	src/browser/view/rule-panel.tsx
+D-301	7159	7173	1	0	80	pair	0	
+D-302	7174	7192	1	1	135	pair	5	src/browser/styles.css;src/browser/view/program-panel.tsx;src/browser/view/rule-panel.tsx;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs
+D-303	7193	7207	1	1	84	pair	0	
+D-304	7208	7225	1	1	145	pair	0	
+D-305	7226	7244	1	1	122	pair	0	
+D-306	7245	7273	1	3	690	pair	6	src/browser/styles.css;src/browser/view/program-editor.ts;src/browser/view/rule-panel.tsx;tests/view/program-editor.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs
+D-307	7274	7289	1	2	101	pair	0	
+D-308	7290	7357	1	4	1184	inv+pair	5	src/browser/sim/game.ts;src/browser/styles.css;src/browser/view/rule-list.tsx;tests/sim/rule-signs.test.mjs;tests/view/rule-signs.test.mjs
+D-309	7358	7389	1	3	517	inv+pair	5	src/browser/sim/game.ts;src/browser/styles.css;src/browser/view/rule-list.tsx;tests/sim/rule-signs.test.mjs;tests/view/world-area.test.mjs
+D-310	7390	7418	1	6	565	inv+pair	5	src/browser/sim/program.ts;src/browser/styles.css;src/browser/view/rule-list.tsx;tests/sim/rule-signs.test.mjs;tests/view/rule-signs.test.mjs
+D-311	7419	7545	1	7	1749	pair	23	src/browser/styles.css;src/browser/view/now-rows.tsx;src/browser/view/run-entry.ts;src/browser/view/run-header.tsx;src/browser/view/run-screen-state.ts;src/browser/view/run-screen.tsx;src/browser/view/scene.tsx;src/browser/view/status-row.ts;src/browser/view/tabs-area.tsx;src/browser/view/tile-table.tsx;src/browser/view/world-area.tsx;tests/view/account-screen.test.mjs;tests/view/chronicle-game.test.mjs;tests/view/end-window-game.test.mjs;tests/view/rule-editor.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen-state.test.mjs;tests/view/run-screen.test.mjs;tests/view/scene.test.mjs;tests/view/status-row.test.mjs;tests/view/tabs-area.test.mjs;tests/view/trip.test.mjs;tests/view/world-area.test.mjs
+D-312	7546	7600	1	3	579	pair	6	src/browser/view/discovery-band-text.ts;src/browser/view/discovery-band.tsx;tests/sim/discovery.test.mjs;tests/view/chronicle.test.mjs;tests/view/discovery-band.test.mjs;tests/view/end-window-lines.test.mjs
+D-313	7601	7651	1	5	1155	pair	14	src/browser/styles.css;src/browser/view/discovery-band.tsx;src/browser/view/discovery-rule.ts;src/browser/view/end-window-lines.ts;src/browser/view/end-window.tsx;src/browser/view/program-panel.tsx;src/browser/view/run-screen.tsx;tests/view/discovery-band.test.mjs;tests/view/discovery-rule.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/program-panel.test.mjs;tests/view/run-screen.test.mjs
+D-314	7652	7670	1	1	162	pair	4	src/browser/sim/data/scene.ts;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/world-area.test.mjs
+D-315	7671	7707	1	2	782	pair	5	src/browser/sim/data/scene.ts;src/browser/styles.css;src/browser/view/scene-picture.ts;src/browser/view/scene.tsx;tests/view/scene.test.mjs
+D-316	7708	7827	1	10	2322	inv+pair	10	src/browser/sim/data/scene.ts;src/browser/styles.css;src/browser/view/camp.tsx;src/browser/view/scene-picture.ts;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/camp-picture.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs;tests/view/world-area.test.mjs
+D-317	7828	7907	1	8	1273	pair	8	src/browser/styles.css;src/browser/view/camp.tsx;src/browser/view/game-view.ts;src/browser/view/run-screen-state.ts;src/browser/view/scene-picture.ts;src/browser/view/scene.tsx;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-318	7908	7937	1	3	591	pair	2	tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-319	7938	7967	1	3	449	pair	3	src/browser/styles.css;src/browser/view/scene.tsx;tests/view/scene.test.mjs
+D-320	7968	8009	1	3	549	pair	5	src/browser/styles.css;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/scene.test.mjs;tests/view/world-area.test.mjs
+D-321	8010	8030	1	2	97	pair	6	src/browser/styles.css;src/browser/view/camp.tsx;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/headquarters-screen.test.mjs;tests/view/scene.test.mjs
+D-322	8031	8092	1	5	1964	pair	12	src/browser/sim/data/scene.ts;src/browser/styles.css;src/browser/view/run-entry.ts;src/browser/view/run-screen-state.ts;src/browser/view/run-screen.tsx;src/browser/view/scene-picture.ts;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/end-window-game.test.mjs;tests/view/run-screen-state.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-323	8093	8107	1	4	984	inv+pair	12	src/browser/styles.css;src/browser/view/account-card.tsx;src/browser/view/app.ts;src/browser/view/game-view.ts;src/browser/view/last-resort.ts;src/browser/view/run-screen-state.ts;src/browser/view/state-store.ts;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/run-screen-state.test.mjs;tests/view/state-store.test.mjs;tests/view/uncaught-failure.test.mjs
+D-324	8108	8122	1	4	1226	pair	4	src/browser/view/run-screen-state.ts;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/run-screen-state.test.mjs
+D-325	8123	8137	1	1	323	pair	4	src/browser/styles.css;src/browser/view/maps-entry.ts;src/browser/view/maps-screen.tsx;tests/view/maps-screen.test.mjs
+D-326	8138	8152	1	1	157	pair	5	src/browser/styles.css;src/browser/view/maps-screen.tsx;src/browser/view/trip-lines.ts;tests/view/maps-screen.test.mjs;tests/view/trip.test.mjs
+D-327	8153	8167	1	5	1350	pair	7	src/browser/sim/map-card.ts;src/browser/styles.css;src/browser/view/map-lines.ts;src/browser/view/maps-screen.tsx;tests/sim/map-card.test.mjs;tests/view/map-lines.test.mjs;tests/view/maps-screen.test.mjs
+D-328	8168	8182	1	2	226	pair	2	src/browser/view/maps-screen.tsx;tests/view/maps-screen.test.mjs
+D-329	8183	8197	1	5	629	pair	6	src/browser/styles.css;src/browser/view/maps-entry.ts;src/browser/view/maps-screen.tsx;src/browser/view/trip-lines.ts;tests/view/account-screen.test.mjs;tests/view/maps-screen.test.mjs
+D-330	8198	8212	1	1	215	pair	3	src/browser/view/headquarters.tsx;tests/view/account-screen.test.mjs;tests/view/headquarters-screen.test.mjs
+D-331	8213	8227	1	3	381	pair	4	src/browser/styles.css;src/browser/view/maps-screen.tsx;tests/view/account-screen.test.mjs;tests/view/maps-screen.test.mjs
+D-332	8228	8242	1	1	161	pair	0	
+D-333	8243	8257	1	3	809	pair	3	src/browser/sim/body.ts;src/browser/sim/map-card.ts;tests/sim/map-card.test.mjs
+D-334	8258	8307	1	3	929	inv+pair	14	src/browser/styles.css;src/browser/view/end-window-lines.ts;src/browser/view/now-lines.ts;src/browser/view/now-rows.tsx;src/browser/view/run-header.tsx;src/browser/view/status-row.ts;src/browser/view/world-area.tsx;tests/sim/rule-signs.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/now-lines.test.mjs;tests/view/run-header.test.mjs;tests/view/status-row.test.mjs;tests/view/world-area.test.mjs
+D-335	8308	8341	1	2	612	inv+pair	7	src/browser/styles.css;src/browser/view/now-lines.ts;src/browser/view/now-rows.tsx;src/browser/view/world-area.tsx;tests/sim/rule-signs.test.mjs;tests/view/now-lines.test.mjs;tests/view/world-area.test.mjs
+D-336	8342	8376	1	2	553	pair	6	src/browser/styles.css;src/browser/view/now-rows.tsx;src/browser/view/program-panel.tsx;src/browser/view/run-screen.tsx;src/browser/view/world-area.tsx;tests/view/run-screen.test.mjs
+D-337	8377	8414	1	4	734	pair	6	src/browser/styles.css;src/browser/view/body-row.ts;src/browser/view/world-area.tsx;tests/sim/body.test.mjs;tests/view/body-row.test.mjs;tests/view/world-area.test.mjs
+D-338	8415	8445	1	3	312	pair	6	src/browser/view/chronicle-entries.ts;src/browser/view/chronicle.ts;src/browser/view/tabs-area.tsx;tests/view/chronicle-game.test.mjs;tests/view/chronicle.test.mjs;tests/view/tabs-area.test.mjs
+D-339	8446	8494	1	2	583	pair	7	src/browser/view/chronicle.ts;src/browser/view/game-view.ts;src/browser/view/run-entry.ts;src/browser/view/run-screen.tsx;tests/view/chronicle-game.test.mjs;tests/view/chronicle.test.mjs;tests/view/tabs-area.test.mjs
+D-340	8495	8525	1	2	420	pair	3	src/browser/view/chronicle-entries.ts;src/browser/view/now-lines.ts;tests/view/chronicle.test.mjs
+D-341	8526	8557	1	3	676	pair	5	src/browser/view/chronicle-entries.ts;tests/sim/copy-actions.test.mjs;tests/sim/discovery.test.mjs;tests/sim/streak.test.mjs;tests/view/chronicle.test.mjs
+D-342	8558	8591	1	7	779	pair	5	src/browser/view/chronicle-entries.ts;src/browser/view/program-panel-acts.ts;src/browser/view/state-store.ts;tests/view/chronicle-entries.test.mjs;tests/view/chronicle.test.mjs
+D-343	8592	8625	1	4	848	pair	7	src/browser/styles.css;src/browser/view/chronicle-entries.ts;src/browser/view/chronicle.ts;src/browser/view/tabs-area.tsx;tests/view/chronicle-game.test.mjs;tests/view/chronicle.test.mjs;tests/view/tabs-area.test.mjs
+D-344	8626	8661	1	3	530	pair	6	src/browser/styles.css;src/browser/view/chronicle-entries.ts;src/browser/view/now-lines.ts;src/browser/view/tabs-area.tsx;tests/sim/campfire.test.mjs;tests/view/tabs-area.test.mjs
+D-345	8662	8686	1	4	407	pair	4	src/browser/view/chronicle-entries.ts;src/browser/view/discovery-band-text.ts;src/browser/view/discovery-band.tsx;tests/view/chronicle.test.mjs
+D-346	8687	8712	1	1	357	pair	8	src/browser/styles.css;src/browser/view/chronicle.ts;src/browser/view/run-screen.tsx;src/browser/view/tabs-area.tsx;tests/view/chronicle-game.test.mjs;tests/view/chronicle.test.mjs;tests/view/run-screen.test.mjs;tests/view/tabs-area.test.mjs
+D-347	8713	8773	1	2	317	pair	0	
+D-348	8774	8822	1	2	763	pair	6	tests/sim/campfire.test.mjs;tests/sim/discovery.test.mjs;tests/view/chronicle-entries.test.mjs;tests/view/chronicle.test.mjs;tests/view/program-panel.test.mjs;tests/view/rule-editor.test.mjs
+D-349	8823	8862	1	2	165	pair	8	src/browser/sim/data/scene.ts;src/browser/styles.css;src/browser/view/scene.tsx;src/browser/view/world-area.tsx;tests/view/headquarters-screen.test.mjs;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs;tests/view/world-area.test.mjs
+D-350	8863	8890	1	2	308	pair	0	
+D-351	8891	8936	1	4	850	inv+pair	1	tests/invariants/test_cross_part_imports.py
+D-352	8937	8967	1	1	228	pair	2	src/browser/view/game-view.ts;tests/view/account-screen.test.mjs
+D-353	8968	8997	1	2	439	pair	4	src/server/app.ts;src/server/database.ts;tests/account-storage.test.mjs;tests/http.test.mjs
+D-354	8998	9023	1	3	365	pair	3	src/server/account-backup.ts;tests/account-backup.test.mjs;tests/account-storage.test.mjs
+D-355	9024	9038	1	3	1086	inv+pair	3	deploy/loop2-app.logrotate;tests/deploy/test_loop2_deploy_dump.py;tests/deploy/test_loop2_log_storage.py
+D-356	9039	9053	1	3	1854	inv+pair	10	src/browser/view/app.ts;src/server/account-policy.ts;src/server/account-routes.ts;src/server/log-line.ts;tests/deploy/test_check_address_workflow.py;tests/deploy/test_loop2_watch.py;tests/deploy/watch_script_support.py;tests/http.test.mjs;tests/transport.test.mjs;tests/view/uncaught-failure.test.mjs
+D-360	9054	9068	1	3	246	pair	0	
+D-362	9069	9083	1	2	672	inv+pair	0	
+D-363	9084	9098	1	3	1239	pair	4	src/browser/view/program-editor.ts;tests/sim/campfire.test.mjs;tests/view/program-editor.test.mjs;tests/view/rule-editor.test.mjs
+D-364	9099	9113	1	3	473	pair	3	src/browser/styles.css;src/browser/view/scene.tsx;tests/view/scene.test.mjs
+D-365	9114	9128	1	2	402	pair	3	src/browser/styles.css;src/browser/view/scene.tsx;tests/view/scene.test.mjs
+D-366	9129	9143	1	1	165	pair	3	src/browser/styles.css;src/browser/view/scene.tsx;tests/view/scene.test.mjs
+D-367	9144	9158	1	2	864	pair	4	src/browser/styles.css;src/browser/view/scene.tsx;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-368	9159	9173	1	6	2351	pair	18	src/browser/styles.css;src/browser/view/end-window-lines.ts;src/browser/view/end-window.tsx;src/browser/view/run-entry.ts;src/browser/view/run-header.tsx;src/browser/view/run-screen-state.ts;src/browser/view/run-screen.tsx;tests/sim/run-record.test.mjs;tests/sim/saved-game.test.mjs;tests/view/account-screen.test.mjs;tests/view/chronicle.test.mjs;tests/view/end-question.test.mjs;tests/view/end-window-game.test.mjs;tests/view/end-window-lines.test.mjs;tests/view/end-window.test.mjs;tests/view/run-header.test.mjs;tests/view/run-screen-state.test.mjs;tests/view/run-screen.test.mjs
+D-369	9174	9188	1	3	1082	pair	1	tests/view/end-window-game.test.mjs
+D-370	9189	9203	1	2	823	pair	3	tests/view/end-window-game.test.mjs;tests/view/end-window.test.mjs;tests/view/run-screen.test.mjs
+D-371	9204	9218	1	3	712	pair	3	src/browser/view/run-screen-state.ts;tests/view/end-window-game.test.mjs;tests/view/run-screen-state.test.mjs
+D-372	9219	9253	1	4	607	pair	4	src/browser/styles.css;src/browser/view/scene-picture.ts;tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-373	9254	9291	1	3	463	pair	2	tests/view/scene-picture.test.mjs;tests/view/scene.test.mjs
+D-374	9292	9304	1	1	70	inv	1	tests/sim/skills.test.mjs
+D-375	9305	9319	1	4	369	pair	1	tests/sim/actions.test.mjs
+D-376	9320	9334	1	4	843	pair	3	tests/sim/conditions.test.mjs;tests/view/program-editor.test.mjs;tests/view/rule-editor.test.mjs
+D-377	9335	9349	1	1	259	inv+pair	3	tests/sim/body.test.mjs;tests/sim/campfire.test.mjs;tests/sim/encounters.test.mjs
+D-378	9350	9364	1	1	261	pair	1	tests/sim/acceptance.test.mjs
+D-379	9365	9379	1	5	1424	pair	1	tests/sim/skills.test.mjs
+D-380	9380	9394	1	6	1366	pair	1	tests/sim/rule-signs.test.mjs
+D-381	9395	9409	1	4	1170	pair	1	tests/view/account-screen.test.mjs
+D-382	9410	9424	1	3	828	pair	5	src/browser/styles.css;src/browser/view/chronicle.ts;src/browser/view/tabs-area.tsx;tests/view/chronicle.test.mjs;tests/view/tabs-area.test.mjs
+D-383	9425	9439	1	1	333	pair	5	src/browser/view/chronicle.ts;src/browser/view/tabs-area.tsx;tests/view/chronicle-game.test.mjs;tests/view/chronicle.test.mjs;tests/view/tabs-area.test.mjs
+D-384	9440	9454	1	3	370	pair	2	src/browser/view/program-panel.tsx;tests/view/program-panel.test.mjs
+D-385	9455	9469	1	1	340	pair	2	src/browser/view/tile-list.ts;src/browser/view/tile-table.tsx
+D-386	9470	9484	1	2	635	pair	5	src/browser/sim/saved-game.ts;tests/sim/completion.test.mjs;tests/sim/death.test.mjs;tests/sim/program-list.test.mjs;tests/sim/saved-game.test.mjs
+D-387	9485	9499	1	4	1124	pair	6	tests/sim/acceptance.test.mjs;tests/sim/body.test.mjs;tests/sim/campfire.test.mjs;tests/sim/data.test.mjs;tests/sim/world.test.mjs;tests/view/program-editor.test.mjs
+D-388	9500	9514	1	4	834	pair	6	tests/sim/acceptance.test.mjs;tests/sim/body.test.mjs;tests/sim/campfire.test.mjs;tests/sim/data.test.mjs;tests/sim/map-card.test.mjs;tests/sim/world.test.mjs
+D-389	9515	9582	1	4	1374	inv+pair	5	src/browser/view/camp-picture.ts;src/browser/view/camp.tsx;src/browser/view/headquarters.tsx;tests/view/headquarters-screen.test.mjs;tests/view/scene-picture.test.mjs
+D-390	9583	9599	2	5	1090	inv+tests+pair	2	scripts/docker_gate.py;tests/quality/test_docker_gate.py
+D-391	9600	9614	1	1	96	pair	2	scripts/docker_gate.py;tests/quality/test_docker_gate.py
+D-392	9615	9629	1	1	141	pair	1	scripts/docker_gate.py
+D-393	9630	9642	1	3	604	inv	0	
+D-394	9643	9657	1	3	273	pair	0	
+D-395	9658	9672	1	1	217	pair	1	src/browser/view/controls/react-number-field.tsx
+D-396	9673	9687	1	3	513	pair	0	
+D-397	9688	9700	1	1	62	inv	1	tests/invariants/test_map_run_tiles.py
+D-398	9701	9715	1	3	616	inv+pair	1	tests/sim/data.test.mjs
+D-399	9716	9730	1	4	834	inv+pair	1	src/server/database.ts
+D-400	9731	9745	1	4	1189	inv+pair	10	src/browser/account-api.ts;src/browser/view/game-view.ts;src/browser/view/previous-save-lines.ts;src/browser/view/programs-entry.ts;src/server/account-routes.ts;src/server/database.ts;tests/account-api.test.mjs;tests/account-storage.test.mjs;tests/deploy/test_account_storage.py;tests/view/previous-save.test.mjs
+D-401	9746	9760	1	3	1395	inv+pair	8	src/browser/view/previous-save-lines.ts;src/browser/view/program-list.tsx;src/browser/view/programs-entry.ts;src/server/account-routes.ts;tests/account-api.test.mjs;tests/sim/previous-programs.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs
+D-402	9761	9775	1	3	1298	inv+pair	13	src/browser/kitchen-sink/kitchen-sink.ts;src/browser/styles.css;src/browser/view/app.ts;src/browser/view/game-view.ts;src/browser/view/menu-bar.tsx;src/browser/view/previous-save-lines.ts;src/browser/view/program-list.tsx;src/browser/view/programs-entry.ts;src/server/account-routes.ts;src/server/database.ts;tests/account-api.test.mjs;tests/view/previous-save.test.mjs;tests/view/program-list.test.mjs
+D-403	9776	9816	1	3	377	pair	0	
+D-404	9817	9846	1	1	326	inv+pair	1	tests/sim/new-account-first-pass.test.mjs
+D-405	9847	9861	1	3	267	pair	0	
+D-406	9862	9874	1	2	371	tests	3	scripts/test.py;tests/quality/test_docker_gate.py;tests/quality/test_test_gate.py
+D-407	9875	9889	1	2	553	pair	0	
+D-408	9890	9904	1	2	282	tests+pair	2	src/browser/view/screen-address.ts;tests/view/screen-registry.test.mjs
+D-409	9905	9930	1	2	324	tests+pair	1	tests/view/state-store.test.mjs

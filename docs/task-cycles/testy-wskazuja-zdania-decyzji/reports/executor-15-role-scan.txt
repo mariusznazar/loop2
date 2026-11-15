@@ -1,0 +1,143 @@
+== tests/view\account-screen.test.mjs 31
+  567 a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the p :: warning
+  611 a lost connection on registration leaves one warning under that form and focus on its button :: warning
+  765 the button under „Zaloguj się” puts in its place one form with an empty address, „Wyślij odnośnik” and „Wróć d :: warning
+  865 a well-formed address gets the one sentence of the reset under the form in a status, with the field empty and  :: warning
+  900 a refusal or a lost connection on a request stands as the form's warning, keeps the address and returns focus  :: warning
+  930 „Wróć do logowania” brings back „Zaloguj się”, and nothing typed, no sentence and no warning survives a second :: warning
+  1034 a logout whose outcome is uncertain keeps the game with its sentence in the open menu „Konto”, and „Wyloguj” s :: warning
+  1104 a reload or sign-in with an unconfirmed address shows the sentence and Wyślij ponownie in the open menu „Konto :: warning
+  1166 a created account starts the sentence of its menu with the outcome of its first message, and the closed bar sh :: warning
+  1211 Wyślij ponownie sends one request for the signed-in account and shows its outcome in the menu, which stays ope :: warning
+  1302 the result stands as one sentence above the game for a signed-in player and leaves at the next change between  :: positive
+  1330 a refused link stands in warning above the form in the card for a player who is not signed in, and the fragmen :: warning
+  1351 a lost connection on the confirmation keeps the fragment and shows the client message in warning above the scr :: warning
+  1380 the sentence of a confirmation waits through a failed session check and shows once it passes :: positive
+  1493 with a reset token in the address the page shows the form at once, asking nothing, building no game and saving :: warning
+  1609 a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks a :: positive
+  1647 a refused link, whatever its reason, clears the fragment first and then checks the session: the card or the ga :: warning
+  1737 a failure that is no change and no refused link keeps the form, the fragment and the link, with the client's s :: warning
+  2107 a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on i :: selected
+  2188 a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up  :: character
+  2686 a character in a loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w p :: destructive
+  2998 the mark of a rehearsal the loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest  :: character
+  3122 a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when :: danger
+  3359 a conflict drops the game, asks for the server's save and builds from it with its sentence in the header until :: selected
+  3530 a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, a :: character
+  3621 a game built from a state with a report shows the section above „Drużyna”, the stopped line first :: danger
+  3975 a reload at each of the seven addresses opens its screen and leaves the address as it is :: character
+  4246 a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu  :: character
+  4817 the page's sentence above the first screen leaves at the first change of screen and does not come back :: positive,warning
+  4895 a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, a :: danger
+  5298 the page's sentence stays in the card through a press of the switch, in warning as an alert, and leaves when t :: positive,warning
+== tests/view\away-report.test.mjs 2
+  215 stopped lines come first and the others after them, each group in the team's order :: danger
+  227 two lines of one character, a stopped one and a later one, both stand :: danger
+== tests/view\body-row.test.mjs 4
+  110 satiety below 30 stands in danger and 30 does not; health never does :: danger
+  194 by a fire the note under temperature reads „przy ogniu” and the note under satiety keeps its minutes :: character
+  208 a chilled body by the fire still reads „marznie” in danger :: character
+  238 the cells keep the danger of their values: a value below its threshold in danger, the others not :: danger
+== tests/view\character-screen.test.mjs 5
+  99 the screen names the character and its archetype, and gives the generation from 2 up only :: character
+  118 the resurrection line reads the time left in danger, shows the minutes below an hour, turns ready at the momen :: character,danger
+  142 a running loop shows its line with „Zatrzymaj”, which acts through onStop; a stopped loop shows its line in it :: character
+  176 the section „Umiejętności” is absent before a tree is known, then shows the known tree's row alone :: character
+  224 „Kup” is inactive with the sentence under the heading beside a waiting map run and beside an ended one :: character
+== tests/view\chronicle.test.mjs 1
+  421 the first chill of a copy that holds a rule „Eksploruj” of the player's own gives an entry of the discovery wi :: discovery
+== tests/view\clock.test.mjs 1
+  121 the clock's send carries the program number to the simulation's send :: character
+== tests/view\discovery-band.test.mjs 1
+  227 there is no band without a discovery, and none once the player goes on :: discovery
+== tests/view\discovery-rule.test.mjs 1
+  148 the first chill adds „Zawsze → Wędruj” at the end of the group „Program” and opens the panel on the action :: discovery
+== tests/view\email-confirmation.test.mjs 1
+  49 each answer to a confirmation has its sentence and role, and only a confirmation or a link refusal is definiti :: positive,warning
+== tests/view\email-status.test.mjs 2
+  16 each outcome of a confirmation message has its sentence and role :: warning
+  48 an unconfirmed address with no send made in the page is said in text-secondary :: text-secondary
+== tests/view\end-question.test.mjs 2
+  258 the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapisz”, „Odrzuć” and „Wróć” in that order, only „ :: destructive
+  543 „Wróć” closes the question and puts the map run back as it was: one that went on goes on, one that was paused  :: discovery
+== tests/view\end-window-game.test.mjs 1
+  442 the window opens at a completion too, titled by the completion text, with the way to the map it opened :: positive
+== tests/view\end-window-lines.test.mjs 6
+  71 the title after a death is the words of its cause in text-strong, after a completion the map's completion text :: positive,text-strong
+  104 the longest streak line gives the longest streak against the map's streak, positive where met, and none where  :: positive
+  128 the cost line after a completion is the deposit frozen at the completion, unchanged by later edits of the copy :: text-secondary
+  160 after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a missing  :: danger,text-secondary
+  180 after the death of a character with no practice the cost line says the team's resurrection was not used, in te :: text-secondary
+  194 the renewal line stands only after a first completion that made a used-up resurrection ready :: text-secondary
+== tests/view\end-window.test.mjs 5
+  168 the window is a dialog named by its title, with the label „Koniec przejścia” above it and „✕” after it; the ti :: positive
+  228 the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery wi :: danger,discovery,positive
+  273 a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery :: danger,positive
+  322 the window shows the line of a death with no practice, and the renewal line after the deposit line of a first  :: danger
+  362 after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the :: danger
+== tests/view\headquarters-screen.test.mjs 4
+  250 the resurrection line follows the clock's moment in the very same element, in danger until ready :: danger
+  279 a running loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped loop sho :: destructive
+  325 a report stands above „Drużyna”, titled „Gdy cię nie było”, the loop that stopped first and in danger :: danger
+  542 „Załóż” hands the page the trimmed name and empties the field; Enter in the field does the same :: character
+== tests/view\maps-screen.test.mjs 3
+  442 the characters stand in the order of their creation, each with its lines from the top :: danger
+  488 a resurrection not ready reads the time left in danger at each character and turns ready with the clock :: danger
+  718 a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stop :: destructive
+== tests/view\now-lines.test.mjs 2
+  129 Teraz after a completion says the text of the map in the role positive :: positive
+  161 Potem with no winning rule says the character will stand, in the role warning :: warning
+== tests/view\program-editor.test.mjs 1
+  916 rule edits preserve other groups, group boundaries and identities :: character
+== tests/view\program-list.test.mjs 1
+  195 a result line stands next to the control as a note and a failure as a warning, each with its text :: warning
+== tests/view\program-panel.test.mjs 4
+  998 at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group „Program”, opens :: discovery
+  1111 with no discovery held, and on Programy, „Dodaj regułę z tym” changes nothing and opens nothing :: discovery
+  1342 „Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the  :: destructive
+  1553 uncommitted text lands in the program it was typed into when Programy shows another, and showing the same one  :: character
+== tests/view\rule-editor.test.mjs 2
+  284 the list shows no ⊘, no „N reguł nie zadziała” and no amber „0×” :: warning
+  364 a row has „↑”, „↓” and the destructive „Usuń”, and a header has no arrows :: destructive
+== tests/view\run-header.test.mjs 5
+  178 „Restart” and „Zakończ” are destructive buttons and the paces and „Pauza” are not (D-44) :: destructive
+  196 the header shows five pace buttons, 1× to 16×, with the one of the state's pace selected :: selected
+  423 the clock is in the role text while running, after a death and after a completion :: positive
+  532 a requirement not met has its fill in text on a track in highlight, a met one its fill, name and numbers in po :: highlight,positive
+  581 after a completion the bar stands, met, at the minute of the completion :: positive
+== tests/view\scene-picture.test.mjs 7
+  223 the props stand always, also on a tile holding none of them, each at its place :: character
+  286 a burning campfire on the character's tile is drawn with its frames, at its place :: character
+  301 an extinguished campfire on the character's tile is drawn in the same picture, not burning :: character
+  528 the mage bends while it gathers, whichever the target, and at nothing else :: character
+  712 each prop's facing is the side its middle lies on, from the places of the data :: character
+  982 while time stands, in the player's pause and at a discovery, the tint shown is kept, and the return starts whe :: discovery
+  1224 the places of the moments in the data lie inside the frame :: discovery
+== tests/view\scene.test.mjs 3
+  353 the greys: the whole scene at the player's pause, the mage after a death, the extinguished fire; every other s :: discovery
+  742 the screen of a map run hands the events of each update to the scene :: character
+  907 a gathering that ends with a piece more in the backpack sends the icon of the resource flying, on a plaque :: text-strong
+== tests/view\screen-registry.test.mjs 1
+  192 a `while-shown` entry is built at the entering, kept for the same key and taken down at the leaving :: character
+== tests/view\status-row.test.mjs 1
+  150 at a stop at a discovery the clock reads „ (pauza)” as at the player's pause, and loses it at „Wznów” :: discovery
+== tests/view\team-lines.test.mjs 1
+  122 the line turns ready at the moment of readiness itself and not a millisecond before, and a ready line is not d :: danger
+== tests/view\terrain-picture.test.mjs 2
+  189 the character tile has the character outline :: character
+  201 the step target is outlined only while a move runs :: character
+== tests/view\tile-list.test.mjs 1
+  111 a fresh map run lists nothing; exploring the entrance lists that tile with its stock :: character
+== tests/view\trip-plan.test.mjs 1
+  391 Usuń is the destructive button of its position and commits the list without it :: destructive
+== tests/view\uncaught-failure.test.mjs 1
+  946 a card that React takes down after an error is replaced by the sentence alone in its place, and the page hears :: warning
+== tests/view\world-area.test.mjs 7
+  516 only the value below its threshold stands in danger, and the backpack reads its pieces of the cap :: character,danger
+  645 by a fire the note under temperature reads „przy ogniu”, and the notes follow the game minute :: character
+  768 the icons of the drawing take the colour text-strong, the icon of a stock of 0 dimmed by depleted :: depleted,text-strong
+  834 the character's tile and the step's target carry an outline each, the target apart by its class :: character
+  881 the drawing is a picture: a click on a tile changes nothing, and nothing in it is a control :: link-highlight
+  902 a hovered tile marks its row and the line under the drawing shows its numbers; a hovered row marks its tile; w :: link-highlight
+  993 a hovered tile not revealed marks the tile alone, and the line gives its label with nothing of its stock :: character
+TOTAL 110
