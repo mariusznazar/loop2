@@ -340,6 +340,7 @@ test("M+5 starts ordinary work immediately, counts every combat action once and 
   // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
   // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
   const program = programFromRules(
     { condition: ALWAYS, action: { kind: "kick" } },
     { condition: ALWAYS, action: { kind: "wander" } },

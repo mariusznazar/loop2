@@ -150,6 +150,7 @@ test("a wait lasts waitMinutes, one game minute", () => {
 test("feasibility and choice do not draw from the wander generator", () => {
   // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
   // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-375 "„Wędruj” can be carried out while the character's tile has a neighbour on the map"
   const run = freshRun();
   const before = JSON.stringify(run);
   actionFeasible(run, WANDER);

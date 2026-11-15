@@ -186,6 +186,7 @@ test("a program change during an explore does not interrupt it", () => {
 });
 
 test("Wędruj prefers an unrevealed neighbour", () => {
+  // decision: D-375 "„Wędruj” takes the character onto a neighbouring tile of the map"
   // D-375: a neighbour not yet revealed takes precedence.
   // The six neighbours of axial (1, 1) are written independently of product helpers.
   const neighbours = [
@@ -226,6 +227,7 @@ test("Wędruj prefers an unrevealed neighbour", () => {
 });
 
 test("Wędruj goes to some neighbour when all are revealed", () => {
+  // decision: D-375 "„Wędruj” takes the character onto a neighbouring tile of the map"
   // D-375. Six allowed axial neighbours, independently enumerated; neither neighbours()
   // nor hexDistance() supplies the expected result of the product's selection.
   const neighbours = [
@@ -263,6 +265,7 @@ test("Wędruj goes to some neighbour when all are revealed", () => {
 });
 
 test("starting Wędruj consumes exactly one draw", () => {
+  // decision: D-375 "Choosing the tile takes one draw of the generator of wandering"
   // D-375: the choice of a step takes one draw of the generator of wandering.
   // Independent Mulberry32 fixture: state advances by 0x6d2b79f5 modulo 2^32, so
   // starting from 0 gives 0x6d2b79f5 after one draw. No product helper computes it.
@@ -276,6 +279,7 @@ test("starting Wędruj consumes exactly one draw", () => {
 test("Wędruj is not feasible with no neighbour on the map", () => {
   // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
   // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-375 "„Wędruj” can be carried out while the character's tile has a neighbour on the map"
   // D-375.
   const run = start().run;
   assert.equal(actionFeasible(run, WANDER), true);

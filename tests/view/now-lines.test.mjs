@@ -50,6 +50,7 @@ const nextOf = (next, now = { kind: "wait" }) =>
 // header („Zbiera: patyk”) in place of the words of the rule's row, a missing icon, or minutes written
 // without "z" the whole.
 test("Teraz names an action under way with the icon of the action, the words of the rule's row and, at the right, the rule's number as the editor numbers it and the minutes", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   const row = nowOf({
     kind: "action",
     ruleId: 9,
@@ -78,6 +79,7 @@ test("Teraz names an action under way with the icon of the action, the words of 
 // Catches a number or the minutes left out of the right-hand text, or the rule that is gone from the
 // copy making the whole row fail: the copy can lose the rule while its action goes on.
 test("Teraz keeps the minutes of an action whose rule the copy no longer holds, and names no rule", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   const row = nowOf({
     kind: "action",
     ruleId: 99,
@@ -91,6 +93,7 @@ test("Teraz keeps the minutes of an action whose rule the copy no longer holds, 
 
 // Catches a wait with an icon, a rule or minutes beside it.
 test("Teraz names a wait by the words of the game and nothing at its right", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   assert.deepEqual(nowOf({ kind: "wait" }), {
     icon: null,
     text: "Czeka — żadna reguła nie pasuje",
@@ -102,6 +105,7 @@ test("Teraz names a wait by the words of the game and nothing at its right", () 
 // Catches an icon, a rule's number or minutes beside the fight, or the creature in the wrong case.
 test("Teraz in the minutes of an attack says the fight alone, with the creature in the case of „z”", () => {
   // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
   assert.deepEqual(nowOf({ kind: "combat", creatureId: "wolf" }), {
     icon: null,
     text: "Walczy z wilkiem",
@@ -113,6 +117,7 @@ test("Teraz in the minutes of an attack says the fight alone, with the creature 
 // Catches a cause worded alike for two deaths, or a cause in a signal role (D-334: not `danger`).
 test("Teraz after a death says its cause in the role text, for each of the three causes", () => {
   // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   const said = ["cold", "hunger", "combat"].map((cause) => {
     const row = nowOf({ kind: "death", cause });
     assert.equal(row.role, "text", cause);
@@ -130,6 +135,7 @@ test("Teraz after a death says its cause in the role text, for each of the three
 // Catches a completion text of the code and not of the map, or a completion not in `positive`.
 test("Teraz after a completion says the text of the map in the role positive", () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
   assert.deepEqual(
     nowOf({ kind: "completion", text: "Las — głębiej rozwiązany" }),
     {
@@ -144,6 +150,7 @@ test("Teraz after a completion says the text of the map in the role positive", (
 // Catches a label other than „Potem”, an icon of the target in place of the action, or a number that
 // does not follow the editor's.
 test("Potem names the rule that wins with its icon, the words of its row and, at the right, its number", () => {
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   assert.equal(NEXT_LABEL, "Potem");
   assert.deepEqual(nextOf(NEXT_9), {
     icon: "grab",
@@ -162,6 +169,7 @@ test("Potem names the rule that wins with its icon, the words of its row and, at
 // Catches the line of no winner in a role other than `warning` (D-335: not `danger`), or with an
 // icon or a number.
 test("Potem with no winning rule says the character will stand, in the role warning", () => {
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   assert.deepEqual(nextOf(NO_NEXT), {
     icon: null,
     text: "żadna reguła nie pasuje — postać stanie",
@@ -172,6 +180,7 @@ test("Potem with no winning rule says the character will stand, in the role warn
 
 // Catches a Potem that follows Teraz, or goes empty, after an end: it is drawn from its own part.
 test("Potem does not depend on what Teraz says: after a death it still names the winning rule", () => {
+  // decision: D-335 "The row says the state of the current game minute"
   const rows = nowRows(
     { now: { kind: "death", cause: "cold" }, next: NEXT_9 },
     PROGRAM,

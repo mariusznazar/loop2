@@ -629,6 +629,7 @@ function scrolledTo(scroll) {
 // D-336. Catches rows that are no control (no tab stop), a click or Enter that does nothing, a row
 // that scrolls the rule of the other row, and a scroll that puts the rule anywhere but the middle.
 test("a click on Teraz and on Potem, and Enter and Space on them, scroll the row of their rule to the middle of the window", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const { screen } = await wiredScreen(page, diverged());
@@ -671,6 +672,7 @@ test("a click on Teraz and on Potem, and Enter and Space on them, scroll the row
 // D-336, D-295. Catches a rule of a folded group looked for as a row that is not drawn, and a header
 // of another group.
 test("for a rule of a folded group Teraz and Potem scroll the header of that group", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const { screen } = await wiredScreen(page, diverged());
@@ -705,6 +707,7 @@ test("for a rule of a folded group Teraz and Potem scroll the header of that gro
 // D-336, D-267. Catches a program that follows the rule (a scroll made by an effect on every update)
 // instead of a scroll once per click.
 test("the program scrolls once per click and does not follow the rule when the game goes on", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const game = await wiredScreen(page, diverged());
@@ -720,6 +723,7 @@ test("the program scrolls once per click and does not follow the rule when the g
 // D-336. Catches a wait, a fight, a death, a completion and a Potem without a winner
 // being a tab stop or scrolling, and an action whose rule the copy no longer holds scrolling to nothing.
 test("a row that names no rule is no control: the keyboard does not reach it and it scrolls nothing", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const waitingState = setProgram(
@@ -777,6 +781,7 @@ test("a row that names no rule is no control: the keyboard does not reach it and
 // D-336, D-166. Catches a scroll in the program panel while it shows a saved program, whose rows
 // carry the same numbers as the copy's.
 test("while the program panel shows a saved program a click on Teraz scrolls nothing", async () => {
+  // decision: D-336 "While the program panel shows a saved program in place of the copy"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const game = await wiredScreen(page, diverged());

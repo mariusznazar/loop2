@@ -101,6 +101,9 @@ const signed = (root) => [
 // Catches the winning row not standing out, the bar of a row below the winner going missing, the
 // reason missing beside an amber bar and a reason standing beside the other bars.
 test("the copy stands with the winner, a bar at each row and header, and the reason of the rule that cannot start", async () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
+  // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name"
   await withPage(async (page) => {
     const game = await wired(
       page,
@@ -138,6 +141,7 @@ test("the copy stands with the winner, a bar at each row and header, and the rea
 // Catches the running row never drawn, drawn while its rule is also the winner, and a fix of the
 // copy not showing at once.
 test("the rule whose action goes on stands as running while another rule wins, and an edit of the copy shows at once", async () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   await withPage(async (page) => {
     const game = await wired(page, sentWith(group(1, ALWAYS, [EXPLORE])));
     assert.ok(rowOf(game.root, 7).classList.contains("winning"));
@@ -160,6 +164,7 @@ test("the rule whose action goes on stands as running while another rule wins, a
 
 // Catches the bar of the open row going with its background and the open row losing its place.
 test("an open row keeps its bar and its classes of state, which the stylesheet lets give way", async () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   await withPage(async (page) => {
     const game = await wired(
       page,
@@ -181,6 +186,8 @@ test("an open row keeps its bar and its classes of state, which the stylesheet l
 
 // Catches signs standing beside a saved program opened during a map run (D-174) and on Programy.
 test("a saved program picked during a map run and the screen Programy show no signs", async () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
   await withPage(async (page) => {
     const run = sentWith(group(1, ALWAYS, [EAT, EXPLORE]));
     const game = await wired(page, run);
@@ -212,6 +219,7 @@ test("a saved program picked during a map run and the screen Programy show no si
 // Catches the signs going at the end of the map run: after a death they stand, counted on the
 // stopped minute, until „Zakończ”, after which the saved program shows none.
 test("the signs stand on the screen after a death and go with „Zakończ”", async () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   await withPage(async (page) => {
     const game = await wired(page, sentWith(group(1, ALWAYS, [EAT, EXPLORE])));
     await game.change({
@@ -236,6 +244,7 @@ test("the signs stand on the screen after a death and go with „Zakończ”", a
 // or the state cover the open row (D-308): of rules of equal weight the later wins, so the pointer
 // must come first, then the states, then the open row.
 test("the stylesheet puts the background under the pointer before the states, and the open row after them", () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   const sheet = readFileSync(
     new URL("../../src/browser/styles.css", import.meta.url),
     "utf8",

@@ -166,6 +166,7 @@ test("at a stop at a discovery the clock reads „ (pauza)” as at the player's
 // stands at the game minute of the death.
 test("after a death the clock stands at the minute of the death, with no cause and no „ (pauza)”, paused or not", () => {
   // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(clockText(dead(state, 312, "cold").run, false), "Minuta 312");
   assert.equal(clockText(dead(state, 287, "hunger").run, false), "Minuta 287");
@@ -194,6 +195,7 @@ test("„Pauza” while running, „Wznów” while paused, and no pause button 
 });
 
 test("a mage left without a program dies, and the clock reads the minute of its death", () => {
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   const ended = advanceMinutes(sent([]), 1000).state;
   assert.ok(ended.run.death, "the mage died within 1000 minutes");
   assert.ok(ended.run.death.minute < 1000);

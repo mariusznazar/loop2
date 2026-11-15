@@ -206,6 +206,8 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
   // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   // decision: D-201 "Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run"
   // decision: D-201 "Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”"
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -318,6 +320,8 @@ const textsOf = (row) => ({
 // wrong file, minutes that do not follow the game minute, a label of Potem other than its word, or a
 // Teraz that grows a progress bar (D-334: none).
 test("Teraz and Potem name the action under way with its rule and minutes and the rule that wins, and follow the game minute", async () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     const rules = [
       { condition: ALWAYS, action: { kind: "explore" } },
@@ -358,6 +362,8 @@ test("Teraz and Potem name the action under way with its rule and minutes and th
 // Catches a wait that names a rule or minutes, or Potem that keeps the rule of a condition that does
 // not hold; and the line of no winner in a role other than `warning` (D-335).
 test("Teraz says the wait alone, and Potem with no winning rule says the character will stand in the role warning", async () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     const never = { kind: "hereBelow", resource: r[0], value: 0 };
     const { container } = await draw(
@@ -385,6 +391,9 @@ test("Teraz says the wait alone, and Potem with no winning rule says the charact
 test("after a death Teraz says its cause in the role text, after a completion the text of the map in positive, and Potem stays", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
   // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
+  // decision: D-335 "The row says the state of the current game minute"
   await withPage(async ({ document }) => {
     const rules = [{ condition: ALWAYS, action: { kind: "explore" } }];
     const { container, show } = await draw(document, sentUnder(...rules));
@@ -418,6 +427,8 @@ test("after a death Teraz says its cause in the role text, after a completion th
 // rule for the minutes of an attack when a combat rule would be chosen (D-335, D-309).
 test("in the minutes of an attack Teraz says the fight alone and Potem names the combat rule the turn would choose", async () => {
   // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     const state = withRun(
       sentUnder(
@@ -527,6 +538,7 @@ test("only the value below its threshold stands in danger, and the backpack read
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
   // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
+  // decision: D-337 "The body row holds each of its values in a cell of its own"
   await withPage(async ({ document }) => {
     const base = sent();
     const character = {
@@ -599,6 +611,9 @@ const notesOf = (container) =>
 test("the body row stands in cells with the minutes of the needs under temperature and satiety from game minute zero, none under health and nature energy", async () => {
   // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero"
   // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered"
+  // decision: D-337 "The body row holds each of its values in a cell of its own"
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   await withPage(async ({ document }) => {
     const started = sent();
     assert.equal(started.run.minute, 0, "precondition: game minute zero");
@@ -630,6 +645,8 @@ test("the body row stands in cells with the minutes of the needs under temperatu
 // Catches „marznie” or „głoduje” not in danger, a note in danger above its threshold, and the minutes
 // kept past the threshold. At 35,0 °C and 30 % the character is not yet chilled or starving.
 test("a note under temperature and one under satiety read „marznie” and „głoduje” in danger below their thresholds and the minutes at them", async () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   await withPage(async ({ document }) => {
     const base = sent();
     const { container, show } = await draw(
@@ -658,6 +675,7 @@ test("a note under temperature and one under satiety read „marznie” and „g
 
 // Catches „bez ognia {n} min” beside a fire on the character's tile, and an unlit map shown as cooling.
 test("by a fire the note under temperature reads „przy ogniu”, and the notes follow the game minute", async () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   await withPage(async ({ document }) => {
     const base = sent();
     const at = base.run.character.at;
@@ -677,6 +695,7 @@ test("by a fire the note under temperature reads „przy ogniu”, and the notes
 // the stopped minute — „marznie” after a death of cold, „głoduje” after one of hunger — and after a
 // completion the minutes of the body at game minute 480.
 test("the notes stand after the end of a map run, on the state at the stopped minute", async () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   await withPage(async ({ document }) => {
     const base = sent();
     const { container, show } = await draw(

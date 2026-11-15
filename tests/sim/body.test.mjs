@@ -482,6 +482,7 @@ const warm = { ...forest, ambientTemperature: 37 };
 test("from the starting temperature a body lasts 83 game minutes on Las and 33 on Las — głębiej before it is chilled", () => {
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // Las: the 83rd minute ends at 37 − 83 × 0.024 = 35.008 °C, the 84th at 34.984 °C.
   // Las — głębiej: the 33rd ends at 37 − 33 × 0.06 = 35.02 °C, the 34th at 34.96 °C.
   assert.equal(minutesUntilChilled(body(37, 100, 100), forest), 83);
@@ -489,12 +490,14 @@ test("from the starting temperature a body lasts 83 game minutes on Las and 33 o
 });
 
 test("from 36.9 °C a body lasts 79 game minutes on Las, the whole minutes of 79.2", () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // (36.9 − 35) / 0.024 = 79.17: the 79th minute ends at 36.9 − 1.896 = 35.004 °C, the 80th at
   // 34.98 °C.
   assert.equal(minutesUntilChilled(body(36.9, 100, 100), forest), 79);
 });
 
 test("a body at exactly 35.0 °C is not chilled but lasts no minute, and a chilled body lasts none either", () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // 35.0 − 0.024 = 34.976 °C, below the threshold in the first minute.
   assert.equal(minutesUntilChilled(body(35, 100, 100), forest), 0);
   assert.equal(minutesUntilChilled(body(34, 100, 100), forest), 0);
@@ -503,12 +506,14 @@ test("a body at exactly 35.0 °C is not chilled but lasts no minute, and a chill
 test("a map that does not cool the body below the threshold gives no minutes until chilled", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   // Ambient 37 °C: no cooling at all, the body keeps the temperature it has.
   assert.equal(minutesUntilChilled(body(37, 100, 100), warm), null);
   assert.equal(minutesUntilChilled(body(36.2, 100, 100), warm), null);
 });
 
 test("from full satiety a body lasts 116 game minutes before it starves, from 82 it lasts 86", () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // 100 − 116 × 0.6 = 30.4, the 117th minute ends at 29.8 (below 30);
   // 82 − 86 × 0.6 = 30.4, the 87th minute ends at 29.8.
   assert.equal(minutesUntilStarving(body(37, 100, 100), forest), 116);
@@ -516,10 +521,12 @@ test("from full satiety a body lasts 116 game minutes before it starves, from 82
 });
 
 test("satiety lasts the same on a map of another ambient temperature", () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   assert.equal(minutesUntilStarving(body(37, 100, 100), forestDeep), 116);
 });
 
 test("satiety that falls to exactly 30 is not starving, and one below 30 lasts no minute", () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // 30.6 − 0.6 = 30 exactly: not starving; the next minute ends at 29.4.
   assert.equal(minutesUntilStarving(body(37, 30.6, 100), forest), 1);
   // 30 − 0.6 = 29.4 and 29.9 − 0.6 = 29.3: starving in the first minute.
@@ -534,6 +541,8 @@ function noteRun(runBody, fields = {}) {
 }
 
 test("the notes at minute zero read the minutes of both needs", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   assert.deepEqual(needNotes(noteRun(body(37, 100, 100)), forest), {
     temperature: { kind: "minutes", minutes: 83 },
     satiety: { kind: "minutes", minutes: 116 },
@@ -545,6 +554,7 @@ test("the notes at minute zero read the minutes of both needs", () => {
 });
 
 test("the note of temperature reads chilled below 35.0 °C and minutes at 35.0 °C", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const at = (temperature) =>
     needNotes(noteRun(body(temperature, 100, 100)), forest).temperature;
   assert.deepEqual(at(35), { kind: "minutes", minutes: 0 });
@@ -552,6 +562,7 @@ test("the note of temperature reads chilled below 35.0 °C and minutes at 35.0 �
 });
 
 test("the note of satiety reads starving below 30 and minutes at 30", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const at = (satiety) =>
     needNotes(noteRun(body(37, satiety, 100)), forest).satiety;
   assert.deepEqual(at(30), { kind: "minutes", minutes: 0 });
@@ -559,6 +570,7 @@ test("the note of satiety reads starving below 30 and minutes at 30", () => {
 });
 
 test("a stick or a campfire burning on the character's tile gives by fire", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const at = noteRun(body(37, 100, 100)).character.at;
   const stick = { item: "stick", at, minutesLeft: 3 };
   const campfire = { at, minutesLeft: 40 };
@@ -570,6 +582,7 @@ test("a stick or a campfire burning on the character's tile gives by fire", () =
 });
 
 test("what does not warm the character's tile gives minutes, not fire", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const at = noteRun(body(37, 100, 100)).character.at;
   const elsewhere = { q: at.q + 1, r: at.r };
   const cases = [
@@ -590,6 +603,7 @@ test("what does not warm the character's tile gives minutes, not fire", () => {
 });
 
 test("a chilled body by the fire still reads chilled", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const at = noteRun(body(37, 100, 100)).character.at;
   const notes = needNotes(
     noteRun(body(34.5, 100, 100), { campfires: [{ at, minutesLeft: 40 }] }),
@@ -601,6 +615,7 @@ test("a chilled body by the fire still reads chilled", () => {
 test("a map at the body's starting temperature gives not cooling, and fire is read before it", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const at = noteRun(body(37, 100, 100)).character.at;
   assert.deepEqual(needNotes(noteRun(body(37, 100, 100)), warm).temperature, {
     kind: "not-cooling",

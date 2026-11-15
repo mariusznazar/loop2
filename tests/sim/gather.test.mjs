@@ -285,6 +285,7 @@ test("a gathering takes no more than lies on the tile, nor beyond the backpack's
 test("the wander stream gives the same draws with and without gathering", () => {
   // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
   // decision: D-65 "A character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then"
+  // decision: D-375 "Choosing the tile takes one draw of the generator of wandering"
   // Every tile revealed with sticks; the backpack holds 12 berries, so gathering stops when it is
   // full and wandering follows. The wander stream's states, at each wander started, are compared.
   const prepared = (() => {

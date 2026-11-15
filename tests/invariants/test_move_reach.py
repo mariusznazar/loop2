@@ -155,6 +155,7 @@ class MoveReach(unittest.TestCase):
 
     def test_every_move_ends_on_a_neighbour(self):
         # invariant: move-reach
+        # decision: D-375 "„Wędruj” takes the character onto a neighbouring tile of the map"
         directions = set()
         for program, real_ms in ((P_WANDER, T), (P_WANDER, T_OTHER), (P_GO, T)):
             with self.subTest(program=json.dumps(program), real_ms=real_ms):
