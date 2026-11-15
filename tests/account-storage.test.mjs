@@ -2780,7 +2780,7 @@ const liveExpiry = () => Date.now() + 86_400_000;
 test("the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for"
-  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400, its command for the role of an account of D-410 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
   // decision: D-202 "The operator can block an account from signing in and using the game"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database, store, raw, account } = await fixture(t);
@@ -2875,7 +2875,7 @@ test("the owner's command writes one event with the account's number for a chang
 test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
-  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -2903,7 +2903,7 @@ test("a database failure of the owner's command adds the error's kind and code a
 // D-253. Faults: no handler, so the default print writes the
 // message and the stack; a handler that goes on after what no code handled.
 test("what no code of the owner's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
-  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save`, `account-role` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runBlockCommand(
     ["block", "player@example.test"],
@@ -3071,7 +3071,7 @@ test("the owner's command changes nothing on a usage error, an unknown address o
 // D-400 and the operator command of the spec's section 5.
 test("the previous-save command grants and revokes by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes, naming the account by its email address normalized as at login, with the command `account-previous-save` run in the `loop2` container as D-137 gives for the block — the command reports that the privilege was granted or revoked, that the account already was in the state asked for, or that no account has that address"
-  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400, its command for the role of an account of D-410 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database } = await fixture(t);
   const runCommand = (args) => runOwnerCommand(previousSaveCommand, args, path);
@@ -3153,7 +3153,7 @@ test("the previous-save command writes one event with the account's number for a
 test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
-  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -3185,7 +3185,7 @@ test("a database failure of the previous-save command adds the error's kind and 
 // D-253. Faults: no handler of its own, so the default print writes the message
 // and the stack; a handler that goes on after what no code handled.
 test("what no code of the previous-save command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
-  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save`, `account-role` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runOwnerCommand(
     previousSaveCommand,
