@@ -280,6 +280,7 @@ function parse(raw) {
 }
 
 test("a message is submitted only after STARTTLS and login with the configured login and password", async (t) => {
+  // decision: D-153 "The account server sends email confirmation and password-reset messages from an address under `mariusznazar.com` through the authenticated SMTP service of Mikrus Outsider"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -463,6 +464,7 @@ test("each failure with no error of the library names its reason, and the line c
 });
 
 test("the submitted message has one recipient, the fixed sender and subject and a text body with the link on its own line", async (t) => {
+  // decision: D-158 "The email confirmation message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Potwierdź adres e-mail w loop2” and a body of four paragraphs separated by an empty line"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -500,6 +502,7 @@ test("the submitted message has one recipient, the fixed sender and subject and 
 });
 
 test("the submitted reset message has one recipient, the fixed sender and subject and a text body with the link on its own line", async (t) => {
+  // decision: D-227 "The password-reset message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Ustaw nowe hasło w loop2” and a body of three paragraphs separated by an empty line"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 

@@ -2243,6 +2243,10 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-message-limits
+    // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+    // decision: D-155 "A link of an email confirmation message works for 24 hours"
+    // decision: D-155 "Recording a new link for an account, which comes before its message is handed to the mail service"
+    // decision: D-156 "The link of a confirmation message is the configured public origin followed by `/#confirm-email=<token>`, its token 32 random bytes written in base64url"
     // Faults: waiting on a silent mailer without bound; a failed, broken or
     // limited sending reported as sent or failing the registration; a message
     // handed on whose link was never recorded.
@@ -2454,6 +2458,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-message-limits
+    // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
     // Faults: a limit checked after the message is handed on; limits counted
     // per route or only for sent messages; a limit that never ends.
     const f = await accountFixture(t);
@@ -2511,6 +2516,7 @@ test(
   async (t) => {
     // invariant: email-confirmation-link
     // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and may ask for a password-reset link subject to the transport, origin and input guards; an emailed confirmation link alone, under the transport, origin and input guards, authorizes confirming the address of its own account"
+    // decision: D-156 "The server gives one and the same refusal to every token that is malformed, unknown, used, expired, of another kind or of a blocked account"
     // Faults: a link confirming twice; refusals that tell a malformed, unknown
     // and used token apart; a token taken in another spelling; confirming the
     // session's account instead of the link's.
@@ -2576,6 +2582,8 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: email-confirmation-link
+    // decision: D-155 "Recording a new link for an account, which comes before its message is handed to the mail service, stops in the same transaction every earlier link of the same kind for that account, so a message whose sending then fails leaves no earlier link working"
+    // decision: D-156 "The server gives one and the same refusal to every token that is malformed, unknown, used, expired, of another kind or of a blocked account"
     // Faults: earlier links stopped only after a successful sending; a link
     // checked without its expiry or its kind.
     const f = await accountFixture(t);
@@ -2629,6 +2637,8 @@ test(
   async (t) => {
     // invariant: unblock-restores-no-link
     // invariant: email-confirmation-link
+    // decision: D-156 "The server gives one and the same refusal to every token that is malformed, unknown, used, expired, of another kind or of a blocked account"
+    // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.”"
     // Faults: a link recorded without reading the block in its transaction; a
     // block that leaves a link on its way working; an unblock that revives it;
     // a message handed on for an account already blocked.
@@ -2905,6 +2915,7 @@ test(
     // invariant: password-reset-verified-email
     // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request"
     // decision: D-222 "Only after the answer does the server record and send a link, and only for an account with a confirmed address that is not blocked and within the limits of D-105, and a failure of that work shows only in the server's log"
+    // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222"
     // Faults: a different status or body for one account state; a message to
     // an unconfirmed, unknown or blocked account or above a limit.
     const f = await accountFixture(t);
@@ -3120,6 +3131,9 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: password-reset-verified-email
+    // decision: D-155 "A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded"
+    // decision: D-155 "Recording a new link for an account, which comes before its message is handed to the mail service, stops in the same transaction every earlier link of the same kind for that account, so a message whose sending then fails leaves no earlier link working"
+    // decision: D-227 "The password-reset message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Ustaw nowe hasło w loop2”"
     // Faults: a lifetime other than one hour; an earlier link left working
     // beside the newest; the route handing on another message than the
     // password-reset message (its subject, D-227).
@@ -3486,6 +3500,7 @@ test(
     // invariant: unblock-restores-no-link
     // decision: D-226 "`POST /api/password-reset` checks the fields of its request, then the rules of D-98, then the form of the token and whether its link works, all before any password work, so a link that does not work never reaches the password gate of D-103"
     // decision: D-226 "Every token that is malformed, unknown, spent, expired, stopped, of another kind or of a blocked account gets one and the same refusal `invalid-link`"
+    // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.”"
     // Faults: the link not read before the hashing, so that a used or
     // stopped link meets a full gate as 429; an answer of 200.
     const f = await accountFixture(t);
@@ -3819,6 +3834,7 @@ test(
     // invariant: password-reset-link
     // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // decision: D-226 "Every token that is malformed, unknown, spent, expired, stopped, of another kind or of a blocked account gets one and the same refusal `invalid-link`, before the hashing or after it, a full password gate answers 429 `too-many-attempts`, and any other failure writes nothing, so the last two leave the link working"
+    // decision: D-155 "A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded, each works once, and a password-reset link is spent only together with the new password"
     // Faults: a failure of the hashing answered 429 where 500 is given; an
     // answer of 200.
     const f = await accountFixture(t);

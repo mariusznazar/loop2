@@ -1508,6 +1508,7 @@ test("issuing refuses a window longer than the hour links are kept for, an unusa
 
 // invariant: email-confirmation-link
 test("a confirmation link confirms its account once, stops the account's other confirmation links, and leaves its other kind of link working", async (t) => {
+  // decision: D-156 "The server gives one and the same refusal to every token that is malformed, unknown, used, expired, of another kind or of a blocked account, and a confirmation stops every other confirmation link of the account"
   const { database, raw, account, advance } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   database.issueLink(confirmationLink(account.id, "mine"), limits);
@@ -1648,6 +1649,7 @@ test("a confirmation link of a blocked account changes nothing, also one the blo
 // invariant: email-confirmation-link
 test("a block committed through another connection stops every link issued before it, which confirms nothing after unblocking, and a block before an issue records nothing", async (t) => {
   // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account"
+  // decision: D-160 "A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message"
   const { path, database, raw, account, track } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   database.issueLink(confirmationLink(account.id, "before"), limits);
@@ -1712,6 +1714,7 @@ function resetState(raw) {
 // invariant: player-server-session
 test("a working reset link replaces the password, deletes every session of its account, stops its reset links and nothing else, and works once", async (t) => {
   // decision: D-138 "The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password"
+  // decision: D-155 "A link of an email confirmation message works for 24 hours and a link of a password-reset message for one hour from the moment it is recorded, each works once, and a password-reset link is spent only together with the new password"
   const { database, store, raw, account, advance } = await fixture(t);
   const other = database.createAccount("other@example.test", "other-hash");
   database.issueLink(confirmationLink(account.id, "confirm"), limits);

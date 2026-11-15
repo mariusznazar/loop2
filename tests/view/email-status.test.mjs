@@ -14,6 +14,7 @@ import {
 } from "../../dist/browser/view/email-status.js";
 
 test("each outcome of a confirmation message has its sentence and role", () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   const outcomes = {
     sent: [
       "Wysłaliśmy odnośnik potwierdzający na ala@example.com.",

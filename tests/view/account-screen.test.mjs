@@ -851,6 +851,7 @@ test("an address not written as name@domain gets its sentence under the field, n
 });
 
 test("a well-formed address gets the one sentence of the reset under the form in a status, with the field empty and the form and „Wróć do logowania” staying", async () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222"
   // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
   // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
   await onPage(async ({ root }) => {
@@ -1243,6 +1244,7 @@ function assertAboveTheForm(root, notice) {
 }
 
 test("with a token in the address the page confirms first, saying so, and checks the session only after the answer", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…”"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -1270,6 +1272,7 @@ test("with a token in the address the page confirms first, saying so, and checks
 
 // D-259: the card shows one form.
 test("the result stands as one sentence above the game for a signed-in player and leaves at the next change between forms and game", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(LINK));
@@ -1295,6 +1298,8 @@ test("the result stands as one sentence above the game for a signed-in player an
 
 // D-261: the sentence stands in the card, above the switch.
 test("a refused link stands in warning above the form in the card for a player who is not signed in, and the fragment goes", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
+  // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -1596,6 +1601,7 @@ test("a change clears the fragment first, then shows a new card with the sentenc
 
 // D-261: where the check leads to the forms, the sentence stands in the card.
 test("a refused link, whatever its reason, clears the fragment first and then checks the session: the card or the game with the sentence in warning above the form or the game", async () => {
+  // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game"
   const reasons = {
     "an unknown or spent link": "Odnośnik jest nieważny albo wygasł.",
     "a link of a blocked account": "Konto jest zablokowane.",

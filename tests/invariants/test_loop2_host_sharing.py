@@ -454,6 +454,8 @@ class ComposeServiceAsksNoPrivilege(unittest.TestCase):
         # decision: D-13 "Compose grants the tunnel file only to `cloudflared` as the read-only secret `/run/secrets/cloudflare_tunnel_token`, preserving the host directory's deployment-account ownership, group 65532 and mode 0750 and the tunnel file's same owner/group and mode 0640, grants the root-owned session file with group 1000 and mode 0440 only to the application as `/run/secrets/loop2_session_secrets`, and grants the root-owned SMTP password file with group 1000 and mode 0440 only to the application as `/run/secrets/loop2_smtp_password`, while the sender address and the mail service's host, port and login stand as plain values in `compose.yaml`"
         # decision: D-13 "Repository files and requests name credentials by secret name or private note rather than value"
         # decision: D-17 "The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`"
+        # decision: D-158 "The email confirmation message comes from `loop2@mariusznazar.com`"
+        # decision: D-227 "The password-reset message comes from `loop2@mariusznazar.com`"
         environment = self.services["app"].get("environment")
         self.assertIsNotNone(environment, "application account settings are missing")
         fields = support._yaml_mapping(environment.block, environment.line + 1)

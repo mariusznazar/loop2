@@ -47,6 +47,8 @@ test("the fragment's token is read, and a fragment without one yields none", () 
 });
 
 test("each answer to a confirmation has its sentence and role, and only a confirmation or a link refusal is definitive", () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning`"
+  // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning`"
   const cases = [
     [
       "confirmed",
@@ -136,6 +138,7 @@ test("an address without a token sends nothing and is left as it is", async () =
 });
 
 test("a definitive answer, confirmed or the link refused, sends the token once and clears the fragment", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server"
   for (const [name, result, text] of [
     ["confirmed", { ok: true, value: null }, "Adres e-mail potwierdzony."],
     ["refused", INVALID_LINK, "Odnośnik jest nieważny albo wygasł."],
@@ -151,6 +154,7 @@ test("a definitive answer, confirmed or the link refused, sends the token once a
 });
 
 test("a lost connection or a server error keeps the fragment, so a reload tries again", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload"
   for (const [name, result] of [
     ["no connection", NO_CONNECTION],
     ["a server error", refusal(500, null, "Serwer nie mógł obsłużyć żądania.")],
