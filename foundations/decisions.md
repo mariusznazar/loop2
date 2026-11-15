@@ -8911,14 +8911,18 @@ and a package or a module from outside the repository is the file of no part.
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: cross-part-imports. For the rest, an agent compares a change with
-  the decision:
-  - complies: a test of the simulation importing a file of the part of test helpers; a test of the
-    browser view importing a built module of the simulation under `dist/browser/sim/`, which the
-    test matches to its source; a test of one part starting a file of another part as a process
-  - violates: a test of the simulation importing a built module under `dist/browser/view/`; a
-    file outside `tests/` importing a file of the part of test helpers; a relative import left
-    unchecked because the test cannot match it to a file
+- **Verification:** invariants: cross-part-imports. tests: the forms the test reads as imports —
+  in TypeScript and JavaScript `import` and `export … from` statements, a bare `import` and
+  `import()` with a string literal, and nothing in a comment, a string or another expression, and
+  in Python `import` and `from … import` statements and a directory added to `sys.path`; a
+  relative import that matches no file failing the test with the file and the line; a built file
+  under `dist/` matched to its source under `src/`; a package or a module from outside the
+  repository taken for the file of no part. An agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a test of one part starting a file of another part as a process, and a page or a
+    style sheet of the browser view referring to a file, both left unread by the test
+  - violates: the test of `cross-part-imports` made to read a process one file starts from
+    another, or the HTML and CSS of the browser view, while this decision stays as it is
 - **Origin:** none
 
 *Rationale:* a file of the tests folder that is no test, such as a helper or a stand-in, serves
@@ -9081,9 +9085,9 @@ loop2 names a place on the author's disk outside the repository, such as the fol
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: tracked-file-private-paths · tracked-file-private-names. An agent compares a change with the decision:
-  - complies: a line of the agent instructions that names the entry `projects` under `loop2` in the locations file; a decision whose whole reasoning stands in its *Rationale* and *Rejected*, with *Origin* `none`; a comment that states in its own words what the code needs
-  - violates: a line of any tracked file that gives the folder of the notes, the list of tasks or an old copy of the repository by its path on the disk; a comment, an entry or a guideline that names a note the author keeps outside the repository, or a file of the private repository of the old loop game
+- **Verification:** invariants: tracked-file-private-paths · tracked-file-private-names. An agent compares a change with the part no invariant holds:
+  - complies: a decision whose whole reasoning stands in its *Rationale* and *Rejected*, with *Origin* `none`; a comment that states in its own words what the code needs
+  - violates: a comment, an entry or a guideline that names a file of a repository its readers cannot reach other than the private repository of the old loop game; an entry or a comment that leaves out what its reader needs because a source outside the repository holds it
 - **Origin:** none
 
 *Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note shows the same and leads a reader of the repository nowhere: the notes a decision or a test pointed to are removed when their task closes, so the pointer goes dead, and the private repository of the old loop game is not open to a reader at all. An agent that wants to know why a decision was made, or the author who returns to it after months, finds the reasoning where it stands in the entry, not in a note that no longer exists. What a reader needs of such a source therefore stands in the foundation, and the documents the notes held do not move into the repository, since that would make the author's working papers public and set a second source of truth beside the foundation.
@@ -9597,9 +9601,9 @@ In one run of the gate, whichever of its processes need a daemon, Docker Desktop
 - **Scope:** build-tools, deployment
 - **Based on:** docker-desktop-start-detach · windows-file-lock-release-at-process-end
 - **Relations:** derives from D-77
-- **Verification:** invariants: gate-docker-start-waits-once. tests: a run that finds Docker Desktop stopped starts it once and skips nothing, in one process and in several at the same time; a process that asks during a start begun by another waits for that start; a start whose process ended is begun again by the next process to ask. An agent compares a change with the part no invariant and no test holds:
-  - complies: a new test that needs a container asks the gate for a daemon before it builds anything, and is skipped through that request alone; a test of the gate's start that runs against a stand-in `docker` and so proves the gate's reaction, not a real start
-  - violates: a test that keeps its own check of the daemon and is skipped on it, so that a stopped Docker Desktop is never started for it; a wait for the daemon with no time limit
+- **Verification:** invariants: gate-docker-start-waits-once. tests: the gate's request for a daemon that finds Docker Desktop stopped starting it and waiting until a daemon answers, no longer than its limit, in one process, in a run of the whole gate and in a run of one test file; no skip where a daemon answers, and a skip only once the limit has passed, with a message that says the start was tried and what stays unchecked; on a computer with no Docker Desktop, a skip at once with a message that says what stays unchecked; one start in a run whatever processes ask, a process that asks during a start begun by another waiting for that start within its own limit and starting none of its own, and a start whose process ended begun again by the next process to ask. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new test that needs a container asks the gate for a daemon before it builds anything, and is skipped through that request alone; a gate that waits 3 minutes for a daemon where no other limit is set for the run
+  - violates: a test that keeps its own check of the daemon and is skipped on it, so that a stopped Docker Desktop is never started for it; a gate whose wait for a daemon, with no other limit set for the run, is other than 3 minutes
 - **Origin:** none
 
 *Rationale:* the gate starts Docker every time, whatever an agent remembers, and today only the game uses Docker; a start left to an agent's memory leaves a forgotten Docker as an unchecked test in a request. A run of one test file starts it too, since agents run one file when they look for a cause, and a file that needs Docker fails without it. Three minutes is a margin of over three times the estimated start of half a minute to a minute (not measured), and costs a run those three minutes once where Docker does not rise. Only an answer of the daemon counts as Docker being up, because that answer is what the tests need. A computer with no Docker Desktop keeps the skip it had, at once. The tests of a run stand in several processes, one for each directory of Python tests, so a start that did not finish is recorded outside any one process; otherwise each of those processes would wait the whole limit again. A start still going is known to the others by a lock held outside any one process for the length of the start, because those processes may run at the same time and each would otherwise find no daemon and no record and start Docker Desktop and wait for it itself; where the holder ends, the operating system releases its lock, on Windows after a time that depends on available system resources, so a start that ended with its process holds the others for that time at most, and a process that waits gives up at its own limit with the gap of a start that did not finish; that start recorded nothing that anyone waited for, so the next process begins it again.
@@ -9612,9 +9616,9 @@ The Docker Desktop that the gate started stays running after the run; the gate d
 - **Scope:** build-tools, deployment
 - **Based on:** none
 - **Relations:** derives from D-390
-- **Verification:** an agent compares a change with the decision:
-  - complies: a run that started Docker Desktop ends with it running, the gate having issued no command that stops or restarts it
-  - violates: a gate, or a test of it, that stops or restarts Docker Desktop at the end of a run or after a test
+- **Verification:** tests: the gate, once it has started Docker Desktop, giving `docker` no command that stops or restarts it, in one process, in several at the same time and in a run of the whole gate. An agent compares a change with the part no test holds:
+  - complies: a run that started Docker Desktop ends with its processes and the virtual machine it runs in left as they are
+  - violates: a gate that ends Docker Desktop at the end of a run by another way than a command of `docker`, such as ending its process or shutting down the virtual machine it runs in; a test that stops or restarts Docker Desktop after it has run
 - **Origin:** none
 
 *Rationale:* Docker Desktop left running is the state that follows starting it by hand, and the next runs of the same work do not wait for a start. Accepted with it: the memory it takes stays taken until its owner closes it.
@@ -9642,7 +9646,9 @@ Two checks keep the simulation's files from using the page, a timer, the console
 - **Scope:** simulation, build-tools
 - **Based on:** none
 - **Relations:** derives from D-04
-- **Verification:** invariants: simulation-isolation · simulation-type-check
+- **Verification:** invariants: simulation-isolation · simulation-type-check. tests: the type check of the simulation's files emitting nothing beside their sources. An agent compares a change with the part no invariant and no test holds:
+  - complies: a change of the test of `simulation-isolation` that keeps its scan of every source of the simulation and its run of the built simulation in a cut-off environment, also where the compiler refuses some of the names it finds
+  - violates: a part of the scan of the sources, or the run of the built simulation in a cut-off environment, taken out of the test of `simulation-isolation` because the compiler refuses the same names
 - **Origin:** none
 
 *Rationale:* the compiler refuses a use of the page, a timer, the console or the structured copy at the type check, ahead of the slower tests of the gate among which the test of isolation stands. The compiler does not take the test's place: the type `Date` belongs to the language, so it does not refuse `Date.now()` or `new Date()`, and it does not refuse an import of a package that brings types of its own, while the test checks the system clock, the imports and a run of the built simulation. A configuration that only checks leaves the compiling of the simulation's files to the browser's configuration, so the files are built once.
@@ -9859,9 +9865,9 @@ The full gate runs its stages one after another: the build, the Node tests, the 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** derives from D-77
-- **Verification:** an agent compares a change with the decision:
-  - complies: the Node tests run as a stage of their own after the build and before the directories of Python tests; a run that finds a stage failing runs no stage after it
-  - violates: the Node tests started beside the directories of Python tests; a stage run after a stage that failed
+- **Verification:** tests: a run of the full gate running the build, the Node tests, the directories of Python tests and the foundation check, the Node tests after the build. An agent compares a change with the part no test holds:
+  - complies: the Node tests run as a stage of their own before the directories of Python tests, and the foundation check after those; a run that finds a stage failing runs no stage after it
+  - violates: the Node tests started beside the directories of Python tests; the foundation check run before the directories of Python tests; a stage run after a stage that failed
 - **Origin:** none
 
 *Rationale:* the Node tests take about one minute, so running them beside the directories of Python tests would save about that minute of a run (an estimate, not a measurement), at the price of a more complex gate and a more complex test of it, and of more memory at the peak, where two heavy directories that use Docker would run beside Node tests on a document imitation with a memory limit of their own; nobody has measured that peak. The figure of the gate's length, about 15 minutes, is the estimate for the directories at the same time; the full gate runs them at the same time (D-406). Accepted with it: the gate keeps that minute.
@@ -9874,7 +9880,9 @@ The full gate runs the directories of Python tests at the same time, giving the 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** derives from D-77 · derives from D-390
-- **Verification:** tests: the directories of Python tests running at the same time in a run of the whole gate, and a run of the whole gate with them that starts Docker Desktop once and waits for it once.
+- **Verification:** tests: the directories of Python tests running at the same time, not one after another, in a run of the whole gate, and a run of the whole gate with them that starts Docker Desktop once and waits for it once. An agent compares a change with the part no test holds:
+  - complies: the runner of the Python tests started by the full gate with no argument `--jobs`
+  - violates: the runner of the Python tests started by the full gate with `--jobs` and a number of 2 or more, so that a gate with more directories than that number runs some of them after others
 - **Origin:** none
 
 *Rationale:* the directories at the same time shorten the gate: three full runs with them so, on one computer of 32 GB as it was, with other work on it that no file of the repository records, took 18.3 to 19.6 minutes, while the gate with the directories one after another was measured earlier at 23 to 24 minutes on a slow computer and at 24.0 to 28.0 minutes with another cycle working beside it; that measurement is a note made on 2026-11-12 outside the repository, and the conditions of the two sets of runs are not alike. These measurements are the product's own, and their records are not open to a reader of the repository. What stood in the way of the directories at the same time was the start of Docker Desktop, which two of them began each for itself; it is begun once for the run now, as D-390 gives, and the tests that use Docker give the containers, images and volumes they make names with a random part, so that they do not meet by name. Accepted with it: the directories share the memory and the processor of the computer at the same time.
