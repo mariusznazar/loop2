@@ -1143,6 +1143,7 @@ test("a confirmed address shows no sentence and no Wyślij ponownie in the open 
 });
 
 test("a created account starts the sentence of its menu with the outcome of its first message, and the closed bar shows no mark of it", async () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   const outcomes = {
     sent: "Wysłaliśmy odnośnik potwierdzający na ala@example.com.",
     limited: "Za dużo wiadomości. Spróbuj ponownie za godzinę.",
@@ -1184,6 +1185,7 @@ test("a created account starts the sentence of its menu with the outcome of its 
 });
 
 test("Wyślij ponownie sends one request for the signed-in account and shows its outcome in the menu, which stays open", async () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -1317,6 +1319,7 @@ test("a refused link stands in warning above the form in the card for a player w
 });
 
 test("a lost connection on the confirmation keeps the fragment and shows the client message in warning above the screen", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -1345,6 +1348,7 @@ test("an address without a token asks only for the session and shows no notice",
 });
 
 test("the sentence of a confirmation waits through a failed session check and shows once it passes", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(LINK));
@@ -3178,6 +3182,7 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
 // for a damaged save, the sentence missing or under the confirmation notice, and the refused save
 // left on the server to come back at the next sign-in.
 test("a refused save starts a new game with its one-time sentence above it, after a confirmation notice, and saves the new game at once on the server's revision", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
@@ -4288,6 +4293,8 @@ test("„Wyloguj” on the screen of a map run going on saves it as it goes and 
 // D-225, D-96, D-281. Catches „Anuluj” or a refused link of a signed-in player
 // leading to the save's map run, and a confirmation link doing so.
 test("after an emailed link — a confirmation, „Anuluj” of „Ustaw nowe hasło” or a refused link — a signed-in player opens Siedziba, whatever the save holds", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one, whatever screen the game opens on"
+  // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.” in `warning` above the account forms or above the game"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -4716,6 +4723,7 @@ test("after „Zakończ” `#/programy` shows the first program once the copy's 
 // D-286. Catches the sentence standing above Programy and Postać until a
 // reload, and one that comes back on the return to Siedziba.
 test("the page's sentence above the first screen leaves at the first change of screen and does not come back", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(LINK);
@@ -5182,6 +5190,7 @@ test("a card opened by the session check or by an expired save takes no focus", 
 // a sentence leaves at a change between the card and the game. Catches a warning in another role,
 // a sentence lost at a press, and a pending sentence that also comes back above the game.
 test("the page's sentence stays in the card through a press of the switch, in warning as an alert, and leaves when the game comes", async () => {
+  // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await loggingOutPage(held);
@@ -6131,6 +6140,7 @@ test("a new password the server would refuse sends nothing, stands under its fie
 // token. Catches the order turned, a refusal read by its sentence instead of its code, and the
 // ending of a change told as a refusal.
 test("a change and a refused link, whatever its reason, clear the fragment first and then end the form with their ending", async () => {
+  // decision: D-160 "An emailed link of a blocked account, of an email confirmation or of a password-reset message, changes nothing and leaves the account as it is, and a player who opens such a confirmation link, or sends the form of such a password-reset link, sees „Odnośnik jest nieważny albo wygasł.”"
   const refused = (message) => ({
     ok: false,
     failure: { kind: "refused", status: 400, code: "invalid-link", message },

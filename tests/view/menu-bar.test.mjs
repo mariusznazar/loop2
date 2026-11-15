@@ -394,6 +394,7 @@ test("an unconfirmed address shows its sentence in text-secondary above „Wyśl
 });
 
 test("right after registration the sentence is the outcome of the registration's message", async () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
     await withPage(async (page) => {
       await openBar(page, {
@@ -412,6 +413,7 @@ test("right after registration the sentence is the outcome of the registration's
 });
 
 test("a send waits with the button disabled as Wysyłanie…, the menu stays open, then the outcome stands, the button is restored and focused", async () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
     await withPage(async (page) => {
       const { held } = await openBar(page, {
@@ -542,6 +544,7 @@ test("the page's account turning confirmed removes the sentence and the button",
 });
 
 test("an answer that comes while the menu is closed is there when the player opens it, and takes no focus", async () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   await withPage(async (page) => {
     const { held, field } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
