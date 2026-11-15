@@ -307,6 +307,8 @@ test("a send and a start of a loop are each one moment of saving", async () => {
   );
 });
 
+// decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock"
+// decision: D-409 "A new character and the purchase of a branch rank do not catch up time"
 // Catches a moment of the clock that does not move with the reading, which the resurrection lines read.
 test("the moment of the store is the date of the clock's latest reading", async () => {
   await onStore(newGame(), async ({ store, dateReads }) => {

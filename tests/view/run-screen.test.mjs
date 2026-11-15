@@ -281,6 +281,7 @@ test("at a discovery the band stands in the program's area, above the program pa
 // screen asks for it, in the world or the area under the drawing, above the band of a discovery, outside the
 // program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
 test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
     const [world, program, tabs] = areasOf(screen.element);
@@ -826,6 +827,7 @@ function coveredState(screen) {
 // over a map run that goes on, a header or an area left visible under the window, and a screen
 // that stays covered after the window is set closed.
 test("told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     assert.equal(windowIn(game.screen), undefined, "not drawn until told");
@@ -872,6 +874,7 @@ test("what the window covers stays in the tree and keeps its state: the tab pick
 // D-368, D-370. Catches „✕” that does not ask the game view to close the window,
 // and a focus left on nothing: it goes to „Koniec przejścia” in the header, which the closing shows.
 test("„✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     await inAct(() => game.screen.setWindow(true));

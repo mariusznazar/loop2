@@ -462,6 +462,7 @@ test("the rule panel of the copy says „Zmiana zeruje passę tego przejścia.�
 // folds the saved program, a memory that outlives its page, and a fold that hides a group of another
 // program.
 test("a group folded on one screen stays folded on the other for the same program, the copy's folding is its own, and a new memory forgets", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`"
   await withPage(async (page) => {
     const folding = createFolding();
     const programs = await wiredPanel(
@@ -512,6 +513,7 @@ test("a group folded on one screen stays folded on the other for the same progra
 // The memory is the page's: a fold made while the other panel is hidden still reaches it when it
 // draws next. Catches a panel that reads the memory only at its own updates.
 test("a fold made on one panel redraws the other at once, with no update of its own", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`"
   await withPage(async (page) => {
     const folding = createFolding();
     const programs = await wiredPanel(

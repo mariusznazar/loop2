@@ -992,6 +992,7 @@ test("„Dodaj regułę z tym” of the window closes it, adds the rule of the d
 // and a window that survives a load: a game built from the kept document opens it as a map run
 // ended opens it, whatever the player did with it.
 test("the window stands in no game state and no saved document: closing and opening it changes the document not at all, and a load opens it by the rule of an ended map run", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   await onPage(async (page) => {
     const { root } = page;
     const { view } = await dieOnTheScreen(page);

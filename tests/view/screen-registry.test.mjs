@@ -124,6 +124,7 @@ const hiddenNames = (element) =>
     .filter((child) => child.hidden)
     .map((child) => child.dataset.name);
 
+// decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens, its address and its position on the menu bar"
 // decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches a screen that two entries both claim, which would be built twice, and one that no entry
 // claims, which would show nothing.
@@ -340,6 +341,7 @@ test("a result is drawn on every living instance in table order, with the events
   });
 });
 
+// decision: D-408 "No function the game view shares between its screens names the new screen"
 // Catches the start that shows the first screen before the instances have drawn once, and a first
 // screen that is not written into the address in place of the entry the page opened at.
 test("start draws the instances with no events, then shows the first screen with its address replaced", async () => {
