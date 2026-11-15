@@ -1950,23 +1950,21 @@ subject to the same reset on a change of a rule's content.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-92 · derives from D-164
-- **Verification:** invariants: saved-program-edit · trip-plan-progress. An agent compares a change with the decision:
-  - complies: „sprawdzane od góry” above the rules on Programy and on the screen of a map run; a
-    rule of the copy showing „Wykonano 3×” and the header of its rule group the sum of its rules,
-    folded or not; a program rule moved up or into another group keeping its count; a changed group
-    condition leaving its rules' counts intact; a rule whose condition changed starting again
-    from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
-    next send or restart; a switch to another program starting every count of the new copy's rules
-    from zero; after „Zakończ” the rules of the copy's program showing the copy's counts, and „Wykonano
-    0×” beside a rule whose action there differs from the copy's; the start of an earning loop leaving
-    the counts of the last manual map run as they were
-  - violates: a bare „3×” beside a rule; a header of a rule group with no sum while its rules
-    show counts; counts kept per position in the list; a rename of a group resetting its rules'
-    counts; a count shown before the first map run; „Zakończ” hiding the ended run's counts; a
-    completion clearing the counts of its map run; counts shown beside a saved program opened
-    during a map run; the counts of the former copy kept after a switch; after „Zakończ” a count
-    of the copy shown beside a rule of the program whose condition there differs; firing counts
-    gathered in a map run of an earning loop
+- **Verification:** invariants: saved-program-edit · trip-plan-progress. tests: the list of rules
+  under the heading „sprawdzane od góry”; during a manual map run a rule of the copy showing
+  „Wykonano {n}×” and the header of its rule group the sum of its rules in the same form, the rules
+  of a saved program shown then with no count, and a map run of an earning loop gathering no count;
+  the count starting from zero at the start of a manual map run, at a restart, at a switch to
+  another program and when a rule's condition or action changes, and surviving reordering the rule,
+  moving it to another rule group, a change of its group's condition or name and a save of the
+  copy; no counts before the first manual map run; the counts kept after a death and after a
+  completion and, after „Zakończ”, beside the rules of the copy's program, a rule there whose
+  content differs from the copy's showing „Wykonano 0×”, and beside no other program, a deleted
+  copy's program included, until the next send or restart, a change of a rule's content there
+  starting its count again. For the screens the heading stands on, an agent compares a change with
+  the part no test and no invariant holds:
+  - complies: „sprawdzane od góry” above the rules both on Programy and on the screen of a map run
+  - violates: the heading standing on the screen of a map run alone, or on Programy alone
 - **Origin:** none
 
 *Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
@@ -3590,9 +3588,16 @@ Programs belong to the player, as one list shared by all characters; a character
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: saved-program-edit · copy-save. An agent compares a change with the decision:
-  - complies: a program edited while a character's earning loop goes on its copy, the earning loop unchanged until its next start; „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
-  - violates: a program stored as a field of the character; saving a program that rewrites the copies of characters already out; a save over a changed program refused; „Restart” taking a fresh copy of the program and dropping the copy's unsaved fix
+- **Verification:** invariants: saved-program-edit · copy-save. tests: the programs standing as one
+  list of the game state, from which a character's send or earning loop takes its program, by
+  default the one the character used last; a manual map run and an earning loop carrying out a copy
+  taken at their start, a restart carrying on the copy of the map run it replaces with its unsaved
+  change, and a switch during a manual map run going on at the same seed and minute with a fresh
+  copy of the other program; a change made during a map run going into the copy and reaching the
+  program only by „Zapisz w programie” or „Zapisz jako nowy program”, and dropped by „Porzuć
+  zmiany” or a switch; a save over a program that changed announced and done at once; a program
+  edited and the acts of the list made outside a map run and during one, and a send and a switch
+  taking the program as it then stands.
 - **Origin:** none
 
 *Rationale:* a saved program serves every character. A program carried out live would reset the streaks of characters in an earning loop and move them in the middle of a map run at every fix; locking a program that has copies would close exactly the programs in use, since copies live for hours. Programs are the player's work, not the character's, so a character's death does not touch them. A fix made in the copy during a map run zeroes the streak of that character alone. A fix made after a death and tried by a restart on the same seed is the basic rhythm of tuning a program, so a restart keeps the copy with its unsaved fix; a switch to another program lets the player try another program on the same seed without ending the map run.
@@ -3605,9 +3610,11 @@ Each program of the player carries a number the game gives it when the program i
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” renamed „Las nocą” and „Program” deleted, the copy's program, the program its character used last and a character's pick still naming program 2; a program created after program 3 was deleted taking the number 4
-  - violates: a record naming a program by its name or by its place on the list; a number given again to a program created after a deletion
+- **Verification:** tests: each created program, an appended one included, taking one more than the
+  number the game state gave last, and a deleted program's number never given again; the program
+  the copy belongs to, the program a character used last, the program picked for it, the program
+  entered with last and the program the counts stand beside after „Zakończ” recorded by that
+  number.
 - **Origin:** none
 
 *Rationale:* a rename changes no record that names a program, and a deleted program's number comes to mean no other program, so a record left naming it finds no program. The name a copy keeps once its program is deleted stands in the copy's heading and names no program. Counting up keeps the number out of the simulation's randomness, as it does for characters (D-56). A later change of how programs are told apart would touch every record naming one and, once the game state is saved, saved games.
@@ -3620,14 +3627,17 @@ The screen Programy holds on the left the list of the player's programs and on t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked on the list of Programy showing that program in the editor on the
-    right of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
-    saved program with „Zmiany tutaj nie dotykają przejścia na mapie Las.” above the editor; on the
-    screen of a map run the select list reading „Kopia w przejściu”, „Program”, „Program 2”
-  - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
-    Programy; a list during a map run on which the copy stands below the saved programs; the program
-    panel standing beside Siedziba
+- **Verification:** tests: Programy holding the list of the player's programs and a panel showing
+  the program picked there, by the list or by the address; that program always a saved one, with
+  „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” above the editor while a map run goes on,
+  is paused or has ended and waits, and „Przełącz postać na ten program” on the screen of a map run
+  alone; the program panel of the screen of a map run showing the copy, its select list holding
+  „Kopia w przejściu” at its top and the saved programs below it. For where the list and the editor
+  stand on Programy, an agent compares a change with the part no test holds:
+  - complies: the list of programs in the left column of Programy and the program editor in the
+    right one
+  - violates: the program editor standing on the left of Programy and the list of programs on its
+    right
 - **Origin:** none
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the panel in place there gains it no width.
@@ -3640,9 +3650,13 @@ The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-91
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Nowy program” adding „Program 2” with the empty rule group „Program” under „Zawsze”; „Usuń” inactive while the list holds one program; „Wciągnij programy z poprzedniego zapisu” standing on the list of a privileged account whose previous save exists
-  - violates: a new program holding no rule group; the one program of the list deleted; a button that duplicates a program; „Wciągnij programy z poprzedniego zapisu” on the list of an account without the privilege or with no previous save
+- **Verification:** tests: the list offering „Nowy program”, „Zmień nazwę” and „Usuń”, and „Wciągnij
+  programy z poprzedniego zapisu” only to an account with the previous-save privilege while its
+  previous save exists; a new program holding one empty rule group „Program” under „Zawsze”; „Usuń”
+  inactive beside a program left alone on the list, and the deletion of the last program refused.
+  For a duplicate of a program, an agent compares a change with the part no test holds:
+  - complies: a variant of „Program” made by saving the copy of a map run as a new program
+  - violates: a button or an act of the game that copies a program into a new one on the list
 - **Origin:** none
 
 *Rationale:* a new program starts as a new game's program does, with a place for its first rule (D-91). A list that keeps one program at least leaves the editor a program to show and a character a program to enter a map with. A variant of a program comes through the copy, saved as a new program. „Wciągnij programy z poprzedniego zapisu” stands with the other acts on the list because it adds programs to the list, and it stands only where it can act (D-401).
@@ -3655,9 +3669,11 @@ Deleting the program the copy of the map run belongs to leaves the map run going
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” deleted during a map run on its copy, the map run going on from the same game minute with „Zapisz jako nowy program” as the one save left; a copy with no edit of its own whose program „Program 2” is deleted standing under „Kopia: Program 2” with „Niezapisane zmiany w kopii.” and „Zapisz jako nowy program” active
-  - violates: the deletion ending the map run; „Usuń” refused for the program of a running copy; „Zapisz w programie” standing with no program to save into; „Zapisz jako nowy program” inactive after the deletion of the copy's program; the heading left with no name after the deletion
+- **Verification:** tests: the deletion of the copy's program leaving the map run going on with the
+  copy, its content and its counts, under a heading that keeps the program's name; „Zapisz w
+  programie” and „Porzuć zmiany” then gone and refused, and the copy counting as holding unsaved
+  changes, with „Niezapisane zmiany w kopii.” standing and „Zapisz jako nowy program” active until
+  the copy is saved as a new program.
 - **Origin:** none
 
 *Rationale:* the copy belongs to the map run, so the map run goes on with it, and a save as a new program keeps the player's work in it, while a save into the program and a discard have no program left to refer to. Once its program is gone, no program of the list holds the copy's content, so the copy counts as unsaved and the one save left can keep it; the heading keeps the name by which the player knew the program.
@@ -3670,9 +3686,11 @@ The program of a new game is named „Program”, and a new program „Program 2
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „ Las nocą ” typed for a rename naming the program „Las nocą”; „program 2” refused while „Program 2” stands on the list, with the message under the name field in `warning`; „Program 3” given to a new program while „Program” and „Program 2” stand; „Las” pulled while „Las” stands appended as „Las (2)”, and as „Las (3)” while „Las (2)” stands too
-  - violates: two programs named „Program 2” on the list; a name of spaces alone taken; a name cut at a length; a pulled program named „Las” while „las” stands; a pulled program replacing the program of its name
+- **Verification:** tests: „Program” for the program of a new game, and „Program 2”, „Program 3” and
+  on for a new program by the first free number, letter case ignored; a typed name trimmed, refused
+  when empty or when another program bears it in any letter case, and taken at any length; a pulled
+  program keeping its name where it is free and otherwise taking „(n)” for the smallest free n from
+  2, counting the programs the same pull appended before it.
 - **Origin:** none
 
 *Rationale:* the player tells programs apart by their names on the select lists of the program panel and of the card of a map, and two names that differ in letter case alone read there as one. A program pulled from the previous save is neither refused for a taken name nor put in place of the program that bears it, so the names stay unique and the player tells the copies apart. Accepted with it: the first program „Program” holds the rule group „Program”, so the panel shows the same word twice.
@@ -3685,9 +3703,12 @@ The player picks the program a character enters a map with on the select list �
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-53
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character that entered Las with „Program 2” showing „Program: Program 2” at it in „Kto idzie” afterwards; a character switched to „Program 3” during its map run showing „Program 3”; a new character showing the program the last character sent entered with; „Program 3” picked at a character and kept through the creation of another character until that character is sent; „Program 2” deleted while it is a character's program used last, the character showing the program with which a character last entered a map
-  - violates: more than one select list of programs at one character in „Kto idzie”; a new character showing the first program of the list after another character entered a map with „Program 2”; a pick at a character lost when the section „Kto idzie” is drawn again
+- **Verification:** tests: the select list „Program:” at each character in „Kto idzie” of the card
+  of a map, holding the player's programs in their order and handing the page the pick; the program
+  it shows, which a send takes, being the first still on the player's list of the program picked for
+  the character, kept until it is sent, the program it used last, the program it was switched to
+  included, the program with which any character last entered a map, and the first program of the
+  list.
 - **Origin:** none
 
 *Rationale:* the player picks the program where the character is sent from, and the program that stands first keeps a character with the program it went with last, so a send repeats the last attempt unless the player picks another. A character switched to another program during a map run used that program last, so the next send offers it.
@@ -3700,9 +3721,15 @@ During a map run the program panel shows the copy under the heading „Kopia: {p
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-39
-- **Verification:** invariants: copy-save. An agent compares a change with the decision:
-  - complies: a program rule added to the copy showing „Niezapisane zmiany w kopii.” in `warning` under „Kopia: Program”, with the three buttons active; „Zapisz jako nowy program” offering „Program 2”, after which the heading reads „Kopia: Program 2” and the list „Program:” at the character in the section „Kto idzie” of the card of a map shows „Program 2”
-  - violates: the three buttons active while the copy is the same as its program; the copy still belonging to „Program” after it was saved as „Program 2”
+- **Verification:** invariants: copy-save. tests: the copy shown under „Kopia: {program name}”;
+  while the copy differs from its program as it was taken from it or last saved into it,
+  „Niezapisane zmiany w kopii.” under the heading and „Zapisz w programie”, „Zapisz jako nowy
+  program” and „Porzuć zmiany” active, and while it is the same, the line gone and the three buttons
+  inactive and their acts refused; „Zapisz jako nowy program” offering the first free name, after
+  which the copy belongs to the new program, which becomes the program the character used last. For
+  the role of the line, an agent compares a change with the part no test and no invariant holds:
+  - complies: „Niezapisane zmiany w kopii.” drawn in the colour of the role `warning`
+  - violates: the line drawn in the colour of plain text or of another role
 - **Origin:** none
 
 *Rationale:* the player sees during a map run what the map run carries out and whether it holds work not yet saved, and the buttons act where there is something to save or to discard. After a save as a new program the copy belongs to the program that holds its content, so the next save and the next discard refer to that program.
@@ -3715,9 +3742,14 @@ While the program the copy belongs to holds changes made since the copy was take
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-39
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program” edited during a map run on its copy, the line standing beside the save buttons, and „Zapisz w programie” saving at the first click with the line gone
-  - violates: a window asking to confirm the save; the save refused while the program holds such changes; the line still standing after the save
+- **Verification:** tests: the line „Program {name} ma zmiany, których nie ma w tej kopii — zapis w
+  programie je zastąpi.” standing while the copy's program holds changes made since the copy was
+  taken from it or last saved into it, with or without unsaved changes of the copy; „Zapisz w
+  programie” then saving at the first click, replacing those changes, and the line gone after it.
+  For where the line stands and its role, an agent compares a change with the part no test holds:
+  - complies: the line standing beside „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć
+    zmiany”, in the colour of the role `warning`
+  - violates: the line standing away from the save buttons, or drawn in the colour of plain text
 - **Origin:** none
 
 *Rationale:* the player can edit a program during a map run, so a save of the copy can replace changes the copy lacks; the line says so before the save, and the save stays one click, as D-164 announces such a save and blocks none. An edit of a saved program during a map run touches neither the copy nor the streak nor the counters. The line names what the save replaces, which holds after „Restart” and after a switch as well, and stands in the role `warning`, which means that something will not be carried out or is not saved. Accepted with it: a longer text, which does not say when the program changed.
@@ -3730,9 +3762,26 @@ On the screens after a character's death and after a completion, editing the cop
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: a fix made in the copy after a death, „Zakończ” asking „Zapisać, odrzucić, wrócić?” under the band of the discovery, „Zapisz” putting the fix into „Program” and opening the screen Postać of that character, and „Program” standing in the panel of Programy as it was saved; the copy of the deleted „Program 2” saved by „Zapisz” as „Program 2” with no name field; „Odrzuć” opening the screen Postać with „Program” as it was; „Zakończ” with no unsaved changes opening the screen Postać at once; „Otwarte: Las — głębiej →” of the window with unsaved changes closing the window and asking in the same band, „Zapisz” then opening the screen Mapy with the card of Las — głębiej, and „Wróć” leaving the window closed with „Koniec przejścia” in the header
-  - violates: the save buttons gone after a completion; „Zakończ” ending the map run at once while the copy holds unsaved changes; the question asked where the copy holds none; „Zapisz” opening a field for a name; „Odrzuć” reaching the program with the copy's unsaved changes; „Wróć” leaving the map run ended; the question standing in the window; the window open again of itself after „Wróć”; „Otwarte: {mapa} →” ending the map run with unsaved changes with no question, or after „Zapisz” opening the screen Postać
+- **Verification:** tests: after a death, editing the copy, „Zapisz w programie”, „Zapisz jako nowy
+  program” and „Porzuć zmiany” acting as during the map run; „Zakończ” and „Otwarte: {mapa} →”
+  ending the map run at once with no unsaved changes, and with unsaved changes — „Zakończ” at any
+  moment of a map run — asking „Zapisać, odrzucić, wrócić?” in the program panel just above the
+  heading of the copy, or where it would stand while the panel shows another program, under the band
+  of a discovery, with „Zapisz”, „Odrzuć” and „Wróć” in that order, „Odrzuć” a destructive button,
+  and the line of D-172 under the sentence where the copy's program holds changes the copy lacks;
+  „Zapisz” saving as „Zapisz w programie” does, or, where the program was deleted, as a new program
+  under the first free name with no name field, „Odrzuć” ending the map run with no save and „Wróć”
+  leaving it as it was; a question a button of the window asks closing the window, which stays
+  closed after „Wróć” until „Koniec przejścia” in the header opens it; the player landing on Postać
+  after „Zakończ” and on Mapy at the card of the opened map after „Otwarte: {mapa} →”, and the
+  program editor then showing the copy's program, or the new program „Zapisz” made. For the screen
+  after a completion and the role of the question's sentence, an agent compares a change with the
+  part no test holds:
+  - complies: a fix made in the copy on the screen after a completion and put into its program by
+    „Zapisz w programie”; the sentence „Zapisać, odrzucić, wrócić?” in the colour of the role
+    `warning`
+  - violates: the save buttons inactive, or the copy closed to editing, on the screen after a
+    completion; the sentence of the question drawn in the colour of plain text
 - **Origin:** none
 
 *Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Unsaved changes can be the very rule that won the map, and their silent loss costs far more than one click, so „Zakończ” asks wherever there is something to lose. The question stands just above the heading of the copy it concerns, under the band of a discovery, so it stays at that copy through the map run and after its end, wherever the end buttons stand, and nothing already standing moves but the copy and its rules. The window covers that panel, so it closes while the question stands and stays closed after „Wróć”, and the question remembers which button asked it, since the player lands where that button leads. „Zapisz” keeps the player's work in one click, also where the program was deleted, so a name is no second step, and where the program changed since the copy was taken from it, the line of D-172 says what the save replaces. „Odrzuć” loses work, so it is a destructive button, as every button that can drop work is (D-44). Accepted with it: one more click at every end of a map run holding unsaved changes; a program saved under a name the game chose, which the player changes on Programy with „Zmień nazwę”; the eye going from „Zakończ” to the band in the program panel and, at a pause on a discovery, two bands standing at once, the question one band farther from „Zakończ”; the end out of the player's sight while the question stands and after it, until „Koniec przejścia” in the header opens it; one sentence more in the question in the rare case where the program the copy belongs to holds changes the copy lacks.
@@ -3745,9 +3794,16 @@ During a map run, picking a saved program on the program panel's list opens it f
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked during a map run on the copy of „Program”, the button standing under the list, and its click going on from the same game minute with a fresh copy of „Program 2”, the panel showing „Kopia w przejściu”; after „Zapisz jako nowy program” as „Program 2”, the button standing beside „Program” and gone beside „Program 2”
-  - violates: a pick on the panel's list switching the character; the button standing beside the program the copy belongs to; a question about the copy's unsaved changes before the switch; the button standing on the screen after a death
+- **Verification:** tests: during a map run a saved program picked on the panel's list opened for
+  editing with no switch; „Przełącz postać na ten program” standing while the panel shows a saved
+  program other than the copy's, and gone beside the copy, beside the copy's program, beside the new
+  program after „Zapisz jako nowy program” and after a death; its click switching the character at
+  once to a fresh copy of that program, a copy whose program is gone included, and the panel showing
+  „Kopia w przejściu” again. For where the button stands, an agent compares a change with the part no
+  test holds:
+  - complies: „Przełącz postać na ten program” standing under the list „Program:” of the panel
+  - violates: the button standing in the header of the screen of a map run, or under the program's
+    rules
 - **Origin:** none
 
 *Rationale:* the panel's list opens programs for editing during a map run, so the switch is an act of its own, standing beside the program it switches to. A save as a new program is no switch, so the button stands beside the program the copy was taken from and is gone beside the program the copy now belongs to. A switch takes a fresh copy of the program, so the unsaved changes of the old copy are lost without a question, the line „Niezapisane zmiany w kopii.” having warned of them, and the streak is set to zero (D-131). After a death or a completion the button is gone, because the map run has ended. Accepted with it: two moves, a pick on the list and the button, and one button more in the panel.
@@ -9985,9 +10041,14 @@ Where the program the program panel shows is gone from the player's list, or the
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-166 · derives from D-167 · derives from D-173 · derives from D-281
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Usuń” of the shown „Program 2” showing „Program”, the first program of the list, during a map run and on Programy; „Zakończ” after the copy's program „Program 2” was deleted showing „Program” with no count of the copy beside its rules (D-93); `#/programy/9` with no program 9 showing `#/programy` with „Program”
-  - violates: the panel left on a program that is gone from the list; „Program 3” shown in place of the deleted „Program 2” because it stood next to it; a count of the copy standing beside the rules of the first program after „Zakończ” with the copy's program deleted
+- **Verification:** tests: the panel showing the first program of the list after „Usuń” of the
+  program shown, on Programy and during a map run, after „Zakończ” when the copy's program was
+  deleted, during the map run or on Programy after it, and on Programy when the number asked for
+  names no program. For „Otwarte: {mapa} →”, an agent compares a change with the part no test holds:
+  - complies: „Otwarte: Las — głębiej →” after the copy's program „Program 2” was deleted, the
+    program editor then showing „Program”, the first program of the list
+  - violates: after „Otwarte: Las — głębiej →” the editor left on the deleted „Program 2”, or
+    showing „Program 3” because it stood next to it
 - **Origin:** none
 
 *Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
