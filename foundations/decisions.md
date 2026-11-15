@@ -3229,6 +3229,9 @@ Players register and sign in with an email address and password. They can start 
 - **Based on:** OWASP Authentication Cheat Sheet, password authentication (https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html, read 2026-10-04) · OWASP Email Validation and Verification Cheat Sheet, establishing control of an address (https://cheatsheetseries.owasp.org/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.html, read 2026-10-04) · OWASP Forgot Password Cheat Sheet, single-use expiring reset links (https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html, read 2026-10-04) · W3C Web Authentication Level 3 (https://www.w3.org/TR/webauthn-3/, read 2026-10-04) · OpenID Connect Core 1.0 (https://openid.net/specs/openid-connect-core-1_0.html, read 2026-10-04)
 - **Relations:** derives from D-202
 - **Verification:** invariants: player-password-login · email-verification-nonblocking · password-reset-verified-email.
+  tests: an address confirmed by the link of its confirmation message becoming the address the
+  reset link is sent to; a password set by the player through the link alone, with no step of the
+  operator, the link refused at its second use.
 - **Origin:** none
 
 *Rationale:* a player can enter without waiting for a message, yet can later recover the account without asking the operator. The recovery link goes only to an address whose control was confirmed earlier. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation and reset; a player who loses the password before confirming the address cannot use this recovery route. The choice is to be looked at again if email delivery repeatedly prevents account recovery or the password method no longer fits the player base.
@@ -4618,12 +4621,19 @@ server's log.
 - **Scope:** account-server, browser-view
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Return a consistent message for both existent and non-existent accounts." · "Ensure that responses return in a consistent amount of time to prevent an attacker enumerating which accounts exist."; read 2026-10-30
 - **Relations:** derives from D-99 · derives from D-104 · derives from D-105 · derives from D-152 · derives from D-161
-- **Verification:** an agent compares a change with the decision:
-  - complies: a request whose mailer never answers getting its answer at once; the same answer and no
-    body for an unknown address, an unconfirmed one, a blocked one and one above a limit
-  - violates: a lookup of the account or the recording of a link before the response has ended; an
-    answer that waits for the mail service; a failure of the work after the answer that ends the
-    process
+- **Verification:** tests: one and the same answer, 204 with no body, for every well-formed
+  address, whether its account is confirmed, unknown, unconfirmed, blocked or above a limit or its
+  link fails to record, the answer ending before the mail service is asked, before the account is
+  looked up and before the link is recorded; the page's sentence under the form „Nie pamiętam
+  hasła” in a status, with the address field empty and the form and „Wróć do logowania” staying;
+  an address not written as name@domain refused with its sentence under the field by the form,
+  which sends nothing, and with that sentence by the server; a link recorded and sent only after
+  the answer, only for a confirmed account that is not blocked and within the limits of D-105, and
+  a failure of the lookup, of the recording or of the sending showing only as a line of the
+  server's log, the process going on. An agent compares a change with the part no test holds:
+  - complies: the sentence under the form in `text`, with a bar at its left in the colour of the
+    sentence, as D-44 gives that answer
+  - violates: the sentence under the form in `warning` or in `positive`, or without its bar
 - **Origin:** none
 
 *Rationale:* one sentence for every well-formed address says nothing about any account, and the only
@@ -4666,10 +4676,14 @@ the game's address is given to other players, if abuse has become real.
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Implement protections against excessive automated submissions such as rate-limiting on a per-account basis"; read 2026-10-30
 - **Relations:** derives from D-105 · derives from D-222
-- **Verification:** an agent compares a change with the decision:
-  - complies: a request for a link going through the two limits of D-105 and no other count
-  - violates: a counter of requests per client address added beside those limits while this decision
-    stands
+- **Verification:** tests: ten requests for a link from one client address within an hour, each
+  answered and handed on as far as the two limits of D-105 allow and no further. An agent compares
+  a change with the part no test holds:
+  - complies: a request for a link going through the two limits of D-105 and no other count,
+    however many requests one client address sends in an hour; this decision looked at again before
+    the game's address is given to players other than the owner, once abuse has become real
+  - violates: a counter of requests per client address added beside those limits while this
+    decision stands, also one that lets ten or more requests an hour through
 - **Origin:** none
 
 *Rationale:* accounts belong to the owner alone for now, so a limit of its own would guard against
@@ -4761,12 +4775,23 @@ D-101 renews it at every request.
 - **Scope:** account-server
 - **Based on:** express-session-end-of-request
 - **Relations:** derives from D-98 · derives from D-103 · derives from D-104 · derives from D-109 · derives from D-112 · derives from D-155
-- **Verification:** invariants: password-reset-link. An agent compares a change with the decision:
-  - complies: a bad link with a good password refused with a full password gate as with a free one; a
-    good link with a bad password still working afterwards
-  - violates: password work for a token whose link does not work; the link spent or reserved before
-    the hashing; a transaction held across the hashing; the route writing to, regenerating or
-    destroying the session of its request
+- **Verification:** invariants: password-reset-link. tests: a request whose fields are missing, of
+  another type or one too many refused with nothing set; the rules of D-98 judged before the link,
+  so that a bad password gets the same answer with a good, an unknown and a malformed token, also
+  with a spent link; a link that does not work refused before any password work, also with a full
+  password gate; one and the same refusal `invalid-link` for every token that does not work and for
+  a link that a block, a later link or an expiry stopped during the hashing; a full password gate
+  answering a good link with a good password 429 `too-many-attempts`; a hash that fails answering
+  500 and writing nothing, the link still working; a reset of an account whose address is locked by
+  failed logins going through; a session of the account sent along ending with the account's
+  others, and a session of another account sent along neither used nor changed. An agent compares a
+  change with the part no invariant and no test holds:
+  - complies: a request whose fields are out of shape and whose password breaks the rules of D-98
+    refused for its fields; a session of another account sent along renewed as D-101 renews it at
+    every request
+  - violates: an attempt admission of D-102 keyed by the client address, taken by the route; a
+    transaction held across the hashing; a session sent along that the route leaves unrenewed while
+    it stays working
 - **Origin:** none
 
 *Rationale:* the password comes before the link because with the link first a short password would
@@ -5735,20 +5760,33 @@ identifier of a thing included, while anything that points to a person takes the
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28
-- **Verification:** an agent compares a change with the decision:
-  - complies: a failure the server handled written as one line with `failure`, `kind`, `code` and
-    `place` and the `accountId` of its case; an operation on the server added to the list of the
-    logging scope in the change that brings it; the readiness line `Loop: <address>` as plain text,
-    since the six rules call for failure and event lines and this line is neither: it is a process's
+- **Verification:** tests: the rules on failures and logs as the server and the owner's commands
+  keep them — a failure they handled written once with its kind, its code and its place, a failure
+  with no error of a library naming its reason, no address, token, password, client address, text
+  of an error or stack in a line, a line for each business event and none for a refusal or for a
+  message that was not sent; a log line of the server and of the owner's commands one JSON object
+  on one line, written through `console`, its fields only among the fixed names; a failure of
+  `measure-passwords` keeping the error's text in its report; a line with the account's number for
+  each change of a player's account and of access to it — an account created, a sign-in, a
+  sign-out, a link issued, a message sent, an address confirmed, a password set, a previous save
+  put aside, a block, an unblock, the previous-save privilege granted or revoked — and none for a
+  save of a game or for a command that changed nothing. An agent compares a change with the part
+  no test holds:
+  - complies: a new rule on failures or logs written into `guidelines/coding.md` in the form of the
+    pinned template, with no departure; the readiness line `Loop: <address>` as plain text, since
+    the six rules call for failure and event lines and this line is neither: it is a process's
     announcement to what launches it, in the exact form the invariants
-    `account-server-occupied-address` and `account-server-default-address` fix; a failed run of
-    `account-database-check` leaving in the log of the image build its sentence with the error's text
-    and no failure line of the log form, and a failed run of `measure-passwords` giving the error's text in its report
-    for the script that ran it, the one JSON object it prints, and no failure line of the log form
-  - violates: a line of `field=value` text in Node.js code; an error's message written where it may
-    quote a value; an email address added to the list without the human's consent; a line for each
-    save of a game; a failure line of the log form, with `failure`, `kind`, `code` and `place`, written by
-    `account-database-check` or `measure-passwords`; the error's text left out of the message of either
+    `account-server-occupied-address` and `account-server-default-address` fix; a line in the
+    browser's console as plain text, and a Bash script's lines in its own text; a failed run of
+    `account-database-check` leaving in the log of the image build its sentence with the error's
+    text and no failure line of the log form, and a failed run of `measure-passwords` printing no
+    failure line of the log form; an operation that changes what runs on the server or its backup
+    added to the list of the logging scope in the change that brings it
+  - violates: a rule of the six left out of `guidelines/coding.md`, or code that departs from one,
+    with no decision of a departure; a failure line of the log form, with `failure`, `kind`, `code`
+    and `place`, written by `account-database-check` or `measure-passwords`; the error's text left
+    out of the sentence of `account-database-check`; a line for housekeeping, such as a cleanup of
+    the database that succeeded; an email address added to the list without the human's consent
 - **Origin:** none
 
 *Rationale:* when something fails, the owner and an agent see its cause and not only its effect, and
@@ -9148,15 +9186,17 @@ that fails for any other reason stays a failure.
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-137 · derives from D-252
-- **Verification:** an agent compares a change with the decision:
-  - complies: a request whose body the browser stopped sending, refused with no line of `failure`;
-    a block committed while a registration waits, leaving no failure line of the session write that
-    the library makes as the response ends; the first store of a session, made in the route that
-    signs the player in, refused because of a block, leaving its line; a session write that fails
-    because the password was replaced meanwhile or the database failed, leaving its line
-  - violates: a line of `failure` for a body the browser broke off; a line of `failure` for the
-    session write that the library makes as a response ends, which a block refused; a session write
-    that fails for another cause left without its line
+- **Verification:** tests: a request whose body the browser broke off refused with no line of
+  `failure`; a block committed while a registration waits on its message leaving no line of
+  `failure` for the session write that the library makes as the response ends, the store telling a
+  block's refusal of a session write from a refusal for another cause; that session write refused
+  because the password was replaced meanwhile or because the database failed leaving its line. An
+  agent compares a change with the part no test holds:
+  - complies: a body too large or broken refused with no line of `failure`; the first store of a
+    session, made in the route that signs the player in, refused because of a block, leaving its
+    line
+  - violates: a line of `failure` for a body too large or broken; the first store of a session
+    refused because of a block left without its line
 - **Origin:** none
 
 *Rationale:* a browser breaks off a body when a player closes the tab or loses the connection, and a
