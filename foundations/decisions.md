@@ -2163,7 +2163,8 @@ The account server sends at most 30 account messages per hour in total and at mo
 - **Relations:** none
 - **Verification:** invariants: account-message-limits. tests: a registration and a request for another
   confirmation message above a limit answered with the outcome `limited` and nothing handed on, an
-  outcome the page says as „Za dużo wiadomości. Spróbuj ponownie za godzinę.” in `warning`; a request
+  outcome the page says as „Za dużo wiadomości. Spróbuj ponownie za godzinę.” in `warning` in the
+  menu „Konto”, after a registration and after „Wyślij ponownie”; a request
   for a password-reset link above a limit getting the one answer every well-formed address gets, with
   nothing handed on, the page's sentence of that answer ending „Gdy wiadomość nie przyjdzie, spróbuj
   ponownie później.”. An agent compares a change with the part no invariant and no test holds:
@@ -3308,15 +3309,15 @@ The link of a confirmation message is the configured public origin followed by `
   then „Adres e-mail potwierdzony.” in `positive` or „Odnośnik jest nieważny albo wygasł.” in
   `warning`, or the client's sentence of its failure in `warning` with the token kept in the
   address, as one sentence above the game for a signed-in player and above the form in the card for
-  one who is not; one and the same refusal for a malformed, unknown, used, expired, other-kind and
-  blocked token; a confirmation stopping the account's other confirmation links. An agent compares a
-  change with the part no invariant and no test holds:
+  one who is not; for a signed-in player the confirmation's sentence above Siedziba, the screen the
+  game opens on after a link, whatever the save holds; one and the same refusal for a malformed,
+  unknown, used, expired, other-kind and blocked token; a confirmation stopping the account's other
+  confirmation links. An agent compares a change with the part no invariant and no test holds:
   - complies: a token drawn from a cryptographically secure source and kept in the database only as
-    the SHA-256 digest of its text; „Potwierdzanie adresu…” in `text-secondary`; the confirmation
-    made whatever screen of the game the address names
+    the SHA-256 digest of its text; „Potwierdzanie adresu…” in `text-secondary`
   - violates: a token kept in clear in the database, beside or instead of its digest; a token from a
     counter, a clock or a source that is not cryptographically secure; the waiting sentence in
-    another role; a link that confirms nothing because the address names a screen of the game
+    another role
 - **Origin:** none
 
 *Rationale:* the page confirms with a request of its own, so a mail client or a spam filter that opens a link by itself uses up nothing, and the link works in any browser because it needs no session; the link alone, with no session, then authorizes the confirmation (D-109), and the request meets D-104 with no exception. A navigation from the player's webmail page on another site brings no session cookie, but the page's own requests do, so a signed-in player sees the result above the game. A fragment reaches no server, no request log and no `Referer`, a digest in the database yields no working link to whoever reads it, and one refusal for every bad token tells nothing about which it was. The start of the game page gains one more state.
@@ -3378,8 +3379,9 @@ An emailed link of a blocked account, of an email confirmation or of a password-
 - **Verification:** invariants: email-confirmation-link · unblock-restores-no-link · password-reset-link.
   tests: the refusal „Odnośnik jest nieważny albo wygasł.” for a confirmation link and a
   password-reset link of a blocked account, shown in `warning` above the form in the card or above
-  the game; a confirmation link recorded after the unblock working. An agent compares a change with
-  the part no invariant and no test holds:
+  the game; the form of a password-reset link ending as a refused link when the server refuses it
+  for a blocked account; a confirmation link recorded after the unblock working. An agent compares
+  a change with the part no invariant and no test holds:
   - complies: the player of an unblocked account, signed in again with the address still
     unconfirmed, finding „Wyślij ponownie” in the menu „Konto” and getting a working link by it
   - violates: an unblocked account whose unconfirmed address offers no „Wyślij ponownie”, or whose
