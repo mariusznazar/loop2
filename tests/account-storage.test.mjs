@@ -135,6 +135,8 @@ async function simultaneousInserts(path) {
 }
 
 test("an account insertion returns an opaque identity and persists across reopen", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier"
+  // decision: D-205 "The account and save server stores player accounts and each player's complete saved game state in a SQLite database file"
   const directory = await mkdtemp(join(tmpdir(), "loop2-accounts-"));
   const connections = [];
   t.after(async () => {
@@ -157,6 +159,7 @@ test("an account insertion returns an opaque identity and persists across reopen
 
 test("two connections cannot insert the same normalized email and SQL characters remain data", async (t) => {
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely"
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const { database, path, account } = await fixture(t);
   const outcomes = await simultaneousInserts(path);
   assert.equal(outcomes.filter(Boolean).length, 1);
@@ -835,6 +838,9 @@ function savedGameCount(raw) {
 
 // invariant: account-save-sqlite-store
 test("a save is stored only on the revision it names, one of a lower version is refused before its revision is compared, and every refusal changes nothing", async (t) => {
+  // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none, refusing every other"
+  // decision: D-210 "The server refuses a save of the game state whose version of the shape is lower than the version of the saved game state it holds, comparing that number before the basis of D-209"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   const save = (accountId, version, basedOn, game) =>
@@ -909,6 +915,8 @@ test("a save is stored only on the revision it names, one of a lower version is 
 
 // invariant: account-save-sqlite-store
 test("a block committed through another connection before a save makes it store nothing, and blocking and unblocking keep the saved game state", async (t) => {
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
+  // decision: D-202 "The operator can block an account from signing in and using the game"
   const { path, database, raw, account, track } = await fixture(t);
   const save = (version, basedOn, game) =>
     database.writeSavedGame(account.id, { version, basedOn, game });
@@ -952,6 +960,8 @@ test("a block committed through another connection before a save makes it store 
 
 // invariant: account-save-sqlite-store
 test("the stored game text holds at most 65 536 bytes, counted in UTF-8 bytes rather than characters, and a longer one changes nothing", async (t) => {
+  // decision: D-104 "The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected, while the server stores at most 64 KiB of each player's saved game state"
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const { database, raw, account } = await fixture(t);
   // D-104: at most 64 KiB, 65 536 bytes, stored per player. "ż" is two bytes
   // in UTF-8, so 32 768 of them are 65 536 bytes in half as many characters.
@@ -998,6 +1008,7 @@ test("the stored game text holds at most 65 536 bytes, counted in UTF-8 bytes ra
 
 // invariant: account-save-sqlite-store
 test("a saved game state goes with its account, and a save for an unknown account or with an unusable field stores nothing", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const { database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   for (const owner of [account, other])
@@ -1043,6 +1054,10 @@ function storedPreviousSave(raw, accountId) {
 
 // invariant: previous-save-slot
 test("a save of a higher version moves the stored save into the previous slot, a second move replaces it, and a first or same-version save moves nothing", async (t) => {
+  // decision: D-399 "The server keeps for every account, with the previous-save privilege (D-400) or without it, at most one previous save: the saved game state that an accepted save of a higher version (D-210) or a reset (D-402) replaced, a later move replacing the previous save an earlier one left"
+  // decision: D-399 "The previous save is a saved game state of the same form as the current one, with the version, the revision and the game as the server stored them"
+  // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, account } = await fixture(t);
   const save = (version, basedOn, game) =>
     database.writeSavedGame(account.id, { version, basedOn, game });
@@ -1084,6 +1099,9 @@ test("a save of a higher version moves the stored save into the previous slot, a
 
 // invariant: previous-save-slot
 test("a save refused as blocked, outdated or conflicting moves nothing, neither the current save nor the previous one", async (t) => {
+  // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none, refusing every other"
+  // decision: D-210 "The server refuses a save of the game state whose version of the shape is lower than the version of the saved game state it holds"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { path, database, account, track } = await fixture(t);
   const save = (version, basedOn, game) =>
     database.writeSavedGame(account.id, { version, basedOn, game });
@@ -1105,6 +1123,7 @@ test("a save refused as blocked, outdated or conflicting moves nothing, neither 
 
 // invariant: previous-save-slot
 test("a save whose write fails after its move leaves both the previous save and the current save as they were", async (t) => {
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, account } = await fixture(t);
   const save = (version, basedOn, game) =>
     database.writeSavedGame(account.id, { version, basedOn, game });
@@ -1128,6 +1147,7 @@ test("a save whose write fails after its move leaves both the previous save and 
 
 // invariant: previous-save-slot
 test("a reset of a privileged, unblocked account moves the current save into the previous slot and leaves no current save", async (t) => {
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, raw, account } = await fixture(t);
   database.writeSavedGame(account.id, {
     version: 1,
@@ -1150,6 +1170,9 @@ test("a reset of a privileged, unblocked account moves the current save into the
 
 // invariant: previous-save-slot
 test("a reset replaces the previous save the earlier moves left, and the next save of the new game starts at revision 1", async (t) => {
+  // decision: D-399 "The server keeps for every account, with the previous-save privilege (D-400) or without it, at most one previous save: the saved game state that an accepted save of a higher version (D-210) or a reset (D-402) replaced, a later move replacing the previous save an earlier one left"
+  // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, account } = await fixture(t);
   const save = (version, basedOn, game) =>
     database.writeSavedGame(account.id, { version, basedOn, game });
@@ -1174,6 +1197,8 @@ test("a reset replaces the previous save the earlier moves left, and the next sa
 
 // invariant: previous-save-slot
 test("a reset moves nothing without the privilege, for a blocked account, and with no current save", async (t) => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable, and the server, in one transaction that reads the account's blocked state, its privilege and its saved game state, moves the saved game state to the previous save (D-399) and leaves the account with none"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { path, database, raw, account, track } = await fixture(t);
   database.writeSavedGame(account.id, {
     version: 1,
@@ -1232,6 +1257,9 @@ test("a reset moves nothing without the privilege, for a blocked account, and wi
 
 // invariant: previous-save-slot
 test("blocking, unblocking, granting and revoking the privilege leave the previous save as it is", async (t) => {
+  // decision: D-399 "The previous save is a saved game state of the same form as the current one, with the version, the revision and the game as the server stored them, held to the limit of D-104 and removed only with its account"
+  // decision: D-399 "No other act writes it — not a save of the same version as the stored one, a first save, a refused save, the blocking or unblocking of the account, the granting or revoking of the privilege"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, account } = await fixture(t);
   database.writeSavedGame(account.id, {
     version: 1,
@@ -1260,6 +1288,8 @@ test("blocking, unblocking, granting and revoking the privilege leave the previo
 
 // invariant: previous-save-slot
 test("the privilege write answers granted, already granted, revoked, not granted and unknown, and the account reads it back", async (t) => {
+  // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, account } = await fixture(t);
   assert.equal(database.findAccountById(account.id).previousSaveAllowed, false);
   assert.deepEqual(
@@ -1289,6 +1319,7 @@ test("the privilege write answers granted, already granted, revoked, not granted
 // invariant: player-save-isolation
 // invariant: previous-save-slot
 test("the move, the reset and the privilege write touch only the account they name, and another account's saves and privilege stay as they were", async (t) => {
+  // decision: D-399 "The server keeps for every account, with the previous-save privilege (D-400) or without it, at most one previous save"
   const { database, account } = await fixture(t);
   const neighbour = database.createAccount(
     "neighbour@example.test",
@@ -1357,6 +1388,9 @@ test("the move, the reset and the privilege write touch only the account they na
 
 // invariant: previous-save-slot
 test("the table of previous saves holds at most 65 536 bytes of text, counted in bytes, a longer one changes nothing, and it goes with its account", async (t) => {
+  // decision: D-104 "The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected, while the server stores at most 64 KiB of each player's saved game state and at most 64 KiB of the previous save of D-399"
+  // decision: D-399 "The previous save is a saved game state of the same form as the current one, with the version, the revision and the game as the server stored them, held to the limit of D-104 and removed only with its account"
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const { database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   // D-104: the previous save has the limit of the saved game state, so "ż"
@@ -1599,6 +1633,7 @@ test("a confirmation link works until the millisecond before its expiry and not 
 
 // invariant: email-confirmation-link
 test("issuing a confirmation link stops the account's earlier one at once, before its message is handed on, so a failed sending leaves no earlier link working", async (t) => {
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   database.issueLink(confirmationLink(account.id, "earlier"), limits);
@@ -1650,6 +1685,7 @@ test("a confirmation link of a blocked account changes nothing, also one the blo
 test("a block committed through another connection stops every link issued before it, which confirms nothing after unblocking, and a block before an issue records nothing", async (t) => {
   // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account"
   // decision: D-160 "A link that a block stopped stays stopped after the account is unblocked, and the player, signed in again, asks for a new confirmation message"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { path, database, raw, account, track } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   database.issueLink(confirmationLink(account.id, "before"), limits);
@@ -1909,6 +1945,7 @@ test("a later reset link recorded between the check and the reset stops the earl
 
 // invariant: account-message-limits
 test("cleanup removes, in bounded batches, only links both expired and an hour old, so pruning never readmits a message", async (t) => {
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { path, database, raw, account, advance, track } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   for (const token of ["short-1", "short-2", "short-3"])
@@ -1981,6 +2018,7 @@ test("cleanup removes, in bounded batches, only links both expired and an hour o
 // invariant: unblock-restores-no-session
 test("blocking deletes every session of that account and no other, and unblocking brings none back", async (t) => {
   // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account in one transaction; unblocking clears the account's blocked mark and restores no session and no link"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { store, database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   for (const id of ["one", "two"])
@@ -2272,6 +2310,7 @@ test("a delayed touch after destroy cannot recreate a session or revoke another 
 });
 
 test("set rejects unknown accounts and replacement of an existing session identity", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const { store, database, account } = await fixture(t);
   await assert.rejects(
     call(store, "set", "missing-account", data("absent")),
@@ -2495,6 +2534,7 @@ test("Store callback failures are delivered once and callback exceptions are not
 });
 
 test("busy writes fail within a bound and keep the valid account for a later retry", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const { store, raw, account, database } = await fixture(t, {
     busyTimeoutMs: 20,
   });
@@ -2512,6 +2552,7 @@ test("busy writes fail within a bound and keep the valid account for a later ret
 });
 
 test("startup and bounded periodic cleanup remove expired rows and disposal stops its timer", async (t) => {
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   const { path, database, raw, account, track } = await fixture(t);
   database.saveSession("expired", {
     accountId: account.id,
@@ -2623,6 +2664,7 @@ async function heldWriteLock(t, path, holdMs) {
 }
 
 test("opening a new database waits within the busy timeout for another connection's write lock", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const directory = await mkdtemp(join(tmpdir(), "loop2-storage-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const path = join(directory, "accounts.sqlite");
@@ -2648,6 +2690,7 @@ test("opening a new database waits within the busy timeout for another connectio
 });
 
 test("opening a new database fails within the busy timeout when another connection's write lock outlasts it", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier"
   const directory = await mkdtemp(join(tmpdir(), "loop2-storage-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const path = join(directory, "accounts.sqlite");
@@ -2732,6 +2775,8 @@ const liveExpiry = () => Date.now() + 86_400_000;
 test("the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
+  // decision: D-202 "The operator can block an account from signing in and using the game"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database, store, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
@@ -2916,6 +2961,7 @@ test("a cleanup that fails in the background writes one line of its kind and cod
 // invariant: unblock-restores-no-link
 test("the owner's command stops every emailed link of the account it blocks, and its unblock brings none back", async (t) => {
   // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account"
+  // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   // The command prunes by the real clock, so the server's connection uses it
   // too and its links are recorded now, not at the fixture's fixed time.
   const { path, database, raw, account } = await fixture(t, {
@@ -3019,6 +3065,8 @@ test("the owner's command changes nothing on a usage error, an unknown address o
 
 // D-400 and the operator command of the spec's section 5.
 test("the previous-save command grants and revokes by address beside an open connection and says which outcome it reached", async (t) => {
+  // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes, naming the account by its email address normalized as at login, with the command `account-previous-save` run in the `loop2` container as D-137 gives for the block — the command reports that the privilege was granted or revoked, that the account already was in the state asked for, or that no account has that address"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database } = await fixture(t);
   const runCommand = (args) => runOwnerCommand(previousSaveCommand, args, path);
@@ -3153,6 +3201,7 @@ test("what no code of the previous-save command handled ends it with one line of
 // Faults: a change made by a refused run, a refusal with another exit code than
 // the block command's, a database created by a run that found no file.
 test("the previous-save command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
+  // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes, naming the account by its email address normalized as at login, with the command `account-previous-save` run in the `loop2` container as D-137 gives for the block — the command reports that the privilege was granted or revoked, that the account already was in the state asked for, or that no account has that address, and changes nothing when it refuses"
   const { path, database, store, raw, account } = await fixture(t);
   await call(store, "set", "one", data(account.id, liveExpiry()));
   const unchanged = (label) => {

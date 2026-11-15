@@ -236,6 +236,7 @@ function startWriter({ path, writers }) {
 test("a backup made beside a separate writer finishes, opens and holds everything committed before it started, a row only in the write-ahead log included", async (t) => {
   // decision: D-228 "A completed, consistent backup of the account and save database"
   // decision: D-236 "The backup command of D-231 makes a database backup"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it"
   const box = await sandbox(t);
   const { path, temporary, directory } = box;
   seedDatabase(box);

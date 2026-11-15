@@ -219,6 +219,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-request-transport
+    // decision: D-110 "Explicit local loopback-proxy mode trusts only a loopback peer, requires forwarded https and uses the actual peer as identity, while direct mode trusts no forwarding and anonymous static and health requests require no proxy metadata"
     // Fault: accepting Express's first forwarded value or a joined IP list.
     const f = await fixture(t);
     const id = "live-transport-record";
@@ -372,6 +373,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-request-transport
+    // decision: D-110 "In the private Cloudflare Tunnel topology of D-10, account requests require exactly one X-Forwarded-Proto value of https and one syntactically valid CF-Connecting-IP, normalized for equivalent IP representations and used directly for admission limits"
     const f = await fixture(t);
     for (const [input, expected] of [
       ["2001:0DB8:0:0:0:0:0:1", "2001:db8::1"],
@@ -399,6 +401,7 @@ test(
   "local proxy mode uses the peer and direct mode ignores forwarded HTTPS",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-110 "Explicit local loopback-proxy mode trusts only a loopback peer, requires forwarded https and uses the actual peer as identity, while direct mode trusts no forwarding"
     const local = await fixture(t, "loopback-proxy");
     const result = await local.send("/test-identity", {
       headers: proxyHeaders,
@@ -416,6 +419,10 @@ test(
   "mutation guards reject foreign origins, non-JSON and malformed bodies",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-104 "The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected"
+    // decision: D-104 "Missing, null, duplicate, malformed or foreign Origin and wrong media type are refused before mutation or password work, and Host or forwarded host headers never choose the expected origin"
+    // decision: D-104 "Input is an object of expected fields with explicit type checks rather than coercion, and no cross-origin allowance or form-body alternative bypasses these guards"
+    // decision: D-110 "Duplicate, list or malformed values are refused, and X-Forwarded-For, X-Real-IP, Forwarded and forwarded host values never select account authority, limiter identity or expected origin"
     // D-104.
     const f = await fixture(t);
     const valid = {
@@ -771,6 +778,7 @@ test(
     // invariant: player-express-session-sqlite-store
     // decision: D-13 "Repository files and requests name credentials by secret name or private note rather than value, may name non-secret paths and ports, and human rotation replaces the file and private copy before recreating its consumer, the encryption key having no consumer to recreate and its old value staying in the private note until every backup made with it has been replaced; session rotation prepends the new signing secret while retaining old verification secrets"
     // decision: D-101 "A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie"
+    // decision: D-104 "The session cookie uses SameSite=Strict"
     // Faults: middleware after static files, reversed secrets, resave=true, public cache.
     const f = await fixture(t);
     const id = "synthetic-old-session";
@@ -821,6 +829,7 @@ test(
     // invariant: player-opaque-session-cookie
     // invariant: player-express-session-sqlite-store
     // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
+    // decision: D-104 "The session cookie uses SameSite=Strict"
     const f = await fixture(t);
     for (const headers of [{}, proxyHeaders]) {
       const response = await f.send("/", { headers });
@@ -901,6 +910,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-mutation-request-guards
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none, refusing every other"
     // Faults: the save route missing from the guarded set; one limit for all
     // routes; a guard run after the write; field checks that coerce.
     const f = await fixture(t);

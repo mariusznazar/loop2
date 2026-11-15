@@ -202,6 +202,7 @@ test("raw and encoded traversal cannot expose files outside dist/public", async 
 });
 
 test("unconfigured accounts answer the canonical account routes as unavailable JSON", async () => {
+  // decision: D-111 "Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `LOOP2_PUBLIC_ORIGIN`, `LOOP2_PROXY_MODE`, `LOOP2_MAIL_FROM`, `LOOP2_SMTP_HOST`, `LOOP2_SMTP_PORT`, `LOOP2_SMTP_USER` and `LOOP2_SMTP_PASSWORD_FILE`, and every partial or invalid explicit configuration refuses before listening; wholly unconfigured non-production may serve public files with JSON 503 from known account routes"
   // D-111: wholly unconfigured non-production serves JSON 503 from known account routes.
   for (const [method, path] of [
     ["POST", "/api/accounts"],
@@ -598,6 +599,7 @@ test(
     // invariant: player-server-session
     // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session"
     // decision: D-101 "Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once"
+    // decision: D-104 "The session cookie uses SameSite=Strict"
     // D-97 and D-101: other browsers of the same account stay signed in.
     const f = await accountFixture(t);
     const one = seed(f, "logout-one", f.first);
@@ -854,6 +856,7 @@ test(
     // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
     // decision: D-106 "Its cost parameters are set explicitly"
     // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards"
+    // decision: D-202 "Anyone can create a player account and start playing without approval"
     // Faults: hashing a trimmed or otherwise changed password; a hash outside
     // the package's Argon2id profile; registration without a signed-in session.
     const f = await accountFixture(t);
@@ -1349,6 +1352,8 @@ test(
   async (t) => {
     // invariant: account-attempt-limits
     // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots"
+    // decision: D-110 "In the private Cloudflare Tunnel topology of D-10, account requests require exactly one X-Forwarded-Proto value of https and one syntactically valid CF-Connecting-IP, normalized for equivalent IP representations and used directly for admission limits"
+    // decision: D-110 "Duplicate, list or malformed values are refused, and X-Forwarded-For, X-Real-IP, Forwarded and forwarded host values never select account authority, limiter identity or expected origin"
     // Faults: duplicates or invalid requests consuming slots; parallel
     // registrations overshooting the limit; the window counted at its end.
     const f = await accountFixture(t);
@@ -2247,6 +2252,7 @@ test(
     // decision: D-155 "A link of an email confirmation message works for 24 hours"
     // decision: D-155 "Recording a new link for an account, which comes before its message is handed to the mail service"
     // decision: D-156 "The link of a confirmation message is the configured public origin followed by `/#confirm-email=<token>`, its token 32 random bytes written in base64url"
+    // decision: D-202 "Anyone can create a player account and start playing without approval"
     // Faults: waiting on a silent mailer without bound; a failed, broken or
     // limited sending reported as sent or failing the registration; a message
     // handed on whose link was never recorded.
@@ -3942,6 +3948,8 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-save-isolation
+    // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
     // Faults: the row chosen by an account named in the body, the query or a
     // header; one shared row; a save answered to the wrong account.
     const f = await accountFixture(t);
@@ -4117,6 +4125,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: blocked-account-access
+    // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
     // Fault: a write that does not read the block in its own transaction.
     const f = await accountFixture(t);
     const cookie = seed(f, "save-race", f.first);
@@ -4138,6 +4147,9 @@ test(
   "the save routes answer null with no save, count revisions from 1, refuse an outdated version before a stale basis and return the game unchanged",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none, refusing every other"
+    // decision: D-210 "The server refuses a save of the game state whose version of the shape is lower than the version of the saved game state it holds, comparing that number before the basis of D-209"
     // D-209 (revision basis), D-210 (version).
     // Faults: the revision check before the version check; a revision that does
     // not advance by one; a game that comes back changed.
@@ -4211,6 +4223,8 @@ test(
   "each malformed save body is a 400 that stores nothing, and a body that is not an object never reaches the fields",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-104 "Input is an object of expected fields with explicit type checks rather than coercion"
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before"
     // D-104 (expected fields with explicit type checks, no coercion); trust
     // boundary of the save route.
     // Faults: coercing a string to a number; accepting an extra field, a
@@ -4288,6 +4302,8 @@ test(
   "the stored text of a game is measured in bytes after re-serializing, at most 65 536, and a larger one is a 413 that stores nothing",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-104 "The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected, while the server stores at most 64 KiB of each player's saved game state"
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
     // D-104: the server stores at most 64 KiB of each saved game state, which
     // the body limit alone does not bound.
     // Faults: measuring the request's text, or characters, not the stored
@@ -4471,6 +4487,8 @@ test(
   async (t) => {
     // invariant: blocked-account-access
     // invariant: previous-save-slot
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable, and the server, in one transaction that reads the account's blocked state, its privilege and its saved game state, moves the saved game state to the previous save (D-399)"
+    // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
     // Fault: a reset that reads the block outside its own transaction.
     const f = await accountFixture(t);
     const cookie = seed(f, "previous-race", f.first);
@@ -4501,6 +4519,7 @@ test(
   async (t) => {
     // invariant: previous-save-slot
     // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and may ask for a password-reset link subject to the transport, origin and input guards; an emailed confirmation link alone, under the transport, origin and input guards, authorizes confirming the address of its own account; a password-reset link alone, under the same guards and with or without a session, authorizes setting a new password of its own account and nothing else; and a valid server-side session alone authorizes reading its own account, reading and replacing its own account's saved game state, reading its own account's previous save and starting its own account's game from zero, each of those two for an account that holds the previous-save privilege (D-400)"
+    // decision: D-400 "One flag covers pulling the programs of the previous save (D-401) and the reset (D-402), and the server reads it in the request: `GET /api/previous-saved-game` and `POST /api/saved-game-reset` answer JSON 403 with the code `previous-save-forbidden` to a signed-in account without it, whatever its previous save holds"
     // Faults: a route answering the slot's existence to an account without the
     // privilege; a reset that moves the save without the privilege.
     const f = await accountFixture(t);
@@ -4572,6 +4591,11 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: previous-save-slot
+    // decision: D-399 "The server keeps for every account, with the previous-save privilege (D-400) or without it, at most one previous save: the saved game state that an accepted save of a higher version (D-210) or a reset (D-402) replaced, a later move replacing the previous save an earlier one left"
+    // decision: D-399 "The previous save is a saved game state of the same form as the current one, with the version, the revision and the game as the server stored them"
+    // decision: D-400 "One flag covers pulling the programs of the previous save (D-401) and the reset (D-402), and the server reads it in the request: `GET /api/previous-saved-game` and `POST /api/saved-game-reset` answer JSON 403 with the code `previous-save-forbidden` to a signed-in account without it"
+    // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed`"
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
     // Faults: a save of the same version filling the slot; a save of a higher
     // version storing the incoming document as the previous one; the slot
     // dropped when the privilege goes; the account answer lacking the flag.
@@ -4687,6 +4711,9 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: previous-save-slot
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable, and the server, in one transaction that reads the account's blocked state, its privilege and its saved game state, moves the saved game state to the previous save (D-399) and leaves the account with none, answering 204 also where there was nothing to move"
+    // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save; D-209 is unchanged, so a save of the old game that reaches the server later, based on a revision other than 0, is refused"
+    // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none, refusing every other"
     // D-209: a basis other than 0 after the reset is refused as a conflict.
     // Faults: the current save kept beside the previous one; the second reset
     // replacing the slot; a reset answered 204 with a body; an event for a
@@ -4759,6 +4786,7 @@ test(
   async (t) => {
     // invariant: player-save-isolation
     // invariant: previous-save-slot
+    // decision: D-104 "Input is an object of expected fields with explicit type checks rather than coercion"
     // Faults: a body field read as the account; the query or a header choosing
     // another account's save.
     const f = await accountFixture(t);
@@ -5600,6 +5628,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-mutation-request-guards
+    // decision: D-110 "In the private Cloudflare Tunnel topology of D-10, account requests require exactly one X-Forwarded-Proto value of https and one syntactically valid CF-Connecting-IP"
     // Faults: the route missing from the guarded set or from the gate; the
     // line written before the guards ran.
     const f = await accountFixture(t);
