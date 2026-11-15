@@ -425,7 +425,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: owner-panel-authorization
-    // decision: D-109 "Each of those five routes returns JSON 401 with the code `unauthenticated` without a valid session and JSON 403 with the code `owner-forbidden` to a valid session of an account without the owner role, checked after the session and before the body is read, with nothing read of the body and nothing changed"
+    // decision: D-109 "Each of those five routes returns JSON 401 with the code `unauthenticated` without a valid session and JSON 403 with the code `owner-forbidden` to a valid session of an account without the owner role, checked after the session and before any field of the body is read, with no field of the body read and nothing changed"
     // Faults: a route with no check of the role; the role checked after the body
     // (a body that is no valid one would then be answered 400); a role checked
     // on the list only; an answer other than 403 owner-forbidden.
@@ -465,7 +465,7 @@ test(
   async (t) => {
     // invariant: owner-panel-authorization
     // invariant: blocked-account-access
-    // decision: D-109 "Each of those five routes returns JSON 401 with the code `unauthenticated` without a valid session and JSON 403 with the code `owner-forbidden` to a valid session of an account without the owner role, checked after the session and before the body is read, with nothing read of the body and nothing changed"
+    // decision: D-109 "Each of those five routes returns JSON 401 with the code `unauthenticated` without a valid session and JSON 403 with the code `owner-forbidden` to a valid session of an account without the owner role, checked after the session and before any field of the body is read, with no field of the body read and nothing changed"
     // Faults: a route that serves where the session is missing; a session that
     // names an account without being a stored session (the identifier of the
     // account sent as the cookie); a session of a blocked owner served because
@@ -707,6 +707,7 @@ test(
     // invariant: unblock-restores-no-session
     // invariant: unblock-restores-no-link
     // decision: D-137 "An account with the owner role (D-410) also blocks and unblocks a player account, named by its email address in the body of `POST /api/owner/block` or `POST /api/owner/unblock` of the owner panel, which the server answers only to a valid session of such an account, with the same effects in the same one transaction and the answers `blocked`, `already-blocked`, `unblocked` or `not-blocked`, JSON 404 with the code `unknown-account` where no account has that address"
+    // decision: D-137 "The address in the body of the four routes of the panel is normalized as at login, and an address written as no address is the address of no account"
     // decision: D-252 "A change of the role of an account and each operation of the owner panel are such changes: each leaves one line with the number of the account changed, written after a change only, and no address and no number of the account of the owner who acted"
     // Faults: a block that leaves a session or a link of its target, or ends one
     // of another account; an unblock that restores either; a line for an outcome
@@ -785,6 +786,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // decision: D-400 "An account with the owner role (D-410) also grants and revokes the privilege of any account, an account with the owner role included, from the owner panel, by `POST /api/owner/grant-previous-save` and `POST /api/owner/revoke-previous-save` with the account's email address in the body, which the server answers only to a valid session of such an account, with the answers `granted`, `already-granted`, `revoked` or `not-granted` and JSON 404 with the code `unknown-account` where no account has that address"
+    // decision: D-400 "The address in the body of those routes is normalized as at login, and an address written as no address is the address of no account"
     // decision: D-252 "A change of the role of an account and each operation of the owner panel are such changes: each leaves one line with the number of the account changed, written after a change only, and no address and no number of the account of the owner who acted"
     // Faults: a grant that ends the target's session or stops its link; a revoke
     // that leaves the next read open; a route that refuses an owner as a target;
@@ -856,6 +858,8 @@ test(
   "an address no account has, or none that is written as an address, is answered 404 unknown-account on each of the four routes and nothing changes or is logged",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-137 "The address in the body of the four routes of the panel is normalized as at login, and an address written as no address is the address of no account"
+    // decision: D-400 "The address in the body of those routes is normalized as at login, and an address written as no address is the address of no account"
     // decision: D-137 "An account with the owner role (D-410) also blocks and unblocks a player account, named by its email address in the body of `POST /api/owner/block` or `POST /api/owner/unblock` of the owner panel, which the server answers only to a valid session of such an account, with the same effects in the same one transaction and the answers `blocked`, `already-blocked`, `unblocked` or `not-blocked`, JSON 404 with the code `unknown-account` where no account has that address"
     // Faults: a route that answers 200 or 500 for an unknown address; one that
     // writes a line for it.
