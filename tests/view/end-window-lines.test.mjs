@@ -161,6 +161,7 @@ test("the cost line after a completion is the deposit frozen at the completion, 
 // real minutes, which is 8 hours), a missing generation, or a line shown while the death is unsettled
 // (D-216, D-39).
 test("after a death the cost line tells a used resurrection with the hours of the data in text-secondary, a missing one with the generation in danger, and nothing while the death is unsettled", () => {
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
   const dead = (deathSettlement) =>
     withRun(RUNNING, {
       minute: 312,
@@ -181,6 +182,7 @@ test("after a death the cost line tells a used resurrection with the hours of th
 // Catches the line of the death of a character with no practice standing in the other role, with the
 // hours of the renewal or the generation, or missing (D-216, D-190, D-39).
 test("after the death of a character with no practice the cost line says the team's resurrection was not used, in text-secondary", () => {
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
   const bare = withRun(RUNNING, {
     minute: 312,
     death: { minute: 312, cause: "cold" },
@@ -195,6 +197,7 @@ test("after the death of a character with no practice the cost line says the tea
 // Catches a renewal line after a completion that found the resurrection ready, one before the
 // completion is settled, one on a death or a map run going on, or in the other role (D-185, D-190).
 test("the renewal line stands only after a first completion that made a used-up resurrection ready", () => {
+  // decision: D-216 "After the first completion of a map that made a used-up resurrection ready, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the resurrection ready shows none"
   const completion = { minute: 480 };
   const done = (completionSettlement) =>
     withRun(RUNNING, {
@@ -388,6 +391,7 @@ test("the trip rows give what the character entered with, the revealed terrain a
 // button after the completion of Las (D-132, D-53, D-149).
 test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of the map it opens", () => {
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
+  // decision: D-53 "„Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened"
   assert.deepEqual(wayOnButtons(runOf({ completion: { minute: 480 } })), [
     { mapId: "forestDeep", text: "Otwarte: Las — głębiej →" },
   ]);

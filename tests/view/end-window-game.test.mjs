@@ -406,6 +406,7 @@ async function withReducedMotion(reduced, body) {
 // stands before the map run ends, one that leaves the header or an area of the screen visible
 // under it, and the death's title missing.
 test("the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers the header and the three areas", async () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   await onPage(async (page) => {
     const { root } = page;
     const { view } = await viewOf(freezing());
@@ -765,6 +766,7 @@ test("„Koniec przejścia” pressed while the question stands closes the quest
 // D-62, D-132, D-368. Catches a „Restart” of the window that leaves the window or the
 // ended map run, one that does not start the same seed from minute zero, and a focus lost.
 test("„Restart” of the window closes it and starts the map run again from game minute zero on the same seed, with the header's „Restart” focused", async () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   await onPage(async (page) => {
     const { root } = page;
     const { view } = await dieOnTheScreen(page);
@@ -811,6 +813,8 @@ test("„Restart” of the header after „✕” starts the map run again and n
 test("„Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(dead(going()));
     await press(windowButton(root, "Zakończ"));
@@ -866,6 +870,7 @@ test("„Zakończ” of the window with unsaved changes closes the window and as
 // than the screen Postać, and „Zapisz” not saving the copy.
 test("the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć”", async () => {
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   for (const [name, expectSaved] of [
     ["Zapisz", true],
     ["Odrzuć", false],
@@ -898,6 +903,7 @@ test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map 
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "„Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(completed(going()));
     await press(windowButton(root, "Otwarte: Las — głębiej →"));
@@ -919,6 +925,7 @@ test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map 
 test("the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "„Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened"
   for (const [name, expectSaved] of [
     ["Zapisz", true],
     ["Odrzuć", false],
@@ -959,6 +966,7 @@ test("the question asked by „Otwarte: …” leads to the screen Mapy at the o
 // header must lead to Postać, not to the map the earlier „Otwarte” asked about.
 test("after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte”", async () => {
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(renamed(completed(going())));
     await press(windowButton(root, "Otwarte: Las — głębiej →"));
@@ -1036,6 +1044,7 @@ test("the window stands in no game state and no saved document: closing and open
 test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
   /** The window's streak line and cost line after a reload of `document`. */
   async function lines(document, root) {
     const loaded = loadSavedGame(JSON.parse(JSON.stringify(document)));
@@ -1109,6 +1118,8 @@ async function costLinesAfterReload(document, root) {
 // stands with the line of a resurrection used.
 test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready", async () => {
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
+  // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+  // decision: D-216 "After the first completion of a map that made a used-up resurrection ready, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the resurrection ready shows none"
   await onPage(async (page) => {
     const { root } = page;
     const bare = await dieOnTheScreen(page, freezing(true));

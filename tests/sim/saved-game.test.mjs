@@ -2202,6 +2202,10 @@ const CRAFTED = {
 test("a crafted document of the current version is refused whole as shape", () => {
   // decision: D-403 "The load refuses a saved game state whose Understanding does not hold the condition „Zawsze” and the action „Eksploruj”, as a saved game state of a shape the game does not admit"
   // decision: D-191 "A character skill has one practice counter and one curve, and what is saved of it is its practice and the ranks of branches bought, its level, free points and every effect being computed from these two"
+  // decision: D-50 "The chest belongs to a team and has a cap on the total count of pieces, by the same rule of capacity as the backpack"
+  // decision: D-56 "Each character carries a number the game gives it when the character is created, 1 for the first character of a game and one more than the number the game state gave last for each later one, so the numbers of two characters of one game differ"
+  // decision: D-56 "A map run names the team's character it carries by that number"
+  // decision: D-221 "A load refuses a saved game state that holds a death unsettled"
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
 });
@@ -2275,6 +2279,7 @@ test("a record at the edges of what it admits loads", () => {
 // The chest holds at most the balance data's chestCapacity (balance.ts: 60), and that count is
 // allowed: a chest of exactly it loads, one piece beyond it is refused.
 test("a chest holding exactly its capacity loads, and one piece beyond it is refused as shape", () => {
+  // decision: D-50 "The chest belongs to a team and has a cap on the total count of pieces, by the same rule of capacity as the backpack"
   const full = changed((document) => {
     document.game.team.chest.pieces = { stick: 60 };
   });

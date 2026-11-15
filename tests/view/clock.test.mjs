@@ -270,6 +270,8 @@ test("a send takes the one reading of its flush", () => {
 // invariant: resurrection-renewal
 // D-221: one result on each reading, so the store never holds a death unsettled.
 test("a flush in which the character dies hands the store one result: the events of the passing of time with the death settled at that reading", () => {
+  // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     const state = lastMinute();
     const store = holdingStore(state);
@@ -294,6 +296,7 @@ test("a flush in which the character dies hands the store one result: the events
 // The moment of the reading decides: a resurrection ready from it on is ready, one a millisecond
 // later is not, whatever moment the clock read when it started.
 test("a death is settled against the reading of its flush, not an earlier one", () => {
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     for (const [offset, kind] of [
       [0, "resurrectionUsed"],
@@ -314,6 +317,8 @@ test("a death is settled against the reading of its flush, not an earlier one", 
 // D-190, D-221: a death of a character with no practice is settled at the reading too, and leaves the
 // resurrection as it was.
 test("a flush in which a character with no practice dies settles the death as none to pay for: the resurrection stays as it was", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     for (const readyAtMs of [0, T0 + 10 * RENEWAL_MS]) {
       const state = lastMinute(readyAtMs, false);
@@ -384,6 +389,7 @@ test("a flush in which the map run solves its map for the first time settles the
 });
 
 test("a flush in which the map run solves its map finds a ready resurrection ready and says so", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   withBothClocks(({ pass }) => {
     const store = holdingStore(oneMinuteFromSolving(0));
     const clock = startClock(store);
@@ -399,6 +405,7 @@ test("a flush in which the map run solves its map finds a ready resurrection rea
 
 // D-221: a retained death goes through the same step of the clock, unsettled or settled.
 test("a death standing on the screen is settled once, at the first reading", () => {
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     const dead = advanceMinutes(lastMinute(), 1).state;
     assert.equal(dead.run.deathSettlement, null, "precondition: unsettled");
@@ -528,6 +535,8 @@ function loopingOla(state = twoCharacters()) {
 // D-221, D-242. Catches loops passed before the manual run, and a reading that hands
 // the store the manual run's result and the loops' as two, so a moment of saving would come twice.
 test("a reading passes the manual run, then the loops, and hands the store one result with their events together", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass, jump }) => {
     // Ola has no practice: her death in the loop takes nothing and her loop goes on.
     let state = send(loopingOla(practised(twoCharacters(), 1)), SENT, 1).state;
@@ -566,6 +575,8 @@ test("a reading passes the manual run, then the loops, and hands the store one r
 // D-190, D-242: of two deaths the earlier in real time takes the team's one resurrection. A loop's end
 // lies at its minute's moment, here a millisecond before the reading, and the manual run's death at the reading.
 test("in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, earlier than the reading, takes the resurrection", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   withBothClocks(({ pass, jump }) => {
     const both = practised(practised(twoCharacters(), 1), 2);
     let state = send(loopingOla(both), SENT, 1).state;

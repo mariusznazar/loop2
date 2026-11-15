@@ -613,6 +613,7 @@ test("a map run of a loop is passed minute by minute as in one go, and stops at 
 // invariant: death-settled-once
 // D-221: the function that passes game time leaves the end as it found it and takes no moment.
 test("passing the minutes of a death leaves it unsettled: the character, the chest and the loop stand as they did", () => {
+  // decision: D-221 "A character's death is settled by a function of the simulation apart from the functions that pass game time, which leave the death unsettled and take no real moment"
   const state = looping(EMPTY, { stick: 3 }, COLD_REAL_MS);
   const after = advanceLoopRun(state, 1, 5000).state;
   assert.deepEqual(after.team, state.team);
@@ -705,6 +706,7 @@ test("a completion deposits the bring list's clipped loot, counts the map run, a
 
 // invariant: trip-transfer
 test("a completion deposits no more than the chest has room for", () => {
+  // decision: D-50 "The chest belongs to a team and has a cap on the total count of pieces, by the same rule of capacity as the backpack"
   const program = withTrip(EMPTY, [], [entry("stick", 2), entry("berry", 5)]);
   const ready = oneShort(looping(program, { moss: 59 }), {
     stick: 3,
@@ -736,6 +738,8 @@ test("the seeds of the successive map runs of a loop follow the draw of the fift
 test("a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried items gone, the loop going on at its next map run", () => {
   // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed, and each map run of an earning loop takes its seed from a draw of the map run before it"
   // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const ready = holding(
     changingRun(
       dyingNext(
@@ -775,6 +779,8 @@ test("a death with a resurrection ready is settled at the moment given: used up,
 // D-190: without a resurrection the character loses its practice and ranks and the
 // loop stops with what it gathered.
 test("a death with no resurrection ready takes the character's skills, raises the generation, drops the loop with its practice and leaves the chest and the moment of readiness", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   let state = looping(withTrip(EMPTY, [entry("berry", 2)], []), { berry: 4 });
   state = readyFrom(
     changing(state, 1, {
@@ -812,6 +818,8 @@ function bought(state) {
 }
 
 test("a death at the very moment of readiness uses the resurrection, and a millisecond before it takes everything", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const dead = (readyAt) =>
     advanceLoopRun(dyingNext(readyFrom(practised(looping()), readyAt)), 1, 1)
       .state;
@@ -826,6 +834,7 @@ test("a death at the very moment of readiness uses the resurrection, and a milli
 // invariant: death-settled-once
 // D-241, D-221: the end is consumed in the call that met it; no state leaves with a loop's run ended.
 test("a death is settled once: the state the end leaves holds no end, a further end changes nothing, and a load of it settles nothing", () => {
+  // decision: D-221 "A load refuses a saved game state that holds a death unsettled"
   const passed = advanceLoopRun(dyingNext(looping()), 1, 1).state;
   const settled = endLoopRun(passed, 1, T0);
   assert.equal(settled.state.loops[1].run.death, null);
@@ -1059,6 +1068,7 @@ test("taking the practice of one character leaves the loop and the skills of ano
 // D-190: practice taken is the character's practice, so a death with no resurrection ready takes it
 // with the rest, and a death a resurrection covers leaves it.
 test("practice taken stays through a death a resurrection covers and goes with a death with none ready", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   let state = holding(looping(), { smallItemGathering: 30 });
   state = takeLoopPractice(state, 1).state;
   const taken = ala(state).skills.smallItemGathering.practice;
@@ -1089,6 +1099,8 @@ test("after a death a resurrection covers the loop waits for none of the practic
 // ready before the death's minute. Her generation grows from 1, the creation's (D-190), to 2, and
 // the report line of the stop names her generation, not Ala's (1), who stays first in the team.
 test("a loop of a character other than the first that stops in passing writes that character's own generation", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   let state = startLoop(
     game(EMPTY),
     { mapId: "forest", characterId: 2 },
@@ -1272,6 +1284,8 @@ test("no function of the loop changes a value passed to it, a loop, a death and 
 // invariant: death-settled-once
 // invariant: resurrection-renewal
 test("what a death does to the team is one rule for a manual map run and a loop", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   for (const [name, state, kind] of [
     ["practice, ready", practised(game()), "resurrectionUsed"],
     [
@@ -1312,6 +1326,7 @@ test("what a death does to the team is one rule for a manual map run and a loop"
 
 // D-190: the practice gathered at the loop is practice, whatever the skills hold.
 test("a character with no practice in its skills has practice when its loop gathered some", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const bare = game().team.characters[0];
   const team = game().team;
   assert.equal(
@@ -1333,6 +1348,7 @@ test("a character with no practice in its skills has practice when its loop gath
 // the loop goes on at its next map run, the run that died paying nothing.
 test("a death of a character with no practice takes the carried items only: the resurrection, the generation and the loop stay, ready or not", () => {
   // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   for (const readyAt of [0, T0 + 1]) {
     const state = readyFrom(
       changingRun(

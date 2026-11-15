@@ -116,6 +116,7 @@ test("the screen names the character and its archetype, and gives the generation
 // The readiness boundary is the simulation's; the wording is D-217.
 // invariant: resurrection-renewal
 test("the resurrection line reads the time left in danger, shows the minutes below an hour, turns ready at the moment and moves with each reading of the clock", async () => {
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
     const state = stateWith({}, { team: teamReadyAt(readyAt) });

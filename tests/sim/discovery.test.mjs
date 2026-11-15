@@ -748,6 +748,7 @@ test("a revealing event reveals what of its row is still new, though its actions
 });
 
 test("a map run ended in death passes no further minute at the level of the run", () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   const dead = toDeath(sentNew());
   assert.ok(dead.run.death, "the character died");
   // The map run carries out its copy.

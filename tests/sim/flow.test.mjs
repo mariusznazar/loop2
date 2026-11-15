@@ -48,6 +48,8 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
 test("a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
   // decision: D-91 "A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”"
   // decision: D-129 "The pace the player picks stays until the player picks another, through a pause, the pause at a discovery included, „Restart”, „Zakończ” and the next send of a character, and a new game starts at 1×"
+  // decision: D-50 "The chest belongs to a team and has a cap on the total count of pieces, by the same rule of capacity as the backpack"
+  // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   const state = newGame();
   assert.equal(state.programs.length, 1);
   assert.deepEqual(programRules(state.programs[0].program), []);
@@ -66,6 +68,7 @@ test("a new game has one empty program, a team with no character and an empty ch
 
 test("a send starts a map run at minute 0 with the seed mixed from the last seed and the real time", () => {
   // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
+  // decision: D-56 "A map run names the team's character it carries by that number"
   const { state, events } = sent();
   const seed = mixSeed(INITIAL_SEED, REAL_MS);
   assert.equal(state.lastSeed, seed);

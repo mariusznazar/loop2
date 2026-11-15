@@ -394,6 +394,7 @@ test("every item and every item of the campfire names an item of the data", () =
 // D-190: the resurrection renews after eight hours, 480 real minutes. Real minutes, not game
 // minutes.
 test("the resurrection renews 480 real minutes after the death that used it", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   assert.equal(BALANCE.resurrectionRenewalRealMinutes, 480);
 });
 

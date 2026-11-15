@@ -53,6 +53,10 @@ function createdKnowing(...names) {
 test("a created character joins the end of the team's list as an elemental mage, in the order of creation", () => {
   // decision: D-192 "A character is described by traits, character skills and the predispositions of its archetype"
   // decision: D-192 "A number that acts in one action only belongs to the tree of that action's character skill, never to a trait"
+  // decision: D-50 "Each character belongs to exactly one team and uses its chest, and a character has no chest of its own"
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-56 "Each character carries a number the game gives it when the character is created, 1 for the first character of a game and one more than the number the game state gave last for each later one, so the numbers of two characters of one game differ"
+  // decision: D-220 "A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection ready"
   const state = created("Ala", "Ola", "Ela");
   assert.deepEqual(state.team.characters, [
     {
@@ -85,6 +89,8 @@ test("a created character joins the end of the team's list as an elemental mage,
 });
 
 test("two characters may share a name and stay two characters", () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
+  // decision: D-56 "Each character carries a number the game gives it when the character is created, 1 for the first character of a game and one more than the number the game state gave last for each later one, so the numbers of two characters of one game differ"
   const state = created("Ala", "Ala");
   assert.deepEqual(
     state.team.characters.map((character) => [character.id, character.name]),
@@ -96,6 +102,7 @@ test("two characters may share a name and stay two characters", () => {
 });
 
 test("the name loses the white space at its start and end, and keeps the white space inside", () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   const state = created("  Ala ", "\tOla\n", " Ala Ma Kota ");
   assert.deepEqual(
     state.team.characters.map((character) => character.name),
@@ -106,6 +113,7 @@ test("the name loses the white space at its start and end, and keeps the white s
 });
 
 test("a name empty once trimmed creates no character", () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   const state = created("Ala");
   for (const name of ["", " ", "   ", "\t\n "]) {
     assert.equal(characterName(name), null, JSON.stringify(name));
@@ -132,6 +140,7 @@ test("the team's chest is empty in a new game and stays empty through creating, 
 });
 
 test("the send sends the chosen character of the team, and a restart keeps it", () => {
+  // decision: D-56 "A map run names the team's character it carries by that number"
   const state = createdKnowing("Ala", "Ola", "Ela");
   const sent = send(state, { mapId, characterId: 2 }, REAL_MS).state;
   assert.equal(sent.run.character.id, 2);

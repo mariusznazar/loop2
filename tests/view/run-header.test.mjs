@@ -246,6 +246,8 @@ test("a click on a pace button asks for that pace; the buttons stay while paused
 // D-62, D-334: the cause of the death is not the header's. Catches the cause left in the header and
 // a „ (pauza)” after the end.
 test("after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Koniec przejścia”, „Restart” and „Zakończ” stand", async () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
+  // decision: D-62 "After a character's death the pace buttons are gone together with „Pauza”"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);

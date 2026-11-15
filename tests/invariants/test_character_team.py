@@ -148,6 +148,8 @@ class CharacterTeam(unittest.TestCase):
 
     def test_every_character_of_every_state_belongs_to_one_team(self):
         # invariant: character-team
+        # decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
+        # decision: D-56 "A map run names the team's character it carries by that number"
         records = drive(STEPS)
         self.assertEqual(len(records), len(STEPS))
         errors = [r["error"] for r in records if r["error"]]
@@ -163,6 +165,7 @@ class CharacterTeam(unittest.TestCase):
 
     def test_a_send_of_a_character_no_team_holds_is_refused(self):
         # invariant: character-team
+        # decision: D-56 "A map run names the team's character it carries by that number"
         records = drive(CONTROL_STEPS)
         found = [m for i, r in enumerate(records) for m in membership_errors(i, r)]
         self.assertEqual(found, [])

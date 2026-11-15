@@ -3087,6 +3087,7 @@ function lastMinute() {
 // saved unsettled, which the next load would refuse.
 test("a game minute that ends the map run in a death is saved at once, settled", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   await onPage(async ({ root }) => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
     let now = 0;
@@ -3140,6 +3141,10 @@ function renewing(at, left) {
 // the saver would send. The screen is drawn in React, so the writes of the line are counted as the
 // changes of its text the page's document records, and a tick that changes the text runs in act.
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
+  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
+  // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   await onPage(async ({ root }) => {
     const T = 1_760_000_000_000;
     let current = T;
@@ -3824,6 +3829,7 @@ test("the report survives a reload, and a closed report stays closed after one",
 // after „Zakończ”. Catches the report drawn
 // on the screen of a manual map run or on Postać, and one not shown when Siedziba is reached.
 test("a manual map run hides the report with Siedziba, „Zakończ” opens Postać without it, and Siedziba shows it on being reached", async () => {
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const address = fakeAddress();
     const { view } = await viewOf(
@@ -4223,6 +4229,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
   // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/mapy/forest", twoPrograms());
@@ -4287,6 +4294,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/", newWithCharacter());
@@ -4960,6 +4968,9 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
 // show, also while a manual map run waits. Catches the lines refreshed only without a map run, a
 // screen that draws its line at the moment it was built, and a tick that saves.
 test("a clock tick rewrites the resurrection line of Siedziba, of Postać and of Mapy while a manual map run waits, and saves nothing", async () => {
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
+  // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   const T = 1_760_000_000_000;
   const warning = " — śmierć zabierze wprawę i wykupione stopnie";
   /** Ala at generation 2 with a paused map run, her resurrection 59 min 30 s away at `T`. */

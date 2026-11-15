@@ -45,6 +45,7 @@ test("a team with nobody in Siedziba shows the fire and the chest alone", () => 
 // Catches a camp that draws the whole team (a character on a map or in a loop standing at the fire), one
 // that forgets one of the three ways a character is away, or one that reorders the characters (D-54).
 test("only the characters in Siedziba stand in the camp, in the order of creation", () => {
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // 1 stays, 2 is in the manual map run, 3 in an earning loop, 4 had its loop stopped, 5 stays.
   const base = send(teamOf(5), { mapId: MAP, characterId: 2 }, NOW).state;
   const state = {
@@ -75,6 +76,7 @@ test("the character of a manual map run is away while the run goes, is paused or
 // Catches a capacity that counts the fire's half or the gap wrong, which would draw a character no band holds
 // or leave a place at the widest band empty. 672 / 2 − 32 / 2 − 6 = 314 pixels of the row, 32 to a cell.
 test("the camp draws as many characters as the widest band holds, the first in the order of creation", () => {
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
   assert.equal(campCapacity(), 9);
   const crowded = teamOf(12);
   assert.deepEqual(ids(crowded), [1, 2, 3, 4, 5, 6, 7, 8, 9]);

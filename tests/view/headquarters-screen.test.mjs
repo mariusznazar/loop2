@@ -180,6 +180,8 @@ test("the folded section „Autorzy grafiki” stands last on the screen, whatev
 // link or leads elsewhere than to the character's screen, and a generation label at generation 1.
 test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character"
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   await withPage(async (page) => {
     const state = withCharacter(teamOf(), 2, { generation: 2 });
     await mount(page, propsOf(state));
@@ -209,6 +211,7 @@ test("each character stands in the order of creation with its name as a link to 
 // Catches the empty team drawn as an empty list, with no sentence, or with the sentence of the screen
 // Mapy (D-51); the creation of the first character must stand beside it.
 test("an empty team says „Drużyna nie ma jeszcze postaci.” and still offers the creation of a character", async () => {
+  // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   await withPage(async (page) => {
     await mount(page, propsOf(newGame()));
     assert.equal(
@@ -253,6 +256,7 @@ test("the chest heading reads the pieces and the capacity, its lines follow the 
 // Catches a resurrection line drawn once and left, a line that loses `danger` late or early, and a
 // line rebuilt as a new element at every reading, which would drop what stands on it (D-217).
 test("the resurrection line follows the clock's moment in the very same element, in danger until ready", async () => {
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
     const state = withResurrection(teamOf(1), readyAt);
@@ -548,6 +552,7 @@ test("a line of a loop a death stopped has no „Odbierz”", async () => {
 // Catches a name handed to the page untrimmed, a field that keeps its text after a creation and a
 // creation that does not reach the page at all.
 test("„Załóż” hands the page the trimmed name and empties the field; Enter in the field does the same", async () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(newGame()));
     assert.equal(
@@ -572,6 +577,7 @@ test("„Załóż” hands the page the trimmed name and empties the field; Ente
 // Catches a character created from a name that is empty once trimmed, a message missing under the
 // field or standing after the player has begun to type (the field's error state, D-44).
 test("a name empty once trimmed creates nothing and says „Wpisz imię postaci.” under the field until the player types", async () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(newGame()));
     await typeInto(nameField(page.root), "   ");
@@ -760,6 +766,7 @@ test("the camp follows the manual map run and the earning loops, and „Drużyna
 // „Puść w pętlę”, a button that leads to the screen Mapy or a link other than a character's name.
 test("nothing on the screen sends a character or leads to the screen Mapy", async () => {
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await withPage(async (page) => {
     const state = { ...reported(), loops: { 2: LOOP } };
     await mount(page, propsOf(state));

@@ -275,6 +275,7 @@ test("real time reaching death gives the same state however it is split", () => 
 
 test("a map run ended in death passes no minute", () => {
   // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   const dead = advanceMinutes(sent(), 300).state;
   assert.equal(dead.run.minute, 243);
   for (const minutes of [0, 1, 50]) {
@@ -289,6 +290,7 @@ test("a map run ended in death passes no minute", () => {
 });
 
 test("restart and end take a map run ended in death as one in progress", () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   const dead = advanceMinutes(sent(), 300).state;
   const restarted = restart(dead);
   assert.deepEqual(restarted, restart(sent()));

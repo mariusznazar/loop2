@@ -460,6 +460,7 @@ test("a step other than the usual one, a resource that does not renew and the en
 // D-329: the sentence of an empty team stands under the heading.
 test("a team with no character reads the sentence under the heading of „Kto idzie”", async () => {
   // decision: D-329 "A team with no character has in the section the sentence"
+  // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   await withPage(async (page) => {
     await mount(page, propsOf(withEdgeSolved(newGame()), "forest"));
     assert.equal(text(page.root, ".maps-who-heading"), "Kto idzie");
@@ -478,6 +479,8 @@ test("the characters stand in the order of their creation, each with its lines f
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
   // decision: D-180 "The card of a map shows what of the plan enters"
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -525,6 +528,7 @@ test("the characters stand in the order of their creation, each with its lines f
 // D-217, D-190: the team's one resurrection, not ready, reads the time left in danger at every character.
 test("a resurrection not ready reads the time left in danger at each character and turns ready with the clock", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
     const state = withResurrection(teamOf("Ala", "Bob"), readyAt);
@@ -675,6 +679,7 @@ test("a map that cuts the plan shows the clipped-plan line and what enters cut",
 // at a solved map; both act with the program the row shows.
 test("„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program", async () => {
   // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await withPage(async (page) => {
     const unsolved = teamOf("Ala");
     const { screen, calls } = await mount(page, propsOf(unsolved, "forest"));

@@ -165,6 +165,7 @@ test("at a stop at a discovery the clock reads „ (pauza)” as at the player's
 // D-62, D-334: the cause of the death is „Teraz”'s (tests/view/now-lines.test.mjs), the clock only
 // stands at the game minute of the death.
 test("after a death the clock stands at the minute of the death, with no cause and no „ (pauza)”, paused or not", () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(clockText(dead(state, 312, "cold").run, false), "Minuta 312");
   assert.equal(clockText(dead(state, 287, "hunger").run, false), "Minuta 287");

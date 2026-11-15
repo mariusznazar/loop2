@@ -395,6 +395,7 @@ test("„Zakończ” with unsaved changes asks at every moment of the map run, l
 test("„Zakończ” without unsaved changes ends the map run at once and opens Postać of its character", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(going());
     await press(headerButton(root, "Zakończ"));
@@ -424,6 +425,7 @@ const RENAMED_PROGRAM = {
 test("„Zapisz” saves the copy into its program, replacing what the program had since, ends the map run and leads to Postać, and Programy then shows that program", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     // The program was edited since the copy was taken from it: the line stands, the save replaces.
     const lacking = editProgram(
@@ -467,6 +469,7 @@ test("„Zapisz” saves the copy into its program, replacing what the program h
 test("„Zapisz” of a copy whose program was deleted saves it as a new program under the first free name with no name field, ends the map run, and Programy shows the new program", async () => {
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const start = deleteProgram(
       renamed(send(twoPrograms(), { ...SENT, programId: 2 }, 0).state),
@@ -533,6 +536,7 @@ test("„Zapisz” of a copy whose program was deleted saves it as a new program
 // that does not lead to Postać.
 test("„Odrzuć” ends the map run with no save, the program as it was, and leads to Postać", async () => {
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await onPage(async ({ root }) => {
     const start = renamed(paused());
     const { view, address } = await viewOf(start);

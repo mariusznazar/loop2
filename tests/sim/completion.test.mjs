@@ -550,6 +550,7 @@ test("the first completion of a map makes a used-up resurrection of the team rea
 
 // D-190: a ready resurrection stays ready.
 test("the first completion of a map leaves a ready resurrection as it was, ready from the moment it was, and says so", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   for (const readyAtMs of [0, T0 - 1, T0, -3_000]) {
     const done = completedWith(readyAtMs);
     const settled = settleCompletion(done, T0).state;
@@ -582,6 +583,7 @@ test("the completion of a map the account had solved before renews nothing, what
 // D-190: the second solving of one map, by a restart of its completion, renews nothing either.
 test("a restart after a first completion starts a map run of a solved map, whose completion renews nothing", () => {
   // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const settled = settleCompletion(completedWith(T0 + RENEWAL_MS), T0).state;
   const restarted = restart(settled).state;
   assert.equal(restarted.run.solvedMapRun, true);
