@@ -128,6 +128,16 @@ class DaemonGap(unittest.TestCase):
         self.assertLess(time.monotonic() - began, 30)
         self.assertEqual(docker.starts(), [])
 
+    def test_a_daemon_that_answers_on_a_computer_without_docker_desktop_is_used(self):
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once where no daemon answers, with a message that says what stays unchecked, and runs where a daemon answers"
+        # Breaking it: ask for Docker Desktop before asking the daemon, and a machine of CI with
+        # Linux, where a daemon answers and there is no Docker Desktop, skips its tests.
+        docker = DockerStandIn(self, answers=True, plugin=False)
+        self.use(docker)
+        self.assertIsNone(docker_gate.daemon_gap())
+        docker_gate.require_daemon(self, "whether the checked thing works stays unchecked")
+        self.assertEqual(docker.starts(), [])
+
     def test_without_a_docker_command_there_is_a_gap_at_once(self):
         # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped"
         empty = tempfile.TemporaryDirectory(prefix="loop2-no-docker-")
@@ -141,7 +151,7 @@ class DaemonGap(unittest.TestCase):
 
     def test_the_skip_names_what_stays_unchecked_and_tells_a_start_from_no_start(self):
         # decision: D-390 "The test is skipped only when no daemon has answered by then, and its message says that the start was tried and did not finish and what stays unchecked"
-        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once, with a message that says what stays unchecked"
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once where no daemon answers, with a message that says what stays unchecked"
         unchecked = "whether the checked thing works stays unchecked"
         reasons = {}
         for name, docker, limit in (("no desktop", DockerStandIn(self, plugin=False), "20"),
@@ -378,6 +388,15 @@ class GateRuns(unittest.TestCase):
         self.assertEqual(docker.starts(), [], output)
         self.assertEqual(len(skipped_lines(output)), 2, output)
         self.assertLess(time.monotonic() - began, 100)
+
+    def test_a_whole_run_on_a_computer_without_docker_desktop_but_with_a_daemon_skips_nothing(self):
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once where no daemon answers, with a message that says what stays unchecked, and runs where a daemon answers"
+        docker = DockerStandIn(self, answers=True, plugin=False)
+        result = self.run_whole(docker, limit="120")
+        output = result.stdout + result.stderr
+        self.assertEqual(result.returncode, 0, output)
+        self.assertEqual(docker.starts(), [], output)
+        self.assertEqual(skipped_lines(output), [], output)
 
     def test_one_selected_test_file_starts_a_stopped_docker_desktop_too(self):
         # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers, for at most 3 minutes, in a run of the whole gate and in a run of one test file alike"

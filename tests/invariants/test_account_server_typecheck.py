@@ -33,7 +33,9 @@ Covers:
   every Docker command is an `inspect` or a `logs` (tests/deploy/test_loop2_watch.py). The
   scheduled check of the public address (`.github/workflows/check-address.yml`) deploys nothing:
   it checks out no code, holds no secret and runs no Docker command
-  (tests/deploy/test_check_address_workflow.py).
+  (tests/deploy/test_check_address_workflow.py). The workflow of the tests
+  (`.github/workflows/tests.yml`) runs on a pull request, before any merge, holds no secret and
+  ships nothing to a server (tests/quality/test_ci_workflow.py).
 
 Does NOT cover: a deployment defined outside this repository; that the script stops before `up`
 when the build fails (the script's own tests read that: whatever it does, the image `up` starts
@@ -78,8 +80,9 @@ BACKUP_SCRIPT = "deploy/loop2-backup"
 LOGROTATE_CONFIG = "deploy/loop2-app.logrotate"
 WATCH_SCRIPT = "deploy/loop2-watch"
 SCHEDULED_CHECK_WORKFLOW = ".github/workflows/check-address.yml"
+TESTS_WORKFLOW = ".github/workflows/tests.yml"
 NOT_ROUTES = (BACKUP_SCRIPT, "deploy/loop2-backup.cron", LOGROTATE_CONFIG, WATCH_SCRIPT,
-              "deploy/loop2-watch.cron", SCHEDULED_CHECK_WORKFLOW)
+              "deploy/loop2-watch.cron", SCHEDULED_CHECK_WORKFLOW, TESTS_WORKFLOW)
 
 TYPECHECK_COMMAND = ["npm", "run", "typecheck"]
 BUILT_OUTPUT = "dist"

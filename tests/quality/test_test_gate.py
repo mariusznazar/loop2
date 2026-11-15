@@ -2,9 +2,11 @@
 runs the directories of Python tests at the same time (D-406)."""
 
 import json
+import subprocess
+import sys
 import unittest
 
-from gate_fixture import GateFixture
+from gate_fixture import ROOT, GateFixture
 
 # A test of one directory that passes only once the test of the other has begun: the two
 # directories run at the same time or the first one fails after its wait.
@@ -33,9 +35,10 @@ class TestGate(unittest.TestCase):
     def assert_focused(self):
         self.assertFalse((self.gate.root / "python-stage").exists())
         self.assertFalse((self.gate.root / "foundation-stage").exists())
+        self.assertFalse((self.gate.root / "instructions-stage").exists())
 
     def test_python_selection_imports_sibling_helper_without_build_or_neighbours(self):
-        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests or the foundation check"
+        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests, the foundation check or the check of the instruction files"
         self.gate.write("tests/cases/helper.py", 'VALUE = 42\n')
         self.gate.write("tests/cases/test_selected.py", 'import unittest\n'
                         'from helper import VALUE\n'
@@ -51,7 +54,7 @@ class TestGate(unittest.TestCase):
         self.assert_focused()
 
     def test_node_selection_builds_then_runs_only_the_selected_file(self):
-        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests or the foundation check"
+        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests, the foundation check or the check of the instruction files"
         self.gate.node_test("tests/selected.test.mjs")
         self.gate.write("tests/other.test.mjs", 'throw new Error("not selected");\n')
         result = self.gate.run("tests/selected.test.mjs")
@@ -59,16 +62,51 @@ class TestGate(unittest.TestCase):
         self.assertTrue((self.gate.root / "tests/selected.test.mjs.ran").exists())
         self.assert_focused()
 
-    def test_the_whole_gate_runs_its_stages(self):
+    def test_the_whole_gate_runs_its_stages_in_their_order(self):
         # decision: D-77 "`npm test` without arguments runs the full gate"
-        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests and the foundation check"
+        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests, the foundation check and the check of the instruction files, in this order, and ends at the first stage that fails"
+        # Breaking it: move the check of the instruction files before the foundation check.
         self.gate.write("tests/passing.test.mjs",
                         'import test from "node:test"; test("passes", () => {});\n')
         result = self.gate.run()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual((self.gate.root / "built").read_text(encoding="utf-8"), "yes")
-        self.assertTrue((self.gate.root / "python-stage").exists())
-        self.assertTrue((self.gate.root / "foundation-stage").exists())
+        self.assertEqual(self.gate.stages_run(),
+                         ["python-stage", "foundation-stage", "instructions-stage"])
+
+    def test_an_error_of_the_check_of_the_instruction_files_stops_the_gate(self):
+        # decision: D-405 "The check of the instruction files stops the gate where it reports an error, and does not where it reports only warnings"
+        # Breaking it: let the gate ignore the exit code of its last stage.
+        self.gate.make_stage_exit("instructions-stage", 1)
+        result = self.gate.run()
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertEqual(self.gate.stages_run()[-1], "instructions-stage")
+
+    def test_a_stage_that_fails_before_the_check_of_the_instruction_files_stops_the_gate(self):
+        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests, the foundation check and the check of the instruction files, in this order, and ends at the first stage that fails"
+        # Breaking it: run the check of the instruction files whatever the stage before it did.
+        self.gate.make_stage_exit("foundation-stage", 3)
+        result = self.gate.run()
+        self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+        self.assertEqual(self.gate.stages_run(), ["python-stage", "foundation-stage"])
+
+    def test_the_check_of_the_instruction_files_ends_with_0_on_a_warning_and_1_on_an_error(self):
+        # decision: D-405 "The check of the instruction files stops the gate where it reports an error, and does not where it reports only warnings"
+        # The gate takes the exit code of the check and reads nothing of its output, so what stops
+        # it is what the check of the pinned process ends with: 0 for a folder whose one file
+        # names a path that is not there, 1 for one whose file names an `@` import with a mark
+        # right after its path.
+        check = ROOT / ".the-way/instruction-files/check_instructions.py"
+        for text, code, level in (("See `docs/missing.md`.\n", 0, "WARN"),
+                                  ("Read @docs/guide.md.\n", 1, "ERROR")):
+            with self.subTest(level=level):
+                folder = self.gate.root / f"instructions-{level.lower()}"
+                self.gate.write(f"{folder.name}/AGENTS.md", text)
+                result = subprocess.run([sys.executable, "-B", str(check), str(folder)],
+                                        capture_output=True, text=True, encoding="utf-8",
+                                        check=False, timeout=60)
+                self.assertEqual(result.returncode, code, result.stdout + result.stderr)
+                self.assertIn(level, result.stdout)
 
     def test_the_whole_gate_runs_the_directories_of_python_tests_at_the_same_time(self):
         # decision: D-406 "The full gate runs the directories of Python tests at the same time"

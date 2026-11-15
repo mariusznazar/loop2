@@ -122,7 +122,7 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
 
 ## agent-workflow
 
-The part directs and records the work performed on this repository.
+The part directs and records the work performed on this repository, and holds the workflow of GitHub Actions that runs the one command of tests on every pull request into `main`, on Linux.
 
 - **Files:** AGENTS.md
   CLAUDE.md
@@ -134,8 +134,9 @@ The part directs and records the work performed on this repository.
   tests/agent_workflow/**
   guidelines/**
   src/browser/AGENTS.md
+  .github/workflows/tests.yml
 - **Depends on:** product-foundation · deployment · build-tools
-- **Trust boundary:** none
+- **Trust boundary:** .github/workflows/tests.yml
 
 ## product-foundation
 

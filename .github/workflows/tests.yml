@@ -1,0 +1,57 @@
+name: tests
+
+# The one command of tests, `npm test`, on every pull request into `main`, so that a red result shows
+# before the merge. The job's name, `tests`, stays as it is: the rule of the repository that
+# requires this check names it.
+#
+# It runs on Linux. The reason stands in D-413 of `foundations/decisions.md`, "How does CI check a
+# pull request into `main`?". A test of containers is skipped, with a message in the log, where no
+# Docker daemon answers and there is no Docker Desktop to start (D-390), so the log of a run shows
+# whether those tests ran.
+#
+# The trigger is `pull_request`, never `pull_request_target`: the code of a request runs with a
+# read-only token and no secret, and no step uses the text of the request (its title, its branch
+# name, its description). The actions stand at the commits of their releases, so that a moved tag
+# changes nothing. Beside `npm test` no other command checks anything: the steps before it set the
+# machine up, and nothing in the file scans for secrets, which GitHub's own scan does.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      # The whole history, so that `foundation_check.py` finds the commit the branch left `main`
+      # from (`git merge-base HEAD`), and `.the-way` at the commit this repository's gitlink
+      # records. The checkout of a pull request sets no `origin/HEAD`, which the script takes the
+      # main branch from, so the next step sets it. Both repositories are public: the submodule
+      # needs no credential.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: true
+          persist-credentials: false
+      - run: git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
+      # Python 3.14 as `python`, the version the-way's scripts run on.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version-file: .the-way/.python-version
+      # The Node.js release `engines` in `package.json` asks for.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+      - run: npm ci
+      # The local copies of Ruff and ShellCheck that the code checks of `npm test` run.
+      - run: python -m venv .runs/quality-venv
+      - run: .runs/quality-venv/bin/python -m pip install --require-hashes -r requirements-quality.txt
+      - run: npm test
