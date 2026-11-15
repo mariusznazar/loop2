@@ -491,8 +491,11 @@ change of data alone.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: content-identifiers. For the numbers of the content and for what a
-  change of data alone adds, an agent compares the change with the decision:
+- **Verification:** invariants: content-identifiers. tests: the simulation and the view taking a
+  game map's step, ambient temperature, solving requirements, entry and exit caps, resources'
+  densities and times to renew and an attacker's chance from the row of the map's data they are
+  given. For the numbers of items, creatures and character skills and for what a change of data
+  alone adds, an agent compares a change with the part no invariant and no test holds:
   - complies: a new creature added as a row of the creatures' data, which the simulation reads
   - violates: a wolf's damage written as a number in the combat code
 - **Origin:** none
@@ -551,7 +554,11 @@ An attack interrupts the character's action still in progress, and that action i
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: action-in-progress
+- **Verification:** invariants: action-in-progress. tests: an attack interrupting the action in
+  progress, whose effect and cost are lost; the program, changed during the action or not,
+  choosing again in the game minute the action ends and in the minute an encounter ends, and
+  before the character's action in each combat turn, a program changed during an encounter
+  included.
 - **Origin:** none
 
 *Rationale:* editing a program leaves the work already begun intact, while an attack makes the character respond to the creature instead; the program as it stands at each next choice controls that response. Losing the interrupted work makes an attack matter even when the character survives it. A change of the program, or a condition of another rule that comes true, interrupts nothing — not even a long action such as an exploration — so the program, an attack apart, chooses a rule only after the action in progress ends, and a changed program works from the next free game minute of the map run in progress.
@@ -570,14 +577,16 @@ until „Wznów”.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: player-map-run-pace. For the player's way to pause and resume a map
-  run, to pick a pace and to fast-forward, an agent compares the change with the decision:
-  - complies: a control of the browser view that pauses the map run in progress and resumes it; a
-    map run at 16× passing sixteen game minutes, one after another, in one real second; „8×” picked
-    during a pause leaving the game minute where it stands until „Wznów”
-  - violates: a map run the player can hold still only by ending it; a pace picked during a pause
-    resuming the map run; a control that takes a map run straight to its result or back to an
-    earlier game minute
+- **Verification:** invariants: player-map-run-pace. tests: the paces 1×, 2×, 4×, 8× and 16× and
+  no other, each giving its multiple of a game minute per real second; the header of the screen
+  of a map run with „Pauza”, which „Wznów” replaces in a pause, and the five pace buttons asking
+  for what they say, also in a pause; a map run resumed going on from where the pause held it; a
+  pace picked in a pause, the pause at a discovery included, changing the pace alone and leaving
+  the map run paused until it is resumed. For a way to move a map run other than its pace and its
+  pause, an agent compares a change with the part no invariant and no test holds:
+  - complies: a map run at 16× passing sixteen game minutes, one after another, in one real second
+  - violates: a control that takes a map run straight to its result or back to an earlier game
+    minute
 - **Origin:** none
 
 *Rationale:* solving a map is a puzzle the player may fast-forward, while earning is income and goes
@@ -614,15 +623,13 @@ does.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: map-run-repeatability · simulation-randomness · restart-seed ·
-  map-run-layout. For where the seed of a map run comes from and for which generator a kind of draw
-  uses, an agent compares the change with the decision:
-  - complies: a map run sent anew that takes a seed other than that of the map run before it; a
-    restart that brings back the same layout of the map; two programs on one seed meeting the wolf
-    in the same game minute; the next seed of an earning loop drawn from a generator of its own, a
-    fifth kind of draw, which moves no draw of the other four
-  - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
-    from the generator of the game map's layout; an earning loop that draws each map run's seed
-    afresh; gathering that draws from the generator of attacks
+  map-run-layout. tests: a generator of its own, started from the seed, for the layout, wandering,
+  gathering, attacks and the next seed of an earning loop, the fifth moving no draw of the other
+  four, so that wandering draws the same with gathering or without it and two programs on one seed
+  meet their first attack in the same game minute; the layout's draws in a fixed order, the
+  entrance after the resources; a send after „Zakończ” taking a new seed; the first map run of an
+  earning loop taking the seed a send at that moment takes, and each later one the first draw of
+  the fifth generator of the map run before it.
 - **Origin:** none
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
@@ -659,17 +666,19 @@ campfire — the simulation chooses, not the program.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: program-rule-pick · action-in-progress · program-closed-lists. For a
-  condition written as an expression, since a sentence of this decision naming what a kind of condition may take
-  would also bind which kinds the closed list holds, which this decision leaves open, an agent
-  compares the change with the decision:
+- **Verification:** invariants: program-rule-pick · action-in-progress · program-closed-lists.
+  tests: a program holding a rule group inside a rule group refused; a program rule naming the
+  berry it eats taken in without it. For a condition written as an expression, since a sentence of
+  this decision naming what a kind of condition may take would also bind which kinds the closed
+  list holds, which this decision leaves open, for a way of the player to carry out a character's
+  action by hand and for the fuel a campfire takes, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: a condition picker listing the conditions of the closed list, each with the resource
     and the whole number it takes; a condition on the character's temperature taking 36.5, a number
-    with tenths, from a number field of the picker; a rule group "when very cold" above a rule group
-    "when chilly"
+    with tenths, from a number field of the picker
   - violates: a text field taking a condition as an expression; a kind of condition added to the
-    closed list that takes a formula as text; a button that makes the character eat now; a rule
-    group inside a rule group; a program rule naming which stick to burn
+    closed list that takes a formula as text; a button that makes the character eat now; a program
+    rule naming which stick to burn
 - **Origin:** none
 
 *Rationale:* the game is the writing of behaviour, so carrying out a character's action by hand
@@ -700,11 +709,17 @@ map sets.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-22
-- **Verification:** invariants: map-run-tiles. For what stands in the game map's data and for the
-  shape of its grid, an agent compares the change with the decision:
-  - complies: a new game map added as a row of the game maps' data, with its dimensions and
-    resources; Las with a fixed entrance, Las — głębiej with a drawn one
-  - violates: a game map with a hand-placed layout; a game map of square tiles
+- **Verification:** invariants: map-run-tiles. tests: tiles with six neighbours; the map's
+  dimensions and cost of a move given to its tiles; the fixed entrance of Las and the entrance of
+  Las — głębiej drawn after its resources, other on other seeds; a resource with no time to renew
+  in the map's data never renewing; the same seed giving the same tiles and another seed other
+  ones, and a resource of density zero placed on no tile. For the attacking creatures and how often
+  they attack standing in the map's data, an agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a new game map added as a row of the game maps' data, with the wolf and its chance
+    per game minute among its attackers
+  - violates: the wolf's chance per game minute of attacking written as a number in the code of
+    attacks
 - **Origin:** none
 
 *Rationale:* six neighbours at an equal distance make a move always mean the same. A resource that
@@ -733,13 +748,10 @@ only from a revealed tile, as much as lies on it.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: exploring-reveal · move-reach. For a journey kept as a route, for
-  exploring that brings an item and for where gathering takes from, an agent compares the change
-  with the decision:
-  - complies: "Go — stick" taking one move toward the nearest known tile with sticks, then the
-    program choosing again; a gathering on a revealed tile holding one stick taking that stick
-  - violates: a journey stored as a route; exploring that brings a stick; a gathering on a tile not
-    yet revealed; a gathering that takes a stick from a revealed tile holding none
+- **Verification:** invariants: exploring-reveal · move-reach. tests: a step ending with the
+  program picking anew, a walk to a far tile or campfire made one step at a time; exploring that
+  leaves the backpack and the stock as they were; gathering that can be carried out only on a
+  revealed tile holding some of its resource, and that takes nothing from a tile holding none.
 - **Origin:** none
 
 *Rationale:* the character reacts to the world between moves, an attack interrupts a move like any
@@ -763,15 +775,11 @@ only that tile.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: walk-target · walk-feasibility · program-world-reference. For things
-  of the world other than resources on tiles, and for campfires on a tile, an agent compares the
-  change with the decision:
-  - complies: "Go — stick" taking one move toward the nearest known tile with sticks; "Go — stick"
-    passed over while the character stands on a known tile with sticks; "Go — campfire" taking one
-    move toward the nearest campfire
-  - violates: a program rule naming "tile 7"; "Go — stick" sending the character off the known tile
-    with sticks it stands on toward another one; a program rule naming "campfire 2"; a second
-    campfire made on a tile that has one; a campfire warming a character on a neighbouring tile
+- **Verification:** invariants: walk-target · walk-feasibility · program-world-reference. tests:
+  „Idź — ognisko” taking one move toward the nearer of two campfires, passed over where no campfire
+  stands or on a campfire's tile, and staying on the campfire it reached; „Wytwórz — ognisko” not
+  carried out on a tile that has a campfire; a campfire and a burning stick on another tile not
+  warming the character.
 - **Origin:** none
 
 *Rationale:* the layout of a game map differs on every seed, and campfires arise in a different
@@ -1580,9 +1588,7 @@ Outside combat a game minute takes effect in this order: the character's body co
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136 · narrows D-140 · narrows D-141 · derives from D-142 · derives from D-146 · derives from D-175
-- **Verification:** invariants: minute-span-split · nature-energy-range. An agent compares a change with the decision:
-  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage with no rule „Eksploruj” in its copy, first chilled in game minute 84, discovering „Wędruj” and „Temperatura poniżej”, the game writing „Zawsze → Eksploruj” and the pick of game minute 84 starting it, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute; a well-fed mage at full nature energy finishing a lighting in a game minute having after it the nature energy of the cap less the lighting's price, the energy that minute gives back lost at the cap;
-  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; nature energy coming back after the effect of the action ending in its game minute, or in a game minute of combat; a completion checked before combat turns in their final minute; an attack tried again after those turns.
+- **Verification:** invariants: minute-span-split · nature-energy-range. tests: outside combat, the loss of health and the streak counted from the body after the game minute's cooling and the fall of satiety, nature energy coming back by satiety after its fall and before a lighting ending in the minute pays, a campfire and a stick lit in a minute warming from the next, a death in the minute leaving the ending action, its discovery, the burning and the renewal of the tiles undone, an exploring ending in a minute of renewal keeping the renewal, a completion after the rest of the minute with no pick, the next pick in the minute the action ends, and an attack taking the place of the pick after an action ending in its minute has landed, interrupting any action still running; in combat, the body and the nature energy standing while the streak, the burning and the renewal go on, the turns resolving in the last combat minute with their result, cooldown and beaten attack recorded, a death in it before the completion is checked, a completion in an earlier combat minute ending the encounter with no turns, and the next ordinary pick in the minute the encounter ends; discoveries entering where the body, the ending action or the attack brings them, collected once for the minute, a rule written at the first chill picked in that minute but not during combat, and the map run pausing after the whole minute of a discovery.
 - **Origin:** none
 
 *Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole, and in the game minute of death the effect of the action ending in it does not take hold, so its discovery does not either. A map run of an earning loop takes the same order and discovers nothing (D-249): a character of an earning loop that meets what is not yet discovered leaves it to the player, who discovers it in a manual map run, since on a solved map there are few discoveries and nothing loses them. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. In the minutes of combat the nature energy stands still with the body, so a minute of combat is one where the body stands still without exception, and the energy serves nothing in combat, the game having no combat spell today. Accepted with it: the order carries the completion as its last step; a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
@@ -1850,10 +1856,10 @@ those groups; the game has no program rule standing outside a rule group.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: moving a program rule from one rule group to another leaves it in the destination
-    group and removes it from the source group
-  - violates: a program rule held outside the program's rule groups or in two groups at once
+- **Verification:** tests: a new game's program holding a list of rule groups and no program rule
+  outside them; the groups taken in their order; a program holding one rule in two groups refused;
+  a rule moved or dropped into another group leaving its source group, and a group removed with
+  its rules.
 - **Origin:** none
 
 *Rationale:* One place for each program rule gives its condition a clear enclosing condition and
@@ -1868,10 +1874,8 @@ A new game starts with one empty rule group named „Program”, whose condition
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-90
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new game showing the empty „Program” group with its „+ reguła” control and the
-    condition „Zawsze”
-  - violates: a new game with no rule group, or a program rule already placed in its initial group
+- **Verification:** tests: a new game's program holding one rule group, named „Program”, under the
+  condition „Zawsze”, with no program rule.
 - **Origin:** none
 
 *Rationale:* The first group gives the player a place to put the first rule, and its condition
@@ -1888,11 +1892,9 @@ firing to that rule's count.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: an exploration lasting twenty game minutes adding one firing when it starts; each
-    combat turn in which a rule starts a combat action adding one firing
-  - violates: a count growing each game minute of the same action; a combat action adding no
-    firing because its duration is zero game minutes
+- **Verification:** tests: a rule's count growing by one when its action starts and not in the
+  later game minutes of that action, at its end or when a death cuts it short; each combat turn in
+  which a rule starts a combat action adding one firing to that rule.
 - **Origin:** none
 
 *Rationale:* The count tells the player how often the program chose a rule, so the duration of
@@ -10057,9 +10059,7 @@ The simulation keeps `actionFeasible`, the function that tells whether an action
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a test that asks `actionFeasible` whether an action can start; a clean-up that leaves it in place
-  - violates: a change that removes `actionFeasible` because no code of the game calls it
+- **Verification:** tests: the tests of the simulation that ask `actionFeasible` whether an action can start, which fail where it is removed.
 - **Origin:** none
 
 *Rationale:* the tests that call it need no other public function of the simulation to tell whether an action is allowed, and `actionFeasible` is their simplest point of observation of that.
