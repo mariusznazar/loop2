@@ -435,27 +435,57 @@ function liveSession(database, id, accountId) {
 test("the role command gives and takes the owner role by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-410 "The role `owner` is given and taken by the command `account-role`, run in the `loop2` container and naming the account by its email address normalized as at login, which reports that the account was made an owner or made a player, that it already was so, or that no account has that address, which changes nothing when it refuses and ends no session and stops no link, and which only a human runs on the server (D-12)."
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
-  const { path, database } = await fixture(t, { now: () => Date.now() });
-  database.createAccount("player@example.test", "encoded-hash");
+  const { path, database, raw } = await fixture(t, { now: () => Date.now() });
+  const account = database.createAccount("player@example.test", "encoded-hash");
+  // A signed-in browser and an unspent emailed link: a change of role must
+  // end neither nor stop the link, and must not block the account.
+  liveSession(database, "one", account.id);
+  database.issueLink(
+    {
+      accountId: account.id,
+      purpose: "email-confirmation",
+      tokenDigest: digest("confirm"),
+      lifetimeMs: DAY,
+    },
+    limits,
+  );
   const runRole = (args) => runCommand(roleCommand, args, path);
   const roleOf = () => database.findAccountByEmail("player@example.test").role;
+  const keptAsBefore = (label) => {
+    assert.equal(
+      database.findAccountById(account.id).blocked,
+      false,
+      `${label}: the account is not blocked`,
+    );
+    assert.deepEqual(
+      sessionsOf(raw, account.id),
+      ["one"],
+      `${label}: the session stays`,
+    );
+    assert.equal(linkSpent(raw, "confirm"), 0, `${label}: the link works`);
+  };
+  keptAsBefore("before any change");
 
   // D-99: the address is normalized as login normalizes it.
   const made = await runRole(["owner", " Player@EXAMPLE.test "]);
   assert.equal(made.code, 0, made.output);
   assert.equal(roleOf(), "owner");
+  keptAsBefore("made owner");
 
   const already = await runRole(["owner", "player@example.test"]);
   assert.equal(already.code, 0, already.output);
   assert.equal(roleOf(), "owner");
+  keptAsBefore("already owner");
 
   const taken = await runRole(["player", "player@example.test"]);
   assert.equal(taken.code, 0, taken.output);
   assert.equal(roleOf(), "player");
+  keptAsBefore("made player");
 
   const again = await runRole(["player", "player@example.test"]);
   assert.equal(again.code, 0, again.output);
   assert.equal(roleOf(), "player");
+  keptAsBefore("already player");
 
   const unknown = await runRole(["owner", "nobody@example.test"]);
   assert.equal(unknown.code, 4, unknown.output);
@@ -463,6 +493,7 @@ test("the role command gives and takes the owner role by address beside an open 
     unknown.stderr,
     /No account has the address nobody@example\.test\. Nothing changed\./,
   );
+  keptAsBefore("unknown address");
 
   const outcomes = [made, already, taken, again].map((run) =>
     run.stdout.trim(),
