@@ -1057,6 +1057,7 @@ function cellsOf(sections) {
 }
 
 test("the actions of the pick stand in four named groups, in the order of D-290, the combat ones picked outside combat", () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   const sections = actionPick(newKnowingGame(), EXPLORE);
   assert.deepEqual(
     sections.map((section) => [
@@ -1258,6 +1259,7 @@ test("a known resource the map of the map run lacks stands greyed: „nie ma go 
 });
 
 test("a target is picked from the resources of the Understanding alone, and an action with no target has no target field", () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   const state = knowing(newKnowingGame(), {
     items: ["berry", "stick"],
   });
@@ -1332,6 +1334,7 @@ test("a „Obchód” with no target to name and its branch bought stands greyed
 });
 
 test("the fields of a rule: the number only where the condition takes one, a target only where one is named", () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   const rule = (condition, action) => ({ id: 1, condition, action });
   assert.deepEqual(ruleFields(rule(ALWAYS, EXPLORE)), ["condition", "action"]);
   assert.deepEqual(
@@ -1370,6 +1373,7 @@ test("the fields of a rule: the number only where the condition takes one, a tar
 });
 
 test("the field after a pick follows the order condition, number, target, action, target, and none follows the last", () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   const written = [
     "condition",
     "number",

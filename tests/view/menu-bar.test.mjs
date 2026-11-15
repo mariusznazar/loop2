@@ -112,6 +112,7 @@ const isWarning = (sentence) => sentence.classList.contains("warning");
 // --- the bar --------------------------------------------------------------------------------
 
 test("a waiting screen's bar holds the game's name alone, with no item and no „Konto”", async () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: null, screen: null }) });
     const bar = page.root.querySelector(".menu-bar");
@@ -122,6 +123,7 @@ test("a waiting screen's bar holds the game's name alone, with no item and no �
 });
 
 test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to #/mapy, „Programy” to #/programy and „Konto”, in that order and without icons", async () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await withPage(async (page) => {
     await openBar(page);
     const bar = page.root.querySelector(".menu-bar");
@@ -151,6 +153,8 @@ test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to 
 });
 
 test("the item of the place the page gives is marked with aria-current, and none on a map run's screen", async () => {
+  // decision: D-277 "The menu bar marks the place the player is at"
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   // D-277, D-280: Siedziba on Siedziba and on Postać, Mapy on Mapy and on a map, Programy on Programy
   // and on a program, none on the screen of a map run; the page gives the screen, the bar reads the
   // item from it.
@@ -183,6 +187,8 @@ test("the item of the place the page gives is marked with aria-current, and none
 });
 
 test("the bar follows the page's update: the marked item moves, and the open menu stays open", async () => {
+  // decision: D-277 "The menu bar marks the place the player is at"
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   await withPage(async (page) => {
     const { bar } = await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -206,6 +212,7 @@ test("the bar follows the page's update: the marked item moves, and the open men
 });
 
 test("„Wróć do przejścia” stands as a link to the map run's address when the page gives it, after „Programy”, and not otherwise", async () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await withPage(async (page) => {
     const { bar } = await openBar(page, {
       props: propsOf({ returnEntry: RETURN_ENTRY }),
@@ -233,6 +240,7 @@ test("„Wróć do przejścia” stands as a link to the map run's address when 
 // --- the menu „Konto”: opening and closing (D-285) -------------------------------------------
 
 test("„Konto” is a native button that says whether the menu stands open, and the menu starts closed", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     const konto = buttonNamed(page.root, "Konto");
@@ -243,6 +251,8 @@ test("„Konto” is a native button that says whether the menu stands open, and
 });
 
 test("a click on „Konto” opens the menu with the account's address and „Wyloguj”", async () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -258,6 +268,7 @@ test("a click on „Konto” opens the menu with the account's address and „Wy
 });
 
 test("Escape closes the menu and focus lands on „Konto”", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: UNCONFIRMED }) });
     const konto = buttonNamed(page.root, "Konto");
@@ -272,6 +283,7 @@ test("Escape closes the menu and focus lands on „Konto”", async () => {
 });
 
 test("a click outside the menu closes it and focus lands on „Konto”", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     const { outside } = await openBar(page);
     const konto = buttonNamed(page.root, "Konto");
@@ -283,6 +295,7 @@ test("a click outside the menu closes it and focus lands on „Konto”", async 
 });
 
 test("a click on an item of the bar, which stands outside the menu, closes it", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -293,6 +306,7 @@ test("a click on an item of the bar, which stands outside the menu, closes it", 
 });
 
 test("a second click on „Konto” closes the menu and focus lands on „Konto”", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     const konto = buttonNamed(page.root, "Konto");
@@ -422,6 +436,7 @@ test("a send waits with the button disabled as Wysyłanie…, the menu stays ope
   // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
   // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”"
+  // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   for (const [message, [text, role]] of Object.entries(OUTCOMES)) {
     await withPage(async (page) => {
       const { held } = await openBar(page, {
@@ -461,6 +476,7 @@ test("the menu stays open after the answer to „Wyślij ponownie” until the p
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
   // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
   // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
+  // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   await withPage(async (page) => {
     const { held, outside } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -526,6 +542,7 @@ test("a refusal other than an address already confirmed is a failure too: its se
 
 test("the server's answer that the address is already confirmed removes the sentence and the button, and keeps the address, „Wyloguj” and the open menu", async () => {
   // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
+  // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   await withPage(async (page) => {
     const { held } = await openBar(page, {
       props: propsOf({ account: UNCONFIRMED }),
@@ -630,6 +647,7 @@ test("an answer that comes after the bar was disposed, or the player signed out,
 // --- „Wyloguj” (D-97) ---------------------------------------------------------------------
 
 test("„Wyloguj” hands the page one request and does nothing else itself", async () => {
+  // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   await withPage(async (page) => {
     const { logouts } = await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -641,6 +659,7 @@ test("„Wyloguj” hands the page one request and does nothing else itself", as
 
 test("while the page's logout waits „Wyloguj” reads Wylogowywanie…, disabled, and sends nothing more; the menu stays open and on the answer the sentence and focus come back", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”"
+  // decision: D-285 "It stays open while „Wyloguj” or „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the sentence of the outcome can be read"
   await withPage(async (page) => {
     const { bar, logouts } = await openBar(page);
     await press(buttonNamed(page.root, "Konto"));

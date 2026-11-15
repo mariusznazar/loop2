@@ -96,19 +96,24 @@ const NO_SCREEN_FRAGMENTS = [
 
 for (const [name, fragment] of NO_SCREEN_FRAGMENTS) {
   test(`a fragment with ${name} reads as no screen`, () => {
+    // decision: D-281 "An address names a screen in the fragment after `#`"
+    // decision: D-281 "The fragments of emailed links (D-156, D-224) stand apart from these, and after them the page opens Siedziba"
     assert.equal(readScreenAddress(fragment), null);
   });
 }
 
 test("the address of Siedziba reads as the headquarters", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/"), HEADQUARTERS);
 });
 
 test("the address of Programy reads as the programs screen", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/programy"), PROGRAMS);
 });
 
 test("the address of a character reads as its screen, with the number as a decimal", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/postac/12"), {
     kind: "character",
     characterId: 12,
@@ -116,6 +121,7 @@ test("the address of a character reads as its screen, with the number as a decim
 });
 
 test("the address of a map run reads as its screen, by the number of its character", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/postac/2/przejscie"), {
     kind: "run",
     characterId: 2,
@@ -123,6 +129,7 @@ test("the address of a map run reads as its screen, by the number of its charact
 });
 
 test("the address of a program reads as its screen, by the number of the program", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/programy/3"), {
     kind: "program",
     programId: 3,
@@ -130,10 +137,12 @@ test("the address of a program reads as its screen, by the number of the program
 });
 
 test("the address of the maps reads as the maps screen", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/mapy"), MAPS_SCREEN);
 });
 
 test("the address of a map reads as its screen, by the identifier of the map in the data", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(readScreenAddress("#/mapy/forest"), {
     kind: "map",
     mapId: "forest",
@@ -145,6 +154,7 @@ test("the address of a map reads as its screen, by the identifier of the map in 
 });
 
 test("every screen writes the address that reads back to it", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   for (const [screen, address] of [
     [HEADQUARTERS, "#/"],
     [{ kind: "character", characterId: 7 }, "#/postac/7"],
@@ -161,6 +171,7 @@ test("every screen writes the address that reads back to it", () => {
 });
 
 test("a map run screen with no map run of its character gives the character's screen", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "run", characterId: 1 }, explicitGame()),
     { kind: "character", characterId: 1 },
@@ -168,6 +179,7 @@ test("a map run screen with no map run of its character gives the character's sc
 });
 
 test("a map run screen of a character with a map run stays the map run screen", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "run", characterId: 2 }, withRunOfCharacterTwo(212)),
     { kind: "run", characterId: 2 },
@@ -175,6 +187,7 @@ test("a map run screen of a character with a map run stays the map run screen", 
 });
 
 test("a map run screen of a character with no map run, but with another's, gives the character's screen", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "run", characterId: 1 }, withRunOfCharacterTwo(212)),
     { kind: "character", characterId: 1 },
@@ -182,6 +195,7 @@ test("a map run screen of a character with no map run, but with another's, gives
 });
 
 test("a map run screen of a number no character carries gives Siedziba", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "run", characterId: 9 }, withRunOfCharacterTwo(212)),
     HEADQUARTERS,
@@ -189,6 +203,7 @@ test("a map run screen of a number no character carries gives Siedziba", () => {
 });
 
 test("a character screen of a number no character carries gives Siedziba", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "character", characterId: 9 }, explicitGame()),
     HEADQUARTERS,
@@ -196,6 +211,7 @@ test("a character screen of a number no character carries gives Siedziba", () =>
 });
 
 test("a character screen of a character of the team stays", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "character", characterId: 2 }, explicitGame()),
     { kind: "character", characterId: 2 },
@@ -203,6 +219,7 @@ test("a character screen of a character of the team stays", () => {
 });
 
 test("a program screen of a number no program carries gives Programy", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "program", programId: 2 }, explicitGame()),
     PROGRAMS,
@@ -210,6 +227,7 @@ test("a program screen of a number no program carries gives Programy", () => {
 });
 
 test("a program screen of a program of the player stays", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "program", programId: 3 }, explicitGame()),
     { kind: "program", programId: 3 },
@@ -217,14 +235,17 @@ test("a program screen of a program of the player stays", () => {
 });
 
 test("no screen named gives Siedziba", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(resolveScreen(null, explicitGame()), HEADQUARTERS);
 });
 
 test("the maps screen stays", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(resolveScreen(MAPS_SCREEN, explicitGame()), MAPS_SCREEN);
 });
 
 test("a map off the list of open maps gives Siedziba: a map whose opening map is not solved", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   for (const mapId of ["forest", "forestDeep"]) {
     assert.deepEqual(
       resolveScreen({ kind: "map", mapId }, explicitGame()),
@@ -235,6 +256,7 @@ test("a map off the list of open maps gives Siedziba: a map whose opening map is
 });
 
 test("a map with no opening map stays, although no map is solved", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "map", mapId: "forestEdge" }, explicitGame()),
     { kind: "map", mapId: "forestEdge" },
@@ -242,6 +264,7 @@ test("a map with no opening map stays, although no map is solved", () => {
 });
 
 test("a map whose opening map is solved stays", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   const edge = { ...explicitGame(), solvedMaps: ["forestEdge"] };
   assert.deepEqual(resolveScreen({ kind: "map", mapId: "forest" }, edge), {
     kind: "map",
@@ -255,6 +278,8 @@ test("a map whose opening map is solved stays", () => {
 });
 
 test("Siedziba and the screen of a character mark the headquarters item of the menu bar", () => {
+  // decision: D-277 "The menu bar marks the place the player is at"
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   assert.equal(markedMenuItem(HEADQUARTERS), "headquarters");
   assert.equal(
     markedMenuItem({ kind: "character", characterId: 2 }),
@@ -263,24 +288,30 @@ test("Siedziba and the screen of a character mark the headquarters item of the m
 });
 
 test("Programy and a program of Programy mark the programs item of the menu bar", () => {
+  // decision: D-277 "The menu bar marks the place the player is at"
   assert.equal(markedMenuItem(PROGRAMS), "programs");
   assert.equal(markedMenuItem({ kind: "program", programId: 3 }), "programs");
 });
 
 test("the screen of a map run marks no item of the menu bar", () => {
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   assert.equal(markedMenuItem({ kind: "run", characterId: 2 }), null);
 });
 
 test("the maps screen and a map's screen mark the maps item of the menu bar", () => {
+  // decision: D-277 "The menu bar marks the place the player is at"
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   assert.equal(markedMenuItem(MAPS_SCREEN), "maps");
   assert.equal(markedMenuItem({ kind: "map", mapId: "forest" }), "maps");
 });
 
 test("with no map run in the game state, the return entry is absent", () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   assert.equal(returnToRunEntry(explicitGame()), null);
 });
 
 test("a map run going on gives the return entry with its map's name, its minute and its address", () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   assert.deepEqual(returnToRunEntry(withRunOfCharacterTwo(212)), {
     text: "Wróć do przejścia · Las · minuta 212",
     address: "#/postac/2/przejscie",
@@ -288,6 +319,7 @@ test("a map run going on gives the return entry with its map's name, its minute 
 });
 
 test("a map run ended in death and waiting for „Restart” or „Zakończ” keeps the return entry, with its minute still", () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   assert.deepEqual(
     returnToRunEntry(
       withRunOfCharacterTwo(212, { minute: 212, cause: "hunger" }),

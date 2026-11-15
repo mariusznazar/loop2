@@ -179,6 +179,7 @@ test("with no map named the list holds the open maps alone and the right area sa
 // D-134, D-331, D-282: a row is a link to the map's address from the data, the solved mark stands
 // after the name, and the row of the map named is the one marked.
 test("a row is a link to the map's address, a solved map says so after its name and the map named is the marked row", async () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
   await withPage(async (page) => {
     const { screen } = await mount(
       page,

@@ -220,6 +220,7 @@ function withTiles() {
 // drawing beside the program, the program panel or the table in the world, and a host for the rule
 // panel standing in the screen, which the panel opening in the program no longer has.
 test("the header stands above three areas of their own in the order world, program and tabs, holding the world, the program panel and the tabs with the chronicle, and no host for the rule panel", async () => {
+  // decision: D-282 "Each column of a screen is an area of its own"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -311,6 +312,7 @@ test("the question stands in the program panel, directly above the heading of th
 // D-281, D-166. Catches the screen, its program
 // panel with the copy included, drawing the map run of the game state beside the one it was given.
 test("the screen draws the map run it was given, the copy of that map run in its program panel, not the game state's", async () => {
+  // decision: D-281 "The screen of a map run takes its map run as a parameter and reads no map run of the game state by itself"
   await withPage(async (page) => {
     // The game state holds Ala's map run on the copy of „Program” at game minute 0; the screen is
     // given her map run on the copy of „Program 2” at game minute 7, as a second map run would be.

@@ -1068,6 +1068,7 @@ const ZAPAS_8_PATYK = { kind: "itemBelow", item: "stick", value: 8 };
 const ZBIERZ_PATYK = { kind: "gather", resource: "stick" };
 
 test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   // D-306: the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk”.
   await withPage(async (page) => {
     const editor = await mountEditor(page, twoGroups());
@@ -1209,6 +1210,7 @@ test("the number field is selected when the focus goes to it, so what is typed r
 });
 
 test("the fields of a rule stand in the order condition, number, target of the condition, action, target of the action, each only where the rule has it", async () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   await withPage(async (page) => {
     await mountPanel(page, withFirstRule(ZAPAS_8_PATYK, ZBIERZ_PATYK), {
       groupId: 1,

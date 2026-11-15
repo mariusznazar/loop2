@@ -291,6 +291,7 @@ function runningState() {
 }
 
 // decision: D-408 "No function the game view shares between its screens names the new screen"
+// decision: D-281 "An address names a screen in the fragment after `#`"
 // Catches an address written for a show that asks for none, and one that goes by the wrong word.
 test("the address gets the fragment with a new entry, in place of the current one or not at all", async () => {
   await onRegistry(async ({ registry, log }) => {
@@ -342,6 +343,7 @@ test("a result is drawn on every living instance in table order, with the events
 });
 
 // decision: D-408 "No function the game view shares between its screens names the new screen"
+// decision: D-281 "An address names a screen in the fragment after `#`"
 // Catches the start that shows the first screen before the instances have drawn once, and a first
 // screen that is not written into the address in place of the entry the page opened at.
 test("start draws the instances with no events, then shows the first screen with its address replaced", async () => {
@@ -360,6 +362,7 @@ test("start draws the instances with no events, then shows the first screen with
   });
 });
 
+// decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
 // Catches a page told of the same place twice, one that is never told of a way back to the map run,
 // and a page told after the game was taken down.
 test("the page is told its place once for each change, with the way back to a map run, and never after dispose", async () => {

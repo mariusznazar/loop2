@@ -127,6 +127,7 @@ const sectionOf = (root, heading) =>
 // Catches a screen without its heading, a team drawn as a bare list with no heading (D-282) and the
 // sections in an order other than the report, the team, the chest.
 test("the screen holds its heading Siedziba, then the sections „Drużyna” and „Skrzynka {n}/{cap}” under it", async () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
     assert.equal(text(page.root, "h2"), "Siedziba");
@@ -177,6 +178,7 @@ test("the folded section „Autorzy grafiki” stands last on the screen, whatev
 // Catches the order of the team changed to the name's or the last created's (D-54), a name that is no
 // link or leads elsewhere than to the character's screen, and a generation label at generation 1.
 test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character"
   await withPage(async (page) => {
     const state = withCharacter(teamOf(), 2, { generation: 2 });
     await mount(page, propsOf(state));
