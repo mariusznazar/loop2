@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 import { backup, DatabaseSync } from "node:sqlite";
 import { ReasonedFailure, writeFailure } from "./log-line.js";
 
+// The role of an account (D-410): `player` for every account a registration
+// makes, `owner` only as the operator's command gives it.
+export type AccountRole = "player" | "owner";
+
 export interface Account {
   id: string;
   email: string;
@@ -16,6 +20,7 @@ export interface Account {
   // The previous-save privilege (D-400), granted and revoked by the operator;
   // it covers the pull of the previous save and the reset.
   previousSaveAllowed: boolean;
+  role: AccountRole;
 }
 
 // A session write refused because its account is blocked, which is what a
@@ -154,6 +159,13 @@ const schemaSteps = [
       revision INTEGER NOT NULL CHECK (revision >= 1),
       game TEXT NOT NULL CHECK (length(CAST(game AS BLOB)) <= 65536)
     ) STRICT;
+  `,
+  // The role of an account (D-410). Every account the database holds becomes a
+  // player, and a new account is one too by the default.
+  `
+    ALTER TABLE accounts
+      ADD COLUMN role TEXT NOT NULL DEFAULT 'player'
+        CHECK (role IN ('player', 'owner'));
   `,
 ];
 
@@ -304,7 +316,7 @@ export class AccountDatabase {
   }
 
   createAccount(email: string, passwordHash: string): Account | null {
-    const account = {
+    const account: Account = {
       id: randomUUID(),
       email,
       passwordHash,
@@ -312,6 +324,7 @@ export class AccountDatabase {
       blocked: false,
       emailConfirmed: false,
       previousSaveAllowed: false,
+      role: "player",
     };
     const result = this.connection
       .prepare(
@@ -343,7 +356,8 @@ export class AccountDatabase {
       (row.blocked !== 0 && row.blocked !== 1) ||
       (row.email_confirmed_at !== null &&
         !Number.isSafeInteger(row.email_confirmed_at)) ||
-      (row.previous_save_allowed !== 0 && row.previous_save_allowed !== 1)
+      (row.previous_save_allowed !== 0 && row.previous_save_allowed !== 1) ||
+      (row.role !== "player" && row.role !== "owner")
     ) {
       throw new Error("Invalid stored account");
     }
@@ -355,6 +369,7 @@ export class AccountDatabase {
       blocked: row.blocked === 1,
       emailConfirmed: row.email_confirmed_at !== null,
       previousSaveAllowed: row.previous_save_allowed === 1,
+      role: row.role,
     };
   }
 
