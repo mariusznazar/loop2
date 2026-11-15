@@ -129,6 +129,7 @@ const sheetOf = (element) => {
 // part from another file. The mage holds its idle sheet and its run sheet, which it shows on a walk
 // (D-319).
 test("a scene going on draws the background, the three props and the mage with its idle and run sheets, and no fire", async () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   await withPage(async (page) => {
     const scene = await drawn(page, doing(GATHER_STICK));
     assert.equal(scene.className, "scene");
@@ -170,6 +171,7 @@ test("a scene going on draws the background, the three props and the mage with i
 // Catches a prop or the mage drawn at a place other than the data's, in percentages of the frame
 // (336 × 152 pixels), so that the picture is right at its one size.
 test("the props and the mage stand at the places of the data, as percentages of the frame", async () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   await withPage(async (page) => {
     const scene = await drawn(page, doing(GATHER_STICK));
     const prop = (resource) =>
@@ -189,6 +191,7 @@ test("the props and the mage stand at the places of the data, as percentages of 
 // Catches a mage that stands at the same place whatever it does, or one that has no place where it
 // stays at a first draw, which has no previous reading: there it stands in the clearing.
 test("the mage stands where the activity leads it: the sticks, the fire, the right edge, the clearing", async () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   await withPage(async (page) => {
     const leftOf = async (state) =>
       (await drawn(page, state)).querySelector(".scene-mage").style.left;
@@ -217,6 +220,7 @@ test("the mage stands where the activity leads it: the sticks, the fire, the rig
 // or whose icon is not the mask of the stylesheet's action icon.
 test("the badge over the mage holds the icon of the action as a mask and a fill as long as the progress", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-320 "Over the mage's head stands a badge"
   await withPage(async (page) => {
     const state = {
       ...withRun(sent(), { current: current(GATHER_STICK), minute: 4 }),
@@ -251,6 +255,8 @@ test("the badge over the mage holds the icon of the action as a mask and a fill 
 
 // Catches a sign over the head while waiting, in combat or after an end of the map run.
 test("no badge while waiting, in combat, after a death and after a completion", async () => {
+  // decision: D-320 "While the character waits no icon and no bar stand there"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const none = async (state, name) =>
       assert.equal(
@@ -274,6 +280,7 @@ test("no badge while waiting, in combat, after a death and after a completion", 
 // Catches a fire that stands off the character's tile, one that is not the same picture when out, or
 // one that is not marked out.
 test("the fire is absent without a campfire on the tile, burning with minutes left and the same picture extinguished", async () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   await withPage(async (page) => {
     const elsewhere = withRun(sent(), {
       campfires: [{ at: { q: 99, r: 99 }, minutesLeft: 5 }],
@@ -353,6 +360,9 @@ function filterOf(element) {
 // in colour. The two values are those D-322 and D-316 give.
 test("the greys: the whole scene at the player's pause, the mage after a death, the extinguished fire; every other stop in colour", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const PAUSE = "grayscale(1) brightness(0.5)";
     const OUT = "grayscale(1) brightness(0.55)";
@@ -389,6 +399,7 @@ test("the greys: the whole scene at the player's pause, the mage after a death, 
 
 // Catches a scene read by assistive technology, with text on it or a stop for the keyboard.
 test("the scene is a picture: hidden from assistive technology, no text, nothing the keyboard reaches", async () => {
+  // decision: D-321 "The scene is a picture, not a control"
   await withPage(async (page) => {
     const states = [
       doing(GATHER_STICK),
@@ -419,6 +430,7 @@ test("the scene is a picture: hidden from assistive technology, no text, nothing
 // Catches the old Loop's pause by a click on the scene (D-321): a click on any part of it calls no
 // control of the screen and changes nothing the page shows.
 test("a click on the scene, on any part of it, does nothing", async () => {
+  // decision: D-321 "The scene is a picture, not a control"
   await withPage(async ({ window, document, root }) => {
     const asked = [];
     const controls = {
@@ -534,6 +546,7 @@ const standingOf = (mage) => ({
 // D-319. Catches a mage that walks in from somewhere at the scene's first draw, after a load
 // included, instead of standing at its place at once.
 test("at its first draw, after a load included, the mage stands at its place at once, with no walk", async () => {
+  // decision: D-319 "At the start of a map run, after „Restart”, after a load"
   await withPage(async (page) => {
     const { mage } = await mounted(page, doing({ kind: "explore" }));
     const placed = standingOf(mage());
@@ -548,6 +561,7 @@ test("at its first draw, after a load included, the mage stands at its place at 
 // walk starts from is a percentage of the mage's own frame of 64 pixels: from 42 to 275 it starts
 // 233 pixels to the left, -364.0625 %.
 test("at an ordinary change of activity the mage walks from where it stands to its next place, facing the way it walks", async () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   await withPage(async (page) => {
     const { draw, mage } = await mounted(page, doingFrom(GATHER_STICK, 0));
     await draw(
@@ -575,6 +589,8 @@ test("at an ordinary change of activity the mage walks from where it stands to i
 // start of a map run or after „Restart”: the event `mapRunStarted` the simulation returned places it
 // at once, where the same state read without that event is an ordinary change and a walk.
 test("at „Restart”, the event of a map run started, the mage stands at its place at once, crossing nothing", async () => {
+  // decision: D-319 "At the start of a map run, after „Restart”, after a load"
+  // decision: D-316 "The scene draws the character, its campfire"
   await withPage(async (page) => {
     const before = doingFrom({ kind: "gather", resource: "berry" }, 0, 4);
     const restarted = restart(before);
@@ -607,6 +623,8 @@ test("at „Restart”, the event of a map run started, the mage stands at its p
 // D-318, D-04 (the scene's previous reading). Catches a mage that goes to the clearing, or anywhere,
 // where its activity leaves it standing: „Zjedz”, combat and a death keep the place it had.
 test("where the activity leaves the mage standing, it keeps the place of the previous reading, in combat and after a death too", async () => {
+  // decision: D-318 "Where its action leads nowhere"
+  // decision: D-316 "The scene draws the character, its campfire"
   await withPage(async (page) => {
     const berry = { kind: "gather", resource: "berry" };
     const { draw, mage } = await mounted(page, doingFrom(berry, 0));
@@ -631,6 +649,8 @@ test("where the activity leaves the mage standing, it keeps the place of the pre
 // the mage's sheets, the fire's or the mage's walk, at the player's pause, a discovery, a death or a
 // completion; and a scene going on whose animations stand.
 test("every stop holds every animation of the scene where it is, and a scene going on runs them", async () => {
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const animated = (scene) => [
       ["mage", one(scene, ".scene-mage")],
@@ -660,6 +680,7 @@ test("every stop holds every animation of the scene where it is, and a scene goi
 // action after „Restart”, which starts at the same minute 0 as the last — and a bar rebuilt at every
 // reading, which could not fill smoothly from one reading to the next.
 test("a new action's bar starts empty as a bar of its own, and one action's bar stays the same bar from reading to reading", async () => {
+  // decision: D-320 "Over the mage's head stands a badge"
   await withPage(async (page) => {
     const fill = (scene) => one(scene, ".scene-badge-fill");
     const progress = (element) =>
@@ -742,6 +763,7 @@ test("a redraw at each reading of the clock keeps every element that runs an ani
 // does not hand the events of its update to the scene, so the mage walks across the scene at
 // „Restart”.
 test("the screen of a map run hands the events of each update to the scene", async () => {
+  // decision: D-319 "At the start of a map run, after „Restart”, after a load"
   await withPage(async ({ document, root }) => {
     const controls = {
       togglePause: () => {},
@@ -831,6 +853,9 @@ const effectsOf = (scene) => [...scene.querySelectorAll(".scene-effect")];
 // D-364. Catches a mage that stands through the gathering, one that bends at „Zbierz” only, or
 // at a target with a prop only, and one that bends where it does something else.
 test("the mage bends while it gathers, „Zbierz” and „Obchód”, fibre included, and stands otherwise", async () => {
+  // decision: D-364 "While the mage gathers"
+  // decision: D-364 "Bending is a continuing occupation of the character"
+  // decision: D-317 "What the character does through an action"
   await withPage(async (page) => {
     for (const action of [GATHER_STICK, GATHER_FIBER, PATROL_STICK]) {
       const scene = await drawn(page, doing(action));
@@ -858,6 +883,7 @@ test("the mage bends while it gathers, „Zbierz” and „Obchód”, fibre inc
 // D-364. Catches a bend sheet that is another file or has another frame count than the data's, and
 // a stylesheet that shows the idle sheet with the bend, or the bend sheet while the mage does not bend.
 test("the mage's bend sheet is the data's file, shown in place of the idle sheet while it bends and hidden otherwise", async () => {
+  // decision: D-364 "While the mage gathers"
   await withPage(async (page) => {
     const gathering = await drawn(page, doing(GATHER_STICK));
     const bend = one(gathering, ".scene-mage-bend");
@@ -887,6 +913,7 @@ test("the mage's bend sheet is the data's file, shown in place of the idle sheet
 // D-364. Catches a mage that bends with its back to the prop: it walks left to the sticks, so its
 // figure is mirrored, and the bend sheet, whose frames reach right, must not be.
 test("a mage that walked left to the sticks bends facing right, toward them", async () => {
+  // decision: D-364 "It faces the prop of what it gathers"
   await withPage(async (page) => {
     const { draw, mage } = await mounted(
       page,
@@ -909,6 +936,8 @@ test("a mage that walked left to the sticks bends facing right, toward them", as
 test("a gathering that ends with a piece more in the backpack sends the icon of the resource flying, on a plaque", async () => {
   // decision: D-40 "The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it; so does the icon flying to the mage"
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   await withPage(async (page) => {
     const { scene } = await reading(page, GATHER_STICK, {
       before: 0,
@@ -957,6 +986,7 @@ test("a gathering that ends with a piece more in the backpack sends the icon of 
 
 // D-365. Catches a flight at „Obchód” that carries one icon per piece, or none for the whole result.
 test("„Obchód” sends one icon for its whole result, however many pieces it brought", async () => {
+  // decision: D-365 "A resource with no prop sends it from under the mage's feet"
   await withPage(async (page) => {
     const { scene } = await reading(page, PATROL_STICK, {
       before: 0,
@@ -973,6 +1003,7 @@ test("„Obchód” sends one icon for its whole result, however many pieces it 
 
 // D-365. Catches a flight of the fibre that starts at a prop it has none of, or at the mage's head.
 test("the fibre's icon flies up from under the mage's feet, where it has no prop", async () => {
+  // decision: D-365 "A resource with no prop sends it from under the mage's feet"
   await withPage(async (page) => {
     const { scene } = await reading(page, GATHER_FIBER, {
       before: 0,
@@ -1000,6 +1031,8 @@ test("the fibre's icon flies up from under the mage's feet, where it has no prop
 // D-366, D-66. Catches a miss that shows no dust, dust where the backpack gained a piece, dust at
 // „Obchód”, which never misses, and dust at another place than the prop's.
 test("„Zbierz” that ends with no new piece puts a cloud of dust at the prop, and no icon flies", async () => {
+  // decision: D-366 "When „Zbierz” ends with no piece more in the backpack"
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
   await withPage(async (page) => {
     const { scene } = await reading(page, GATHER_STICK, {
       before: 2,
@@ -1026,6 +1059,7 @@ test("„Zbierz” that ends with no new piece puts a cloud of dust at the prop,
 });
 
 test("a missed „Zbierz” of the fibre puts the cloud under the mage's feet", async () => {
+  // decision: D-366 "When „Zbierz” ends with no piece more in the backpack"
   await withPage(async (page) => {
     const { scene } = await reading(page, GATHER_FIBER, {
       before: 0,
@@ -1048,6 +1082,7 @@ test("a missed „Zbierz” of the fibre puts the cloud under the mage's feet", 
 });
 
 test("an „Obchód” that brought nothing shows no effect", async () => {
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
   await withPage(async (page) => {
     const { scene } = await reading(page, PATROL_STICK, {
       before: 3,
@@ -1061,6 +1096,9 @@ test("an „Obchód” that brought nothing shows no effect", async () => {
 // D-367, D-317. Catches an effect that comes with no end of a gathering, from a first draw, or from
 // a reading that carries two ends, which are overdue; and one at the start of a map run.
 test("no effect without exactly one end of a gathering in a reading that has a previous reading", async () => {
+  // decision: D-367 "The scene shows an effect of the end of a gathering"
+  // decision: D-367 "Any other reading starts none"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   await withPage(async (page) => {
     // A reading with no end of a gathering: the backpack grew, nothing finished.
     const none = await reading(page, GATHER_STICK, {
@@ -1107,6 +1145,9 @@ test("no effect without exactly one end of a gathering in a reading that has a p
 // D-322, D-317. Catches an effect started at a stop, which would stand frozen over a discovery, and
 // an effect already running that does not stand still with the rest of the scene at the pause.
 test("an effect whose turn comes at a stop is dropped, and one running stands still with the scene at a stop", async () => {
+  // decision: D-367 "Any other reading starts none"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
   await withPage(async (page) => {
     const atDiscovery = await reading(page, GATHER_STICK, {
       before: 0,
@@ -1152,6 +1193,9 @@ test("an effect whose turn comes at a stop is dropped, and one running stands st
 // D-317. Catches an effect that lasts longer than 300 ms or stays after its animation, and one that a
 // redraw at the next reading of the clock starts over.
 test("an effect lasts 300 ms, is dropped when its animation ends, and a redraw does not restart it", async () => {
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
+  // decision: D-367 "Any other reading starts none"
   await withPage(async (page) => {
     const { draw, scene } = await reading(page, GATHER_STICK, {
       before: 0,
@@ -1178,6 +1222,7 @@ test("an effect lasts 300 ms, is dropped when its animation ends, and a redraw d
 // D-317, „latest wins”. Catches a second effect that stands beside a running one, or one that the
 // first's animation end removes.
 test("a new effect takes the place of the one still running, and the old one's end does not remove it", async () => {
+  // decision: D-367 "Any other reading starts none"
   await withPage(async (page) => {
     const { draw, scene } = await reading(page, GATHER_STICK, {
       before: 0,
@@ -1200,6 +1245,7 @@ test("a new effect takes the place of the one still running, and the old one's e
 
 // D-317, D-322. Catches an effect left behind when the map run ends or restarts.
 test("a map run started drops an effect still standing", async () => {
+  // decision: D-367 "Any other reading starts none"
   await withPage(async (page) => {
     const { draw, scene } = await reading(page, GATHER_STICK, {
       before: 0,
@@ -1220,6 +1266,9 @@ test("a map run started drops an effect still standing", async () => {
 // every case stands at its place, which the first draw gives: the sticks 42, the bush 224, the
 // clearing 144 for the fibre. Its body is 32 to the right of its frame's edge, its feet likewise.
 test("an effect stands at the mage that gathered, though the next action walks elsewhere", async () => {
+  // decision: D-367 "The scene shows an effect of the end of a gathering"
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
+  // decision: D-366 "When „Zbierz” ends with no piece more in the backpack"
   await withPage(async (page) => {
     const EXPLORE = { kind: "explore" };
     const ended = (action) => [
@@ -1311,6 +1360,7 @@ test("an effect stands at the mage that gathered, though the next action walks e
 // mage's left, the sticks and the bush to its right. The bend sheet's frames reach right and the mage's
 // figure is mirrored when it walked left, so the sheet is mirrored again where the two differ.
 test("the bending mage faces its prop whatever way it walked: sticks and bush to the right, moss to the left", async () => {
+  // decision: D-364 "It faces the prop of what it gathers"
   await withPage(async (page) => {
     const MOSS = { kind: "gather", resource: "moss" };
     const BERRY = { kind: "gather", resource: "berry" };
@@ -1449,6 +1499,7 @@ test("the layers: the tint over everything the scene draws, the flying icon and 
 // D-320. Catches a badge that does not walk with the mage, or stands at another place than over its
 // head: its carrier has the mage's box and the mage's walk, on both elements together.
 test("the badge's carrier stands where the mage stands and walks as it walks", async () => {
+  // decision: D-320 "Over the mage's head stands a badge"
   await withPage(async (page) => {
     const { draw, scene } = await mounted(page, doingFrom(GATHER_STICK, 0));
     const both = () => [
@@ -1480,6 +1531,7 @@ const tintValue = (scene) => tintOf(scene).style.getPropertyValue("--tint");
 // D-316. Catches a tint that does not follow the streak evenly to 0.8 at the streak the condition
 // asks for, one that goes on past it, and one that is full before the completion.
 test("the tint goes from 0 at streak 0 to 0.8 at the required streak, stays there and is 1 only at a completion", async () => {
+  // decision: D-316 "The tint of its light (D-315), never blue and never greying the scene as the pause does, follows the streak"
   await withPage(async (page) => {
     const at = async (state) => tintValue(await drawn(page, state));
     assert.equal(await at(lit({ streak: 0 })), "0");
@@ -1497,6 +1549,7 @@ test("the tint goes from 0 at streak 0 to 0.8 at the required streak, stays ther
 // D-316. Catches a loss that takes the tint back at once, a return that runs on a rise,
 // and a return that restarts when the streak grows again.
 test("a loss of the streak in the map run's course returns the tint to the cool one on a new element, and a rise runs no return", async () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   await withPage(async (page) => {
     const { draw, scene } = await mounted(page, lit({ streak: 480 }));
     const first = tintOf(scene());
@@ -1531,6 +1584,7 @@ test("a loss of the streak in the map run's course returns the tint to the cool 
 // D-316, D-322. Catches a pause that returns the tint while time stands: the
 // loss in the pause shows no change, and the return runs where the scene goes on.
 test("a loss of the streak in the player's pause or at a discovery returns the tint only where the scene goes on", async () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   await withPage(async (page) => {
     for (const standing of [
       { paused: true },
@@ -1557,6 +1611,7 @@ test("a loss of the streak in the player's pause or at a discovery returns the t
 // D-316. Catches a death or a completion that runs a return, a „Restart” that runs one, and a
 // first draw, a load included, that shows anything but where the streak puts the tint.
 test("at a death, a completion, a map run started and a first draw the tint stands at once where the streak puts it", async () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   await withPage(async (page) => {
     const standsAtOnce = (scene, value, name) => {
       assert.equal(tintValue(scene), value, name);
@@ -1652,6 +1707,7 @@ test("warming at the fire takes the frost back, reading by reading", async () =>
 // D-373, D-316. Catches a fire that shows the smaller flame too early or too late, the extinguished
 // fire that takes it, and a smaller flame of another file or another frame count.
 test("a burning fire shows the smaller flame in its last 20 minutes, the full one before and the extinguished fire always the full one", async () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   await withPage(async (page) => {
     const flame = async (minutesLeft) =>
       sheetOf(one(await drawn(page, withFire(minutesLeft)), ".scene-fire"));
@@ -1685,6 +1741,7 @@ test("the fire's element stays the same when its flame turns small", async () =>
 // D-322. Catches a pause that leaves the tint or the frost out of its grey: they lie in the
 // scene, so the pause's filter on the scene greys them with the rest.
 test("the pause greys the tint and the frost with the whole scene, because they lie inside it", async () => {
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
   await withPage(async (page) => {
     const scene = await drawn(
       page,
@@ -1759,6 +1816,8 @@ function cancelAnimation(element) {
 // D-322. Catches a moment whose effect plays at the first draw of the scene, which is
 // where a return to the screen, a reload and a load draw it: the scene must stand on the last image.
 test("a scene drawn on a moment, as after a return to the screen, a reload or a load, plays no effect and stands on its last image", async () => {
+  // decision: D-322 "Where the map run ends in the game minute of a discovery"
+  // decision: D-317 "The three moments in which time stands still"
   await withPage(async (page) => {
     for (const [name, state] of [
       ["a discovery", discoveredOf({ actions: ["explore"] })],
@@ -1778,6 +1837,8 @@ test("a scene drawn on a moment, as after a return to the screen, a reload or a 
 // moment, one that plays at a reading with another call's events, and one that plays again at a redraw
 // of the same state.
 test("the effect plays in the reading whose events carry its moment, and not at a redraw of the same state", async () => {
+  // decision: D-322 "Where the map run ends in the game minute of a discovery"
+  // decision: D-316 "The scene draws the character, its campfire"
   await withPage(async (page) => {
     for (const [name, to, events, wrong] of [
       [
@@ -1807,6 +1868,8 @@ test("the effect plays in the reading whose events carry its moment, and not at 
 // more than once, one that ends on the end of a part of it and not of its whole, and a scene hidden
 // while the effect runs, which a browser cancels and fires no end for.
 test("the end of an effect's own animation stands the scene on its last image and tells the screen once, as does the cancel of a hidden scene", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-317 "The three moments in which time stands still"
   await withPage(async (page) => {
     for (const [name, to, events, ended] of [
       [
@@ -1856,6 +1919,8 @@ test("the end of an effect's own animation stands the scene on its last image an
 // D-322. Catches a moment that plays again because the same state was drawn after its end, and one that
 // does not play when the next moment of the same kind comes after the scene went on.
 test("a moment that has played does not play again, and the next one after the scene went on does", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-317 "The three moments in which time stands still"
   await withPage(async (page) => {
     const read = await moment(page, going(), dyingOf("cold"), [DIED]);
     await inAct(() => endAnimation(master(read.scene())));
@@ -1871,6 +1936,7 @@ test("a moment that has played does not play again, and the next one after the s
 // place than the data's, a frame-sized layer that does not carry the offsets the effect comes in from,
 // and a plaque that outlasts „Wznów”.
 test("a discovery shows a plaque for each icon on the clearing, each coming from the forest, and „Wznów” takes them away", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const found = {
       actions: ["explore", "wander"],
@@ -1922,6 +1988,7 @@ test("a discovery shows a plaque for each icon on the clearing, each coming from
 // D-322, D-122. Catches a discovery of conditions alone that stands a layer of plaques of nothing.
 test("a discovery whose things have no icon shows no plaque, and the scene stays in colour", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const found = { conditions: ["always"], creatures: ["wolf"] };
     const scene = await drawn(page, discoveredOf(found));
@@ -1933,6 +2000,7 @@ test("a discovery whose things have no icon shows no plaque, and the scene stays
 // D-322. Catches the plaques of a discovery over the effect of an end in the game minute
 // of that discovery: the end shows alone.
 test("a death or a completion in the game minute of a discovery shows no plaque", async () => {
+  // decision: D-322 "Where the map run ends in the game minute of a discovery"
   await withPage(async (page) => {
     const held = { ...NO_UNDERSTANDING_ITEMS, actions: ["explore"] };
     for (const [name, state] of [
@@ -1968,6 +2036,7 @@ test("a death or a completion in the game minute of a discovery shows no plaque"
 // D-322. Catches a dead mage drawn in the idle sheet, a death sheet that stands for a mage
 // who lives, and the data's file not read from the drawing. The stylesheet decides which sheet shows.
 test("after a death the mage shows its death sheet from the data in place of the other three, and a living mage never does", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const dead = await drawn(page, dyingOf("hunger"));
     const sheet = one(dead, ".scene-mage-death");
@@ -2001,6 +2070,7 @@ test("after a death the mage shows its death sheet from the data in place of the
 // reaches the whole width of the frame and falls to the right, so a mage in the right half is turned to
 // fall to the left, and one in the left half falls to the right.
 test("a dead mage falls toward the middle of the frame, whichever way it faced", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     for (const [action, facing] of [
       [{ kind: "explore" }, "left"],
@@ -2024,6 +2094,7 @@ test("a dead mage falls toward the middle of the frame, whichever way it faced",
 // D-322, D-315, D-317. Catches a cold layer after a death of hunger or in a fight,
 // one before a death, one under the tint or over the frost, and one that carries a colour in its style.
 test("the cold layer stands after a death of cold alone, over the tint and under the frost, with no colour in its style", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     for (const cause of ["hunger", "combat"])
       assert.equal(
@@ -2060,6 +2131,7 @@ test("the cold layer stands after a death of cold alone, over the tint and under
 // of their own in the style instead of the token, a count other than the data's, and specks under
 // the tint, whose gold would take their colour.
 test("the specks of a completion stand only while the effect plays, over the tint, each a pixel of the scene on its grid", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     const read = await moment(page, going(), solved(), [SOLVED]);
     const scene = read.scene();
@@ -2090,6 +2162,8 @@ test("the specks of a completion stand only while the effect plays, over the tin
 // D-322, D-316. Catches a completion that changes the mage's colour or the full gold the tint stands at.
 test("a completion's last image is the mage in colour in the full gold, with no speck", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`, and the light of the scene stands in full gold (D-315)"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-316 "The tint of its light (D-315), never blue and never greying the scene as the pause does, follows the streak"
   await withPage(async (page) => {
     const scene = await drawn(page, solved());
     assert.equal(filterOf(one(scene, ".scene-mage-sprite")), "");
@@ -2100,6 +2174,7 @@ test("a completion's last image is the mage in colour in the full gold, with no 
 // D-322. Catches a stop that holds the effect of its own moment, the effect then standing
 // frozen at its first frame, and a moment that lets the rest of the scene move while it plays.
 test("at its stop only the effect of a moment runs, and every other animation of the scene stands", async () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
     for (const [name, state, events, parts] of [
       [
@@ -2144,6 +2219,7 @@ test("at its stop only the effect of a moment runs, and every other animation of
 // mode that moves the brightness (`normal`, `multiply`, `screen`), which would be a flash of the whole
 // scene against D-317 as the layer comes in.
 test("the cold layer blends by colour, so it keeps the brightness of what it lies over", () => {
+  // decision: D-317 "The scene shows no flash of its whole area"
   const match = /\.scene-chill\s*\{([^}]*)\}/.exec(STYLES);
   assert.ok(match, "the rule of the cold layer stands in the stylesheet");
   assert.match(match[1], /mix-blend-mode:\s*color\s*;/);
@@ -2215,6 +2291,9 @@ const creatureOf = (scene) => scene.querySelectorAll(".scene-creature");
 // of 16 × 16 stands over the gap, from 182, its bottom 3 above the line.
 test("in the minutes of a combat the wolf stands beside the mage, on its right, facing it, with the cloud of the scuffle between them", async () => {
   // decision: D-148 "An attacking creature appears in the encounter's text and in the scene"
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
+  // decision: D-316 "The two scuffle, the creature in the frames of its bite"
+  // decision: D-317 "What the character does through an action"
   await withPage(async (page) => {
     const scene = await drawn(page, inCombat());
     const wolf = one(scene, ".scene-creature");
@@ -2270,6 +2349,7 @@ test("in the minutes of a combat the wolf stands beside the mage, on its right, 
 // picture, and a mage that does not turn to it: the mage there, 275, faces left, so its figure starts at
 // 294 and the wolf's frame ends at 292.
 test("where the mage stands at the right edge the wolf stands on its left, mirrored, and the mage turns toward it", async () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
   await withPage(async (page) => {
     const scene = await drawn(page, {
       ...inCombat(),
@@ -2303,6 +2383,9 @@ test("where the mage stands at the right edge the wolf stands on its left, mirro
 // load or a return to the screen, one that does not, at the reading of the attack, and a run that
 // outlasts the attack's effect or does not end with its animation.
 test("the wolf runs in from the right edge at the reading whose events carry the attack, and stands at once at any other", async () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
+  // decision: D-316 "The scene draws the character, its campfire"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   await withPage(async (page) => {
     const { draw, scene } = await mounted(
       page,
@@ -2347,6 +2430,8 @@ test("the wolf runs in from the right edge at the reading whose events carry the
 // D-322. Catches a wolf that runs in at the stop of the first attack, where time stands still, and a
 // scuffle that moves at a stop.
 test("at the stop at a discovery the wolf stands beside the mage with no run in, and every stop holds its frames and the cloud's", async () => {
+  // decision: D-322 "At the stop at a discovery that the first attack makes"
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
   await withPage(async (page) => {
     const stopped = {
       ...inCombat(),
@@ -2378,6 +2463,8 @@ test("at the stop at a discovery the wolf stands beside the mage with no run in,
 // D-316. Catches a wolf that fights on after the mage's death, one that stands in the bite frames
 // where it should stand, and one with a cloud of a scuffle; and one that is gone with the mage's death.
 test("the wolf stands still in its idle frame, with no cloud, beside the mage that died in the fight and after a map run solved in the combat", async () => {
+  // decision: D-316 "A defeated creature falls where it stood and is gone"
+  // decision: D-316 "The two scuffle, the creature in the frames of its bite"
   await withPage(async (page) => {
     for (const state of [
       afterCombat("characterDied", { death: { minute: 186, cause: "combat" } }),
@@ -2423,6 +2510,8 @@ test("the wolf stands still in its idle frame, with no cloud, beside the mage th
 // effect of the mage's death, an effect longer than 300 ms or that stays after its animation, a wolf that
 // runs off the wrong way, and an effect at a reading with several ends.
 test("a defeated wolf falls and a departing one runs off to the right, each an effect of 300 ms at the place the wolf stood, and the mage's death shows none", async () => {
+  // decision: D-316 "A defeated creature falls where it stood and is gone"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   await withPage(async (page) => {
     const after = async (outcome, events, state = afterCombat(outcome)) => {
       const read = await mounted(page, inCombat());
@@ -2505,6 +2594,7 @@ test("a defeated wolf falls and a departing one runs off to the right, each an e
 // D-316. Catches a mage that goes on facing away from the wolf after the fight, once it stood still
 // and turned, and a wolf that is drawn over the tint of the light.
 test("the mage keeps the way it turned after the fight, and the wolf and its cloud lie under the tint, the mage between them", async () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
   await withPage(async (page) => {
     const { draw, scene, mage } = await mounted(
       page,
@@ -2539,6 +2629,7 @@ test("the mage keeps the way it turned after the fight, and the wolf and its clo
 // lets the action that ends in it take effect and then tries the attack, so one reading carries both. The
 // two effects belong to different parts of the scene and both play.
 test("a reading that carries the attack together with the end of a gathering shows the flight or the dust and the wolf's run in", async () => {
+  // decision: D-367 "Any other reading starts none"
   await withPage(async (page) => {
     for (const [name, before, after, selector] of [
       ["a hit", 0, 1, ".scene-flight"],
@@ -2597,6 +2688,7 @@ test("a reading that carries the attack together with the end of a gathering sho
 // solved within the 300 ms of the run, as at 16×, where the combat is decided 312 ms after the attack: the run
 // is then overdue, the scene stands still for good and the wolf stands beside the mage.
 test("a death or a completion in the 300 ms of the run in leaves the wolf standing beside the mage, not held on its way", async () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
   await withPage(async (page) => {
     for (const patch of [
       { death: { minute: 182, cause: "cold" } },

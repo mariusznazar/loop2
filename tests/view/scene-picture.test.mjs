@@ -109,6 +109,7 @@ test("a game without a map run has no scene", () => {
 });
 
 test("Zbierz walks the mage to the sticks, the berry bush or the moss, as its target says", () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   assert.deepEqual(
     goalOf(doing({ kind: "gather", resource: "stick" })),
     at(MAGE_AT_STICKS),
@@ -124,6 +125,7 @@ test("Zbierz walks the mage to the sticks, the berry bush or the moss, as its ta
 });
 
 test("Obchód walks the mage to the prop of its target too", () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   assert.deepEqual(
     goalOf(doing({ kind: "patrol", resource: "stick" })),
     at(MAGE_AT_STICKS),
@@ -135,23 +137,27 @@ test("Obchód walks the mage to the prop of its target too", () => {
 });
 
 test("a target with no prop, the fibre, leaves the mage where it stands", () => {
+  // decision: D-318 "Where its action leads nowhere"
   assert.deepEqual(goalOf(doing({ kind: "gather", resource: "fiber" })), STAYS);
   assert.deepEqual(goalOf(doing({ kind: "patrol", resource: "fiber" })), STAYS);
 });
 
 test("Wytwórz, Zapal and Zasil — ognisko walk the mage to the place of the fire", () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   for (const kind of ["craftCampfire", "lightCampfire", "feedCampfire"]) {
     assert.deepEqual(goalOf(doing({ kind })), at(MAGE_AT_FIRE), kind);
   }
 });
 
 test("Zapal — patyk and Zjedz leave the mage where it stands", () => {
+  // decision: D-318 "Where its action leads nowhere"
   for (const kind of ["lightItem", "eat"]) {
     assert.deepEqual(goalOf(doing({ kind })), STAYS, kind);
   }
 });
 
 test("Eksploruj, Wędruj, Idź and Idź — ognisko lead the mage to the right edge, always the same place", () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   const actions = [
     { kind: "explore" },
     { kind: "wander" },
@@ -164,6 +170,7 @@ test("Eksploruj, Wędruj, Idź and Idź — ognisko lead the mage to the right e
 });
 
 test("while waiting, with no rule fitting, the mage goes to the middle of the clearing", () => {
+  // decision: D-318 "The mage walks to the place its current action leads it to"
   const waiting = withRun(sent(), {
     current: {
       activity: { kind: "wait" },
@@ -176,6 +183,7 @@ test("while waiting, with no rule fitting, the mage goes to the middle of the cl
 });
 
 test("in combat, with no current activity, the mage stays where it stands", () => {
+  // decision: D-318 "Where its action leads nowhere"
   assert.deepEqual(goalOf(withRun(sent(), { current: null })), STAYS);
 });
 
@@ -221,6 +229,7 @@ test("the background is the forest picture, a still frame of 336 × 152 pixels",
 });
 
 test("the props stand always, also on a tile holding none of them, each at its place", () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   const state = sent();
   const ownTile = state.run.tiles.find(
     (tile) =>
@@ -264,6 +273,7 @@ test("the props stand always, also on a tile holding none of them, each at its p
 });
 
 test("the props stand the same whatever the mage is doing", () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   const idle = sceneDrawing(withRun(sent(), { current: null })).props;
   assert.deepEqual(sceneDrawing(doing({ kind: "explore" })).props, idle);
 });
@@ -275,6 +285,7 @@ test("the mage's place is the prop's own mage place: the sticks' is 42, the bush
 });
 
 test("no campfire on the character's tile: no fire, though a campfire stands elsewhere", () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   const state = sent();
   const elsewhere = withRun(state, {
     campfires: [{ at: { q: 99, r: 99 }, minutesLeft: 5 }],
@@ -284,6 +295,7 @@ test("no campfire on the character's tile: no fire, though a campfire stands els
 });
 
 test("a burning campfire on the character's tile is drawn with its frames, at its place", () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   const state = withRun(sent(), {
     campfires: [{ at: sent().run.character.at, minutesLeft: 42 }],
   });
@@ -299,6 +311,7 @@ test("a burning campfire on the character's tile is drawn with its frames, at it
 });
 
 test("an extinguished campfire on the character's tile is drawn in the same picture, not burning", () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   const state = withRun(sent(), {
     campfires: [{ at: sent().run.character.at, minutesLeft: 0 }],
   });
@@ -319,6 +332,7 @@ test("the fire's data hold the place of the fire and the place the mage stands a
 });
 
 test("the badge shows the icon of the action, the file of the rule's row, for each action", () => {
+  // decision: D-320 "Over the mage's head stands a badge"
   const ordinary = Object.keys(ACTIONS).filter(
     (kind) => !COMBAT_KINDS.includes(kind),
   );
@@ -344,6 +358,7 @@ test("the badge shows the icon of the action, the file of the rule's row, for ea
 });
 
 test("the progress is 0 at the start of the action, 0.45 midway with a carry, and 1 at its end", () => {
+  // decision: D-320 "Over the mage's head stands a badge"
   const start = sceneDrawing(doing({ kind: "gather", resource: "stick" }));
   assert.equal(start.badge.progress, 0);
 
@@ -365,6 +380,8 @@ test("the progress is 0 at the start of the action, 0.45 midway with a carry, an
 });
 
 test("no badge while waiting, in combat, after a death and after a completion", () => {
+  // decision: D-320 "While the character waits no icon and no bar stand there"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const waiting = withRun(sent(), {
     current: {
       activity: { kind: "wait" },
@@ -402,6 +419,7 @@ test("no badge while waiting, in combat, after a death and after a completion", 
 });
 
 test("the badge stays at a pause and at a stop at a discovery", () => {
+  // decision: D-320 "Over the mage's head stands a badge"
   const paused = {
     ...doing({ kind: "gather", resource: "stick" }),
     paused: true,
@@ -424,6 +442,7 @@ test("a running map run is going", () => {
 });
 
 test("the player's pause stops the scene, which is then greyed", () => {
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
   const state = {
     ...doing({ kind: "explore" }),
     paused: true,
@@ -443,6 +462,7 @@ test("a loaded map run comes back paused, so it stands as at a pause", () => {
 
 test("a stop at a discovery stands in colour: the discovery is held with the pause", () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const state = {
     ...doing({ kind: "explore" }),
     paused: true,
@@ -452,12 +472,14 @@ test("a stop at a discovery stands in colour: the discovery is held with the pau
 });
 
 test("a death stops the scene, the mage then grey", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const state = withRun(sent(), { death: { minute: 4, cause: "cold" } });
   assert.equal(sceneDrawing({ ...state, paused: false }).standing, "dead");
   assert.equal(sceneDrawing({ ...state, paused: true }).standing, "dead");
 });
 
 test("a completion stops the scene in colour", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const state = withRun(sent(), { completion: { minute: 4 } });
   assert.equal(sceneDrawing({ ...state, paused: false }).standing, "completed");
   assert.equal(
@@ -527,6 +549,7 @@ test("the mage's third sheet, the bend, and the cloud of dust come from the data
 });
 
 test("the mage bends while it gathers, whichever the target, and at nothing else", () => {
+  // decision: D-364 "While the mage gathers"
   const bending = (state) => sceneDrawing(state).mage.bending;
   for (const resource of ["stick", "berry", "moss", "fiber"]) {
     assert.equal(bending(doing({ kind: "gather", resource })), true, resource);
@@ -589,6 +612,7 @@ function effectOf(resource, before, after, events, mageX = MAGE_AT_STICKS) {
 }
 
 test("a hit flies the resource's icon from the middle of its prop to the mage's body, 32 right of its frame's edge and 18 over the ground line", () => {
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
   // Sticks at 80 × 132, 22 × 13: their middle is 91 and 125.5. The mage's frame at 42: body 74, line 136.
   assert.deepEqual(effectOf("stick", 0, 1, [finished(STICK)]), {
     kind: "flight",
@@ -615,6 +639,7 @@ test("a hit flies the resource's icon from the middle of its prop to the mage's 
 });
 
 test("a hit of the fibre, which has no prop, flies from under the mage's feet, 3 over the ground line", () => {
+  // decision: D-365 "A resource with no prop sends it from under the mage's feet"
   assert.deepEqual(effectOf("fiber", 0, 1, [finished(FIBER)], 144), {
     kind: "flight",
     href: "/icons/flax.svg",
@@ -624,6 +649,8 @@ test("a hit of the fibre, which has no prop, flies from under the mage's feet, 3
 });
 
 test("„Obchód” flies one icon whatever it brought, and shows nothing when it brought nothing", () => {
+  // decision: D-365 "When a gathering ends with a piece more in the backpack"
+  // decision: D-365 "A resource with no prop sends it from under the mage's feet"
   const patrol = { kind: "patrol", resource: "moss" };
   const brought = effectOf("moss", 0, 9, [finished(patrol)], 32);
   assert.equal(brought.kind, "flight");
@@ -632,6 +659,7 @@ test("„Obchód” flies one icon whatever it brought, and shows nothing when i
 });
 
 test("a „Zbierz” that put no piece into the backpack puts the cloud of dust at the prop, centred on it with its bottom 2 under its line", () => {
+  // decision: D-366 "When „Zbierz” ends with no piece more in the backpack"
   // Sticks: middle 91, so the 16-wide frame starts at 83; the line is 132, so its bottom is at 134.
   assert.deepEqual(effectOf("stick", 3, 3, [finished(STICK)]), {
     kind: "dust",
@@ -652,6 +680,9 @@ test("a „Zbierz” that put no piece into the backpack puts the cloud of dust 
 });
 
 test("no effect without exactly one end of a gathering, in a reading that has a map run before it", () => {
+  // decision: D-367 "The scene shows an effect of the end of a gathering"
+  // decision: D-367 "Any other reading starts none"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   assert.equal(effectOf("stick", 0, 1, []), null, "no end");
   assert.equal(effectOf("stick", 0, 1, [finished({ kind: "eat" })]), null);
   assert.equal(
@@ -677,6 +708,7 @@ test("no effect without exactly one end of a gathering, in a reading that has a 
 // D-367. A net change of the backpack decides hit or miss, so a reading in which an action that takes
 // pieces out of it also ended cannot be read.
 test("no effect where an action that takes pieces out of the backpack ended in the same reading", () => {
+  // decision: D-367 "The scene shows an effect of the end of a gathering"
   for (const kind of [
     "craftCampfire",
     "lightCampfire",
@@ -698,6 +730,7 @@ test("no effect where an action that takes pieces out of the backpack ended in t
 });
 
 test("the bending mage faces its prop: the sticks and the bush lie to its right, the moss to its left, and the fibre has none", () => {
+  // decision: D-364 "It faces the prop of what it gathers"
   const facing = (action) => sceneDrawing(doing(action)).mage.bendFacing;
   assert.equal(facing({ kind: "gather", resource: "stick" }), "right");
   assert.equal(facing({ kind: "gather", resource: "berry" }), "right");
@@ -711,6 +744,7 @@ test("the bending mage faces its prop: the sticks and the bush lie to its right,
 // of its 64-pixel frame, so its middle is `SCENE.mageMiddle` right of the frame's edge, and a prop
 // whose middle is to the right of it lies on the mage's right.
 test("each prop's facing is the side its middle lies on, from the places of the data", () => {
+  // decision: D-364 "It faces the prop of what it gathers"
   for (const [resource, prop] of Object.entries(SCENE_PROPS)) {
     const mageMiddle = prop.mageAt + SCENE.mageMiddle;
     const propMiddle = prop.place.x + prop.picture.width / 2;
@@ -733,6 +767,7 @@ const burningWith = (minutesLeft) =>
 // the ones with 20 or fewer left), one an extinguished fire takes, and a burning fire left with the
 // full flame.
 test("a burning fire draws the smaller flame with 20 minutes of burning left or fewer, and the full flame with more", () => {
+  // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
   const FULL = "/sprites/fire.png";
   const SMALL = "/sprites/fire-small.png";
   assert.equal(burningWith(60).href, FULL);
@@ -882,6 +917,7 @@ const tintAt = (patch) => sceneDrawing(run(patch)).tint;
 // completion, and one that is 1 before it. The required streaks are the maps' own data.
 test("the tint is the streak's share of the required streak times 0.8, and 1 at a completion alone", () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`, and the light of the scene stands in full gold (D-315)"
+  // decision: D-316 "The tint of its light (D-315), never blue and never greying the scene as the pause does, follows the streak"
   assert.equal(tintAt({ streak: 0 }), 0);
   assert.equal(tintAt({ streak: 120 }), 0.2);
   assert.equal(tintAt({ streak: 480 }), 0.8);
@@ -900,6 +936,7 @@ test("the tint is the streak's share of the required streak times 0.8, and 1 at 
 });
 
 test("the tint grows evenly in the streak, never down", () => {
+  // decision: D-316 "The tint of its light (D-315), never blue and never greying the scene as the pause does, follows the streak"
   let last = -1;
   for (let streak = 0; streak <= 600; streak++) {
     const tint = tintAt({ streak });
@@ -949,6 +986,7 @@ const SHOWN = (shown, from = null, serial = 1) => ({ shown, from, serial });
 // D-316, D-322. Catches a tint that returns at once, one that returns while time stands, one that
 // jumps at a death or a completion, and one that is restarted by a return already running.
 test("the tint shown stands at once at a first draw and where a map run starts, wherever it stood", () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   assert.deepEqual(tintShown(null, 0.4, "going", false), SHOWN(0.4));
   assert.deepEqual(tintShown(SHOWN(0.8), 0, "going", true), SHOWN(0, null, 2));
   assert.deepEqual(
@@ -958,6 +996,7 @@ test("the tint shown stands at once at a first draw and where a map run starts, 
 });
 
 test("while the scene goes on, a fall of the target starts a return from the tint shown, and a rise only follows", () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   assert.deepEqual(tintShown(SHOWN(0.8), 0, "going", false), SHOWN(0, 0.8, 2));
   assert.deepEqual(
     tintShown(SHOWN(0.8), 0.7, "going", false),
@@ -982,6 +1021,7 @@ test("while the scene goes on, a fall of the target starts a return from the tin
 });
 
 test("while time stands, in the player's pause and at a discovery, the tint shown is kept, and the return starts where the scene goes on", () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   for (const standing of ["paused", "discovery"]) {
     const held = SHOWN(0.8);
     assert.equal(tintShown(held, 0, standing, false), held, standing);
@@ -995,6 +1035,7 @@ test("while time stands, in the player's pause and at a discovery, the tint show
 });
 
 test("at a death and at a completion the tint stands at once where the streak or the completion puts it, and a return running is dropped", () => {
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
   assert.deepEqual(tintShown(SHOWN(0.6), 0, "dead", false), SHOWN(0, null, 2));
   assert.deepEqual(
     tintShown(SHOWN(0.8), 1, "completed", false),
@@ -1025,6 +1066,7 @@ const momentOf = (state) => sceneDrawing(state).moment;
 
 // Catches a scene that shows an effect of a moment while the map run goes on or the player pauses it.
 test("the scene shows a moment only at a discovery, after a death and after a completion", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   assert.equal(momentOf({ ...doing(ACT_EXPLORE), paused: false }), null);
   assert.equal(momentOf({ ...doing(ACT_EXPLORE), paused: true }), null);
   assert.equal(
@@ -1040,6 +1082,7 @@ const ACT_EXPLORE = { kind: "explore" };
 // D-322. Catches a scene that begins a moment from anything but the events of a
 // simulation call: a scene drawn again has none, and the events must be those of its own moment.
 test("a moment has just begun where the events of the call carry its discovery, death or completion", () => {
+  // decision: D-322 "Where the map run ends in the game minute of a discovery"
   const discovered = { kind: "discovered", minute: 3, ...NOTHING };
   const died = { kind: "characterDied", minute: 3, cause: "cold" };
   const solved = { kind: "mapRunCompleted", minute: 3 };
@@ -1074,6 +1117,7 @@ test("the end effect begins at the game minute of a death or a completion, not a
 // a thing with no icon, a missing icon, a row that is not centred and a plaque that comes out of the
 // wrong pine: the left half of a row from the left pine, the right half from the right one.
 test("a discovery shows the icon of each thing it revealed that has one, in a centred row over the clearing", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const moment = momentOf(
     discovering({
       actions: ["explore", "wander"],
@@ -1099,6 +1143,7 @@ test("a discovery shows the icon of each thing it revealed that has one, in a ce
 // Catches two plaques of one icon: „Idź” and „Idź — ognisko” share the direction sign, „Zbierz” and
 // „Obchód” the grab; one discovery shows each picture once.
 test("a discovery shows an icon once, however many of the things it revealed share it", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const moment = momentOf(
     discovering({
       actions: ["walkTo", "walkToCampfire", "gather", "patrol"],
@@ -1116,6 +1161,7 @@ test("a discovery shows an icon once, however many of the things it revealed sha
 // Catches a plaque, or a band, for what the data gives no icon: conditions, creatures and skill trees
 // are named by the band over the program alone (D-122).
 test("a discovery of conditions and creatures alone shows no plaque", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const moment = momentOf(
     discovering({
       conditions: ["always", "temperatureBelow"],
@@ -1164,6 +1210,7 @@ test("nine plaques stand in two rows, eight and one, each row centred", () => {
 // D-322. Catches a cold layer after a death of hunger or in a fight, which the scene
 // does not show, and a death of cold with none.
 test("after a death the scene shows the fall, and the cold layer after a death of cold alone", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   assert.deepEqual(momentOf(dying("cold")), {
     kind: "death",
     key: "death:4",
@@ -1176,6 +1223,7 @@ test("after a death the scene shows the fall, and the cold layer after a death o
 // D-322. Catches plaques of a discovery over a death or a completion in the game minute
 // of that discovery: the scene shows the effect of the end alone.
 test("a death or a completion in the game minute of a discovery shows the effect of the end alone", () => {
+  // decision: D-322 "Where the map run ends in the game minute of a discovery"
   const held = { ...NOTHING, actions: ["explore"] };
   const died = withRun(
     { ...sent(), paused: true, discovery: held },
@@ -1194,6 +1242,7 @@ test("a death or a completion in the game minute of a discovery shows the effect
 // forest picture holds there: a speck that rose over a tree would be a colour on a ground it does not
 // stand out from.
 test("the specks of a completion rise over a part of the frame, on the scene's grid, over the open snow alone", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const { specks } = momentOf(completing());
   assert.ok(specks.length >= 12, "enough of them to be a shower");
   const frame = decodePng(SCENE.background.file);
@@ -1242,6 +1291,7 @@ test("the places of the moments in the data lie inside the frame", () => {
 // and a last frame in which the mage still stands. Where the pixels come from is not tested: the sheet is
 // the pack's death sheet of the mage moved into the frames of the scene, which only the source can show.
 test("the death sheet holds pixels alone, six frames of the mage's size, the first standing and the last lying on the ground line", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const sheet = decodePng("mage-death.png");
   assert.deepEqual(sheet.types, ["IHDR", "IDAT", "IEND"], "pixels alone");
   assert.deepEqual([sheet.width, sheet.height], [384, 64]);
@@ -1305,6 +1355,8 @@ const creatureOf = (state) => sceneDrawing(state).creature;
 // scuffle, and a creature drawn from files the data does not name or from another size than theirs.
 test("through the minutes of a combat the scene draws the wolf scuffling, from the files and frames of the data", () => {
   // decision: D-148 "An attacking creature appears in the encounter's text and in the scene"
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
+  // decision: D-316 "The two scuffle, the creature in the frames of its bite"
   const creature = creatureOf(fighting());
   assert.equal(creature.scuffling, true);
   assert.equal(creature.key, "fight:181");
@@ -1328,6 +1380,7 @@ test("through the minutes of a combat the scene draws the wolf scuffling, from t
 // D-316. Catches a wolf left in the scene after any end of a combat but the mage's death and a
 // map run solved in the combat, and one that disappears at those two.
 test("the wolf stays after the mage's death in the fight and after a map run solved in a combat, and after no other end", () => {
+  // decision: D-316 "A defeated creature falls where it stood and is gone"
   assert.equal(creatureOf(sent()), null, "no combat yet");
   for (const outcome of ["creatureDefeated", "creatureDeparted"])
     assert.equal(creatureOf(afterFight(outcome)), null, outcome);
@@ -1362,6 +1415,7 @@ test("the wolf stays after the mage's death in the fight and after a map run sol
 // columns of the data from its frame's left edge, and when it faces left, the mirror of them about the
 // frame's middle, so the figure of the mage at the right edge starts 19 columns in.
 test("the wolf stands on the right of the mage at each place the data gives but the right edge, and on its left there, the gap of the data from its figure and inside the picture", () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
   const { gap, mageFigure } = SCENE_FIGHT;
   const right = [
     ...Object.values(SCENE_PROPS).map((prop) => prop.mageAt),
@@ -1394,6 +1448,7 @@ test("the wolf stands on the right of the mage at each place the data gives but 
 // D-316. Catches a cloud of the scuffle that stands off the gap or in the air, and a size other
 // than the dust's.
 test("the cloud of the scuffle stands over the middle of the gap, its bottom 3 above the ground line", () => {
+  // decision: D-316 "The two scuffle, the creature in the frames of its bite"
   const cloud = creatureOf(fighting()).cloud;
   const right = scuffleCloud(creaturePlace(144, 64, 64, 336), cloud);
   assert.deepEqual(
@@ -1414,6 +1469,8 @@ const ENDED = (outcome) => ({
 // D-317, D-316. Catches an effect that is not made at the attack, a run in that carries the wrong
 // fight, and a reading with no previous reading, a map run started or several ends that shows one.
 test("the wolf runs in at the reading whose events carry its attack, and at none else", () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   const before = sent();
   const effect = creatureEffect(
     before,
@@ -1444,6 +1501,7 @@ test("the wolf runs in at the reading whose events carry its attack, and at none
 // the wolf stands, one for a reading whose previous state held no combat, and a run off that does not
 // reach the right edge of the frame.
 test("the wolf falls where it stood when defeated and runs off to the right edge when it departs, and the mage's death shows no effect", () => {
+  // decision: D-316 "A defeated creature falls where it stood and is gone"
   const was = fighting();
   const run = (outcome, mageX = 144) =>
     creatureEffect(was, afterFight(outcome), [ENDED(outcome)], mageX, 64, 336);
