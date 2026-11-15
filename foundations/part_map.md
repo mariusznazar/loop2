@@ -71,6 +71,7 @@ The part is the account and save server: it serves the built game, handles the H
   tests/passwords.test.mjs
   tests/account-storage.test.mjs
   tests/account-owner.test.mjs
+  tests/owner-routes.test.mjs
   tests/account-backup.test.mjs
   tests/account-database-check.test.mjs
   tests/account-database-check-standin.mjs
