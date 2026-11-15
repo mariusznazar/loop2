@@ -14,6 +14,8 @@ Czytaj również ogólne wytyczne kodowania.
 | -------------------------------------------------- | ----------- | -------- |
 | `src/browser/view/account-card.tsx`                | exemplar    | D-36     |
 | `src/browser/view/account-rules.ts`                | copy        | —        |
+| `src/browser/view/accounts-entry.ts`               | copy        | —        |
+| `src/browser/view/accounts-screen.tsx`             | copy        | —        |
 | `src/browser/view/app.ts`                          | do not copy | —        |
 | `src/browser/view/away-report.ts`                  | copy        | —        |
 | `src/browser/view/body-row.ts`                     | do not copy | —        |
