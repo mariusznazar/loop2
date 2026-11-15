@@ -5770,12 +5770,12 @@ unlocks its earning loop without certifying that the chosen program survives eve
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the speed control inactive for a character in an earning loop; an earning loop
-    starting on a solved map without a safety check across all seeds
-  - violates: an earning loop going sixteen game minutes per real minute when the speed is set so;
-    an earning loop kept as one long map run; an earning loop started on a map not yet solved; a
-    solved map refused as unsafe after a failed seed
+- **Verification:** tests: an earning loop starting only on a solved map, also as a saved game state
+  admits it, and starting there on a program that dies; one game minute of an earning loop for each
+  whole real minute, in the balance data, the open game and the catch-up, the pace of the game state
+  reaching none of it, and a manual map run passing its multiple of game minutes at each pace; the
+  next map run of an earning loop starting at once after a completion or a death a resurrection
+  covers, with its own number and seed.
 - **Origin:** none
 
 *Rationale:* solving a map is a puzzle and may be fast-forwarded; earning is income and goes with the
@@ -5804,15 +5804,11 @@ real time.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-07 · derives from D-22
-- **Verification:** invariants: catch-up-state. For the order of characters and the borders, an agent
-  compares a change with the decision:
-  - complies: two characters of one team caught up one after the other in the list's order, the
-    first taking its loot into a chest with room for one; two characters dying in the catch-up, the
-    one lower on the list in an earlier game minute, finding the resurrection used by the one
-    above it and losing everything
-  - violates: characters caught up together, game minute by game minute; a map run that takes from
-    the chest in the middle of another character's map run; the character that died first in real
-    time taking the resurrection in the catch-up
+- **Verification:** invariants: catch-up-state. tests: the catch-up running when a loaded game comes
+  back, taking the characters one at a time, each to the end, in the order of the list; an item
+  reaching the chest at a completion and the next map run of another character taking it from there;
+  the last room of the chest going to the character earlier on the list, and one resurrection for
+  two deaths going to the character earlier on the list though it died later in real time.
 - **Origin:** none
 
 *Rationale:* nothing has to run while no browser is open, so the catch-up needs no server of its own.
@@ -5840,13 +5836,14 @@ on: the function that reaches its end deals with that end at once.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-56 · derives from D-164
-- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
-  - complies: a game state holding the manual map run of one character and the earning loops of two
-    others; each next map run binding its lists anew from the program content the earning loop holds;
-    deleting a program leaving an earning loop on that program's content as it was
-  - violates: a second earning loop for one character; a saved game state admitted with the map run
-    of an earning loop ended in a death or in a completion; a pause, a pace or firing counts held
-    for an earning loop
+- **Verification:** invariants: loop-practice-payment. tests: the earning loops held by character
+  number beside a manual map run of another character, at most one for a character, each with
+  exactly the content of the program taken at its start, its map run going on, the number of that
+  map run, the count of its completions and the practice gathered since the last „Odbierz”, also as
+  a saved game state admits them; an edit or a deletion of the program leaving the content an
+  earning loop holds, in its later map runs too; the open game and the catch-up dealing with the end
+  of a loop's map run at once, the state the browser view holds after a reading or a load holding
+  the next map run, and a load refusing an earning loop whose map run has ended.
 - **Origin:** none
 
 *Rationale:* the shape itself gives a character one earning loop, and the manual map run stays as
@@ -6074,13 +6071,16 @@ browser's (D-209) and after a sign-in to the same account with that unsaved game
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-212 · derives from D-240
-- **Verification:** invariants: catch-up-minutes. An agent compares a change with the decision:
-  - complies: a game closed for a month computing all its game minutes on return, the page waiting for
-    it; the tab that lost to another browser's save loading that save and then catching up; the load
-    taking no time passed, the catch-up running after it; a new game and a refused save passing
-    through it and changing nothing
-  - violates: a load that advances earning loops itself; a bound on the minutes with the rest lost; a
-    state kept in the page's memory going on from the sign-in with its missed game minutes dropped
+- **Verification:** invariants: catch-up-minutes. tests: the catch-up running on its own after the
+  load the page makes when it opens with a session. For the catch-up after a sign-in, after a save
+  lost to another browser's and after a sign-in with the unsaved game state kept in the page's
+  memory, an agent compares a change with the part no invariant and no test holds:
+  - complies: the tab that lost to another browser's save loading that save and then catching up; a
+    sign-in to the same account with the state kept in the page's memory catching up from that
+    state's save time
+  - violates: a state kept in the page's memory going on from the sign-in with its missed game
+    minutes dropped; a save with earning loops loaded at a sign-in through the form and shown without
+    its catch-up
 - **Origin:** none
 
 *Rationale:* the player comes back to what the earning loops earned, however long the absence, and
@@ -6108,12 +6108,11 @@ moment of that save.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-219
-- **Verification:** an agent compares a change with the decision:
-  - complies: the save time travelling inside the game of the saved document, which the server stores
-    unread; a save leaving the game state of the browser view the same value, so the comparison of
-    D-207 sees no change
-  - violates: a column of the account database for the save time; the server's clock as the save
-    time; the loop clock's value written as the save time; a load reading the clock
+- **Verification:** tests: each saved document, a retry and the document kept in the page's memory
+  included, carrying the moment of the reading of the browser's clock made for it, stamped on a copy
+  so that the game state the browser view holds stays the value it was; a document with no save time
+  refused; a new game holding no save time, and a game loaded from a save holding the moment of that
+  save.
 - **Origin:** none
 
 *Rationale:* the catch-up counts from this moment, and the renewal of a resurrection goes by the same
@@ -6143,12 +6142,15 @@ discovers what the character met in a manual map run.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-239
-- **Verification:** invariants: loop-run-knowledge. An agent compares a change with the decision:
-  - complies: a first chill in an earning loop's map run adding nothing to the Understanding and no
-    rule to the content the earning loop holds, its game minutes taking effect in the order of D-71;
-    what a manual map run discovers meanwhile widening an earning loop's repertoire, as D-119 gives
-  - violates: an earning loop's map run stopping at a discovery; a program rule written into a
-    program by an earning loop; a discovery named in the report
+- **Verification:** invariants: loop-run-knowledge. tests: a loop's map run, passed on its own and in
+  the catch-up, through the game minutes in which a manual map run discovers, its game time going on
+  with no stop and no discovery, and the program content the earning loop holds gaining no rule. For
+  the player discovering what a character met only in a manual map run, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: a creature a character first meets in an earning loop's map run entering the
+    Understanding only when a manual map run meets it
+  - violates: a discovery of an earning loop's map run named in the report of the time away, or
+    entered when that report closes
 - **Origin:** none
 
 *Rationale:* on a solved map discoveries are few and nothing loses them, the player makes them in a
@@ -6167,12 +6169,14 @@ and the earning loops of other characters go on through them.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-122 · derives from D-239
-- **Verification:** an agent compares a change with the decision:
-  - complies: a manual map run paused in game minute 100 while another character's earning loop
-    passes its game minutes and ends a map run; the screen after a death standing while an earning
-    loop deposits into the chest
-  - violates: one pause holding every map run of the game; earning loops standing still while the
-    screen after a completion stays
+- **Verification:** tests: a paused manual map run standing as it is in the open game and in the
+  catch-up while another character's earning loop passes its game minutes. For the stop at a
+  discovery and the screen after the end, an agent compares a change with the part no test holds:
+  - complies: a manual map run stopped at a discovery while another character's earning loop passes
+    its game minutes and ends a map run; the screen after a death standing while an earning loop
+    deposits into the chest
+  - violates: earning loops standing still while a manual map run waits at a discovery or while the
+    screen after its completion stays
 - **Origin:** none
 
 *Rationale:* earning goes with the world's time (D-239), so looking at a manual map run or at its
