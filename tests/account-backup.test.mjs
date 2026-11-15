@@ -234,6 +234,8 @@ function startWriter({ path, writers }) {
 }
 
 test("a backup made beside a separate writer finishes, opens and holds everything committed before it started, a row only in the write-ahead log included", async (t) => {
+  // decision: D-228 "A completed, consistent backup of the account and save database"
+  // decision: D-236 "The backup command of D-231 makes a database backup"
   const box = await sandbox(t);
   const { path, temporary, directory } = box;
   seedDatabase(box);
@@ -290,6 +292,7 @@ test("a backup made beside a separate writer finishes, opens and holds everythin
 });
 
 test("a backup takes one step, where the default rate takes many on the same database", async (t) => {
+  // decision: D-236 "The backup command of D-231 makes a database backup through `backup()` of `node:sqlite`, on the connection it opens, whole in one step"
   const box = await sandbox(t);
   const { path, directory, servers } = box;
   const server = seedDatabase(box);
@@ -314,6 +317,7 @@ test("a backup takes one step, where the default rate takes many on the same dat
 });
 
 test("without the one fixed word, or with anything else, the command refuses before it opens the database and prints nothing to standard output", async (t) => {
+  // decision: D-231 "That command opens only an existing database file, needs its one fixed word `--to-standard-output`, without which it refuses before it opens the database and prints nothing to standard output"
   const box = await sandbox(t);
   const { path, temporary, directory } = box;
   seedDatabase(box).close();
@@ -360,6 +364,7 @@ test("without the one fixed word, or with anything else, the command refuses bef
 });
 
 test("a missing database file creates nothing and ends with its own code", async (t) => {
+  // decision: D-231 "That command opens only an existing database file"
   const { path, temporary, directory } = await sandbox(t);
   for (const target of [path, undefined, "", "   ", ":memory:", directory]) {
     const result = await runBackup([word], target, temporary);
@@ -400,6 +405,7 @@ test("a database that cannot be opened and a temporary directory that cannot be 
 // only that the night's copy failed; SQLite's message or the path in standard
 // error, which the backup script appends to its log.
 test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {
+  // decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
   const box = await sandbox(t);
   const garbage = join(box.directory, "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");

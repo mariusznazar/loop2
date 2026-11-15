@@ -52,6 +52,8 @@ LIST_TEMPORARY = "console.log(JSON.stringify(require('node:fs').readdirSync('/tm
 class BackupBytesThroughDockerExec(unittest.TestCase):
 
     def test_bytes_of_docker_exec_without_a_terminal_open_as_the_database(self):
+        # decision: D-228 "A completed, consistent backup of the account and save database"
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec`"
         docker_gate.require_daemon(self, "whether the bytes of `docker exec` open as the database "
                                          "stays unchecked")
         suffix = uuid.uuid4().hex[:12]

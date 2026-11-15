@@ -92,6 +92,7 @@ test("the check fails when its temporary directory cannot be written", async (t)
 test("the check passes under the pass-through stand-in, which it reached", async (t) => {
   // invariant: account-save-sqlite-upgrade
   // decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked"
+  // decision: D-236 "The backup command of D-231 makes a database backup through `backup()` of `node:sqlite`"
   const directory = await sandbox(t);
   const result = await runCheck(directory, "pass-through");
   assert.equal(result.code, 0, result.stderr);

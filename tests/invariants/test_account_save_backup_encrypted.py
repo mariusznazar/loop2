@@ -113,6 +113,7 @@ class NoBackupLeavesUnencrypted(unittest.TestCase):
 
     def test_a_run_that_does_not_finish_the_encryption_sends_nothing(self):
         # invariant: account-save-backup-encrypted
+        # decision: D-228 "A completed, consistent backup of the account and save database is stored outside the game server host"
         for arrange in NOTHING_LEAVES:
             with self.subTest(arrange.__name__):
                 fixture = self.fixture()
@@ -125,6 +126,8 @@ class NoBackupLeavesUnencrypted(unittest.TestCase):
 
     def test_control_a_whole_run_sends_exactly_the_file_age_wrote(self):
         # invariant: account-save-backup-encrypted
+        # decision: D-232 "A backup of the account and save database is encrypted on the game server's host before it leaves it, by `age` in the backup script's pipe, with the identity file `/etc/loop2/backup-encryption-key` of D-13 used as a symmetric key"
+        # decision: D-232 "The plain database exists on the host only in that pipe, and the backup is not compressed"
         fixture = self.fixture()
         result = fixture.run()
         self.assertEqual(result.code, 0, result)

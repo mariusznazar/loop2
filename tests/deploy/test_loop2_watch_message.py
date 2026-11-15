@@ -141,6 +141,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_each_kind_sends_its_fixed_notice_and_nothing_a_tool_printed(self):
         # invariant: failure-watcher-message
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content"
         # The break: a log line, a count or Docker's text in the subject or the text, or in the
         # state or the log the next reader of the machine trusts.
         for kind, arrange in ARRANGEMENTS.items():
@@ -183,6 +184,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_the_log_of_the_backup_is_read_and_a_marker_beside_the_exact_line_reaches_nothing(self):
         # invariant: failure-watcher-message
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content"
         # The marker stands in lines that look like the end of a sent night; where one line is
         # exact the watcher has no trouble to report, and the marker reaches nothing it writes.
         fixture = self.fixture()
@@ -198,6 +200,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_all_six_kinds_in_one_run_send_six_fixed_notices_and_nothing_else(self):
         # invariant: failure-watcher-message
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content"
         fixture = self.fixture()
         arrange_down(fixture)
         arrange_backup(fixture)
@@ -218,6 +221,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_the_subject_is_one_word_a_url_path_takes_and_no_two_notices_are_alike(self):
         # invariant: failure-watcher-message
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         subjects, texts = [], []
         for kind, arrange in ARRANGEMENTS.items():
             with self.subTest(kind):

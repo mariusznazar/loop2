@@ -57,6 +57,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
 
     def test_installed_copy_equal_to_the_source_gives_no_warning(self):
         # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.fixture.answer_passing_run()
@@ -83,6 +84,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
 
     def test_commit_without_the_sources_warns_for_each_pair_then_fails_the_build_with_7(self):
         # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
         # One warning for each of the six installed copies: the deploy script, the backup script
         # and its schedule, the watcher and its schedule, and the logrotate file.
         sha = self.fixture.commit("main", "from before the deployment existed")
@@ -104,6 +106,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
 
 
     def test_each_new_pair_differing_warns_once_and_continues(self):
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
         cases = {
             "backup script": ({"backup": support.read_bytes(support.BACKUP_SCRIPT) + b"# x\n"},
                               "deploy/loop2-backup at", "/usr/local/bin/loop2-backup"),
@@ -139,6 +142,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
                 self.assertLess(self.index_of("differs"), self.index_of("build of"))
 
     def test_unreadable_installed_copy_warns_for_that_pair_only_and_continues(self):
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
         for name in ("installed_backup", "installed_schedule", "installed_watch",
                      "installed_watch_schedule", "installed_logrotate"):
             with self.subTest(missing=name):
@@ -157,6 +161,7 @@ class InstalledScriptComparison(DeployBuildTestCase):
 
     def test_all_six_differing_warn_six_times(self):
         # decision: D-16 "Each deployment compares that copy with the script's source at the deployed commit and only warns when they differ"
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending, and each deployment compares the installed script and the installed schedule with their sources at the deployed commit and only warns when they differ"
         sha = self.fixture.deployable_commit()
         self.fixture.install(b"# a\n", b"# b\n", b"# c\n", b"# d\n", b"# e\n", b"# f\n")
         self.fixture.answer_passing_run()

@@ -113,6 +113,7 @@ class WithFixture(unittest.TestCase):
 class TheKinds(WithFixture):
 
     def test_each_kind_calls_pusher_once_with_its_own_fixed_notice(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: a notice paired with the wrong kind, or two calls for one trouble.
         arrangements = {
             "down": lambda f: f.set_container(support.GAME, support.GAME_ID, status="exited"),
@@ -133,6 +134,7 @@ class TheKinds(WithFixture):
                 self.assert_sent(result, kind)
 
     def test_the_six_notices_differ_and_none_is_the_backup_scripts(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: the backup kind worded as the backup script's own notice, so the owner could
         # not tell a failed night from the night that is missing.
         subjects = [subject for subject, _text in support.NOTICES.values()]
@@ -476,6 +478,7 @@ class TheBackupKind(WithFixture):
     """No successful send of a backup in the log of the backup for 26 hours (D-233, D-356)."""
 
     def test_a_send_26_hours_old_or_less_counts_and_one_second_older_does_not(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: a limit of another length, or a comparison off by one second.
         for age in (0, 26 * HOUR - 1, 26 * HOUR):
             with self.subTest(age=age):
@@ -486,6 +489,7 @@ class TheBackupKind(WithFixture):
             self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_a_missing_empty_or_unreadable_log_counts_as_no_send(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: a log that cannot be read taken for a quiet night.
         arrangements = {"missing": lambda f: f.remove_backup_log(),
                         "empty": lambda f: f.write_backup_log(""),
@@ -497,6 +501,7 @@ class TheBackupKind(WithFixture):
                 self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_a_log_that_never_gives_its_lines_is_cut_off_and_counts_as_no_send(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: the reading with no time limit, which would hold the watcher's own lock for
         # good, so that every later run ended as "another run holds the lock" and nothing was sent.
         fixture = self.stated()
@@ -508,6 +513,7 @@ class TheBackupKind(WithFixture):
         self.assertNotIn("another run holds", fixture.run_at(NOW + FIVE_MINUTES).log)
 
     def test_the_kind_is_sent_once_and_then_held_for_24_hours(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content, at most once a day"
         # The break: the six hours of the other kinds, which would bring four mails a day.
         fixture = self.stated("")
         self.assert_sent(fixture.run_at(NOW), "backup")
@@ -669,6 +675,7 @@ class TheBackupLogAsInput(WithFixture):
     sent its file."""
 
     def test_a_line_that_is_not_exactly_the_end_of_a_sent_night_counts_for_nothing(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: a match anywhere in the line, a loose timestamp, a dot, a digit class or a
         # program name read too freely, or a reading that loses a byte and so makes a line exact.
         for name, lines in LOOK_ALIKES.items():
@@ -677,6 +684,7 @@ class TheBackupLogAsInput(WithFixture):
                 self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_all_the_look_alikes_beside_one_exact_line_do_not_hide_it(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The control of the test above: the reading is whole, not broken by a line it refuses.
         everything = [line for lines in LOOK_ALIKES.values() for line in lines]
         for name, lines in (("before", [EXACT_LINE] + everything),
@@ -686,6 +694,7 @@ class TheBackupLogAsInput(WithFixture):
                 self.assert_quiet(fixture.run_at(NOW))
 
     def test_a_send_older_than_the_limit_beside_many_newer_failed_nights_counts_for_nothing(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: any line of the night read as a success, or the newest night taken for the send.
         log = support.night(NOW - 27 * HOUR).encode()
         for step in range(30):
@@ -694,6 +703,7 @@ class TheBackupLogAsInput(WithFixture):
         self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_a_day_that_is_not_on_the_calendar_does_not_count_and_a_leap_day_does(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: a stamp read by its digits alone, so that the 29th of February of a year that
         # has none stands in the window of the first of March. Each clock is half past midnight.
         for year, counts in ((2027, False), (2028, True)):
@@ -704,6 +714,7 @@ class TheBackupLogAsInput(WithFixture):
                 self.assert_sent(fixture.run_at(now), *(() if counts else ("backup",)))
 
     def test_a_log_far_longer_than_the_part_read_is_read_from_its_end(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: the whole file read, which a flood of error text would turn into a slow run,
         # or its start read, which would miss the night that has just ended.
         limit = int(deploy_support.constants(
@@ -718,6 +729,7 @@ class TheBackupLogAsInput(WithFixture):
             self.assert_quiet(fixture.run_at(NOW))
 
     def test_a_line_of_millions_of_bytes_neither_counts_nor_stops_the_reading(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         huge = b"A" * 3_000_000
         with self.subTest("an exact line at the end of it"):
             fixture = self.stated(huge + EXACT_LINE.encode() + b"\n")
@@ -727,6 +739,7 @@ class TheBackupLogAsInput(WithFixture):
             self.assert_quiet(fixture.run_at(NOW))
 
     def test_a_last_line_with_no_newline_counts_when_it_is_exact(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         fixture = self.stated(EXACT_LINE)
         self.assert_quiet(fixture.run_at(NOW))
 
@@ -752,6 +765,7 @@ class TheWatcherCountsWhatTheBackupScriptWrites(WithFixture):
         self.assertEqual(support.stamp(self.BACKUP_START), support.backup_support.TIMESTAMP)
 
     def test_the_end_of_a_night_that_the_backup_script_sent_counts_for_26_hours(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: a watcher and a script that word the end of a sent night differently, so a
         # watcher that never counts a send raises its kind every day. Both ends of the week's names
         # stand here, the first and the seventh day.
@@ -766,6 +780,7 @@ class TheWatcherCountsWhatTheBackupScriptWrites(WithFixture):
                     self.assert_sent(fixture.run_at(self.BACKUP_START + 26 * HOUR + 1), "backup")
 
     def test_a_night_whose_send_failed_does_not_count(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         log = self.log_of_a_run("1", send_exit=12)
         self.assertIn("loop2-backup: end: failed (exit 8)", log)
         fixture = self.stated(log, window=self.BACKUP_START)
@@ -1281,6 +1296,7 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
 class TheConstants(unittest.TestCase):
 
     def test_the_constants_name_the_design_s_own_files_and_containers(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log`"
         # The seam replaces the paths, so a wrong one would show nowhere else.
         block = deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(block["LOG_FILE"], "/var/log/loop2-watch.log")
@@ -1291,6 +1307,7 @@ class TheConstants(unittest.TestCase):
         self.assertEqual(block["TUNNEL_CONTAINER"], "loop2-cloudflared")
 
     def test_the_log_the_watcher_reads_is_the_one_the_backup_script_writes(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log`"
         backup = deploy_support.constants(deploy_support.read_bytes(support.backup_support.SCRIPT))
         block = deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(block["BACKUP_LOG_FILE"], backup["LOG_FILE"])
