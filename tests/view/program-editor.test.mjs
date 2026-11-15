@@ -932,6 +932,7 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one"
   const first = {
     id: 8,
     name: "First",
@@ -1433,6 +1434,7 @@ test("the field after a pick follows the order condition, number, target, action
 });
 
 test("the time of one execution: minutes from the data, „tura” in combat, a movement's step in a map run and nothing outside one", () => {
+  // decision: D-293 "Beside a program rule's action, in its row and in the rule panel, stands the time one carrying out of the action takes, such as „10 min”, „tura” for an action of combat, for a movement during a map run the time of a step on that map, and nothing for a movement outside a map run"
   const outside = newKnowingGame();
   assert.equal(actionTime(outside, "explore"), "20 min");
   assert.equal(actionTime(outside, "gather"), "10 min");
@@ -1578,6 +1580,7 @@ test("a cell of the action pick carries its price in brackets after its name, a 
 });
 
 test("a rule is numbered by its group and its place in it, a group by its place in the program", () => {
+  // decision: D-292 "In the program editor each rule group bears its number in the program, such as „2”, and each program rule the number of its group and its own number in that group, such as „2.1”"
   assert.equal(groupNumber(0), "1");
   assert.equal(groupNumber(1), "2");
   assert.equal(ruleNumber(0, 0), "1.1");
@@ -1645,6 +1648,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
 
 test("the arrows are off only on the program's first and last rule, a group's edge being no end", () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only on the program's first rule and „↓” only on its last"
   const second = {
     id: 2,
     name: "Dwa",
@@ -1670,6 +1674,7 @@ test("the arrows are off only on the program's first and last rule, a group's ed
 test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {
   // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one"
   const rules = (program) =>
     program.groups.map((group) => group.rules.map((rule) => rule.id));
   const program = {
@@ -1743,6 +1748,7 @@ test("a rule group is dropped before another group or at the end, and a drop tha
 
 test("a rule dropped on a folded group, which shows no rule to go before, lands at the group's end", () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
+  // decision: D-295 "A folded rule group shows its name, its condition and the number of its program rules, and a program rule dropped on it lands at its end"
   const program = {
     ...THREE,
     groups: [

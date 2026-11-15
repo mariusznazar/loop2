@@ -314,6 +314,7 @@ for (const mode of ["programs", "run"]) {
     // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
     // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
     // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+    // decision: D-296 "A click on the header of a rule group opens the rule panel with the group's name"
     await withPage(async (page) => {
       const game = await wiredPanel(page, gameWithRule(), mode);
       assert.equal(classed(game.root, "rule-panel").length, 0, "closed");
@@ -477,6 +478,7 @@ test("the rule panel of the copy says „Zmiana zeruje passę tego przejścia.�
 // program.
 test("a group folded on one screen stays folded on the other for the same program, the copy's folding is its own, and a new memory forgets", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`"
+  // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens and goes with a reload of the page, after which every rule group stands unfolded"
   await withPage(async (page) => {
     const folding = createFolding();
     const programs = await wiredPanel(
@@ -528,6 +530,7 @@ test("a group folded on one screen stays folded on the other for the same progra
 // draws next. Catches a panel that reads the memory only at its own updates.
 test("a fold made on one panel redraws the other at once, with no update of its own", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`"
+  // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens"
   await withPage(async (page) => {
     const folding = createFolding();
     const programs = await wiredPanel(
