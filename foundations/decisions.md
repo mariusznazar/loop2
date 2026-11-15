@@ -6712,11 +6712,13 @@ form keeps the button D-44 gives it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-279
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: „Wejdź” at a character in „Kto idzie” of the card of a map of the kind
+  `main` of the shared button, a button that sends no form, beside „Puść w pętlę” as the plain
+  button. For the look of the main button, one main button to a form and the plain button of every
+  other action outside a form, an agent compares a change with the part no test holds:
   - complies: „Zaloguj się” under the login form with its text in `text-strong`, framed in the same
-    colour and unfilled, on `highlight` under the pointer; „Wejdź” at each character in „Kto idzie”
-    in the main look, beside „Puść w pętlę” made with the plain shared button; an action of the
-    headquarters made with the plain shared button
+    colour and unfilled, on `highlight` under the pointer, and „Wejdź” of the kind `main` drawn in
+    that same look; an action of the headquarters made with the plain shared button
   - violates: a form with two buttons in the main look; a main button filled, or framed in
     `selected` or in a colour other than its text's; a role of colour added for the main button
 - **Origin:** none
@@ -6754,11 +6756,15 @@ and has no address. Every other action of the browser view keeps the button D-44
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the secondary action of the shared button a button of the type `button`
+  with the class `secondary`, in both forms; „Nie pamiętam hasła” a button standing under the login
+  form, outside it. For the look of the secondary action, the actions of the login card drawn as
+  secondary actions and the plain button of every other action, an agent compares a change with the
+  part no test holds:
   - complies: „Wróć do logowania” under the form „Nie pamiętam hasła” as underlined text without a
-    frame, a button the keyboard reaches; „Wyloguj” in the menu „Konto” kept a plain button
-  - violates: „Usuń” of a program rule drawn as underlined text; „Nie pamiętam hasła” made a link
-    with an address; a secondary action given a frame
+    frame; „Wyloguj” in the menu „Konto” kept a plain button
+  - violates: „Usuń” of a program rule drawn as underlined text; „Anuluj” of the form „Ustaw nowe
+    hasło” drawn as a plain framed button; a secondary action given a frame
 - **Origin:** none
 
 *Rationale:* a way into or out of a form's state, such as a forgotten password, is commonly made as
@@ -6784,10 +6790,14 @@ buttons of D-130 keep the look of the button selected in its group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-96
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a tab, in both forms of the shared button and as „Kronika” and „Teren”
+  of the screen of a map run, a button with `aria-pressed`, `true` on the chosen one alone, which a
+  click switches. For the look of a tab, its keyboard, the absence of arrow keys and of the roles
+  of tabs, the switch of the login card drawn as tabs and the look of the pace buttons, an agent
+  compares a change with the part no test holds:
   - complies: „Załóż konto” chosen in the switch with its text in `text-strong` and a line in
-    `selected` at its bottom, `aria-pressed="true"`, and Space on „Zaloguj się” switching and moving
-    focus to its address field
+    `selected` at its bottom, and Space on „Zaloguj się” switching and moving focus to its address
+    field
   - violates: arrow keys moving between tabs, or `role="tab"`, with no change of this decision; the
     chosen tab marked by a line in `positive`; a pace button drawn as a tab
 - **Origin:** none
@@ -7031,11 +7041,9 @@ Leaving the screen of a manual map run pauses it as „Pauza” does.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21
-- **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player opens Siedziba standing paused at the
-    same game minute, while the earning loop of another character passes its game minutes
-  - violates: a manual map run passing its game minutes while the player stands on Programy; leaving
-    the screen holding the map run in a state of its own other than the pause of „Pauza”
+- **Verification:** tests: leaving the screen of a manual map run that goes on, by a change of
+  address, the browser's forward button included, pausing it as „Pauza” does, its game minute
+  standing while real time passes, also while the question „Zapisać, odrzucić, wrócić?” stands.
 - **Origin:** none
 
 *Rationale:* an earning loop goes on as D-250 gives. The player fast-forwards a map run in order to
@@ -7052,11 +7060,13 @@ player presses „Wznów”, whether or not it went on before the player left.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-283
-- **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player opens Programy standing paused at the
-    same game minute when the player comes back to it, and going on only after „Wznów”
-  - violates: the map run going on by itself on the return because it went on before the player
-    left
+- **Verification:** tests: a return to the screen of a map run that went on before the player left
+  finding it in the pause leaving put it in, at the same game minute, waiting for „Wznów”. For a
+  map run already paused before the player left, an agent compares a change with the part no test
+  holds:
+  - complies: a map run of Las paused by „Pauza” before the player opens Programy standing paused
+    at the same game minute when the player comes back to it, and going on only after „Wznów”
+  - violates: a map run paused before the player left going on by itself on the return
 - **Origin:** none
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on (D-122), so a
@@ -7128,13 +7138,17 @@ kupisz po jego zakończeniu.”
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-200
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a death in a map run of Las, before „Zakończ”, „Puść w pętlę” of another
-    character starting its earning loop, while „Wejdź” of each character in „Kto idzie” stands
-    inactive above „Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby
-    wysłać postać.”
-  - violates: „Wejdź” or „Kup” inactive with no sentence by it; „Puść w pętlę” of another
-    character inactive while a manual map run waits
+- **Verification:** tests: on the screen Mapy, while a manual map run goes on, waits or has ended,
+  „Wejdź” of every character inactive and „Puść w pętlę” inactive at that map run's character
+  alone, another character's staying active; „Kup” on the screen Postać inactive while the map run
+  waits and after its end; under the buttons of each character in „Kto idzie” the sentence naming
+  the map from the data, gone after „Zakończ”; at „Umiejętności” the sentence that ranks are bought
+  after the end of the map run. For what Siedziba and the screen Postać keep active, an agent
+  compares a change with the part no test holds:
+  - complies: while a map run of Las waits in a pause, „Załóż” on Siedziba creating a character and
+    „Zatrzymaj” on the screen Postać stopping another character's earning loop
+  - violates: Siedziba or the screen Postać blocking an act the simulation allows, such as „Załóż”
+    or „Zatrzymaj”, while a manual map run waits or has ended
 - **Origin:** none
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
