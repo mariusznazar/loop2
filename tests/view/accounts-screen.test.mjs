@@ -134,6 +134,29 @@ async function mountList(page, list) {
 
 // --- reading the list ----------------------------------------------------------------------
 
+test("the screen has the heading „Panel właściciela” while the list is read, after a failed read and with the list, as it has no item on the bar", async () => {
+  await withPage(async (page) => {
+    const headings = (root) =>
+      all(root, "h2").map((heading) => heading.textContent);
+    const stand = makeClient();
+    const answer = deferred();
+    stand.answers.listAccounts.push(answer.promise);
+    const { instance } = await mount(page, stand.client);
+    assert.deepEqual(headings(page.root), ["Panel właściciela"], "reading");
+    await inAct(() => answer.resolve(ok([account(ONE)])));
+    await settleAll();
+    assert.deepEqual(headings(page.root), ["Panel właściciela"], "the list");
+    await inAct(() => instance.dispose());
+
+    const failing = makeClient();
+    failing.answers.listAccounts.push(UNREACHABLE);
+    await mount(page, failing.client);
+    await settleAll();
+    assert.ok(warning(page.root), "the read failed");
+    assert.deepEqual(headings(page.root), ["Panel właściciela"], "failed");
+  });
+});
+
 test("the list is read once when the screen is built, and a line stands in its place until the answer comes", async () => {
   await withPage(async (page) => {
     const stand = makeClient();
@@ -203,7 +226,9 @@ test("a failed read stands as one sentence in warning with a retry, which reads 
       stand.answers.listAccounts.push(failure, ok([account(ONE)]));
       const { instance } = await mount(page, stand.client);
       await settleAll();
-      assert.match(warning(page.root)?.textContent, /Nie udało się wczytać/);
+      const sentence = warning(page.root)?.textContent;
+      assert.match(sentence, /Nie udało się wczytać/);
+      assert.equal(sentence.match(/[.!?]/g).length, 1, "one sentence");
       assert.equal(
         rows(page.root).length,
         0,
@@ -290,7 +315,7 @@ test("of each pair of buttons the one that makes no sense for the state of the r
   });
 });
 
-test("„Zablokuj” is a destructive button, and the confirmation's two buttons are a destructive one and a secondary action", async () => {
+test("„Zablokuj” is a destructive button, and the confirmation's two buttons are a destructive one and a plain one, as in the confirmation of „Zacznij od zera”", async () => {
   await withPage(async (page) => {
     await mountList(page, [account(ONE)]);
     const block = buttonOf(page.root, "Zablokuj", ONE);
@@ -302,7 +327,11 @@ test("„Zablokuj” is a destructive button, and the confirmation's two buttons
     const withdraw = [...confirm.querySelectorAll("button")].find(
       (button) => button.textContent === "Wróć",
     );
-    assert.ok(withdraw.classList.contains("secondary"));
+    assert.ok(
+      !withdraw.classList.contains("secondary"),
+      "„Wróć” of the confirmation is no secondary action: D-275 gives that only to a form",
+    );
+    assert.ok(!withdraw.classList.contains("destructive"));
   });
 });
 
@@ -548,7 +577,7 @@ test("a block the server refuses for an owner is said in a sentence of its own a
       account(ONE),
       account(TWO),
     ]);
-    answers.blockAccount.push(refused(403, "owner-not-blockable"));
+    answers.blockAccount.push(refused(409, "owner-not-blockable"));
     answers.listAccounts.push(
       ok([account(ONE), account(TWO, { role: "owner" })]),
     );
@@ -601,7 +630,9 @@ test("a failed operation is said in one sentence in warning and the list is read
         ["grantPreviousSave", ONE],
         ["listAccounts"],
       ]);
-      assert.match(warning(page.root)?.textContent, /Nie udało się/);
+      const sentence = warning(page.root)?.textContent;
+      assert.match(sentence, /Nie udało się/);
+      assert.equal(sentence.match(/[.!?]/g).length, 1, "one sentence");
       const again = buttonOf(
         page.root,
         "Nadaj uprawnienie do poprzedniego zapisu",

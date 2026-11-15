@@ -33,9 +33,9 @@ export type AccountsEntryOptions = {
   readonly onSignedOut: () => void;
 };
 
-const READ_FAILED = "Nie udało się wczytać listy kont. Spróbuj ponownie.";
+const READ_FAILED = "Nie udało się wczytać listy kont.";
 const NO_RIGHT = "To konto nie ma prawa do listy kont.";
-const OPERATION_FAILED = "Nie udało się wykonać operacji. Spróbuj ponownie.";
+const OPERATION_FAILED = "Nie udało się wykonać operacji.";
 const OWNER_NOT_BLOCKABLE = "Konta z rolą właściciela nie można zablokować.";
 const UNKNOWN_ACCOUNT = "Konta o tym adresie już nie ma.";
 

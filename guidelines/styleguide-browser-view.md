@@ -976,7 +976,10 @@ Otwarte dla człowieka:
 - **Bad:** Przycisk „Zablokuj” przy koncie z rolą właściciela; „Zablokuj” wykonane od pierwszego kliknięcia, bez potwierdzenia.
 
 Ekran listy kont stoi pod `#/konta` i jest tylko dla konta z rolą właściciela
-(D-281). Pokazuje każde konto w jednym wierszu, posortowane po adresie (D-411):
+(D-281). Nie jest pozycją paska, więc żadna pozycja paska go nie znaczy; zamiast
+tego nad listą stoi nagłówek „Panel właściciela” w `text-strong`, jak „Siedziba”
+na swoim ekranie, także gdy lista się wczytuje albo jej nie udało się wczytać.
+Pokazuje każde konto w jednym wierszu, posortowane po adresie (D-411):
 
 - adres konta to nazwa wiersza, w `text-strong`, bo na niego patrzy się najpierw;
 - stan blokady: konto zablokowane w `warning`, bo jego gra się nie wykona,
@@ -1001,9 +1004,12 @@ Potwierdzenie „Zablokuj” stoi tak jak potwierdzenie „Zacznij od zera” (D
 pod wierszem, a w nim jedno zdanie o skutkach blokady w `warning` (sesje gracza
 kończą się w każdej przeglądarce, odnośniki z maili przestają działać, a
 odblokowanie tego nie przywraca), przycisk potwierdzający „Tak, zablokuj” jako
-przycisk niszczący w tym samym wyglądzie co „Zablokuj”, i akcja poboczna „Wróć”
-(D-275). Klik „Zablokuj”, który otwiera potwierdzenie, nic nie wysyła. Przycisk
-„Tak, zablokuj” wysyła blokadę. „Wróć” zamyka potwierdzenie i nic nie zmienia.
+przycisk niszczący w tym samym wyglądzie co „Zablokuj”, i zwykły przycisk
+„Wróć” (D-44), tak jak przy „Zacznij od zera”; potwierdzenie nie jest formularzem,
+więc „Wróć” nie jest akcją poboczną (D-275). Przyciski stoją obok zdania, w oknie
+szerokim tak samo jak w oknie wąskim, a nie na końcu wiersza. Klik „Zablokuj”,
+który otwiera potwierdzenie, nic nie wysyła. Przycisk „Tak, zablokuj” wysyła
+blokadę. „Wróć” zamyka potwierdzenie i nic nie zmienia.
 
 Lista bez kont stoi bez pozycji, z jednym zdaniem w `text-secondary`, jak puste
 listy na ekranie Mapy (D-331). Odmowa serwera albo brak połączenia przy

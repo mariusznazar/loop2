@@ -19,7 +19,9 @@
  *
  * Classes the style rules read (`src/browser/styles.css`), and what each holds:
  * `accounts-screen-host` the element of the screen; `accounts-screen` the screen's root, beside
- * `screen`; `accounts-area` its one area; `accounts-loading` the line while the list is read;
+ * `screen`; `accounts-area` its one area; `accounts-heading` its heading „Panel właściciela”, which
+ * stands in place of an item of the bar, as the screen has none (D-281); `accounts-loading` the line
+ * while the list is read;
  * `accounts-empty` the sentence of a list with no account; `accounts-retry` the block of „Spróbuj
  * ponownie” beside the sentence of a failed read; `accounts-list` the list; `accounts-row` one
  * account; `accounts-summary` what the row shows of the account; `accounts-email` its address;
@@ -27,6 +29,9 @@
  * state, with `accounts-state-blocked` where the account is blocked; `accounts-privilege` the
  * privilege; `accounts-role` the role; `accounts-actions` the four buttons; `accounts-confirm` the
  * confirmation of „Zablokuj”; `accounts-confirm-text` its sentence of effects.
+ *
+ * The confirmation's „Wróć” is the plain button of D-44, as in the confirmation of „Zacznij od zera”
+ * (`program-list.tsx`): the confirmation is no form, so the secondary action of D-275 does not apply.
  */
 import { useLayoutEffect, useRef } from "react";
 import { flushSync } from "react-dom";
@@ -93,6 +98,7 @@ const BLOCK_CONFIRMATION =
   "Blokada kończy sesje gracza w każdej przeglądarce i unieważnia jego odnośniki z maili, a odblokowanie nie przywraca ani sesji, ani odnośników.";
 const BLOCK_CONFIRM_TEXT = "Tak, zablokuj";
 const BLOCK_WITHDRAW_TEXT = "Wróć";
+const HEADING_TEXT = "Panel właściciela";
 
 /** The text of each of the four buttons (D-411). */
 const BUTTON_TEXT: Record<AccountAction, string> = {
@@ -232,7 +238,6 @@ function AccountRow({ account, props, controls, focus }: RowProps) {
           />
           <ReactButton
             text={BLOCK_WITHDRAW_TEXT}
-            kind="secondary"
             label={`${BLOCK_WITHDRAW_TEXT}: ${email}`}
             buttonRef={focus.withdrawRef}
             onClick={() => {
@@ -304,6 +309,7 @@ function AccountsView({ controls, props, focusHost }: AccountsViewProps) {
   return (
     <div className="screen accounts-screen">
       <section className="screen-area accounts-area">
+        <h2 className="accounts-heading">{HEADING_TEXT}</h2>
         {sentence === null ? null : <ReactFormWarning sentence={sentence} />}
         {phase === "loading" ? (
           <p className="accounts-loading" role="status">

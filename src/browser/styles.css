@@ -813,9 +813,17 @@ header .failure-line {
 /*
  * The screen of the list of accounts, `#/konta` (styleguide rule "The list of accounts", D-411): one
  * area under the bar, at the content width of the screens, with the classes the screen draws (its
- * header comment names them). The line while the list is read and the sentence of an empty list
+ * header comment names them). Its heading is in `text-strong` as the heading of Siedziba is, since
+ * the screen is no item of the bar. The line while the list is read and the sentence of an empty list
  * are in `text-secondary`; the sentence of a failed read is the shared `form-warning`.
  */
+.accounts-heading {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
 .accounts-loading,
 .accounts-empty {
   margin: 0;
@@ -896,7 +904,6 @@ header .failure-line {
 
 .accounts-confirm-text {
   margin: 0;
-  margin-right: auto;
   padding-left: var(--space-s);
   border-left: var(--bar-width) solid currentColor;
   color: var(--warning);
