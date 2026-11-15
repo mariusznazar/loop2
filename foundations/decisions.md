@@ -266,10 +266,12 @@ public address different from `kantarion.bieda.it`. The existing loop container 
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · loop2-containers-published-ports
 - **Relations:** none
-- **Verification:** invariants: loop2-container-isolation · loop2-distinct-address. For leaving the
-  existing loop instance untouched, an agent compares the change with the decision:
-  - complies: a loop2 container and public route added beside the existing loop instance
-  - violates: a deployment that rebuilds or replaces the existing loop container
+- **Verification:** invariants: loop2-container-isolation · loop2-distinct-address. tests: the
+  game and its account and save server served by the one process of the loop2 container; a
+  deployment of loop2 reading the old loop container by one `docker inspect` alone and naming it in
+  no other command. An agent compares a change with the part no invariant and no test holds:
+  - complies: the loop2 containers deployed on the Mikrus host through the forced command of the installed deploy script
+  - violates: a workflow or deploy script that runs the game or its account and save server on a host of another provider, such as a cloud platform's container service
 - **Origin:** none
 
 *Rationale:* a separate instance exercises the new game's server and release path on the intended
@@ -291,11 +293,13 @@ key can only start a rebuild of a commit that belongs to that branch.
 - **Scope:** deployment
 - **Based on:** loop2-deploy-dump-to-deployed-time
 - **Relations:** none
-- **Verification:** invariants: loop2-deploy-trigger-input. For the rest, an agent compares the
-  change with the decision:
-  - complies: a workflow that, on a push, calls the server's one rebuild command with the commit
-  - violates: a workflow that copies the built files onto the server; a key that opens a shell on
-    the server
+- **Verification:** invariants: loop2-deploy-trigger-input. tests: the deployment workflow started
+  by a push to `main`; its one call to the server handing over the pushed commit's name and nothing
+  else, the workflow checking out no code; the server fetching the commit from GitHub itself and
+  building the game and its account server from it. An agent compares a change with the part no
+  invariant and no test holds:
+  - complies: the automation's key in `authorized_keys` restricted to the forced command of the installed deploy script
+  - violates: a key that opens a shell on the server; a workflow step that fetches or builds the code on the runner and copies the result onto the server
 - **Origin:** none
 
 *Rationale:* the code is sent nowhere — the server takes it from GitHub itself — so a stolen key can
@@ -313,9 +317,9 @@ Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted re
 - **Scope:** deployment
 - **Based on:** cloudflare-tunnel-transport · cloudflare-tunnel-token-file · cloudflared-connection-readiness · mikrus-tunnel-outbound-tcp · loop2-containers-published-ports · loop2-containers-memory-use
 - **Relations:** derives from D-08
-- **Verification:** invariants: loop2-application-port. An agent compares the change with the decision:
-  - complies: a private application container reached by the separately limited tunnel connector, whose image is prepared and health checked with the application
-  - violates: a public origin port; a deployment that reports success while the connector has no active connection; a tunnel installed as an unmanaged host service
+- **Verification:** invariants: loop2-application-port. tests: the public address `https://loop2.mariusznazar.com/` the deployment workflow probes; the connector a second service of the loop2 Compose project, built and started with the application; its image taken from the official `cloudflare/cloudflared` repository by a version and a digest; a deployment that reports success only once both services are healthy and the application answers its probe, the connector's health check failing while it has no connection. An agent compares a change with the part no invariant and no test holds:
+  - complies: the connector run as a remotely managed tunnel from its token file with `--protocol http2` and `--edge-ip-version 4`, under a memory limit of its own, the tunnel's published route sending the hostname to `http://app:3000`
+  - violates: a connector left to choose its protocol or IP version itself; a connector service with no memory limit; a locally managed tunnel run from a configuration file of its own; a proxied AAAA record, Origin Rule or Configuration Rule kept for loop2 beside the tunnel's hostname
 - **Origin:** none
 
 *Rationale:* The tunnel encrypts traffic across the public network without adding certificate handling to the application, and keeping its connector in the product's deployment makes its version and resource boundary reviewable. The application depends on a working connector and its credential; replacing it during deployment adds a short interruption. HTTP/2 uses the observed TCP route; container connectivity still needs observation on the host. The memory bounds were looked at once, on 2026-11-14, three hours after a deployment: the application used 77.07MiB of its limit of 512MiB and the connector 23.2MiB of 256MiB, one sample and no peak. That nothing in Cloudflare bypasses the tunnel is a remark of the owner's check of the Cloudflare panel on 2026-11-14, as the owner gave it: in the DNS of the zone `mariusznazar.com`, `loop2` has one record, a proxied CNAME to `<tunnel UUID>.cfargotunnel.com`, and no AAAA or A record; the zone has no Origin Rule and no Configuration Rule; the route published in the tunnel sends `loop2.mariusznazar.com` to `http://app:3000`. The hostname remains independent of the hosting provider.
@@ -331,10 +335,12 @@ that contains it.
 - **Scope:** deployment
 - **Based on:** none
 - **Relations:** derives from D-09
-- **Verification:** invariants: loop2-deploy-trigger-input. For the rest, an agent compares the
-  change with the decision:
-  - complies: a workflow that runs on a push to `main` and asks the server to rebuild the pushed commit, a newer push replacing a deployment still waiting to run
-  - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for someone to start its deployment by hand
+- **Verification:** invariants: loop2-deploy-trigger-input. tests: the deployment workflow started
+  by a push to `main` alone, with no manual start and no other trigger; its runs one at a time in
+  one group, a running deployment never cancelled. An agent compares a change with the part no
+  invariant and no test holds:
+  - complies: the deployment job with no `environment:` whose protection rule waits for a reviewer
+  - violates: a deployment job given an `environment:` whose protection rule holds every push to `main` until someone approves it
 - **Origin:** none
 
 *Rationale:* every merged pull request reaches the test server with no manual step, and no second
@@ -371,9 +377,9 @@ Automation secrets and server access values — its name, SSH port, SSH user and
 - **Scope:** deployment, agent-workflow
 - **Based on:** cloudflare-tunnel-token-file · compose-file-secret-permissions · cloudflared-image-identity · session-secret-rotation
 - **Relations:** none
-- **Verification:** an agent compares the change with the decision:
-  - complies: a connector receiving only its tunnel token and an application receiving only its session keys and SMTP password, with human rotation preserving host permissions and the private copies; old session signatures remain accepted while new responses use the first key; a backup script on the host that reads the encryption key and takes the Strych login from root's SSH configuration
-  - violates: an access or credential value in a workflow, script, skill, request, command argument, log or container environment; a world-readable credential, a tunnel-token grant to the application, a session-key or SMTP-password grant to the connector, a grant of the encryption key or the key to Strych to a container, old-key removal while its signatures can still be valid, or removal of an old encryption key while a backup still needs it
+- **Verification:** tests: the server's name, SSH port, SSH user and key reaching the deployment workflow from GitHub secrets alone, no IPv6 address or server name in the workflow or the deployment skill, and no user name in the logrotate file; the backup script sending to Strych with no login and no port of its own, and reading the encryption key from its path outside the checkout; the tunnel token, session keys and SMTP password taken from their paths outside the checkout as file secrets, each granted only to its consumer and in short form, so that the host's ownership and modes stand, and no container given the encryption key or the key to Strych; the connector running as user and group 65532; the sender address and the mail service's host, port and login as plain values in `compose.yaml`, the SMTP password named only by the path of its secret file; the server signing with the first session secret and still accepting a cookie signed with an older one. An agent compares a change with the part no test holds:
+  - complies: the encryption key file owned by root with group root and mode 0400 and the key to Strych at `/backup_key`, each copied in the owner's private note; a request that names a credential by its secret name; a human rotation that replaces the host file and its private copy before recreating the consumer, an old session secret kept after the new first one until 30 days past the last deployment able to sign with it, and an old encryption key kept in the private note while a backup made with it remains
+  - violates: an access or credential value in a request, a skill, a command argument, a log or a container environment; a world-readable credential file on the host; removal of an old session secret while its signatures can still be valid, or of an old encryption key while a backup still needs it
 - **Origin:** none
 
 *Rationale:* Access values reveal where and how to enter the server, whereas deployment paths and container ports do not. A runtime credential must survive starts outside automation, and the private copy supports recovery independently of the provider dashboard. A file-backed secret avoids printing the token in configuration and environment inspection, at the price of maintaining host permissions and another copy during rotation. The backup script on the host reads the encryption key each night, so the key has no container to recreate, and a backup made before a rotation still needs the old key. The private copies of the encryption key and of the key to Strych let a backup be reached and read once the server is gone, independently of the provider's panel; both stand in one note, so a leak of the note reveals the way to the backups and their contents together. No source says whether the key to Strych can be replaced, so this decision sets no rotation for it.
@@ -387,9 +393,8 @@ The loop2 container is a Docker container.
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads
 - **Relations:** derives from D-08
-- **Verification:** an agent compares the change with the decision:
-  - complies: a Compose file and a Dockerfile from which Docker builds and runs the loop2 container
-  - violates: loop2 run as a service directly on the host, or in a container of another runtime
+- **Verification:** tests: the deployment building the loop2 images and starting their containers
+  with Docker Compose.
 - **Origin:** none
 
 *Rationale:* the host already runs Docker with Compose, and the old loop game runs there in a Docker
@@ -407,10 +412,13 @@ kept, so a rollback restores the earlier commit's code, never the data of that t
 - **Scope:** deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-09
-- **Verification:** invariants: loop2-deploy-keeps-running. For the rollback, an agent compares the
-  change with the decision:
-  - complies: a revert merged to `main`; a human running the installed deploy script on the server with an earlier commit named in the deploy log
-  - violates: a rollback that restarts a kept image of an earlier commit; the automation key's path accepting a commit of a branch other than `main`
+- **Verification:** invariants: loop2-deploy-keeps-running. tests: a human's run of the deploy
+  script deploying an earlier commit of `main` or a commit of another branch, its fetch taking every
+  branch; the automation key's path refusing a commit that `main` as just fetched does not hold; the
+  dangling loop2 images pruned after a successful deployment. An agent compares a change with the
+  part no invariant and no test holds:
+  - complies: a revert merged to `main`, deployed as any push; a rollback that rebuilds the earlier commit and leaves the database volume as it is
+  - violates: a rollback that restarts a kept image of an earlier commit, such as an image tagged with each commit and kept past its replacement; a rollback that also restores a copy of the database from that time
 - **Origin:** none
 
 *Rationale:* Rebuilding an earlier commit keeps the repository and the deployed code in agreement without keeping product images as a recovery store. Application and connector images are prepared before either running container is replaced; shared base images and build cache remain outside product cleanup. A human can try a request before its merge or recover at once. Crossing a deployment-route change also requires the matching installed command and external route settings, so code rollback alone is not public-route recovery. Rebuilding restores code, not historical data or necessarily identical upstream layers.
@@ -427,8 +435,11 @@ the copy is a human's change.
 - **Scope:** deployment
 - **Based on:** openssh-authorized-keys-options · loop2-host-forced-command-entry · loop2-host-installed-command · loop2-host-installed-copies-agree
 - **Relations:** derives from D-09 · derives from D-12
-- **Verification:** an agent compares the change with the decision:
-  - complies: an `authorized_keys` entry whose forced command names the installed copy's path; a deployment that logs the difference between the copies and goes on
+- **Verification:** tests: each deployment comparing the installed deploy script with its source at
+  the deployed commit, warning when they differ or the source is missing, warning nothing when they
+  agree, and going on with the installed copy. An agent compares a change with the part no test
+  holds:
+  - complies: an `authorized_keys` entry whose forced command names the root-owned installed copy's path outside the checkout; a deployment that leaves the installed copy as it found it
   - violates: a forced command that points into the server's checkout; a deployment that reinstalls its own script
 - **Origin:** none
 
@@ -450,10 +461,9 @@ A deployment of loop2 changes nothing on the host but loop2's own checkout, appl
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · mikrus-host-swap · docker-volume-lifecycle · loop2-deploy-resource-gate-lines · loop2-deploy-stage-exit-lines
 - **Relations:** derives from D-08
-- **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. Checks of accounts and sessions alone do not establish preservation of saved game states and cannot clear account-save-durable-storage. For the thresholds and the memory limit, an
-  agent compares the change with the decision:
-  - complies: a deployment that refuses to build while available memory is below its threshold and leaves the running container untouched; a Compose service with a memory limit
-  - violates: a build started without reading the host's memory and disk; a Compose service with no memory limit
+- **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. Checks of accounts and sessions alone do not establish preservation of saved game states and cannot clear account-save-durable-storage. tests: a deployment running no Docker command that prunes the build cache or any image but loop2's own dangling ones; no build while available memory or free disk is below the threshold the deploy script sets or cannot be read, and a build at the thresholds; the application's database at `/app/data/accounts.sqlite` on its volume, whose fresh directory belongs to uid and gid 1000. An agent compares a change with the part no invariant and no test holds:
+  - complies: each Compose service of loop2 with a memory limit of its own
+  - violates: a Compose service of loop2 with no memory limit
 - **Origin:** none
 
 *Rationale:* the host is shared with the old loop game and another workload and has no swap, so a
