@@ -156,6 +156,7 @@ test("an account insertion returns an opaque identity and persists across reopen
 });
 
 test("two connections cannot insert the same normalized email and SQL characters remain data", async (t) => {
+  // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely"
   const { database, path, account } = await fixture(t);
   const outcomes = await simultaneousInserts(path);
   assert.equal(outcomes.filter(Boolean).length, 1);
@@ -1646,6 +1647,7 @@ test("a confirmation link of a blocked account changes nothing, also one the blo
 // invariant: unblock-restores-no-link
 // invariant: email-confirmation-link
 test("a block committed through another connection stops every link issued before it, which confirms nothing after unblocking, and a block before an issue records nothing", async (t) => {
+  // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account"
   const { path, database, raw, account, track } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   database.issueLink(confirmationLink(account.id, "before"), limits);
@@ -1709,6 +1711,7 @@ function resetState(raw) {
 // invariant: password-reset-ends-sessions
 // invariant: player-server-session
 test("a working reset link replaces the password, deletes every session of its account, stops its reset links and nothing else, and works once", async (t) => {
+  // decision: D-138 "The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password"
   const { database, store, raw, account, advance } = await fixture(t);
   const other = database.createAccount("other@example.test", "other-hash");
   database.issueLink(confirmationLink(account.id, "confirm"), limits);
@@ -1974,6 +1977,7 @@ test("cleanup removes, in bounded batches, only links both expired and an hour o
 
 // invariant: unblock-restores-no-session
 test("blocking deletes every session of that account and no other, and unblocking brings none back", async (t) => {
+  // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account in one transaction; unblocking clears the account's blocked mark and restores no session and no link"
   const { store, database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   for (const id of ["one", "two"])
@@ -2208,6 +2212,7 @@ test("a session write whose expected password hash was changed through a second 
 
 // invariant: account-session-storage
 test("missing and expired records authorize nothing, including equality to expiry", async (t) => {
+  // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
   const { store, account, advance } = await fixture(t);
   assert.ok(store instanceof session.Store);
   assert.equal(await call(store, "get", "missing"), null);
@@ -2222,6 +2227,7 @@ test("missing and expired records authorize nothing, including equality to expir
 
 // invariant: account-session-storage
 test("out-of-order renewal preserves the later expiry and never changes identity", async (t) => {
+  // decision: D-101 "Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot restore a destroyed session or shorten a later expiry"
   const { store, database, account, advance } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
   await call(store, "set", "browser", data(account.id));
@@ -2243,6 +2249,7 @@ test("out-of-order renewal preserves the later expiry and never changes identity
 
 // invariant: account-session-storage
 test("a delayed touch after destroy cannot recreate a session or revoke another browser", async (t) => {
+  // decision: D-101 "Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot restore a destroyed session or shorten a later expiry"
   const { store, raw, account } = await fixture(t);
   await call(store, "set", "one", data(account.id));
   await call(store, "set", "two", data(account.id));
@@ -2718,6 +2725,8 @@ const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
 const liveExpiry = () => Date.now() + 86_400_000;
 
 test("the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
+  // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
+  // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database, store, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "hash");
@@ -2894,6 +2903,7 @@ test("a cleanup that fails in the background writes one line of its kind and cod
 
 // invariant: unblock-restores-no-link
 test("the owner's command stops every emailed link of the account it blocks, and its unblock brings none back", async (t) => {
+  // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account"
   // The command prunes by the real clock, so the server's connection uses it
   // too and its links are recorded now, not at the fixture's fixed time.
   const { path, database, raw, account } = await fixture(t, {
@@ -2928,6 +2938,7 @@ test("the owner's command stops every emailed link of the account it blocks, and
 });
 
 test("the owner's command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
+  // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
   const { path, database, store, raw, account } = await fixture(t);
   await call(store, "set", "one", data(account.id, liveExpiry()));
   const unchanged = (label) => {

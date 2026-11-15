@@ -618,6 +618,7 @@ test("„Wyloguj” hands the page one request and does nothing else itself", as
 });
 
 test("while the page's logout waits „Wyloguj” reads Wylogowywanie…, disabled, and sends nothing more; the menu stays open and on the answer the sentence and focus come back", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”"
   await withPage(async (page) => {
     const { bar, logouts } = await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -657,6 +658,7 @@ test("while the page's logout waits „Wyloguj” reads Wylogowywanie…, disabl
 });
 
 test("while the page says the logout is unavailable „Wyloguj” keeps its text, is disabled and hands the page nothing; the waiting text is the logout's alone", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”"
   await withPage(async (page) => {
     const { bar, logouts } = await openBar(page);
     await press(buttonNamed(page.root, "Konto"));

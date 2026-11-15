@@ -433,6 +433,7 @@ async function registerPage(held) {
 // --- the session check ----------------------------------------------------------------------
 
 test("until the server names an account the page has neither the game nor a running clock", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await startPage(held);
@@ -678,6 +679,8 @@ test("a registration the server would refuse sends nothing and marks the field a
 });
 
 test("registration problems follow the server's rules, counting a password in code points", () => {
+  // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences and is never compared with the account's old password, and browser validation uses the same code-point interpretation"
+  // decision: D-99 "It imposes no dot, DNS or ASCII restriction"
   const twelve = "a".repeat(12);
   // Each of these emoji is one code point and two UTF-16 units.
   const emoji = (count) => "😀".repeat(count);
@@ -935,6 +938,7 @@ test("„Wróć do logowania” brings back „Zaloguj się”, and nothing type
 });
 
 test("the address rule and the password rules each give registration's result alone", () => {
+  // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences"
   const twelve = "a".repeat(12);
   assert.equal(addressProblem(" ala@example.com "), null);
   assert.equal(addressProblem("ala"), ADDRESS_SENTENCE);
@@ -966,6 +970,8 @@ async function signedInPage(held) {
 
 // The page calls focus() on the card here (D-381).
 test("a confirmed logout or an expired session removes the game and its clock and brings back the card, with focus in its first field", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
+  // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers"
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
     "an expired session": NO_SESSION,
@@ -1003,6 +1009,7 @@ test("a confirmed logout or an expired session removes the game and its clock an
 
 // D-97 and D-285: the one warning stands as the sentence of the menu „Konto”, which stays open.
 test("a logout whose outcome is uncertain keeps the game with its sentence in the open menu „Konto”, and „Wyloguj” stays usable", async () => {
+  // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const logout = await signedInPage(held);
@@ -1035,6 +1042,7 @@ test("a logout whose outcome is uncertain keeps the game with its sentence in th
 });
 
 test("signing in and out again and again keeps at most one clock running", async () => {
+  // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const logout = await signedInPage(held);
@@ -1516,6 +1524,7 @@ test("a sent form waits with its fields and „Anuluj” locked, sends the token
 });
 
 test("a password the server would refuse sends nothing, marks the field at fault, takes focus there and keeps the link", async () => {
+  // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(RESET_LINK);
@@ -1551,6 +1560,7 @@ test("a password the server would refuse sends nothing, marks the field at fault
 // D-261, D-381: the card of the link closes and one new card opens on „Zaloguj się” with the sentence in
 // it, above its switch.
 test("a change clears the fragment first, then shows a new card with the sentence in positive above its form, asks about no session and focuses the address field", async () => {
+  // decision: D-138 "The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password and signs nobody in, so the player signs in with the new password on the form"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const address = resetAddress(root);
@@ -3331,6 +3341,8 @@ async function loggingOutPage(held) {
 // good, the update sentence missing, and the expiry path skipped at logout. D-259, D-261: one form
 // stands, and the sentence stands in the card, in `confirmation-notice`.
 test("„Wyloguj” saves first and goes on, stays or ends each way its save's outcome gives", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session"
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives"
   const outcomes = [
     ["saved", { kind: "saved", revision: 5 }, null],
     ["a conflict", { kind: "conflict" }, null],
@@ -3394,6 +3406,8 @@ test("„Wyloguj” saves first and goes on, stays or ends each way its save's o
 // D-97, D-210. Catches a stopped tab trying to save before logout, and the forms without the
 // sentence of the update. D-261: the sentence stands in the card.
 test("a tab that stopped saving as outdated logs out without a save and shows the update sentence above the form in the card", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving"
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -4243,6 +4257,8 @@ test("leaving the screen of a map run that goes on pauses it as „Pauza” does
 // and pauses nothing. Catches a logout's save that pauses the map run, and a listener on the
 // address left behind by a game that has gone.
 test("„Wyloguj” on the screen of a map run going on saves it as it goes and pauses nothing, and the game that left listens to the address no more", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
+  // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events"
   await withStillClock(async () => {
     await onPage(async ({ root }) => {
       const held = heldClient();
@@ -6068,6 +6084,7 @@ test("a sent „Ustaw nowe hasło” waits with the whole card locked, sends the
 // D-98, D-225. Catches a request sent past a local check, the message under the wrong
 // field, a warning left from the check before, and the link spent or cleared by it.
 test("a new password the server would refuse sends nothing, stands under its field, takes focus there and keeps the link", async () => {
+  // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { steps, address, reset } = resetLink();

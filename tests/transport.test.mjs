@@ -769,6 +769,7 @@ test(
     // invariant: player-opaque-session-cookie
     // invariant: player-express-session-sqlite-store
     // decision: D-13 "Repository files and requests name credentials by secret name or private note rather than value, may name non-secret paths and ports, and human rotation replaces the file and private copy before recreating its consumer, the encryption key having no consumer to recreate and its old value staying in the private note until every backup made with it has been replaced; session rotation prepends the new signing secret while retaining old verification secrets"
+    // decision: D-101 "A session expires 30 days after its last request and every request with a valid session, static-file requests included, renews the server expiry and cookie"
     // Faults: middleware after static files, reversed secrets, resave=true, public cache.
     const f = await fixture(t);
     const id = "synthetic-old-session";
@@ -818,6 +819,7 @@ test(
   async (t) => {
     // invariant: player-opaque-session-cookie
     // invariant: player-express-session-sqlite-store
+    // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
     const f = await fixture(t);
     for (const headers of [{}, proxyHeaders]) {
       const response = await f.send("/", { headers });

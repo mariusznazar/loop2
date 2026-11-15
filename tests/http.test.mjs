@@ -121,6 +121,7 @@ after(async () => {
 });
 
 test("serves the built HTML and JavaScript from another working directory", async () => {
+  // decision: D-86 "Every visitor may retrieve the built game's files from its public directory"
   const html = await send("/");
   assert.equal(html.status, 200);
   assert.match(html.headers["content-type"], /^text\/html/);
@@ -467,6 +468,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-session-authorization
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // Faults: reading the account from a query, header or body identifier; a
     // store looked up by account ID; logout acting on a supplied account.
     const f = await accountFixture(t);
@@ -546,6 +548,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-session-authorization
+    // decision: D-101 "Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot restore a destroyed session or shorten a later expiry"
     // Faults: a missing session guard; accepting an unsigned or foreign-key
     // cookie; reading a record past its expiry or after deletion.
     const f = await accountFixture(t);
@@ -593,6 +596,8 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-server-session
+    // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session"
+    // decision: D-101 "Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once"
     // D-97 and D-101: other browsers of the same account stay signed in.
     const f = await accountFixture(t);
     const one = seed(f, "logout-one", f.first);
@@ -645,6 +650,7 @@ test(
   "a failed session destruction is not reported as logout and leaves the browser signed in",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // D-109: logout awaits destruction; a database refusal stands in for any failure.
     const f = await accountFixture(t);
     const cookie = seed(f, "logout-failing", f.first);
@@ -674,6 +680,7 @@ test(
   "a read that loaded its session before logout cannot revive it afterwards",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-101 "Expired, removed or invalid sessions authorize nothing, and a delayed renewal cannot restore a destroyed session or shorten a later expiry"
     // D-101: a delayed renewal cannot restore a destroyed session.
     const f = await accountFixture(t);
     const cookie = seed(f, "logout-delayed", f.first);
@@ -843,6 +850,10 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-argon2-password-hash
+    // decision: D-98 "A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization"
+    // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
+    // decision: D-106 "Its cost parameters are set explicitly"
+    // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards"
     // Faults: hashing a trimmed or otherwise changed password; a hash outside
     // the package's Argon2id profile; registration without a signed-in session.
     const f = await accountFixture(t);
@@ -902,6 +913,8 @@ test(
   "a credential success replaces only this browser's session with a fresh identity",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-101 "Each browser holds its own random, opaque session identifier in a loop2 host-scoped, Secure and HttpOnly cookie, and a player may remain signed in through several browsers at once"
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // D-109: regenerate on credential success to prevent fixation; D-97/D-101:
     // other browsers keep their sessions.
     const f = await accountFixture(t);
@@ -954,6 +967,8 @@ test(
   "one normalized address holds one account and a duplicate gets the required message, also in a race",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely"
+    // decision: D-100 "Registration with an email address that already has an account shows „Konto z tym adresem już istnieje.”"
     // D-99, D-100. Faults: comparing raw spellings; a lost insert race
     // answered as a server error or as a second account.
     const f = await accountFixture(t);
@@ -992,6 +1007,8 @@ test(
   "passwords count 12 to 128 Unicode code points and keep their exact content",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-98 "A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization"
+    // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly"
     // D-98. Faults: UTF-16 or byte length, trimming, normalizing, or a
     // confirmation compared after normalization.
     const f = await accountFixture(t);
@@ -1052,6 +1069,10 @@ test(
   "malformed fields and out-of-shape credentials are refused before password work or writes",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely, and accepts its form when exactly one `@` has nonempty text on both sides"
+    // decision: D-99 "It imposes no dot, DNS or ASCII restriction"
+    // decision: D-100 "A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two"
+    // decision: D-103 "One bounded gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account"
     // D-99, D-104: explicit field and type checks, no coercion; bad lengths
     // and shapes keep the generic login message without Argon2.
     const f = await accountFixture(t);
@@ -1153,6 +1174,7 @@ test(
   "a known address with a wrong password and an unknown address fail login identically",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-100 "A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two"
     // D-100. Fault: a distinct message, status or shape for an unknown address.
     const f = await accountFixture(t);
     assert.equal((await register(f, "known@example.test")).status, 201);
@@ -1172,6 +1194,7 @@ test(
   "a failed session save keeps the new account usable and issues no success cookie",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // D-109: success only after the session is stored; the account is not
     // deleted when its first session fails.
     const f = await accountFixture(t);
@@ -1206,6 +1229,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-attempt-limits
+    // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots, and a capacity refusal is not a credential failure"
     // Faults: success not clearing earlier failures; a lock skipped for correct
     // credentials or timed from the first failure; a capacity refusal counted
     // as a failure; a lock or window still counted at its end instant.
@@ -1256,6 +1280,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-attempt-limits
+    // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”"
     // Faults: a success clearing address failures; in-flight attempts not
     // counted; another client sharing the restriction.
     const f = await accountFixture(t);
@@ -1323,6 +1348,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-attempt-limits
+    // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots"
     // Faults: duplicates or invalid requests consuming slots; parallel
     // registrations overshooting the limit; the window counted at its end.
     const f = await accountFixture(t);
@@ -1396,6 +1422,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-attempt-limits
+    // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”"
     // Faults: releasing the reservation when the client disconnects, and
     // dropping the outcome of work whose client has gone.
     const f = await accountFixture(t);
@@ -1535,6 +1562,8 @@ function failLogin(policy, email, address) {
 }
 
 test("the password rules of a new password are those of registration, with the same problems", () => {
+  // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences"
+  // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely, and accepts its form when exactly one `@` has nonempty text on both sides"
   const long = "p".repeat(12);
   assert.deepEqual(
     checkNewPassword({ password: long, passwordConfirmation: long }),
@@ -1841,6 +1870,9 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: blocked-account-access
+    // decision: D-100 "A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two"
+    // decision: D-139 "A login of a blocked account with the correct password is refused with „To konto jest zablokowane.”, status 403 and the code `account-blocked`, and no session, while a wrong password of a blocked account gets the login message of D-100"
+    // decision: D-139 "That refusal is neither a failed nor a successful login for the attempt limits of D-102: it adds no failure and clears none, and an address locked by failures refuses it as it refuses every login"
     // Faults: a blocked login signed in, or answered with the common message;
     // the block revealed before the password is checked; a blocked login
     // counted as a failure (it would lock the address) or as a success (it
@@ -1884,6 +1916,8 @@ test(
   "a block committed while the password is checked refuses that login as blocked and clears no failure",
   { timeout: 30000 },
   async (t) => {
+    // decision: D-139 "A login of a blocked account with the correct password is refused with „To konto jest zablokowane.”, status 403 and the code `account-blocked`, and no session"
+    // decision: D-139 "That refusal is neither a failed nor a successful login for the attempt limits of D-102: it adds no failure and clears none"
     // Faults: the login deciding on the account it read before the password
     // check, so that it answers 503 and its success clears the four failures.
     const f = await accountFixture(t);
@@ -1936,6 +1970,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: password-reset-ends-sessions
+    // decision: D-100 "A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two, and so does, whatever the account's block, a login with the password that was right when it was checked and that a password reset replaced meanwhile, which is neither a failed nor a successful login for the attempt limits of D-102"
     // Faults: a login deciding on the account it read before the password
     // check, so that it answers 503 or stores a session of the old password;
     // a refusal counted as a failure or as a success.
@@ -2321,6 +2356,7 @@ test(
   async (t) => {
     // invariant: account-session-authorization
     // invariant: blocked-account-access
+    // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
     // Faults: a resend without the session guard; an address or account taken
     // from the request; a blocked account's session still sending; a
     // confirmed account sent another message.
@@ -2470,6 +2506,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: email-confirmation-link
+    // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and may ask for a password-reset link subject to the transport, origin and input guards; an emailed confirmation link alone, under the transport, origin and input guards, authorizes confirming the address of its own account"
     // Faults: a link confirming twice; refusals that tell a malformed, unknown
     // and used token apart; a token taken in another spelling; confirming the
     // session's account instead of the link's.
@@ -2645,6 +2682,7 @@ test(
   "no response and no line of the server's log holds a link's token",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // Faults: a token echoed in an answer; the link, the message or an error
     // holding the token written to the log.
     const f = await accountFixture(t, { sendingDeadline: 200 });
@@ -2977,6 +3015,7 @@ test(
   async (t) => {
     // invariant: password-reset-verified-email
     // invariant: account-mutation-request-guards
+    // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely, and accepts its form when exactly one `@` has nonempty text on both sides"
     // Faults: work started for a badly written address; a body naming
     // anything else than the address accepted; a coerced field.
     const f = await accountFixture(t);
@@ -3024,6 +3063,8 @@ test(
   async (t) => {
     // invariant: account-session-authorization
     // invariant: password-reset-verified-email
+    // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
+    // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and may ask for a password-reset link subject to the transport, origin and input guards"
     // Faults: a session required or used to pick the account; a field, query
     // or header taking the message to another address; an address not
     // normalized as at registration.
@@ -3175,6 +3216,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: password-reset-verified-email
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // Faults: a token or link echoed in an answer; the link, the message, the
     // address or an error holding them written to the log.
     const f = await accountFixture(t, { sendingDeadline: 200 });
@@ -3308,6 +3350,9 @@ test(
   async (t) => {
     // invariant: password-reset-link
     // invariant: player-argon2-password-hash
+    // decision: D-98 "A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization"
+    // decision: D-106 "Its cost parameters are set explicitly"
+    // decision: D-138 "The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password and signs nobody in"
     // Faults: the password trimmed before it is hashed; an answer of 200 with
     // a body where 204 with none is given.
     const f = await accountFixture(t);
@@ -3342,6 +3387,7 @@ test(
   { timeout: 60000 },
   async (t) => {
     // invariant: password-reset-link
+    // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences"
     // Faults: the link checked before the password rules; the link not read
     // before the hashing, so that a bad link meets a full gate as 429; a full
     // gate answered 500; a trimmed password hashed.
@@ -3744,6 +3790,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: password-reset-link
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // Faults: a failure of the hashing answered 429 where 500 is given; an
     // answer of 200.
     const f = await accountFixture(t);
@@ -3778,6 +3825,7 @@ test(
   "no answer and no line of the server's log holds a set-password request's token or password",
   { timeout: 30000 },
   async (t) => {
+    // decision: D-109 "Credential success regenerates and persists the session before success is returned, logout awaits destruction, and account responses are not cacheable and expose no password hash, session identifier, link token, secret, database error or stack"
     // Fault: a token written to the log by a failure of the hashing.
     const f = await accountFixture(t);
     const logged = captureLog(t);
@@ -3933,6 +3981,7 @@ test(
   async (t) => {
     // invariant: account-session-authorization
     // invariant: blocked-account-access
+    // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
     // Faults: a save route without the session guard; a block read only from
     // the session; a refused save that still writes.
     const f = await accountFixture(t);
@@ -4310,6 +4359,7 @@ test(
     // invariant: account-session-authorization
     // invariant: blocked-account-access
     // invariant: previous-save-slot
+    // decision: D-101 "Expired, removed or invalid sessions authorize nothing"
     // Faults: a route without the session guard; a reset that moves the save of
     // an account the session does not name; a block read only from the session.
     const f = await accountFixture(t);
@@ -4405,6 +4455,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: previous-save-slot
+    // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards, and may ask for a password-reset link subject to the transport, origin and input guards; an emailed confirmation link alone, under the transport, origin and input guards, authorizes confirming the address of its own account; a password-reset link alone, under the same guards and with or without a session, authorizes setting a new password of its own account and nothing else; and a valid server-side session alone authorizes reading its own account, reading and replacing its own account's saved game state, reading its own account's previous save and starting its own account's game from zero, each of those two for an account that holds the previous-save privilege (D-400)"
     // Faults: a route answering the slot's existence to an account without the
     // privilege; a reset that moves the save without the privilege.
     const f = await accountFixture(t);

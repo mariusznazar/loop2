@@ -591,6 +591,7 @@ test("a loaded paused game sends nothing, and a save of it changes nothing the 3
 // --- before logout ---------------------------------------------------------------------------
 
 test("before logout the saver waits for the request in flight, then sends the current state and reports it saved", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -613,6 +614,7 @@ test("before logout the saver waits for the request in flight, then sends the cu
 });
 
 test("before logout a refusal is reported for logout to go on, without the page's callbacks, and a too-large one is not retried", async () => {
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210)"
   for (const kind of ["conflict", "too-large", "outdated", "signed-out"]) {
     await onPage(async () => {
       const held = heldClient();
@@ -632,6 +634,7 @@ test("before logout a refusal is reported for logout to go on, without the page'
 });
 
 test("a failed save before logout asks to log out again, and the retries go on under that sentence until one succeeds", async () => {
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.”"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -701,6 +704,7 @@ test("before logout a request in flight that fails is followed by the logout's o
 });
 
 test("a saver stopped as outdated reports so before logout without sending anything", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());

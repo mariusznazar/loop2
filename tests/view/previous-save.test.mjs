@@ -1337,6 +1337,7 @@ test("a reset answered with no session shows the forms with the expired sentence
 // Catches a page that stops a reset while a logout waits, or lets the reset's late answer build a
 // game over the forms the logout brought (D-402): the logout's own answer decides what stands.
 test("a reset confirmed while a logout waits is sent, and the logout's answer decides what the page shows", async () => {
+  // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it"
   await onPage(async () => {
     const page = await startedPage();
     await press(pageButton("Konto"));
