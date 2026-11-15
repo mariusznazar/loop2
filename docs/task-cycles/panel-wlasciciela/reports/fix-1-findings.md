@@ -1,9 +1,0 @@
-# Findings to fix — slice 1 (review `reports/review-1-report.md`, `FAIL 55e3b8e83a5875cbf3de161411f2ae2b71e2f1f4`)
-
-Blocking findings, in the reviewer's words. The slice review's Minor findings are not fixed here.
-
-**I1. `tests/account-storage.test.mjs` is not in Prettier's layout, so the gate's `test_prettier_source_format` fails.**
-- Where: `tests/account-storage.test.mjs:827-830`, `:880-883`, `:927`, `:929-937` (the new version-5 test and the new failing-step-6 test).
-- What is wrong: lines the slice adds break Prettier's layout (one `rows(...)` call split across lines that Prettier keeps on one; a `"SELECT … ORDER BY id"` literal of 90 columns left on the call's line; an `assert.deepEqual(rows(...), [ … ])` whose first argument overruns the line). `guidelines/coding.md`, rule *Formatter* (invariant `prettier-source-format`), requires every TS/JS file of the part to be in the layout Prettier leaves, with no option added.
-- Why it matters: the invariant has a test and the test fails; the one command (`npm test`) cannot pass, so the change cannot merge. The base file was clean, so the slice introduced it.
-- Evidence: `npx prettier --check src/server/database.ts tests/account-storage.test.mjs tests/account-backup.test.mjs tests/startup.test.mjs` exits 1 and names only `tests/account-storage.test.mjs`; `git show b1904c5b:tests/account-storage.test.mjs` checked with Prettier on its own is clean; `npm test -- tests/quality/test_quality_invariants.py` fails `test_prettier_source_format` with the same file named. `npx prettier tests/account-storage.test.mjs | diff` shows exactly the regions above. The executor's checks (the plan's *Checks* list) do not include the formatter, which is why it passed unseen; the plan's list is the plan's gap, the file's layout is the change's defect.
