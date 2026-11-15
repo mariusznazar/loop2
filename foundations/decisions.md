@@ -1585,7 +1585,9 @@ Loop2 adopts the testing-guideline template of its pinned the-way in full, with 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new testing rule for loop2 written into `guidelines/testing.md` in the form of the pinned template; the wording of `guidelines/testing.md` brought to the template of the-way once its pin moves, with only the departures of this decision kept
+  - violates: a rule of the template left out of `guidelines/testing.md`, or a test that departs from it, with no decision of a departure behind it; a testing rule for loop2 kept only in a comment or a file other than `guidelines/testing.md`; the agent instructions no longer sending an agent to `guidelines/testing.md` before it writes or changes a test
 - **Origin:** none
 
 *Rationale:* A common discipline makes the choice of a useful test and an independent expected value reviewable without prescribing proportions of test levels. The version of the template is that of the pinned the-way, named with no commit number, so the discipline follows the pin as the coding-guideline discipline of D-28 and the styleguide discipline of D-38 do. Where the template's default does not fit loop2, the departure is a decision of its own with its reason, as the decisions the binding sentence names give them, and the rest of the template's rules stand as it gives them, the wording accepted for loop2 standing in the testing guidelines. Weak point: every departure ages if nobody checks its condition of return when a change reaches its area.
@@ -1598,7 +1600,9 @@ Tests on generated inputs are considered only when the task author names a game 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test on generated inputs added by a task that names the game rule and the risk from combinations of inputs that a few readable examples do not protect, the task choosing the tool and settling its upkeep
+  - violates: a property-test library or a test on generated inputs added by a change whose task names no game rule or no such risk; a test on generated inputs added where a few readable examples protect the rule
 - **Origin:** none
 
 *Rationale:* The complexity of the game and the risk being protected justify generated inputs; the ability to generate them alone does not. The template recommends a test of a property wherever a sentence holds for all inputs; loop2 departs from that recommendation because of the scope of adopting the guidelines and the present complexity of the game, and the departure does not leave the behaviours of the game out of testing: it only sets when this kind of test is weighed. Cost accepted: the author's justification and the reviewer's assessment stand in place of tests added automatically, and the automatic search for unusual cases waits for a justified need. Gain: a smaller scope and no dependency, configuration or tests to maintain beyond what the game's complexity needs now. Naming no library leaves the change that shows the need free to choose its tool and to settle the cost of upkeep.
@@ -1611,7 +1615,9 @@ Permanent tests of complete player journeys in a real browser are deferred, and 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a changed player journey checked by hand in a browser, with no permanent test of the whole journey; a task that, after a critical-journey defect escaped smaller tests, chooses the tool and the scope of automating journeys
+  - violates: a permanent test of a complete player journey in a real browser added with no defect that escaped smaller tests and no significant cost of manual checks behind it; a change of a player journey merged with no manual check of that journey
 - **Origin:** none
 
 *Rationale:* Manual checks keep the initial testing discipline proportionate to the game, at the cost of evidence of one run rather than permanent protection against recurrence. Automation would give repeatable protection at once, but it needs a new environment and the upkeep of its tests. The template recommends a test of every critical journey in a real browser; this is a departure from that recommendation, justified by the scope of adopting the guidelines and the present complexity of the game. It leaves the duty of refusal tests on trust boundaries as it is, and it gives no leave to remove an existing test without the reason the rules for changing a test require.
@@ -1624,7 +1630,9 @@ Permanent refusal tests for font files and the local interface preview server ar
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first change of the principle of the font files or of the preview server — another kind of file, another way in, another recipient — bringing the boundary's refusal test and moving its invariant to the method test; a change of how the kitchen-sink page is built that adds no refusal test and whose review checks that the preview server serves only its own directory and only on the developer's machine
+  - violates: a change of a boundary's principle merged with no refusal test of that boundary, or with its invariant still checked by review; a new font file whose review does not check it against the release of the Geist font repository; a change that lets the preview server serve outside its own directory or to another machine, passed by its review
 - **Origin:** none
 
 *Rationale:* The departure is temporary and limits the rule that every trust boundary of the part map has a written refusal rule and at least one permanent test checking it directly. Neither boundary has such a test: the fonts are chosen by name and copied byte for byte with no check against the release they come from, and the preview server is a local one over the directory of the built page, while the existing test of that page's build expressly leaves its serving out of its scope; an audit of the tests found no direct refusal test for either. The template allows a departure through a justified decision of the product; this is not its exception for a boundary that is only the configuration of a service owned by another. Keeping the guideline work bounded leaves these boundaries dependent on review until the departure ends, which can miss a defect; the lack of a test stays explicit, and absence of a test proves neither refusal nor a vulnerability. Their refusals are written as invariants checked by review of changes — font files come only from the release of the Geist font repository named in D-46, and the preview server serves only its own directory and only on the developer's machine — so that the rule on trust boundaries names their refusal; the first change of a boundary's principle moves its invariant to a test. A change that leaves the principle of a boundary as it was gives a refusal test nothing new to refuse, at the cost of the server staying without a permanent test. The departure stands beside the rule on trust boundaries, not in the general section of behaviours deliberately left untested, and the departure for the sprite files (D-273) refers to this reading of what ends it.
@@ -1652,7 +1660,9 @@ A new or changed test case has a name describing its behaviour and condition, an
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new case named by the behaviour and the condition it checks, with its preparation, action and assertion apart, protecting one behaviour, possibly through a table of explicitly named variants of it; an expected value written out in the case
+  - violates: a new case that checks unrelated behaviours in one scenario, or walks a table of variants that carry no names; a case whose expected value repeats the product's algorithm in the test or was copied from what the code returned
 - **Origin:** none
 
 *Rationale:* Named variants keep one behaviour readable without duplicating its preparation; combining unrelated behaviours obscures the cause of a failure. This departs from the template's default of no logic in a test, which a test walking a list of crafted inputs, as an integration test of the public server does, would otherwise break. Cost: different behaviours have to be kept apart and the variants named; one large scenario saves preparation but makes the cause of a failure hard to point to. It refines how a case is shaped and does not order every existing test to be rewritten.
@@ -1680,7 +1690,9 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test in `tests/view/` that starts child processes counted as an integration test; a test that starts the built application in a container and checks only that it answers, counted as a smoke test
+  - violates: a test that reads files of test data, uses the network or starts a process counted as a unit test because it stands in `tests/sim/` or `tests/view/`; a smoke test presented as proof of a complete game journey; a fourth level of tests added to `guidelines/testing.md`
 - **Origin:** none
 
 *Rationale:* The levels distinguish calculations from real connections and packaging, so a missing environment names which evidence is absent. A unit test executes the rules of the simulation or the logic that prepares a view in memory, with no real network, no reading or writing of data in files, no process and no browser; importing a built module is not an operation on test data in files, and a unit test may cover several functions together when that is the smallest fragment that shows the error. It is a fast and exact check of a rule, but proves nothing about files, the server or the screen. An integration test checks a concrete operation or connection on real files, local HTTP or processes, scripts among them, and the check of repository files by scripts belongs here too; it costs the preparation and cleanup of resources, and it can find a wrong path, command or response of the server. The test of starting the finished application as a whole belongs to the smoke level. A smoke test is a short check that building, configuration and start fit together, without proof of the whole game; it costs building and starting a process or container, and a separate name lets one say what was not checked when the container environment does not work. The tests of views that use a hand-made document model check only the logic modelled, not clicks, focus or look in a real browser, and the division does not present them as end-to-end tests; D-88 settles that exclusion. The glossary gets entries for unit test, which in loop2 may span several functions, and for integration test, which includes scripts that check repository files, each defined by the resources it may use; smoke test means the same as in the field and gets none.
@@ -1723,7 +1735,9 @@ A new or changed simulation test supplies explicit state, elapsed time and seed 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-04 · derives from D-22
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new simulation test that writes out the state, the elapsed time and the seed and runs the game's own random generator; a new test of an HTTP failure on a real local server that waits for its listening with a time limit and closes the server even after a failure; a change of the HTTP helper of `tests/http.test.mjs` that limits its waits and cleans up after a failure
+  - violates: a simulation test that waits for game minutes on the computer's clock or replaces the game's random generator; a test of a file or HTTP failure on a substitute presented as proof of the replaced operation; a test that sleeps a fixed span as proof of readiness, or leaves a file, server or process behind after a failure; a change of the HTTP helper that keeps a wait with no time limit
 - **Origin:** none
 
 *Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps. A seed is a number that fixes a repeatable sequence of draws; the repeatability it gives does not replace an independent expectation. The recipe uses D-04 and D-22 and no new library. A controlled response in place of a dependency serves to check the reaction to a forced error and is no proof that the replaced operation works; substituted responses alone are easier to control, but may hide damage to the real connection. A test waits for a specific signal or condition, with a limit of time and handling of an error, and does not assume that the passing of a fixed pause means readiness; checking a condition periodically is allowed. A fixed pause is simpler, but on a slower computer it may be too short, and on a faster one it wastes time; real waiting for game minutes is simpler to write, but it slows the test and ties its result to the moment of its running. The rules fix no concrete limits and do not order the existing helpers rebuilt in the work of adopting the guidelines: when they were adopted, the HTTP helper limited idleness, not the whole request, and the wait for the server to start had no limit, so the rules left the helper to take them at its next change.
@@ -1736,7 +1750,9 @@ The unit exemplar is the case "the count of a hand-made backpack is the pieces o
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-81
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: `guidelines/testing.md` naming the three cases of this decision as the exemplars of their levels, each with its limits; a new unit test that follows the backpack case in its explicit data and independent arithmetic, not in its handling of time
+  - violates: `guidelines/testing.md` naming another case, the whole file of an exemplar or its helpers as the exemplar of a level; one of the three cases renamed or removed while the guidelines still name it as an exemplar
 - **Origin:** none
 
 *Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection. The unit exemplar states the content of the backpack in the test and expects the sums 15, 7 and 0; the requirement of counting pieces together comes from D-64 and the expectations from arithmetic, with no call of a product function on the expected side. Its gain is a model of readable data and an independent result. The integration exemplar sends real requests that try to leave the public directory and checks the refusal and the absence of the files' content; its gain is a model of checking the visible effect of a real request instead of a call of a function. The selection does not approve the whole file of that case or its helpers as a model of limits and cleanup: when the case was chosen, the HTTP helper limited idleness, not the whole operation, and the wait for listening had no limit; the expected refusal and its invariant are settled by D-86, and the choice adds no repair of the helpers to any work. The smoke exemplar checks a normal start, forces an occupied port and requires an error without a report of readiness, then checks the normal start again; its gain is the control that the refusal comes from the forced problem and not from an application that does not start at all, and it rests on the invariant account-server-occupied-address. It is a model of the control of a start and a refusal, not proof of the full handling of HTTP, the working of the container or the game. The selection takes existing cases, without rewriting tests; cost: an example needs upkeep with the guidelines, and its limits must not be stretched to a whole file.
@@ -1762,7 +1778,9 @@ Whole screens are not preserved by pixel-by-pixel image comparison, while agreed
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a changed appearance inspected by a person in a browser, the checks of agreed appearance rules kept; the check of the content of external icons kept as it is
+  - violates: a pixel-by-pixel comparison of a whole screen against a reference image added with no concrete visual defect and no agreed requirement of an exact layout; a check of an agreed appearance rule or of the safety of external icons or fonts removed on the ground that the look is inspected in a browser
 - **Origin:** none
 
 *Rationale:* Avoiding whole-screen references saves maintenance and judgement of intended differences, while leaving some visual differences for a person to catch. Image comparisons could catch such differences automatically, but they need reference images to keep and a judgement of each intended difference. The exclusion leaves the safety of external icons and fonts as it is, and it gives no leave to remove an existing test without the reason the rules for changing a test require.
@@ -1775,7 +1793,9 @@ Real browser events, focus and SVG rendering are checked manually after a change
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a change of a click, a key or the focus of a screen checked by hand in a browser, its test on jsdom proving only the logic it runs; a test of a trust boundary kept whatever this exclusion leaves to a person
+  - violates: a test on a hand-made document model or on jsdom presented as proof of a real event, of focus or of the drawing of SVG; an automated test of real browser events, focus or SVG added with no defect that such a test missed and apart from the automation of the player journeys of D-75; a refusal test of a trust boundary left out on the ground of this exclusion
 - **Origin:** none
 
 *Rationale:* A document model or a ready-made imitation provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects. The tests of views on a hand-made document model do not check real events, focus or the drawing of SVG. The deferral of player-journey tests in D-75 covers only whole player journeys, so this exclusion stands separately from it. Weak point: until automation is justified, only a person catches a defect of an event or of focus. Screens built with React lose the hand-made document model in their tests and take a ready-made imitation of the document in its place; the exclusion covers that imitation as it covers the model.
@@ -1788,7 +1808,9 @@ For a change touching a category deliberately left without tests, its author and
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-75 · derives from D-87 · derives from D-88
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a change of a player journey whose author and reviewer check whether a critical-journey defect escaped smaller tests or the manual checks grew costly; a change of the focus of a screen whose author and reviewer check whether a test on jsdom missed a defect of a real event or of focus
+  - violates: a change of the look of a screen whose author and reviewer do not check whether a concrete visual defect or an agreed requirement of an exact layout now calls for image comparison; a change of a player journey merged with no check of whether a defect of that journey escaped smaller tests
 - **Origin:** none
 
 *Rationale:* An exclusion can outlive its reason unless the changes that reach it revisit that reason. Besides the categories the binding sentence names, a category deliberately left without a test is code that only passes or copies data and decides nothing: it has no separate permanent test, and the return is to a test once a rule, a transformation or an error appears in it; testing every such fragment would add upkeep and might duplicate the test of the behaviour that uses it, and the cost is that nothing gives a separate signal about the fragment. None of these exclusions covers a trust boundary, and none gives leave to remove an existing test without the reason the rules for changing a test require.
@@ -5963,13 +5985,23 @@ where React must answer, and keeps no copy of either.
 - **Scope:** browser-view · build-tools
 - **Based on:** react-hook-order-report · react-entry-build
 - **Relations:** derives from D-03 · derives from D-88
-- **Verification:** an agent compares a change with the decision:
-  - complies: a case of a screen in React that imports the harness first and walks the page,
-    screens still in DOM included, and clicks a button with the harness's `press`; a test of another
-    screen keeping its own stand-in
-  - violates: a hand-made document model grown until React runs on it; a second harness for the next
-    screen; a test file of a screen in React that defines a copy of the harness's `press` or
-    `fire`; a test that passes while React's development build reports a changed order of hooks
+- **Verification:** tests: no file under `tests/` but the harness loading jsdom or happy-dom; each
+  case on a window of its own, which the product reads as its globals and which no other case
+  reaches; the focus leaving a focused control that becomes disabled, by its property, its
+  attribute, its fieldset or React, and staying where it is otherwise; React's work awaited through
+  `act`; typing through the input's native value setter and a bubbling `input` event, which reaches
+  a controlled field's change and a listener outside React; a case failed on a report of React's
+  development build through `console.error`; the harness's `press` clicking inside `act`, and its
+  `fire` sending a bubbling event of its target's window, a `pointerout` as a mouse event. An agent
+  compares a change with the part no test holds:
+  - complies: a case of a screen in React whose file imports the harness before React and clicks a
+    button with the harness's `press`, and sends an event React answers through `fire` inside `act`;
+    a test of a screen not built with React keeping its own stand-in for the document; jsdom kept
+    at one exact version in `package.json`
+  - violates: a hand-made document model grown until React runs on it; a test file of a screen in
+    React that imports the harness after React, or defines a copy of the harness's `press` or
+    `fire`; jsdom declared with a range of versions; a test of a screen not built with React made to
+    give up its stand-in for jsdom
 - **Origin:** none
 
 *Rationale:* what replaces the hand-made document model in the tests of screens that move to React
@@ -6119,12 +6151,19 @@ reopens how the limit is held.
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Based on:** node-assert-failure-inspect · node-worker-threads · node-sigkill-termination · node-process-rss
 - **Relations:** derives from D-264
-- **Verification:** invariants: document-test-memory-limit. An agent compares a change with the
-  decision:
-  - complies: a throwaway file that starts the limit before it loads jsdom; a failing comparison on
-    a DOM element that ends in a short message naming its case
-  - violates: a helper on jsdom that takes `assert` from `node:assert`; a file outside `tests/` that
-    loads jsdom with no limit
+- **Verification:** invariants: document-test-memory-limit. tests: the harness's `assert` failing
+  with a short plain error that carries no value, also on a rendered element and in the report of
+  the runner; the limit the harness starts read by a thread that kills a process whose main thread
+  is stuck, with its sentence on standard error, and that leaves a process under the limit alone.
+  An agent compares a change with the part no invariant and no test holds:
+  - complies: a throwaway file outside `tests/` that imports `tests/view/memory-limit.mjs` first
+    and starts the limit before it loads jsdom; how the limit is held taken up again once a
+    forty-first test file on a document imitation comes
+  - violates: a helper under `tests/` that works on jsdom's elements and takes `assert` from
+    `node:assert` without importing the harness; a file outside `tests/` that loads jsdom with no
+    limit, or starts the limit after it has loaded jsdom; a forty-first test file on a document
+    imitation, or a test on none whose memory runs away, met with the limit left held as it is and
+    how it is held not reopened
 - **Origin:** none
 
 *Rationale:* Node writes out both values of a failing comparison before it throws, and on a DOM
