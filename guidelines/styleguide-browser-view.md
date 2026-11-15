@@ -192,7 +192,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402
+- **Decision:** D-38 · D-44 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -224,7 +224,7 @@ stanów:
   programy z poprzedniego zapisu” na ekranie Programy, czekający na odpowiedź
   serwera, zmienia napis na „Wciąganie…” (D-44, D-401), a przycisk niszczący
   „Zacznij od zera”, czekający na odpowiedź na reset, jest wyłączony i zachowuje
-  napis (D-44, D-402). Nie ma ruchomego wskaźnika. Odmowa
+  napis (D-44, D-402); tak samo przycisk „Zablokuj” z listy kont, czekający na odpowiedź serwera (D-411). Nie ma ruchomego wskaźnika. Odmowa
   serwera i brak połączenia przy formularzu stoją jednym zdaniem pod
   formularzem w `warning` (rola `warning`: coś się nie wykona, D-39). Wyłączony przycisk traci fokus
   klawiatury, więc ekran po odpowiedzi przywraca go na kontrolce, od której
@@ -253,7 +253,7 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
   a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39), w obu
   postaciach przycisku; są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
-  „Przełącz postać na ten program”, „Zatrzymaj” i „Zacznij od zera” (D-44, D-402) oraz „Odrzuć” pytania
+  „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” (D-44, D-402) i „Zablokuj” na liście kont (D-411), oraz „Odrzuć” pytania
   „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
   Loading dotyczy zwykłego przycisku, który czeka na odpowiedź serwera,
@@ -490,7 +490,7 @@ czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
 ### Menu bar, the menu „Konto” and the list of programs
 
-- **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47
+- **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47 · D-410 · D-411
 - **Invariant:** none
 - **Good:** Pozycja „Programy” na ekranie Programy w `text-strong` z linią w `selected` u dołu, a „Wyloguj” w menu „Konto”, które po odpowiedzi serwera stoi otwarte ze zdaniem wyniku.
 - **Bad:** Pozycja paska z ikoną, zaznaczona zielenią albo tłem; „Wróć do przejścia” zaznaczone na ekranie przejścia; menu „Konto” zamykające się samo po odpowiedzi serwera.
@@ -516,6 +516,9 @@ Pasek:
   Visible focus bez dodatku (D-47);
 - na ekranie Postać pasek znaczy Siedzibę, na ekranie Mapy pod każdym jego
   adresem znaczy Mapy, a na ekranie przejścia nie znaczy żadnej pozycji (D-280);
+- pozycje paska są te same dla gracza i dla konta z rolą właściciela (D-280,
+  D-410); ekran listy kont (D-411) nie jest pozycją paska i na nim żadna
+  pozycja nie jest zaznaczona (D-281);
 - pasek nie ma pozycji nieaktywnych (D-280), więc stan disabled nie dotyczy
   pozycji; error, empty i loading też nie, bo pozycja nie ma wpisu, listy
   i nie czeka na serwer;
@@ -532,6 +535,11 @@ Menu „Konto”:
   także „Adres e-mail niepotwierdzony.” w `text-secondary` ze wspólnym
   przyciskiem „Wyślij ponownie”, obie rzeczy znikają po potwierdzeniu adresu
   (D-157);
+- u konta z rolą właściciela (D-410) stoi w menu, po adresie i przed
+  przyciskami, odnośnik „Panel właściciela” prowadzący do `#/konta` (D-281):
+  zwykły odnośnik menu, nie pozycja paska; tekst w `text`, pod kursorem tło
+  `highlight`, jak odnośnik na liście programów, a fokus rysuje reguła Visible
+  focus. Gracz tego odnośnika nie ma;
 - zdanie o wyniku wysyłania stoi w tym miejscu, w kolorach z D-157 (w
   `text-secondary` po wysłaniu, w `warning` przy odmowie i przy błędzie),
   w zamkniętym menu bez znaku na pasku (D-157);
@@ -959,6 +967,52 @@ Otwarte dla człowieka:
   stopnia skali odstępów;
 - użycia ról, które mieszczą się w słowach D-40, ale nie zostały zatwierdzone
   dla tych miejsc: tor paska czasu w `highlight` i ramka okna w `divider`.
+
+### The list of accounts
+
+- **Decision:** D-410 · D-411 · D-281 · D-44 · D-39 · D-40
+- **Invariant:** none
+- **Good:** Wiersz konta z rolą właściciela ma adres, stan, uprawnienie, rolę i trzy przyciski, bez „Zablokuj”; „Zablokuj” przy koncie gracza jest neutralne w spoczynku i staje w `danger` pod kursorem.
+- **Bad:** Przycisk „Zablokuj” przy koncie z rolą właściciela; „Zablokuj” wykonane od pierwszego kliknięcia, bez potwierdzenia.
+
+Ekran listy kont stoi pod `#/konta` i jest tylko dla konta z rolą właściciela
+(D-281). Pokazuje każde konto w jednym wierszu, posortowane po adresie (D-411):
+
+- adres konta to nazwa wiersza, w `text-strong`, bo na niego patrzy się najpierw;
+- stan blokady: konto zablokowane w `warning`, bo jego gra się nie wykona,
+  konto odblokowane w `text`;
+- uprawnienie do poprzedniego zapisu i rola (gracz albo właściciel) w `text`;
+  jeśli wiersz podpisuje te wartości, podpisy stoją w `text-label`.
+
+Wiersz nie pokazuje nic więcej o koncie niż te cztery rzeczy (D-411).
+
+Przyciski każdego wiersza to wspólne przyciski (D-44) w stanach z reguły States
+of shared controls:
+
+- „Odblokuj”, „Nadaj uprawnienie do poprzedniego zapisu” i „Odbierz uprawnienie
+  do poprzedniego zapisu” to zwykłe przyciski, w `text` na spoczynku; działają od
+  razu, bez potwierdzenia; czekając na serwer, są wyłączone i zachowują napis,
+  w `text-disabled`;
+- „Zablokuj” to przycisk niszczący (D-411): neutralny w spoczynku, w `danger`
+  pod kursorem i przy fokusie; czekając na serwer, jest wyłączony i zachowuje
+  napis. Przy koncie z rolą właściciela, także przy własnym, go nie ma.
+
+Po kliknięciu „Zablokuj” pod wierszem stoi jedno zdanie w `warning`, które mówi
+o skutkach blokady wymienionych w D-411: sesje gracza kończą się w każdej
+przeglądarce, a odnośniki z maili przestają działać, i odblokowanie tego nie
+przywraca. Potwierdzenie nie wysyła nic bez kolejnego kliknięcia.
+
+Lista bez kont stoi bez pozycji, z jednym zdaniem w `text-secondary`, jak puste
+listy na ekranie Mapy (D-331). Odmowa serwera albo brak połączenia przy
+wczytaniu listy stoi nad nią jednym zdaniem w `warning`, jak odmowa przy
+formularzu (D-44).
+
+Otwarte dla człowieka:
+
+- które przyciski stoją przy potwierdzeniu „Zablokuj” i czy przy nim ma stać
+  akcja poboczna, która zamyka potwierdzenie bez blokady (D-275);
+- treść zdania przy pustej liście i zdania przy odmowie wczytania listy, bo
+  reguła nie ustala ich słów.
 
 ## Examples
 
