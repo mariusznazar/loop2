@@ -831,6 +831,30 @@ On Windows, when a process terminates with a portion of a file locked, the opera
 
 - **Source:** https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfile (archived: https://web.archive.org/web/20261024175828/https://learn.microsoft.com/en-us/windows/win32/api/FileAPI/nf-fileapi-lockfile, 2026-10-24) § Remarks — "If a process terminates with a portion of a file locked or closes a file that has outstanding locks, the locks are unlocked by the operating system. However, the time it takes for the operating system to unlock these locks depends upon available system resources."; read 2026-11-15
 
+## github-secret-scanning-history
+
+GitHub's documentation says that secret scanning scans the entire Git history on all branches of a repository for hardcoded credentials of known secret types.
+
+- **Source:** https://raw.githubusercontent.com/github/docs/d59b2631959db46d71ca5f7748ec04311c6d0870/content/code-security/concepts/secret-security/secret-scanning.md § How secret scanning protects your code — "scans your entire Git history on all branches of your repository for hardcoded credentials, including API keys, passwords, tokens, and other known secret types."; read 2026-11-15
+
+## github-push-protection-blocks-push
+
+GitHub's documentation says that push protection blocks a push in which it detects a potential secret, of the types of secret it can block.
+
+- **Source:** https://raw.githubusercontent.com/github/docs/d59b2631959db46d71ca5f7748ec04311c6d0870/content/code-security/concepts/secret-security/push-protection.md § How push protection works — "When push protection detects a potential secret during a push attempt, it will block the push and provide a detailed message explaining the reason for the block." · "Push protection can block the following types of secrets."; read 2026-11-15
+
+## loop2-secret-scanning-enabled
+
+On 2026-11-15 the repository `mariusznazar/loop2` has secret scanning and the push protection of secret scanning enabled.
+
+- **Source:** reading: `gh api repos/mariusznazar/loop2 --jq '.security_and_analysis | {secret_scanning, secret_scanning_push_protection}'` on the REST API of GitHub, gh version 2.88.1 (2026-03-12) — "{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}"; run 2026-11-15
+
+## github-ubuntu-runner-docker
+
+The runner image that GitHub's label `ubuntu-24.04` names is the x64 image Ubuntu 24.04, and its installed software lists Docker Client and Docker Server.
+
+- **Source:** https://raw.githubusercontent.com/actions/runner-images/95e6f51a068507e8f43d061d2166a39d0ef36ce8/README.md § Available Images — "Ubuntu 24.04" · "x64" · "ubuntu-latest or ubuntu-24.04" · https://raw.githubusercontent.com/actions/runner-images/95e6f51a068507e8f43d061d2166a39d0ef36ce8/images/ubuntu/Ubuntu2404-Readme.md § Installed Software, Tools — "Docker Client 28.0.4" · "Docker Server 28.0.4"; read 2026-11-15
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
