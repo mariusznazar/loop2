@@ -4777,7 +4777,11 @@ with the planned retained backups; otherwise another device outside the game ser
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** sqlite-online-backup · loop2-backup-log-nightly-sends · Docker volumes persist beyond a container but reside on a Docker host (https://docs.docker.com/engine/storage/volumes/, read 2026-10-04) · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § Strych (backupy) — "Strych to współdzielony serwer backupowy, na którym każdy z użytkowników posiada 200MB przestrzeni do przechowywania własnych plików. Aby uzyskać do niego dostęp, wystarczy o niego poprosić przez panel, klikając odpowiednią opcję w sekcji “Backup”."; read 2026-10-31 · NCSC guidance on separated and restorable backups (https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks, read 2026-10-04)
 - **Relations:** derives from D-205
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a backup of the database made beside a separate writer, whole and
+  holding every row committed before it began, and the bytes of the backup command opening as the
+  database; only a backup whose command and encryption ended well sent, by `rsync` to Mikrus
+  Strych; a backup made by the backup command giving back an account's login and saved game state
+  in a fresh container. An agent compares a change with the part no test holds:
   - complies: tested retained backups fit and restore from Strych, so the deployment uses Strych;
     they do not fit, so the deployment uses another device outside the game server host
   - violates: Strych passes the checks but another location is chosen without review; Strych fails
@@ -4807,9 +4811,7 @@ database read, write and backup operations have been checked on that release.
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** node-sqlite-database · Node.js 24.21.0 SQLite documentation, `DatabaseSync`, prepared statements, backup and release-candidate status (https://raw.githubusercontent.com/nodejs/node/v24.21.0/doc/api/sqlite.md, read 2026-10-04) · Node.js 24.21.0 stability index, release candidates anticipate no further breaking changes but may still have them (https://nodejs.org/download/release/v24.21.0/docs/api/documentation.html#stability-index, read 2026-10-04) · better-sqlite3 13.0.3 API, database, transactions and backup (https://github.com/WiseLibs/better-sqlite3/blob/v13.0.3/docs/api.md, read 2026-10-04) · better-sqlite3 13 release, Node-API native addon (https://github.com/WiseLibs/better-sqlite3/releases/tag/v13.0.0, read 2026-10-04)
 - **Relations:** derives from D-01 · derives from D-205
-- **Verification:** invariants: account-save-sqlite-access · account-save-sqlite-upgrade. An agent compares a change with the decision:
-  - complies: a step of the image's final stage that checks read, write and backup on the image's own Node.js release, so that a release failing it fails the build and the running containers stay in service
-  - violates: a server image built without that step; an external SQLite driver among the server's dependencies
+- **Verification:** invariants: account-save-sqlite-access · account-save-sqlite-upgrade.
 - **Origin:** none
 
 *Rationale:* the built-in module avoids another native runtime package and its installation in the
@@ -4834,9 +4836,13 @@ command deletes one, and nothing reads the destination's list of files.
 - **Scope:** deployment, agent-workflow
 - **Based on:** https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § WAŻNE UWAGI NA KONIEC — "Rób backupy w rozsądnych odstępach czasu i jeśli to możliwe, to najlepiej w nocy." · "Prawdopodobnie nie potrzebujesz backupu co godzinę, a np. jeden dziennie czy nawet kilka tygodniowo w zupełności powinny Ci wystarczyć."; read 2026-10-31 · https://raw.githubusercontent.com/RsyncProject/rsync/6b5ae825db985e9d1c98576651b50c8e490ddb97/rsync.1.md § --temp-dir — "The default behavior is to create each temporary file in the same directory as the associated destination file." · § --partial — "By default, rsync will delete any partially transferred file if the transfer is interrupted."; read 2026-10-31
 - **Relations:** derives from D-228
-- **Verification:** an agent compares a change with the decision:
-  - complies: a send that names one of the seven files, computed from the date, and replaces that file whole, so a failed send leaves the older backup standing
-  - violates: a file name taken from a listing of the destination; a deleting option or command aimed at the destination; a name that leaves an eighth file there
+- **Verification:** tests: one backup a night, started by the schedule at 03:17 each day; the one of
+  the seven weekday files `loop2-accounts-<1..7>.sqlite.age` that the UTC day of the week names, a
+  day that names none refused, the file replaced whole with its time kept; one `rsync` call with one
+  file and one destination name, no option of it that deletes, lists or leaves a broken file, and
+  no other tool reaching Strych. An agent compares a change with the part no test holds:
+  - complies: the backup script started only by the schedule a human installed and by a human's hand run
+  - violates: a deployment, a workflow or the game server that runs the backup script or writes a file under one of the seven weekday names
 - **Origin:** none
 
 *Rationale:* a player loses at most a day of play, and a fault noticed after a week has no clean
@@ -4878,9 +4884,20 @@ installing or reinstalling them being a human's change.
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** mikrus-host-swap · cron-d-file-rules · loop2-host-installed-copies-agree
 - **Relations:** derives from D-228 · derives from D-12
-- **Verification:** an agent compares a change with the decision:
-  - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on; a run of the command without its fixed word that ends with the usage exit code, an empty standard output and the database never opened
-  - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a schedule installed under a file name with a dot; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
+- **Verification:** tests: the schedule starting `/usr/local/bin/loop2-backup` as root at 03:17
+  each day, in a file cron can read; the script running the backup command in the `loop2` container
+  through `docker exec` with its fixed word and no terminal, and the bytes of that standard output
+  opening as the database; no Compose service beside the application and the connector, and no
+  Compose secret or mount that could give the game container the key to Strych; the command
+  refusing without its fixed word, or with anything else, before it opens the database and with
+  nothing on standard output, and creating no database where none exists; the script holding the
+  deployment's lock, with the deployment's wait, over the command and the encryption and releasing
+  it, with no descriptor of it left open, before the send; each deployment comparing the installed
+  backup script and schedule with their sources at the deployed commit and warning, never refusing,
+  when they differ, cannot be read or have no source. An agent compares a change with the part no
+  test holds:
+  - complies: a backup script installed by a human at `/usr/local/bin/loop2-backup`, with its schedule under `/etc/cron.d/` by a file name with no dot; the backup command run only by a human or by the installed backup script
+  - violates: a timer in the server's process that makes or sends a backup; a deployment that installs or reinstalls the script or the schedule; a schedule installed under a file name with a dot; a skill instruction in which an agent runs the command, through the `mikrus` MCP server or otherwise
 - **Origin:** none
 
 *Rationale:* the key to Strych stays away from the process that serves players, a failed send
@@ -4930,9 +4947,14 @@ backup is not compressed.
 - **Scope:** deployment, agent-workflow
 - **Based on:** age-file-encryption
 - **Relations:** derives from D-228 · derives from D-13
-- **Verification:** invariants: account-save-backup-encrypted. An agent compares a change with the decision:
-  - complies: a script that sends only after every stage of its pipe exited 0 and the file is not empty
-  - violates: a plain database file on the host's disk on its way to the encryption; the key handed into the game container
+- **Verification:** invariants: account-save-backup-encrypted. tests: `age --encrypt` run in the
+  script's pipe with `/etc/loop2/backup-encryption-key` as its identity, reading the backup
+  command's stream as it came, so uncompressed, and the file sent being exactly the file `age`
+  wrote; the database's content reaching nothing but `age` — no log, no output, no notice, no
+  argument of a tool and no file sent. An agent compares a change with the part no invariant and no
+  test holds:
+  - complies: the backup command's stream piped straight into `age`, whose output is the only file the script writes
+  - violates: a plain database file written anywhere on the host's disk on its way to the encryption, such as a copy fetched by `docker cp` before `age` reads it; the backup encrypted inside the game container, with the key handed into it
 - **Origin:** none
 
 *Rationale:* a leak from Strych reveals no player's address. The price is one more secret and one
@@ -4974,9 +4996,20 @@ reaches no file.
 - **Scope:** deployment, agent-workflow
 - **Based on:** mikrus-pusher-mail
 - **Relations:** derives from D-228 · derives from D-231 · derives from D-13
-- **Verification:** invariants: account-save-backup-failure-notice. An agent compares a change with the decision:
-  - complies: one handler at the script's exit that sends the fixed text whatever caused a non-zero end; a watcher that finds no successful send in the log of the backup from the last 26 hours, calls `pusher` once with the fixed sentence of that kind and sends no second message of that kind within the day
-  - violates: a tool's output piped into `pusher`, as its documentation shows; the error text of `rsync` written to the log, since a refused login prints the login; a message of the watcher about the missing backup that holds a line of the log, a file name or a size
+- **Verification:** invariants: account-save-backup-failure-notice. tests: at a failed end of the
+  backup script one call of `pusher`, also when `pusher` fails or hangs, with one fixed subject and
+  text, the same for every failure, that hold no tool's output, no step's name and nothing of the
+  database; the watcher reading `/var/log/loop2-backup.log`, the log the backup script writes, and
+  calling `pusher` with a fixed message of its own kind, other than the script's and holding
+  nothing it read, when no line exactly as the script writes it at the end of a sent night stands
+  there from the last 26 hours, a missing, empty or unreadable log counting as none, and sending
+  that kind at most once in 24 hours; the log of the backup holding each run's start and end, the
+  weekday file and size before the send, and a failure's stage and exit code, with nothing of the
+  database, no login and none of the text of `ssh` and `rsync`, and the backup command's standard
+  error carrying a failure's kind and code and nothing of its message. An agent compares a change
+  with the part no invariant and no test holds:
+  - complies: a watcher and a backup script that run on the game server's host and tell the owner only through `pusher`, so that a host that is down sends no message
+  - violates: a second way of telling the owner of a missing backup beside `pusher`, such as a signal to an outside service that alarms when it stays away
 - **Origin:** none
 
 *Rationale:* the script stands outside the game container, so a failed backup, a full Strych, a wrong
@@ -5019,9 +5052,13 @@ nobody has run, `umask 077` among them, stay untried.
 - **Scope:** deployment, build-tools, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-228
-- **Verification:** an agent compares a change with the decision:
-  - complies: the owner runs the trial on an image built from the same commit and sees a name given in the game before the backup was made come back, and runs it again the month after and after the next change of the database's schema version
-  - violates: a backup taken as checked because its file opens; an agent that fetches, decrypts or opens a backup; a change of the database's schema version or of the saved game's version taken as covered by a trial made before it
+- **Verification:** tests: a decrypted backup made by the backup command run in a container of an
+  image built from the same working tree, a login with a test account and a name given in the saved
+  game state before the backup seen back, a wrong password or an absent name failing the trial; the
+  trial's container and volumes, which hold the plain database, removed at every end, and no pass
+  claimed until Docker shows them gone. An agent compares a change with the part no test holds:
+  - complies: the owner repeats the trial the month after and after the next change of the database's schema version or of the saved game's version, on a backup fetched from Strych and decrypted on the owner's computer, and removes the decrypted file at its end
+  - violates: an agent that fetches, decrypts or opens a backup; a change of the database's schema version or of the saved game's version taken as covered by a trial made before it; a decrypted backup left on the owner's computer after the trial; a restore over the server's database, or the building of a new server, taken as checked by the trial
 - **Origin:** none
 
 *Rationale:* a login that brings the saved game state back shows that a backup gives the player's
@@ -5079,9 +5116,12 @@ count the database can reach.
 - **Scope:** account-server
 - **Based on:** sqlite-online-backup · node-sqlite-database · sqlite-wal-concurrency
 - **Relations:** derives from D-228 · derives from D-229 · derives from D-231
-- **Verification:** an agent compares a change with the decision:
-  - complies: a `rate` above any page count the database can reach, so that the backup takes one step
-  - violates: `backup()` without a `rate`, or with a `rate` a database of this server can exceed; `VACUUM INTO` in place of `backup()`
+- **Verification:** tests: the backup of the server's database code taken through `backup()` of
+  `node:sqlite`, in one step on a database that the default `rate` backs up in many; the backup
+  command's backup, made beside a separate writer, finishing whole with every row committed before
+  it began. An agent compares a change with the part no test holds:
+  - complies: a positive whole `rate` above the largest page count a database of this server can reach, with the backup taken on the connection the command opened
+  - violates: a `rate` above the page count of the tested database that a database of this server can still exceed; a backup taken through a second connection opened beside the command's own
 - **Origin:** none
 
 *Rationale:* a change through another connection restarts a backup at its next step, and a backup
@@ -5152,9 +5192,13 @@ human repeats that comparison.
 - **Scope:** deployment, agent-workflow
 - **Based on:** openssh-strict-host-key-checking · openssh-option-order · openssh-extra-host-key-sources · loop2-host-ssh-host-key-options · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
 - **Relations:** derives from D-228 · derives from D-230 · derives from D-13
-- **Verification:** an agent compares a change with the decision:
-  - complies: a send whose `ssh` options, on the command line, name that file and turn off every other known-hosts file; root's SSH entry for Strych holding only the login and the path of the key
-  - violates: `StrictHostKeyChecking` set to `accept-new` or `no`; a send that reads root's default known-hosts file; a line taken into the file without its fingerprint compared; a script that writes to the file; an installation procedure that sets `KnownHostsCommand` or `VerifyHostKeyDNS` in root's SSH configuration or the system-wide one
+- **Verification:** tests: the encrypted backup sent by one `rsync` call over `ssh`, no other tool
+  reaching Strych, to a name in the home directory on `strych.mikr.us` with no login and no port;
+  on its command line batch mode, strict host-key checking, `/etc/loop2/strych-known-hosts` as the
+  user's known-hosts file and `/dev/null` as the global one. An agent compares a change with the
+  part no test holds:
+  - complies: root's SSH entry for Strych holding only the login and the path of the key; a host-key line written into the file by a human after comparing its fingerprint
+  - violates: a line taken into the file without its fingerprint compared; a script that writes to the file; `KnownHostsCommand` or `VerifyHostKeyDNS` given on the send's command line, or set by an installation procedure in root's SSH configuration or the system-wide one
 - **Origin:** none
 
 *Rationale:* a script started by a schedule has nobody to answer the question about an unknown host,
