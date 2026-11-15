@@ -161,6 +161,7 @@ test("groups append with monotonic numbers through rename and deletion, includin
 
 test("group conditions offer the same kinds and editable fields while preserving rules and counts", () => {
   // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   const state = {
     ...setProgram(newGame(), THREE).state,
     ruleCounts: { 1: 7, 2: 3, 3: 1 },

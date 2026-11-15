@@ -1304,6 +1304,7 @@ const creatureOf = (state) => sceneDrawing(state).creature;
 // D-316. Catches a scene that shows no creature in the minutes of a combat, one that shows it with no
 // scuffle, and a creature drawn from files the data does not name or from another size than theirs.
 test("through the minutes of a combat the scene draws the wolf scuffling, from the files and frames of the data", () => {
+  // decision: D-148 "An attacking creature appears in the encounter's text and in the scene"
   const creature = creatureOf(fighting());
   assert.equal(creature.scuffling, true);
   assert.equal(creature.key, "fight:181");

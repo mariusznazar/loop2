@@ -76,6 +76,7 @@ test("Las — głębiej gives patyk 18 of 25 tiles, from density 0.7 on 5 × 5 =
 
 test("the wolf's mean gap between attacks is its cooldown 180 plus 1 / 0.01 = 100, so 280 game minutes", () => {
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
   // D-142: the first eligible minute is 181, and a chance of 0.01 a minute gives 100 minutes on
   // average after it: 180 + 100 = 280.
   assert.equal(meanAttackGap(wolf), 280);

@@ -1132,6 +1132,7 @@ test("a number typed in the panel keeps its text and the focus while the game at
 test("the number field of the panel takes the range and the step of the condition kind", async () => {
   // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   for (const [condition, range] of [
     [
       { kind: "temperatureBelow", value: 36.5 },

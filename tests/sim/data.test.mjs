@@ -66,6 +66,7 @@ test("Las — głębiej has the map data, attacker, solving requirements and ope
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
   // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
   // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
+  // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,
@@ -142,6 +143,8 @@ test("actions carry their labels, status texts and the fixed explore duration", 
 
 test("combat actions carry the accepted damage, item requirement and attack revelation", () => {
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   assert.deepEqual(ACTIONS.strikeWithStick, {
     label: "Uderz — patyk",
     group: "foodAndCombat",
@@ -176,6 +179,9 @@ test("combat actions carry the accepted damage, item requirement and attack reve
 
 test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", () => {
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   assert.deepEqual(CREATURES.wolf, {
     name: "wilk",
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -256,6 +262,8 @@ test("conditions carry labels and the value range of hereBelow", () => {
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
   // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   assert.deepEqual(CONDITIONS.healthBelow, {
     label: "Zdrowie poniżej",
     section: "body",
@@ -414,6 +422,7 @@ test("the archetype and the pace are in data", () => {
 test("the character skills grow the listed pairs of verb and target, and the walks stand in none", () => {
   // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapal — ognisko” and „Zapal — patyk”"
   // decision: D-120 "An action that no character skill grows, such as a move onto a neighbouring tile"
+  // decision: D-150 "„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions"
   // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
@@ -435,6 +444,7 @@ test("the character skills grow the listed pairs of verb and target, and the wal
 });
 
 test("the elemental mage has all listed skills as predispositions", () => {
+  // decision: D-150 "„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions"
   // The created archetype admits every listed character skill.
   assert.deepEqual(
     [...ARCHETYPES.elementalMage.predispositions].sort(),
@@ -519,6 +529,7 @@ test("each revealing event reveals exactly the actions, conditions and items of 
   // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
   // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
   for (const row of ROWS) {
     const label = JSON.stringify(row.event);
     const is = (def) => JSON.stringify(def.revealedBy) === label;

@@ -364,6 +364,7 @@ test("the window shows the line of a death with no practice, and the renewal lin
 // Catches a section that stands with no content, a section out of its order, a name in another role
 // and the paragraph of the last encounter standing among the last minutes (D-368).
 test("after a death the sections of „why” stand in order: the last minutes, the paragraph of the last encounter, the rules that never fired, the time, the trip", async () => {
+  // decision: D-147 "At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too"
   await withPage(async ({ document }) => {
     const state = {
       ...sent([
@@ -441,6 +442,7 @@ test("after a death the sections of „why” stand in order: the last minutes, 
 // Catches the paragraph standing twice, among the last minutes too, or shown for a map run that had
 // no attack (D-147, D-368).
 test("the paragraph of the last encounter stands once, in its own section, and never in the last minutes; without an attack there is none", async () => {
+  // decision: D-147 "At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too"
   await withPage(async ({ document }) => {
     const fought = withRun(DIED, { lastCombat: WOLF });
     const { container, show } = await draw(document, fought, LAST_MINUTES);

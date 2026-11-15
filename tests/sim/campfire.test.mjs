@@ -838,6 +838,7 @@ test("a campfire gives its event in the game minute its last minute of burning p
 
 test("a campfire going out in a minute of an encounter gives its event too", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   const fighting = {
     ...handMade({ campfires: burning(1) }),
     current: null,

@@ -237,6 +237,7 @@ test("a campfire going out, a death and a completion give entries of the kind Ś
 // Catches an entry for the end of an action, a step, a tile, an exchange of blows or an end of an
 // encounter: none of them is a kind of the chronicle (D-340, D-147).
 test("the end of an action, a step, a revealed tile, an exchange and the end of an encounter give no entry and change nothing", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   const { chronicle, state } = sentChronicle();
   const version = chronicle.snapshot().version;
   recordEvents(chronicle, state, [
@@ -253,6 +254,8 @@ test("the end of an action, a step, a revealed tile, an exchange and the end of 
 // Catches the paragraph kept apart from the order of time, an earlier attack's paragraph kept beside
 // the later one, or an entry for each attack (D-147).
 test("an attack places the paragraph at its minute among the entries, and the next attack moves it", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);
@@ -292,6 +295,7 @@ test("an attack ends the wait before it, so the next wait gives its entry", () =
 // the filter the player picked (D-346, D-383), or keeping the wait of the ended map run so that the new
 // map run's first wait gives no entry.
 test("„Restart” clears the entries and the paragraph and keeps the tab and the filter", () => {
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [attacked(5), started(9, { kind: "eat" })]);
   recordEvents(chronicle, state, [waitStarted(12)]);
@@ -309,6 +313,7 @@ test("„Restart” clears the entries and the paragraph and keeps the tab and t
 // Catches the entries or the paragraph left after „Zakończ”, or a clearing the screen is not told
 // of, since the number stays.
 test("„Zakończ” clears the entries and the paragraph", () => {
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [attacked(5), started(9, { kind: "eat" })]);
   const version = chronicle.snapshot().version;
@@ -339,6 +344,8 @@ function loadedWithEncounter(state) {
 // Catches the paragraph lost at a load, standing at the minute of the load, or entries invented for
 // what came before (D-339).
 test("a chronicle built from a loaded state holds the paragraph of the last encounter alone, at the attack's minute", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const { state } = sentChronicle();
   const chronicle = createChronicle(loadedWithEncounter(state));
   assert.deepEqual(rowsOf(chronicle), [{ paragraph: 212 }]);
@@ -596,6 +603,7 @@ test("a filter's window holds its newest entries up to its size, newest first, a
 // Catches the paragraph drawn in a window that ends before its place, or left out of one that reaches
 // it.
 test("the paragraph stands in the window of Wszystko only where the window reaches its place", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);
@@ -705,6 +713,7 @@ test("a listener is called once for a result that changed the chronicle and once
 // paragraph stands at the game minute of the attack and is no entry; the death's entry is the last of
 // the minutes, and an act after the end stands after it.
 test("the entries up to the death end with its entry, oldest first, leave out the paragraph of the last encounter and stay as they were after an edit", () => {
+  // decision: D-147 "At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);

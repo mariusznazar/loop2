@@ -2214,6 +2214,7 @@ const creatureOf = (scene) => scene.querySelectorAll(".scene-creature");
 // 144; its figure ends at 189, so the wolf's frame of 64 × 32 starts at 191 on the line 136, and the cloud
 // of 16 × 16 stands over the gap, from 182, its bottom 3 above the line.
 test("in the minutes of a combat the wolf stands beside the mage, on its right, facing it, with the cloud of the scuffle between them", async () => {
+  // decision: D-148 "An attacking creature appears in the encounter's text and in the scene"
   await withPage(async (page) => {
     const scene = await drawn(page, inCombat());
     const wolf = one(scene, ".scene-creature");

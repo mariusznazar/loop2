@@ -190,6 +190,7 @@ test("a streak of zero gives no event of a loss, and the game minutes after a lo
 test("a game minute of an encounter reports no loss, the streak growing in it", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows"
   // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   const fighting = withRun({
     body: body(34.99, 100, 100),
     streak: 7,

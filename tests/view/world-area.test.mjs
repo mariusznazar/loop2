@@ -201,6 +201,7 @@ const rowOf = (container, key) =>
 // the world area, which the window of the end holds (D-185, D-216, D-311).
 test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
   // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana"
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -379,6 +380,7 @@ test("Teraz says the wait alone, and Potem with no winning rule says the charact
 // `positive` (D-132), and rows that vanish after the end (D-335, D-334).
 test("after a death Teraz says its cause in the role text, after a completion the text of the map in positive, and Potem stays", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
   await withPage(async ({ document }) => {
     const rules = [{ condition: ALWAYS, action: { kind: "explore" } }];
     const { container, show } = await draw(document, sentUnder(...rules));
@@ -411,6 +413,7 @@ test("after a death Teraz says its cause in the role text, after a completion th
 // Catches a fight with an icon, a rule or minutes beside it (D-334, D-147), and a Potem that names no
 // rule for the minutes of an attack when a combat rule would be chosen (D-335, D-309).
 test("in the minutes of an attack Teraz says the fight alone and Potem names the combat rule the turn would choose", async () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
   await withPage(async ({ document }) => {
     const state = withRun(
       sentUnder(
@@ -718,6 +721,7 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
 // and „Potem” or anywhere else, while the map run holds a record of one (D-311, D-147): it stands
 // in the chronicle in the area with the tabs alone.
 test("the world area draws no paragraph of the last encounter, with a record of one or without", async () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, sent());
     const paragraph = () => container.querySelector(".combat-line");

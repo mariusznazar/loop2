@@ -101,6 +101,7 @@ test("Teraz names a wait by the words of the game and nothing at its right", () 
 
 // Catches an icon, a rule's number or minutes beside the fight, or the creature in the wrong case.
 test("Teraz in the minutes of an attack says the fight alone, with the creature in the case of „z”", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
   assert.deepEqual(nowOf({ kind: "combat", creatureId: "wolf" }), {
     icon: null,
     text: "Walczy z wilkiem",
@@ -111,6 +112,7 @@ test("Teraz in the minutes of an attack says the fight alone, with the creature 
 
 // Catches a cause worded alike for two deaths, or a cause in a signal role (D-334: not `danger`).
 test("Teraz after a death says its cause in the role text, for each of the three causes", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
   const said = ["cold", "hunger", "combat"].map((cause) => {
     const row = nowOf({ kind: "death", cause });
     assert.equal(row.role, "text", cause);

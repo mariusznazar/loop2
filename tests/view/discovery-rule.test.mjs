@@ -188,6 +188,7 @@ test("a discovery of conditions alone adds „{first condition} → Eksploruj”
 });
 
 test("the first condition is the first the discovery holds", () => {
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   const state = running(
     ONE_RULE(),
     knowing({

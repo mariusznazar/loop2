@@ -474,6 +474,8 @@ test("crafting, feeding, item lighting and eating grant one only when their effe
 });
 
 test("combat practice counts damaging effects and effective dodges, not last or unused dodge requests", () => {
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "Another dodge refreshes that reduction, the strike consumes it with damage floored at zero"
   const stick = {
     ...base(ranks("oneHandedCombat", { strongerStrike: 4 })),
     character: {
@@ -510,6 +512,7 @@ test("combat practice counts damaging effects and effective dodges, not last or 
 });
 
 test("the combat resolution minute adds its successful strikes to the run's earlier practice", () => {
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   // D-379: 6 + 4*2 = 14 damage, so two strikes defeat the 24-health wolf.
   // The two effects add to three earlier strikes, while seven gathers stay seven.
   const run = newMapRun(

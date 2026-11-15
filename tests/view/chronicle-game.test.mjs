@@ -258,6 +258,8 @@ test("„Zakończ” clears the chronicle and a new send starts with Kronika and
 // D-339, D-147. Catches the paragraph of the last encounter still standing in the world
 // area, and a chronicle built from a loaded game that shows anything but the paragraph.
 test("a game loaded with a record of an encounter shows the paragraph in the chronicle alone and none in the world area", async () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   await onPage(async ({ root }) => {
     const start = exploring();
     const loaded = {

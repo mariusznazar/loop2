@@ -387,6 +387,8 @@ test("an empty chronicle and a filter that shows nothing say „Nic tu jeszcze n
 // at the end, its minute not the attack's, the paragraph kept when the state holds no record of an
 // encounter, and the paragraph not growing when the turns are resolved.
 test("the paragraph of the last encounter stands at its minute among the entries, under Walka alone, and grows when the turns are resolved", async () => {
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const fighting = {
@@ -436,6 +438,8 @@ test("the paragraph of the last encounter stands at its minute among the entries
 
 // D-339. Catches a chronicle built from a loaded state drawn with anything but the paragraph alone.
 test("a chronicle built from a loaded state draws the paragraph alone", async () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   await withPage(async ({ document }) => {
     const loaded = {
       ...sentGame(),
