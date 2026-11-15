@@ -1,5 +1,0 @@
-# decision_index.py: list of the sections of the log
-
-Log: foundations/decisions.md
-Sections: 0.
-
