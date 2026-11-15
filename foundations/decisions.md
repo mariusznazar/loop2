@@ -10934,7 +10934,7 @@ The built-in scan of GitHub for secrets, Secret Protection, with push protection
   - violates: a second workflow file that runs a scanner of secrets on each pull request; a stage of the one command of tests that runs a scanner of secrets
 - **Origin:** none
 
-*Rationale:* GitHub scans the whole history of the repository and every push, and refuses a push that holds a secret, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no file and no test of the repository shows that it is on.
+*Rationale:* GitHub scans the whole history of the repository and every push, and refuses a push that holds a secret of a kind it recognizes, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no file and no test of the repository shows that it is on.
 *Rejected:* a separate workflow with a scanner, such as gitleaks — a second CI file and a foreign tool fetched at every run, and a departure from the rule of the process the repository pins that no other checking command stands in CI beside the one command of tests; the scanner as a test of the one command of tests — a tool added to the local installation, repeating what GitHub already does over the whole history of the repository.
 
 ### D-413 — How does CI check a pull request into `main`?
