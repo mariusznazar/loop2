@@ -725,6 +725,16 @@ The account API returns JSON 401 for `GET /api/account`, `GET /api/saved-game` a
 - **Part:** account-server
 - **Violated:** no
 
+## owner-panel-authorization
+
+Each of the five routes of the owner panel answers JSON 401 to a request without a valid server-side session and JSON 403 to a valid session of an account without the owner role, each doing so for a request that meets the transport check of the account routes and, on a `POST` route, the Origin, media-type and body requirements, that role read from the database at the request and never from the session, and the block route answers JSON 409 to a block of an account with the owner role, the caller's own included, and each route changes nothing of any account, session or link when it refuses.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-109 · D-137 · D-400 · D-410
+- **Part:** account-server
+- **Violated:** no
+
 ## account-mutation-request-guards
 
 Every state-changing account route, the save route `PUT /api/saved-game` and the reset route `POST /api/saved-game-reset` included, refuses a missing, duplicate, malformed or nonmatching Origin and a non-JSON, compressed or structurally invalid body or one over that route's body limit of D-104 before password work or mutation.

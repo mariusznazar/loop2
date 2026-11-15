@@ -10,7 +10,8 @@ export type Screen =
   | { readonly kind: "program"; readonly programId: ProgramId }
   | { readonly kind: "run"; readonly characterId: CharacterId }
   | { readonly kind: "maps" }
-  | { readonly kind: "map"; readonly mapId: MapId };
+  | { readonly kind: "map"; readonly mapId: MapId }
+  | { readonly kind: "accounts" };
 
 /**
  * Every kind of `Screen`, which the registry of screens checks that its entries hold (D-408). The
@@ -25,6 +26,7 @@ const KIND_NAMED = {
   run: true,
   maps: true,
   map: true,
+  accounts: true,
 } as const satisfies Record<Screen["kind"], true>;
 export const SCREEN_KINDS = Object.keys(KIND_NAMED) as Screen["kind"][];
 
@@ -60,6 +62,7 @@ export function readScreenAddress(hash: string): Screen | null {
   if (hash === "#/") return { kind: "headquarters" };
   if (hash === "#/programy") return { kind: "programs" };
   if (hash === "#/mapy") return { kind: "maps" };
+  if (hash === "#/konta") return { kind: "accounts" };
   const map = MAP.exec(hash);
   if (map) {
     const id = mapId(map[1]);
@@ -94,15 +97,22 @@ function hasCharacter(state: GameState, characterId: CharacterId): boolean {
  * character gives that character's screen; a character screen or a map run screen of a number no
  * character carries gives Siedziba; a program screen of a number no program carries gives Programy;
  * a map screen of a map off the list of open maps gives Siedziba, the list being the maps whose
- * opening map the game has solved (D-149); no named screen gives Siedziba. Pure.
+ * opening map the game has solved (D-149); the list of accounts gives itself to an account with the
+ * owner role and Siedziba to any other (D-281, D-410); no named screen gives Siedziba. Pure.
  */
-export function resolveScreen(named: Screen | null, state: GameState): Screen {
+export function resolveScreen(
+  named: Screen | null,
+  state: GameState,
+  owner: boolean,
+): Screen {
   if (named === null) return { kind: "headquarters" };
   switch (named.kind) {
     case "headquarters":
     case "programs":
     case "maps":
       return named;
+    case "accounts":
+      return owner ? named : { kind: "headquarters" };
     case "map":
       return canSendMap(state.solvedMaps, named.mapId)
         ? named
@@ -140,13 +150,15 @@ export function screenAddress(screen: Screen): string {
       return "#/mapy";
     case "map":
       return `#/mapy/${screen.mapId}`;
+    case "accounts":
+      return "#/konta";
   }
 }
 
 /**
  * The item of the menu bar that marks a screen (D-277, D-280): Siedziba on Siedziba and on the
  * character's screen, Programy on the programs screen and on a program's, Mapy on the maps screen
- * and on a map's, and none on a map run's screen. Pure.
+ * and on a map's, and none on a map run's screen or on the list of accounts (D-411). Pure.
  */
 export function markedMenuItem(screen: Screen): MenuItem | null {
   switch (screen.kind) {
@@ -160,6 +172,7 @@ export function markedMenuItem(screen: Screen): MenuItem | null {
     case "map":
       return "maps";
     case "run":
+    case "accounts":
       return null;
   }
 }

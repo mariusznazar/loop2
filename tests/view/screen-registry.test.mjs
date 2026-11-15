@@ -20,6 +20,7 @@ const CHARACTER_1 = { kind: "character", characterId: 1 };
 const CHARACTER_2 = { kind: "character", characterId: 2 };
 const MAPS = { kind: "maps" };
 const MAP = { kind: "map", mapId: "forest" };
+const ACCOUNTS = { kind: "accounts" };
 
 /**
  * An entry that records its calls into `log`, each as `name:call`. `instances` collects what it
@@ -78,8 +79,8 @@ function addressOf(log) {
 }
 
 /**
- * The five entries of a game's table in the order of its document: Siedziba, Programy, Przejście,
- * Postać and Mapy, the last two `while-shown`.
+ * The six entries of a game's table in the order of its document: Siedziba, Programy, Przejście,
+ * Postać, Mapy and the list of accounts, the last three `while-shown`.
  */
 function table(log) {
   return [
@@ -90,6 +91,7 @@ function table(log) {
       String(screen.characterId),
     ),
     entryOf("maps", ["maps", "map"], log, "while-shown", () => "maps"),
+    entryOf("accounts", ["accounts"], log, "while-shown", () => "accounts"),
   ];
 }
 
@@ -433,5 +435,43 @@ test("dispose takes every living instance down", async () => {
       "programs:dispose",
       "run:dispose",
     ]);
+  });
+});
+
+// decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba."
+// Catches a page built with no entry for the list of accounts, which would then refuse to build for
+// every account, the player's included, since the registry checks every kind of `Screen` at its build.
+test("a table that leaves out the entry of the list of accounts is refused when it is built", async () => {
+  await withPage(async ({ root }) => {
+    const log = [];
+    throwsLike(
+      () =>
+        createScreenRegistry({
+          element: root,
+          entries: table(log).slice(0, 5),
+          first: HEADQUARTERS,
+          address: addressOf(log),
+          state: () => newGame(),
+          onPlace: () => undefined,
+        }),
+      /no screen entry holds the kind accounts/,
+    );
+  });
+});
+
+// decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens"
+// decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba."
+// Catches a list that is never built for its address, or one left standing after the player leaves it.
+test("the list of accounts is built on entering its address and taken down on leaving it", async () => {
+  await onRegistry(async ({ registry, element, log, entries }) => {
+    registry.start();
+    const accounts = entries[5];
+    assert.equal(accounts.instances.length, 0, "not built before it is shown");
+    registry.show(ACCOUNTS, "go");
+    assert.equal(accounts.instances.length, 1);
+    assert.deepEqual(names(element), ["hq", "programs", "run", "accounts"]);
+    registry.show(HEADQUARTERS, "go");
+    assert.ok(log.includes("accounts:dispose"), "taken down on leaving");
+    assert.deepEqual(names(element), ["hq", "programs", "run"]);
   });
 });

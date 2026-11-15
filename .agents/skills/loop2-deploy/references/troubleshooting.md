@@ -113,15 +113,16 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   visible. Deploying forward again shows them. Until then no loop2 container references the
   volume, which is exactly the state in which `docker volume prune --all` would clear it; run no prune.
 - **A database newer than the code:** an application refuses a database whose schema version
-  it does not know. The current code writes schema version 5. Version 2 added to version 1 the
+  it does not know. The current code writes schema version 6. Version 2 added to version 1 the
   blocked state of each account; version 3 adds to version 2 the confirmation state of each
   account's address and the table of emailed links; version 4 adds to version 3 the table of
   saved game states; version 5 adds to version 4 the previous-save privilege of each account, off,
-  and the table of previous saves. The first start on an older database moves it to version 5 in
+  and the table of previous saves; version 6 adds to version 5 the role of each account, `player`
+  for every account that exists. The first start on an older database moves it to version 6 in
   one transaction, keeping every account, session, emailed link and saved game state with their
   values; only accounts from a database before version 3 come out with an unconfirmed address
-  (the moves from 3 to 4 and from 4 to 5 leave the confirmation state as it is), and every existing
-  account comes out without the previous-save privilege. A failure leaves the database as it was
+  (the moves from 3 to 4, from 4 to 5 and from 5 to 6 leave the confirmation state as it is), and
+  every existing account comes out without the previous-save privilege and as a player. A failure leaves the database as it was
   and stops the start (exit 8). **The first deployment of this change, also the human's trial deployment of
   its branch before the merge (M4), moves the persistent database of the test server to
   version 3.** From then on a commit that knows only version 2 or 1, `main` before this change
@@ -135,16 +136,21 @@ A rollback deploys earlier code (D-15). The data does not move with it:
   deployment of its branch before the merge, moves the persistent database of the test server to
   version 5.** From then on a commit that knows only version 4 or older, `main` before this change
   included, fails health (exit 8): a rollback to it cannot start, and every merge to `main` before
-  this change is merged deploys that older code and leaves the test server down. A target commit
-  that knows only an older schema fails health (exit 8) on a newer database; the recovery is
-  deploying a commit that knows the schema, since the data has no way back: there is no step back
-  from version 5 to version 4 and no copy of the database from before the move, except a nightly
-  backup made earlier, which the human's restore may bring back with everything after it lost.
-  Only the human repairs the database.
+  this change is merged deploys that older code and leaves the test server down. **The first
+  deployment of the change with the owner role, also the human's trial deployment of its branch
+  before the merge, moves the persistent database of the test server to version 6.** From then on
+  a commit that knows only version 5 or older, `main` before this change included, fails health
+  (exit 8): a rollback to it cannot start, and every merge to `main` before this change is merged
+  deploys that older code and leaves the test server down. A target commit that knows only an
+  older schema fails health (exit 8) on a newer database; the recovery is deploying a commit that
+  knows the schema, since the data has no way back: there is no step back from version 6 to
+  version 5 or from version 5 to version 4 and no copy of the database from before the move, except
+  a nightly backup made earlier, which the human's restore may bring back with everything after it
+  lost. Only the human repairs the database.
 - **Saved game states in a rollback:** the saved game states lie in the same volume
   `loop2_accounts`. A rollback leaves them as they are, like the accounts: nothing is restored
   from an earlier time and a state saved after the target commit stays. Rolling back to a commit
-  that knows version 5 keeps them readable; a commit that knows only older versions cannot open
+  that knows version 6 keeps them readable; a commit that knows only older versions cannot open
   the database at all (see above). The previous saves lie in the same volume and stay as they are.
 - **The SMTP password in a rollback:** the file `/etc/loop2/smtp-password` is not rolled back
   with the code; a commit from before this change does not mention it and leaves it unused.

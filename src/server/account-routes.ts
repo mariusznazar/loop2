@@ -1,5 +1,5 @@
 import express from "express";
-import type { Request, Response, Router } from "express";
+import type { Request, RequestHandler, Response, Router } from "express";
 import {
   composeConfirmationMessage,
   composePasswordResetMessage,
@@ -62,13 +62,13 @@ const paths = {
 
 // The body limit of the six small routes and of the save route, and the most
 // the server stores of one player's game, all in bytes (D-104).
-const accountBodyLimit = 16 * 1024;
+export const accountBodyLimit = 16 * 1024;
 const savedGameLimit = 64 * 1024;
 
 // The outcome of one confirmation message, as both confirmation routes report it.
 type ConfirmationMessage = "sent" | "limited" | "failed";
 
-function refuse(
+export function refuse(
   response: Response,
   status: number,
   code: string,
@@ -80,7 +80,7 @@ function refuse(
 // Only the stored session names the account; nothing the request supplies does.
 // Blocking deletes an account's sessions; a session read just before the block
 // committed still finds the account blocked here, and authorizes nothing.
-function sessionAccount(
+export function sessionAccount(
   runtime: AccountRuntime,
   request: Request,
 ): Account | null {
@@ -90,7 +90,7 @@ function sessionAccount(
   return account && !account.blocked ? account : null;
 }
 
-function unauthenticated(response: Response): void {
+export function unauthenticated(response: Response): void {
   refuse(
     response,
     401,
@@ -99,7 +99,7 @@ function unauthenticated(response: Response): void {
   );
 }
 
-function invalidRequest(response: Response): void {
+export function invalidRequest(response: Response): void {
   refuse(response, 400, "invalid-request", "Nieprawidłowe żądanie.");
 }
 
@@ -149,13 +149,15 @@ function invalidLink(response: Response): void {
 }
 
 // The account answer carries the privilege and nothing of the previous save, so
-// it does not change as the slot does (D-400).
+// it does not change as the slot does (D-400). It carries the role of an owner
+// and no field of the role for a player (D-410).
 function accountBody(account: Account) {
   return {
     id: account.id,
     email: account.email,
     emailConfirmed: account.emailConfirmed,
     previousSaveAllowed: account.previousSaveAllowed,
+    ...(account.role === "owner" ? { role: account.role } : {}),
   };
 }
 
@@ -166,7 +168,7 @@ const registrationProblems = {
 };
 
 // The body holds exactly the named fields, each a string; nothing is coerced.
-function stringFields<Name extends string>(
+export function stringFields<Name extends string>(
   body: unknown,
   names: readonly Name[],
 ): Record<Name, string> | null {
@@ -384,13 +386,11 @@ async function sendResetMessage(
   }
 }
 
-export function accountRoutes(
-  runtime: AccountRuntime | null,
-  policy: AccountPolicy = new AccountPolicy(),
-): Router {
-  const router = express.Router();
-
-  router.all(Object.values(paths), (_request, response, next) => {
+// What every route of the account server does first: nothing is cached, an
+// unconfigured server is unavailable, and a request whose transport metadata
+// the server refused is answered before any session is read (D-110).
+export function accountPrelude(runtime: AccountRuntime | null): RequestHandler {
+  return (_request, response, next) => {
     response.setHeader("Cache-Control", "no-store");
     if (!runtime) {
       response.status(503).json({ error: "Accounts unavailable" });
@@ -401,7 +401,16 @@ export function accountRoutes(
       return;
     }
     next();
-  });
+  };
+}
+
+export function accountRoutes(
+  runtime: AccountRuntime | null,
+  policy: AccountPolicy = new AccountPolicy(),
+): Router {
+  const router = express.Router();
+
+  router.all(Object.values(paths), accountPrelude(runtime));
   if (!runtime) return router;
 
   router.post(

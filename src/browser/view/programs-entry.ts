@@ -351,7 +351,8 @@ export function createProgramsEntry(
           store.act((take) => take(deleteProgram(store.get(), programId)));
           // The program shown may be the one gone: the nearest screen opens in its place (D-281).
           const here = port.current();
-          const nearest = resolveScreen(here, store.get());
+          // The screen shown is a program or the list of programs: neither names the list of accounts, so no role is asked.
+          const nearest = resolveScreen(here, store.get(), false);
           if (screenAddress(nearest) !== screenAddress(here))
             port.show(nearest, "replace");
           port.focusIfLost();

@@ -12,6 +12,7 @@ import type { AccountRuntime } from "./configuration.js";
 import { BlockedSessionRefusal } from "./database.js";
 import { writeFailure } from "./log-line.js";
 import type { LineFields } from "./log-line.js";
+import { ownerRoutes } from "./owner-routes.js";
 import { clientAddress, trustProxy } from "./transport.js";
 
 // The built game, found next to the compiled server (dist/server -> dist/public),
@@ -80,6 +81,7 @@ export function createApp(
   }
 
   app.use(accountRoutes(runtime, policy));
+  app.use(ownerRoutes(runtime));
 
   app.use("/api", (_request, response) => {
     response.status(404).json({ error: "Not found" });

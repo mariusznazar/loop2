@@ -14,6 +14,7 @@ Czytaj również ogólne wytyczne kodowania.
 |---|---|---|
 | `src/server/app.ts` | exemplar | D-37 |
 | `src/server/account-routes.ts` | copy | — |
+| `src/server/owner-routes.ts` | copy | — |
 
 ## Rules
 

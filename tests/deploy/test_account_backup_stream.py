@@ -89,7 +89,7 @@ class BackupBytesThroughDockerExec(unittest.TestCase):
             try:
                 self.assertEqual(connection.execute("PRAGMA integrity_check").fetchall(),
                                  [("ok",)])
-                self.assertEqual(connection.execute("PRAGMA user_version").fetchone(), (5,))
+                self.assertEqual(connection.execute("PRAGMA user_version").fetchone(), (6,))
                 self.assertEqual(
                     connection.execute("SELECT email FROM accounts").fetchall(), [(EMAIL,)])
             finally:

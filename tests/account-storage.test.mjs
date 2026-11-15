@@ -187,11 +187,11 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     "encoded-hash",
   );
   reopened.close();
-  // Version 5 is the current schema version (D-112, D-400), so 6 is the first
+  // Version 6 is the current schema version (D-112, D-410), so 7 is the first
   // version this code does not know.
-  raw.exec("PRAGMA user_version = 6");
+  raw.exec("PRAGMA user_version = 7");
   assert.throws(() => new AccountDatabase(path), /Unsupported.*schema/);
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 7);
   assert.equal(
     raw.prepare("SELECT count(*) AS count FROM accounts").get().count,
     1,
@@ -321,12 +321,12 @@ async function olderDatabaseFixture(t, sql, version) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-// A database may still be at version 1 when version 5 arrives, so it moves
-// through steps 2, 3, 4 and 5 in one opening.
-test("a version-1 database opens as version 5 with every account and session intact, no account blocked, no address confirmed and no account privileged", async (t) => {
+// A database may still be at version 1 when version 6 arrives, so it moves
+// through steps 2, 3, 4, 5 and 6 in one opening.
+test("a version-1 database opens as version 6 with every account and session intact, no account blocked, no address confirmed and no account privileged", async (t) => {
   const { path, raw, track } = await versionOneFixture(t);
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.deepEqual(storedVersionOneRows(raw), {
     accounts: versionOneAccounts,
     sessions: versionOneSessions,
@@ -340,6 +340,7 @@ test("a version-1 database opens as version 5 with every account and session int
       blocked: false,
       emailConfirmed: false,
       previousSaveAllowed: false,
+      role: "player",
     });
   for (const session of versionOneSessions)
     assert.deepEqual(database.readSession(session.id), {
@@ -351,7 +352,7 @@ test("a version-1 database opens as version 5 with every account and session int
   assert.equal(database.blockAccount("b@example.test").outcome, "blocked");
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.equal(reopened.findAccountByEmail("b@example.test").blocked, true);
   assert.equal(reopened.findAccountByEmail("a@example.test").blocked, false);
   assert.equal(reopened.readSession("browser-a1").accountId, "account-a");
@@ -448,14 +449,14 @@ function storedLinkCount(raw) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-2 database opens as version 5 with every account, blocked state and session intact, no address confirmed and no account privileged", async (t) => {
+test("a version-2 database opens as version 6 with every account, blocked state and session intact, no address confirmed and no account privileged", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionTwoDatabase,
     2,
   );
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.deepEqual(storedVersionTwoRows(raw), {
     accounts: versionTwoAccounts,
     sessions: versionOneSessions,
@@ -469,6 +470,7 @@ test("a version-2 database opens as version 5 with every account, blocked state 
       blocked: account.blocked === 1,
       emailConfirmed: false,
       previousSaveAllowed: false,
+      role: "player",
     });
   for (const session of versionOneSessions)
     assert.deepEqual(database.readSession(session.id), {
@@ -492,7 +494,7 @@ test("a version-2 database opens as version 5 with every account, blocked state 
   );
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.equal(reopened.findAccountById("account-a").emailConfirmed, true);
   assert.equal(reopened.findAccountById("account-b").emailConfirmed, false);
   assert.equal(reopened.findAccountById("account-c").blocked, true);
@@ -592,14 +594,14 @@ function storedVersionThreeRows(raw) {
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-3 database opens as version 5 with every row and value kept, no saved game state and no previous save", async (t) => {
+test("a version-3 database opens as version 6 with every row and value kept, no saved game state and no previous save", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionThreeDatabase,
     3,
   );
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.deepEqual(storedVersionThreeRows(raw), {
     accounts: versionThreeAccounts,
     sessions: versionOneSessions,
@@ -615,6 +617,7 @@ test("a version-3 database opens as version 5 with every row and value kept, no 
       blocked: account.blocked === 1,
       emailConfirmed: account.confirmed !== null,
       previousSaveAllowed: false,
+      role: "player",
     });
     assert.equal(database.readSavedGame(account.id), null, account.id);
   }
@@ -645,7 +648,7 @@ test("a version-3 database opens as version 5 with every row and value kept, no 
   );
   database.close();
   const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.deepEqual(reopened.readSavedGame("account-a"), {
     version: 1,
     revision: 1,
@@ -676,14 +679,14 @@ const versionFourDatabase = `${versionThreeDatabase}
 
 // invariant: account-database-schema
 // invariant: account-schema-lifecycle
-test("a version-4 database opens as version 5 with every row kept, every account unprivileged and no previous save", async (t) => {
+test("a version-4 database opens as version 6 with every row kept, every account unprivileged and no previous save", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionFourDatabase,
     4,
   );
   const database = track(new AccountDatabase(path, { now: () => 1000 }));
-  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
   assert.deepEqual(storedVersionThreeRows(raw), {
     accounts: versionThreeAccounts,
     sessions: versionOneSessions,
@@ -757,6 +760,295 @@ test("a failing step 5 leaves a version-4 database at version 4 with its rows, c
   assert.deepEqual(rows(raw, "SELECT marker FROM previous_saves"), [
     { marker: "keep" },
   ]);
+});
+
+// A version-5 database as the code of version 5 writes it: the version-4
+// database moved by the previous-save step, the schema the test server holds
+// before this version. Account a is confirmed and holds a saved game state and
+// a previous save, b has the previous-save privilege, and c is blocked; the
+// links, the sessions and the values of every column are the ones of the
+// earlier fixtures, so the move is seen to keep them all.
+const versionFiveDatabase = `${versionFourDatabase}
+  ALTER TABLE accounts
+    ADD COLUMN previous_save_allowed INTEGER NOT NULL DEFAULT 0
+      CHECK (previous_save_allowed IN (0, 1));
+  CREATE TABLE previous_saves (
+    account_id TEXT PRIMARY KEY NOT NULL
+      REFERENCES accounts(id) ON DELETE CASCADE,
+    version INTEGER NOT NULL CHECK (version >= 1),
+    revision INTEGER NOT NULL CHECK (revision >= 1),
+    game TEXT NOT NULL CHECK (length(CAST(game AS BLOB)) <= 65536)
+  ) STRICT;
+  UPDATE accounts SET previous_save_allowed = 1 WHERE id = 'account-b';
+  INSERT INTO previous_saves VALUES ('account-a', 1, 2, '{"previous":true}');
+`;
+
+const versionFiveAccounts = [
+  { ...versionThreeAccounts[0], privileged: 0 },
+  { ...versionThreeAccounts[1], privileged: 1 },
+  { ...versionThreeAccounts[2], privileged: 0 },
+];
+
+// invariant: account-database-schema
+// invariant: account-schema-lifecycle
+test("a version-5 database opens as version 6 with every row and value kept and every account a player", async (t) => {
+  // decision: D-112 "Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state, the time their email address was confirmed, unset until it is, the previous-save privilege, off until the operator grants it, and the role, `player` or `owner`, which the step to version 6 adds to the accounts of the database with the value `player` for every account it holds"
+  // decision: D-410 "Every account has a role, `player` or `owner`, stored with the account in the account database; a new account has the role `player`, and an account of either role signs in on the same card, plays and keeps its own saved game state."
+  // decision: D-202 "A new account has the role `player` (D-410), and no registration and no request gives an account the owner role"
+  const { path, raw, track } = await olderDatabaseFixture(
+    t,
+    versionFiveDatabase,
+    5,
+  );
+  const database = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 6);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+  assert.deepEqual(
+    rows(
+      raw,
+      "SELECT id, previous_save_allowed AS privileged FROM accounts ORDER BY id",
+    ),
+    versionFiveAccounts.map(({ id, privileged }) => ({ id, privileged })),
+  );
+  assert.deepEqual(
+    rows(raw, "SELECT account_id, version, revision, game FROM saved_games"),
+    [
+      {
+        account_id: "account-a",
+        version: 2,
+        revision: 3,
+        game: '{"kept":true}',
+      },
+    ],
+  );
+  assert.deepEqual(
+    rows(raw, "SELECT account_id, version, revision, game FROM previous_saves"),
+    [
+      {
+        account_id: "account-a",
+        version: 1,
+        revision: 2,
+        game: '{"previous":true}',
+      },
+    ],
+  );
+  assert.deepEqual(
+    rows(raw, "SELECT id, role FROM accounts ORDER BY id"),
+    versionFiveAccounts.map(({ id }) => ({ id, role: "player" })),
+  );
+  for (const account of versionFiveAccounts) {
+    assert.deepEqual(database.findAccountByEmail(account.email), {
+      id: account.id,
+      email: account.email,
+      passwordHash: account.hash,
+      createdAt: account.created,
+      blocked: account.blocked === 1,
+      emailConfirmed: account.confirmed !== null,
+      previousSaveAllowed: account.privileged === 1,
+      role: "player",
+    });
+  }
+  assert.deepEqual(database.readSavedGame("account-a"), {
+    version: 2,
+    revision: 3,
+    game: '{"kept":true}',
+  });
+  assert.deepEqual(database.readPreviousSavedGame("account-a"), {
+    version: 1,
+    revision: 2,
+    game: '{"previous":true}',
+  });
+  for (const session of versionOneSessions)
+    assert.deepEqual(database.readSession(session.id), {
+      accountId: session.account,
+      data: session.data,
+      expiresAt: session.expires,
+    });
+
+  // A new account is a player, and so is every account after a reopen.
+  const created = database.createAccount("new@example.test", "hash-new");
+  assert.equal(created.role, "player");
+  database.close();
+  const reopened = track(new AccountDatabase(path, { now: () => 1000 }));
+  assert.equal(reopened.findAccountById(created.id).role, "player");
+  assert.equal(reopened.findAccountById("account-b").role, "player");
+  assert.deepEqual(rows(raw, "SELECT DISTINCT role FROM accounts"), [
+    { role: "player" },
+  ]);
+});
+
+// invariant: account-schema-lifecycle
+test("a failing step 6 leaves a version-5 database at version 5 with its rows, columns and tables unchanged", async (t) => {
+  // A column of the new name already there makes step 6 fail after the
+  // transaction has begun, so the database has to be left as it was. Step 6 is
+  // one statement, so the next case, which makes it fail after step 5 has run,
+  // is the one that shows a rollback.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionFiveDatabase}
+      ALTER TABLE accounts ADD COLUMN role TEXT;`,
+    5,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /duplicate column/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+  assert.deepEqual(
+    rows(raw, "SELECT name FROM pragma_table_info('accounts') ORDER BY cid"),
+    [
+      "id",
+      "email",
+      "password_hash",
+      "created_at",
+      "blocked",
+      "email_confirmed_at",
+      "previous_save_allowed",
+      "role",
+    ].map((name) => ({ name })),
+  );
+  assert.deepEqual(tableNames(raw), [
+    "accounts",
+    "emailed_links",
+    "previous_saves",
+    "saved_games",
+    "sessions",
+  ]);
+  assert.deepEqual(
+    rows(
+      raw,
+      "SELECT id, previous_save_allowed AS privileged FROM accounts ORDER BY id",
+    ),
+    versionFiveAccounts.map(({ id, privileged }) => ({ id, privileged })),
+  );
+  assert.deepEqual(
+    rows(raw, "SELECT account_id, version, revision, game FROM previous_saves"),
+    [
+      {
+        account_id: "account-a",
+        version: 1,
+        revision: 2,
+        game: '{"previous":true}',
+      },
+    ],
+  );
+});
+
+// invariant: account-schema-lifecycle
+test("a step 6 that fails after step 5 has run rolls step 5 back too, and leaves a version-4 database as it was", async (t) => {
+  // Step 6 is one statement, so a failure of it alone cannot tell a rollback from a step that
+  // changed nothing. In a version-4 database step 5 runs first, adds the privilege column and
+  // creates the table of the previous saves; a column `role` already there then makes step 6 fail,
+  // and the rollback has to take step 5's work away as well.
+  const { path, raw } = await olderDatabaseFixture(
+    t,
+    `${versionFourDatabase}
+      ALTER TABLE accounts ADD COLUMN role TEXT;`,
+    4,
+  );
+  assert.throws(
+    () => new AccountDatabase(path, { now: () => 1000 }),
+    /duplicate column/,
+  );
+  assert.equal(raw.prepare("PRAGMA user_version").get().user_version, 4);
+  assert.deepEqual(
+    rows(raw, "SELECT name FROM pragma_table_info('accounts') ORDER BY cid"),
+    [
+      "id",
+      "email",
+      "password_hash",
+      "created_at",
+      "blocked",
+      "email_confirmed_at",
+      "role",
+    ].map((name) => ({ name })),
+  );
+  assert.deepEqual(tableNames(raw), [
+    "accounts",
+    "emailed_links",
+    "saved_games",
+    "sessions",
+  ]);
+  assert.deepEqual(storedVersionThreeRows(raw), {
+    accounts: versionThreeAccounts,
+    sessions: versionOneSessions,
+    links: versionThreeLinks,
+  });
+});
+
+// A stored value of the account row that no code writes: the constraint of its column refuses it, and
+// a row that holds it all the same, written with the checks of constraints switched off, is read by
+// no reader of the accounts (D-410, D-112).
+const unknownStoredValues = [
+  ["role", "'admin'"],
+  ["role", "''"],
+  ["role", "'Owner'"],
+  ["blocked", "2"],
+  ["previous_save_allowed", "2"],
+];
+
+// invariant: account-database-schema
+test("the role of an account, its blocked mark and its privilege take no value the code does not write", async (t) => {
+  const { raw, account } = await fixture(t);
+  for (const [column, value] of unknownStoredValues) {
+    assert.throws(
+      () =>
+        raw.exec(
+          `UPDATE accounts SET ${column} = ${value} WHERE id = '${account.id}'`,
+        ),
+      /CHECK constraint failed/,
+      `${column} = ${value}`,
+    );
+  }
+  assert.deepEqual(
+    rows(raw, "SELECT role, blocked, previous_save_allowed FROM accounts"),
+    [{ role: "player", blocked: 0, previous_save_allowed: 0 }],
+    "a refused change leaves the row as it was",
+  );
+});
+
+test("an account row that holds a role, a blocked mark or a privilege no code writes is read by none of the readers of accounts", async (t) => {
+  const { database, raw, account } = await fixture(t);
+  const readers = [
+    ["findAccountByEmail", () => database.findAccountByEmail(account.email)],
+    ["findAccountById", () => database.findAccountById(account.id)],
+    ["listAccounts", () => database.listAccounts()],
+  ];
+  const restored = {
+    role: "'player'",
+    blocked: "0",
+    previous_save_allowed: "0",
+  };
+  for (const [column, value] of unknownStoredValues) {
+    raw.exec("PRAGMA ignore_check_constraints = ON");
+    raw.exec(
+      `UPDATE accounts SET ${column} = ${value} WHERE id = '${account.id}'`,
+    );
+    raw.exec("PRAGMA ignore_check_constraints = OFF");
+    for (const [name, read] of readers)
+      assert.throws(
+        read,
+        /Invalid stored account/,
+        `${name}: ${column} = ${value}`,
+      );
+    raw.exec(
+      `UPDATE accounts SET ${column} = ${restored[column]} WHERE id = '${account.id}'`,
+    );
+    assert.equal(
+      database.findAccountById(account.id).role,
+      "player",
+      "the row is read again once its value is one the code writes",
+    );
+  }
 });
 
 function tableNames(raw) {
@@ -1790,8 +2082,8 @@ test("a working reset link replaces the password, deletes every session of its a
   assert.equal(database.findAccountById(other.id).passwordHash, "other-hash");
   assert.equal(
     raw.prepare("PRAGMA user_version").get().user_version,
-    5,
-    "the schema stays at its current version 5",
+    6,
+    "the schema stays at its current version 6",
   );
 
   // The link is spent with the password: neither it nor the link left over
@@ -2780,7 +3072,7 @@ const liveExpiry = () => Date.now() + 86_400_000;
 test("the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for"
-  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400, its command for the role of an account of D-410 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
   // decision: D-202 "The operator can block an account from signing in and using the game"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database, store, raw, account } = await fixture(t);
@@ -2875,7 +3167,7 @@ test("the owner's command writes one event with the account's number for a chang
 test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
-  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -2903,7 +3195,7 @@ test("a database failure of the owner's command adds the error's kind and code a
 // D-253. Faults: no handler, so the default print writes the
 // message and the stack; a handler that goes on after what no code handled.
 test("what no code of the owner's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
-  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save`, `account-role` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runBlockCommand(
     ["block", "player@example.test"],
@@ -3071,7 +3363,7 @@ test("the owner's command changes nothing on a usage error, an unknown address o
 // D-400 and the operator command of the spec's section 5.
 test("the previous-save command grants and revokes by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-400 "The previous-save privilege is a flag on the player account, off when the account is created, which the operator grants and revokes, naming the account by its email address normalized as at login, with the command `account-previous-save` run in the `loop2` container as D-137 gives for the block — the command reports that the privilege was granted or revoked, that the account already was in the state asked for, or that no account has that address"
-  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400, its command for the role of an account of D-410 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
   // The fixture's open AccountDatabase stands in for the running server's.
   const { path, database } = await fixture(t);
   const runCommand = (args) => runOwnerCommand(previousSaveCommand, args, path);
@@ -3153,7 +3445,7 @@ test("the previous-save command writes one event with the account's number for a
 test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
-  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -3185,7 +3477,7 @@ test("a database failure of the previous-save command adds the error's kind and 
 // D-253. Faults: no handler of its own, so the default print writes the message
 // and the stack; a handler that goes on after what no code handled.
 test("what no code of the previous-save command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
-  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save`, `account-role` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runOwnerCommand(
     previousSaveCommand,

@@ -419,6 +419,7 @@ export function startApp(
     const view: GameView = createGameView({
       client,
       previousSaveAllowed: owner.previousSaveAllowed,
+      role: owner.role,
       state: start.state,
       revision: start.revision,
       afterConflict: conflict,

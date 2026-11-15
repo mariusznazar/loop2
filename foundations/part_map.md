@@ -62,7 +62,7 @@ The part computes the game: the game state, the map run, the character's program
 
 ## account-server
 
-The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state and previous save, sends account email through the mail service, accepts the report of a failure that the browser sends and writes it as one line of its log, gives the operator a command that blocks and unblocks a player account, a command that grants and revokes the previous-save privilege of a player account and a command that writes one consistent backup of the database to its standard output, checks the database's read, write and backup operations on the Node.js release of the image it is built into, and measures its own password work in the image it runs in.
+The part is the account and save server: it serves the built game, handles the HTTP requests sent to it, owns the persistence of accounts, sessions and each player's saved game state and previous save, sends account email through the mail service, accepts the report of a failure that the browser sends and writes it as one line of its log, gives the operator a command that blocks and unblocks a player account, a command that grants and revokes the previous-save privilege of a player account, a command that gives and takes the owner role of an account and a command that writes one consistent backup of the database to its standard output, answers the routes of the owner panel — the list of accounts and the blocking, unblocking, granting and revoking of the privilege of another account — only to a session of an account with the owner role, checks the database's read, write and backup operations on the Node.js release of the image it is built into, and measures its own password work in the image it runs in.
 
 - **Files:** src/server/**
   tests/http.test.mjs
@@ -70,6 +70,8 @@ The part is the account and save server: it serves the built game, handles the H
   tests/transport.test.mjs
   tests/passwords.test.mjs
   tests/account-storage.test.mjs
+  tests/account-owner.test.mjs
+  tests/owner-routes.test.mjs
   tests/account-backup.test.mjs
   tests/account-database-check.test.mjs
   tests/account-database-check-standin.mjs
