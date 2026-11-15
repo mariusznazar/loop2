@@ -22,7 +22,8 @@ responses.
 - **Scope:** account-server, build-tools
 - **Based on:** Express 5 API, routing and JSON request parsing (https://expressjs.com/en/5x/api/express/ § express.json() — "This is a built-in middleware function in Express. It parses incoming requests with JSON payloads and is based on body-parser." · § express.Router() — "You can add middleware and HTTP method routes (such as get, put, post, and so on) to router just like an application."; read 2026-11-10) · Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/ § Serving static files in Express — "To serve static files such as images, CSS files, and JavaScript files, use the express.static built-in middleware function in Express."; read 2026-11-10) · Express 5 error handling (https://expressjs.com/en/5x/guide/error-handling/ § The default error handler — "Express comes with a built-in error handler that takes care of any errors that might be encountered in the app."; read 2026-11-10) · Node.js 24.21.0 low-level HTTP API (https://nodejs.org/download/release/v24.21.0/docs/api/http.html § HTTP, introduction — "The HTTP interfaces in Node.js are designed to support many features of the protocol which have been traditionally difficult to use. In particular, large, possibly chunk-encoded, messages. The interface is careful to never buffer entire requests or responses, so the user is able to stream data."; read 2026-11-10) · Fastify 5.12 validation and serialization (https://fastify.dev/docs/v5.12.x/Reference/Validation-and-Serialization/ § Validation and Serialization — "Fastify uses a schema-based approach. We recommend using JSON Schema to validate routes and serialize outputs."; read 2026-11-10)
 - **Relations:** derives from D-01
-- **Verification:** invariants: account-server-express-http
+- **Verification:** invariants: account-server-express-http. tests: the server on Node.js 24, by the
+  engines its package and lockfile admit and by the Node.js image every deployment file names.
 - **Origin:** none
 
 *Rationale:* Express supplies routing and JSON request parsing for the small account and save API
@@ -196,7 +197,14 @@ hands out.
 - **Based on:** react-entry-format
 - **Relations:** none
 - **Verification:** invariants: application-package-layout · application-build-layout ·
-  application-build-output
+  application-build-output. tests: building the application type-checking the simulation's files
+  under a configuration of their own, which takes every file of the simulation and writes nothing
+  beside them; React joined into the one script of the files the server hands out. An agent
+  compares a change with the part no invariant and no test holds:
+  - complies: `tsconfig.sim.json` keeping `noEmit`, the simulation compiled for the page by the
+    browser's configuration alone
+  - violates: the simulation's configuration given an output directory of its own, so that
+    building the application writes a compiled copy of the simulation there
 - **Origin:** none
 
 *Rationale:* a shared installation keeps the local starting point small, while separate compiler
@@ -1137,9 +1145,9 @@ Every start of the loop2 server process by a loop2 test on the machine that runs
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** node-listen-port-zero
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new test that starts the built server through the shared server helper of the invariant tests, which asks the system for a free port at each start and gives it to the server in `LOOP2_LISTEN_PORT`;
-  - violates: a test that starts the server with `LOOP2_LISTEN_PORT=3000` or another port written into the test; a second test that starts the server without `LOOP2_LISTEN_HOST` and `LOOP2_LISTEN_PORT`.
+- **Verification:** tests: the shared server helper of the invariant tests giving the server, in `LOOP2_LISTEN_PORT`, the port its probe of a free port names at that start, never one of its own, and another such port when a start whose port was taken runs once more. An agent compares a change with the part no test holds:
+  - complies: a new test that starts the built server through the shared server helper of the invariant tests, or that asks the system for a free port at each start of its own and gives it to the server in `LOOP2_LISTEN_PORT`; a test that gives `LOOP2_LISTEN_PORT` a value the server refuses before it listens; a server started inside a container a test runs, on the port the container names;
+  - violates: a test that starts the server with `LOOP2_LISTEN_PORT=3000` or another port written into the test; a probe of a free port in the shared helper that picks a port itself instead of asking the system for one; a second test that starts the server without `LOOP2_LISTEN_HOST` and `LOOP2_LISTEN_PORT`.
 - **Origin:** none
 
 *Rationale:* Runs of the tests side by side on one machine, or a run beside another process holding a fixed port, collide on that port, and the run that loses passes only when it is repeated; a port the system names free at each start gives every start a port of its own. A short window remains between the system naming the port free and the server listening on it, in which another process may take the port; starting once more on another free port eases it. The single test of the default address keeps the address a person starts the server on under a test, and it passes whether or not that address is free.
@@ -5096,9 +5104,9 @@ error fails the image's build. The Node.js image stays unpinned.
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · docker-build-cache-invalidation · loop2-deploy-stage-exit-lines
 - **Relations:** derives from D-229 · derives from D-236
-- **Verification:** an agent compares a change with the decision:
-  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build of the same commit that takes the step from its cache on an unchanged base image and unchanged code
-  - violates: a release check moved out of the image's build into the deploy script; a base image pinned by version and digest while this entry stands; a release check that reads the server's database
+- **Verification:** tests: the check run in the final stage of the image, after the server's user is set, as a step of its own whose failure stops the build; the check working through the server's database code on a temporary database of which it leaves no file, backing it up through `backup()` of `node:sqlite`, and printing the release it checked; an empty backup, another password hash or saved game state in the backup, a backup in two steps and an error each failing the check with no release claimed. An agent compares a change with the part no test holds:
+  - complies: the final stage built on a Node.js image named by its major version alone, such as `node:24-slim`, so that each build takes the release the host pulls; a release check that reads back what it wrote before it makes the backup, and works on no database but the temporary one it makes
+  - violates: a base image pinned by version and digest while this entry stands; a release check that reads the server's database, or that compares only the backup and no longer reads back the database it wrote
 - **Origin:** none
 
 *Rationale:* no server image exists without having passed on its own release, whatever release the
