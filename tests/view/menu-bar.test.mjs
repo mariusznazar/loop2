@@ -775,7 +775,7 @@ const barItemsOf = (root) =>
     link.getAttribute("href"),
   ]);
 
-// decision: D-280 "the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela”"
+// decision: D-280 "An account with the owner role (D-410) has one more screen, the list of accounts (D-411), of the same content width, which is no item of the bar: the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela” to `#/konta` (D-281)"
 test("the open menu of an owner holds the link „Panel właściciela” to #/konta, after the address and before the buttons", async () => {
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: OWNER }) });
@@ -791,7 +791,7 @@ test("the open menu of an owner holds the link „Panel właściciela” to #/ko
   });
 });
 
-// decision: D-280 "the menu „Konto” of a player holds no such link"
+// decision: D-280 "The items of the bar and the bar itself are the same for a player and for an account with the owner role, and the menu „Konto” of a player holds no such link"
 test("the open menu of a player holds no link „Panel właściciela”", async () => {
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: PLAYER }) });

@@ -141,9 +141,9 @@ const marked = () =>
     (link) => link.textContent,
   );
 
-// decision: D-280 "the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela”"
-// decision: D-281 "names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba"
-// decision: D-411 "shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+// decision: D-280 "An account with the owner role (D-410) has one more screen, the list of accounts (D-411), of the same content width, which is no item of the bar: the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela” to `#/konta` (D-281)"
+// decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba"
+// decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
 bounded(
   "an owner signs in, opens the menu, follows „Panel właściciela” and the list of accounts stands with the rows the client gave",
   async () => {
@@ -188,7 +188,7 @@ bounded(
   },
 );
 
-// decision: D-281 "for any other account it leads to no existing screen, falls under „any other” and opens Siedziba"
+// decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba"
 bounded(
   "a player's #/konta opens Siedziba and the list is never read",
   async () => {
@@ -203,7 +203,7 @@ bounded(
   },
 );
 
-// decision: D-281 "names the screen of the list of accounts (D-411) for an account with the owner role"
+// decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role"
 bounded(
   "after a reload at #/konta an owner stays on the screen of the list",
   async () => {
@@ -220,7 +220,7 @@ bounded(
   },
 );
 
-// decision: D-411 "shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+// decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
 bounded(
   "a list refused as owner-forbidden shows the sentence that the account has no right to it",
   async () => {
