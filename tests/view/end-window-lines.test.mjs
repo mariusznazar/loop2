@@ -234,6 +234,7 @@ test("the renewal line stands only after a first completion that made a used-up 
 test("the discovery line gives the band text of the discovery, and says whether its rule can be added", () => {
   // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
+  // decision: D-313 "Where the copy holds no rule group, the button is disabled"
   const discovered = {
     ...RUNNING,
     discovery: {

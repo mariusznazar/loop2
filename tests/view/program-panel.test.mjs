@@ -740,6 +740,7 @@ function drag(target, type) {
 // swap cannot tell it. Catches a panel that drops the hint on the way, one that names a neighbour,
 // a hint attached to an edit that moves nothing, and one that reaches the edit of a saved program.
 test("„↓” on a rule of the copy and the drop of a rule or a group reach editCopy with the hint of the move", async () => {
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
@@ -1024,6 +1025,7 @@ const rulesOfGroup = (group) =>
 // action, the focus left outside the field, and the streak left as it stood.
 test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero", async () => {
   // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -1081,6 +1083,7 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
 // the panel the call opened, as any. Catches a saved program left shown, or edited, when the call adds
 // the rule, and a request to open that opens again at every draw.
 test("with a saved program shown on the list „Program:”, „Dodaj regułę z tym” shows the copy and opens the new rule there, once", async () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   await withPage(async (page) => {
     const game = await wiredPanel(page, firstChill());
     await pick(game.root, "1");

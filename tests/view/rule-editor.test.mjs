@@ -415,6 +415,7 @@ test("a „↓” inside a group swaps the rule with its neighbour", async () =>
 // Catches a move site that hands no hint, one that names the neighbour instead of the rule moved,
 // and a hint that names the wrong kind.
 test("„↑” and „↓” hand the identity of the rule moved as the hint of the edit, across a group border too", async () => {
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await press(buttonIn(rowOf(page.root, 1), "↓"));
@@ -427,6 +428,7 @@ test("„↑” and „↓” hand the identity of the rule moved as the hint of
 });
 
 test("the drop of a rule hands the identity of the rule dragged as the hint, and the drop of a group that of the group", async () => {
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   await withPage(async (page) => {
     const { calls } = await mount(page, threeGroups());
     await drag(rowOf(page.root, 2).querySelector(".drag-handle"), "dragstart");
@@ -447,6 +449,7 @@ test("the drop of a rule hands the identity of the rule dragged as the hint, and
 });
 
 test("an edit that moves nothing hands no hint: „Usuń”, „✕”, „+ reguła” and „+ dodaj grupę”", async () => {
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   await withPage(async (page) => {
     const { calls } = await mount(page, twoGroups());
     await press(buttonIn(rowOf(page.root, 2), "Usuń"));

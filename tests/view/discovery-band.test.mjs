@@ -141,6 +141,7 @@ const click = (element) =>
 
 test("the first finished exploration of a tile with sticks and berries gives the band its text and no sentence about a rule", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   await withPage(async ({ document }) => {
     const state = { ...chilled(), discovery: EXPLORED };
     const { container } = await draw(document, state);
@@ -154,6 +155,7 @@ test("the first finished exploration of a tile with sticks and berries gives the
 
 test("the first chill of a new game gives the text of the discovery and the sentence naming the group Program, with no number of the rule", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, chilled());
     assert.equal(textOf(container), `${CHILL_TEXT} ${SENTENCE}`);
@@ -167,6 +169,7 @@ test("the first chill of a new game gives the text of the discovery and the sent
 test("the first chill of a copy that holds a rule „Eksploruj” of the player's own gives the text of the discovery and no sentence about a rule", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote"
   // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   await withPage(async ({ document }) => {
     const own = programOfGroups(
       group(1, "Ogień", [
@@ -193,6 +196,7 @@ test("the first chill of a copy that holds a rule „Eksploruj” of the player'
 
 test("a renamed first group gives its name, and a group dragged above the one holding the rule leaves the sentence on the group that holds it", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   await withPage(async ({ document }) => {
     const first = chilled(programOfGroups(group(1, "Ogień"), group(2, "Głód")));
     const sentence = (name) =>
@@ -218,6 +222,7 @@ test("a renamed first group gives its name, and a group dragged above the one ho
 });
 
 test("the rule deleted while the band stands leaves the text of the discovery with no sentence about the rule", async () => {
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   await withPage(async ({ document }) => {
     const first = chilled();
     const { container, show } = await draw(document, first);
@@ -306,6 +311,7 @@ test("both buttons are the shared plain button (D-44)", async () => {
 });
 
 test("„Dodaj regułę z tym” is disabled where the copy holds no rule group, and „Wznów” stays usable", async () => {
+  // decision: D-313 "Where the copy holds no rule group, the button is disabled"
   await withPage(async ({ document }) => {
     const first = chilled();
     const { container, asked, show } = await draw(document, first);

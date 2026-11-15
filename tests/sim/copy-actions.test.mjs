@@ -331,6 +331,9 @@ test("a switch gives the map run a fresh copy of the other program, with the str
   // decision: D-164 "A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart, at the next switch to it during a manual map run or at the next start of an earning loop"
   // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   // decision: D-170 "The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const before = withOthers(editedAndRunning());
   assert.equal(before.run.streak, 10, "precondition: a streak of 10");
   const { state, events } = switchProgram(before, 3);
@@ -444,6 +447,9 @@ const lossesIn = (events) =>
 const entry = (item, count) => ({ item, count });
 
 test("an edit of the copy that changes its rules, at a streak above zero, returns one loss of the streak with the cause of the change", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const running = advanceMinutes(sentWith(EXPLORING), 10).state;
   assert.equal(running.run.streak, 10, "precondition: a streak of 10");
   const { state, events } = setProgram(running, EXPLORING_THEN_WANDERING);
@@ -464,6 +470,8 @@ test("an edit of the copy that changes a rule group's name or a rule's action re
 });
 
 test("an edit of the copy at a streak of zero returns no loss", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const sent = sentWith(EXPLORING);
   assert.equal(sent.run.streak, 0, "precondition: a streak of 0");
   const { state, events } = setProgram(sent, EXPLORING_THEN_WANDERING);
@@ -473,6 +481,8 @@ test("an edit of the copy at a streak of zero returns no loss", () => {
 
 test("an edit of the copy that leaves its rules and rule groups, or changes only the trip plan, returns no loss", () => {
   // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule, changing its condition or action, and changing a rule group — also while the map run is paused; an act of the program editor after which the copy is the same as before it, an edit or discard changing the trip plan alone, a save of the copy and an edit of a saved program leave the streak as it stands, together with the number of beaten attacks"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const running = advanceMinutes(sentWith(EXPLORING), 10).state;
   const same = setProgram(running, EXPLORING);
   assert.equal(same.state.run.streak, 10);
@@ -487,12 +497,17 @@ test("an edit of the copy that leaves its rules and rule groups, or changes only
 });
 
 test("an edit of the copy after the end of the map run returns no loss, the streak standing", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const { state, events } = setProgram(died(editedAndRunning()), EXPLORING);
   assert.equal(state.run.streak, 7);
   assert.deepEqual(events, []);
 });
 
 test("„Porzuć zmiany” at a streak above zero returns one loss of the streak, none at a streak of zero or after the end", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const before = editedAndRunning();
   assert.equal(before.run.streak, 10, "precondition: a streak of 10");
   const { events } = discardCopyChanges(before);
@@ -505,6 +520,8 @@ test("„Porzuć zmiany” at a streak above zero returns one loss of the streak
 });
 
 test("a save of the copy, as it is or as a new program, and an edit of a saved program return no loss of the streak", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const before = withOthers(editedAndRunning());
   assert.deepEqual(saveCopyIntoProgram(before).events, []);
   assert.deepEqual(saveCopyAsNewProgram(before, "Nocna").events, []);
@@ -512,12 +529,17 @@ test("a save of the copy, as it is or as a new program, and an edit of a saved p
 });
 
 test("a switch at a streak of zero returns no loss of the streak", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const sent = withOthers(sentWith(EXPLORING));
   assert.equal(sent.run.streak, 0, "precondition: a streak of 0");
   assert.deepEqual(switchProgram(sent, 3).events, []);
 });
 
 test("a switch to a program of the same rules at a streak above zero returns the loss", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const running = advanceMinutes(withOthers(sentWith(EXPLORING)), 10).state;
   assert.deepEqual(switchProgram(running, 4).events, [
     { kind: "streakLost", minute: 10, streak: 10, cause: "programSwitched" },

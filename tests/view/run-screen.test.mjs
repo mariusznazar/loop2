@@ -223,6 +223,7 @@ test("the header stands above three areas of their own in the order world, progr
   // decision: D-282 "Each column of a screen is an area of its own"
   // decision: D-311 "The screen of a map run has two columns under one header"
   // decision: D-311 "The header holds the character's name, the map's name, the clock"
+  // decision: D-338 "The player filters it by these kinds in the area with the tabs under the world"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -362,6 +363,7 @@ test("the screen draws the map run it was given, the copy of that map run in its
 // with them, and „✕” changing the tab picked, whichever it was.
 test("an open rule panel stands in the program under its header, the tabs and their content and the drawing stay where they were, and „✕” leaves the tab picked as it was", async () => {
   // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -430,6 +432,7 @@ test("an open rule panel stands in the program under its header, the tabs and th
 test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero", async () => {
   // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -872,6 +875,7 @@ test("told the window stands, the screen of an ended map run draws it and hides 
 // program panel's element, the hovered tile and the tabs picked stand through the window.
 test("what the window covers stays in the tree and keeps its state: the tab picked and the program panel stand through the window", async () => {
   // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     const [, program, tabs] = areasOf(game.screen.element);
@@ -940,6 +944,7 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
 // D-313. Catches the window left standing over the rule panel „Dodaj regułę z tym”
 // opens, and the rule added before the window closes, which would give the panel no room to focus.
 test("„Dodaj regułę z tym” of the window closes the window and then does what the panel's button does: the rule is added and its panel stands open", async () => {
+  // decision: D-313 "The same button stands in the end-of-run window"
   await withPage(async (page) => {
     const chilled = firstChill();
     const game = await wiredScreen(page, completedRun(chilled));

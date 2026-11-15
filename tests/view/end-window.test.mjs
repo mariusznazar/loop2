@@ -234,6 +234,7 @@ test("the scrolling part opens with the longest streak as the bar of the header'
   // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
   // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
+  // decision: D-313 "The same button stands in the end-of-run window"
   await withPage(async ({ document }) => {
     const state = { ...DIED, discovery: DISCOVERED };
     const { container } = await draw(document, state);
@@ -282,6 +283,7 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
+  // decision: D-313 "Where the copy holds no rule group, the button is disabled"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, SOLVED);
     assert.equal(
@@ -653,6 +655,7 @@ test("the warning of a cut trip plan stands between „Restart” and „Zakońc
 test("„✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj regułę z tym” ask for their own control and nothing else", async () => {
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   // decision: D-368 "The window scrolls in itself while its buttons"
+  // decision: D-313 "The same button stands in the end-of-run window"
   await withPage(async ({ document }) => {
     const { container, asked, show } = await draw(document, SOLVED);
     for (const [name, expected] of [

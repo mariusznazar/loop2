@@ -37,6 +37,8 @@ const BEFORE = program([fire(), hunger()]);
 
 // Catches a number counted from the rule's id or before the act, or a sentence missing its condition.
 test("a rule added at the end of the second group gives its number and sentence after the act", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([
     fire(),
     hunger([R_EAT, R_WANDER, rule(30, { kind: "wander" })]),
@@ -49,6 +51,8 @@ test("a rule added at the end of the second group gives its number and sentence 
 // Catches the number after the act („1.2” of the rule that took the place), or an entry for the rule
 // whose number fell from 1.3 to 1.2 only because another went.
 test("a rule removed gives its number and sentence before the act, and the rule moving up gives none", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([fire([R_EXPLORE, R_CRAFT]), hunger()]);
   assert.deepEqual(copyChangeTexts(BEFORE, after, null), [
     "Usunięto regułę 1.2: Zawsze → Zbierz — Patyk",
@@ -57,6 +61,8 @@ test("a rule removed gives its number and sentence before the act, and the rule 
 
 // Catches the whole sentence before or after left out, or a change of the condition missed.
 test("a rule whose action or condition changed gives the whole sentence before, an arrow and the whole sentence after", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const action = program([
     fire([rule(11, { kind: "wander" }), R_STICK, R_CRAFT]),
     hunger(),
@@ -79,6 +85,8 @@ test("a rule whose action or condition changed gives the whole sentence before, 
 // Catches the swapped neighbour named in place of the rule the player moved: „↓” on 1.1 and „↑” on
 // 1.2 give the same two copies, and only the hint tells them apart.
 test("a swap of two neighbours names the rule the hint names, and only that one", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const swapped = program([fire([R_STICK, R_EXPLORE, R_CRAFT]), hunger()]);
   assert.deepEqual(
     copyChangeTexts(BEFORE, swapped, { kind: "rule", ruleId: 11 }),
@@ -92,6 +100,8 @@ test("a swap of two neighbours names the rule the hint names, and only that one"
 
 // Catches a swap with no hint giving two entries, or none: the copies say one rule moved.
 test("a swap of two neighbours with no hint gives one entry of a move", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const swapped = program([fire([R_STICK, R_EXPLORE, R_CRAFT]), hunger()]);
   const texts = copyChangeTexts(BEFORE, swapped, null);
   assert.equal(texts.length, 1);
@@ -101,6 +111,8 @@ test("a swap of two neighbours with no hint gives one entry of a move", () => {
 // Catches the rules whose numbers shifted named as moved: only the dragged rule changed its order
 // against the others, which kept theirs.
 test("a rule dragged from the start to the end of its group with no hint is the one rule moved", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([fire([R_STICK, R_CRAFT, R_EXPLORE]), hunger()]);
   assert.deepEqual(copyChangeTexts(BEFORE, after, null), [
     "Przesunięto regułę 1.1 na 1.3: Zawsze → Eksploruj",
@@ -110,6 +122,8 @@ test("a rule dragged from the start to the end of its group with no hint is the 
 // Catches a move across groups missed with no hint, or the rules of the second group, whose numbers
 // grew by one, named as moved („↓” on the last rule of a group, D-297).
 test("a rule moved into the next group is named with its numbers before and after, and no other rule is", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([
     fire([R_EXPLORE, R_STICK]),
     hunger([R_CRAFT, R_EAT, R_WANDER]),
@@ -126,6 +140,8 @@ test("a rule moved into the next group is named with its numbers before and afte
 
 // Catches an entry for each rule of a removed group, or a group named by its number.
 test("a group removed with its rules gives one entry with the group's name and none for its rules", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([hunger()]);
   assert.deepEqual(copyChangeTexts(BEFORE, after, null), [
     "Usunięto grupę „Ogień”",
@@ -133,6 +149,8 @@ test("a group removed with its rules gives one entry with the group's name and n
 });
 
 test("a group added gives its name", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([fire(), hunger(), group(9, "Woda", [])]);
   assert.deepEqual(copyChangeTexts(BEFORE, after, null), [
     "Dodano grupę „Woda”",
@@ -141,6 +159,8 @@ test("a group added gives its name", () => {
 
 // Catches the old name given for a renamed group, or a change of a group's condition missed.
 test("a group renamed or given another condition gives its name after the act", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const renamed = program([group(1, "Ciepło", fire().rules), hunger()]);
   assert.deepEqual(copyChangeTexts(BEFORE, renamed, null), [
     "Zmieniono grupę „Ciepło”",
@@ -157,6 +177,8 @@ test("a group renamed or given another condition gives its name after the act", 
 // Catches the group not dragged named as moved, or entries for the rules whose numbers changed with
 // their group's.
 test("a group dragged above its neighbour names the group the hint names, and none of the rules", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([hunger(), fire()]);
   assert.deepEqual(
     copyChangeTexts(BEFORE, after, { kind: "group", groupId: 2 }),
@@ -172,6 +194,8 @@ test("a group dragged above its neighbour names the group the hint names, and no
 });
 
 test("a changed trip plan gives one entry that names no item", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const after = program([fire(), hunger()], {
     take: [{ item: "stick", count: 4 }],
     bring: [],
@@ -184,6 +208,7 @@ test("a changed trip plan gives one entry that names no item", () => {
 // Catches an entry for an act after which the copy is as it was, such as „↑” refused or a value
 // typed again, and an entry for the identity counters alone.
 test("an edit after which the copy is the same gives nothing", () => {
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   assert.deepEqual(copyChangeTexts(BEFORE, structuredClone(BEFORE), null), []);
   assert.deepEqual(
     copyChangeTexts(

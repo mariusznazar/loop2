@@ -827,6 +827,8 @@ function stepsWithEvents(run, minutes, stepProgram = IDLE) {
 
 test("a campfire gives its event in the game minute its last minute of burning passes, on its tile", () => {
   // decision: D-68 "A campfire that burns out stays on its tile, extinguished"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Burning 3 minutes: minutes 1 and 2 leave 2 and then 1; minute 3 passes the last one.
   const start = freeNextMinute(handMade({ campfires: burning(3) }));
   const { run, events } = stepsWithEvents(start, 3);
@@ -839,6 +841,8 @@ test("a campfire gives its event in the game minute its last minute of burning p
 test("a campfire going out in a minute of an encounter gives its event too", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
   // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const fighting = {
     ...handMade({ campfires: burning(1) }),
     current: null,
@@ -852,6 +856,8 @@ test("a campfire going out in a minute of an encounter gives its event too", () 
 });
 
 test("a campfire crafted unlit, or one already at zero, gives no event", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const crafted = after(endingNext(at({ [stick]: 8 }), CRAFT), 1);
   assert.deepEqual(crafted.campfires, [{ at: entrance, minutesLeft: 0 }]);
   const crafting = stepsWithEvents(freeNextMinute(crafted), 3);
@@ -865,6 +871,8 @@ test("a campfire crafted unlit, or one already at zero, gives no event", () => {
 
 test("the minute of a death gives no event, and the campfire keeps its minutes", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Health 0.1 is gone in minute 1 of chill: the death comes before the world passes.
   const dying = handMade({ campfires: burning(1), body: body(34, 50, 0.1) });
   const { run, events } = stepsWithEvents(freeNextMinute(dying), 1);
@@ -874,6 +882,8 @@ test("the minute of a death gives no event, and the campfire keeps its minutes",
 });
 
 test("each campfire that goes out gives its own event, and one still burning gives none", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   const far = offsetToAxial(3, 3);
   const run = freeNextMinute(
@@ -893,6 +903,8 @@ test("each campfire that goes out gives its own event, and one still burning giv
 });
 
 test("a campfire going out while an activity goes on gives its event, and the activity's end no event", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // A wait running to minute 5 with the campfire's last minute at minute 1: no activity ends in it.
   const running = {
     ...handMade({ campfires: burning(1) }),

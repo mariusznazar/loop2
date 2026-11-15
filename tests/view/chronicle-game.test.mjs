@@ -173,6 +173,8 @@ async function played({ pass, reading }, view) {
 // D-346, D-339. Catches a chronicle that lives in the screen and so is lost when the
 // player leaves for Siedziba and comes back, and a tab picked that returns to „Kronika”.
 test("the chronicle and the tab picked are there after Przejście, Siedziba and Przejście again", async () => {
+  // decision: D-339 "The chronicle lives in the memory of the page"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
   await onPage(async (page) => {
     const { root } = page;
     const { view, address } = await viewOf(exploring());
@@ -200,6 +202,8 @@ test("the chronicle and the tab picked are there after Przejście, Siedziba and 
 // D-343, D-346, D-383. Catches „Restart” that keeps the entries of the map run before it, or that
 // brings back „Kronika” or „Wszystko”.
 test("„Restart” starts the chronicle anew and keeps the tab and the filter picked", async () => {
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
+  // decision: D-383 "The filter the player picks above the list of the chronicle stays picked"
   await onPage(async (page) => {
     const { root } = page;
     const { view } = await viewOf(exploring());
@@ -227,6 +231,8 @@ test("„Restart” starts the chronicle anew and keeps the tab and the filter p
 // the tab and the filter of the ended one kept after a send.
 test("„Zakończ” clears the chronicle and a new send starts with Kronika and Wszystko picked", async () => {
   // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
+  // decision: D-383 "The filter the player picks above the list of the chronicle stays picked"
   await onPage(async (page) => {
     const { root } = page;
     const { view, address } = await viewOf(exploring());
@@ -261,6 +267,8 @@ test("„Zakończ” clears the chronicle and a new send starts with Kronika and
 test("a game loaded with a record of an encounter shows the paragraph in the chronicle alone and none in the world area", async () => {
   // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
+  // decision: D-338 "The player filters it by these kinds in the area with the tabs under the world"
+  // decision: D-339 "After a load of a saved game state"
   await onPage(async ({ root }) => {
     const start = exploring();
     const loaded = {

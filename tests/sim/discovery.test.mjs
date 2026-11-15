@@ -133,6 +133,8 @@ test("a new game sent with its one empty group waits until the minute of the fir
   // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to"
   // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const before = advanceMinutes(sentNew(), 83);
   assert.equal(before.state.run.minute, 83);
   assert.equal(before.state.run.body.temperature, 35.008);
@@ -190,6 +192,7 @@ test("a new game sent with its one empty group waits until the minute of the fir
 });
 
 test("the same span of minutes, however split, reaches the same game state with the same events through the first chill", () => {
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // One minute a call, up to and including the minute of the first finished exploration, 104.
   let state = sentNew();
   const reference = [];
@@ -915,12 +918,14 @@ function deepFreeze(value) {
 }
 
 test("the first chill of a new game names the group Program, where the game wrote the rule", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = advanceMinutes(sentNew(), 100).state;
   assert.equal(chillRuleGroupName(state), "Program");
 });
 
 test("a copy whose first group the player renamed before the first chill names that name", () => {
   // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   assert.deepEqual(
     state.run.copy.program.groups.map((one) => one.rules.length),
@@ -932,11 +937,13 @@ test("a copy whose first group the player renamed before the first chill names t
 
 test("a copy with no rule group gets the group Program at the first chill, and the name is Program", () => {
   // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to, while that program is on the player's list, and where either holds no rule group, the game adds the rule group „Program” with the condition „Zawsze” and writes the rule into it"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn();
   assert.equal(chillRuleGroupName(state), "Program");
 });
 
 test("a group dragged above the one holding the rule while the band stands leaves the name where the rule stands", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => program.groups.reverse());
   assert.deepEqual(
@@ -948,6 +955,7 @@ test("a group dragged above the one holding the rule while the band stands leave
 });
 
 test("a group renamed while the band stands gives the new name", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const renamed = editedCopy(state, (program) => {
     program.groups[0].name = "Ciepło";
@@ -956,6 +964,7 @@ test("a group renamed while the band stands gives the new name", () => {
 });
 
 test("the rule moved into another group while the band stands gives that group", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const moved = editedCopy(state, (program) => {
     program.groups[1].rules = program.groups[0].rules;
@@ -965,6 +974,7 @@ test("the rule moved into another group while the band stands gives that group",
 });
 
 test("another group holding its own Zawsze → Eksploruj, dragged above the one the game wrote into, gives that group", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => {
     program.groups[1].rules.push(explorationRule(program.nextRuleId));
@@ -975,6 +985,8 @@ test("another group holding its own Zawsze → Eksploruj, dragged above the one 
 });
 
 test("the rule deleted while the band stands gives null, and the first other group holding such a rule once there is one", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const deleted = editedCopy(state, (program) => {
     program.groups[0].rules = [];
@@ -988,6 +1000,7 @@ test("the rule deleted while the band stands gives null, and the first other gro
 });
 
 test("the group of the rule deleted while the band stands gives null", () => {
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const deleted = editedCopy(state, (program) => {
     program.groups.splice(0, 1);
@@ -996,6 +1009,8 @@ test("the group of the rule deleted while the band stands gives null", () => {
 });
 
 test("a rule that is not Zawsze → Eksploruj does not name its group", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const changed = editedCopy(state, (program) => {
     program.groups[0].rules = [
@@ -1016,6 +1031,7 @@ test("a rule that is not Zawsze → Eksploruj does not name its group", () => {
 });
 
 test("the first finished exploration, a discovery that wrote no rule, gives null though the copy holds the rule", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const chilled = advanceMinutes(sentNew(), 100).state;
   const explored = advanceMinutes(chilled, 100).state;
   assert.equal(explored.run.minute, 104, "precondition: the exploration");
@@ -1045,6 +1061,7 @@ test("a state holding no map run gives null, whatever it holds", () => {
 
 test("a saved document of the paused state, loaded again, gives the same name, with the shape unchanged", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => program.groups.reverse());
   const document = JSON.parse(

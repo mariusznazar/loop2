@@ -1021,6 +1021,7 @@ test("after „Wróć” a later „Zakończ” leads to Postać, not to the map
 // rule, adds it somewhere but the end of the first group, or opens no panel.
 test("„Dodaj regułę z tym” of the window closes it, adds the rule of the discovery at the end of the copy's first group and opens its panel", async () => {
   // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”"
+  // decision: D-313 "The same button stands in the end-of-run window"
   await onPage(async ({ root }) => {
     const ended = completed(atDiscovery());
     const { view } = await viewOf(ended);
