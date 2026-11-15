@@ -1,6 +1,9 @@
 // The browser's client of the account API: relative requests, a bounded wait, and one typed result
 // for every outcome. It holds no identity, reads no cookie and touches no DOM or game state.
 
+/** The role of an account: only the exact word `owner` makes an owner (D-410). */
+export type AccountRole = "player" | "owner";
+
 /** The account the server names; the client keeps nothing else of a response. */
 export interface Account {
   readonly id: string;
@@ -8,7 +11,31 @@ export interface Account {
   readonly emailConfirmed: boolean;
   /** Whether the account holds the previous-save privilege (D-400). */
   readonly previousSaveAllowed: boolean;
+  /** The role of the account; an answer without `owner` in it is a player's (D-410). */
+  readonly role: AccountRole;
 }
+
+/** One entry of the owner panel's list: the four fields the server sends and nothing more (D-411). */
+export interface PanelAccount {
+  readonly email: string;
+  readonly role: AccountRole;
+  readonly blocked: boolean;
+  readonly previousSaveAllowed: boolean;
+}
+
+/** The words an operation of the owner panel answers with (D-137, D-400). */
+export const panelOutcomes = [
+  "blocked",
+  "already-blocked",
+  "unblocked",
+  "not-blocked",
+  "granted",
+  "already-granted",
+  "revoked",
+  "not-granted",
+] as const;
+
+export type PanelOutcome = (typeof panelOutcomes)[number];
 
 /** What the server reports of the confirmation message it was asked to send. */
 export type ConfirmationMessage = "sent" | "limited" | "failed";
@@ -37,6 +64,9 @@ export const refusalCodes = [
   "save-outdated",
   "save-too-large",
   "previous-save-forbidden",
+  "owner-forbidden",
+  "owner-not-blockable",
+  "unknown-account",
 ] as const;
 
 export type RefusalCode = (typeof refusalCodes)[number];
@@ -142,6 +172,16 @@ export interface AccountClient {
     code: string,
     place: string,
   ): Promise<AccountResult<null>>;
+  /** GET /api/owner/accounts: every account, sorted by address, for the owner panel. */
+  listAccounts(): Promise<AccountResult<readonly PanelAccount[]>>;
+  /** POST /api/owner/block: blocks the account at the address (D-137). */
+  blockAccount(email: string): Promise<AccountResult<PanelOutcome>>;
+  /** POST /api/owner/unblock: unblocks the account at the address (D-137). */
+  unblockAccount(email: string): Promise<AccountResult<PanelOutcome>>;
+  /** POST /api/owner/grant-previous-save: grants the previous-save privilege (D-400). */
+  grantPreviousSave(email: string): Promise<AccountResult<PanelOutcome>>;
+  /** POST /api/owner/revoke-previous-save: revokes the previous-save privilege (D-400). */
+  revokePreviousSave(email: string): Promise<AccountResult<PanelOutcome>>;
 }
 
 export interface AccountClientOptions {
@@ -213,6 +253,11 @@ function isConfirmationMessage(value: unknown): value is ConfirmationMessage {
   return value === "sent" || value === "limited" || value === "failed";
 }
 
+/** Only the exact word `owner` is an owner; any other value, or none, is a player (D-410). */
+function roleOf(value: unknown): AccountRole {
+  return value === "owner" ? "owner" : "player";
+}
+
 /** The fields of an account, copied; any other property is dropped. */
 function accountOfBody(body: Record<string, unknown>): Account | null {
   const { id, email, emailConfirmed, previousSaveAllowed } = body;
@@ -220,7 +265,58 @@ function accountOfBody(body: Record<string, unknown>): Account | null {
   if (typeof email !== "string" || email === "") return null;
   if (typeof emailConfirmed !== "boolean") return null;
   if (typeof previousSaveAllowed !== "boolean") return null;
-  return { id, email, emailConfirmed, previousSaveAllowed };
+  const role = roleOf(body.role);
+  return { id, email, emailConfirmed, previousSaveAllowed, role };
+}
+
+function isAccountRole(value: unknown): value is AccountRole {
+  return value === "player" || value === "owner";
+}
+
+/** One entry of the list: exactly its four fields, each of its own kind (D-411). */
+function panelAccountOf(value: unknown): PanelAccount | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return null;
+  }
+  const fields = value as Record<string, unknown>;
+  if (
+    !hasExactKeys(fields, ["email", "role", "blocked", "previousSaveAllowed"])
+  ) {
+    return null;
+  }
+  const { email, role, blocked, previousSaveAllowed } = fields;
+  if (typeof email !== "string" || email === "") return null;
+  if (!isAccountRole(role)) return null;
+  if (typeof blocked !== "boolean") return null;
+  if (typeof previousSaveAllowed !== "boolean") return null;
+  return { email, role, blocked, previousSaveAllowed };
+}
+
+/** The `accounts` of the list answer: exactly that one field, each entry read by `panelAccountOf`. */
+function panelAccountsOf(text: string): PanelAccount[] | null {
+  const body = objectOf(text);
+  if (body === null || !hasExactKeys(body, ["accounts"])) return null;
+  const { accounts } = body;
+  if (!Array.isArray(accounts)) return null;
+  const list: PanelAccount[] = [];
+  for (const entry of accounts) {
+    const account = panelAccountOf(entry);
+    if (account === null) return null;
+    list.push(account);
+  }
+  return list;
+}
+
+function isPanelOutcome(value: unknown): value is PanelOutcome {
+  return panelOutcomes.some((word) => word === value);
+}
+
+/** The `outcome` of an operation's answer: exactly that field, one of the eight words. */
+function panelOutcomeOf(text: string): PanelOutcome | null {
+  const body = objectOf(text);
+  if (body === null || !hasExactKeys(body, ["outcome"])) return null;
+  const { outcome } = body;
+  return isPanelOutcome(outcome) ? outcome : null;
 }
 
 function accountOf(text: string): Account | null {
@@ -511,6 +607,51 @@ export function createAccountClient(
       noContentRequest(
         "/api/browser-failure",
         { kind, code, place },
+        timeoutMs,
+      ),
+    listAccounts: () =>
+      request(
+        "/api/owner/accounts",
+        "GET",
+        undefined,
+        200,
+        panelAccountsOf,
+        timeoutMs,
+      ),
+    blockAccount: (email) =>
+      request(
+        "/api/owner/block",
+        "POST",
+        { email },
+        200,
+        panelOutcomeOf,
+        timeoutMs,
+      ),
+    unblockAccount: (email) =>
+      request(
+        "/api/owner/unblock",
+        "POST",
+        { email },
+        200,
+        panelOutcomeOf,
+        timeoutMs,
+      ),
+    grantPreviousSave: (email) =>
+      request(
+        "/api/owner/grant-previous-save",
+        "POST",
+        { email },
+        200,
+        panelOutcomeOf,
+        timeoutMs,
+      ),
+    revokePreviousSave: (email) =>
+      request(
+        "/api/owner/revoke-previous-save",
+        "POST",
+        { email },
+        200,
+        panelOutcomeOf,
         timeoutMs,
       ),
   };

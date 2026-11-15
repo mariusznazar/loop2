@@ -208,8 +208,9 @@ function accountOf({
   email,
   emailConfirmed,
   previousSaveAllowed,
+  role,
 }: Account): Account {
-  return { id, email, emailConfirmed, previousSaveAllowed };
+  return { id, email, emailConfirmed, previousSaveAllowed, role };
 }
 
 /** A text input with the keyboard of an address; the browser's own check is stricter than the server's. */

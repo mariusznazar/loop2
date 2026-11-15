@@ -235,6 +235,7 @@ test("the success status of each call with an account body gives that account an
         email: "a@x.pl",
         emailConfirmed: true,
         previousSaveAllowed: true,
+        role: "player",
         confirmationMessage: "sent",
       },
     ],
@@ -246,6 +247,7 @@ test("the success status of each call with an account body gives that account an
         email: "a@x.pl",
         emailConfirmed: true,
         previousSaveAllowed: true,
+        role: "player",
       },
     ],
     [
@@ -256,6 +258,7 @@ test("the success status of each call with an account body gives that account an
         email: "a@x.pl",
         emailConfirmed: true,
         previousSaveAllowed: true,
+        role: "player",
       },
     ],
   ]) {
@@ -389,6 +392,7 @@ test("register gives the confirmation message outcome it is told and nothing els
         email: "a@x.pl",
         emailConfirmed: false,
         previousSaveAllowed: false,
+        role: "player",
         confirmationMessage: outcome,
       },
     });
@@ -1329,4 +1333,318 @@ test("saveGame hands the real fetch a PUT with keepalive and the server gets tha
     seen.map(({ method, url }) => ({ method, url })),
     [{ method: "PUT", url: "/api/saved-game" }],
   );
+});
+
+// Role of the account and the owner panel (D-410, D-411).
+
+const ownerPanelAccounts = [
+  { email: "a@x.pl", role: "owner", blocked: false, previousSaveAllowed: true },
+  {
+    email: "b@x.pl",
+    role: "player",
+    blocked: true,
+    previousSaveAllowed: false,
+  },
+];
+
+const panelOperations = [
+  ["blockAccount", "/api/owner/block", ["blocked", "already-blocked"]],
+  ["unblockAccount", "/api/owner/unblock", ["unblocked", "not-blocked"]],
+  [
+    "grantPreviousSave",
+    "/api/owner/grant-previous-save",
+    ["granted", "already-granted"],
+  ],
+  [
+    "revokePreviousSave",
+    "/api/owner/revoke-previous-save",
+    ["revoked", "not-granted"],
+  ],
+];
+
+// invariant: account-client-outcomes
+test("the role of an account is owner only for the exact word owner, and any other answer of it is a player's", async () => {
+  // decision: D-410 "The answers that carry the account — `GET /api/account`, the login and the registration — hold"
+  const base = {
+    id: "u1",
+    email: "a@x.pl",
+    emailConfirmed: true,
+    previousSaveAllowed: false,
+  };
+  for (const [extra, role] of [
+    [{ role: "owner" }, "owner"],
+    [{ role: "player" }, "player"],
+    [{}, "player"],
+    [{ role: "Owner" }, "player"],
+    [{ role: "owner " }, "player"],
+    [{ role: "admin" }, "player"],
+    [{ role: "" }, "player"],
+    [{ role: null }, "player"],
+    [{ role: 1 }, "player"],
+    [{ role: ["owner"] }, "player"],
+    [{ role: { owner: true } }, "player"],
+  ]) {
+    respond = (_request, response) =>
+      reply(response, 200, JSON.stringify({ ...base, ...extra }));
+    for (const name of ["login", "currentAccount"]) {
+      assert.deepEqual(
+        await within(calls[name](client()), `${name} ${JSON.stringify(extra)}`),
+        { ok: true, value: { ...base, role } },
+        `${name} ${JSON.stringify(extra)}`,
+      );
+    }
+  }
+  for (const [extra, role] of [
+    [{ role: "owner" }, "owner"],
+    [{ role: "Owner" }, "player"],
+    [{}, "player"],
+  ]) {
+    respond = (_request, response) =>
+      reply(
+        response,
+        201,
+        JSON.stringify({ ...base, ...extra, confirmationMessage: "sent" }),
+      );
+    assert.deepEqual(
+      await within(
+        calls.register(client()),
+        `register ${JSON.stringify(extra)}`,
+      ),
+      { ok: true, value: { ...base, role, confirmationMessage: "sent" } },
+    );
+  }
+});
+
+// invariant: account-client-requests
+// invariant: account-client-outcomes
+test("listAccounts sends a bodiless GET to the owner list path and gives each entry with its four fields, an empty list included", async () => {
+  // decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+  respond = (_request, response) =>
+    reply(response, 200, JSON.stringify({ accounts: ownerPanelAccounts }));
+  assert.deepEqual(await within(client().listAccounts(), "list"), {
+    ok: true,
+    value: ownerPanelAccounts,
+  });
+  assert.deepEqual(
+    seen.map(({ method, url, body }) => ({ method, url, body })),
+    [{ method: "GET", url: "/api/owner/accounts", body: "" }],
+  );
+  respond = (_request, response) => reply(response, 200, '{"accounts":[]}');
+  assert.deepEqual(await within(client().listAccounts(), "empty"), {
+    ok: true,
+    value: [],
+  });
+});
+
+// invariant: account-client-outcomes
+test("listAccounts is no success for an entry that is not exactly email, role, blocked and previousSaveAllowed", async () => {
+  // decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+  const entry = {
+    email: "a@x.pl",
+    role: "player",
+    blocked: false,
+    previousSaveAllowed: false,
+  };
+  const variants = [
+    { ...entry, id: "u1" },
+    { ...entry, emailConfirmed: true },
+    { ...entry, role: "admin" },
+    { ...entry, role: "Owner" },
+    { ...entry, role: "" },
+    { ...entry, role: null },
+    { ...entry, role: undefined },
+    { ...entry, email: "" },
+    { ...entry, email: null },
+    { ...entry, email: 7 },
+    { ...entry, blocked: "false" },
+    { ...entry, blocked: 0 },
+    { ...entry, blocked: null },
+    { ...entry, previousSaveAllowed: 1 },
+    { ...entry, previousSaveAllowed: null },
+    { email: "a@x.pl", role: "player", blocked: false },
+    { email: "a@x.pl", role: "player", previousSaveAllowed: false },
+    { role: "player", blocked: false, previousSaveAllowed: false },
+    {},
+    [],
+    null,
+    "a@x.pl",
+  ];
+  for (const bad of variants) {
+    respond = (_request, response) =>
+      reply(response, 200, JSON.stringify({ accounts: [entry, bad] }));
+    const result = await within(client().listAccounts(), JSON.stringify(bad));
+    assert.equal(result.ok, false, JSON.stringify(bad));
+    assert.equal(result.failure.kind, "unexpected", JSON.stringify(bad));
+  }
+  for (const body of [
+    "",
+    "not json",
+    "null",
+    "[]",
+    "{}",
+    '{"list":[]}',
+    '{"accounts":null}',
+    '{"accounts":{}}',
+    '{"accounts":"x"}',
+    '{"accounts":[],"extra":1}',
+    '{"accounts":[],"email":"a@x.pl"}',
+    '{"code":"unauthenticated","error":"A refusal body at a success status"}',
+  ]) {
+    respond = (_request, response) => reply(response, 200, body);
+    const result = await within(client().listAccounts(), body);
+    assert.equal(result.ok, false, body);
+    assert.equal(result.failure.kind, "unexpected", body);
+  }
+  respond = (_request, response) =>
+    reply(response, 201, JSON.stringify({ accounts: [entry] }));
+  const created = await within(client().listAccounts(), "201");
+  assert.equal(created.failure.kind, "unexpected");
+  assert.equal(created.failure.status, 201);
+});
+
+// invariant: account-client-outcomes
+test("listAccounts turns a refusal into a refusal with its known code, and a dead or silent server into a failure", async () => {
+  // decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+  respond = (_request, response) =>
+    reply(
+      response,
+      403,
+      '{"code":"owner-forbidden","error":"To konto nie jest kontem właściciela."}',
+    );
+  assert.deepEqual(await within(client().listAccounts(), "403"), {
+    ok: false,
+    failure: {
+      kind: "refused",
+      status: 403,
+      code: "owner-forbidden",
+      message: "To konto nie jest kontem właściciela.",
+    },
+  });
+  respond = (request) => request.socket.destroy();
+  const dead = await within(client().listAccounts(), "dead");
+  assert.deepEqual(
+    [dead.failure.kind, dead.failure.reason],
+    ["unreachable", "network"],
+  );
+  respond = () => {};
+  const silent = await within(
+    createAccountClient({ timeoutMs: 150 }).listAccounts(),
+    "silent",
+  );
+  assert.deepEqual(
+    [silent.failure.kind, silent.failure.reason],
+    ["unreachable", "timeout"],
+  );
+});
+
+// invariant: account-client-requests
+// invariant: account-client-outcomes
+test("each operation posts the address alone as JSON to its owner route and gives the outcome word the server answers", async () => {
+  // decision: D-411 "Each account has four buttons: „Zablokuj” and „Odblokuj”, which block and unblock it as D-137 gives, and „Nadaj uprawnienie do poprzedniego zapisu” and „Odbierz uprawnienie do poprzedniego zapisu”, which grant and revoke the privilege as D-400 gives; an account with the owner role has no „Zablokuj”."
+  for (const [name, path, words] of panelOperations) {
+    for (const word of words) {
+      seen = [];
+      respond = (_request, response) =>
+        reply(response, 200, JSON.stringify({ outcome: word }));
+      assert.deepEqual(
+        await within(client()[name]("a@x.pl"), `${name} ${word}`),
+        { ok: true, value: word },
+        `${name} ${word}`,
+      );
+      assert.equal(seen.length, 1, name);
+      assert.equal(seen[0].method, "POST", name);
+      assert.equal(seen[0].url, path, name);
+      assert.ok(seen[0].contentType?.startsWith("application/json"), name);
+      assert.deepEqual(JSON.parse(seen[0].body), { email: "a@x.pl" }, name);
+    }
+  }
+});
+
+// invariant: account-client-outcomes
+test("an operation is no success for an outcome word outside its eight, for a body of other fields, or for another status", async () => {
+  // decision: D-411 "Each account has four buttons: „Zablokuj” and „Odblokuj”, which block and unblock it as D-137 gives, and „Nadaj uprawnienie do poprzedniego zapisu” and „Odbierz uprawnienie do poprzedniego zapisu”, which grant and revoke the privilege as D-400 gives; an account with the owner role has no „Zablokuj”."
+  const bodies = [
+    '{"outcome":"made-owner"}',
+    '{"outcome":"unknown"}',
+    '{"outcome":"Blocked"}',
+    '{"outcome":"owner"}',
+    '{"outcome":"blocked-already"}',
+    '{"outcome":""}',
+    '{"outcome":null}',
+    '{"outcome":["blocked"]}',
+    '{"outcome":"blocked","extra":true}',
+    '{"outcome":"blocked","email":"a@x.pl"}',
+    '{"outcome":"blocked"',
+    '"blocked"',
+    "{}",
+    "[]",
+    "null",
+    "",
+  ];
+  for (const [name] of panelOperations) {
+    for (const body of bodies) {
+      respond = (_request, response) => reply(response, 200, body);
+      const result = await within(client()[name]("a@x.pl"), `${name} ${body}`);
+      assert.equal(result.ok, false, `${name} ${body}`);
+      assert.equal(result.failure.kind, "unexpected", `${name} ${body}`);
+    }
+    for (const status of [201, 202, 204]) {
+      respond = (_request, response) =>
+        reply(response, status, '{"outcome":"blocked"}');
+      const result = await within(
+        client()[name]("a@x.pl"),
+        `${name} ${status}`,
+      );
+      assert.equal(result.ok, false, `${name} ${status}`);
+      assert.equal(result.failure.kind, "unexpected", `${name} ${status}`);
+      assert.equal(result.failure.status, status, `${name} ${status}`);
+    }
+  }
+});
+
+// invariant: account-client-outcomes
+test("each operation turns the owner refusals and the session refusal into refusals with their codes, and a dead or silent server into a failure", async () => {
+  // decision: D-411 "Each account has four buttons: „Zablokuj” and „Odblokuj”, which block and unblock it as D-137 gives, and „Nadaj uprawnienie do poprzedniego zapisu” and „Odbierz uprawnienie do poprzedniego zapisu”, which grant and revoke the privilege as D-400 gives; an account with the owner role has no „Zablokuj”."
+  for (const [name] of panelOperations) {
+    for (const [status, code, message] of [
+      [401, "unauthenticated", "Sesja wygasła albo nie istnieje."],
+      [403, "owner-forbidden", "To konto nie jest kontem właściciela."],
+      [404, "unknown-account", "Żadne konto nie ma tego adresu."],
+      [409, "owner-not-blockable", "Konta właściciela nie można zablokować."],
+      [400, "invalid-request", "Żądanie ma niepoprawną treść."],
+    ]) {
+      respond = (_request, response) =>
+        reply(response, status, JSON.stringify({ code, error: message }));
+      assert.deepEqual(
+        await within(client()[name]("a@x.pl"), `${name} ${code}`),
+        { ok: false, failure: { kind: "refused", status, code, message } },
+        `${name} ${code}`,
+      );
+    }
+    respond = (_request, response) =>
+      reply(response, 409, '{"error":"Słowa serwera bez kodu"}');
+    const noCode = await within(client()[name]("a@x.pl"), `${name} no code`);
+    assert.deepEqual(
+      [noCode.failure.kind, noCode.failure.status, noCode.failure.code],
+      ["refused", 409, null],
+      name,
+    );
+    respond = (request) => request.socket.destroy();
+    const dead = await within(client()[name]("a@x.pl"), `${name} dead`);
+    assert.deepEqual(
+      [dead.ok, dead.failure.kind, dead.failure.reason],
+      [false, "unreachable", "network"],
+      name,
+    );
+    respond = () => {};
+    const silent = await within(
+      createAccountClient({ timeoutMs: 150 })[name]("a@x.pl"),
+      `${name} silent`,
+    );
+    assert.deepEqual(
+      [silent.ok, silent.failure.kind, silent.failure.reason],
+      [false, "unreachable", "timeout"],
+      name,
+    );
+  }
 });
