@@ -6823,7 +6823,9 @@ The menu bar marks the place the player is at as the chosen tab is marked (D-276
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-276
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the menu bar marking the item of the place the player is at, Siedziba on
+  Siedziba, Mapy on Mapy and Programy on Programy, and moving the mark as the player moves. For the
+  look of the mark, an agent compares a change with the part no test holds:
   - complies: the item of the menu bar for the screen the player is on with its text in
     `text-strong` and a line in `selected` at its bottom
   - violates: that item marked in green, by a background or by a frame
@@ -6902,19 +6904,20 @@ at most three clicks: the choice of a map, the map's row and „Wejdź”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-277
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the game opening the screens Siedziba, Postać, Mapy, Programy and
+  Przejście at their addresses; the menu bar holding the game's name alone on the waiting screens,
+  and over the game the name, the items Siedziba, Mapy and Programy in that order with no icons and
+  the menu „Konto” with the address and „Wyloguj”; „Wróć do przejścia · {mapa} · minuta {m}” with the
+  map run's game minute, leading to the screen of the map run, on Siedziba, Postać, Programy and Mapy
+  while the map run goes on or has ended in a death until „Zakończ”, and on no screen of a map run;
+  the name of a character on its card on Siedziba leading to its screen Postać; the menu bar marking
+  Siedziba on Postać, Mapy on `#/mapy` and on `#/mapy/{map}`, and no item on the screen of a map run;
+  a player with one character reaching the first map run from Siedziba by „Mapy”, the row of a map
+  and „Wejdź”. For the width of the content, an agent compares a change with the part no test holds:
   - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide and as
-    wide as a window 1000 px wide; the menu bar holding Siedziba, Mapy and Programy in that order,
-    with Mapy marked on `#/mapy` and on `#/mapy/{map}`; after the player leaves a map run of Las at game minute 212,
-    „Wróć do przejścia · Las · minuta 212” on Siedziba, Postać and Programy, still there after the
-    character's death until „Restart” or „Zakończ”, and none on the screen of that map run;
-    „Sprawdzanie logowania…” under a menu bar holding the game's name alone; on the screen Postać
-    the item Siedziba marked; a player with one character, who has picked nothing before, reaching
-    the first map run from Siedziba by „Mapy”, the row of a map and „Wejdź”
-  - violates: an item of the menu bar with an icon; an inactive item Mapy on the menu bar;
-    „Wróć do przejścia” gone after a death before „Zakończ”; an item marked on the screen of a map
-    run; the clock of „Wróć do przejścia” written as „03:32”; content wider on Programy than on
-    Siedziba
+    wide as a window 1000 px wide
+  - violates: content wider on Programy than on Siedziba; the content of Postać narrower than a
+    window 1000 px wide
 - **Origin:** none
 
 *Rationale:* the player reads the game by where things stand: one page holding the program, the
@@ -6962,16 +6965,13 @@ apart from these, and after them the page opens Siedziba.
 - **Scope:** browser-view
 - **Based on:** uri-fragment-in-requests
 - **Relations:** derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: a reload at `#/programy/3` opening Programy with program 3 picked;
-    `#/postac/2/przejscie` with no map run of character 2 opening the screen Postać of character 2;
-    `#/programy/9` with no program 9 opening `#/programy`; `#/nieznany` opening Siedziba; a page
-    opened at `#confirm-email=…` confirming as D-156 gives and opening Siedziba for a signed-in
-    player; a reload at `#/mapy/forest` opening Mapy with Las picked; the address of a map that does
-    not exist, or of Las — głębiej before Las is solved, opening Siedziba
-  - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
-    screen of a map run reading the map run from the game state rather than from its parameter; the
-    address of a map off the list of open maps opening `#/mapy`
+- **Verification:** tests: the seven addresses in the fragment after `#`, each read as its screen,
+  written by it and opened at a reload, a program's and a map's by their number and identifier; the
+  page writing and following them in the fragment; an address that leads to no existing screen
+  opening the nearest one, a map run with none the screen Postać of its character, a program with
+  none `#/programy`, and any other Siedziba, a map off the list of open maps included; the screen of
+  a map run drawing the map run it was given and not the game state's; the fragments of emailed
+  links read as no screen, and a signed-in player opening Siedziba after them.
 - **Origin:** none
 
 *Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
@@ -7001,17 +7001,16 @@ and its target after it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: the world, the program and the area with the tabs „Kronika” and „Teren” of the screen
-    of a map run each an area of its own, which a narrower layout can place one above the other in
-    that order; on Programy the list of programs and the program editor each an area of its own,
-    the rule panel opening in place in the editor (D-288); on Mapy the list of
-    maps and the card of a map each an area of its own; the team on Siedziba, drawn in React, under
-    the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
-    of „Zbierz” in a field after it
-  - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
-    the characters of Siedziba as a bare list with no heading; one flat pick holding „Zbierz —
-    patyk” and „Zbierz — jagoda” as cells of their own
+- **Verification:** tests: the world, the program and the tabs of the screen of a map run, and the
+  list of programs and the program editor of Programy, each an area of its own; the team on
+  Siedziba as the section „Drużyna” under its heading; the rule panel offering the action „Zbierz”
+  as one cell and its target in a field after it. An agent compares a change with the part no test
+  holds:
+  - complies: a narrower layout placing the world, the program and the area with the tabs „Kronika”
+    and „Teren” of the screen of a map run one above the other in that order; on Mapy the list of
+    maps and the card of a map each an area of its own
+  - violates: the list of maps and the card of a map of Mapy drawn as one block that a narrower
+    layout cannot set apart; areas of a screen whose places a narrower layout cannot change
 - **Origin:** none
 
 *Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
@@ -7077,12 +7076,15 @@ sentence of the outcome can be read.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: Enter on „Konto” opening the menu and Escape closing it with focus on „Konto”; the
-    menu standing open with „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” after the
-    answer to „Wyślij ponownie”, until the player clicks outside it
-  - violates: the menu closing at the click on „Wyloguj” or „Wyślij ponownie”; the menu closing by
-    itself after the server's answer; focus left on the page after Escape rather than on „Konto”
+- **Verification:** tests: the menu opening on a click on „Konto”, a native button, and closing on
+  Escape, on a click outside it and on a second click on „Konto”, focus then on „Konto”; the menu
+  standing open while „Wyloguj” or „Wyślij ponownie” waits for the server and after the answer until
+  the player closes it. For the keyboard in a real browser, which the tests on a document imitation
+  do not show, an agent compares a change with the part no test holds:
+  - complies: Enter and Space on „Konto” opening the menu in the browser, as the browser's own click
+    of a native button
+  - violates: a key handler on „Konto” that stops Enter or Space, so the keyboard no longer opens
+    the menu
 - **Origin:** none
 
 *Rationale:* the player reads the outcome of what the menu sent without opening it again. Accepted
@@ -7101,10 +7103,9 @@ change of screen.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-156 · derives from D-225
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Adres e-mail potwierdzony.” above Siedziba after a confirmation link, gone once the
-    player opens Programy and not back on the return to Siedziba
-  - violates: that sentence standing above Programy and Postać until a reload
+- **Verification:** tests: „Adres e-mail potwierdzony.” and the sentence of a discarded saved game
+  state above Siedziba, the first screen, standing through an act that changes no screen, gone once
+  the player opens Programy and not back on the return to Siedziba.
 - **Origin:** none
 
 *Rationale:* the sentence speaks of the moment the game opened, so it stands with the first screen
