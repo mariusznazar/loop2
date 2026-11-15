@@ -6937,33 +6937,35 @@ frost by at least 3:1 against the snow it lies on.
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit
 - **Relations:** none
-- **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. An agent compares a
-  change with the decision:
+- **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
+  the files of the smaller flame, of the mage's death, of the wolf and of the camp's clearing and
+  chest holding pixels alone; the chest of the camp one still picture, the same empty and full; the
+  credit line of the pack LPC Wolf naming its licence CC BY 3.0; the frost's thickness in whole
+  pixels of the scene, its pixel a part of the frame's width and height, and the specks of a
+  completion whole pixels of the scene on its grid, rising by whole pixels over the open snow alone;
+  the frost's outline standing out by at least 3:1 from the snow measured under every tint. For where
+  the pictures come from, the sprite files no test reads and the colours CSS draws in, an agent
+  compares a change with the part no invariant and no test holds:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
-    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
-    the clearing of the camp composed from the pack's snow ground and trees, and its chest cut from
-    the pack's sheet with every pixel moved unchanged, each a PNG file of that kind, the camp's
-    characters and fire the files of the scene's mage and fire;
-    the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
-    a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
-    holds, which the cloud of a scuffle is too, with a credit line for the pack in the folded section
-    of credits; the wolf a set of sprite files made from the side views of the pack LPC Wolf, every
-    pixel of them moved unchanged into frames of one size with the wolf's feet on their bottom row,
-    and a credit line for that pack that names its author and its contributor, its page, its licence
-    CC BY 3.0 and that the frames were cut out; the smaller flame of the
-    campfire a sprite file made from the frames of the pack's fire with the flame cut down by hand;
-    the frost on the edges of the frame built by CSS of squares of one pixel of the scene on its grid
-    in colours the pictures of the pack's trees hold, its outline or its fill 3:1 or more against the
-    snow under every tint of the light; the fall of the mage a sprite file made from the pack's death
-    sheet of the mage, every pixel of it moved unchanged into frames of the mage's size; the specks of
-    light after a completion built by CSS of squares of one pixel of the scene on its grid in colours
-    read from pixels of the pack's bonfire, standing out from the open snow they rise over
-  - violates: a picture placed straight in the directory the server serves; a sprite file in
-    another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
-    other than the three named; a wolf drawn from a pack under another licence than CC BY 3.0; the cloud of dust in a colour that does not stand out from the
-    ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
-    game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
-    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave; a chest of the camp drawn from an icon file as a mask, or in one picture when it is empty and in another when it is full
+    PNG file with no chunk but its pixels'; the clearing of the camp composed from the pack's snow
+    ground and trees, and its chest cut from the pack's sheet with every pixel moved unchanged, the
+    camp's characters and fire the files of the scene's mage and fire; the character of the scene
+    drawn from a sprite file made from the pack's mage; the cloud of dust a sprite file made from the
+    smoke of Smoke & Fire Animated Particle [16x16] in browns the scene holds, which the cloud of a
+    scuffle is too; the wolf a set of sprite files made from the side views of the pack LPC Wolf,
+    every pixel of them moved unchanged into frames of one size; the smaller flame of the campfire a
+    sprite file made from the frames of the pack's fire with the flame cut down by hand; the fall of
+    the mage a sprite file made from the pack's death sheet of the mage; the frost on the edges of the
+    frame built by CSS of squares of one pixel of the scene on its grid in colours the pictures of the
+    pack's trees hold; the specks of light after a completion in colours read from pixels of the
+    pack's bonfire, standing out from the open snow they rise over; the tint layer and the cold layer
+    in colours the human chose
+  - violates: a sprite file no test reads carrying text or metadata chunks; a picture drawn from a
+    pack other than the three named; the cloud of dust in a colour that does not stand out from the
+    ground it stands on; the hooded figure of loop as the character of the scene; a mage, a creature
+    or a prop drawn by CSS as a shape; a frost or a speck in a colour no picture of a pack holds; a
+    speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour
+    no choice of the human gave; a chest of the camp drawn from an icon file as a mask
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
@@ -7025,14 +7027,16 @@ scene, and text stands on a solid background, never on a picture.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the scene of a map run and the camp at the top of Siedziba, the camp over
+  the screen's panel and its heading, each a picture with no text in it. For the login card, text
+  laid over a picture from outside it and the screens with no picture, an agent compares a change
+  with the part no invariant and no test holds:
   - complies: the screen of the login card with the picture over the whole window and every sentence
-    of the page inside the card, on its solid `panel`; the scene at the top of the world area of the
-    screen of a map run with no text on it or over it, „Teraz” and „Potem” on the solid background
-    under it; the waiting screens with no picture
+    of the page inside the card, on its solid `panel`; „Teraz” and „Potem” on the solid background
+    under the scene; the waiting screens with no picture
   - violates: a sentence of the page standing on the picture outside the card; the card's background
-    made half-transparent over the picture; the game minute or the name of the map written over the
-    scene
+    made half-transparent over the picture; the game minute or the name of the map laid over the
+    scene from an element beside it
 - **Origin:** none
 
 *Rationale:* the game stops looking like a form through pictures where there is nothing to read,
@@ -8405,7 +8409,9 @@ the pack Pixel Crawler that the predecessor game, loop, cut out.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-271
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the background of the scene the forest's picture in one still frame. For
+  what the forest shows and the pictures it is composed from, an agent compares a change with the
+  part no invariant and no test holds:
   - complies: a background of pines, a tree and a sapling in their snow variants, composed from
     loop's cut pictures of Pixel Crawler
   - violates: a green forest; a background composed from pictures cut anew from the pack's sheets
@@ -8430,14 +8436,21 @@ streak; the cold layer after a death of cold (D-322) lies over the layer of the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-314
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the layer of the tint over the background, the props, the burning
+  campfire, the mage, the wolf with the cloud of its scuffle, the dust and the icon flying on its
+  plaque, and under the frost and the carrier of the badge over the mage's head, which stands outside
+  the mage's element; the specks of a completion over the layer; the cold layer after a death of cold
+  over the layer of the tint and under the frost. For the picture's own file, the extinguished
+  campfire, the plaques of a discovery and the colours that stay over the layer, an agent compares a
+  change with the part no invariant and no test holds:
   - complies: the file of the background as light as the cut pictures it is composed from and in
-    their colours, the cool tint at streak 0 and the gold at a completion a layer over it, the
-    props, the fire, the mage and the icon flying on its plaque under that layer and the frost and the
-    badge over the mage's head over it
+    their colours, with no tint and no darkness in it; an extinguished campfire under the layer; the
+    plaques of a discovery over the layer, on their solid `panel` background; the frost the same
+    colours at streak 0 and at a completion
   - violates: the file of the background darkened, as the picture behind the login card is, or
-    tinted; a tint drawn by putting another file in place of the background; the mage or the
-    flying icon with its plaque left out of the layer, or the badge, a plaque of a discovery, a speck of light or the frost under it
+    tinted; a tint drawn by putting another file in place of the background; an extinguished
+    campfire left out of the layer; a plaque of a discovery under the layer; a frost whose colour
+    changes with the streak
 - **Origin:** none
 
 *Rationale:* the tint of the scene's light follows the streak and turns full gold at a completion, so
@@ -9667,12 +9680,15 @@ scale of it. Whatever the scene draws is drawn for this size alone.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the scene of a map run 672 × 304 px in a window 1280 px wide and in one 1920 px wide,
-    drawn at twice its picture; an effect of the scene made for that size
-  - violates: a second size of the scene, such as 336 × 152 px, chosen by a constant, by a style
-    rule or by the width of the window; the scene drawn at a fraction of twice its picture, such as
-    one and a half times
+- **Verification:** tests: the scene's picture given 672 × 304 px, twice its picture of 336 × 152,
+  in a narrow window and in a wide one and in another state of the game, the frame sized by its
+  picture alone. For the size the style sheet draws the scene at and what the scene draws, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: the scene of a map run drawn 672 × 304 px in a window 1280 px wide and in one 1920 px
+    wide; an effect of the scene made for that size
+  - violates: a style rule that draws the scene at a second size, such as 336 × 152 px, or at a
+    fraction of twice its picture, such as one and a half times; an effect of the scene made for a
+    second size of it
 - **Origin:** none
 
 *Rationale:* what counts is the width of the program of the original loop, not the
@@ -10111,14 +10127,16 @@ thickness it is the outline alone, the fill coming with the next pixels. The fro
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-271
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character at 37 °C with no frost on the frame; at 36 °C a frost whose deepest teeth
-    reach 8 pixels of the scene from each edge; at 35 °C and at 20 °C one whose deepest teeth reach 16;
-    the same character warmed to 36 °C at the fire with the teeth at 8 again; the frost the same
-    colours at streak 0 and at a completion
-  - violates: a frost that starts only below 35 °C; a frost that grows further below 35 °C; a frost
-    whose deepest teeth stand at the same depth at 36 °C and at 35 °C; half the opacity at the full thickness for a
-    half; a frost over the whole area of the scene; a frost that changes its colour with the streak
+- **Verification:** tests: the frost's thickness in whole pixels of the scene, none at 37 °C, growing
+  evenly as the body cools, 8 at 36 °C and the full 16 at 35 °C and below, following the body's
+  temperature and not the streak, and taken back reading by reading as the body warms at a fire; the
+  frost over the layer of the tint. For where the frost lies on the frame and the shape of its inner
+  edge, an agent compares a change with the part no invariant and no test holds:
+  - complies: a frost on the four edges of the frame whose deepest teeth reach 8 pixels of the scene
+    from each edge at 36 °C and 16 at 35 °C; its inner edge ragged; at the first pixel of thickness
+    the outline alone, the fill coming with the next pixels
+  - violates: a frost over the whole area of the scene; a frost whose inner edge is straight, every
+    part of it at the full thickness; a fill with no outline at the first pixel of thickness
 - **Origin:** none
 
 *Rationale:* the frost warns before the character starts losing health, which comes below 35 °C, and
@@ -10145,14 +10163,17 @@ scene's data. An extinguished campfire stays as D-316 gives it.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-271 · derives from D-349
-- **Verification:** an agent compares a change with the decision:
-  - complies: a fire with 21 minutes of burning left drawn with the full flame and the same fire with
-    20 left with the smaller flame in four frames at the beat of the full one; the file of the
-    smaller flame a PNG of the full flame's size holding the same stones and logs and no colour
-    the full flame's file lacks; an extinguished fire the full flame's first frame, grey
-  - violates: the smaller flame at 30 minutes left, or none at 10; a smaller flame of another
-    size of the stones, or with a stage between; the full flame drawn at a fraction of its scale;
-    the extinguished fire in the smaller flame
+- **Verification:** tests: a burning campfire with more than 20 minutes of burning left drawn with
+  the full flame and with 20 or fewer with the smaller flame, from a file of its own, in the same four
+  frames, place and size, on the same element, so that its frames run on; the smaller flame's file
+  holding pixels alone and being the full flame's sheet with only pixels of its flame cut down to the
+  pit's black and no new colour, every frame keeping part of its flame; an extinguished campfire in
+  the full flame's picture, not burning. For the beat of the smaller flame and where its file and the
+  20 minutes stand, an agent compares a change with the part no invariant and no test holds:
+  - complies: the frames of the smaller flame changing at the beat of the full one; the file of the
+    smaller flame and the 20 minutes named in the scene's data
+  - violates: the smaller flame at another beat than the full one; the file of the smaller flame or
+    the 20 minutes named in the code of the browser view
 - **Origin:** none
 
 *Rationale:* 20 minutes is what one stick adds to a burning fire, so a smaller flame says to feed the
@@ -10445,21 +10466,26 @@ the screen, with no text on it or over it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-54 · derives from D-272 · derives from D-280 · derives from D-314 · derives from D-315 · derives from D-316 · derives from D-317 · derives from D-321 · derives from D-349
-- **Verification:** invariants: loop2-container-sprites. An agent compares a change with the decision:
-  - complies: the camp 96 px high between the row of warnings and the heading „Siedziba”, with the sentence
-    of the page above the screen still above it; the fire in the middle at every width of the window, the
-    chest and the characters of Siedziba beside it, the first in the order of creation; in
-    a window 400 px wide the clearing cropped at the sides around the fire and as many whole characters
-    as the band holds, „Drużyna” listing all of them; a team whose only character is in a manual map run,
-    or in an earning loop, with the fire and the chest alone; the camp drawn again at „Wejdź”, „Puść w
-    pętlę”, „Zatrzymaj” and „Zakończ”; the frames of the fire and of the characters standing still under
-    the setting for reduced motion; no link, button, field, text or name for a reader in the camp
-  - violates: the camp under the heading „Siedziba”; the clearing drawn at a fraction of twice its
-    picture; a character of a map run or of an earning loop standing at the fire; a character cut in half
-    at the edge of the band; a campfire of the camp that goes out with the campfire of the game state; a
-    picture of the chest that changes with what it holds; a click on a character that opens its screen; a
-    name or a count written on the picture; a camp that shows the same at the same width after a character
-    has gone to a map
+- **Verification:** invariants: loop2-container-sprites. tests: the band over the panel of Siedziba,
+  the heading „Siedziba” under it, 96 px high, its clearing, a picture of 672 × 48, drawn at twice its
+  pixels; the characters that stand in it, those neither in a manual map run, going, paused or ended,
+  nor in an earning loop, in the order of creation, as many as the widest band holds, „Drużyna” listing
+  them all, and the fire and the chest alone where none is in Siedziba, the camp following at once
+  every change of the map run and of the earning loops; the fire in the frames of its burning flame
+  whatever campfire the game state holds, and each character in the frames of its idle sheet; the camp
+  a picture, with no control, no stop for the keyboard, no response to a click and no text, hidden from
+  readers of the screen. For where the band stands under the menu bar, its clearing, the place of its
+  fire, its cropping and its motion, an agent compares a change with the part no invariant and no test
+  holds:
+  - complies: the camp under the row of warnings below the menu bar, with the sentence of the page above
+    the screen still above it; the clearing in full light with no tint, composed of the pictures the
+    forest of the scene is composed of; the fire in the middle at every width of the window; in a window
+    400 px wide the clearing cropped at the sides around the fire and as many whole characters as the
+    band holds; the frames of the fire and of the characters changing at the scene's beat by CSS and
+    standing still under the setting for reduced motion
+  - violates: the camp over the row of warnings; the clearing scaled down in a narrow window; a character
+    cut in half at the edge of the band; a loop of drawing that moves the camp; a camp that moves under
+    the setting for reduced motion
 - **Origin:** none
 
 *Rationale:* without it Siedziba is a page of text that looks like a form, and a picture of the camp at its
