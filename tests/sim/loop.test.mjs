@@ -225,6 +225,7 @@ function plainRun(manual) {
 const ala = (state) => state.team.characters[0];
 
 test("the first map run of a loop goes on the program of its row, from the seed a send takes, and the loop holds the content of the program and nothing of its copy", () => {
+  // decision: D-22 "The first map run of an earning loop, with none before it, takes a new seed, as a send of a character does"
   const state = game(withTrip(EMPTY, [], []));
   const result = startLoop(state, FOREST, T0);
   const loop = result.state.loops[1];
@@ -655,6 +656,7 @@ test("minutes that are no whole number from 0 up are a RangeError", () => {
 // D-179: loot goes to the chest at completion by the frozen bring list, the
 // next map run takes from the chest as it then stands, on the same copy and at game minute 0.
 test("a completion deposits the bring list's clipped loot, counts the map run, adds its practice to the loop and starts the next map run in the same step", () => {
+  // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed, and each map run of an earning loop takes its seed from a draw of the map run before it"
   const program = withTrip(
     EMPTY,
     [entry("stick", 3)],
@@ -703,6 +705,7 @@ test("a completion deposits no more than the chest has room for", () => {
 });
 
 test("the seeds of the successive map runs of a loop follow the draw of the fifth generator, and the last seed is not touched after the start", () => {
+  // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed, and each map run of an earning loop takes its seed from a draw of the map run before it"
   let state = looping(EMPTY, {}, COLD_REAL_MS);
   const start = state.lastSeed;
   let seed = state.loops[1].run.seed;
@@ -721,6 +724,7 @@ test("the seeds of the successive map runs of a loop follow the draw of the fift
 // D-190: a ready resurrection does not save the map run; it is used up, the map
 // run pays nothing, what the loop gathered stays and the next map run starts at once.
 test("a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried items gone, the loop going on at its next map run", () => {
+  // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed, and each map run of an earning loop takes its seed from a draw of the map run before it"
   const ready = holding(
     changingRun(
       dyingNext(

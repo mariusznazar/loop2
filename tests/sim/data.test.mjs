@@ -380,6 +380,7 @@ test("an earning loop goes one game minute in 60 real seconds, a whole number of
 });
 
 test("the archetype and the pace are in data", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
   assert.equal(ARCHETYPES.elementalMage.name, "Mag żywiołów");
   assert.equal(BALANCE.gameMinutesPerRealSecond, 1);
   // D-21: the paces 1×, 2×, 4×, 8× and 16×.
@@ -727,6 +728,7 @@ test("every map step and every fixed action duration is a whole number of minute
 });
 
 test("an activity of 0 minutes from faulty data still finishes in the next minute", async () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const { newMapRun, stepMinute } =
     await import("../../dist/browser/sim/run.js");
   const map = { ...forestMap, stepMinutes: 0 };

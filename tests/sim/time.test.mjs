@@ -74,6 +74,7 @@ test("real time passed while paused changes nothing, carry included", () => {
 });
 
 test("after a resume time goes on from where the pause held it", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   let state = passRealTime(sent(), 2300).state;
   state = setPaused(state, true).state;
   state = passRealTime(state, 10000).state;
@@ -122,6 +123,8 @@ test("real time without a map run is ignored", () => {
 });
 
 test("passing real time gives the events of the minutes it covers, in order", () => {
+  // decision: D-20 "The program chooses again at the next free game minute"
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const { state, events } = passRealTime(sent(), 20000);
   assert.equal(state.run.minute, 20);
   assert.deepEqual(
@@ -184,6 +187,7 @@ test("at 16x each whole 62.5 ms of real time moves the run on by one game minute
 });
 
 test("each pace of the data gives its multiple of a game minute per real second", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
   for (const [pace, minutes] of [
     [1, 1],
     [2, 2],
@@ -227,6 +231,7 @@ test("real time passed before a change of pace counts at the old pace", () => {
 });
 
 test("a pace chosen while paused changes only the pace, and the run stands until resumed", () => {
+  // decision: D-21 "Picking a pace while the map run is paused, the pause at a discovery included, changes the pace and leaves the map run paused until „Wznów”"
   const paused = setPaused(passRealTime(sent(), 300).state, true).state;
   const { state, events } = setPace(paused, 8);
   assert.deepEqual(state, { ...paused, pace: 8 });

@@ -58,6 +58,7 @@ test("counts stay absent through program edits before the first send", () => {
 });
 
 test("minute zero counts once; a multi-minute action, its finish and later waits add nothing", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once"
   const program = structuredClone(PROGRAM);
   program.groups[1].condition = { kind: "satietyBelow", value: 0 };
   const start = sent(program);
@@ -91,6 +92,7 @@ test("an initial wait leaves every rule at zero", () => {
 });
 
 test("later starts count and each restart or new send resets before the minute-zero choice", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once"
   const later = advanceMinutes(sent(), 20).state;
   assert.deepEqual(later.ruleCounts, { 17: 1, 91: 1 });
   assert.deepEqual(restart(later).state.ruleCounts, { 17: 1, 91: 0 });
@@ -103,6 +105,7 @@ test("later starts count and each restart or new send resets before the minute-z
 });
 
 test("pause and death retain counts, including an action interrupted by death", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once"
   const start = sent();
   const paused = setPaused(start, true).state;
   assert.deepEqual(passRealTime(paused, 60000).state.ruleCounts, {

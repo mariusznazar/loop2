@@ -52,6 +52,8 @@ function prepared(program = KICK) {
 }
 
 test("an eligible attack interrupts a long exploration before it finishes", () => {
+  // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const state = prepared();
   const result = advanceMinutes(state, 1);
   assert.ok(result.events.some((event) => event.kind === "attacked"));
@@ -92,6 +94,7 @@ test("start cooldown protects minute 180 and the first draw can attack at 181", 
 });
 
 test("cooldown starts at combat end E and protects E+180, but not E+181", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   const done = advanceMinutes(fighting(), 5).state;
   assert.equal(done.run.attackCooldownStart, 186);
   const state = {
@@ -145,6 +148,8 @@ test("death, completion and a map without attackers consume no attack draw", () 
 });
 
 test("an action ending in attack minute lands, while an interrupted move leaves no target or later movement", () => {
+  // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const ending = prepared();
   ending.run.current.endMinute = 181;
   const landed = advanceMinutes(ending, 1);
@@ -178,6 +183,7 @@ test("an action ending in attack minute lands, while an interrupted move leaves 
 });
 
 test("five combat minutes freeze needs and recovery while fire, renewal and streak advance once each", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
   let state = fighting(KICK, 235);
   state.run.body = { temperature: 30, satiety: 0, health: 100 };
   state.run.streak = 12;
@@ -211,6 +217,7 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
 });
 
 test("nature energy stands through the five combat minutes and comes back after them", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   // D-71, D-377: in the minutes of combat nature energy stands, as the needs and recovery do; the
   // next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
   let state = fighting(KICK, 235);
@@ -228,6 +235,7 @@ test("nature energy stands through the five combat minutes and comes back after 
 });
 
 test("a lighting interrupted by an attack takes neither its sticks nor its nature energy", () => {
+  // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
   // D-63. Satiety 50 falls below 60, so no energy comes back meanwhile and the energy shows only
   // a payment.
   const state = prepared();
@@ -255,6 +263,7 @@ test("a lighting interrupted by an attack takes neither its sticks nor its natur
 });
 
 test("each waiting minute M+1 through M+4 can complete without turns or an invented result", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   for (const offset of [1, 2, 3, 4]) {
     const state = fighting();
     state.run.streak = 540 - offset;
@@ -273,6 +282,7 @@ test("each waiting minute M+1 through M+4 can complete without turns or an inven
 });
 
 test("combat death in M+5 wins over completion and keeps the streak", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   const state = fighting();
   state.run.minute = 185;
   state.run.streak = 539;
@@ -291,6 +301,9 @@ test("combat death in M+5 wins over completion and keeps the streak", () => {
 });
 
 test("M+5 starts ordinary work immediately, counts every combat action once and still shows combat", () => {
+  // decision: D-20 "The program chooses again at the next free game minute, and before the character's action in each combat turn"
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   const program = programFromRules(
     { condition: ALWAYS, action: { kind: "kick" } },
     { condition: ALWAYS, action: { kind: "wander" } },
@@ -314,6 +327,7 @@ test("M+5 starts ordinary work immediately, counts every combat action once and 
 });
 
 test("editing during the wait preserves encounter state and resolves with the newly written program", () => {
+  // decision: D-20 "The program chooses again at the next free game minute, and before the character's action in each combat turn"
   const state = fighting();
   state.run.character.backpack.stick = 1;
   state.run.streak = 100;
@@ -347,6 +361,7 @@ test("editing during the wait preserves encounter state and resolves with the ne
 });
 
 test("combat filters unavailable actions and group conditions through the current repertoire", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   for (const blocked of ["action", "group"]) {
     const program = programFromRules(
       { condition: ALWAYS, action: { kind: "strikeWithStick" } },
@@ -390,6 +405,7 @@ test("combat filters unavailable actions and group conditions through the curren
 });
 
 test("a creature-only discovery pauses before turns and does not write a combat rule", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const state = prepared();
   state.understanding.creatures = [];
   const result = passRealTime(state, 10000);
@@ -446,6 +462,8 @@ test("the discovered wolf stays known through another attack, restart and end", 
 });
 
 test("an ending exploration and first wolf produce one catalog-ordered discovery", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const state = prepared();
   state.understanding = {
     actions: ["explore", "wander"],
@@ -482,6 +500,8 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
 });
 
 test("first chill and attack in one minute keep the automatic exploration rule but never start it during combat", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const state = prepared(programFromRules());
   // The Understanding of a new game: „Zawsze” and „Eksploruj”.
   state.understanding = {
@@ -514,6 +534,7 @@ test("first chill and attack in one minute keep the automatic exploration rule b
 });
 
 test("a departed creature starts cooldown but adds no defeated attack", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   const state = fighting(
     programFromRules({ condition: ALWAYS, action: { kind: "dodge" } }),
   );
@@ -569,6 +590,7 @@ test("stepMinute and game advancement have the same attack and combat ordering",
 });
 
 test("two different ordinary programs on a shared seed meet their first attack in the same minute", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
   const map = {
     ...MAPS.forestDeep,
     ambientTemperature: 37,
@@ -597,6 +619,7 @@ test("two different ordinary programs on a shared seed meet their first attack i
 });
 
 test("M+5 counts the second defeated attack before checking both map requirements", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   const state = prepared();
   state.run.minute = 185;
   state.run.current = null;

@@ -216,6 +216,7 @@ test("a chilled body by the fire still reads „marznie” in danger", () => {
 });
 
 test("on a map that does not cool the body the note under temperature reads „nie stygnie”", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const warm = { ...LAS, ambientTemperature: 37 };
   const cells = bodyCells(
     runOf({ temperature: 37, satiety: 82, health: 100 }),

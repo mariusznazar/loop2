@@ -126,6 +126,7 @@ function assertWritten(state, program) {
 }
 
 test("a new game sent with its one empty group waits until the minute of the first chill, which learns Wędruj and Temperatura poniżej, writes Zawsze → Eksploruj into the group Program and starts exploring in that minute", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const before = advanceMinutes(sentNew(), 83);
   assert.equal(before.state.run.minute, 83);
   assert.equal(before.state.run.body.temperature, 35.008);
@@ -566,6 +567,7 @@ test("a known item and its actions, revealed again, reveal nothing", () => {
 });
 
 test("a gathering ending in the minute of the character's death reveals nothing, and the same gathering without death does", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const dying = (health) =>
     prepared(CHILLED, (run) => ({
       tiles: onStandingTile(run, { revealed: true, stock: { stick: 5 } }),
@@ -587,6 +589,7 @@ test("a gathering ending in the minute of the character's death reveals nothing,
 });
 
 test("the first chill in the minute of death still reveals what the body step reveals", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const state = prepared(START, () => ({
     body: { temperature: 34.9, satiety: 100, health: 0.2 },
   }));
@@ -732,6 +735,7 @@ const CHILL_REVEALED = {
 };
 
 test("a span of minutes of a new game sent, given 100, ends at the minute of the first chill, paused, holding what the chill revealed, and called again goes on", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const first = advanceMinutes(sentNew(), 100);
   assert.equal(first.state.run.minute, 84);
   assert.equal(first.state.paused, true);

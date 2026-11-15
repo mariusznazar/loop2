@@ -108,6 +108,7 @@ const click = (element) =>
 // clock standing anywhere but after the map's name and the bar of the solving condition standing
 // anywhere but right after the clock.
 test("the header reads the character's name, the map's name, the clock, the bar of the solving condition, „Pauza”, the paces, „Restart” and „Zakończ”, in that order, with no action of the character", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     const header = container.querySelector(".run-header");
@@ -154,6 +155,7 @@ test("the name is the one of the team member whose map run it is", async () => {
 // D-122: „ (pauza)” after the clock at every pause. Catches a clock that does not follow the pause or
 // keeps the action of the character.
 test("the clock reads the game minute, „ (pauza)” after it while paused, and „Wznów” takes the place of „Pauza”", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   await withPage(async ({ document }) => {
     const running = advanceMinutes(sent(), 3).state;
     const { container, show } = await draw(document, running);
@@ -166,6 +168,7 @@ test("the clock reads the game minute, „ (pauza)” after it while paused, and
 });
 
 test("the buttons ask for what they say: the pause, the restart and the end", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   await withPage(async ({ document }) => {
     const { container, asked } = await draw(document, sent());
     await click(buttonNamed(container, "Pauza"));
@@ -195,6 +198,7 @@ test("„Restart” and „Zakończ” are destructive buttons and the paces and
 });
 
 test("the header shows five pace buttons, 1× to 16×, with the one of the state's pace selected", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -218,6 +222,7 @@ test("the header shows five pace buttons, 1× to 16×, with the one of the state
 });
 
 test("a click on a pace button asks for that pace; the buttons stay while paused and go with death", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, asked, show } = await draw(document, running);
@@ -335,6 +340,7 @@ test("the header is hidden while the window stands over an ended map run, and sh
 });
 
 test("the warning of a cut trip plan follows the current copy's take list", async () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   await withPage(async ({ document }) => {
     const map = MAPS.forest;
     MAPS.forest = { ...map, carryIn: 2 };

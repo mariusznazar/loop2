@@ -46,6 +46,7 @@ test("different states give different sequences", () => {
 });
 
 test("streams of one seed differ", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
   assert.notEqual(streamState(1, "layout"), streamState(1, "wander"));
   assert.notDeepEqual(
     sequence(streamState(1, "layout"), 10),
@@ -76,6 +77,7 @@ test("mixSeed uses the high part of a large realMs", () => {
 // computation of the same two published hash steps), so a stream of the same seed still starts
 // where it did.
 test("adding the fifth stream changes no state of the four streams before it", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw — attacks, gathering, the map's layout and wandering among them"
   const before = [
     [1, "layout", 615540736],
     [1, "wander", 2190006448],
@@ -95,6 +97,7 @@ test("adding the fifth stream changes no state of the four streams before it", (
 });
 
 test("the fifth stream starts from the seed at a state of its own, none of the other four's", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
   for (const seed of [1, 12345, 4294967295]) {
     const others = ["layout", "wander", "gather", "attack"].map((stream) =>
       streamState(seed, stream),
@@ -106,6 +109,7 @@ test("the fifth stream starts from the seed at a state of its own, none of the o
 // The expected draws are worked out by hand-checkable steps in an independent implementation of
 // mulberry32 over the fmix32 state of the stream: the first draw of the fifth stream, as a uint32.
 test("the next seed is the first draw of the fifth stream of the seed, as a uint32", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
   assert.equal(nextSeed(1), 3392212447);
   assert.equal(nextSeed(12345), 2555624278);
   assert.equal(nextSeed(4294967295), 1338111422);

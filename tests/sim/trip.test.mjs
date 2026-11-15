@@ -203,6 +203,7 @@ test("completion deposits the frozen list once, and end never deposits again", (
 
 // Catches skipping a map cap, charging a shortage against the shared budget, or mutating stock.
 test("entry caps, including zero, affect equipment independently of exit caps", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const chest = { pieces: { berry: 20 } };
   const before = structuredClone(chest);
@@ -222,6 +223,7 @@ test("entry caps, including zero, affect equipment independently of exit caps", 
 });
 
 test("exit spends chest room and map capacity in snapshot order, with partial rows", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const run = sent().run;
   assert.deepEqual(tripLoot(run, { pieces: { moss: 55 } }, MAPS.forest), [
     entry("berry", 5),
@@ -256,6 +258,7 @@ test("exit spends chest room and map capacity in snapshot order, with partial ro
 });
 
 test("warnings compare desired pieces and carrying capacity to the map, ignoring stock", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const plan = equipped().programs[0].program.tripPlan;
   assert.equal(tripEntryCut(plan, 15, MAPS.forest), false);
   assert.equal(tripEntryCut(plan, 15, { ...MAPS.forest, carryIn: 15 }), false);
@@ -398,6 +401,7 @@ test("unlisted and clipped contents of a completed backpack cannot fund a subseq
 
 // Weakest point: no live map currently sets these caps, so test the real lifecycle with test data.
 test("zero map entry cap still allows gathering, and completion clips that minute's gathered loot", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // invariant: trip-transfer
   const original = MAPS.forest;
   MAPS.forest = { ...original, carryIn: 0, carryOut: 1 };
@@ -579,6 +583,7 @@ test("a manual run of a solved map takes its take list from nowhere, cut by capa
 });
 
 test("takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // invariant: solved-map-manual-run
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
@@ -602,6 +607,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
 // D-251: the mark of the list of maps and the run read one cut. Catches a cut that spends the budget
 // out of list order, drops a partial row, or ignores the entry cap of the map.
 test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
   // Capacity 12 is spent on moss first, the rest, 3, goes to berry.
@@ -742,6 +748,7 @@ test("sendTake at an unsolved map shares one capacity of 12 down the list, a par
 });
 
 test("sendTake at an unsolved map is cut by the map's entry cap of 4 before the chest's stock", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // Entry cap 4 under capacity 15 gives a budget of 4: stick min(8, 10, 4) = 4, room 0 left.
   const chest = { pieces: { stick: 10, berry: 10 } };
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };

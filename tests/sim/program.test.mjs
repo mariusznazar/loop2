@@ -146,6 +146,8 @@ test("a wait lasts waitMinutes, one game minute", () => {
 });
 
 test("feasibility and choice do not draw from the wander generator", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = freshRun();
   const before = JSON.stringify(run);
   actionFeasible(run, WANDER);
@@ -177,6 +179,8 @@ const grouped = (...groups) => ({
 const identified = (id, condition, action) => ({ id, condition, action });
 
 test("a new game starts with one empty Program group under always", () => {
+  // decision: D-91 "A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”"
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   const initial = newGame().programs[0].program;
   assert.ok(
     Array.isArray(initial.groups),
@@ -192,6 +196,7 @@ test("a new game starts with one empty Program group under always", () => {
 });
 
 test("group order skips false, empty and infeasible groups and then takes the first qualifying rule", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups"
   const candidate = grouped(
     group(7, below(stick, 0), [identified(71, ALWAYS, WANDER)]),
     group(5, ALWAYS, []),
@@ -292,6 +297,8 @@ test("group conditions refuse unknown kinds and invalid fields while accepting a
 });
 
 test("program identities are unique positive integers below the next identity counters", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
+  // decision: D-23 "Conditions are chosen from a closed list, never written as expressions, rule groups stand one level deep"
   const valid = grouped(
     group(3, ALWAYS, [identified(7, ALWAYS, EXPLORE)]),
     group(5, ALWAYS, [identified(9, ALWAYS, WANDER)]),

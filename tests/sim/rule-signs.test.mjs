@@ -91,6 +91,8 @@ const refusalOf = (run, action) => actionRefusal(run, action);
 
 // What refuses the action, and the words of the reason (D-380). Each case writes the state out.
 test("each refusal of an action gives the reason of its row in D-380", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const here = revealedHere(freshRun(), { stick: 3 });
   const bare = revealedHere(freshRun());
   const alone = { ...freshRun(), tiles: [freshRun().tiles[0]] };

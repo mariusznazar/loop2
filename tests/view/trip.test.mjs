@@ -147,6 +147,7 @@ test("completion keeps actual deposit text while later editing cannot change it"
 });
 
 test("map warning appears below desired load and backpack capacity, including a zero map cap", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   assert.equal(tripWarning(plan, 15, MAPS.forest), null);
   assert.equal(tripWarning(plan, 3, { ...MAPS.forest, carryIn: 3 }), null);
   assert.equal(tripWarning(plan, 15, { ...MAPS.forest, carryIn: 5 }), null);
@@ -162,6 +163,7 @@ const MARK =
 // D-251. Catches a mark measured against the take list before its cut, one shown at a map
 // not yet solved, and one that stays where the chest holds exactly what the run takes.
 test("the mark shows at a solved map when a take entry cut by capacity and the entry cap exceeds the chest, and only then", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const take = (...entries) => ({ take: entries, bring: [] });
   const chest = (pieces) => ({ pieces });
   // Three pieces asked, two in the chest: the mark; the same at a map not yet solved: none.
@@ -263,6 +265,7 @@ test("the mark shows at a solved map when a take entry cut by capacity and the e
 // Catches a line that writes the take list as asked, not as cut; a solved map that reads the chest
 // where the run takes from nowhere; and an empty take that stands without „nic”.
 test("the enter line gives what a send takes, cut by the chest, the capacity and the entry cap", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   const take = (...entries) => ({ take: entries, bring: [] });
   const stocked = { pieces: { stick: 10, berry: 10 } };

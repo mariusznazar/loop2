@@ -122,6 +122,7 @@ test("on Las a program of today's closed list is alive in minute 242 and dies of
 });
 
 test("death falls during an action in progress, which gives no activityFinished", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Explore runs from minute 0 to 20; the body dies in minute 1.
   const start = withBody(body(34, 50, 0.7));
   assert.equal(start.run.current.endMinute, 20);
@@ -288,6 +289,7 @@ test("restart and end take a map run ended in death as one in progress", () => {
 });
 
 test("the body step reports a loss only when the character is chilled or starving after it", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Worked by hand: Las cools the body by 0.024 °C and satiety falls by 0.6 in a minute.
   const cases = [
     [body(37, 100, 100), false, "warm and fed"],
@@ -304,6 +306,7 @@ test("the body step reports a loss only when the character is chilled or starvin
 });
 
 test("the body step names the cause of its loss from the same reading: cold, hunger, both, or none", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Worked by hand as in the case above: Las cools by 0.024 °C and satiety falls by 0.6 in a minute.
   const cases = [
     [body(37, 100, 100), null, "warm and fed"],
@@ -338,6 +341,7 @@ test("every map run starts with full nature energy, 100: a send, a restart and a
 });
 
 test("nature energy comes back by 0.5 in a game minute whose satiety after its fall is 60 or above", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const cases = [
     [60.6, 40.5, "60.6 − 0.6 = 60, well fed"],
     [60.5, 40, "60.5 − 0.6 = 59.9, not well fed"],
@@ -467,6 +471,7 @@ test("a body at exactly 35.0 °C is not chilled but lasts no minute, and a chill
 });
 
 test("a map that does not cool the body below the threshold gives no minutes until chilled", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // Ambient 37 °C: no cooling at all, the body keeps the temperature it has.
   assert.equal(minutesUntilChilled(body(37, 100, 100), warm), null);
   assert.equal(minutesUntilChilled(body(36.2, 100, 100), warm), null);
@@ -563,6 +568,7 @@ test("a chilled body by the fire still reads chilled", () => {
 });
 
 test("a map at the body's starting temperature gives not cooling, and fire is read before it", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const at = noteRun(body(37, 100, 100)).character.at;
   assert.deepEqual(needNotes(noteRun(body(37, 100, 100)), warm).temperature, {
     kind: "not-cooling",

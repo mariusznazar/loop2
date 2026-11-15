@@ -589,6 +589,7 @@ test("the buttons stand after the scrolling part, outside it: „Restart” and 
 // Catches the warning of a cut trip plan missing from the window, standing away from „Restart” or
 // following the saved program instead of the copy's take list (D-188).
 test("the warning of a cut trip plan stands between „Restart” and „Zakończ”, from the copy's take list", async () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   await withPage(async ({ document }) => {
     const map = MAPS.forest;
     MAPS.forest = { ...map, carryIn: 2 };

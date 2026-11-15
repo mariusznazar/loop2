@@ -167,6 +167,9 @@ test("the six actions are on the closed list with their labels and minutes", () 
 });
 
 test("„Wytwórz — ognisko” is feasible on a revealed tile without a campfire, with 6 sticks", () => {
+  // decision: D-26 "A tile holds at most one campfire, which warms only that tile"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   assert.equal(actionFeasible(at({ [stick]: 6 }), CRAFT), true);
   assert.equal(actionFeasible(at({ [stick]: 9 }), CRAFT), true);
   assert.equal(
@@ -195,6 +198,8 @@ test("„Wytwórz — ognisko” is feasible on a revealed tile without a campfi
 });
 
 test("„Zapal — ognisko” is feasible at a campfire here that is not burning, with 2 sticks", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   assert.equal(
     actionFeasible(at({ [stick]: 2 }, burning(0)), LIGHT_CAMPFIRE),
     true,
@@ -226,6 +231,8 @@ test("„Zapal — ognisko” is feasible at a campfire here that is not burning
 });
 
 test("„Zapal — patyk” is feasible on a revealed tile with a stick, and nowhere else", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   assert.equal(actionFeasible(at({ [stick]: 1 }), LIGHT_ITEM), true);
   assert.equal(
     actionFeasible(at({ [stick]: 1 }, burning(30)), LIGHT_ITEM),
@@ -245,6 +252,8 @@ test("„Zapal — patyk” is feasible on a revealed tile with a stick, and now
 });
 
 test("„Zasil — ognisko” is feasible at a burning campfire here, with a piece of fuel", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   assert.equal(actionFeasible(at({ [stick]: 1 }, burning(1)), FEED), true);
   assert.equal(
     actionFeasible(at({ [stick]: 1 }, burning(0)), FEED),
@@ -266,6 +275,8 @@ test("„Zasil — ognisko” is feasible at a burning campfire here, with a pie
 });
 
 test("„Zjedz — jagoda” is feasible with a piece of food, and not without", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   assert.equal(actionFeasible(at({ [berry]: 1 }), EAT), true);
   assert.equal(
     actionFeasible(at({ [berry]: 1 }, [], false), EAT),
@@ -314,6 +325,7 @@ test("crafting puts an unlit campfire on the tile at its end and uses 6 sticks",
 });
 
 test("a campfire lit in minute m warms from minute m + 1 for 60 minutes and uses 2 sticks", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const lit = after(
     endingNext(at({ [stick]: 3 }, burning(0)), LIGHT_CAMPFIRE),
     1,
@@ -361,6 +373,7 @@ test("lighting and feeding land on the campfire of the character's tile alone", 
 });
 
 test("a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3 and is used", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const lit = after(endingNext(at({ [stick]: 2 }), LIGHT_ITEM), 1);
   assert.deepEqual(lit.burningItems, [
     { item: stick, at: entrance, minutesLeft: 3 },
@@ -417,6 +430,7 @@ test("eating adds 25 satiety at its end, not above 100, and uses a berry", () =>
 });
 
 test("„Idź — ognisko” takes one move toward the nearest campfire, in the minutes of the tile it enters", () => {
+  // decision: D-26 "A program points at a thing of the world only as the nearest known one of its kind, counted in game minutes of walking"
   const near = neighbours(handMade().tiles, entrance)[0];
   const far = offsetToAxial(3, 3);
   assert.equal(hexDistance(far, entrance), 3);
@@ -440,6 +454,8 @@ test("„Idź — ognisko” takes one move toward the nearest campfire, in the 
 });
 
 test("„Idź — ognisko” walks to a far campfire step by step and stays there", () => {
+  // decision: D-25 "A move onto a neighbouring tile is an ordinary action of the character, after which the program picks a program rule anew, as after any action of the character"
+  // decision: D-26 "An action of the character that goes to a thing of the world can be carried out where a thing of its kind is known and the character does not stand on one, and nowhere else"
   const far = offsetToAxial(3, 3);
   const walking = programFromRules(rule(ALWAYS, TO_CAMPFIRE));
   let run = freeNextMinute(at({}, [{ at: far, minutesLeft: 30 }]));
@@ -456,6 +472,9 @@ test("„Idź — ognisko” walks to a far campfire step by step and stays ther
 });
 
 test("„Idź — ognisko” cannot be carried out where there is no campfire or on a campfire's tile", () => {
+  // decision: D-26 "An action of the character that goes to a thing of the world can be carried out where a thing of its kind is known and the character does not stand on one, and nowhere else"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   assert.equal(actionFeasible(at(), TO_CAMPFIRE), false, "none");
   for (const minutesLeft of [0, 30]) {
@@ -479,6 +498,7 @@ test("„Idź — ognisko” cannot be carried out where there is no campfire or
 });
 
 test("„Idź — ognisko” is passed over on a campfire's tile, and the next program rule is picked", () => {
+  // decision: D-26 "An action of the character that goes to a thing of the world can be carried out where a thing of its kind is known and the character does not stand on one, and nowhere else"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   const run = freeNextMinute(
     at({}, [
@@ -495,6 +515,7 @@ test("„Idź — ognisko” is passed over on a campfire's tile, and the next p
 });
 
 test("the action ending in the minute of death takes no effect", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Health 0.35 and chilled: the minute's body kills the character before the berry lands.
   const run = endingNext(
     { ...at({ [berry]: 1 }), body: body(34, 50, 0.35) },
@@ -514,6 +535,7 @@ function heldProgram(state) {
 }
 
 test("the program check takes the six actions before sending and during a map run", () => {
+  // decision: D-23 "Which piece of an item an action uses — which fuel goes into a campfire — the simulation chooses, not the program"
   const rules = NEW_ACTIONS.map((action) => rule(ALWAYS, action));
   const during = send(
     createCharacter(withEdgeSolved(newGame()), "Ala").state,
@@ -547,6 +569,8 @@ function withEnergy(run, natureEnergy, satiety = 100) {
 }
 
 test("Płomyk can be cast with nature energy reaching its price of 10, and not with less", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const cases = [
     [LIGHT_CAMPFIRE, at({ [stick]: 2 }, burning(0))],
     [LIGHT_ITEM, at({ [stick]: 1 })],
@@ -637,6 +661,7 @@ test("the energy of a lighting is taken when it finishes, not while it goes on",
 });
 
 test("a mage with full nature energy who finishes a lighting has 90 after that minute", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // D-71: the minute's 0.5 comes back before the lighting takes effect, so it is lost at the cap.
   const full = after(
     endingNext(withEnergy(at({ [stick]: 1 }), 100), LIGHT_ITEM),
@@ -776,6 +801,7 @@ test("a campfire gives its event in the game minute its last minute of burning p
 });
 
 test("a campfire going out in a minute of an encounter gives its event too", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
   const fighting = {
     ...handMade({ campfires: burning(1) }),
     current: null,
@@ -801,6 +827,7 @@ test("a campfire crafted unlit, or one already at zero, gives no event", () => {
 });
 
 test("the minute of a death gives no event, and the campfire keeps its minutes", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Health 0.1 is gone in minute 1 of chill: the death comes before the world passes.
   const dying = handMade({ campfires: burning(1), body: body(34, 50, 0.1) });
   const { run, events } = stepsWithEvents(freeNextMinute(dying), 1);

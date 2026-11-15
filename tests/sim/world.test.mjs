@@ -148,6 +148,7 @@ test("a stick lit with 3 minutes warms in 3 minutes and is gone", () => {
 });
 
 test("a campfire and a stick on another tile do not warm, and burn down there", () => {
+  // decision: D-26 "A tile holds at most one campfire, which warms only that tile"
   const away = neighbour();
   const run = after(
     handMade({
@@ -228,6 +229,8 @@ test("a tile below its stock of sticks gains one piece at minute 30 and none abo
 });
 
 test("a resource whose map data gives no time to renew does not renew, while the others renew", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —, cost of a move, attacking creatures with how often they attack, and resources stand in the map's data, each resource with its density, stock per tile and time to renew one piece, no time meaning a resource that does not renew"
   // A hand-made map: Las with the sticks' time to renew left out of its data.
   const noStickRenewal = {
     ...forest,
@@ -271,6 +274,7 @@ test("a resource whose map data gives no time to renew does not renew, while the
 });
 
 test("in the minute of death nothing burns down and no tile renews", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Chilled at 30 °C, health falls by 0.35 a minute: 10.5 reaches 0 in minute 30.
   const { withStick } = renewalTiles(handMade());
   const away = neighbour();
@@ -300,6 +304,7 @@ test("in the minute of death nothing burns down and no tile renews", () => {
 });
 
 test("an exploring that ends in a minute of renewal reveals its tile and keeps the renewal", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const { withStick } = renewalTiles(handMade());
   const start = setStock(
     handMade({

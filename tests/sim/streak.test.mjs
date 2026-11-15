@@ -70,6 +70,7 @@ test("a game minute of loss to cold sets the streak to 0, and it stays 0 while t
 });
 
 test("a game minute of loss to hunger sets the streak to 0", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Satiety 30.4 falls to 29.8 below 30: starving; the temperature 36.9 stays above 35.
   const state = withRun({ body: body(36.9, 30.4, 100), streak: 7 });
   const { state: after } = advanceMinutes(state, 1);
@@ -177,6 +178,7 @@ test("a streak of zero gives no event of a loss, and the game minutes after a lo
 });
 
 test("a game minute of an encounter reports no loss, the streak growing in it", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows"
   const fighting = withRun({
     body: body(34.99, 100, 100),
     streak: 7,

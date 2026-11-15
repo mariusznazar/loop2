@@ -79,6 +79,7 @@ function otherTile(run) {
 const kinds = (events) => events.map((event) => event.kind);
 
 test("a map run with a streak of 479 completes at the end of the next game minute without a loss, with the rest of that minute taken effect and no program rule picked", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const before = oneShort();
   const at = otherTile(before.run);
   const state = {
@@ -271,6 +272,7 @@ test("the program edited on a map run that has completed leaves its streak at 48
 });
 
 test("solving requirements present in data are all required and absent ones are ignored", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
   const deep = MAPS.forestDeep;
   const run = {
@@ -338,6 +340,7 @@ test("Las - deeper gives both requirements, the streak first and the beaten atta
 });
 
 test("a requirement the data of the map leaves out is not given, and the other one stands alone", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const run = {
     ...sent().run,
     mapId: "forestDeep",

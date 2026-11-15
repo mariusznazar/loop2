@@ -113,6 +113,7 @@ test("forty dodges use one refreshed reduction and leave the wolf at 15 health",
 });
 
 test("a stick strike without a stick is skipped in favor of the next combat rule", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   const program = programFromRules(
     { condition: { kind: "always" }, action: { kind: "strikeWithStick" } },
     { condition: { kind: "always" }, action: { kind: "kick" } },
@@ -141,6 +142,8 @@ test("ordinary actions cannot be carried out during combat", () => {
 });
 
 test("character health conditions are checked after the creature's strike", () => {
+  // decision: D-20 "The program chooses again at the next free game minute, and before the character's action in each combat turn"
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   const program = programFromRules({
     condition: { kind: "healthBelow", value: 94 },
     action: { kind: "kick" },
@@ -153,6 +156,7 @@ test("character health conditions are checked after the creature's strike", () =
 });
 
 test("combat checks group conditions in order against post-strike health", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
   const always = { kind: "always" };
   const kick = { kind: "kick" };
   const program = {

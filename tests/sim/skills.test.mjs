@@ -319,6 +319,8 @@ test("send and restart take independent rank snapshots and a restart discards ru
 });
 
 test("practice appears at the effect minute, once for all tiles of Zwiad, and never on an already revealed tile", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = base(ranks("exploration", { scout: 1 }));
   const started = pickActivity(run, program({ kind: "explore" })).run;
   let current = started;
@@ -372,6 +374,8 @@ test("gather miss grants none, an improved chance hits, and full hand respects s
 });
 
 test("Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock and free space, and leaves random stream alone", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const action = { kind: "patrol", resource: "stick" };
   for (const [stock, carried, expected] of [
     [20, 0, 12],
@@ -404,6 +408,8 @@ test("Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock
 });
 
 test("clean flame needs no stick but still costs ten energy; item lighting still needs its piece", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const action = { kind: "lightCampfire" };
   const run = ready(action, ranks("flameSpell", { cleanFlame: 1 }));
   const fixture = {

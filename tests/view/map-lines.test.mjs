@@ -98,6 +98,7 @@ test("the terrain lines give the grid, the entrance, the step and the minutes wi
 // left out. Catches a note on the usual step, a note with the wrong direction, a note left in the
 // text instead of standing apart, and a minutes line for a map that does not cool the body.
 test("a step above the usual costs more, one below costs less, the note standing apart, and a map that does not cool leaves the minutes out", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(terrainLines({ ...forest, stepMinutes: 9 }), [
@@ -124,6 +125,7 @@ test("a step above the usual costs more, one below costs less, the note standing
 // stock and its renewal.
 // Catches a floored count, a renewal given the wrong minutes, and a resource whose line is missing.
 test("each resource gives its name, the tiles that hold it, its stock and its renewal", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(resourceLines(forest), [
@@ -172,6 +174,7 @@ test("each resource gives its name, the tiles that hold it, its stock and its re
 // renewal. Catches a „+1 co” given to such a resource, and the words left in the text instead of
 // standing apart.
 test("a resource that does not renew says so apart, in warning, in place of its renewal", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   const map = {
     ...forest,
@@ -207,6 +210,7 @@ test("an attacker gives its name, health and blow, and its chance, quiet time an
 // 180 + 1 / 0.0123 = 261.30 gives 261. Catches a point for the comma, a second decimal, and a gap
 // left unrounded.
 test("the chance is written with a decimal comma and at most one decimal, and the mean gap rounds", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   const wolfAt = (chancePerMinute) => ({
     ...forestDeep,
@@ -226,6 +230,7 @@ test("the chance is written with a decimal comma and at most one decimal, and th
 // gives no line. Catches a zero cap dropped as if unset, a cap line without its warning role, and a
 // map without caps getting a line.
 test("the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-327 "It departs from the card of the predecessor game in five things only"
   assert.deepEqual(capLines(forest), []);

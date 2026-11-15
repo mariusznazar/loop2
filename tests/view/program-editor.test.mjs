@@ -127,6 +127,7 @@ function heldProgram(state) {
 // D-90 and D-93. Catches reused numbers, lost groups, insertion before removal and counts tied to
 // position.
 test("groups append with monotonic numbers through rename and deletion, including the last group", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   const initial = newGame().programs[0].program;
   const added = addGroup(initial);
   assert.equal(added.groups.length, 2);
@@ -227,6 +228,7 @@ test("group conditions offer the same kinds and editable fields while preserving
 });
 
 test("native drop targets place a rule before the target after removal, or append to a group", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   const input = {
     ...THREE,
     groups: [
@@ -914,6 +916,7 @@ test("every program the editor builds passes setProgram, before sending and duri
 
 // D-90 and the group-bound arrows of D-297: edits target a group identity, never its position.
 test("rule edits preserve other groups, group boundaries and identities", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   const first = {
     id: 8,
     name: "First",
@@ -1616,6 +1619,7 @@ test("the arrows are off only on the program's first and last rule, a group's ed
 });
 
 test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   const rules = (program) =>
     program.groups.map((group) => group.rules.map((rule) => rule.id));
   const program = {

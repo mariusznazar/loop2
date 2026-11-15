@@ -46,6 +46,7 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
 // D-91, D-164: the player's programs replace the game's one program, and a
 // new game holds one, „Program”, with no program rule.
 test("a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
+  // decision: D-91 "A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”"
   const state = newGame();
   assert.equal(state.programs.length, 1);
   assert.deepEqual(programRules(state.programs[0].program), []);
@@ -91,6 +92,7 @@ test("a send while a map run exists is refused", () => {
 });
 
 test("a program edit during a 20-minute exploration does not interrupt it and applies at minute 20", () => {
+  // decision: D-20 "The program chooses again at the next free game minute"
   let state = advanceMinutes(sent().state, 5).state;
   const exploring = state.run.current;
   state = setProgram(state, WANDER_FIRST).state;
@@ -161,6 +163,7 @@ test("Zakończ ends the map run, keeps the program and the last seed", () => {
 });
 
 test("the next send after Zakończ takes a new seed from the later real time", () => {
+  // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed"
   const first = sent().state;
   const ended = end(first).state;
   const { state: second, events } = send(ended, SENT, LATER_MS);
@@ -181,6 +184,8 @@ test("Restart and Zakończ without a map run are refused", () => {
 // The pace the player picked stays until the player changes it (D-129).
 
 test("setPace sets the pace and nothing else, with a map run or without", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
+  // decision: D-21 "Picking a pace while the map run is paused, the pause at a discovery included, changes the pace and leaves the map run paused until „Wznów”"
   const running = sent().state;
   const held = {
     ...setPaused(running, true).state,
@@ -197,6 +202,7 @@ test("setPace sets the pace and nothing else, with a map run or without", () => 
 });
 
 test("setPace throws on a pace outside the list of paces and leaves the game as it was", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
   const state = sent().state;
   for (const pace of [0, 3, 5, 32, -1, 1.5, "2", null, undefined, Number.NaN]) {
     assert.throws(() => setPace(state, pace), Error, `pace ${String(pace)}`);
