@@ -190,6 +190,7 @@ test("a button not selected in its group is the same element in both forms", asy
 // since two forms that both leave it out would agree and show a plain button.
 test("a secondary action is the same element in both forms", async () => {
   // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-275 "An action that opens or leaves a state of a form and stands under that form — „Nie pamiętam hasła”, „Wróć do logowania” and „Anuluj” of the login card — is a secondary action: underlined text in `text-secondary` without a frame, and a button still, since it changes the state of the screen and has no address"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -297,6 +298,7 @@ test("a button in positive is the same element in both forms, of the type button
 // class `main`, which styles.css draws as it draws a form's submit button.
 test("a main button outside a form is the same element in both forms, of the type button with the class main", async () => {
   // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -401,6 +403,7 @@ test("a button whose open state is set on the DOM form is the same element as th
 // `aria-pressed`, with the class `tab` beside `selected`.
 test("a tab selected in its group is the same element in both forms", async () => {
   // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -421,6 +424,7 @@ test("a tab selected in its group is the same element in both forms", async () =
 
 test("a tab not selected in its group is the same element in both forms", async () => {
   // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,

@@ -222,6 +222,8 @@ test("unknown trees are hidden, purchases update existing buttons and refuse una
 // D-287 and D-200: while a manual map run waits or has ended, „Kup” is inactive whatever the points,
 // and the section says why in one sentence.
 test("„Kup” is inactive with the sentence under the heading beside a waiting map run and beside an ended one", async () => {
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "Wróć do niego i je zakończ, żeby wysłać postać.”, and at the section „Umiejętności” „Przejście na mapie {mapa} jest niezakończone"
   await withPage(async (page) => {
     const started = send(
       withTrees(knowingExploration(), ["exploration"]),

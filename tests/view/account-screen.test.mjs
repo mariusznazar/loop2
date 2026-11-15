@@ -2787,6 +2787,8 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
 // one sentence per map instead of one per character, a sentence left on after „Zakończ”, and a
 // sentence of sending that stays in Siedziba.
 test("after the end of a map run every character's „Wejdź” is inactive under the sentence why, and „Zakończ” takes the sentence away", async () => {
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
   await onPage(async ({ root }) => {
     const endedWithOla = createCharacter(ended(), "Ola").state;
     const sentence =
@@ -4322,6 +4324,8 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
 // without saving, a leave of a paused or ended map run that saves although nothing changed, and a
 // return that resumes the map run by itself.
 test("leaving the screen of a map run that goes on pauses it as „Pauza” does and saves at once; a return resumes nothing, and leaving a paused or an ended map run saves nothing", async () => {
+  // decision: D-283 "Leaving the screen of a manual map run pauses it as „Pauza” does"
+  // decision: D-284 "A return to the screen of a manual map run that waits in a pause leaves it in that pause until the player presses „Wznów”, whether or not it went on before the player left"
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   await withStillClock(async () => {
     await onPage(async ({ root }) => {
@@ -5501,6 +5505,7 @@ test("the card opens on „Zaloguj się” with the name, the sentence, the swit
   // decision: D-259 "The login card opens on „Zaloguj się”."
   // decision: D-259 "The switch stands only in „Zaloguj się” and „Załóż konto”, where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no switch, and the ways out of them are „Wróć do logowania” and „Anuluj”."
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card"
+  // decision: D-275 "An action that opens or leaves a state of a form and stands under that form — „Nie pamiętam hasła”, „Wróć do logowania” and „Anuluj” of the login card — is a secondary action: underlined text in `text-secondary` without a frame, and a button still, since it changes the state of the screen and has no address"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);

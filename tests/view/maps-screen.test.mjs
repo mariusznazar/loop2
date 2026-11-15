@@ -628,6 +628,7 @@ test("a map that cuts the plan shows the clipped-plan line and what enters cut",
 // D-243, D-274: „Wejdź” in the main look at each map, „Puść w pętlę” the plain button and only
 // at a solved map; both act with the program the row shows.
 test("„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program", async () => {
+  // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
   await withPage(async (page) => {
     const unsolved = teamOf("Ala");
     const { screen, calls } = await mount(page, propsOf(unsolved, "forest"));
@@ -763,6 +764,8 @@ test("a character in an earning loop shows its line and „Zatrzymaj”, its sen
 // D-287, D-55: while a manual map run waits or has ended, every „Wejdź” is inactive, „Puść w pętlę”
 // is inactive at the run's character alone, and each character says why.
 test("a manual map run going on, waiting and ended keeps „Wejdź” inactive and „Puść w pętlę” inactive at its character alone, with the sentence at each character", async () => {
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
   await withPage(async (page) => {
     const base = solved(teamOf("Ala", "Bob"));
     const running = send(base, { mapId: "forest", characterId: 1 }, 1).state;

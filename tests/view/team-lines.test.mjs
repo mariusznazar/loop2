@@ -191,6 +191,7 @@ test("the line after a stop lists the practice gathered in the skills' order, an
 // D-287. Catches a sentence that names the map by a typed name instead of the
 // data's, that drops the second sentence every inactive send shows, and a map other than the run's.
 test("the sentence beside an inactive send names the run's map from the data and tells the player to finish the run", () => {
+  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
   assert.equal(
     runWaitingSentence("forest"),
     "Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby wysłać postać.",

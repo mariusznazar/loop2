@@ -591,6 +591,8 @@ test("„Wróć” closes the question and puts the map run back as it was: one 
 // D-324, D-283, D-284. Catches the question surviving the leaving of the screen, a map run that goes on
 // on the return, and a question that comes back with the screen.
 test("leaving the screen closes the question and the map run stays paused on the return, “Zakończ” asking again", async () => {
+  // decision: D-283 "Leaving the screen of a manual map run pauses it as „Pauza” does"
+  // decision: D-284 "A return to the screen of a manual map run that waits in a pause leaves it in that pause until the player presses „Wznów”, whether or not it went on before the player left"
   await onPage(async ({ root, pass, reading }) => {
     const { view, address } = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));
