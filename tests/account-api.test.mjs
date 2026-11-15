@@ -1185,6 +1185,7 @@ const reportedWords = {
 // invariant: browser-failure-report
 // invariant: account-client-requests
 test("reportBrowserFailure posts the three words as one JSON POST to the report path, with no keepalive, same-origin credentials and no redirect", async () => {
+  // decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server"
   respond = (_request, response) => response.writeHead(204).end();
   await withRecordedFetch(async (options) => {
     const result = await within(

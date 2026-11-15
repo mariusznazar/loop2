@@ -351,6 +351,7 @@ test("the clock's interval is registered before the saver's, and dispose clears 
 // Catches a store that takes a result after an error nothing handled, or reads the clock for a save
 // afterwards, whose error would come back with every save (D-323).
 test("after halt() no result is taken, no act changes the state, and keep makes no reading", async () => {
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock"
   await onStore(
     passing(),
     async ({ store, sent, taken, readings, intervals, pass }) => {

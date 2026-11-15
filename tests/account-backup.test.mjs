@@ -406,6 +406,7 @@ test("a database that cannot be opened and a temporary directory that cannot be 
 // error, which the backup script appends to its log.
 test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {
   // decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const box = await sandbox(t);
   const garbage = join(box.directory, "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -455,6 +456,8 @@ function runBackupWithStandin(box, mode) {
 // failure written as backup-database, so the operator reads "No backup was
 // made" after a backup that went out whole.
 test("a whole backup whose temporary directory cannot be removed is one failure of its own, with its cause and one sentence, and exits 1", async (t) => {
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  // decision: D-354 "A failure of the command written as that line and followed by that sentence is one failure recorded once"
   const box = await sandbox(t);
   seedDatabase(box).close();
 
@@ -500,6 +503,7 @@ test("a whole backup whose temporary directory cannot be removed is one failure 
 // D-253. Faults: no handler, so the default print writes the
 // message and the stack; a line on standard output, which carries the backup.
 test("what no code of the command handled ends it with one line of its kind, code and place on standard error", async (t) => {
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const box = await sandbox(t);
   seedDatabase(box);
   const child = spawn(process.execPath, ["--import", standin, command, word], {

@@ -355,6 +355,8 @@ class LocalStart(unittest.TestCase):
                 self.assertFalse(accepts_connections(address, port), f"{address}:{port}")
 
     def test_a_browser_signs_up_over_https_though_no_mail_can_leave(self):
+        # decision: D-255 "One command of the repository starts the game locally over HTTPS"
+        # decision: D-257 "At the local start the mail settings point at an address where nothing answers"
         start = self.local()
         began = time.monotonic()
         status, headers, body = Accounts(start.port).register("first@example.test")
@@ -374,6 +376,8 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(json.loads(body)["email"], "first@example.test")
 
     def test_the_certificate_holds_for_the_address_the_game_stands_at(self):
+        # decision: D-255 "One command of the repository starts the game locally over HTTPS"
+        # decision: D-258 "The local start makes its own certificate"
         start = self.local()
         certificate = ssl.get_server_certificate(("127.0.0.1", start.port))
         context = ssl.create_default_context(cadata=certificate)
@@ -382,6 +386,7 @@ class LocalStart(unittest.TestCase):
         self.assertIn(b"<html", body.lower())
 
     def test_the_game_stands_at_a_port_of_its_own_at_each_of_two_starts_side_by_side(self):
+        # decision: D-256 "The local start keeps no account and no saved game state for a person between its starts: each start of the command makes a database of its own"
         first = self.local()
         second = self.local()
         self.assertNotEqual(first.port, second.port)
@@ -393,6 +398,7 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(len(directories(self.copy)), 2)
 
     def test_a_start_removes_the_database_of_a_start_that_ended(self):
+        # decision: D-256 "The local start keeps no account and no saved game state for a person between its starts: each start of the command makes a database of its own and removes the databases of the starts it does not find running"
         first = self.local()
         self.assertEqual(Accounts(first.port).register("gone@example.test")[0], 201)
         earlier = directories(self.copy)
@@ -409,6 +415,7 @@ class LocalStart(unittest.TestCase):
         self.assertNotEqual(directories(self.copy), earlier)
 
     def test_a_start_killed_from_outside_leaves_nothing_running_and_goes_at_the_next_start(self):
+        # decision: D-256 "The local start keeps no account and no saved game state for a person between its starts: each start of the command makes a database of its own and removes the databases of the starts it does not find running"
         first = self.local()
         earlier = directories(self.copy)
         support.kill_tree(first.process)
@@ -422,6 +429,7 @@ class LocalStart(unittest.TestCase):
         self.assertNotEqual(directories(self.copy), earlier)
 
     def test_a_number_another_program_holds_keeps_no_directory_of_an_ended_start(self):
+        # decision: D-256 "The local start keeps no account and no saved game state for a person between its starts: each start of the command makes a database of its own and removes the databases of the starts it does not find running; a start whose process number is in use and whose port takes a connection and stays silent counts as running"
         foreign = os.getpid()
         mark = "abcdefabcdefabcd"
         for port in (support.free_port(), 99999, 0):
@@ -437,6 +445,7 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(len(directories(self.copy)), 1)
 
     def test_a_start_on_its_way_up_is_not_taken_for_ended(self):
+        # decision: D-256 "The local start keeps no account and no saved game state for a person between its starts: each start of the command makes a database of its own and removes the databases of the starts it does not find running; a start whose process number is in use and whose port takes a connection and stays silent counts as running"
         write_stand_in(self.copy, BUSY_SERVER)
         command = ["node", "scripts/local-start.mjs"]
         first = Start(self.copy, command, wait=False)
@@ -487,6 +496,7 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(json.loads(lines[0])["code"], "EEXIST")
 
     def test_stop_with_no_built_game_still_tells_every_start_and_leaves_the_missing_writer_once(self):
+        # decision: D-253 "A script run by hand or by the test gate that touches none of those data meets the rule on the last resort through the default print of Node.js or Python, which writes what nothing handled"
         # A copy that holds no dist/server/log-line.js, with a start of the stand-in
         # server that holds no writer either, and a directory whose stop file cannot be written
         # listed before it.
@@ -529,6 +539,7 @@ class LocalStart(unittest.TestCase):
         self.assertIn("stopped: 0", local_stop(self.copy))
 
     def test_no_environment_value_and_no_argument_leads_the_removal_elsewhere(self):
+        # decision: D-256 "The local start keeps no account and no saved game state for a person between its starts: each start of the command makes a database of its own"
         outside = self.copy.file("outside.sqlite")
         foreign = self.copy.file(".runs/local-start/not-a-start/accounts.sqlite")
         os.makedirs(os.path.dirname(foreign))

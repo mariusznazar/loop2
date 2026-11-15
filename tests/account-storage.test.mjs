@@ -2806,6 +2806,7 @@ test("the owner's command writes one event with the account's number for a chang
 // hears to try again; SQLite's message or the file's path in the output; a
 // sentence dropped, so the owner no longer reads what happened.
 test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -2833,6 +2834,7 @@ test("a database failure of the owner's command adds the error's kind and code a
 // D-253. Faults: no handler, so the default print writes the
 // message and the stack; a handler that goes on after what no code handled.
 test("what no code of the owner's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runBlockCommand(
     ["block", "player@example.test"],
@@ -3070,6 +3072,7 @@ test("the previous-save command writes one event with the account's number for a
 // to try again; SQLite's message or the file's path in the output; a sentence
 // dropped, so the owner no longer reads what happened.
 test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -3101,6 +3104,7 @@ test("a database failure of the previous-save command adds the error's kind and 
 // D-253. Faults: no handler of its own, so the default print writes the message
 // and the stack; a handler that goes on after what no code handled.
 test("what no code of the previous-save command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runOwnerCommand(
     previousSaveCommand,

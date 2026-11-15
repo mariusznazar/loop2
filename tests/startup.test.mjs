@@ -614,6 +614,7 @@ for (const [mode, origin] of [
     `${origin} no code of the server handled ends it with one line of its kind, code and place`,
     { timeout: 20000 },
     async (t) => {
+      // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
       // D-253. Faults: no handler, so the default print
       // writes the message and the stack; a handler that keeps the process.
       const f = await configurationFixture(t);

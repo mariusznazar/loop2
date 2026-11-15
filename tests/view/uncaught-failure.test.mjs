@@ -355,6 +355,7 @@ async function playing(held) {
 // again, whose error would come back with every save, and a save that sends anything but the last
 // whole state the page held before the error.
 test("after an error nothing handled, in the clock's own reading, the game state stays as it was and every save sends the state from before the error", async () => {
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock"
   await onPage(async ({ root, intervals }) => {
     let now = 0;
     let faulty = false;
@@ -482,6 +483,9 @@ test("after an error nothing handled, the buttons of the screen Mapy change no s
 // D-323, D-253, D-252. Catches an event left uncancelled, which the
 // browser then prints itself with the error's text, and a line that carries that text or the stack.
 test("an error and a rejection nothing handled are cancelled, and each leaves one line of its kind, code and place and no word of its text", async () => {
+  // decision: D-253 "The page in the browser has one too: it cancels the event of an error that no code handled, so that the browser prints nothing itself, and writes in the console, as plain text, one line of the kind, the code and the place of the handler, never the error's message or stack"
+  // decision: D-323 "The page writes the line of the error as D-253 gives it"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   const cases = [
     {
       name: "an error event",
@@ -528,6 +532,9 @@ test("an error and a rejection nothing handled are cancelled, and each leaves on
 });
 
 test("the same line is written once until the page is reloaded, and a line of another error is written too", async () => {
+  // decision: D-253 "The page in the browser has one too: it cancels the event of an error that no code handled, so that the browser prints nothing itself, and writes in the console, as plain text, one line of the kind, the code and the place of the handler, never the error's message or stack, the same line once until the page is reloaded"
+  // decision: D-323 "The page writes the line of the error as D-253 gives it"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ lines }) => {
     const held = heldClient();
     await startPage(held);
@@ -560,6 +567,8 @@ function recordReports(held, lines) {
 // D-356, D-253. Catches a report sent before its line is written,
 // a report sent again for a line already written, and a line the account client never hears of.
 test("each distinct line goes to the account client once per page load, after its console line, for errors and rejections alike", async () => {
+  // decision: D-253 "The page in the browser has one too: it cancels the event of an error that no code handled, so that the browser prints nothing itself, and writes in the console, as plain text, one line of the kind, the code and the place of the handler, never the error's message or stack, the same line once until the page is reloaded"
+  // decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server"
   await onPage(async ({ lines }) => {
     const held = heldClient();
     const sent = recordReports(held, lines);
@@ -588,6 +597,7 @@ test("each distinct line goes to the account client once per page load, after it
 // D-323, D-253. Catches a card taken down that reports under the
 // place of the page's handling instead of its own, and a report left out for it.
 test("a card taken down on the page is reported once, with the place of its own line", async () => {
+  // decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server"
   await onPage(async ({ root, lines }) => {
     await outsideAct(async () => {
       const held = heldClient();
@@ -621,6 +631,7 @@ test("a card taken down on the page is reported once, with the place of its own 
 // D-323, D-253. Catches a report whose failure leaves the error
 // uncancelled, or writes a second line of its own, or reaches the window as an error of the page.
 test("a report the account client throws or refuses leaves the error cancelled, its one line written and no error of its own", async () => {
+  // decision: D-253 "The page in the browser has one too: it cancels the event of an error that no code handled, so that the browser prints nothing itself, and writes in the console, as plain text, one line of the kind, the code and the place of the handler"
   const doubles = {
     "a double that throws": () => {
       throw new Error("a double that throws");
@@ -646,6 +657,8 @@ test("a report the account client throws or refuses leaves the error cancelled, 
 // D-323, D-208. Catches a sentence that replaces the sentence of a
 // failed save, one standing more than once, and one in a role but `warning`.
 test("on a game screen the sentence stands once in the row under the menu bar, in warning, beside the sentence of a failed save and not instead of it", async () => {
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await playing(held);
@@ -684,6 +697,8 @@ test("on a game screen the sentence stands once in the row under the menu bar, i
 });
 
 test("while the page asks for the session the sentence stands under the bar of the waiting screen, and the card then shows it in the card", async () => {
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -710,6 +725,8 @@ test("while the page asks for the session the sentence stands under the bar of t
 });
 
 test("an error while the card stands puts the sentence in the card under the button of its form, once, and the card still works", async () => {
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -765,6 +782,9 @@ function assertWaitingWithSentence(root, intervals, reason) {
 // that catches up the earning loops of a loaded save, takes the result and saves a state the
 // error came before.
 test("after an error nothing handled no game is built: a card built after it shows the sentence, and a sign-in on it stays at the waiting screen and saves nothing", async () => {
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock; the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence, and the catch-up of D-247"
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await playing(held);
@@ -792,6 +812,9 @@ test("after an error nothing handled no game is built: a card built after it sho
 });
 
 test("an error on the waiting screen before the first game leaves a sign-in that loads a save at the waiting screen, with no game built and no save sent", async () => {
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock; the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence, and the catch-up of D-247"
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await startPage(held);
@@ -885,6 +908,10 @@ test("a failure the game foresees keeps its own sentence alone: a lost connectio
 // D-323, D-262. Catches a root the page never hears of, and a
 // card taken down that leaves an empty screen with the error only in the console.
 test("an error in the drawing of a root of the game reaches the page through the window", async () => {
+  // decision: D-253 "The page in the browser has one too: it cancels the event of an error that no code handled, so that the browser prints nothing itself, and writes in the console, as plain text, one line of the kind, the code and the place of the handler"
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save"
+  // decision: D-323 "The page writes the line of the error as D-253 gives it"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root, lines }) => {
     // React's development build adds a warning of its own about the root it takes down.
     const warning = mock.method(console, "warn", () => {});
@@ -915,6 +942,8 @@ test("an error in the drawing of a root of the game reaches the page through the
 });
 
 test("a card that React takes down after an error is replaced by the sentence alone in its place, and the page hears of the error", async () => {
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262)"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ lines }) => {
     await outsideAct(async () => {
       const heard = [];
@@ -947,6 +976,10 @@ test("a card that React takes down after an error is replaced by the sentence al
 });
 
 test("a card taken down on the page leaves the sentence alone in the card's place, with one line of the error", async () => {
+  // decision: D-253 "The page in the browser has one too: it cancels the event of an error that no code handled, so that the browser prints nothing itself, and writes in the console, as plain text, one line of the kind, the code and the place of the handler"
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262)"
+  // decision: D-323 "The page writes the line of the error as D-253 gives it"
+  // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
   await onPage(async ({ root, lines }) => {
     await outsideAct(async () => {
       const held = heldClient();

@@ -142,6 +142,7 @@ class FixedMessages(unittest.TestCase):
     def test_each_kind_sends_its_fixed_notice_and_nothing_a_tool_printed(self):
         # invariant: failure-watcher-message
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a log line, a count or Docker's text in the subject or the text, or in the
         # state or the log the next reader of the machine trusts.
         for kind, arrange in ARRANGEMENTS.items():
@@ -163,6 +164,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_the_marker_was_put_before_the_watcher_which_asked_for_the_reading(self):
         # invariant: failure-watcher-message
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # A precondition of the test above: the marker stood in what the watcher read.
         for kind in ("failures", "browser"):
             with self.subTest(kind):
@@ -185,6 +187,7 @@ class FixedMessages(unittest.TestCase):
     def test_the_log_of_the_backup_is_read_and_a_marker_beside_the_exact_line_reaches_nothing(self):
         # invariant: failure-watcher-message
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The marker stands in lines that look like the end of a sent night; where one line is
         # exact the watcher has no trouble to report, and the marker reaches nothing it writes.
         fixture = self.fixture()
@@ -201,6 +204,7 @@ class FixedMessages(unittest.TestCase):
     def test_all_six_kinds_in_one_run_send_six_fixed_notices_and_nothing_else(self):
         # invariant: failure-watcher-message
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         fixture = self.fixture()
         arrange_down(fixture)
         arrange_backup(fixture)
@@ -222,6 +226,7 @@ class FixedMessages(unittest.TestCase):
     def test_the_subject_is_one_word_a_url_path_takes_and_no_two_notices_are_alike(self):
         # invariant: failure-watcher-message
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         subjects, texts = [], []
         for kind, arrange in ARRANGEMENTS.items():
             with self.subTest(kind):
@@ -252,6 +257,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_docker_text_on_a_failed_reading_reaches_nothing(self):
         # invariant: failure-watcher-message
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         fixture = self.fixture()
         fixture.answer("docker", exit_code=1, stdout=(MARKER + "\n").encode(),
                        stderr=(MARKER + "\n").encode())
@@ -263,6 +269,7 @@ class FixedMessages(unittest.TestCase):
 
     def test_an_inspect_that_succeeds_with_an_answer_off_the_shape_reaches_nothing(self):
         # invariant: failure-watcher-message
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         # The break: the watcher quotes the raw answer of a successful `docker inspect`, which it
         # holds whole when the answer does not fit the expected shape, in its log or a message.
         shapes = {
