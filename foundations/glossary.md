@@ -155,7 +155,7 @@ for.
 
 ## blocked account
 
-A blocked account is a player account the operator has cut off from signing in and playing, which stays so until the operator unblocks it.
+A blocked account is a player account the operator, or an owner from the owner panel, has cut off from signing in and playing, which stays so until the operator or an owner unblocks it.
 
 - **Not:** an email address refused for 15 minutes after five failed logins (D-102) — "locked"
 
@@ -265,6 +265,12 @@ A previous save is the one saved game state the server keeps beside an account's
 
 ## previous-save privilege
 
-The previous-save privilege is the flag the operator sets on a player account that allows the account to pull the programs of its previous save and to start the game from zero.
+The previous-save privilege is the flag the operator, or an owner from the owner panel, sets on a player account that allows the account to pull the programs of its previous save and to start the game from zero.
 
 - **Not:** none
+
+## owner
+
+An owner is an account whose role is `owner`, the role that lets its holder use the owner panel of the game and that only a human gives, with the command `account-role`; every other account has the role `player`.
+
+- **Not:** the person who reaches the server and runs its commands — "operator"
