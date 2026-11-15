@@ -537,6 +537,8 @@ function loopingOla(state = twoCharacters()) {
 test("a reading passes the manual run, then the loops, and hands the store one result with their events together", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
+  // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
+  // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
   withBothClocks(({ pass, jump }) => {
     // Ola has no practice: her death in the loop takes nothing and her loop goes on.
     let state = send(loopingOla(practised(twoCharacters(), 1)), SENT, 1).state;
@@ -685,6 +687,7 @@ test("a date turned back passes nothing and the loop clock then runs from the da
 
 // D-242: with no loop the clock is set to the reading, so a first loop gets a full minute.
 test("a loop started by the clock gets a full first minute, and its first run is seeded by the reading it took", () => {
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   withBothClocks(({ jump }) => {
     const state = twoCharacters();
     const store = holdingStore(state);
@@ -729,6 +732,7 @@ function savedBefore(state, savedMs) {
 // D-247, D-242. Catches a catch-up that reads another moment than the one the clock keeps for the
 // view, and one that loses the rest shorter than a minute.
 test("the catch-up spans from the save time to the date it reads, which is the clock's moment, and the rest waits", () => {
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   withBothClocks(({ jump }) => {
     const state = savedBefore(loopingOla(), 150_000);
     const store = holdingStore(state);

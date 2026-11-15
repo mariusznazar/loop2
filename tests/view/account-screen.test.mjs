@@ -2182,6 +2182,11 @@ function hidePage() {
 test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   // decision: D-07 "The browser computes the whole game — the map runs, the earning loops and the catch-up — and sends the saved game state to the server"
+  // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
+  // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
+  // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
+  // decision: D-247 "It runs on its own after each load of a game state, the unsaved game state kept in the page's memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another browser's (D-209) and after a sign-in to the same account with that unsaved game state"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -2202,6 +2207,8 @@ test("a loaded game catches its loop up once, and a catch-up that ended a map ru
 // each other (D-209).
 test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up once", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
+  // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
+  // decision: D-247 "It runs on its own after each load of a game state, the unsaved game state kept in the page's memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another browser's (D-209) and after a sign-in to the same account with that unsaved game state"
   await onPage(async () => {
     const held = heldClient();
     await startPage(held);
@@ -2537,6 +2544,8 @@ const ACTS = [
 // sign-in would refuse and start anew, a moment older than the reading it makes, and a stamp written
 // into the view's state, which the saver's comparison would take for a change.
 test("the document kept for the same account holds the moment of its reading and loads, and the view's state stays what it was", async () => {
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   await onPage(async () => {
     let current = CLOCK_MS;
     const date = mock.method(Date, "now", () => current);
@@ -2582,6 +2591,7 @@ test("the document kept for the same account holds the moment of its reading and
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
   // The clock reads no real time, so an act that starts the map run again leaves no carried time.
   Object.defineProperty(globalThis, "performance", {

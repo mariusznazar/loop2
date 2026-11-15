@@ -281,6 +281,7 @@ test("a save that succeeds keeps its revision for the next save and takes away t
 
 test("a failed save shows that the game retries, and the retries follow after 5, 10 and 20 s and then every 30 s, each with the state of its time", async () => {
   // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -539,6 +540,8 @@ const documentOf = ({ version, game }) => ({ version, revision: 9, game });
 // D-248. Catches a document unstamped, which the load refuses, a moment read before
 // the reading that sends, so older than the state it stamps, and a stamp written into the state held.
 test("each document holds the moment of the reading made for it and loads, and the state held stays what it was", async () => {
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -581,6 +584,8 @@ test("each document holds the moment of the reading made for it and loads, and t
 // comparison by identity finds a change at every check, and a tab that has only loaded sending.
 test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees", async () => {
   // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const savedMs = CLOCK_MS - 60_000;
   const { state } = loadSavedGame(savedGame(withSaveTime(passing(), savedMs)));
   await onPage(async () => {

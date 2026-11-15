@@ -402,6 +402,7 @@ test("the resurrection renews 480 real minutes after the death that used it", ()
 // that every real moment of the loop clock stays a whole number of milliseconds; the speed control
 // does not reach it.
 test("an earning loop goes one game minute in 60 real seconds, a whole number of seconds", () => {
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   assert.ok(
     Number.isInteger(BALANCE.loopMinuteRealSeconds) &&
       BALANCE.loopMinuteRealSeconds >= 1,

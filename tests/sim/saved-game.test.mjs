@@ -2219,6 +2219,10 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-56 "A map run names the team's character it carries by that number"
   // decision: D-221 "A load refuses a saved game state that holds a death unsettled"
   // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
+  // decision: D-241 "The game state holds its earning loops beside the one manual map run, by character number, so a character has at most one, each with the content of the program taken at its start, its map run going on, the number of that map run, the count of its completions and the practice gathered from those completions since the player last took the practice waiting with „Odbierz”"
+  // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
 });
@@ -2595,6 +2599,7 @@ test("the load shares none of the earning loops, the stopped loops or the report
 // D-241, D-246, D-248: a game from no save holds no earning loop, no stopped loop, no report and no
 // save time.
 test("a new game holds no earning loop, no stopped loop, no report and no save time", () => {
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const state = newGame();
   assert.deepEqual(state.loops, {});
   assert.deepEqual(state.stoppedLoops, {});
@@ -2604,6 +2609,7 @@ test("a new game holds no earning loop, no stopped loop, no report and no save t
 
 // D-248: stamped only on the way to the document, so the state passed stays what it was.
 test("a state with its save time is a copy holding the moment, the state passed left as it was", () => {
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   const state = deepFreeze(newGame());
   const stamped = withSaveTime(state, 1760000000123);
   assert.notEqual(stamped, state);
@@ -2630,6 +2636,7 @@ test("a moment that is no safe integer gives no save time", () => {
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const state = newGame();
   for (const moment of [-1, -60_000, Number.MIN_SAFE_INTEGER]) {
     assert.deepEqual(
@@ -2644,6 +2651,7 @@ test("a state stamped by a clock set before 1970 loads back from its saved docum
 
 // D-248: the save time is stamped on the way to the document, so a state never stamped does not load.
 test("the saved document of a state never stamped is refused as shape", () => {
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   assertRefused("a new game unstamped", savedGame(newGame()), "shape");
 });
 
