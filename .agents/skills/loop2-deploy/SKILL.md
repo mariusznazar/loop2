@@ -1,6 +1,6 @@
 ---
 name: loop2-deploy
-description: How loop2's test-server deployment works - seeing which commit runs, reading the deploy log and its exit codes 2-8, database backups and restores, rolling back, blocking or unblocking a player account, what an agent may read on the server versus what only the human changes, secrets, setup, failed deployments, the log record and alerts. Use for any question about deploying or the test server.
+description: Loop2's test-server deployment - the commit that runs, deploy log and exit codes 2-8, backups, rolling back, the owner panel, the role command account-role, the emergency commands account-block and account-previous-save, what an agent may read, secrets, setup, failed deployments, log record and alerts. Use for any question about deploying or the test server.
 ---
 
 # loop2-deploy
@@ -104,7 +104,8 @@ files or requests. The MCP has full rights, so the following limits are an agree
   command, no hand run of the send, no fetching, opening or listing of backups on Strych, full `docker inspect`, Compose
   configuration dumps, arbitrary container execution, restarts, deployments, key changes or
   secret rotation. The MCP's changing tools
-  (`upload`, `porty`, `domains`) are the human's too.
+  (`upload`, `porty`, `domains`) are the human's too. The owner panel, the role command and the
+  block and previous-save commands change accounts, so an agent never uses them (D-12).
 
 Every server or Cloudflare change is the human's, except deployment started by the existing
 automation. The agent prepares the commands. Read `references/setup_and_secrets.md` for setup,
@@ -270,9 +271,10 @@ private note. The agent reads the file's metadata only and never its content.
   whole log of both services as Compose prints it, with Docker's timestamps. The lines under a
   header are those of the containers of its previous commit. Find the generations with
   `grep -n -F -m 20 -- 'loop2-deploy |' /var/log/loop2-app.log`.
-- **The `account-block` and `account-previous-save` lines**, which the human appends to the same
-  file with the commands in "Blocking a player account" and "The previous-save privilege". Nothing
-  else reaches it.
+- **The `account-block`, `account-previous-save` and `account-role` lines**, which the human
+  appends to the same file with the commands in "Blocking a player account", "The previous-save
+  privilege" and "The owner role". The events of the owner panel need no such step: they are written
+  to the container's log like the others, so the deployment's dump takes them in.
 
 **How long each lives.** A running container's log: until the next deployment, and not above
 about 100 MB. The dump: `logrotate` rotates it weekly, or sooner when it passes 100 MiB, and
@@ -365,10 +367,106 @@ cron and the GitHub e-mail are proved only by the human's steps in "The failure 
 alerts" in `references/setup_and_secrets.md`; the windowing has no cheap check and stays
 unchecked until the first real failure line is counted.
 
+## The owner panel
+
+An account with the owner role (D-410) sees, in the game, the owner panel; the owner signs in
+with the same card as a player. The menu „Konto” of an owner has the link „Panel właściciela”,
+which opens the list of accounts at `#/konta`. A player has no such link, and the address opens
+the start screen „Siedziba”, as any address that leads to no screen does (D-281).
+
+- **What the list shows (D-411):** every account, sorted by its email address, with its address,
+  its blocked state, its previous-save privilege and its role (`player` or `owner`), and nothing
+  more of an account.
+- **The four buttons, one row per account:** „Zablokuj” and „Odblokuj” block and unblock the
+  account as in "Blocking a player account" (D-137); „Nadaj uprawnienie do poprzedniego zapisu”
+  and „Odbierz uprawnienie do poprzedniego zapisu” grant and revoke the privilege as in "The
+  previous-save privilege" (D-400). The two privilege buttons act at once and apply to every
+  account, owners included.
+- **„Zablokuj” asks first.** Its confirmation says that the block ends the player's sessions in
+  every browser and makes the links from emails useless, and that unblocking restores neither. The
+  other three buttons have no confirmation.
+- **An account with the owner role cannot be blocked from the panel,** its owner's own included:
+  the account has no „Zablokuj” button, and the server answers JSON 409 with the code
+  `owner-not-blockable` to a block of it, with nothing changed (D-137). The command still blocks
+  it; see "When to use the commands".
+- **Only a session of an account with the owner role** is answered on the panel's routes; a
+  player's session is refused on each of them, with nothing changed.
+- **What reaches the log:** a block, an unblock, a grant and a revoke from the panel each write
+  their event line to the container's log (`account-blocked`, `account-unblocked`,
+  `account-previous-save-granted`, `account-previous-save-revoked`). The deployment's dump takes
+  them in, so they need no wrapper. The role itself is given and taken only by the command, never
+  by the panel (see "The owner role").
+
+## The owner role
+
+An account has the role `player` or `owner` (D-410), stored with the account in the database; a
+new account is a player. The owner role lets its holder use the owner panel, and it is given and
+taken with one command run in the application container from a shell on the server. Only the human
+runs it; an agent never does (D-12). The address is the account's email address, as the person logs
+in with it; letter case and surrounding spaces do not matter.
+
+```sh
+docker exec loop2 node dist/server/account-role.js owner <email>
+docker exec loop2 node dist/server/account-role.js player <email>
+```
+
+These plain commands are allowed and leave the events out of the failure record, since the command
+runs by `docker exec` and its lines reach only the terminal. To keep the events in
+`/var/log/loop2-app.log`, the human runs this instead (`owner` shown, `player` the same), in bash,
+as the account that owns the dump file or as root. The address goes between the single quotes of
+`email=` (a single quote inside it is written `'\''`):
+
+```sh
+email='<email>'
+case $email in
+  *$'\n'* | *$'\r'*)
+    echo "refused: the address holds a line feed or a carriage return; nothing was run" >&2 ;;
+  *)
+    out=$(docker exec loop2 node dist/server/account-role.js owner "$email" 2>&1); status=$?
+    printf '%s\n' "$out"
+    printf '%s\n' "$out" | while IFS= read -r line; do
+      case $line in
+        '{"event":"account-'*'}' | '{"failure":"account-role"'*'}')
+          printf '%s account-role | %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$line" ;;
+      esac
+    done >> /var/log/loop2-app.log
+    echo "exit $status" ;;
+esac
+```
+
+The refusal of an address with a line feed or a carriage return, the terminal output, the `exit`
+line and the file's lines follow the shape of the block command's run above, with the tag
+`account-role` in front of each line the file gets. The residual risk of the check is the same as
+in "Blocking a player account".
+
+- **`owner`** gives the role: the account can use the owner panel from its next request. **`player`**
+  takes it away: from the next request on, the panel refuses the account. The role is read from the
+  database at each request, so a change holds from the next request. A signed-in session is not
+  ended, and no emailed link is stopped.
+- **What it prints.** One sentence: that the account was made an owner or a player, that it already
+  was one (nothing changed), or that no account has the address (nothing changed). After a change
+  also one JSON line of the event with the account's number (`account-owner-granted` or
+  `account-owner-revoked`); at exit 1 also one JSON line of the error's kind and code. Wrong
+  arguments print the usage line, `Usage: node dist/server/account-role.js owner|player <email address>`,
+  and under it `Nothing changed.`. Exit 0 means the account now has the role asked for: made an
+  owner, already an owner, made a player, or already a player. Every other exit changed nothing: 1
+  the database could not be opened or changed, for example because it stayed busy longer than the
+  wait (run the command again); 2 wrong arguments, or an address without a single `@` with text on
+  both sides; 3 `LOOP2_DATABASE_PATH` names no existing database file (the command never creates
+  one); 4 no account has that address.
+- **What it touches.** It opens the account database beside the running application, makes one
+  short change to the role of that account and closes it; the application keeps serving. It prints
+  no password hash or session identifier, and of a database error only its kind and code. The
+  address stays in the server's shell history.
+- **After the first deployment of this change,** the human gives the owner role to the human's own
+  account with the first command above, `owner` and the human's `<email>`, and then checks in the
+  game that „Panel właściciela” stands in the menu „Konto”.
+
 ## Blocking a player account
 
 The owner blocks a player account, and unblocks it, with one command run in the application
-container from a shell on the server. Only the human runs it; an agent never does (D-12). The
+container from a shell on the server; the owner panel does the same and is the usual way (see "The
+owner panel"). Only the human runs the command, and an agent never does (D-12). The
 address is the account's email address, as the player logs in with it; letter case and
 surrounding spaces do not matter.
 
@@ -508,6 +606,20 @@ same as in "Blocking a player account".
   prints no password hash or session identifier, and of a database error only its kind and code.
   The address stays in the server's shell history.
 
+## When to use the commands instead of the panel
+
+The owner panel is the usual way to block, unblock, grant and revoke. The commands `account-block`
+and `account-previous-save` stay beside it as the emergency way (D-137, D-400), and the human uses
+them only:
+
+- when the panel does not work;
+- when the owner's account is blocked, so that its owner cannot reach the panel;
+- when the owner's account is not an owner yet, so that the panel cannot be reached;
+- when an account with the owner role is to be blocked, which the panel refuses.
+
+The role command has no panel counterpart to fall back to: it is the only way to give or take the
+owner role (see "The owner role").
+
 ## Rollback
 
 An ordinary rollback within the same route is one deployment: merge a revert request, or the
@@ -537,8 +649,8 @@ blocking fails health with exit 8. The first deployment of the commit with addre
 confirmation, including the human's trial deployment of its branch (M4) before the merge,
 moves the database to schema version 3: an earlier commit, `main` included, then refuses it
 and fails health with exit 8, and only the human repairs the database. The current code writes
-schema version 5; the first deployment that moves the database to it is the paragraph "The first
-deployment of the commit with previous saves" below.
+schema version 6; the first deployment that moves the database to it is the paragraph "The first
+deployment of the commit with the owner role" below.
 
 **The first deployment of the commit with saved game states, including the human's deployment
 of its branch (S1) before the merge, moves the database to schema version 4,** which adds the
@@ -556,6 +668,14 @@ and fails health with exit 8: a rollback to it cannot start, and only the human 
 database. Until the branch is merged, a merge of anything else to `main` deploys that older code
 and takes the test server down. Details and recovery: "Rollback and the accounts" in
 `references/troubleshooting.md`.
+
+**The first deployment of the commit with the owner role, including the human's trial deployment
+of its branch before the merge, moves the database to schema version 6,** which adds the role of
+each account, `player` for every account that exists. From then on a commit that knows only
+version 5 or older, `main` before this change included, refuses the database and fails health with
+exit 8: a rollback to it cannot start, and only the human repairs the database. Until the branch is
+merged, a merge of anything else to `main` deploys that older code and takes the test server down.
+Details and recovery: "Rollback and the accounts" in `references/troubleshooting.md`.
 
 **Crossing the tunnel transition also requires the matching installed script and Cloudflare
 route.** Follow the complete procedure in `references/troubleshooting.md` before deploying or
