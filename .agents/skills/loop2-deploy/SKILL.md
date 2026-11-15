@@ -369,8 +369,8 @@ unchecked until the first real failure line is counted.
 
 ## The owner panel
 
-An account with the owner role (D-410) sees, in the game, the owner panel; the owner signs in
-with the same card as a player. The menu „Konto” of an owner has the link „Panel właściciela”,
+An account with the owner role (D-410) sees, in the game, the owner panel; it signs in with the
+same card as a player. The menu „Konto” of an owner has the link „Panel właściciela”,
 which opens the list of accounts at `#/konta`. A player has no such link, and the address opens
 the start screen „Siedziba”, as any address that leads to no screen does (D-281).
 
@@ -426,7 +426,7 @@ case $email in
     printf '%s\n' "$out"
     printf '%s\n' "$out" | while IFS= read -r line; do
       case $line in
-        '{"event":"account-'*'}' | '{"failure":"account-role"'*'}')
+        '{"event":"account-'*'}' | '{"failure":"account-role"'*'}' | '{"failure":"uncaught"'*'"place":"account-role"}')
           printf '%s account-role | %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$line" ;;
       esac
     done >> /var/log/loop2-app.log
@@ -441,8 +441,10 @@ in "Blocking a player account".
 
 - **`owner`** gives the role: the account can use the owner panel from its next request. **`player`**
   takes it away: from the next request on, the panel refuses the account. The role is read from the
-  database at each request, so a change holds from the next request. A signed-in session is not
-  ended, and no emailed link is stopped.
+  database at each request, so a change holds from the next request. A game page that is already
+  open learns the role only when it loads, so the link „Panel właściciela” stands in its menu
+  „Konto” after the page is reloaded. A signed-in session is not ended, and no emailed link is
+  stopped.
 - **What it prints.** One sentence: that the account was made an owner or a player, that it already
   was one (nothing changed), or that no account has the address (nothing changed). After a change
   also one JSON line of the event with the account's number (`account-owner-granted` or
@@ -459,12 +461,12 @@ in "Blocking a player account".
   no password hash or session identifier, and of a database error only its kind and code. The
   address stays in the server's shell history.
 - **After the first deployment of this change,** the human gives the owner role to the human's own
-  account with the first command above, `owner` and the human's `<email>`, and then checks in the
-  game that „Panel właściciela” stands in the menu „Konto”.
+  account with the first command above, `owner` and the human's `<email>`, reloads the game page,
+  and then checks in the game that „Panel właściciela” stands in the menu „Konto”.
 
 ## Blocking a player account
 
-The owner blocks a player account, and unblocks it, with one command run in the application
+The human blocks a player account, and unblocks it, with one command run in the application
 container from a shell on the server; the owner panel does the same and is the usual way (see "The
 owner panel"). Only the human runs the command, and an agent never does (D-12). The
 address is the account's email address, as the player logs in with it; letter case and
@@ -544,7 +546,7 @@ like a JSON line of the command pass into the file with the words the address ca
 ## The previous-save privilege
 
 A player account with the previous-save privilege can pull the programs of its previous save and
-start the game from zero; without it the server refuses both. The owner grants and revokes the
+start the game from zero; without it the server refuses both. The human grants and revokes the
 privilege with one command run in the application container from a shell on the server. Only the
 human runs it; an agent never does (D-400). The address is the account's email address, as the
 player logs in with it; letter case and surrounding spaces do not matter.
@@ -613,8 +615,8 @@ and `account-previous-save` stay beside it as the emergency way (D-137, D-400), 
 them only:
 
 - when the panel does not work;
-- when the owner's account is blocked, so that its owner cannot reach the panel;
-- when the owner's account is not an owner yet, so that the panel cannot be reached;
+- when the account with the owner role is blocked, so that its holder cannot reach the panel;
+- when the human's account does not have the owner role yet, so that the panel cannot be reached;
 - when an account with the owner role is to be blocked, which the panel refuses.
 
 The role command has no panel counterpart to fall back to: it is the only way to give or take the

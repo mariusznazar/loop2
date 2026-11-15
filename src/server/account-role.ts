@@ -3,7 +3,7 @@ import { normalizeEmail } from "./account-policy.js";
 import { AccountDatabase, type RoleOutcome } from "./database.js";
 import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 
-// The owner gives or takes the owner role of one account, named by its email
+// The operator gives or takes the owner role of one account, named by its email
 // address, from a shell in the loop2 container (D-410):
 //
 //   node dist/server/account-role.js owner <email>
