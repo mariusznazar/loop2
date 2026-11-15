@@ -5879,21 +5879,22 @@ in real time takes it.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-219 · derives from D-221 · derives from D-239
-- **Verification:** invariants: catch-up-minutes · catch-up-death-moment. An agent compares a change
-  with the decision:
-  - complies: a computer waking after an hour passing 60 game minutes of each earning loop at one
-    reading, minute by minute, the characters in the team's order; an earning loop started beside
-    another sharing its clock, its first game minute shorter than a real minute; with no earning loop
-    in the game state the clock set to the reading, so a first earning loop gets a whole first game
-    minute; the loop clock taking its new value before the result reaches the game, so a save made
-    on its way passes no game minute twice; a reading that ends a loop's map run in a death a
-    millisecond before it and the manual map run in another giving the one resurrection to the death
-    of the earning loop
-  - violates: a death settled at the reading in place of its game minute's moment; the manual map
-    run's death settled before the game minutes of the earning loops that the same reading passes; the loop clock's
-    value held in the game state; one character passed through all the game minutes of a reading
-    before the next in the open game; the speed control or the pause of a manual map run reaching
-    the loop clock
+- **Verification:** invariants: catch-up-minutes · catch-up-death-moment. tests: in the open game,
+  earning loops going by the browser's date and not by the elapsed time of the manual map run, on a
+  loop clock apart from the game state that counts whole game minutes, each as long as the balance
+  data gives, takes its new value before the result reaches the game state, is set to the reading
+  when no earning loop stands and to a reading before it with no game minute passed; a death in an
+  earning loop settled at its game minute's own moment in the open game, the same in calls of any
+  size; the open game passing the game minutes of a reading one after another, within each game
+  minute the characters in the team's order, the same in calls of any size; the death of the manual
+  map run settled at the reading, after the earlier death in an earning loop took the one
+  resurrection. For the first completion of the manual map run that a reading brings, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: a reading that passes game minutes of earning loops and brings the first completion of
+    a map by the manual map run settling that completion after those game minutes, at the reading,
+    so a death in those game minutes finds the resurrection as the completion had not yet renewed it
+  - violates: the first completion of the manual map run settled before the game minutes of the
+    earning loops that the same reading passes
 - **Origin:** none
 
 *Rationale:* one game minute per real minute is world time, and a date says what time it is with no
@@ -5928,12 +5929,12 @@ inactive, and the player stops the earning loop first.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-53 · derives from D-170 · derives from D-239
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Puść w pętlę” at Las starting the character at once on the program its list shows,
-    the list afterwards showing that program as after a send; a pick on the list of a character in
-    an earning loop reaching its next send or start and leaving the running earning loop as it is
-  - violates: a question for a program or a map before the start; „Wejdź” stopping the earning
-    loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick standing
+- **Verification:** tests: „Puść w pętlę” standing beside „Wejdź” at each character in „Kto idzie”
+  of the card of a solved map alone, and starting the earning loop at once on the click with the
+  program the character's list „Program:” shows, the player staying on the card; the start making
+  that program the one the character used last and the one with which a character last entered a
+  map, and clearing the pick; at a character in an earning loop „Wejdź” and „Puść w pętlę” inactive
+  and a send and a start refused, while those of another character stay active.
 - **Origin:** none
 
 *Rationale:* a character goes to earn from the place it is sent from, on the program it already
@@ -5951,13 +5952,16 @@ A running earning loop shows on the card and the screen of its character, and at
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
-- **Verification:** an agent compares a change with the decision:
-  - complies: a line reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2” on the
-    character's card on Siedziba, on its screen Postać and at that character in „Kto idzie” of the
-    card of Las, moving with each game minute of the earning loop; the counts of the last manual map run staying as they were after an earning loop
-    starts; the program editor staying on the player's programs while earning loops pass
-  - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
-    earning loop's map run; the start of an earning loop clearing the counts
+- **Verification:** tests: the line „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”
+  of a running earning loop, with „Zatrzymaj”, on the card of its character on Siedziba, on its
+  screen Postać and at it in „Kto idzie” of the card of a map, and at no character outside an earning
+  loop; an earning loop's map run gathering no firing counts, and the start of an earning loop
+  leaving the counts a manual map run left as they were. For the role of the line and for what the
+  map-run view and the program editor show, an agent compares a change with the part no test holds:
+  - complies: the line in `text`; the program editor staying on the player's programs and the
+    map-run view on the manual map run while earning loops pass
+  - violates: a button that opens the map of an earning loop's map run; the map-run view drawing an
+    earning loop's map run; the line in `text-secondary` or `danger`
 - **Origin:** none
 
 *Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. The firing counts stay as they were because D-93 holds a manual map run's counts until the next send or map run restart. On the card of a map the character in an earning loop shows the same line as on its card in Siedziba, with „Zatrzymaj”, and the buttons below it inactive. Accepted with it: the player sees neither what the character does nor why it died, cannot watch an earning loop, as the predecessor game allowed, and checks a program only by a manual map run, the rule that a map run counts its firings takes an exception, and a destructive button stands on the screen where characters are sent.
@@ -5974,13 +5978,18 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-183 · derives from D-189
-- **Verification:** invariants: trip-run-end · loop-practice-payment. An agent compares a change with the decision:
-  - complies: a stop in the middle of a map run leaving the chest as it stood and the character's
-    skills grown by what the earning loop and that map run gathered; „Pętla zatrzymana” after a stop
-    with nothing gathered, standing after a reload and gone at the next send; „Zatrzymaj” neutral
-    at rest and in `danger` under the pointer
-  - violates: a question before the stop; the text of „Zatrzymaj” in `danger` at rest; the stopped map run left on the screen; the line gone after
-    a reload; the loot of the stopped map run reaching the chest
+- **Verification:** invariants: trip-run-end · loop-practice-payment. tests: „Zatrzymaj” as a
+  destructive button that stops the earning loop at once on the click, on the card of the character,
+  on its screen Postać and in „Kto idzie”, paying the practice of the earning loop and of its map run
+  going on into the character skills, after a death of that map run only the earning loop's own, and
+  leaving the character outside any earning loop, free to be sent again; the line „Pętla zatrzymana ·
+  wprawa: {umiejętność} +{n}, …” in the order of the skills' data, or the bare „Pętla zatrzymana”
+  where nothing was gathered, on the card and the screen of that character alone, standing after a
+  load of the game state and gone at the next send or start of that character. For the role of the
+  line, an agent compares a change with the part no invariant and no test holds:
+  - complies: the line „Pętla zatrzymana …” in `text-secondary` on the card and the screen of the
+    character
+  - violates: the line in `text` or `danger`
 - **Origin:** none
 
 *Rationale:* a stop is the player's own act on a character it can see, so it acts at once, and the
@@ -6022,21 +6031,30 @@ manual map run reads the report on reaching Siedziba.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-240
-- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
-  - complies: an earning loop a death stopped standing above one that went on; a line of an earning
-    loop a death stopped naming no practice, since the death took it; a character's own change in the
-    chest on its line, with the practice waiting at its earning loop, the map run going on included,
-    read from the earning loop whenever the section is drawn and gone after „Odbierz” until the earning loop gathers
-    more, and „Odbierz” beside the line only where practice waits;
-    a resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
-    adding no line; a stop in the open game on a line that holds minutes of an earlier return reading
-    with no minutes; „Skrzynka jest pełna.” following the chest as the section is drawn; „Zatrzymaj”
-    leaving the character's line open, so the next return of a later earning loop of that character
-    adds to it
-  - violates: a second return replacing the report; a report held outside the game state; a button
-    „Zamknij” at each character; a stop in the first game minute of the catch-up left out of the
-    section; „Gdy cię nie było” over a section that holds stops in the open game and no return; the report drawn on the
-    screen of a manual map run
+- **Verification:** invariants: loop-practice-payment. tests: the section above „Drużyna” on
+  Siedziba, titled „Gdy cię nie było”, or „Pętle, które stanęły” while it holds only stops in the
+  open game; one line for each character that had an earning loop, a later earning loop of a
+  character whose earning loop a death stopped opening a line of its own; the lines of earning loops
+  a death stopped first, in `danger`, naming no practice and with no „Odbierz”, with the game minutes
+  the catch-up passed, or with no minutes for a stop in the open game, also on a line that held
+  minutes of an earlier return, and with the generation; the others after them, each group in the
+  team's order, with the game minutes the catch-up passed, the character's own signed change of the
+  chest, the practice waiting and „Odbierz” in `positive` beside it, what is empty left out, and
+  „ · wskrzeszenie zużyte” where a resurrection covered a death in the catch-up; „Skrzynka jest
+  pełna.” where the chest is full; the practice waiting read from the character's own earning loop,
+  its map run going on included, whenever the section is drawn, gone with its button after
+  „Odbierz” and back when the earning loop gathers more; the report in the game state, surviving a
+  reload, a further return adding to it, the section opening from one whole game minute of the
+  catch-up and at a stop in its first game minute; one „Zamknij” emptying the whole report; the
+  report hidden on the screen of a manual map run and on Postać and read on reaching Siedziba. For
+  the roles of the lines that went on and of the sentence of a full chest, and for a later earning
+  loop of a character whose earning loop „Zatrzymaj” stopped, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the lines of earning loops that went on in `text`, and „Skrzynka jest pełna.” in
+    `warning`; „Zatrzymaj” leaving the character's line open, so the next return of a later earning
+    loop of that character adds to it
+  - violates: „Skrzynka jest pełna.” in `text` or `danger`; a line of an earning loop that went on in
+    `text-secondary`; a later earning loop after „Zatrzymaj” opening a second line of that character
 - **Origin:** none
 
 *Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
@@ -6198,11 +6216,13 @@ program, clipped by carrying capacity and the map's entry cap, exceeds the stock
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-188 · derives from D-189
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the line, word for word, at a character in „Kto idzie” of a solved map
+  alone, under its „Wejdź”, where an item of the take list, clipped by carrying capacity and the
+  map's entry cap in the order of the list, exceeds the stock in the chest, and none where the chest
+  holds it. For the role of the line, an agent compares a change with the part no test holds:
   - complies: a program taking three pieces of an item the chest holds two of showing the line under
-    „Wejdź” at Las once Las is solved; the same program at a map not yet solved showing no line
-  - violates: the line measured against the take list before its clipping; the line in a role other
-    than `warning`
+    „Wejdź” at Las in `warning`
+  - violates: the line in a role other than `warning`
 - **Origin:** none
 
 *Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
