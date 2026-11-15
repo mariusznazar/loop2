@@ -155,7 +155,7 @@ test("the list is read once when the screen is built, and a line stands in its p
 });
 
 test("each account is a row with its address, blocked state, privilege and role, in the order the server gives", async () => {
-  // decision: D-411 "shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
+  // decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
   await withPage(async (page) => {
     // Not in the order of the addresses: the screen keeps the server's order.
     await mountList(page, [
@@ -252,7 +252,7 @@ test("a 401 on the read goes to the page's signed-out handling once and shows no
 // --- the buttons of a row -------------------------------------------------------------------
 
 test("an account with the owner role has no „Zablokuj” and the other three buttons, and a player has all four", async () => {
-  // decision: D-411 "an account with the owner role has no „Zablokuj”"
+  // decision: D-411 "Each account has four buttons: „Zablokuj” and „Odblokuj”, which block and unblock it as D-137 gives, and „Nadaj uprawnienie do poprzedniego zapisu” and „Odbierz uprawnienie do poprzedniego zapisu”, which grant and revoke the privilege as D-400 gives; an account with the owner role has no „Zablokuj”"
   await withPage(async (page) => {
     await mountList(page, [account(BOSS, { role: "owner" }), account(ONE)]);
     assert.deepEqual(buttonTexts(rowOf(page.root, BOSS)), [
@@ -421,7 +421,7 @@ test("opening the confirmation moves focus to „Wróć”, and only one confirm
 // --- the three operations that act at once -----------------------------------------------------
 
 test("each of the other three buttons sends its one request at once, with the address of its row, and the list is read again", async () => {
-  // decision: D-411 "the other three operations act at once, with no confirmation"
+  // decision: D-411 "„Zablokuj” is a destructive button and opens a confirmation that says that the block ends the player's sessions in every browser and makes the links from emails useless, and that unblocking restores neither, and the other three operations act at once, with no confirmation"
   await withPage(async (page) => {
     const cases = [
       [
