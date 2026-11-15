@@ -1060,6 +1060,7 @@ test("a save of a higher version moves the stored save into the previous slot, a
   // decision: D-399 "The previous save is a saved game state of the same form as the current one, with the version, the revision and the game as the server stored them"
   // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
   // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
+  // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   const { database, account } = await fixture(t);
   const save = (version, basedOn, game) =>
     database.writeSavedGame(account.id, { version, basedOn, game });

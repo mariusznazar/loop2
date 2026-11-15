@@ -762,6 +762,8 @@ const HEADQUARTERS = {
 };
 
 test("a document of the current version loads into the state it describes", () => {
+  // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   assert.deepEqual(loadSavedGame(structuredClone(DOCUMENT)), {
     ok: true,
     state: DOCUMENT.game,
@@ -778,6 +780,8 @@ test("the current version is the one the document of the current version is writ
 
 // The `save` the server hands back: exactly `version`, `revision` and `game` (D-204).
 test("the server's save of the current version loads into the game it holds, its revision left out", () => {
+  // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const save = {
     version: 7,
     revision: 3,
@@ -852,6 +856,7 @@ function assertRefused(name, document, reason) {
 }
 
 test("a map run that goes on comes back paused, at its game minute, pace and carried real time", () => {
+  // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”"
   const going = changed((document) => {
     document.game.paused = false;
     document.game.discovery = null;
@@ -866,6 +871,7 @@ test("a map run that goes on comes back paused, at its game minute, pace and car
 });
 
 test("a map run that ended comes back as it ended", () => {
+  // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
   // Each kind of settlement of a death (D-190, D-216); Ala's generation is 2 in the document.
   const died = changed((document) => dead(document));
   assert.deepEqual(loadSavedGame(died), { ok: true, state: died.game });
@@ -962,6 +968,7 @@ test("a map run moving the character to a neighbouring tile loads with the move"
 });
 
 test("the load changes nothing passed to it, and the state it gives shares nothing with it", () => {
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const before = structuredClone(DOCUMENT);
   const frozen = deepFreeze(structuredClone(DOCUMENT));
   assert.equal(loadSavedGame(frozen).ok, true);
@@ -984,6 +991,7 @@ test("the load changes nothing passed to it, and the state it gives shares nothi
 
 // invariant: save-version
 test("the team's moment of readiness below zero loads, as it is a safe integer of any sign", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const before = changed((document) => {
     document.game.team.resurrectionReadyAtMs = -1500;
   });
@@ -994,6 +1002,7 @@ test("the team's moment of readiness below zero loads, as it is a safe integer o
 
 // invariant: save-version
 test("a document of another version is refused as version, whatever its game holds", () => {
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   // D-206: 7 is the current version since the raise, so 8 stands in for another one.
   for (const version of [0, 8, -1]) {
     assertRefused(
@@ -1105,6 +1114,8 @@ test("the document of version 6 is refused as version, whatever its game holds",
 
 // invariant: save-version
 test("a document whose character's archetype the data lacks is refused as archetype", () => {
+  // decision: D-206 "A saved game state whose character names an archetype missing from the data is also discarded whole"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   for (const archetypeId of ["fireMage", "toString", "__proto__"]) {
     assertRefused(
       archetypeId,
@@ -1126,6 +1137,7 @@ test("a document whose character's archetype the data lacks is refused as archet
 
 // invariant: save-version
 test("a value that is no object with a whole version is refused as shape", () => {
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const { game } = structuredClone(DOCUMENT);
   const cases = {
     null: null,
@@ -2206,6 +2218,7 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-56 "Each character carries a number the game gives it when the character is created, 1 for the first character of a game and one more than the number the game state gave last for each later one, so the numbers of two characters of one game differ"
   // decision: D-56 "A map run names the team's character it carries by that number"
   // decision: D-221 "A load refuses a saved game state that holds a death unsettled"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
 });
@@ -2214,6 +2227,7 @@ test("a crafted document of the current version is refused whole as shape", () =
 // D-368, D-212: the record comes back whole after a load, whichever way the map run stands.
 test("the record loads back whole from a map run that goes on, one that died and one that completed", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
   const going = changed((document) => {
     document.game.paused = false;
     document.game.discovery = null;
@@ -2426,6 +2440,7 @@ function editedAt(document, path, edit) {
 // save for good instead of the refusal D-96 gives. The expected result comes
 // from D-213: a crafted document is a refusal, so it never throws.
 test("no value a document can hold, at any place of it, throws out of the load", () => {
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   for (const document of [DOCUMENT, HEADQUARTERS, changed(dead)]) {
     const places = placesIn(document);
     assert.ok(places.length > 50, "precondition: the sweep reaches the game");
@@ -2485,6 +2500,7 @@ function faultyOnRead(target, key) {
 // different reading: the version, the archetypes, the rest of the game, and
 // inside a program the check that reads it and the comparison that follows.
 test("an error of the code in the load is no refusal: it leaves the load as the error it is", () => {
+  // decision: D-213 "An error of its own code is no refusal: it leaves the load as a thrown error, which the browser view writes to the console without its text, and the saved game state on the server and the unsaved game state in the page's memory stay as they stand, while the player gets the sentence of D-96"
   const atVersion = faultyAt(structuredClone(DOCUMENT), "version");
   const atTeam = structuredClone(DOCUMENT);
   atTeam.game = faultyAt(atTeam.game, "team");
@@ -2518,6 +2534,8 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
 // writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
 // the open game with no minutes, a second loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const edges = {
     "a save time of 0": (document) => (document.game.saveTimeMs = 0),
     // D-386: a safe integer of any sign, as `resurrectionReadyAtMs` is read, so the case is no
@@ -2597,6 +2615,7 @@ test("a state with its save time is a copy holding the moment, the state passed 
 
 // D-386: as in `settleDeath`, so a broken clock never reaches a document.
 test("a moment that is no safe integer gives no save time", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   for (const moment of [NaN, Infinity, 1.5, 2 ** 53, "1760000000000", null]) {
     assert.throws(
       () => withSaveTime(newGame(), moment),
@@ -2609,6 +2628,8 @@ test("a moment that is no safe integer gives no save time", () => {
 // D-386; D-07, D-248. Catches a save the game writes and then refuses: a device clock set
 // before 1970 reads below zero, and the refusal would replace the player's progress with a new game.
 test("a state stamped by a clock set before 1970 loads back from its saved document", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const state = newGame();
   for (const moment of [-1, -60_000, Number.MIN_SAFE_INTEGER]) {
     assert.deepEqual(
@@ -2627,6 +2648,8 @@ test("the saved document of a state never stamped is refused as shape", () => {
 });
 
 test("the saved document of a state is the current version beside a copy of the state, shared nowhere", () => {
+  // decision: D-206 "A saved game state carries the version number of its shape, and the game loads whole only a saved game state whose version is the game's current one"
+  // decision: D-213 "Saved-game code turns a game state into the saved document of the current version of its shape, and an unknown value — a saved game state downloaded from the server or the unsaved game state kept in the page's memory (D-211) — into a game state or a refusal naming why, inside the simulation, no value a document can hold making it throw, and changing nothing passed to it"
   const state = structuredClone(DOCUMENT.game);
   const document = savedGame(deepFreeze(state));
   assert.deepEqual(document, DOCUMENT);
@@ -2854,6 +2877,8 @@ function patrolling() {
 }
 
 test("a game state the simulation made loads back from its saved document", () => {
+  // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”"
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const ended = end(played()).state;
   const done = completed();
   const doneMarked = completed(true);
@@ -3048,6 +3073,7 @@ test("a game state the simulation made loads back from its saved document", () =
 
 // Catches a trip count the game takes from the player that makes the load refuse the whole save.
 test("the largest trip count the game accepts loads back, and one beyond the safe integers the game refuses", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const withCount = (count) =>
     editProgram(newGame(), 1, {
       ...emptyProgram(),

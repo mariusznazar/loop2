@@ -631,6 +631,7 @@ test("leaving the screen closes the question and the map run stays paused on the
 // save, and a reload that brings it back or that resumes the map run.
 test("the question lives in the page alone: a game built from the kept document stands with no question and the map run paused", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
+  // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”"
   await onPage(async ({ root }) => {
     const first = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));

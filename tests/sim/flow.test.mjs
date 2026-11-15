@@ -92,6 +92,7 @@ test("a send starts a map run at minute 0 with the seed mixed from the last seed
 });
 
 test("a send while a map run exists is refused", () => {
+  // decision: D-55 "The game holds one manual map run at a time: while one character is in a manual map run, the game sends no other on a manual map run"
   const { state } = sent();
   assert.throws(() => send(state, SENT, LATER_MS), Error);
 });

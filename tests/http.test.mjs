@@ -3969,6 +3969,7 @@ test(
     // invariant: player-save-isolation
     // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
     // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
+    // decision: D-07 "The server holds the players' accounts and each player's saved game state, and computes nothing of the game"
     // Faults: the row chosen by an account named in the body, the query or a
     // header; one shared row; a save answered to the wrong account.
     const f = await accountFixture(t);
@@ -4169,6 +4170,7 @@ test(
     // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
     // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1, and accepts a save only when it names as its basis the revision of the saved game state the server holds, or 0 where the account has none, refusing every other"
     // decision: D-210 "The server refuses a save of the game state whose version of the shape is lower than the version of the saved game state it holds, comparing that number before the basis of D-209"
+    // decision: D-07 "The server holds the players' accounts and each player's saved game state, and computes nothing of the game"
     // D-209 (revision basis), D-210 (version).
     // Faults: the revision check before the version check; a revision that does
     // not advance by one; a game that comes back changed.
@@ -4615,6 +4617,7 @@ test(
     // decision: D-400 "One flag covers pulling the programs of the previous save (D-401) and the reset (D-402), and the server reads it in the request: `GET /api/previous-saved-game` and `POST /api/saved-game-reset` answer JSON 403 with the code `previous-save-forbidden` to a signed-in account without it"
     // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed`"
     // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
+    // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
     // Faults: a save of the same version filling the slot; a save of a higher
     // version storing the incoming document as the previous one; the slot
     // dropped when the privilege goes; the account answer lacking the flag.

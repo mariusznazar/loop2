@@ -664,6 +664,7 @@ function submissionOfBytes(bytes) {
 // invariant: account-client-requests
 test("loadSavedGame sends a bodiless GET on the relative saved-game path and the save call a JSON PUT of exactly version, basedOn and game", async () => {
   // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
+  // decision: D-07 "The browser computes the whole game — the map runs, the earning loops and the catch-up — and sends the saved game state to the server"
   respond = (request, response) =>
     request.method === "GET"
       ? reply(response, 200, saveJson)

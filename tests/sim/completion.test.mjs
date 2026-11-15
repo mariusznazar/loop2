@@ -624,6 +624,7 @@ test("a completion settled is not settled again, even when the resurrection is u
 
 // D-386: where there is nothing to settle the moment is not looked at; one to settle is a safe integer.
 test("a completion to settle takes a safe integer moment, and nothing else to settle reads none", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const done = completedWith(T0 + RENEWAL_MS);
   for (const nowMs of [
     Number.NaN,
@@ -661,6 +662,7 @@ test("a completion to settle takes a safe integer moment, and nothing else to se
 
 // D-386: a device clock set before 1970 reads below zero, and the moment is stored as it is.
 test("a first completion at a moment below zero makes the used-up resurrection ready at that moment", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const settled = settleCompletion(completedWith(RENEWAL_MS), -5_000).state;
   assert.equal(settled.team.resurrectionReadyAtMs, -5_000);
   assert.equal(settled.run.completionSettlement.kind, "resurrectionRenewed");

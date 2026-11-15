@@ -835,6 +835,7 @@ test("a death at the very moment of readiness uses the resurrection, and a milli
 // D-241, D-221: the end is consumed in the call that met it; no state leaves with a loop's run ended.
 test("a death is settled once: the state the end leaves holds no end, a further end changes nothing, and a load of it settles nothing", () => {
   // decision: D-221 "A load refuses a saved game state that holds a death unsettled"
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const passed = advanceLoopRun(dyingNext(looping()), 1, 1).state;
   const settled = endLoopRun(passed, 1, T0);
   assert.equal(settled.state.loops[1].run.death, null);
@@ -850,6 +851,7 @@ test("a death is settled once: the state the end leaves holds no end, a further 
 });
 
 test("taking an end reads the moment only when there is an end to settle, and the moment must be a safe integer", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const running = looping();
   assert.equal(endLoopRun(running, 1, NaN).state, running);
   assert.equal(endLoopRun(running, 2, NaN).state, running);
@@ -1131,6 +1133,7 @@ test("a send throws for a character in a loop, and clears the stopped line of th
 });
 
 test("every state a loop makes over a whole map run, an end and the next map run loads back, with the save time it was stamped with", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   let state = looping(SURVIVING, { stick: 4, berry: 2 }, COLD_REAL_MS);
   let loaded = 0;
   assert.ok(state.loops[1], "precondition: the loop stands");
@@ -1148,6 +1151,7 @@ test("every state a loop makes over a whole map run, an end and the next map run
 });
 
 test("the states of a loop through a death, its settling and the next map run, and of a stopped loop, load back", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   let state = practised(looping(EMPTY, { stick: 4 }, COLD_REAL_MS));
   assert.ok(state.loops[1], "precondition: the loop stands");
   const check = (name, given) => {
@@ -1179,6 +1183,7 @@ test("the states of a loop through a death, its settling and the next map run, a
 });
 
 test("a loop beside a manual map run of another character loads back", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const sent = send(game(), { mapId: "forest", characterId: 2 }, T0).state;
   const state = advanceMinutes(
     advanceLoopRun(startLoop(sent, FOREST, T0 + 1).state, 1, 30).state,

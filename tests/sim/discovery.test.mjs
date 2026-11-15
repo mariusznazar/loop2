@@ -1044,6 +1044,7 @@ test("a state holding no map run gives null, whatever it holds", () => {
 });
 
 test("a saved document of the paused state, loaded again, gives the same name, with the shape unchanged", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => program.groups.reverse());
   const document = JSON.parse(

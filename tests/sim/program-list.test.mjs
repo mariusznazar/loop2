@@ -526,6 +526,7 @@ test("an append changes nothing of the game state but the programs and the count
 // discards.
 test("the game state after an append is saved and loaded again whole, names taken in another letter case, with Polish letters, an emoji and 5000 characters among them", () => {
   // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it"
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const long = "x".repeat(5000);
   const state = appendPrograms(
     team(),

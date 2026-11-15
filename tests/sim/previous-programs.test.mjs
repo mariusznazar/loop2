@@ -131,6 +131,7 @@ function deepFreeze(value) {
 // the current version, so the bound of the readable versions is read in as well.
 test("a document of each version from 1 to 7, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
   // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+  // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   const documents = {
     1: {
       version: 1,

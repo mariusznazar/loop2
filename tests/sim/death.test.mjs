@@ -234,6 +234,7 @@ test("the renewal does not depend on the pace of the map run", () => {
 // D-219: the renewal runs while the game is closed, as the state holds a moment, not a countdown.
 test("a resurrection used up is ready again at its moment after a save and a load, and the next death goes by it", () => {
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const settled = settleDeath(fallen(), T0).state;
   // D-248: a saved document carries the moment of its save, so the state is stamped first.
   const loaded = loadSavedGame(savedGame(withSaveTime(end(settled).state, T0)));
@@ -253,6 +254,7 @@ test("a resurrection used up is ready again at its moment after a save and a loa
 
 // D-07, D-219: a clock set back is the player's own; the moment is stored as the arithmetic gives it.
 test("a moment below zero settles as any other", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const state = fallen(-20_000);
   const settled = settleDeath(state, -5_000).state;
   assert.equal(settled.team.resurrectionReadyAtMs, RENEWAL_MS - 5_000);
@@ -349,6 +351,7 @@ test("a death settled is not settled again, however late", () => {
 // invariant: death-settled-once
 // A load on the screen after a death settles nothing.
 test("a settled death saved and loaded on its screen is left as it stood by a later settling", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   for (const readyAtMs of [0, T0 + 1]) {
     const settled = settleDeath(fallen(readyAtMs), T0).state;
     // D-248: a saved document carries the moment of its save, so the state is stamped first.
@@ -364,6 +367,7 @@ test("a settled death saved and loaded on its screen is left as it stood by a la
 
 // D-386: where there is nothing to settle the moment is not even looked at.
 test("with nothing to settle the very state comes back, whatever the moment", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const going = send(team(), SENT, T0).state;
   const completed = {
     ...going,
@@ -385,6 +389,7 @@ test("with nothing to settle the very state comes back, whatever the moment", ()
 
 // D-386: a moment the load would refuse never enters the game state.
 test("a moment that is no safe integer is refused at a death to settle", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const state = fallen();
   for (const nowMs of [
     Number.NaN,
