@@ -1783,7 +1783,8 @@ Every visitor may retrieve the built game's files from its public directory and 
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-05
-- **Verification:** invariants: public-file-access
+- **Verification:** invariants: public-file-access. tests: a visitor with no session served the
+  built game's page and its script from the public directory.
 - **Origin:** none
 
 *Rationale:* A public game requires no account to fetch its assets, while the public directory bounds what the server exposes. The refusal is described as a status 400, 403 or 404 with neither the content of the file nor a substitute page of the game, which is what the existing test of the server checks. The permission is written out as a rule, with an invariant that the existing test serves as evidence for, because a test alone does not tell a later author which decision justifies the refusal; the cost is an entry and the upkeep of its link with the test. The decision adds no mechanism of logging in and opens no new function of HTTP.
@@ -2010,9 +2011,19 @@ The shared „Wyloguj” button stands in the menu „Konto”, first saves the 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: logout saves the game state, then destroys the current session and removes its game view, while another browser remains signed in; a logout whose save gets no answer keeping the game with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.”; a tab that stopped saving after the refusal of D-210 logging out with no save request and showing „Gra została zaktualizowana. Odśwież stronę.” above the forms
-  - violates: a tab that stopped saving after the refusal of D-210 logging out to the forms with no sentence above them; a header action that revokes every session of the account or leaves the hidden game's timer running; a logout that ends the session before its save has an outcome; a logout that ends the session after its save failed for want of a connection
+- **Verification:** tests: „Wyloguj” standing only in the open menu „Konto”, reading
+  „Wylogowywanie…” while it waits, first saving the current game state, also of a map run going on,
+  and then ending only this browser's session on the server, the other browsers of the account
+  staying signed in; a tab stopped by the refusal of D-210 logging out with no save; a save failed
+  for want of a connection keeping the game with „Nie udało się zapisać postępu. Spróbuj wylogować
+  się ponownie.” and no logout, a conflict and a too-large refusal letting it go on, a refusal of
+  D-210 and a stopped tab letting it go on to the forms with „Gra została zaktualizowana. Odśwież
+  stronę.” above them, and an answer of no session ending as D-211 gives; a confirmed logout hiding
+  the game, stopping its timers and its listening to the address and bringing back the forms, an
+  uncertain one keeping the game with its warning; a late answer of a reset building no game over
+  the forms a logout brought. An agent compares a change with the part no test holds:
+  - complies: „Wyloguj” drawn with the shared button of `src/browser/view/controls/`; the sentence of a save failed before logout and the sentence of the update above the forms, each in `warning`; a late answer of the account read or of the saved game state, arriving after a confirmed logout, leaving the forms as they stand
+  - violates: a button of its own for „Wyloguj”; either sentence in another role than `warning`; a late answer of the account read or of the saved game state, arriving after the logout, building the game again over the forms
 - **Origin:** none
 
 *Rationale:* Independent browser sessions let a player leave one device without interrupting another; a visible failure avoids claiming the server revoked a session when its outcome is uncertain. Saving first keeps the progress made since the last save, at the cost of one more request at logout; where the server refuses the save for good — another browser's later save, a game state too large, a newer game on the server — the progress cannot be saved anyway, so logout goes on, and the progress of the tab since its last successful save is lost. The tab with older code tells the player at the forms to reload, so a sign-in in that tab does not meet its old code's refusal of a saved game state that is whole; accepted with it: one more state of the account forms, and the false alarm stays possible for a player who signs in in the old tab despite the sentence, since the old code then answers „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” though the saved game state on the server is whole. A player who wanted to leave and whose session is gone is asked to sign in again, the unsaved state staying in the tab, unseen, until a reload or a sign-in to another account; for a blocked player „Sesja wygasła…” is untrue, the sign-in then reads „To konto jest zablokowane.” (D-139), and the state goes with the tab.
@@ -2025,9 +2036,15 @@ A player password has from 12 through 128 Unicode code points of any kind, witho
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: accepting an unchanged password containing spaces and supplementary characters at the code-point boundary; a password reset refusing a short new password with registration's sentence
-  - violates: trimming the password, rejecting pasted characters or applying a byte limit as the character limit; a password reset refused because the new password equals the old one
+- **Verification:** tests: passwords of 12 and 128 code points accepted and of 11 and 129 refused,
+  counted in code points whatever their UTF-16 or byte length, spaces alone included, and the
+  password stored, signing in and set by a reset exactly as typed, untrimmed; a repetition that
+  differs by a trailing space or a decomposed letter refused; a new password checked by the rules
+  of registration, with its problems and its sentences, at the server and in the browser's forms;
+  the browser's rules counting code points as the server does. An agent compares a change with the
+  part no test holds:
+  - complies: a password reset accepting a new password equal to the account's old one; password fields of the browser with no `maxlength`
+  - violates: a password reset refused because the new password equals the old one; a `maxlength` on a password field, which cuts a password of up to 128 code points written in characters of two UTF-16 units
 - **Origin:** none
 
 *Rationale:* Length supplies a clear boundary without restricting the player's choice of characters; code points give the same explicit interpretation to server and browser, while a visible grapheme can contain several code points. A new password is a player password like any other, so the player meets one rule and one set of sentences.
@@ -2040,9 +2057,14 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: registration and login normalize identically and a unique database constraint rejects concurrent duplicate registration
-  - violates: browser validation rejecting a no-dot address that the server accepts, or a database-only ASCII comparison replacing normalization
+- **Verification:** tests: registration, login, a request for a reset link and the owner's block
+  command trimming and lowercasing the address alike; one account for one normalized address, also
+  in a race of two requests or of two connections to the database; an address refused by the
+  server unless exactly one `@` has text on both sides; an address with no dot
+  accepted by the server, and one with no dot and with letters outside ASCII by the browser's
+  rules. An agent compares a change with the part no test holds:
+  - complies: the server accepting a registration whose address holds letters outside ASCII
+  - violates: a check of the server that refuses an address with letters outside ASCII, or one that looks the domain up in DNS before an account is created
 - **Origin:** none
 
 *Rationale:* A single normalized spelling keeps registration and later account operations consistent; case-distinct local parts intentionally cannot obtain separate accounts. A loose shape avoids treating a syntax filter as proof of delivery.
@@ -2055,9 +2077,14 @@ Registration with an email address that already has an account shows „Konto z 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the same login response shape and message for unknown address and wrong password; a login with the password that was right when it was checked, during whose password work a reset commits, answering that message, releasing its admission and storing no session
-  - violates: an unknown-address response exposing account existence through a distinct login message; a login answering by the account it read before its password work, or counting as a failure a password that was right when checked
+- **Verification:** tests: a registration with an address that has an account, also in a race,
+  answered 409 with „Konto z tym adresem już istnieje.”; an unknown address, a wrong password, a
+  password out of shape and a wrong password of a blocked account answered with the same status,
+  shape and „Nieprawidłowy adres e-mail lub hasło.”; a login whose right password a reset replaced
+  during its check answered with that message, storing no session, adding no failure and clearing
+  none. An agent compares a change with the part no test holds:
+  - complies: a login of a blocked account, whose right password a reset replaced during its check, answered with „Nieprawidłowy adres e-mail lub hasło.”
+  - violates: such a login answered with the refusal of D-139
 - **Origin:** none
 
 *Rationale:* A duplicate message explains why registration cannot proceed, while the common login message reveals no further distinction; registration consequently allows an observer to discover whether an address has an account. A password replaced during its check no longer proves anything, so the login earns no other answer, D-139's included; it was right when checked, so it is no wrong guess, and it is no sign-in, so it clears nothing. A password hash is salted, so any reset changes it, even to the same password.
@@ -2070,7 +2097,12 @@ Each browser holds its own random, opaque session identifier in a loop2 host-sco
 - **Scope:** account-server, browser-view
 - **Based on:** express-session-store-contract
 - **Relations:** derives from D-97
-- **Verification:** invariants: player-opaque-session-cookie.
+- **Verification:** invariants: player-opaque-session-cookie. tests: one account signed in in
+  several browsers, whose logout or new sign-in in one leaves the others signed in; a request for a
+  static file with a valid session renewing the record to 30 days from the request and the cookie
+  with it; an absent, unsigned, foreign-key, unknown, expired, removed or deleted session
+  authorizing nothing on the account, logout, message and save routes; a delayed renewal that
+  neither restores a destroyed session nor shortens a later expiry.
 - **Origin:** none
 
 *Rationale:* Sliding validity keeps an active player signed in but a device left signed in remains usable until its idle lifetime ends; independent records cost storage and permit revocation of one browser.
@@ -2083,9 +2115,10 @@ Five failed logins for one normalized email address within a rolling 15-minute w
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: account-attempt-limits. An agent compares a change with the decision:
-  - complies: parallel requests reserve their admission before hashing and release unused capacity after actual completion; a reset that commits clearing its address's failures and lock in the same turn, the reservations of logins in progress kept
-  - violates: simultaneous successful registrations exceeding the IP limit or correct credentials bypassing an active email lock; a refused or failed reset lifting a lock; a reset dropping the address's history entry that a login in progress still settles on
+- **Verification:** invariants: account-attempt-limits. tests: a login or registration refused by
+  a limit answered 429 with „Za dużo prób. Spróbuj ponownie za kilka minut.”; an invalid and a
+  duplicate registration using no slot of the client address; refusals of a full password gate
+  adding no failure to the address's count.
 - **Origin:** none
 
 *Rationale:* Per-address and per-network limits slow repeated attempts but allow an attacker to lock another address and make users behind a shared address share a limit. Rolling histories release stale partial failures; attempts spread below the threshold remain possible, and changing client addresses can evade an address limit. A lock stands in the way of guesses at a password, and a password reset shows control of the mailbox, so only someone with access to it can lift a lock.
@@ -2098,9 +2131,11 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 - **Scope:** account-server, deployment
 - **Based on:** none
 - **Relations:** derives from D-102
-- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
-  - complies: a full password gate refuses immediately and a disconnected request retains its slot until native work finishes
-  - violates: registration and login using independent unbounded hash pools or dropping a live limiter key to make room
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. tests: a login
+  for an unknown address refused by a full password gate as a login for a known one is. An agent
+  compares a change with the part no invariant and no test holds:
+  - complies: at most 10,000 live email keys and 10,000 live client-address keys in the process's memory, an email key kept as a digest of fixed size, each history no longer than its threshold, all of them gone at a restart; the cap of the password gate changed only together with a measurement of it within the container's memory budget
+  - violates: attempt histories written to the database or to a file that outlives a restart; a raw email address as a key of the table; a history that grows past its threshold; a cap of the gate raised with no measurement behind it
 - **Origin:** none
 
 *Rationale:* Bounded histories and native work prevent untrusted input from consuming unbounded memory; a restart loses the restrictions and a full table can refuse legitimate newcomers. The measured password gate shares the host processor with other workloads.
@@ -2142,6 +2177,9 @@ The account server hashes and verifies player passwords with the `argon2` packag
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** none
 - **Verification:** invariants: player-argon2-password-hash · player-argon2-deployment-check.
+  tests: the hash made by the password module, at registration and at a password reset, and the
+  profile the measurement of passwords measures, all of Argon2id with the explicit parameters of
+  64 MiB, three passes and one lane, not the package's defaults.
 - **Origin:** none
 
 *Rationale:* The package handles salt generation, an encoded password hash and verification, so the project writes less security-sensitive code than with a lower-level hash API. A native dependency can fail to install or consume more memory than the target permits; compatible published binaries support feasibility rather than proving this particular image. Explicit settings and target measurements address that uncertainty. The owner measured the password work in the deployed image on the test server on 2026-11-14 and gave this result, which no entry holds as a reading with its output word for word: the running container and the checkout were at commit `6ab6a32be884ac174b068b8a6a5dd1515073d2a9`, image `sha256:e91ad6f940e2fa1ebf649b47d2dc9712cd71f503f1a5b55f6641a6269864faf9`; `scripts/measure-passwords.mjs --memory 512m` (Node v20.19.0 of the host) ended with exit code 0 and the verdict `PASS`; the image held Node 24.22.3, argon2 0.45.1, linux-x64, kernel 5.15.158-2-pve, cgroup v2; profile argon2id 64 MiB, t=3, p=1; the gate lets 2 operations in at once and refuses the third; 20 hashes and 20 verifications, 2 at a time, with a median of 680.4 and 658.5 ms, the longest 1402.2 ms, 15 696 ms in all; limit 428867584 B (80% of 512 MiB) without swap, 0 hits of the limit and 0 out-of-memory kills, the largest process RSS 187133952 B, the peak of the cgroup not recorded (kernel 5.15); a first run interrupted with Ctrl-C (code 130) gave no result.
@@ -2180,7 +2218,17 @@ A visitor may create an account or attempt credential login subject to the trans
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-152 · derives from D-156 · derives from D-157 · derives from D-202 · derives from D-204
-- **Verification:** invariants: account-session-authorization · player-save-isolation.
+- **Verification:** invariants: account-session-authorization · player-save-isolation. tests: a
+  visitor with no session creating an account and asking for a reset link; a confirmation link
+  confirming the address of its own account, with or without a session, and not the session's;
+  the previous save read and the game started from zero only for an account with the privilege;
+  a sign-in and a registration answering success only after a new session identifier is stored,
+  a failed store answering a failure with no cookie; a logout answering 204 only after its record
+  is deleted, a failed deletion answering a failure and leaving the browser signed in; account
+  answers that are `no-store` and hold no password hash, session identifier, link token, password
+  or database error. An agent compares a change with the part no invariant and no test holds:
+  - complies: an account answer that holds no session signing key and no mail password, also when the configuration behind the route fails
+  - violates: an answer of the account server that quotes a value of the session key file or of the mail password file
 - **Origin:** none
 
 *Rationale:* Server-held identity keeps browser input from selecting another account, so the stored session alone selects the saved game state or the previous save a request reads, replaces or moves, and waiting for persistence prevents a success response with no usable session. Errors can leave a newly created account usable for later login even when its first session could not be stored. A link shows control of its own address without a session and opens no other operation of the account, and a session that asks for a message gets it sent only to its account's own address. A request for a password-reset link proves nothing of who sends it, so all it can do is have a link sent to an address whose control was already shown; a player who forgot the password has no session, and the link stands in for the password because only that mailbox receives it.
@@ -2933,9 +2981,9 @@ The operator blocks and unblocks a player account, named by its email address no
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-12 · derives from D-99
-- **Verification:** invariants: blocked-account-access · player-server-session · unblock-restores-no-session · unblock-restores-no-link. An agent compares a change with the decision:
-  - complies: the owner runs `docker exec loop2 node dist/server/account-block.js block <email>` and the account's sessions in every browser end with the block, while the running server keeps serving
-  - violates: an HTTP route of the account server that blocks accounts; a skill instruction in which an agent runs the command through the `mikrus` MCP server; unblocking that makes the sessions or the emailed links ended by the block valid again
+- **Verification:** invariants: blocked-account-access · player-server-session · unblock-restores-no-session · unblock-restores-no-link. tests: the built command, run as its own process beside an open connection, blocking and unblocking by an address it normalizes, reporting blocked, already blocked, unblocked and not blocked each in its own words, and refusing a usage error, an unknown address and an unusable or busy database with a report and no change; a block, also through another connection, marking the account and deleting its sessions and stopping its emailed links and nothing of another account, and an unblock clearing the mark. An agent compares a change with the part no invariant and no test holds:
+  - complies: the owner running `docker exec loop2 node dist/server/account-block.js block <email>` on the server, as the `loop2-deploy` skill describes it; the mark, the deletion of the sessions and the stopping of the links written in one transaction
+  - violates: an HTTP route of the account server that blocks accounts; a skill instruction in which an agent runs the command through the `mikrus` MCP server; a block that marks the account in one transaction and deletes its sessions or stops its links in another
 - **Origin:** none
 
 *Rationale:* the owner already reaches the server through SSH, so a command in the container adds no new way into the server, and it reports its outcome where the owner typed it. Blocking is possible only from the server's terminal, with no view in the browser, the player's address stays in the server's shell history, and the command opens the database beside the running server, waiting at most the bounded busy timeout for its write. Deleting the sessions and stopping the emailed links at the block, as logout deletes one session, leaves nothing that unblocking could bring back. The same holds for the emailed links of the account,
@@ -2953,7 +3001,7 @@ The browser holds an opaque, random session identifier in a host-scoped, Secure 
 - **Scope:** account-server, browser-view
 - **Based on:** OWASP Session Management Cheat Sheet, session identifiers, server-side expiry and invalidation (https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html, read 2026-10-04) · MDN Set-Cookie, Secure and HttpOnly attributes and host scope (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie, read 2026-10-04) · OWASP JSON Web Token Cheat Sheet, token revocation trade-off (https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html, read 2026-10-04) · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Once they have set their new password, the user should then login through the usual mechanism. Don't automatically log the user in" · "Ask the user if they want to invalidate all of their existing sessions, or invalidate the sessions automatically."; read 2026-10-30
 - **Relations:** none
-- **Verification:** invariants: player-opaque-session-cookie · player-server-session · password-reset-ends-sessions
+- **Verification:** invariants: player-opaque-session-cookie · player-server-session · password-reset-ends-sessions. tests: one call of the reset replacing the password and deleting every session of its account; the reset answering with no cookie and storing no session; the browser, after the change, showing the form „Zaloguj się” with focus in its address field.
 - **Origin:** none
 
 *Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout, account blocking or a password reset, without maintaining a token denylist. This adds database lookups and cleanup of expired records, and the choice rests on one account server serving the game and on the session checks in SQLite being no measured bottleneck. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist. A password reset ends every browser's session so that whoever took over the password does not play on after it changes; a player playing in a second browser meets „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” at the next save, the unsaved state waiting in that tab for the sign-in (D-211).
@@ -2966,9 +3014,11 @@ A login of a blocked account with the correct password is refused with „To kon
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-137
-- **Verification:** invariants: blocked-account-access. An agent compares a change with the decision:
-  - complies: the login route checks the password through the gate first and settles a blocked account's correct password by releasing its admission, answering 403 `account-blocked`
-  - violates: the blocked message for an address whose password was not checked or was wrong; a blocked login counted as a failure, so that five of them lock the address
+- **Verification:** invariants: blocked-account-access. tests: a blocked account's correct
+  password, also one blocked during its check, refused 403 with `account-blocked`, „To konto jest
+  zablokowane.” and no session, and its wrong password with the message of D-100; five such
+  refusals locking nothing and clearing none of four failures before them; a locked address
+  refusing the correct password of a blocked account with the limit's message.
 - **Origin:** none
 
 *Rationale:* a player who knows the password learns why the game stays closed, while someone who knows only the address learns nothing more than from any wrong password, so the block is no clue for an address alone. The refusal is no guess of credentials, so it does not count towards a lock, and no sign-in, so it clears nothing; someone who knows a blocked account's password may repeat the attempt unslowed by the limits, each attempt still passing the bounded password gate. A new refusal code changes the server and the browser's client together.
