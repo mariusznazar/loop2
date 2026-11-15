@@ -12,6 +12,19 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 NPM = ROOT / "node_modules/npm/bin/npm-cli.js"
 
+# A stand-in stage writes its marker file with its arguments, adds its marker to `stages-run`,
+# and ends with the exit code that the file `exit-<marker>` holds, or 0 where there is none.
+STAND_IN = """\
+import sys
+from pathlib import Path
+
+Path("{marker}").write_text(" ".join(sys.argv[1:]))
+with Path("stages-run").open("a", encoding="utf-8") as stages:
+    stages.write("{marker}\\n")
+exit_file = Path("exit-{marker}")
+sys.exit(int(exit_file.read_text()) if exit_file.exists() else 0)
+"""
+
 
 class GateFixture:
 
@@ -28,9 +41,10 @@ class GateFixture:
         self.write("scripts/build.mjs",
                    'import { writeFileSync } from "node:fs"; writeFileSync("built", "yes");\n')
         for path, marker in ((".the-way/gate/run_tests.py", "python-stage"),
-                             (".the-way/elements/common/foundation_check.py", "foundation-stage")):
-            self.write(path, 'import sys\nfrom pathlib import Path\n'
-                       f'Path("{marker}").write_text(" ".join(sys.argv[1:]))\n')
+                             (".the-way/elements/common/foundation_check.py", "foundation-stage"),
+                             (".the-way/instruction-files/check_instructions.py",
+                              "instructions-stage")):
+            self.write(path, STAND_IN.format(marker=marker))
 
     def write(self, name, content):
         path = self.root / name
@@ -51,6 +65,15 @@ class GateFixture:
                         self.root / ".the-way/gate/run_tests.py")
         self.write("tests/passing.test.mjs",
                    'import test from "node:test"; test("passes", () => {});\n')
+
+    def stages_run(self):
+        """The stand-in stages that ran, in the order they ran."""
+        log = self.root / "stages-run"
+        return log.read_text(encoding="utf-8").split() if log.exists() else []
+
+    def make_stage_exit(self, marker, code):
+        """Makes the stand-in stage of `marker` end with `code`."""
+        self.write(f"exit-{marker}", str(code))
 
     def track_files(self):
         """Lets git list the files written so far, as the runner reads the tests from git."""

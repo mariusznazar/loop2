@@ -52,7 +52,10 @@ def main(arguments):
                   # The directories of tests run at the same time (D-406).
                   lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py"),
                   lambda: command(sys.executable, "-B",
-                                  ".the-way/elements/common/foundation_check.py")]
+                                  ".the-way/elements/common/foundation_check.py"),
+                  # Its exit code is 1 for an error and 0 for warnings alone (D-405).
+                  lambda: command(sys.executable, "-B",
+                                  ".the-way/instruction-files/check_instructions.py")]
         for stage in stages:
             code = stage()
             if code:

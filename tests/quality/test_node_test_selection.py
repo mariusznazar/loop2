@@ -10,7 +10,7 @@ class NodeTestSelection(unittest.TestCase):
     def test_every_node_test_file_is_selected_by_npm_test(self):
         # invariant: node-test-selection
         # decision: D-77 "`npm test` without arguments runs the full gate"
-        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests and the foundation check, in this order"
+        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests, the foundation check and the check of the instruction files, in this order"
         present = {path.relative_to(ROOT).as_posix()
                    for path in (ROOT / "tests").rglob("*.test.mjs") if path.is_file()}
         self.assertTrue(present, "no Node tests found under tests/")
@@ -24,6 +24,7 @@ class NodeTestSelection(unittest.TestCase):
         self.assertFalse(omitted, f"Node test files omitted by npm test: {sorted(omitted)}")
         self.assertTrue((gate.root / "python-stage").exists())
         self.assertTrue((gate.root / "foundation-stage").exists())
+        self.assertTrue((gate.root / "instructions-stage").exists())
 
 
 if __name__ == "__main__":

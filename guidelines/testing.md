@@ -338,7 +338,7 @@ jest dowodem wykonania.
 
 `npm test -- <plik testu>` przyjmuje dokładnie jeden istniejący plik:
 `*.test.mjs` uruchamia po zbudowaniu gry, a `test_*.py` bez budowania.
-Nie uruchamia innych testów ani kontroli fundamentu. Błędna ścieżka,
+Nie uruchamia innych testów, kontroli fundamentu ani sprawdzenia plików instrukcji. Błędna ścieżka,
 plik niebędący testem i przebieg bez wykonanego testu kończą się porażką;
 pusty plik, pusta grupa i same pominięte testy nie są sukcesem.
 Chroni to `tests/quality/test_test_gate.py`. Przed requestem nadal wymagany
@@ -356,7 +356,7 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 - **Data:** Każdy przypadek ma własne dane, które zmienia; wspólne tylko niemodyfikowane dane i przygotowanie. Wartość rozstrzygająca oczekiwanie stoi w przypadku. (D-73)
 - **Time and randomness:** Jawny stan, upływ czasu i ziarno, rzeczywisty generator gry; bez czekania na minuty komputera. Powtarzalność nie zastępuje niezależnego oczekiwania. (D-84)
 - **Exemplar:** `tests/sim/traits.test.mjs`, wyłącznie „the count of a hand-made backpack is the pieces of all items together”: jawne dane i niezależne sumy; nie wzorzec czasu ani całej rozgrywki. (D-85)
-- **Command:** Pełny przebieg: `npm test`; jeden plik: `npm test -- <plik testu>` (Node po budowaniu, Python bez niego; bez innych testów i kontroli fundamentu). Przed requestem pełny przebieg. (D-77)
+- **Command:** Pełny przebieg: `npm test`; jeden plik: `npm test -- <plik testu>` (Node po budowaniu, Python bez niego; bez innych testów, kontroli fundamentu i sprawdzenia plików instrukcji). Przed requestem pełny przebieg. (D-77)
 - **Time limit:** Brak pliku konfiguracji limitu całego przebiegu. Lokalnych ograniczeń innych testów nie przedstawiaj jako limitu całości. Powrót: konkretny problem czasu diagnozy albo zawieszony przebieg. (D-77)
 
 ### integration test
@@ -429,6 +429,8 @@ może pokazywać rzeczywiście różne ryzyka.
 - `package.json`
 - `stryker.config.json`
 - `scripts/test.py`
+- `.github/workflows/tests.yml`
+- `tests/quality/test_ci_workflow.py`
 - `scripts/docker_gate.py`
 - `tests/quality/docker_standin.py`
 - `tests/quality/test_docker_gate.py`
