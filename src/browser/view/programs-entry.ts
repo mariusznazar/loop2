@@ -60,6 +60,8 @@ export type ProgramsEntryOptions = {
   readonly client: Pick<AccountClient, "loadPreviousSavedGame">;
   /** Whether the account holds the previous-save privilege (D-400); where it does not, nothing is asked. */
   readonly previousSaveAllowed: boolean;
+  /** Whether the account has the owner role (D-410), which the screen of the list of accounts needs (D-281). */
+  readonly owner: boolean;
   /** The page's act of a confirmed „Zacznij od zera” (D-402); left out, the game shows no reset control. */
   readonly onReset?: () => void;
   /** No session: the page keeps the game state for a sign-in to the same account (D-211). */
@@ -351,7 +353,7 @@ export function createProgramsEntry(
           store.act((take) => take(deleteProgram(store.get(), programId)));
           // The program shown may be the one gone: the nearest screen opens in its place (D-281).
           const here = port.current();
-          const nearest = resolveScreen(here, store.get());
+          const nearest = resolveScreen(here, store.get(), options.owner);
           if (screenAddress(nearest) !== screenAddress(here))
             port.show(nearest, "replace");
           port.focusIfLost();

@@ -17,7 +17,7 @@ import {
   type AccountAction,
   type AccountsScreenProps,
 } from "./accounts-screen.js";
-import type { Screen, ScreenEntry } from "./screen-registry.js";
+import type { ScreenEntry } from "./screen-registry.js";
 
 export type AccountsEntryOptions = {
   /** The requests of the screen: the list and the four operations. */
@@ -32,9 +32,6 @@ export type AccountsEntryOptions = {
   /** An answer said there is no session: the page ends the signed-in state (D-211). */
   readonly onSignedOut: () => void;
 };
-
-/** The kind of `Screen` the entry holds, named by its address `#/konta` (D-281). */
-const KIND: string = "accounts";
 
 const READ_FAILED = "Nie udało się wczytać listy kont. Spróbuj ponownie.";
 const NO_RIGHT = "To konto nie ma prawa do listy kont.";
@@ -65,7 +62,7 @@ export function createAccountsEntry(
 ): ScreenEntry {
   const { client } = options;
   return {
-    kinds: [KIND as Screen["kind"]],
+    kinds: ["accounts"],
     lives: "while-shown",
     key: () => "accounts",
     build() {

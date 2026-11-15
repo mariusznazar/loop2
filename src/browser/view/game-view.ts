@@ -1,5 +1,6 @@
-import type { AccountClient } from "../account-api.js";
+import type { AccountClient, AccountRole } from "../account-api.js";
 import type { GameState } from "../sim/types.js";
+import { createAccountsEntry } from "./accounts-entry.js";
 import { createChronicle } from "./chronicle.js";
 import { createCharacterEntry } from "./character-entry.js";
 import {
@@ -37,15 +38,31 @@ export type GameEntry = "sign-in" | "link" | "address";
 export type GameViewOptions = {
   /**
    * The account client the game's saver saves through, and the pull of the previous save fetches
-   * through; only a privileged account's game ever calls `loadPreviousSavedGame`.
+   * through; only a privileged account's game ever calls `loadPreviousSavedGame`. The screen of the
+   * list of accounts (D-411) takes its five requests from the same client, and is built only for an
+   * account with the owner role, so the other accounts' games never call them.
    */
-  readonly client: Pick<AccountClient, "saveGame" | "loadPreviousSavedGame">;
+  readonly client: Pick<
+    AccountClient,
+    | "saveGame"
+    | "loadPreviousSavedGame"
+    | "listAccounts"
+    | "blockAccount"
+    | "unblockAccount"
+    | "grantPreviousSave"
+    | "revokePreviousSave"
+  >;
   /**
    * Whether the account holds the previous-save privilege (D-400), from the account the page names;
    * left out, it counts as false. Where it is false the game asks for nothing of the previous save
    * and shows no control for it.
    */
   readonly previousSaveAllowed?: boolean;
+  /**
+   * The role of the account the page names (D-410); left out, it is `player`. Only an account with
+   * the role `owner` reaches the screen of the list of accounts at its address (D-281).
+   */
+  readonly role?: AccountRole;
   /**
    * The page's act of a confirmed „Zacznij od zera” (D-402): the game calls it once for each
    * confirmation and sends no request of its own for the reset. Left out, the game shows no reset
@@ -130,8 +147,9 @@ function prefersReducedMotion(): boolean {
  * end-of-run window and the focus owed to it; the registry (`screen-registry.ts`) shows the screens
  * and draws them from the state and from the real moment of the clock's latest reading, which the
  * resurrection lines need and the state never holds. The screens are the entries of the table
- * below: Siedziba, Programy and Przejście built once and hidden while another shows, Postać and Mapy
- * built on entering and taken down on leaving. A new screen is one more line of the table.
+ * below: Siedziba, Programy and Przejście built once and hidden while another shows, Postać, Mapy and
+ * the list of accounts built on entering and taken down on leaving. A new screen is one more line of
+ * the table.
  *
  * The view shows one screen at a time, the one the address names (D-280, D-281). The two program
  * panels are two, so the program each shows stays its own. The first screen is the entry's (D-96,
@@ -153,6 +171,7 @@ function prefersReducedMotion(): boolean {
  */
 export function createGameView(options: GameViewOptions): GameView {
   const { address } = options;
+  const owner = options.role === "owner";
   let disposed = false;
 
   const element = document.createElement("div");
@@ -194,6 +213,7 @@ export function createGameView(options: GameViewOptions): GameView {
     folding,
     client: options.client,
     previousSaveAllowed: options.previousSaveAllowed === true,
+    owner,
     onReset: options.onReset,
     onSignedOut: () => options.onSignedOut(),
   });
@@ -209,7 +229,7 @@ export function createGameView(options: GameViewOptions): GameView {
         const hash = address.hash();
         return hash === ""
           ? landing(store.get())
-          : resolveScreen(readScreenAddress(hash), store.get());
+          : resolveScreen(readScreenAddress(hash), store.get(), owner);
       }
     }
   }
@@ -230,6 +250,10 @@ export function createGameView(options: GameViewOptions): GameView {
       }),
       createCharacterEntry({ store }),
       createMapsEntry({ store }),
+      createAccountsEntry({
+        client: options.client,
+        onSignedOut: () => options.onSignedOut(),
+      }),
     ],
     first: firstScreen(),
     address,
@@ -248,7 +272,7 @@ export function createGameView(options: GameViewOptions): GameView {
       address.reload();
       return;
     }
-    const screen = resolveScreen(readScreenAddress(hash), store.get());
+    const screen = resolveScreen(readScreenAddress(hash), store.get(), owner);
     registry.show(screen, screenAddress(screen) === hash ? "none" : "replace");
     registry.focusIfLost();
   });
