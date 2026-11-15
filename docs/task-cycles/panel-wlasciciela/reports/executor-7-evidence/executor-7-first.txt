@@ -1,0 +1,262 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/accounts-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ the list is read once when the screen is built, and a line stands in its place until the answer comes (11.2575ms)
+✖ each account is a row with its address, blocked state, privilege and role, in the order the server gives (13.8087ms)
+✖ a list with no account says so in one sentence and shows no row (10.1873ms)
+✖ a failed read stands as one sentence in warning with a retry, which reads the list again (8.5279ms)
+✖ the refusal owner-forbidden of the list is said as the account having no right to it, with no retry (9.3876ms)
+✖ a 401 on the read goes to the page's signed-out handling once and shows no sentence of failure (6.274ms)
+✖ an account with the owner role has no „Zablokuj” and the other three buttons, and a player has all four (8.1344ms)
+✖ of each pair of buttons the one that makes no sense for the state of the row is disabled (9.3974ms)
+✖ „Zablokuj” is a destructive button, and the confirmation's two buttons are a destructive one and a secondary action (17.284ms)
+✖ the click on „Zablokuj” sends nothing and opens the confirmation with its one sentence of effects (15.1862ms)
+✖ the confirmation sends the one block with the address of its row, and the list is read again (8.4467ms)
+✖ „Wróć” closes the confirmation, sends nothing and leaves the row as it was (8.5796ms)
+✖ opening the confirmation moves focus to „Wróć”, and only one confirmation stands at a time (7.2906ms)
+✖ each of the other three buttons sends its one request at once, with the address of its row, and the list is read again (6.9703ms)
+✖ while an operation waits its button is disabled and keeps its text, no other button of the list can be pressed, and focus comes back after the answer (6.9286ms)
+✖ the answer unknown-account is said in one sentence, and the list is read again (7.1741ms)
+✖ a block the server refuses for an owner is said in a sentence of its own after the confirmation (6.6583ms)
+✖ a failed operation is said in one sentence in warning and the list is read again (7.1509ms)
+✖ an operation refused as owner-forbidden says the account has no right, and reads the list no more (7.0198ms)
+✖ a 401 on an operation or on the read after it goes to the signed-out handling and reads nothing more (6.6279ms)
+✔ an answer that comes after the screen is taken down changes nothing and tells the page nothing (5.942ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 1
+ℹ fail 20
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 932.1058
+
+✖ failing tests:
+
+test at tests\view\accounts-screen.test.mjs:123:1
+✖ the list is read once when the screen is built, and a line stands in its place until the answer comes (11.2575ms)
+  Error: expected [ ["listAccounts"] ], got []
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.deepEqual (file:///tests/view/page-document.mjs:242:5)
+      at file:///tests/view/accounts-screen.test.mjs:129:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:124:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at tests\view\accounts-screen.test.mjs:143:1
+✖ each account is a row with its address, blocked state, privilege and role, in the order the server gives (13.8087ms)
+  Error: expected ["two@example.test","boss@example.test","one@example.test"], got []
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.deepEqual (file:///tests/view/page-document.mjs:242:5)
+      at file:///tests/view/accounts-screen.test.mjs:153:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:145:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:169:1
+✖ a list with no account says so in one sentence and shows no row (10.1873ms)
+  Error: expected a match of /Nie ma żadnych kont\./, got undefined
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.match (file:///tests/view/page-document.mjs:253:5)
+      at file:///tests/view/accounts-screen.test.mjs:173:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:170:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:180:1
+✖ a failed read stands as one sentence in warning with a retry, which reads the list again (8.5279ms)
+  Error: expected a match of /Nie udało się wczytać/, got undefined
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.match (file:///tests/view/page-document.mjs:253:5)
+      at file:///tests/view/accounts-screen.test.mjs:192:14
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:181:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:209:1
+✖ the refusal owner-forbidden of the list is said as the account having no right to it, with no retry (9.3876ms)
+  Error: expected a match of /nie ma prawa/, got undefined
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.match (file:///tests/view/page-document.mjs:253:5)
+      at file:///tests/view/accounts-screen.test.mjs:215:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:210:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:222:1
+✖ a 401 on the read goes to the page's signed-out handling once and shows no sentence of failure (6.274ms)
+  Error: expected 1, got 0
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.equal (file:///tests/view/page-document.mjs:220:5)
+      at file:///tests/view/accounts-screen.test.mjs:228:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:223:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:236:1
+✖ an account with the owner role has no „Zablokuj” and the other three buttons, and a player has all four (8.1344ms)
+  TypeError: Cannot read properties of undefined (reading 'querySelectorAll')
+      at all (file:///tests/view/accounts-screen.test.mjs:102:42)
+      at buttonTexts (file:///tests/view/accounts-screen.test.mjs:110:3)
+      at file:///tests/view/accounts-screen.test.mjs:240:22
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:238:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:254:1
+✖ of each pair of buttons the one that makes no sense for the state of the row is disabled (9.3974ms)
+  TypeError: Cannot read properties of undefined (reading 'querySelectorAll')
+      at all (file:///tests/view/accounts-screen.test.mjs:102:42)
+      at disabled (file:///tests/view/accounts-screen.test.mjs:261:7)
+      at file:///tests/view/accounts-screen.test.mjs:264:22
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:255:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:275:1
+✖ „Zablokuj” is a destructive button, and the confirmation's two buttons are a destructive one and a secondary action (17.284ms)
+  TypeError: Cannot read properties of null (reading 'classList')
+      at file:///tests/view/accounts-screen.test.mjs:279:21
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:276:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:293:1
+✖ the click on „Zablokuj” sends nothing and opens the confirmation with its one sentence of effects (15.1862ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:297:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:295:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:313:1
+✖ the confirmation sends the one block with the address of its row, and the list is read again (8.4467ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:318:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:314:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:343:1
+✖ „Wróć” closes the confirmation, sends nothing and leaves the row as it was (8.5796ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:346:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:344:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:368:1
+✖ opening the confirmation moves focus to „Wróć”, and only one confirmation stands at a time (7.2906ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:371:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:369:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:387:1
+✖ each of the other three buttons sends its one request at once, with the address of its row, and the list is read again (6.9703ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:412:13
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:389:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:426:1
+✖ while an operation waits its button is disabled and keeps its text, no other button of the list can be pressed, and focus comes back after the answer (6.9286ms)
+  TypeError: Cannot read properties of null (reading 'focus')
+      at file:///tests/view/accounts-screen.test.mjs:435:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:427:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:461:1
+✖ the answer unknown-account is said in one sentence, and the list is read again (7.1741ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:469:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:462:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:487:1
+✖ a block the server refuses for an owner is said in a sentence of its own after the confirmation (6.6583ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:492:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:488:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:512:1
+✖ a failed operation is said in one sentence in warning and the list is read again (7.1509ms)
+  TypeError: Cannot read properties of null (reading 'focus')
+      at file:///tests/view/accounts-screen.test.mjs:523:13
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:513:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:548:1
+✖ an operation refused as owner-forbidden says the account has no right, and reads the list no more (7.0198ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:552:11
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:549:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\accounts-screen.test.mjs:561:1
+✖ a 401 on an operation or on the read after it goes to the signed-out handling and reads nothing more (6.6279ms)
+  Error: what the case presses stands: expected a true value, got null
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.ok (file:///tests/view/page-document.mjs:249:5)
+      at press (file:///tests/view/page-document.mjs:135:10)
+      at file:///tests/view/accounts-screen.test.mjs:566:13
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/accounts-screen.test.mjs:562:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

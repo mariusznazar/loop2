@@ -1,0 +1,46 @@
+# Sizes of the changed files
+
+Lines of each file that differs between `b1904c5b` and `e9b68648`, before the change and after it.
+
+| File | Before | After | Change | Note |
+|---|---|---|---|---|
+| `.agents/skills/loop2-deploy/SKILL.md` | 563 | 683 | +120 | modified |
+| `.agents/skills/loop2-deploy/references/troubleshooting.md` | 210 | 216 | +6 | modified |
+| `.claude/skills/loop2-deploy/SKILL.md` | 563 | 683 | +120 | modified |
+| `.claude/skills/loop2-deploy/references/troubleshooting.md` | 210 | 216 | +6 | modified |
+| `foundations/decisions.md` | 10873 | 10935 | +62 | modified |
+| `foundations/glossary.md` | 270 | 276 | +6 | modified |
+| `foundations/invariants.md` | 1395 | 1405 | +10 | modified |
+| `foundations/part_map.md` | 219 | 221 | +2 | modified |
+| `guidelines/coding.md` | 330 | 332 | +2 | modified |
+| `guidelines/styleguide-browser-view.md` | 986 | 1037 | +51 | modified |
+| `src/browser/account-api.ts` | 517 | 658 | +141 | modified |
+| `src/browser/styles.css` | 3192 | 3300 | +108 | modified |
+| `src/browser/view/account-card.tsx` | 736 | 744 | +8 | modified |
+| `src/browser/view/accounts-entry.ts` | — | 214 | +214 | added |
+| `src/browser/view/accounts-screen.tsx` | — | 385 | +385 | added |
+| `src/browser/view/app.ts` | 694 | 695 | +1 | modified |
+| `src/browser/view/game-view.ts` | 282 | 306 | +24 | modified |
+| `src/browser/view/menu-bar.tsx` | 351 | 362 | +11 | modified |
+| `src/browser/view/programs-entry.ts` | 403 | 405 | +2 | modified |
+| `src/browser/view/screen-address.ts` | 181 | 194 | +13 | modified |
+| `src/server/account-role.ts` | — | 92 | +92 | added |
+| `src/server/account-routes.ts` | 908 | 917 | +9 | modified |
+| `src/server/app.ts` | 130 | 132 | +2 | modified |
+| `src/server/database.ts` | 848 | 942 | +94 | modified |
+| `src/server/owner-routes.ts` | — | 155 | +155 | added |
+| `tests/account-api.test.mjs` | 1332 | 1650 | +318 | modified |
+| `tests/account-backup.test.mjs` | 571 | 571 | +0 | modified |
+| `tests/account-owner.test.mjs` | — | 750 | +750 | added |
+| `tests/account-storage.test.mjs` | 3325 | 3505 | +180 | modified |
+| `tests/deploy/test_account_backup_stream.py` | 108 | 108 | +0 | modified |
+| `tests/owner-routes.test.mjs` | — | 1209 | +1209 | added |
+| `tests/startup.test.mjs` | 736 | 736 | +0 | modified |
+| `tests/view/account-screen.test.mjs` | 6516 | 6522 | +6 | modified |
+| `tests/view/accounts-screen.test.mjs` | — | 676 | +676 | added |
+| `tests/view/menu-bar.test.mjs` | 759 | 818 | +59 | modified |
+| `tests/view/owner-panel.test.mjs` | — | 239 | +239 | added |
+| `tests/view/screen-address.test.mjs` | 335 | 391 | +56 | modified |
+| `tests/view/screen-registry.test.mjs` | 437 | 477 | +40 | modified |
+
+Summary: 38 files changed (8 added, 0 deleted, 0 renamed, 30 modified, 0 not measured); lines before 37980, after 43157, change +5177.

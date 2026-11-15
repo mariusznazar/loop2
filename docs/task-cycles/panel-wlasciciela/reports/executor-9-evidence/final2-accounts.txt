@@ -1,0 +1,37 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/accounts-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the list is read once when the screen is built, and a line stands in its place until the answer comes (40.7288ms)
+✔ each account is a row with its address, blocked state, privilege and role, in the order the server gives (15.0273ms)
+✔ a list with no account says so in one sentence and shows no row (10.2525ms)
+✔ a failed read stands as one sentence in warning with a retry, which reads the list again (99.8547ms)
+✔ the refusal owner-forbidden of the list is said as the account having no right to it, with no retry (11.9267ms)
+✔ a 401 on the read goes to the page's signed-out handling once and shows no sentence of failure (10.6436ms)
+✔ an account with the owner role has no „Zablokuj” and the other three buttons, and a player has all four (12.9146ms)
+✔ of each pair of buttons the one that makes no sense for the state of the row is disabled (12.5986ms)
+✔ „Zablokuj” is a destructive button, and the confirmation's two buttons are a destructive one and a secondary action (18.4849ms)
+✔ the click on „Zablokuj” sends nothing and opens the confirmation with its one sentence of effects (16.5052ms)
+✔ the confirmation sends the one block with the address of its row, and the list is read again (22.7481ms)
+✔ „Wróć” closes the confirmation, sends nothing and leaves the row as it was (15.8153ms)
+✔ opening the confirmation moves focus to „Wróć”, and only one confirmation stands at a time (19.1388ms)
+✔ each of the other three buttons sends its one request at once, with the address of its row, and the list is read again (33.49ms)
+✔ while an operation waits its button is disabled and keeps its text, no other button of the list can be pressed, and focus comes back after the answer (19.0382ms)
+✔ the answer unknown-account is said in one sentence, and the list is read again (15.9669ms)
+✔ a block the server refuses for an owner is said in a sentence of its own after the confirmation (26.07ms)
+✔ a failed operation is said in one sentence in warning and the list is read again (27.3246ms)
+✔ an operation refused as owner-forbidden says the account has no right, and reads the list no more (14.2887ms)
+✔ a 401 on an operation or on the read after it goes to the signed-out handling and reads nothing more (17.8921ms)
+✔ an answer that comes after the screen is taken down changes nothing and tells the page nothing (6.2938ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1301.7828
