@@ -1,4 +1,0 @@
-D-26: lines decision: ['tests/sim/campfire.test.mjs:172', 'tests/sim/campfire.test.mjs:452', 'tests/sim/campfire.test.mjs:477'] with no clause tests:
-D-27: lines decision: ['tests/invariants/test_icon_credits.py:296', 'tests/view/account-screen.test.mjs:5254', 'tests/view/account-screen.test.mjs:5594'] with no clause tests:
-D-31: pair beside tests/invariants with no words limiting it to a part
-D-271: lines decision: ['tests/view/camp-picture.test.mjs:94', 'tests/view/icons.test.mjs:322', 'tests/view/scene-frost-contrast.test.mjs:41'] with no clause tests:

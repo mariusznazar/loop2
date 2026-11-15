@@ -1,7 +1,0 @@
-tests/account-mail.test.mjs exit 0
-tests/http.test.mjs exit 0
-tests/account-storage.test.mjs exit 0
-tests/view/email-confirmation.test.mjs exit 0
-tests/view/email-status.test.mjs exit 0
-tests/view/account-screen.test.mjs exit 0
-tests/invariants/test_loop2_host_sharing.py exit 0

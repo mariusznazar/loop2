@@ -1,7 +1,0 @@
-npm test -- tests/view/react-controls.test.mjs exit 0
-npm test -- tests/view/tabs-area.test.mjs exit 0
-npm test -- tests/view/maps-screen.test.mjs exit 0
-npm test -- tests/view/end-question.test.mjs exit 0
-npm test -- tests/view/character-screen.test.mjs exit 0
-npm test -- tests/view/team-lines.test.mjs exit 0
-npm test -- tests/view/account-screen.test.mjs exit 0
