@@ -2439,11 +2439,13 @@ discovered, game time stops by itself.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: player-map-run-pace · minute-span-split. An agent compares a change
-  with the decision:
-  - complies: the first gathered sticks revealing „Wytwórz” and the campfire; the first wolf
-    revealing the verbs of combat
-  - violates: a program editor listing every condition from the first game minute
+- **Verification:** invariants: player-map-run-pace · minute-span-split. tests: the Understanding of
+  a new game holding the condition „Zawsze” and the action „Eksploruj” alone, in the game state and
+  in the picks of the program editor; nothing else entering it before the event that reveals it, a
+  gathering that misses and a lighting or a crafting that takes no hold revealing nothing; each
+  action, item, condition, branch and creature entering it with the need, action, item or encounter
+  that reveals it, and every action and condition other than „Zawsze” and „Eksploruj” having such
+  an event in the data.
 - **Origin:** none
 
 *Rationale:* discovery is written into how the game works rather than into text; the tuning screen
@@ -2478,11 +2480,18 @@ at once what the program editor offers and what the simulation lets the characte
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the Understanding one for all characters, what a character's manual map
+  run discovers entering the map run of the character sent next and the next pick of another
+  character's earning loop; the Understanding left as it was by a character's death, „Restart”,
+  „Zakończ”, a send, a pause and a change of the program; a character's repertoire computed from
+  the Understanding through the predispositions and the branches the character has bought, anew at
+  each pick, so that an action leaves it as soon as the Understanding loses it, and a branch action
+  as soon as a death has taken the branch; an action of a bought branch open only to the character that
+  bought it, in the program editor and in the simulation alike. For one computation serving both
+  the program editor and the simulation, an agent compares a change with the part no test holds:
   - complies: the program editor and the simulation both asking one function for a character's
-    repertoire; a character's death, „Restart” and „Zakończ” leaving the Understanding as it was
-  - violates: a list of discovered actions saved with each character; an editor that filters by
-    archetype while the simulation does not; a branch bought by one character usable by another
+    repertoire
+  - violates: an editor that filters by archetype while the simulation does not
 - **Origin:** none
 
 *Rationale:* a new character sees what others discovered, but only what its archetype lets it
@@ -2504,10 +2513,11 @@ tile, is open to every character, and an archetype never filters items.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Wędruj” open to every archetype, while „Wytwórz — ognisko” is open only to an archetype with the predisposition „Wytwarzanie ogniska”
-  - violates: an archetype defined as a list of allowed verbs; an archetype that forbids eating an
-    item
+- **Verification:** tests: a character skill left out of the predispositions taking out of the
+  repertoire every action whose pair of verb and target it grows, and only those; with no
+  predisposition the actions no character skill grows, the walks and „Wędruj”, staying open, and
+  conditions and items never filtered; an action opened by a branch open only to the character that
+  bought the branch, in the program editor and in the simulation.
 - **Origin:** none
 
 *Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes a campfire and, in later data, an archetype's goods, so only
@@ -2532,16 +2542,14 @@ the first gathered berry brings „Zjedz — jagoda” and the condition „Syto
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-118
-- **Verification:** invariants: first-exploration-discovery · new-account-first-pass. An agent
-  compares a change with the decision:
-  - complies: a mage of a new game first chilled in game minute 84, with „Eksploruj” in the
-    Understanding from the start, bringing „Wędruj” and „Temperatura poniżej” into it; the program
-    editor offering „Idź” and a condition „Tu leży mniej niż” once the first exploration has
-    finished; the first finished „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury
-    poniżej” in one band of a discovery
-  - violates: the conditions on the campfire offered after the first gathered stick, before any
-    campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick;
-    „Energia natury poniżej” discovered before the first finished „Zapal”
+- **Verification:** invariants: first-exploration-discovery · new-account-first-pass. tests: the
+  Understanding of a new game holding „Eksploruj”, in the game state and in the picks of the
+  program editor; each revealing event — the first chill, the first finished exploration, the first
+  gathered stick, the first crafted campfire, the first finished „Zapal” of a campfire and of a
+  stick, and the first gathered berry — bringing exactly what this decision gives it, in the game
+  minute in which it happens and in the data, and nothing where it does not happen or where what it
+  brings is already known; each tile revealed later adding the items lying on it, moss and fibre
+  included.
 - **Origin:** none
 
 *Rationale:* the first map run is a linear tutorial, so each discovery offers the program what the
@@ -2576,21 +2584,19 @@ what happened, with the text of the band in the role `discovery` and with „Dod
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-118 · derives from D-368
-- **Verification:** invariants: player-map-run-pace. An agent compares a change with the decision:
-  - complies: after the first finished exploration the clock „Minuta {game minute} (pauza)” and above
-    the program the band „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu
-    leży mniej niż … szt., Zapas poniżej … szt.” with „Dodaj regułę z tym” and „Wznów”, gone once
-    the player presses „Wznów” in the band or in the header; a completion of Las in the game minute
-    of a discovery showing „Teraz” „Las rozwiązany” and the clock „Minuta 480” with no „ (pauza)”, and
-    the window of the end naming that discovery in the text of the band, with „Dodaj regułę z tym”
-    and no band above the program, until „Restart”; a death in the game minute of a discovery
-    treated alike; the scene in its colours while the band stands
-  - violates: a „Wznów” of the band that does anything other than the „Wznów” of the header; the
-    band still standing after „Wznów”; the band standing in the world area; two
-    discoveries of one game minute in two bands; a completion in the game minute of a discovery
-    leaving the map run paused with „Wznów”; the band of that discovery standing above the program
-    after a completion or a death; the window of that end saying nothing of the discovery, or
-    without „Dodaj regułę z tym”; the scene greyed at a stop at a discovery
+- **Verification:** invariants: player-map-run-pace. tests: at a stop at a discovery the clock
+  reading „Minuta {game minute} (pauza)” and losing „ (pauza)” at „Wznów”; the band above the
+  program, outside the world area and the area under it, naming what was discovered and the rule
+  the game wrote, one discovery for the game minute, with „Dodaj regułę z tym” and „Wznów”, whose
+  „Wznów” does what the header's does; the band standing until the player goes on, through a pause
+  of the player and „Wróć”; the scene in its colours at the stop; the band's text entering the
+  chronicle; a completion or a death in the game minute of a discovery leaving the discovery held
+  until „Restart” or „Zakończ”, the end-of-run window naming it with the band's text and „Dodaj
+  regułę z tym” and no „Wznów”, and no band standing. For the role of the band and of the window's
+  text of a discovery, an agent compares a change with the part no invariant and no test holds:
+  - complies: the text of the band above the program and the text naming a discovery in the
+    end-of-run window, both in the role `discovery`
+  - violates: the band's text, or the window's text of a discovery, in `text` or in `warning`
 - **Origin:** none
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
@@ -2645,15 +2651,21 @@ change of the copy nor as a change of the program that a save of the copy announ
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-121 · derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new game's mage first chilled in game minute 84 with the empty rule group „Program”
-    of the copy and of the program „Program” each gaining „Zawsze → Eksploruj” there, „Program 2”
-    staying as it was and the copy showing no unsaved changes; a first chill in a copy whose rule
-    groups the player has all deleted adding the rule group „Program” with the condition „Zawsze”
-    and the rule in it
-  - violates: the rule written again at a later chill or in a later map run; the rule written into
-    a rule group of its own beside the first rule group; the rule written into every program of the
-    list; the rule lighting „Niezapisane zmiany w kopii.” or the line of a program that changed
+- **Verification:** tests: at the first chill „Zawsze → Eksploruj” written once, at the end of the
+  first rule group of the copy and of the copy's program on the list, the rule group „Program” under
+  „Zawsze” added where the copy and its program hold no rule group, the rule written into the copy
+  alone where its program is gone, and the other programs staying as they were; no rule written at
+  a later chill, at a chill that reveals nothing new, at another discovery, or where the copy holds
+  a rule „Eksploruj” of the player's own, also under a condition that does not hold; the copy's
+  base written alike with the copy and its program, so that neither an unsaved change of the copy
+  nor a change of the program shows. For the copy or its program alone holding no rule group, an
+  agent compares a change with the part no test holds:
+  - complies: a first chill in a copy whose rule groups the player has all deleted, while its
+    program on the list keeps its rule group „Program”, adding the rule group „Program” with the
+    condition „Zawsze” and the rule to the copy, and the rule at the end of the program's first
+    rule group
+  - violates: the rule group „Program” added to the copy only where its program holds no rule group
+    either
 - **Origin:** none
 
 *Rationale:* a player who wrote nothing by the first chill sees the character set moving and the
@@ -2726,12 +2738,7 @@ carried out in that game minute, and the program rule stays in the program.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119 · narrows D-23
-- **Verification:** invariants: program-rule-pick. An agent compares a change with the decision:
-  - complies: a program holding „Zawsze → Zjedz — jagoda” above „Zawsze → Eksploruj” before the
-    first gathered berry, the character starting „Eksploruj” and the first rule staying in the
-    program
-  - violates: the simulation refusing a program that holds a program rule outside the character's
-    repertoire; a program rule passed over for lying outside the repertoire removed from the program
+- **Verification:** invariants: program-rule-pick.
 - **Origin:** none
 
 *Rationale:* a program rule outside the repertoire is one the character cannot carry out yet, so
@@ -2751,12 +2758,7 @@ whose condition does not hold, and the rule group stays in the program.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119 · narrows D-23
-- **Verification:** invariants: program-rule-pick. An agent compares a change with the decision:
-  - complies: a first rule group under the condition „Zapas poniżej” of sticks, before the first
-    finished exploration, passed over for the next rule group, and the first rule group staying in
-    the program with its program rules
-  - violates: a program rule of such a rule group carried out because the group's condition holds;
-    the simulation refusing a program that holds such a rule group
+- **Verification:** invariants: program-rule-pick.
 - **Origin:** none
 
 *Rationale:* a condition outside the repertoire is one the character cannot use yet, so it steers
@@ -2779,11 +2781,17 @@ of data alone.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-118
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zasil — ognisko” revealed by the first finished „Zapal” through a field of its own
-    entry in the data of the actions, which the simulation reads; a condition revealed by the first
-    gathered stick added as an entry of the data of the conditions, with no change of the
-    simulation's code
+- **Verification:** tests: what reveals each action, condition and item, the campfire and the wolf
+  standing in the data beside it as one kind of revealing event — the first chill, the first
+  finished exploration, a revealed tile that holds the item, the first gathered stick or berry, the
+  first crafted campfire, the first finished „Zapal”, an attack of the wolf — and nothing standing
+  there beside „Zawsze” and „Eksploruj”. For the simulation reading what reveals a thing from the
+  data, so that a thing revealed by a kind of revealing event the simulation already handles is
+  added, or what reveals it changed, by a change of data alone, an agent compares a change with the
+  part no test holds:
+  - complies: the simulation reading what reveals „Zasil — ognisko” from the field of its entry in
+    the data of the actions; a condition revealed by the first gathered stick added as an entry of
+    the data of the conditions, with no change of the simulation's code
   - violates: a list in the simulation's code naming „Wędruj” and „Temperatura poniżej” as what the
     first chill reveals; a condition revealed by the first crafted campfire that takes a change of
     the simulation's code to be revealed
@@ -10254,16 +10262,16 @@ Zaczynasz od nowa.” (D-96), and the version number of the shape stays as it is
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-118 · derives from D-206 · derives from D-213
-- **Verification:** an agent compares a change with the decision:
-  - complies: a document of the current version whose Understanding holds „Zawsze” and no „Eksploruj”
-    refused whole as a shape the game does not admit, the game starting anew with „Zapis był
-    uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” above it; the same refusal for a document
-    whose list of actions is missing, empty, of a wrong type or names an action twice; a document
-    that holds „Eksploruj” and no „Zawsze” refused alike; the version number of the shape the same
-    before and after the change that put „Eksploruj” into the Understanding of a new game
-  - violates: such a document loaded with „Eksploruj” added to its Understanding; the sentence of
-    another version, „Zapis pochodził z innej wersji gry…”, standing above the new game for it; the
-    version raised for the sake of it
+- **Verification:** tests: a document of the current version refused whole, as of a shape the game
+  does not admit, where its Understanding lacks „Zawsze” or „Eksploruj”, holds no action, names
+  „Eksploruj” twice, holds a number in place of an action, or has its list of actions missing or of
+  a wrong type. For what the game does with such a state and for the version number of the shape, an
+  agent compares a change with the part no test holds:
+  - complies: the game discarding such a state and starting the player anew, with „Zapis był
+    uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” above it; the version number of the shape
+    the same before and after the change that put „Eksploruj” into the Understanding of a new game
+  - violates: the sentence of another version, „Zapis pochodził z innej wersji gry…”, standing above
+    the new game for it; the version raised for the sake of it
 - **Origin:** none
 
 *Rationale:* a saved game state of the current version whose Understanding lacks „Eksploruj” comes
