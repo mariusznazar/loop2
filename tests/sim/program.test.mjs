@@ -70,6 +70,7 @@ test("hereBelow reads 0 on an unrevealed tile, whatever lies there", () => {
 });
 
 test("hereBelow compares the true stock of a revealed tile", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const run = withHere(freshRun(), (tile) => ({
     ...tile,
     revealed: true,
@@ -85,6 +86,7 @@ test("hereBelow compares the true stock of a revealed tile", () => {
 });
 
 test("hereBelow with N = 0 never holds", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const run = withHere(freshRun(), (tile) => ({
     ...tile,
     revealed: true,
@@ -258,6 +260,7 @@ test("identical rule contents keep distinct identities when groups and rules mov
 });
 
 test("group conditions use the same legal number, resource and item values as rules", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const conditions = [
     ALWAYS,
     below(stick, 3),
@@ -280,6 +283,7 @@ test("group conditions use the same legal number, resource and item values as ru
 });
 
 test("group conditions refuse unknown kinds and invalid fields while accepting a legal control", () => {
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   const valid = grouped(group(5, ALWAYS, []));
   assert.doesNotThrow(() => setProgram(newGame(), valid));
   for (const condition of [

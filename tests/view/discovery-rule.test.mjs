@@ -170,6 +170,7 @@ test("the first chill adds „Zawsze → Wędruj” at the end of the group „P
 });
 
 test("a discovery of conditions alone adds „{first condition} → Eksploruj” with the number a pick of that condition gives, and opens the panel on the condition", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const state = running(
     ONE_RULE(),
     knowing({ actions: ["explore"], conditions: ["temperatureBelow"] }),

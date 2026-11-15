@@ -160,6 +160,7 @@ test("groups append with monotonic numbers through rename and deletion, includin
 });
 
 test("group conditions offer the same kinds and editable fields while preserving rules and counts", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const state = {
     ...setProgram(newGame(), THREE).state,
     ruleCounts: { 1: 7, 2: 3, 3: 1 },
@@ -456,6 +457,7 @@ test("„↑” and „↓” swap a rule with its neighbour; past either end no
 });
 
 test("switching the condition to „Tu leży mniej niż” takes the map's first resource and the data's default N", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   assert.deepEqual(
     withConditionKind(THREE, 1, 0, "hereBelow", LAS, ITEMS_LISTED).groups[0]
       .rules[0],
@@ -473,6 +475,7 @@ test("switching the condition to „Tu leży mniej niż” takes the map's first
 });
 
 test("switching the condition to a new kind puts in the kind's default number, and the first item for „Zapas poniżej”", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const switched = (kind) =>
     withConditionKind(THREE, 1, 0, kind, LAS, ITEMS_LISTED).groups[0].rules[0]
       .condition;

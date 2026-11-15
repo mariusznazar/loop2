@@ -184,6 +184,8 @@ test("an action ending in attack minute lands, while an interrupted move leaves 
 
 test("five combat minutes freeze needs and recovery while fire, renewal and streak advance once each", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
+  // decision: D-60 "During the game minutes of combat the character's needs and health stand still until the combat actions change its health"
+  // decision: D-67 "A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece"
   let state = fighting(KICK, 235);
   state.run.body = { temperature: 30, satiety: 0, health: 100 };
   state.run.streak = 12;
@@ -283,6 +285,7 @@ test("each waiting minute M+1 through M+4 can complete without turns or an inven
 
 test("combat death in M+5 wins over completion and keeps the streak", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
   const state = fighting();
   state.run.minute = 185;
   state.run.streak = 539;

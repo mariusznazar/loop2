@@ -80,6 +80,7 @@ test("nature energy is cut down to a whole number and never stands in danger, at
 });
 
 test("temperature is cut down to tenths, never rounded up", () => {
+  // decision: D-57 "A character's warmth is its body temperature in degrees Celsius, counted with tenths"
   assert.equal(
     bodyValues({ temperature: 36.976, satiety: 100, health: 100 })[0].text,
     "Temperatura 36,9 °C",
@@ -121,6 +122,7 @@ test("an empty backpack reads „Plecak 0/15”", () => {
 });
 
 test("a backpack holding items reads its count, its cap and each held item in the data's order", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   assert.equal(
     backpackText(character({ berry: 2, stick: 5 })),
     "Plecak 7/15: patyk 5, jagoda 2",
@@ -132,6 +134,7 @@ test("a backpack holding items reads its count, its cap and each held item in th
 });
 
 test("the cap is the character's carrying capacity", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   assert.equal(backpackText(character({ moss: 2 }, 20)), "Plecak 2/20: mech 2");
 });
 
@@ -217,6 +220,7 @@ test("a chilled body by the fire still reads „marznie” in danger", () => {
 
 test("on a map that does not cool the body the note under temperature reads „nie stygnie”", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   const warm = { ...LAS, ambientTemperature: 37 };
   const cells = bodyCells(
     runOf({ temperature: 37, satiety: 82, health: 100 }),

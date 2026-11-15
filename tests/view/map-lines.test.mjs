@@ -101,6 +101,7 @@ test("a step above the usual costs more, one below costs less, the note standing
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   assert.deepEqual(terrainLines({ ...forest, stepMinutes: 9 }), [
     { text: "siatka 4 × 4", note: null },
     { text: "wejście stałe", note: null },

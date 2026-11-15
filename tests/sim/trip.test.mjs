@@ -122,6 +122,7 @@ test("a bought branch acts on entry equipment and completion pays practice and l
 });
 // Each expected clipping is hand-counted from the rules of D-179 and D-187.
 test("entry spends one budget in order, shortages leave room and partial rows fit", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   // invariant: trip-transfer
   assert.deepEqual(
     clipTrip(
@@ -552,6 +553,7 @@ function aboutToComplete(state) {
 }
 
 test("a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   // invariant: solved-map-manual-run
   const capacity = equipped().team.characters[0].traits.carryingCapacity;
   const started = sent(solvedForest());
@@ -584,6 +586,7 @@ test("a manual run of a solved map takes its take list from nowhere, cut by capa
 
 test("takeFromNowhere clips the take list by capacity and the entry cap of the map and reads nothing else", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // invariant: solved-map-manual-run
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
@@ -778,6 +781,7 @@ test("sendTake at a solved map is not cut by any chest's stock, as no chest is a
 });
 
 test("the backpack of a solved map's run is the entries sendTake gives from nowhere", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // Capacity 12 with a list of stick 8 and berry 9: stick 8 and berry 4 come into the backpack.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
   const backpack = takeFromNowhere(plan, 12, MAPS.forest);

@@ -1130,6 +1130,8 @@ test("a number typed in the panel keeps its text and the focus while the game at
 // The range and the step of the number field of the panel (D-376). Catches a field drawn with another
 // kind's range or step, so the browser would offer a temperature 0 to 100 or a count in tenths.
 test("the number field of the panel takes the range and the step of the condition kind", async () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
   for (const [condition, range] of [
     [
       { kind: "temperatureBelow", value: 36.5 },

@@ -96,6 +96,7 @@ test("health conditions compare the acting side and its opponent in health point
 });
 
 test("„Temperatura poniżej N °C” holds below N and not at N, also for tenths", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   assert.equal(holds(withBody(34.999999, 100), temperatureBelow(35)), true);
   assert.equal(holds(withBody(35, 100), temperatureBelow(35)), false);
   assert.equal(holds(withBody(36.59, 100), temperatureBelow(36.6)), true);
@@ -104,6 +105,7 @@ test("„Temperatura poniżej N °C” holds below N and not at N, also for tent
 });
 
 test("„Sytość poniżej N %” holds below N and not at N", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   assert.equal(holds(withBody(37, 29.999999), satietyBelow(30)), true);
   assert.equal(holds(withBody(37, 30), satietyBelow(30)), false);
   assert.equal(holds(withBody(37, 0), satietyBelow(0)), false);
@@ -112,6 +114,7 @@ test("„Sytość poniżej N %” holds below N and not at N", () => {
 });
 
 test("„Energia natury poniżej N” reads the mage's nature energy, holding below N and not at N", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   // D-376. The body is full: the energy alone decides.
   const energy = (natureEnergy) => handMade({ natureEnergy });
   assert.equal(holds(energy(29.5), natureEnergyBelow(30)), true);
@@ -122,6 +125,7 @@ test("„Energia natury poniżej N” reads the mage's nature energy, holding be
 });
 
 test("„Zapas poniżej N szt.” counts only the named item of the backpack", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   assert.equal(
     holds(carrying({ [firstItem]: 2 }), itemBelow(firstItem, 3)),
     true,
@@ -143,11 +147,13 @@ test("„Zapas poniżej N szt.” counts only the named item of the backpack", (
 });
 
 test("„Zostało mniej niż N min — ognisko” reads 0 where there is no campfire", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   assert.equal(holds(handMade(), campfireLeftBelow(1)), true);
   assert.equal(holds(handMade(), campfireLeftBelow(0)), false);
 });
 
 test("„Zostało mniej niż N min — ognisko” reads the minutes left to a campfire on the character's tile", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const here = (minutesLeft) =>
     handMade({ campfires: [{ at: entrance, minutesLeft }] });
   assert.equal(holds(here(20), campfireLeftBelow(20)), false);
@@ -157,6 +163,7 @@ test("„Zostało mniej niż N min — ognisko” reads the minutes left to a ca
 });
 
 test("„Zostało mniej niż N min — ognisko” reads the nearest campfire, extinguished or not, not a farther one", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   // Every tile costs 10 minutes to enter, so the neighbour is the nearer of the two.
   const run = handMade();
   const tiles = run.tiles.map((tile) => ({ ...tile, stepMinutes: 10 }));
@@ -185,6 +192,7 @@ test("„Zostało mniej niż N min — ognisko” reads the nearest campfire, ex
 });
 
 test("„Zostało mniej niż N min — ognisko” counts nearness in game minutes of walking, not in tiles", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   // Every tile costs 10 minutes to enter but the neighbour `slow`, which costs 100: a tile two
   // tiles away through another neighbour is 20 minutes away, `slow` 100.
   const run = handMade();
@@ -263,6 +271,9 @@ function refused(condition) {
 }
 
 test("the check takes a temperature with tenths and holds it as the decimal the player reads", () => {
+  // decision: D-57 "A character's warmth is its body temperature in degrees Celsius, counted with tenths"
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step, and keeps a number on the step as the decimal with as many places as the step has, 36.6 and not 36.60000000000001"
   for (const [offered, kept] of [
     [36.6, 36.6],
     [30.0, 30],
@@ -279,12 +290,17 @@ test("the check takes a temperature with tenths and holds it as the decimal the 
 });
 
 test("the check refuses a temperature off the step of 0.1 or outside 30.0–37.0", () => {
+  // decision: D-57 "A character's warmth is its body temperature in degrees Celsius, counted with tenths"
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   for (const value of [36.55, 29.9, 37.1, 36.61, -1, 100]) {
     refused(temperatureBelow(value));
   }
 });
 
 test("the check takes the whole numbers of „Tu leży mniej niż” as before, and only those", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   for (const value of [0, 1, 7, 50]) {
     for (const condition of held(hereBelow(value)))
       assert.deepEqual(condition, hereBelow(value));
@@ -293,6 +309,9 @@ test("the check takes the whole numbers of „Tu leży mniej niż” as before, 
 });
 
 test("the check takes each new kind's numbers from its minimum to its maximum on its step", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
+  // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
   const ranges = [
     [satietyBelow, 0, 100],
     // D-376: from 0 to 100 by 1.
@@ -314,6 +333,7 @@ test("the check takes each new kind's numbers from its minimum to its maximum on
 });
 
 test("the check refuses a number that is no finite number, for every kind that takes one", () => {
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   const makers = [
     temperatureBelow,
     satietyBelow,

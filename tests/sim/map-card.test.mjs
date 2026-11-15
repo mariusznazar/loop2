@@ -17,6 +17,8 @@ const wolf = forestDeep.attackers[0];
 
 test("Las, at 25 °C with no warmth, keeps the body at or above the chill threshold for 83 game minutes", () => {
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // Start 37.0 °C, chilled below 35.0 °C; cooling 0.002 °C a minute per degree below 37 °C, so
   // 0.002 × 12 = 0.024 °C a minute. (37 − 35) / 0.024 = 83.3…: the 83rd minute ends at 35.008 °C,
   // the 84th at 34.984 °C.
@@ -25,6 +27,8 @@ test("Las, at 25 °C with no warmth, keeps the body at or above the chill thresh
 
 test("Las — głębiej, at 7 °C with no warmth, keeps the body at or above the chill threshold for 33 game minutes", () => {
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // Cooling 0.002 × 30 = 0.06 °C a minute. (37 − 35) / 0.06 = 33.3…: the 33rd minute ends at
   // 35.02 °C, the 34th at 34.96 °C.
   assert.equal(minutesWithoutFire(forestDeep), 33);
@@ -32,6 +36,8 @@ test("Las — głębiej, at 7 °C with no warmth, keeps the body at or above the
 
 test("a body that reaches exactly the chill threshold at minute 1000 is still at or above it there", () => {
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // Cooling 0.002 × 1 = 0.002 °C a minute: (37 − 35) / 0.002 = 1000 minutes end at exactly 35.0 °C,
   // which is not below the threshold; minute 1001 ends at 34.998 °C.
   assert.equal(minutesWithoutFire({ ...forest, ambientTemperature: 36 }), 1000);
@@ -39,6 +45,7 @@ test("a body that reaches exactly the chill threshold at minute 1000 is still at
 
 test("a map at or above the body's starting temperature does not cool the body below the threshold, so no minutes are given", () => {
   // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   // No cooling at 37 °C or warmer: the body never reaches 35 °C.
   assert.equal(minutesWithoutFire({ ...forest, ambientTemperature: 37 }), null);
   assert.equal(minutesWithoutFire({ ...forest, ambientTemperature: 40 }), null);

@@ -37,6 +37,7 @@ test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () =
   // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
   // decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
   // decision: D-398 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
   assert.deepEqual(MAPS.forestEdge, {
     name: "Skraj lasu",
     width: 4,
@@ -60,6 +61,7 @@ test("Las — głębiej has the map data, attacker, solving requirements and ope
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
   // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
   // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,
@@ -228,6 +230,7 @@ test("each action names its group and each condition its section and place in th
 });
 
 test("conditions carry labels and the value range of hereBelow", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   assert.equal(CONDITIONS.always.label, "Zawsze");
   assert.deepEqual(CONDITIONS.hereBelow, {
     label: "Tu leży mniej niż",
@@ -243,6 +246,7 @@ test("conditions carry labels and the value range of hereBelow", () => {
 });
 
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
+  // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
   assert.deepEqual(CONDITIONS.healthBelow, {
     label: "Zdrowie poniżej",
     section: "body",
@@ -270,6 +274,7 @@ test("health conditions use the approved thresholds and are revealed by an attac
 test("Las has an ambient temperature of 25 degrees in its map data", () => {
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
   // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
   assert.equal(MAPS.forest.ambientTemperature, 25);
   for (const [id, map] of Object.entries(MAPS)) {
     assert.equal(typeof map.ambientTemperature, "number", id);
@@ -277,6 +282,8 @@ test("Las has an ambient temperature of 25 degrees in its map data", () => {
 });
 
 test("the body starts at its caps, with the rates and thresholds of D-387", () => {
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-387 "A gathering lasts 10 game minutes and succeeds with the chance 0.7"
   assert.deepEqual(BALANCE.body, {
     startTemperature: 37.0,
     startSatiety: 100,
@@ -293,6 +300,7 @@ test("the body starts at its caps, with the rates and thresholds of D-387", () =
 });
 
 test("the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)", () => {
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const { startTemperature, coolingPerDegreeBelow } = BALANCE.body;
   const perMinute =
     (startTemperature - MAPS.forest.ambientTemperature) * coolingPerDegreeBelow;
@@ -300,6 +308,7 @@ test("the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)", () =>
 });
 
 test("a new character's traits hold carrying capacity 15, apart from the archetype", () => {
+  // decision: D-64 "Carrying capacity is 15 pieces"
   assert.deepEqual(TRAITS, { carryingCapacity: 15 });
   for (const archetype of Object.values(ARCHETYPES)) {
     assert.ok(!("carryingCapacity" in archetype));
@@ -309,6 +318,7 @@ test("a new character's traits hold carrying capacity 15, apart from the archety
 // The minutes a stick adds as fuel and burns when lit, its warmth and the satiety of a berry are
 // those of D-387.
 test("the items are the four resources of Las, with their uses", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
   assert.deepEqual(ITEMS.stick, {
     name: "patyk",
@@ -334,6 +344,7 @@ test("the items are the four resources of Las, with their uses", () => {
 // The sticks to craft and to light a campfire, its minutes of burning and its warmth are those of
 // D-387.
 test("the campfire holds its name, costs, burning minutes, warmth and icon", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   assert.deepEqual(CAMPFIRE, {
     id: "campfire",
     name: "ognisko",
@@ -593,6 +604,7 @@ test("setProgram accepts every resource of the map data list, in conditions and 
 });
 
 test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const { newGame, setProgram } =
     await import("../../dist/browser/sim/game.js");
   const [resource] = forestMap.resources.map(({ id }) => id);
@@ -647,6 +659,7 @@ test("setProgram rejects a resource id outside the map data list", async () => {
 });
 
 test("setProgram rejects kinds outside the closed list and values outside the data range", async () => {
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   const { newGame, setProgram } =
     await import("../../dist/browser/sim/game.js");
   const [resource] = forestMap.resources.map(({ id }) => id);

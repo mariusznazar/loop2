@@ -170,6 +170,10 @@ test("on Las the program passes 480 game minutes alive on the named seed", () =>
 });
 
 test("on the same seed the empty program dies in game minute 243, of cold", () => {
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
+  // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
+  // decision: D-61 "For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const { state, events } = played(EMPTY_PROGRAM, MINUTES);
   assert.deepEqual(state.run.death, { minute: 243, cause: "cold" });
   assert.equal(state.run.minute, 243);

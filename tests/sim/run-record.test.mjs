@@ -213,6 +213,7 @@ function fought() {
 
 test("the minutes of a fight count to the fight, the minute of the attack to what the character was doing, and the last minute of a death in the fight too", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
   const { state, seen } = fought();
   const { run } = state;
   // Attacked at the end of game minute A; the five game minutes of the fight are A + 1 to A + 5,

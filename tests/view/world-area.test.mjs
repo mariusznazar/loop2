@@ -514,6 +514,7 @@ test("the scene is the picture of the forest at the one size of D-349, with no t
 // Catches a value in `danger` that is not below its threshold, or one below it that is not. The
 // thresholds are 35 °C and 30 % (D-337); the nature energy is never in `danger` (D-178).
 test("only the value below its threshold stands in danger, and the backpack reads its pieces of the cap", async () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   await withPage(async ({ document }) => {
     const base = sent();
     const character = {

@@ -336,6 +336,7 @@ test("practice appears at the effect minute, once for all tiles of Zwiad, and ne
 });
 
 test("gather miss grants none, an improved chance hits, and full hand respects stock and backpack limits", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   const action = { kind: "gather", resource: "stick" };
   const miss = { ...ready(action), gatherRandom: randomBetween(0.71, 0.74) };
   assert.deepEqual(landed(miss).practice, {});
@@ -376,6 +377,8 @@ test("gather miss grants none, an improved chance hits, and full hand respects s
 test("Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock and free space, and leaves random stream alone", () => {
   // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
   // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-65 "A character carries out a gathering while its backpack holds fewer pieces than its cap"
   const action = { kind: "patrol", resource: "stick" };
   for (const [stock, carried, expected] of [
     [20, 0, 12],

@@ -72,6 +72,7 @@ test("Las is the map these numbers are worked out for", () => {
 });
 
 test("a map run starts at 37.0 °C, satiety 100, health 100, alive", () => {
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const { run } = sent();
   assert.equal(run.minute, 0);
   assert.deepEqual(run.body, body(37, 100, 100));
@@ -79,6 +80,9 @@ test("a map run starts at 37.0 °C, satiety 100, health 100, alive", () => {
 });
 
 test("on Las the body at named minutes is the one worked out by hand", () => {
+  // decision: D-58 "A character's body cools in each game minute outside combat"
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const expected = [
     [1, body(36.976, 99.4, 100)],
     [83, body(35.008, 50.2, 100)],
@@ -98,6 +102,8 @@ test("on Las the body at named minutes is the one worked out by hand", () => {
 });
 
 test("on Las a program of today's closed list is alive in minute 242 and dies of cold in minute 243", () => {
+  // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
+  // decision: D-61 "For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise"
   const at242 = advanceMinutes(sent(), 242).state;
   assert.equal(at242.run.death, null);
   assert.ok(
@@ -123,6 +129,8 @@ test("on Las a program of today's closed list is alive in minute 242 and dies of
 
 test("death falls during an action in progress, which gives no activityFinished", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
+  // decision: D-61 "For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise"
   // Explore runs from minute 0 to 20; the body dies in minute 1.
   const start = withBody(body(34, 50, 0.7));
   assert.equal(start.run.current.endMinute, 20);
@@ -142,6 +150,9 @@ test("death falls during an action in progress, which gives no activityFinished"
 });
 
 test("a map run that is warm but hungry dies of hunger", () => {
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
+  // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
+  // decision: D-61 "For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise"
   const { state, events } = advanceMinutes(withBody(body(37, 10, 0.35)), 5);
   assert.equal(state.run.minute, 1);
   assert.deepEqual(state.run.body, body(36.976, 9.4, 0));
@@ -152,6 +163,8 @@ test("a map run that is warm but hungry dies of hunger", () => {
 });
 
 test("a map run both chilled and starving loses both and dies of cold", () => {
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
+  // decision: D-61 "For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise"
   const { state } = advanceMinutes(withBody(body(30, 10, 1)), 5);
   assert.equal(state.run.minute, 2);
   assert.deepEqual(state.run.body, body(29.952, 8.8, 0));
@@ -159,6 +172,8 @@ test("a map run both chilled and starving loses both and dies of cold", () => {
 });
 
 test("health rises by 0.05 where neither chilled nor starving, not above 100", () => {
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger; in a game minute in which it is neither, its health comes back by itself, up to full health"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   let state = withBody(body(37, 100, 99.9));
   state = advanceMinutes(state, 1).state;
   assert.equal(state.run.body.health, 99.95);
@@ -174,6 +189,8 @@ test("satiety does not fall below 0", () => {
 });
 
 test("the warmth on the tile warms the body, capped at 37.0 °C on the sum", () => {
+  // decision: D-59 "Warming raises a character's body temperature up to its starting body temperature"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // Nothing burns yet, so the body module is given the warmth directly.
   const cases = [
     [body(37, 100, 100), 0.5, body(37, 99.4, 100)],
@@ -189,6 +206,8 @@ test("the warmth on the tile warms the body, capped at 37.0 °C on the sum", () 
 });
 
 test("a value the decimal arithmetic puts exactly on a threshold does not cross it", () => {
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // 35.24 − 10 × 0.024 is 35.0 exactly: not chilled; binary arithmetic gives 34.99999999999998.
   let state = advanceMinutes(withBody(body(35.24, 100, 50)), 10).state;
   assert.deepEqual(state.run.body, body(35, 94, 50.5));
@@ -255,6 +274,7 @@ test("real time reaching death gives the same state however it is split", () => 
 });
 
 test("a map run ended in death passes no minute", () => {
+  // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
   const dead = advanceMinutes(sent(), 300).state;
   assert.equal(dead.run.minute, 243);
   for (const minutes of [0, 1, 50]) {
@@ -290,6 +310,7 @@ test("restart and end take a map run ended in death as one in progress", () => {
 
 test("the body step reports a loss only when the character is chilled or starving after it", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
   // Worked by hand: Las cools the body by 0.024 °C and satiety falls by 0.6 in a minute.
   const cases = [
     [body(37, 100, 100), false, "warm and fed"],
@@ -307,6 +328,7 @@ test("the body step reports a loss only when the character is chilled or starvin
 
 test("the body step names the cause of its loss from the same reading: cold, hunger, both, or none", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
   // Worked by hand as in the case above: Las cools by 0.024 °C and satiety falls by 0.6 in a minute.
   const cases = [
     [body(37, 100, 100), null, "warm and fed"],
@@ -452,6 +474,8 @@ const { forestDeep } = MAPS;
 const warm = { ...forest, ambientTemperature: 37 };
 
 test("from the starting temperature a body lasts 83 game minutes on Las and 33 on Las — głębiej before it is chilled", () => {
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // Las: the 83rd minute ends at 37 − 83 × 0.024 = 35.008 °C, the 84th at 34.984 °C.
   // Las — głębiej: the 33rd ends at 37 − 33 × 0.06 = 35.02 °C, the 34th at 34.96 °C.
   assert.equal(minutesUntilChilled(body(37, 100, 100), forest), 83);
@@ -472,6 +496,7 @@ test("a body at exactly 35.0 °C is not chilled but lasts no minute, and a chill
 
 test("a map that does not cool the body below the threshold gives no minutes until chilled", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   // Ambient 37 °C: no cooling at all, the body keeps the temperature it has.
   assert.equal(minutesUntilChilled(body(37, 100, 100), warm), null);
   assert.equal(minutesUntilChilled(body(36.2, 100, 100), warm), null);
@@ -569,6 +594,7 @@ test("a chilled body by the fire still reads chilled", () => {
 
 test("a map at the body's starting temperature gives not cooling, and fire is read before it", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   const at = noteRun(body(37, 100, 100)).character.at;
   assert.deepEqual(needNotes(noteRun(body(37, 100, 100)), warm).temperature, {
     kind: "not-cooling",

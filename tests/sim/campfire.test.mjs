@@ -148,6 +148,7 @@ const range = (from, to) =>
 const burning = (minutesLeft) => [{ at: entrance, minutesLeft }];
 
 test("the six actions are on the closed list with their labels and minutes", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const listed = Object.fromEntries(
     NEW_ACTIONS.map(({ kind }) => [
       kind,
@@ -288,6 +289,7 @@ test("„Zjedz — jagoda” is feasible with a piece of food, and not without",
 });
 
 test("each action lasts its minutes and takes nothing from the backpack at its start", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const cases = [
     [CRAFT, at({ [stick]: 6 }), 20],
     [LIGHT_CAMPFIRE, at({ [stick]: 2 }, burning(0)), 5],
@@ -314,6 +316,7 @@ test("each action lasts its minutes and takes nothing from the backpack at its s
 });
 
 test("crafting puts an unlit campfire on the tile at its end and uses 6 sticks", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const run = after(endingNext(at({ [stick]: 8, [berry]: 1 }), CRAFT), 1);
   assert.deepEqual(run.campfires, [{ at: entrance, minutesLeft: 0 }]);
   assert.deepEqual(
@@ -326,6 +329,7 @@ test("crafting puts an unlit campfire on the tile at its end and uses 6 sticks",
 
 test("a campfire lit in minute m warms from minute m + 1 for 60 minutes and uses 2 sticks", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const lit = after(
     endingNext(at({ [stick]: 3 }, burning(0)), LIGHT_CAMPFIRE),
     1,
@@ -374,6 +378,7 @@ test("lighting and feeding land on the campfire of the character's tile alone", 
 
 test("a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3 and is used", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const lit = after(endingNext(at({ [stick]: 2 }), LIGHT_ITEM), 1);
   assert.deepEqual(lit.burningItems, [
     { item: stick, at: entrance, minutesLeft: 3 },
@@ -384,6 +389,7 @@ test("a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3
 });
 
 test("feeding a burning campfire adds 20 minutes, without a cap, and uses one stick", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   for (const [left, expected] of [
     [150, 169],
     [1000, 1019],
@@ -411,6 +417,9 @@ test("a feeding during which the campfire burns out makes it burn 20 minutes aga
 });
 
 test("eating adds 25 satiety at its end, not above 100, and uses a berry", () => {
+  // decision: D-59 "Warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   for (const [satiety, expected] of [
     [50, 74.4],
     [76, 100],
@@ -707,6 +716,7 @@ test("empty nature energy takes no health", () => {
 const CLEAN_FLAME = { flameSpell: { practice: 0, ranks: { cleanFlame: 1 } } };
 
 test("the price of an action names the pieces it uses up and the nature energy it takes, nothing for what takes none", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const price = (kind, skills = {}) => actionPrice(kind, skills);
   assert.deepEqual(price("craftCampfire"), {
     pieces: [{ item: "stick", count: 6 }],

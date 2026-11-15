@@ -52,6 +52,7 @@ const neighbour = () => neighbours(handMade().tiles, entrance)[0].at;
 test("Las and its campfire and stick are the ones these numbers are worked out for", () => {
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
   // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   assert.equal(forest.ambientTemperature, 25);
   assert.equal(CAMPFIRE.warmth, 0.5);
   assert.equal(CAMPFIRE.burnMinutes, 60);
@@ -78,6 +79,7 @@ test("a map run starts with no campfires and nothing burning", () => {
 });
 
 test("a campfire with 60 minutes on the character's tile warms in exactly 60 minutes, then is extinguished and stays", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const start = handMade({
     body: body(5, 100, 100),
     campfires: [{ at: entrance, minutesLeft: 60 }],
@@ -104,6 +106,7 @@ test("a campfire with 60 minutes on the character's tile warms in exactly 60 min
 });
 
 test("a character at a burning campfire stays at 37.0 °C", () => {
+  // decision: D-59 "Warming raises a character's body temperature up to its starting body temperature"
   let run = handMade({ campfires: [{ at: entrance, minutesLeft: 60 }] });
   for (let minute = 1; minute <= 60; minute += 1) {
     run = after(run, 1);
@@ -113,6 +116,8 @@ test("a character at a burning campfire stays at 37.0 °C", () => {
 });
 
 test("the cap of 37.0 °C applies to the warmth of a campfire and a stick together", () => {
+  // decision: D-59 "Warming raises a character's body temperature up to its starting body temperature"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const both = {
     campfires: [{ at: entrance, minutesLeft: 60 }],
     burningItems: [{ item: lightable, at: entrance, minutesLeft: 3 }],
@@ -129,6 +134,7 @@ test("the cap of 37.0 °C applies to the warmth of a campfire and a stick togeth
 });
 
 test("a stick lit with 3 minutes warms in 3 minutes and is gone", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const start = handMade({
     body: body(30, 100, 100),
     burningItems: [{ item: lightable, at: entrance, minutesLeft: 3 }],
@@ -192,6 +198,7 @@ function setStock(run, index, resource, pieces) {
 }
 
 test("a tile below its stock of sticks gains one piece at minute 30 and none above its stock; a tile at 0 keeps its resource", () => {
+  // decision: D-67 "A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock"
   let start = handMade();
   const { withStick, withBerry, withoutStick } = renewalTiles(start);
   const [below, empty, full] = withStick;
@@ -231,6 +238,7 @@ test("a tile below its stock of sticks gains one piece at minute 30 and none abo
 test("a resource whose map data gives no time to renew does not renew, while the others renew", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —, cost of a move, attacking creatures with how often they attack, and resources stand in the map's data, each resource with its density, stock per tile and time to renew one piece, no time meaning a resource that does not renew"
+  // decision: D-67 "A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece, given in the game map's data and counted from the map run's game minute zero, up to its starting stock"
   // A hand-made map: Las with the sticks' time to renew left out of its data.
   const noStickRenewal = {
     ...forest,
@@ -305,6 +313,7 @@ test("in the minute of death nothing burns down and no tile renews", () => {
 
 test("an exploring that ends in a minute of renewal reveals its tile and keeps the renewal", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-67 "A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece"
   const { withStick } = renewalTiles(handMade());
   const start = setStock(
     handMade({
