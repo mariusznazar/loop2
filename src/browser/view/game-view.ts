@@ -213,7 +213,6 @@ export function createGameView(options: GameViewOptions): GameView {
     folding,
     client: options.client,
     previousSaveAllowed: options.previousSaveAllowed === true,
-    owner,
     onReset: options.onReset,
     onSignedOut: () => options.onSignedOut(),
   });

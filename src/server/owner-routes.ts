@@ -11,6 +11,11 @@ import {
   unauthenticated,
 } from "./account-routes.js";
 import type { AccountRuntime } from "./configuration.js";
+import type {
+  PanelBlockOutcome,
+  PreviousSavePrivilegeOutcome,
+  UnblockOutcome,
+} from "./database.js";
 import { writeEvent } from "./log-line.js";
 import { mutationGuards } from "./transport.js";
 
@@ -60,6 +65,18 @@ function targetAddress(body: unknown): string | null | undefined {
   return input ? normalizeEmail(input.email) : undefined;
 }
 
+type PanelResult =
+  PanelBlockOutcome | UnblockOutcome | PreviousSavePrivilegeOutcome;
+
+// The outcomes that name an account, and the event each change writes: a misspelled
+// outcome or event is no key or value of these types.
+type ChangeOutcome = Extract<PanelResult, { accountId: string }>["outcome"];
+type PanelEvent =
+  | "account-blocked"
+  | "account-unblocked"
+  | "account-previous-save-granted"
+  | "account-previous-save-revoked";
+
 // One shape for the four operations: the role, then the body, then the
 // operation, then the answer; each writes the line of its change, and of a
 // change only (D-252).
@@ -67,8 +84,8 @@ function operationRoute(
   router: Router,
   runtime: AccountRuntime,
   path: string,
-  run: (address: string) => { outcome: string; accountId?: string },
-  events: Readonly<Record<string, string>>,
+  run: (address: string) => PanelResult,
+  events: Readonly<Partial<Record<ChangeOutcome, PanelEvent>>>,
 ): void {
   router.post(path, ownerOnly(runtime), (request, response) => {
     const address = targetAddress(request.body);
@@ -95,8 +112,7 @@ function operationRoute(
       return;
     }
     const event = events[result.outcome];
-    if (event && result.accountId)
-      writeEvent(event, { accountId: result.accountId });
+    if (event) writeEvent(event, { accountId: result.accountId });
     response.json({ outcome: result.outcome });
   });
 }
