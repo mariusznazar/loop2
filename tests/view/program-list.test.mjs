@@ -369,6 +369,7 @@ const resetLine = (root) =>
 // Catches the control drawn on an account the page gives no reset (no privilege, or no callback):
 // the page then leaves `reset` out or null, and the list must draw nothing of the control.
 test("without a reset state the list has no reset control and no confirmation (D-402)", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control"
   for (const reset of [undefined, null]) {
     await withPage(async (page) => {
       await mount(page, { ...propsOf(TWO, 3), reset });
@@ -382,6 +383,7 @@ test("without a reset state the list has no reset control and no confirmation (D
 // pointer), one that sits in another place than beside the pull, and a press that does more than
 // asking for the confirmation.
 test("at rest the reset is an enabled destructive button beside the pull, and a press only asks for the confirmation", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing"
   await withPage(async (page) => {
     const { calls } = await mount(page, {
       ...propsOf(TWO, 3),
@@ -408,6 +410,7 @@ test("at rest the reset is an enabled destructive button beside the pull, and a 
 // two buttons are not the confirm (destructive) and the withdraw (plain), and a press of either
 // that hands the page the wrong act or hands it twice.
 test("opened, the confirmation names what the reset does, and its two answers hand the page one act each", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero"
   await withPage(async (page) => {
     const { calls } = await mount(page, {
       ...propsOf(TWO, 3),
@@ -432,6 +435,7 @@ test("opened, the confirmation names what the reset does, and its two answers ha
 // Catches a waiting control that stays pressable or asks again, and a confirmation that stays open
 // while the page waits for the server.
 test("while the reset waits the control is disabled, a press hands nothing, and no confirmation stands", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled"
   await withPage(async (page) => {
     const { calls } = await mount(page, {
       ...propsOf(TWO, 3),
