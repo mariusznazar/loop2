@@ -287,6 +287,7 @@ test("a loop starts beside a manual map run of another character, which it leave
 });
 
 test("without a program number a loop takes the program of the character's row: the pick, else the one used last", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
   let state = game();
   state = editProgram(
     state,
@@ -411,6 +412,7 @@ test("two loops from one state at one moment go the same map runs, ends and seed
 // chill, which the precondition shows; the loop's map run takes the same minutes and discovers
 // nothing.
 test("a loop's map run through the first chill leaves the Understanding, the programs and the counts as it found them, and its copy empty", () => {
+  // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
   let state = setProgram(newGame(), EMPTY).state;
   state = {
     ...createCharacter(state, "Ala").state,
@@ -497,6 +499,7 @@ test("an action a manual map run discovers meanwhile enters the loop's next pick
 // D-241: the copy is taken at the start and
 // nothing the player does to the program reaches it, the next map runs of the loop included.
 test("editing or deleting the program after the start leaves the loop on the content it took, in every later map run", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
   let state = game(programFromRules(rule(ALWAYS, EXPLORE)));
   state = {
     ...state,

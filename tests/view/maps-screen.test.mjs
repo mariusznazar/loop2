@@ -476,6 +476,7 @@ test("a team with no character reads the sentence under the heading of „Kto id
 test("the characters stand in the order of their creation, each with its lines from the top", async () => {
   // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -547,6 +548,8 @@ test("a resurrection not ready reads the time left in danger at each character a
 // the character and the program picked.
 test("the list „Program:” shows the program of the row in the order of the player's list and a change hands the page the pick", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
+  // decision: D-170 "The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list"
   await withPage(async (page) => {
     const state = createProgram(teamOf("Ala", "Bob")).state;
     const [first, second] = state.programs;

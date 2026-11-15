@@ -4588,6 +4588,9 @@ const groupsOf = (sent, id) =>
 // the select list „Program:” or the copy beside its own list, the sentence missing above the editor
 // of Programy beside a waiting map run, and the sentence standing on the screen of the map run.
 test("Siedziba holds no program panel; Programy holds the list and a panel with the sentence; Przejście holds the select list with the copy first and no sentence", async () => {
+  // decision: D-166 "The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there"
+  // decision: D-166 "That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone"
+  // decision: D-166 "On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await reloadedAt(held, "#/programy", pausedRun());
@@ -4627,6 +4630,7 @@ test("Siedziba holds no program panel; Programy holds the list and a panel with 
 // the list, and an edit on Programy reaching the copy.
 test("the address picks the program on the list and in the panel, an edit on Programy lands in it and never in the copy, and `#/programy` shows the first", async () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-166 "The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/programy", pausedRun());
@@ -4675,6 +4679,8 @@ test("the address picks the program on the list and in the panel, an edit on Pro
 // D-166. Catches the panel of Programy and the panel of Przejście sharing the program
 // shown: the one panel that moved between the screens would carry what a pick on one into the other.
 test("the program each panel shows stays its own: a pick on the select list of Przejście does not move Programy", async () => {
+  // decision: D-166 "The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there"
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/programy/2", pausedRun());
@@ -4710,6 +4716,7 @@ test("the program each panel shows stays its own: a pick on the select list of P
 // of the history.
 test("„Nowy program” of the list shows the new program with a new entry of the history", async () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/programy", twoPrograms());
@@ -4730,6 +4737,7 @@ test("„Nowy program” of the list shows the new program with a new entry of t
 // program that is gone, or adding an entry the back button would land on that names a gone program.
 test("deleting the program shown opens the nearest screen, Programy with the first program, in place of its entry", async () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-384 "Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/programy/2", twoPrograms());
@@ -4777,6 +4785,8 @@ const programsShown = (root) =>
 // while the counts stand beside „Program 2”, and `#/programy/{n}` no longer showing program n.
 test("after „Zakończ” the bar's „Programy” shows the program the copy belonged to, and `#/programy/{n}` still shows program n", async () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const game = endedOnSecondProgram();
@@ -4819,6 +4829,7 @@ test("after „Zakończ” the bar's „Programy” shows the program the copy b
 // run or on Programy after „Zakończ”; `#/programy` then shows the first program. Catches a program
 // gone from the list kept as the one shown, or „Program 3” shown in its place.
 test("after „Zakończ” `#/programy` shows the first program once the copy's program is deleted, during the map run or on Programy", async () => {
+  // decision: D-384 "Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(

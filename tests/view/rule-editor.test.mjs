@@ -167,6 +167,7 @@ function showAgain(list, props, program, more = {}) {
 // --- the heading, the headers and the rows -------------------------------------------------------
 
 test("the list stands under the heading „sprawdzane od góry”", async () => {
+  // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     assert.equal(textIn(page.root, ".rule-list-heading"), "sprawdzane od góry");
@@ -262,6 +263,8 @@ test("the time of one execution: minutes, „tura” in combat, nothing for a mo
 });
 
 test("counts stand where the page gives them: a rule's „Wykonano n×” and a group's sum, and none where counts are null", async () => {
+  // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   await withPage(async (page) => {
     await mount(page, twoGroups(), { counts: { 1: 3, 2: 0, 3: 18 } });
     assert.equal(textIn(rowOf(page.root, 1), ".rule-count"), "Wykonano 3×");

@@ -65,6 +65,7 @@ test("a new game has one empty program, a team with no character and an empty ch
 });
 
 test("a send starts a map run at minute 0 with the seed mixed from the last seed and the real time", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
   const { state, events } = sent();
   const seed = mixSeed(INITIAL_SEED, REAL_MS);
   assert.equal(state.lastSeed, seed);
@@ -117,6 +118,7 @@ test("a program edit during a 20-minute exploration does not interrupt it and ap
 // D-164: „Restart” goes on with the copy of the map run it replaces, its
 // unsaved changes included.
 test("Restart starts a new map run at minute 0 with the same seed and tiles and the copy as it stands", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
   const start = sent().state;
   let state = advanceMinutes(start, 45).state;
   state = setProgram(state, WANDER_FIRST).state;

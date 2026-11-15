@@ -257,6 +257,7 @@ async function drawn(state) {
 // answer wired to the act of another.
 test("the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapisz”, „Odrzuć” and „Wróć” in that order, only „Odrzuć” a destructive button, each asking its own act", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await withPage(async () => {
     const view = await drawn(renamed(paused()));
     const sentence = byClass(view.host, "end-question-text")[0];
@@ -282,6 +283,7 @@ test("the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapi
 // standing where the copy's program is gone, naming a program other than the copy's, or missing
 // where the program holds such changes.
 test("the line of D-172 stands under the sentence only while the copy's program is on the list and holds changes the copy lacks", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await withPage(async () => {
     const plain = await drawn(renamed(paused()));
     assert.equal(byClass(plain.host, "end-question-note").length, 0);
@@ -340,6 +342,7 @@ test("the line of D-172 stands under the sentence only while the copy's program 
 // discovery, after a death, after a completion), a map run that goes on while the question stands,
 // and a navigation to Postać before the answer.
 test("„Zakończ” with unsaved changes asks at every moment of the map run, leaves the map run where it is and stops the one that goes on", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   const moments = [
     ["going on", () => renamed(going()), true, false],
     ["paused", () => renamed(paused()), true, false],
@@ -390,6 +393,8 @@ test("„Zakończ” with unsaved changes asks at every moment of the map run, l
 // The second clause of D-173. Catches a question asked where the copy holds nothing
 // to lose, and „Zakończ” that no longer leads to Postać.
 test("„Zakończ” without unsaved changes ends the map run at once and opens Postać of its character", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(going());
     await press(headerButton(root, "Zakończ"));
@@ -417,6 +422,8 @@ const RENAMED_PROGRAM = {
 // no program or into another one, leaves the changes of the program the copy lacks in place of
 // the copy's, or does not lead to Postać; and the editor after it showing another program.
 test("„Zapisz” saves the copy into its program, replacing what the program had since, ends the map run and leads to Postać, and Programy then shows that program", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     // The program was edited since the copy was taken from it: the line stands, the save replaces.
     const lacking = editProgram(
@@ -458,6 +465,8 @@ test("„Zapisz” saves the copy into its program, replacing what the program h
 // than the first free one, a copy left belonging to the deleted program, the new program not the
 // one the character used last, and the editor after the end not showing the new program.
 test("„Zapisz” of a copy whose program was deleted saves it as a new program under the first free name with no name field, ends the map run, and Programy shows the new program", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
   await onPage(async ({ root }) => {
     const start = deleteProgram(
       renamed(send(twoPrograms(), { ...SENT, programId: 2 }, 0).state),
@@ -523,6 +532,7 @@ test("„Zapisz” of a copy whose program was deleted saves it as a new program
 // D-173. Catches „Odrzuć” that saves, that keeps the map run, that changes the program, or
 // that does not lead to Postać.
 test("„Odrzuć” ends the map run with no save, the program as it was, and leads to Postać", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const start = renamed(paused());
     const { view, address } = await viewOf(start);
@@ -691,6 +701,7 @@ const panelOf = (root) => byClass(runScreenOf(root), "program-panel")[0];
 // while the question stands, a question left standing over a copy that holds nothing to save, a
 // map run that goes on when the question goes, and a „Zakończ” that still asks afterwards.
 test("the buttons of the panel work while the question stands, and it goes when the copy holds no unsaved changes, leaving the map run paused", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   const closers = [
     [
       "„Zapisz w programie”",
@@ -810,6 +821,7 @@ function placeOf(root) {
 test("the question stands under the band of a discovery and directly above the heading of the copy, after the list „Program:” and „Nowy program”, also after a completion in the minute of a discovery", async () => {
   // decision: D-122 "A band in the role `discovery` above the program"
   // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”, and the band does not stand"
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   const order = [
     "program-list",
     "program-actions",
@@ -856,6 +868,7 @@ test("the question stands under the band of a discovery and directly above the h
 // program on the list „Program:” while it stands must still see it (the map run waits for the
 // answer), standing in the same place, and it must not move into the panel of Programy.
 test("the question stays in its place while the panel shows another program, and never stands on Programy", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(renamed(paused()));
     await press(headerButton(root, "Zakończ"));

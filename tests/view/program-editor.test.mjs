@@ -162,6 +162,7 @@ test("groups append with monotonic numbers through rename and deletion, includin
 test("group conditions offer the same kinds and editable fields while preserving rules and counts", () => {
   // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const state = {
     ...setProgram(newGame(), THREE).state,
     ruleCounts: { 1: 7, 2: 3, 3: 1 },
@@ -1585,6 +1586,7 @@ test("a row reads as a sentence: the condition with its number and target, then 
 });
 
 test("a group's summary: its name, condition, number of rules and the sum of their counts where counts stand", () => {
+  // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
   const group = {
     id: 2,
     name: "Ogień",

@@ -284,6 +284,7 @@ test("at a discovery the band stands in the program's area, above the program pa
 // program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
 test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
     const [world, program, tabs] = areasOf(screen.element);
@@ -314,6 +315,8 @@ test("the question stands in the program panel, directly above the heading of th
 // panel with the copy included, drawing the map run of the game state beside the one it was given.
 test("the screen draws the map run it was given, the copy of that map run in its program panel, not the game state's", async () => {
   // decision: D-281 "The screen of a map run takes its map run as a parameter and reads no map run of the game state by itself"
+  // decision: D-166 "On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it"
+  // decision: D-171 "During a map run the program panel shows the copy under the heading „Kopia: {program name}”"
   await withPage(async (page) => {
     // The game state holds Ala's map run on the copy of „Program” at game minute 0; the screen is
     // given her map run on the copy of „Program 2” at game minute 7, as a second map run would be.

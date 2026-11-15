@@ -71,6 +71,7 @@ const nameField = (root) => root.querySelector(".input-field input");
 // --- the list ------------------------------------------------------------------------------
 
 test("each program is a link to its own number's address, in the list's order", async () => {
+  // decision: D-166 "The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there"
   await withPage(async (page) => {
     await mount(page, propsOf(TWO));
     assert.deepEqual(
@@ -103,6 +104,7 @@ test("only the chosen program is marked with aria-current, and none is marked wi
 
 test("Usuń is inactive while the list holds one program and active beside two (D-167)", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-167 "A program left alone on the list stays there, „Usuń” leaving it in place"
   await withPage(async (page) => {
     await mount(page, propsOf(ONE, 1));
     const remove = buttonNamed(page.root, "Usuń");
@@ -119,6 +121,7 @@ test("Usuń is inactive while the list holds one program and active beside two (
 });
 
 test("Usuń hands the chosen program's number to the page, and Nowy program hands it the act", async () => {
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(TWO, 3));
     await press(buttonNamed(page.root, "Usuń"));
@@ -140,6 +143,7 @@ const sentences = (root) => [
 // Catches the button standing where the page gives none (an account without the privilege, or with
 // no previous save), and a line standing only with a button.
 test("with the pull away the list has no pull button and no line", async () => {
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await withPage(async (page) => {
     await mount(page, propsOf(TWO, 3, { control: "away", line: null }));
     assert.equal(pullButton(page.root), undefined);
@@ -150,6 +154,7 @@ test("with the pull away the list has no pull button and no line", async () => {
 // Catches the button drawn destructive, main or disabled at rest, and a press that hands the page
 // nothing or a second act.
 test("at rest the pull is a plain enabled button, among the list's acts, and a press hands the page the pull", async () => {
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await withPage(async (page) => {
     const { calls } = await mount(
       page,
@@ -303,6 +308,7 @@ test("Zapisz hands a name the name rule takes to the page and closes the field",
 });
 
 test("a chosen program keeps its own name, letter case changed, without a refusal", async () => {
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(TWO, 3));
     await press(buttonNamed(page.root, "Zmień nazwę"));
@@ -317,6 +323,7 @@ test("a chosen program keeps its own name, letter case changed, without a refusa
 });
 
 test("a name another program bears is refused in the field, and Zapisz hands nothing on", async () => {
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(TWO, 3));
     await press(buttonNamed(page.root, "Zmień nazwę"));
@@ -333,6 +340,7 @@ test("a name another program bears is refused in the field, and Zapisz hands not
 });
 
 test("an empty name is refused in the field with its own message", async () => {
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(TWO, 3));
     await press(buttonNamed(page.root, "Zmień nazwę"));

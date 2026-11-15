@@ -743,6 +743,7 @@ test("the header has no „Koniec przejścia” while the map run goes on or is 
 // D-173, D-311. Catches the window standing with the question and the question closing the
 // header's button with no effect.
 test("„Koniec przejścia” pressed while the question stands closes the question and opens the window, so the two never stand together", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(dead(going())));
     await press(windowButton(root, "Zakończ"));
@@ -808,6 +809,8 @@ test("„Restart” of the header after „✕” starts the map run again and n
 // D-62, D-53, D-173. Catches a „Zakończ” of the window that asks with no unsaved changes, one that
 // leaves the map run, and one that leads anywhere but to Postać.
 test("„Zakończ” of the window with no unsaved changes ends the map run at once and opens Postać", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(dead(going()));
     await press(windowButton(root, "Zakończ"));
@@ -823,6 +826,8 @@ test("„Zakończ” of the window with no unsaved changes ends the map run at o
 // standing over the question, a map run ended by the click, and a window that opens again by itself
 // after „Wróć”.
 test("„Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(renamed(dead(going())));
     await press(windowButton(root, "Zakończ"));
@@ -860,6 +865,7 @@ test("„Zakończ” of the window with unsaved changes closes the window and as
 // D-173. Catches the answers of a question a button of the window asked leading to another screen
 // than the screen Postać, and „Zapisz” not saving the copy.
 test("the question asked by „Zakończ” of the window leads to Postać after „Zapisz” and after „Odrzuć”", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   for (const [name, expectSaved] of [
     ["Zapisz", true],
     ["Odrzuć", false],
@@ -890,6 +896,8 @@ const MAP_ADDRESS = "#/mapy/forestDeep";
 // standing, and one that opens the screen Mapy without the card of the map it opened.
 test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać", async () => {
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(completed(going()));
     await press(windowButton(root, "Otwarte: Las — głębiej →"));
@@ -909,6 +917,8 @@ test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map 
 // D-173, D-371. Catches a question that forgets which button asked it and
 // leads to Postać, a „Zapisz” that does not save, and a „Wróć” that ends the map run or leads on.
 test("the question asked by „Otwarte: …” leads to the screen Mapy at the opened map after „Zapisz” and after „Odrzuć”, and „Wróć” leads nowhere", async () => {
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   for (const [name, expectSaved] of [
     ["Zapisz", true],
     ["Odrzuć", false],
@@ -948,6 +958,7 @@ test("the question asked by „Otwarte: …” leads to the screen Mapy at the o
 // D-173. Catches the memory of the asking button staying after „Wróć”: a later „Zakończ” of the
 // header must lead to Postać, not to the map the earlier „Otwarte” asked about.
 test("after „Wróć” a later „Zakończ” leads to Postać, not to the map of the earlier „Otwarte”", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(renamed(completed(going())));
     await press(windowButton(root, "Otwarte: Las — głębiej →"));

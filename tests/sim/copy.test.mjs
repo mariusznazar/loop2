@@ -60,6 +60,8 @@ function twoPrograms(records = {}, game = withEdgeSolved(newKnowingGame())) {
 }
 
 test("a new game holds program 1, „Program”, with the empty rule group „Program” under „Zawsze”, the next program number 2 and no record of a program", () => {
+  // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
+  // decision: D-165 "Each program of the player carries a number the game gives it when the program is created, one more than the number the game state gave last"
   const state = newGame();
   assert.deepEqual(state.programs, [
     { id: 1, name: "Program", program: EMPTY },
@@ -73,6 +75,8 @@ test("a new game holds program 1, „Program”, with the empty rule group „Pr
 
 // D-164: an edit during a map run goes into the copy; the program it was taken from stays.
 test("an edit during a map run leaves program 1 as it was while the map run carries out the edited copy", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
+  // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   // Exploration lasts 20 minutes from minute 0, so the next rule is picked at minute 20.
   let state = advanceMinutes(sent(), 5).state;
   state = setProgram(state, WANDER_FIRST).state;
@@ -93,6 +97,11 @@ test("an edit during a map run leaves program 1 as it was while the map run carr
 
 // D-164, D-170: a send takes a copy of the program passed and records it for the character.
 test("a send with a program number carries out a copy of that program, whose base is its content, makes it the character's program used last and the one entered with last, and clears the character's pick", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
+  // decision: D-164 "A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart, at the next switch to it during a manual map run or at the next start of an earning loop"
+  // decision: D-165 "Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number"
+  // decision: D-170 "The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list"
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const state = twoPrograms({ pickedPrograms: { 1: 1, 2: 1 } });
   const { run, ...records } = send(
     state,
@@ -128,6 +137,7 @@ test("a send refuses a program number not on the list, a deleted program's inclu
 
 // D-170: the program a headquarters row stands on, which a send without a number takes.
 test("a send without a program number takes the first still on the list of the row's pick, the character's program used last, the program entered with last and the first program", () => {
+  // decision: D-170 "The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list"
   const variants = [
     ["no record", {}, 1],
     ["entered with last", { lastEnteredProgram: 3 }, 3],
@@ -172,6 +182,9 @@ test("a send without a program number takes the first still on the list of the r
 
 // D-164: „Restart” goes on with the copy of the map run it replaces, unsaved changes included.
 test("Restart carries on the copy of the map run it replaces, its unsaved change included, with every count from zero and the programs as they were", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
+  // decision: D-164 "A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart, at the next switch to it during a manual map run or at the next start of an earning loop"
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const edited = setProgram(
     advanceMinutes(sent(), 5).state,
     WANDER_FIRST,
@@ -187,6 +200,8 @@ test("Restart carries on the copy of the map run it replaces, its unsaved change
 
 // D-93: after „Zakończ” the counts stand beside the copy's program.
 test("Zakończ keeps a count beside a rule of the copy's program whose condition and action are the copy's, and 0 beside one whose content differs", () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
+  // decision: D-165 "Each record of the game state that names a program — the program the copy of a map run belongs to, the program a character used last, the program picked for a character, the program with which a character last entered a map and the program the firing counts stand beside after „Zakończ” — names it by that number"
   const explorer = programFromRules(
     rule(ALWAYS, { kind: "explore" }),
     rule(ALWAYS, { kind: "wander" }),
@@ -205,6 +220,7 @@ test("Zakończ keeps a count beside a rule of the copy's program whose condition
 });
 
 test("Zakończ clears the counts where the copy's program is gone", () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const running = sent();
   for (const programId of [null, 2]) {
     const state = {
@@ -281,6 +297,7 @@ test("the first chill writes the rule into the copy and its base alone where the
 });
 
 test("setProgram outside a map run edits the program entered with last, or else the first of the list, and reconciles counts only where they stand beside it", () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const entered = twoPrograms({ lastEnteredProgram: 3 });
   const third = setProgram(entered, EXPLORING).state;
   assert.deepEqual(

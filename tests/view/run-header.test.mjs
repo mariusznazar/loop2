@@ -288,6 +288,7 @@ test("after a completion the clock stands at the minute of the completion with n
 // paused, one standing while the window stands over the header, one missing after either end with
 // the window closed, one after „Restart” and one asking for anything but the window.
 test("„Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, asked, show } = await draw(document, running);

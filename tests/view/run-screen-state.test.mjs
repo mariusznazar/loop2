@@ -132,6 +132,7 @@ test("leaving the screen ends the wait for the effect, and the window stands at 
 // Catches the window that opens again after „Wróć”, which D-173 forbids, and one that stands with
 // the question.
 test("the question closes the window, which stays closed after „Wróć”", () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   const { screen } = screenOf(renamed(ended(going())));
   screen.entered();
   assert.equal(screen.windowShown(), true, "precondition: the window stands");

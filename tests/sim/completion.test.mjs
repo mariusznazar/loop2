@@ -259,6 +259,7 @@ test("restart after a completion keeps the seed and starts with a streak of 0 an
 });
 
 test("the counts of the rules stay after a completion, through end", () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const state = oneShort();
   assert.deepEqual(state.ruleCounts, { 1: 1 });
   const solved = advanceMinutes(state, 1).state;
