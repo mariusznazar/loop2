@@ -22,7 +22,8 @@ responses.
 - **Scope:** account-server, build-tools
 - **Based on:** Express 5 API, routing and JSON request parsing (https://expressjs.com/en/5x/api/express/ § express.json() — "This is a built-in middleware function in Express. It parses incoming requests with JSON payloads and is based on body-parser." · § express.Router() — "You can add middleware and HTTP method routes (such as get, put, post, and so on) to router just like an application."; read 2026-11-10) · Express 5 static file serving (https://expressjs.com/en/5x/starter/static-files/ § Serving static files in Express — "To serve static files such as images, CSS files, and JavaScript files, use the express.static built-in middleware function in Express."; read 2026-11-10) · Express 5 error handling (https://expressjs.com/en/5x/guide/error-handling/ § The default error handler — "Express comes with a built-in error handler that takes care of any errors that might be encountered in the app."; read 2026-11-10) · Node.js 24.21.0 low-level HTTP API (https://nodejs.org/download/release/v24.21.0/docs/api/http.html § HTTP, introduction — "The HTTP interfaces in Node.js are designed to support many features of the protocol which have been traditionally difficult to use. In particular, large, possibly chunk-encoded, messages. The interface is careful to never buffer entire requests or responses, so the user is able to stream data."; read 2026-11-10) · Fastify 5.12 validation and serialization (https://fastify.dev/docs/v5.12.x/Reference/Validation-and-Serialization/ § Validation and Serialization — "Fastify uses a schema-based approach. We recommend using JSON Schema to validate routes and serialize outputs."; read 2026-11-10)
 - **Relations:** derives from D-01
-- **Verification:** invariants: account-server-express-http
+- **Verification:** invariants: account-server-express-http. tests: the server on Node.js 24, by the
+  engines its package and lockfile admit and by the Node.js image every deployment file names.
 - **Origin:** none
 
 *Rationale:* Express supplies routing and JSON request parsing for the small account and save API
@@ -43,7 +44,9 @@ The browser view is built in TypeScript with React, its screens written as `.tsx
 - **Scope:** browser-view, build-tools
 - **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
 - **Relations:** derives from D-04
-- **Verification:** invariants: browser-view-framework
+- **Verification:** invariants: browser-view-framework. tests: the browser view's source held in TypeScript files alone, with no file of another code or template language. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new screen of the browser view written as a React component in a `.tsx` file, drawing what it shows from the game state it is given
+  - violates: a new screen of the browser view written as a `.ts` module that builds its elements with `document.createElement`; a screen component that draws from a copy of the game state it keeps and changes by itself
 - **Origin:** none
 
 *Rationale:* the screen of a map run changes up to five times a second beside fields in which the player types, so keeping focus and rows takes a mechanism rather than an author's discipline, and the program editor is the screen on which the game stands or falls, since writing a program there has to go without grimacing. The program editor written in the browser's DOM loses the focus of a rule field when the offer of actions changes, because its rows are then built anew and the rebuild does not say where the focus returns (a reading of the code, not a run). A trial of the heaviest screen — 60 program rules and 500 chronicle entries, five updates a second beside a text field and a number field, run in a headless Chrome 156 with its processor throttled sixfold, and again at an extreme state of 200 rules and 2000 entries — fitted in every option but one: in all 48 runs no field lost focus, value or text cursor, and all 144 drags of a rule ended with the drop line on the right row. The exception, idiomorph on the DOM, took 98.5% of the browser's time at the extreme state and left a key press waiting up to 368 ms, while every other option had at most five keyboard events over 100 ms there. The trial screen was written for the trial and the throttling is no model of a weaker laptop, so the trial says nothing of the real editor's focus, and the faults of the libraries named below come from their documentation, a different kind of evidence. So cost and upkeep decided: React has the widest use (743 million npm downloads a month in the reading of 2026-11-01, an upper measure since installs as a dependency count) and the most documentation of the options, versioned with an archive of every major version; its major versions come rarely, announced by warnings, and nothing in it asks for a way of loading code of the product's own. Preact, the lighter option, which loads without a bundler through an import map, was passed over for React although React adds the bundler: the choice was not to tinker with a less-trodden way of loading. Its game-state fit is direct: an external store with immutable readings. It has traps of its own on focus: a component defined inside a component, or a changed `key`, erases state and nodes, and a controlled field needs a synchronous update or the cursor jumps. Lacks of the option chosen: its types stand in a separate package; it comes to three packages, 33 with the build tools, and two packages and the types are lifted together; it adds a bundler to the build, since its packages hold only the older CommonJS format that a browser does not load and, from version 19, no ready file for a script tag; it adds about 218 KB to the page, which the server does not compress; the rule that bars every other framework and its check have to be written anew; the check that guards against values written in place of tokens read, when this was chosen, only the file types it listed, so it had to be widened to the file type of the new screens, or a colour written in a component would pass unseen; the shared controls, which return ready elements and change them in place, become the library's components or stay as wrapped elements, and the page that shows the controls follows them; the guideline for the browser's code and its exemplar are written anew; and the tests on the hand-made document model of the screens that move to it lose that model, because a library draws no row on it, so such a case needs jsdom or happy-dom, a new package of tooling (jsdom has 20 dependencies), while the cases on pure functions stay in every option, and the tests of the screens that are rewritten anyway, the editor and the layout of the screens, change in every option. A test on an imitation of the document proves focus and dragging in no option; only a browser does. Every new package passes the check for known vulnerabilities (D-33). A library need not cover the whole view, since in the trial each drew into a given element, but the view would then have two ways of building and the rule would have to say which holds where. Moving later from React to Preact costs little: the trial source built on both, differing by two files of seven lines and a JSX setting. Risks taken, each a hypothesis: a rebuilt node may restart a CSS animation and make the figure shake; a rule dragged between groups may leave the drop line on the screen; a number field whose value the game clips may lose its cursor.
@@ -64,10 +67,12 @@ the server or the unsaved game state it kept in the page's memory after a save f
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: simulation-isolation · simulation-inputs. For the language the game
-  is written in, for the shape of the simulation's functions and for how the browser view uses the
-  game state, an agent compares the change with the decision:
-  - complies: a game screen written as a TypeScript module that the build compiles for the browser;
+- **Verification:** invariants: simulation-isolation · simulation-inputs. tests: the browser's
+  source, the simulation's included, held in TypeScript files alone. For whether the game runs in
+  the browser, for the shape of the simulation's functions that pass game time and for how the
+  browser view uses the game state, an agent compares the change with the part no invariant and no
+  test holds:
+  - complies: a game screen that the build compiles into the page the browser loads;
     the simulation's function that passes real time to a map run taking the real time elapsed as an
     argument, which the browser view measures and passes in; the program editor of the
     browser view passing the edited program to a function of the simulation; the page building the
@@ -80,9 +85,7 @@ the server or the unsaved game state it kept in the page's memory after a save f
     mage stands, or to find the start of a map run; the chronicle writing the entry of a change of
     the copy from the copy before the player's act and the copy after it, and the entry of a loss of
     the streak from an event the simulation returned
-  - violates: a screen of the game written as a Godot scene, or a script of the game's own code that
-    the browser loads, written directly in JavaScript instead of compiled from TypeScript; a
-    simulation function that reads the system time or the page; a screen of the browser view that
+  - violates: a screen of the game written as a Godot scene; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
     reading written into the game state on each reading; a field added to the game state, and with
@@ -196,7 +199,14 @@ hands out.
 - **Based on:** react-entry-format
 - **Relations:** none
 - **Verification:** invariants: application-package-layout · application-build-layout ·
-  application-build-output
+  application-build-output. tests: building the application type-checking the simulation's files
+  under a configuration of their own, which takes every file of the simulation and writes nothing
+  beside them; React joined into the one script of the files the server hands out. An agent
+  compares a change with the part no invariant and no test holds:
+  - complies: `tsconfig.sim.json` keeping `noEmit`, the simulation compiled for the page by the
+    browser's configuration alone
+  - violates: the simulation's configuration given an output directory of its own, so that
+    building the application writes a compiled copy of the simulation there
 - **Origin:** none
 
 *Rationale:* a shared installation keeps the local starting point small, while separate compiler
@@ -225,10 +235,13 @@ and sends the saved game state to the server.
 - **Scope:** account-server, browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares the change with the decision:
-  - complies: a server endpoint that stores the saved game state the browser sends and returns it
-    unchanged on login; a save route that compares the version number of the saved game state's
-    shape the browser sends beside the game with the stored one, reading nothing inside the game
+- **Verification:** tests: the server keeping each account's own saved game state and returning
+  the game it was sent unchanged, whatever that game holds; the browser sending the saved game
+  state to the server, and computing the catch-up of a loaded game itself before it sends the
+  result. For the server computing nothing of the game and the browser computing all of it, an
+  agent compares a change with the part no test holds:
+  - complies: a rule of how a map run, an earning loop or the catch-up passes written in the
+    simulation the browser runs, with nothing of it on the server
   - violates: a server endpoint that advances a map run, or computes the catch-up; a server module
     that computes the outcome of a character's actions or of the time the game was closed
 - **Origin:** none
@@ -258,10 +271,12 @@ public address different from `kantarion.bieda.it`. The existing loop container 
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · loop2-containers-published-ports
 - **Relations:** none
-- **Verification:** invariants: loop2-container-isolation · loop2-distinct-address. For leaving the
-  existing loop instance untouched, an agent compares the change with the decision:
-  - complies: a loop2 container and public route added beside the existing loop instance
-  - violates: a deployment that rebuilds or replaces the existing loop container
+- **Verification:** invariants: loop2-container-isolation · loop2-distinct-address. tests: the
+  game and its account and save server served by the one process of the loop2 container; a
+  deployment of loop2 reading the old loop container by one `docker inspect` alone and naming it in
+  no other command. An agent compares a change with the part no invariant and no test holds:
+  - complies: the loop2 containers deployed on the Mikrus host through the forced command of the installed deploy script
+  - violates: a workflow or deploy script that runs the game or its account and save server on a host of another provider, such as a cloud platform's container service
 - **Origin:** none
 
 *Rationale:* a separate instance exercises the new game's server and release path on the intended
@@ -283,11 +298,13 @@ key can only start a rebuild of a commit that belongs to that branch.
 - **Scope:** deployment
 - **Based on:** loop2-deploy-dump-to-deployed-time
 - **Relations:** none
-- **Verification:** invariants: loop2-deploy-trigger-input. For the rest, an agent compares the
-  change with the decision:
-  - complies: a workflow that, on a push, calls the server's one rebuild command with the commit
-  - violates: a workflow that copies the built files onto the server; a key that opens a shell on
-    the server
+- **Verification:** invariants: loop2-deploy-trigger-input. tests: the deployment workflow started
+  by a push to `main`; its one call to the server handing over the pushed commit's name and nothing
+  else, the workflow checking out no code; the server fetching the commit from GitHub itself and
+  building the game and its account server from it. An agent compares a change with the part no
+  invariant and no test holds:
+  - complies: the automation's key in `authorized_keys` restricted to the forced command of the installed deploy script
+  - violates: a key that opens a shell on the server; a workflow step that fetches or builds the code on the runner and copies the result onto the server
 - **Origin:** none
 
 *Rationale:* the code is sent nowhere — the server takes it from GitHub itself — so a stolen key can
@@ -305,9 +322,9 @@ Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted re
 - **Scope:** deployment
 - **Based on:** cloudflare-tunnel-transport · cloudflare-tunnel-token-file · cloudflared-connection-readiness · mikrus-tunnel-outbound-tcp · loop2-containers-published-ports · loop2-containers-memory-use
 - **Relations:** derives from D-08
-- **Verification:** invariants: loop2-application-port. An agent compares the change with the decision:
-  - complies: a private application container reached by the separately limited tunnel connector, whose image is prepared and health checked with the application
-  - violates: a public origin port; a deployment that reports success while the connector has no active connection; a tunnel installed as an unmanaged host service
+- **Verification:** invariants: loop2-application-port. tests: the public address `https://loop2.mariusznazar.com/` the deployment workflow probes; the connector a second service of the loop2 Compose project, built and started with the application; its image taken from the official `cloudflare/cloudflared` repository by a version and a digest; a deployment that reports success only once both services are healthy and the application answers its probe, the connector's health check failing while it has no connection. An agent compares a change with the part no invariant and no test holds:
+  - complies: the connector run as a remotely managed tunnel from its token file with `--protocol http2` and `--edge-ip-version 4`, under a memory limit of its own, the tunnel's published route sending the hostname to `http://app:3000`
+  - violates: a connector left to choose its protocol or IP version itself; a connector service with no memory limit; a locally managed tunnel run from a configuration file of its own; a proxied AAAA record, Origin Rule or Configuration Rule kept for loop2 beside the tunnel's hostname
 - **Origin:** none
 
 *Rationale:* The tunnel encrypts traffic across the public network without adding certificate handling to the application, and keeping its connector in the product's deployment makes its version and resource boundary reviewable. The application depends on a working connector and its credential; replacing it during deployment adds a short interruption. HTTP/2 uses the observed TCP route; container connectivity still needs observation on the host. The memory bounds were looked at once, on 2026-11-14, three hours after a deployment: the application used 77.07MiB of its limit of 512MiB and the connector 23.2MiB of 256MiB, one sample and no peak. That nothing in Cloudflare bypasses the tunnel is a remark of the owner's check of the Cloudflare panel on 2026-11-14, as the owner gave it: in the DNS of the zone `mariusznazar.com`, `loop2` has one record, a proxied CNAME to `<tunnel UUID>.cfargotunnel.com`, and no AAAA or A record; the zone has no Origin Rule and no Configuration Rule; the route published in the tunnel sends `loop2.mariusznazar.com` to `http://app:3000`. The hostname remains independent of the hosting provider.
@@ -323,10 +340,12 @@ that contains it.
 - **Scope:** deployment
 - **Based on:** none
 - **Relations:** derives from D-09
-- **Verification:** invariants: loop2-deploy-trigger-input. For the rest, an agent compares the
-  change with the decision:
-  - complies: a workflow that runs on a push to `main` and asks the server to rebuild the pushed commit, a newer push replacing a deployment still waiting to run
-  - violates: a workflow that deploys only from a separate `test` branch; a push to `main` that waits for someone to start its deployment by hand
+- **Verification:** invariants: loop2-deploy-trigger-input. tests: the deployment workflow started
+  by a push to `main` alone, with no manual start and no other trigger; its runs one at a time in
+  one group, a running deployment never cancelled. An agent compares a change with the part no
+  invariant and no test holds:
+  - complies: the deployment job with no `environment:` whose protection rule waits for a reviewer
+  - violates: a deployment job given an `environment:` whose protection rule holds every push to `main` until someone approves it
 - **Origin:** none
 
 *Rationale:* every merged pull request reaches the test server with no manual step, and no second
@@ -363,9 +382,9 @@ Automation secrets and server access values — its name, SSH port, SSH user and
 - **Scope:** deployment, agent-workflow
 - **Based on:** cloudflare-tunnel-token-file · compose-file-secret-permissions · cloudflared-image-identity · session-secret-rotation
 - **Relations:** none
-- **Verification:** an agent compares the change with the decision:
-  - complies: a connector receiving only its tunnel token and an application receiving only its session keys and SMTP password, with human rotation preserving host permissions and the private copies; old session signatures remain accepted while new responses use the first key; a backup script on the host that reads the encryption key and takes the Strych login from root's SSH configuration
-  - violates: an access or credential value in a workflow, script, skill, request, command argument, log or container environment; a world-readable credential, a tunnel-token grant to the application, a session-key or SMTP-password grant to the connector, a grant of the encryption key or the key to Strych to a container, old-key removal while its signatures can still be valid, or removal of an old encryption key while a backup still needs it
+- **Verification:** tests: the server's name, SSH port, SSH user and key reaching the deployment workflow from GitHub secrets alone, no IPv6 address or server name in the workflow or the deployment skill, and no user name in the logrotate file; the backup script sending to Strych with no login and no port of its own, and reading the encryption key from its path outside the checkout; the tunnel token, session keys and SMTP password taken from their paths outside the checkout as file secrets, each granted only to its consumer and in short form, so that the host's ownership and modes stand, and no container given the encryption key or the key to Strych; the connector running as user and group 65532; the sender address and the mail service's host, port and login as plain values in `compose.yaml`, the SMTP password named only by the path of its secret file; the server signing with the first session secret and still accepting a cookie signed with an older one. An agent compares a change with the part no test holds:
+  - complies: the encryption key file owned by root with group root and mode 0400 and the key to Strych at `/backup_key`, each copied in the owner's private note; a request that names a credential by its secret name; a human rotation that replaces the host file and its private copy before recreating the consumer, an old session secret kept after the new first one until 30 days past the last deployment able to sign with it, and an old encryption key kept in the private note while a backup made with it remains
+  - violates: an access or credential value in a request, a skill, a command argument, a log or a container environment; a world-readable credential file on the host; removal of an old session secret while its signatures can still be valid, or of an old encryption key while a backup still needs it
 - **Origin:** none
 
 *Rationale:* Access values reveal where and how to enter the server, whereas deployment paths and container ports do not. A runtime credential must survive starts outside automation, and the private copy supports recovery independently of the provider dashboard. A file-backed secret avoids printing the token in configuration and environment inspection, at the price of maintaining host permissions and another copy during rotation. The backup script on the host reads the encryption key each night, so the key has no container to recreate, and a backup made before a rotation still needs the old key. The private copies of the encryption key and of the key to Strych let a backup be reached and read once the server is gone, independently of the provider's panel; both stand in one note, so a leak of the note reveals the way to the backups and their contents together. No source says whether the key to Strych can be replaced, so this decision sets no rotation for it.
@@ -379,9 +398,8 @@ The loop2 container is a Docker container.
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads
 - **Relations:** derives from D-08
-- **Verification:** an agent compares the change with the decision:
-  - complies: a Compose file and a Dockerfile from which Docker builds and runs the loop2 container
-  - violates: loop2 run as a service directly on the host, or in a container of another runtime
+- **Verification:** tests: the deployment building the loop2 images and starting their containers
+  with Docker Compose.
 - **Origin:** none
 
 *Rationale:* the host already runs Docker with Compose, and the old loop game runs there in a Docker
@@ -399,10 +417,13 @@ kept, so a rollback restores the earlier commit's code, never the data of that t
 - **Scope:** deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-09
-- **Verification:** invariants: loop2-deploy-keeps-running. For the rollback, an agent compares the
-  change with the decision:
-  - complies: a revert merged to `main`; a human running the installed deploy script on the server with an earlier commit named in the deploy log
-  - violates: a rollback that restarts a kept image of an earlier commit; the automation key's path accepting a commit of a branch other than `main`
+- **Verification:** invariants: loop2-deploy-keeps-running. tests: a human's run of the deploy
+  script deploying an earlier commit of `main` or a commit of another branch, its fetch taking every
+  branch; the automation key's path refusing a commit that `main` as just fetched does not hold; the
+  dangling loop2 images pruned after a successful deployment. An agent compares a change with the
+  part no invariant and no test holds:
+  - complies: a revert merged to `main`, deployed as any push; a rollback that rebuilds the earlier commit and leaves the database volume as it is
+  - violates: a rollback that restarts a kept image of an earlier commit, such as an image tagged with each commit and kept past its replacement; a rollback that also restores a copy of the database from that time
 - **Origin:** none
 
 *Rationale:* Rebuilding an earlier commit keeps the repository and the deployed code in agreement without keeping product images as a recovery store. Application and connector images are prepared before either running container is replaced; shared base images and build cache remain outside product cleanup. A human can try a request before its merge or recover at once. Crossing a deployment-route change also requires the matching installed command and external route settings, so code rollback alone is not public-route recovery. Rebuilding restores code, not historical data or necessarily identical upstream layers.
@@ -419,8 +440,11 @@ the copy is a human's change.
 - **Scope:** deployment
 - **Based on:** openssh-authorized-keys-options · loop2-host-forced-command-entry · loop2-host-installed-command · loop2-host-installed-copies-agree
 - **Relations:** derives from D-09 · derives from D-12
-- **Verification:** an agent compares the change with the decision:
-  - complies: an `authorized_keys` entry whose forced command names the installed copy's path; a deployment that logs the difference between the copies and goes on
+- **Verification:** tests: each deployment comparing the installed deploy script with its source at
+  the deployed commit, warning when they differ or the source is missing, warning nothing when they
+  agree, and going on with the installed copy. An agent compares a change with the part no test
+  holds:
+  - complies: an `authorized_keys` entry whose forced command names the root-owned installed copy's path outside the checkout; a deployment that leaves the installed copy as it found it
   - violates: a forced command that points into the server's checkout; a deployment that reinstalls its own script
 - **Origin:** none
 
@@ -442,10 +466,9 @@ A deployment of loop2 changes nothing on the host but loop2's own checkout, appl
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · mikrus-host-swap · docker-volume-lifecycle · loop2-deploy-resource-gate-lines · loop2-deploy-stage-exit-lines
 - **Relations:** derives from D-08
-- **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. Checks of accounts and sessions alone do not establish preservation of saved game states and cannot clear account-save-durable-storage. For the thresholds and the memory limit, an
-  agent compares the change with the decision:
-  - complies: a deployment that refuses to build while available memory is below its threshold and leaves the running container untouched; a Compose service with a memory limit
-  - violates: a build started without reading the host's memory and disk; a Compose service with no memory limit
+- **Verification:** invariants: loop2-host-sharing · account-save-durable-storage. Checks of accounts and sessions alone do not establish preservation of saved game states and cannot clear account-save-durable-storage. tests: a deployment running no Docker command that prunes the build cache or any image but loop2's own dangling ones; no build while available memory or free disk is below the threshold the deploy script sets or cannot be read, and a build at the thresholds; the application's database at `/app/data/accounts.sqlite` on its volume, whose fresh directory belongs to uid and gid 1000. An agent compares a change with the part no invariant and no test holds:
+  - complies: each Compose service of loop2 with a memory limit of its own
+  - violates: a Compose service of loop2 with no memory limit
 - **Origin:** none
 
 *Rationale:* the host is shared with the old loop game and another workload and has no swap, so a
@@ -471,8 +494,11 @@ change of data alone.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: content-identifiers. For the numbers of the content and for what a
-  change of data alone adds, an agent compares the change with the decision:
+- **Verification:** invariants: content-identifiers. tests: the simulation and the view taking a
+  game map's step, ambient temperature, solving requirements, entry and exit caps, resources'
+  densities and times to renew and an attacker's chance from the row of the map's data they are
+  given. For the numbers of items, creatures and character skills and for what a change of data
+  alone adds, an agent compares a change with the part no invariant and no test holds:
   - complies: a new creature added as a row of the creatures' data, which the simulation reads
   - violates: a wolf's damage written as a number in the combat code
 - **Origin:** none
@@ -495,14 +521,18 @@ character's tile, never on the drawing.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: terrain-drawing-numbers. For hovering and for everything else the
-  player does on the drawing, since what the player sees and what the drawing does in answer is
-  shown only by a real browser, which the repository does not declare, an agent compares the change
-  with the decision:
-  - complies: hovering a tile marks its row in the list of revealed tiles, and hovering that row
-    marks the tile, while the tab „Teren” of the area under the world on the screen of a map run is
-    picked (D-311)
-  - violates: a click on a tile that sends the character there or changes the program
+- **Verification:** invariants: terrain-drawing-numbers. tests: a click on a tile of the drawing
+  changing nothing, and nothing in the drawing a control; hovering a tile marking its row in the
+  list of revealed tiles, and hovering a row marking its tile; the numbers of stock standing in the
+  rows of the list and in the line under the drawing, which gives the hovered tile, or the
+  character's tile where none is hovered or the key names no tile. For hovering as a real browser
+  delivers it, and for what the player does on the drawing other than a click, an agent compares a
+  change with the part no invariant and no test holds:
+  - complies: in a browser, hovering a tile marks its row in the list of revealed tiles, and
+    hovering that row marks the tile, while the tab „Teren” of the area under the world on the
+    screen of a map run is picked (D-311)
+  - violates: a double click or a drag on a tile that sends the character there or changes the
+    program
 - **Origin:** none
 
 *Rationale:* the player writes the condition that fewer than N of a resource lie on the
@@ -531,7 +561,11 @@ An attack interrupts the character's action still in progress, and that action i
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: action-in-progress
+- **Verification:** invariants: action-in-progress. tests: an attack interrupting the action in
+  progress, whose effect and cost are lost; the program, changed during the action or not,
+  choosing again in the game minute the action ends and in the minute an encounter ends, and
+  before the character's action in each combat turn, a program changed during an encounter
+  included.
 - **Origin:** none
 
 *Rationale:* editing a program leaves the work already begun intact, while an attack makes the character respond to the creature instead; the program as it stands at each next choice controls that response. Losing the interrupted work makes an attack matter even when the character survives it. A change of the program, or a condition of another rule that comes true, interrupts nothing — not even a long action such as an exploration — so the program, an attack apart, chooses a rule only after the action in progress ends, and a changed program works from the next free game minute of the map run in progress.
@@ -550,14 +584,16 @@ until „Wznów”.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: player-map-run-pace. For the player's way to pause and resume a map
-  run, to pick a pace and to fast-forward, an agent compares the change with the decision:
-  - complies: a control of the browser view that pauses the map run in progress and resumes it; a
-    map run at 16× passing sixteen game minutes, one after another, in one real second; „8×” picked
-    during a pause leaving the game minute where it stands until „Wznów”
-  - violates: a map run the player can hold still only by ending it; a pace picked during a pause
-    resuming the map run; a control that takes a map run straight to its result or back to an
-    earlier game minute
+- **Verification:** invariants: player-map-run-pace. tests: the paces 1×, 2×, 4×, 8× and 16× and
+  no other, each giving its multiple of a game minute per real second; the header of the screen
+  of a map run with „Pauza”, which „Wznów” replaces in a pause, and the five pace buttons asking
+  for what they say, also in a pause; a map run resumed going on from where the pause held it; a
+  pace picked in a pause, the pause at a discovery included, changing the pace alone and leaving
+  the map run paused until it is resumed. For a way to move a map run other than its pace and its
+  pause, an agent compares a change with the part no invariant and no test holds:
+  - complies: a map run at 16× passing sixteen game minutes, one after another, in one real second
+  - violates: a control that takes a map run straight to its result or back to an earlier game
+    minute
 - **Origin:** none
 
 *Rationale:* solving a map is a puzzle the player may fast-forward, while earning is income and goes
@@ -594,15 +630,13 @@ does.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: map-run-repeatability · simulation-randomness · restart-seed ·
-  map-run-layout. For where the seed of a map run comes from and for which generator a kind of draw
-  uses, an agent compares the change with the decision:
-  - complies: a map run sent anew that takes a seed other than that of the map run before it; a
-    restart that brings back the same layout of the map; two programs on one seed meeting the wolf
-    in the same game minute; the next seed of an earning loop drawn from a generator of its own, a
-    fifth kind of draw, which moves no draw of the other four
-  - violates: a map run sent anew that keeps the seed of the map run before it; wandering that draws
-    from the generator of the game map's layout; an earning loop that draws each map run's seed
-    afresh; gathering that draws from the generator of attacks
+  map-run-layout. tests: a generator of its own, started from the seed, for the layout, wandering,
+  gathering, attacks and the next seed of an earning loop, the fifth moving no draw of the other
+  four, so that wandering draws the same with gathering or without it and two programs on one seed
+  meet their first attack in the same game minute; the layout's draws in a fixed order, the
+  entrance after the resources; a send after „Zakończ” taking a new seed; the first map run of an
+  earning loop taking the seed a send at that moment takes, and each later one the first draw of
+  the fifth generator of the map run before it.
 - **Origin:** none
 
 *Rationale:* the same program on the same seed gives the same map run to the game minute, so a map
@@ -639,17 +673,19 @@ campfire — the simulation chooses, not the program.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: program-rule-pick · action-in-progress · program-closed-lists. For a
-  condition written as an expression, since a sentence of this decision naming what a kind of condition may take
-  would also bind which kinds the closed list holds, which this decision leaves open, an agent
-  compares the change with the decision:
+- **Verification:** invariants: program-rule-pick · action-in-progress · program-closed-lists.
+  tests: a program holding a rule group inside a rule group refused; a program rule naming the
+  berry it eats taken in without it. For a condition written as an expression, since a sentence of
+  this decision naming what a kind of condition may take would also bind which kinds the closed
+  list holds, which this decision leaves open, for a way of the player to carry out a character's
+  action by hand and for the fuel a campfire takes, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: a condition picker listing the conditions of the closed list, each with the resource
     and the whole number it takes; a condition on the character's temperature taking 36.5, a number
-    with tenths, from a number field of the picker; a rule group "when very cold" above a rule group
-    "when chilly"
+    with tenths, from a number field of the picker
   - violates: a text field taking a condition as an expression; a kind of condition added to the
-    closed list that takes a formula as text; a button that makes the character eat now; a rule
-    group inside a rule group; a program rule naming which stick to burn
+    closed list that takes a formula as text; a button that makes the character eat now; a program
+    rule naming which stick to burn
 - **Origin:** none
 
 *Rationale:* the game is the writing of behaviour, so carrying out a character's action by hand
@@ -680,11 +716,17 @@ map sets.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-22
-- **Verification:** invariants: map-run-tiles. For what stands in the game map's data and for the
-  shape of its grid, an agent compares the change with the decision:
-  - complies: a new game map added as a row of the game maps' data, with its dimensions and
-    resources; Las with a fixed entrance, Las — głębiej with a drawn one
-  - violates: a game map with a hand-placed layout; a game map of square tiles
+- **Verification:** invariants: map-run-tiles. tests: tiles with six neighbours; the map's
+  dimensions and cost of a move given to its tiles; the fixed entrance of Las and the entrance of
+  Las — głębiej drawn after its resources, other on other seeds; a resource with no time to renew
+  in the map's data never renewing; the same seed giving the same tiles and another seed other
+  ones, and a resource of density zero placed on no tile. For the attacking creatures and how often
+  they attack standing in the map's data, an agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a new game map added as a row of the game maps' data, with the wolf and its chance
+    per game minute among its attackers
+  - violates: the wolf's chance per game minute of attacking written as a number in the code of
+    attacks
 - **Origin:** none
 
 *Rationale:* six neighbours at an equal distance make a move always mean the same. A resource that
@@ -713,13 +755,10 @@ only from a revealed tile, as much as lies on it.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: exploring-reveal · move-reach. For a journey kept as a route, for
-  exploring that brings an item and for where gathering takes from, an agent compares the change
-  with the decision:
-  - complies: "Go — stick" taking one move toward the nearest known tile with sticks, then the
-    program choosing again; a gathering on a revealed tile holding one stick taking that stick
-  - violates: a journey stored as a route; exploring that brings a stick; a gathering on a tile not
-    yet revealed; a gathering that takes a stick from a revealed tile holding none
+- **Verification:** invariants: exploring-reveal · move-reach. tests: a step ending with the
+  program picking anew, a walk to a far tile or campfire made one step at a time; exploring that
+  leaves the backpack and the stock as they were; gathering that can be carried out only on a
+  revealed tile holding some of its resource, and that takes nothing from a tile holding none.
 - **Origin:** none
 
 *Rationale:* the character reacts to the world between moves, an attack interrupts a move like any
@@ -743,15 +782,11 @@ only that tile.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: walk-target · walk-feasibility · program-world-reference. For things
-  of the world other than resources on tiles, and for campfires on a tile, an agent compares the
-  change with the decision:
-  - complies: "Go — stick" taking one move toward the nearest known tile with sticks; "Go — stick"
-    passed over while the character stands on a known tile with sticks; "Go — campfire" taking one
-    move toward the nearest campfire
-  - violates: a program rule naming "tile 7"; "Go — stick" sending the character off the known tile
-    with sticks it stands on toward another one; a program rule naming "campfire 2"; a second
-    campfire made on a tile that has one; a campfire warming a character on a neighbouring tile
+- **Verification:** invariants: walk-target · walk-feasibility · program-world-reference. tests:
+  „Idź — ognisko” taking one move toward the nearer of two campfires, passed over where no campfire
+  stands or on a campfire's tile, and staying on the campfire it reached; „Wytwórz — ognisko” not
+  carried out on a tile that has a campfire; a campfire and a burning stick on another tile not
+  warming the character.
 - **Origin:** none
 
 *Rationale:* the layout of a game map differs on every seed, and campfires arise in a different
@@ -779,11 +814,16 @@ game-icons.net and its licence, and says how the icon file differs from its sour
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** game-icons-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
 - **Relations:** none
-- **Verification:** invariants: icon-file-content · icon-credits · loop2-container-icons. For where
-  the icons come from and where their source files stand, an agent compares the change with the
-  decision:
-  - complies: a campfire icon taken from game-icons.net into `assets/icons/`, credited in the folded
-    section of the login card and of Siedziba
+- **Verification:** invariants: icon-file-content · icon-credits · loop2-container-icons. tests:
+  every icon the game's data names, the actions' and the campfires' included, standing as an SVG
+  file in `assets/icons/` with a credit whose page is on game-icons.net; the section of credits a
+  folded `details` whose summary reads „Autorzy grafiki”, standing as the last part of the login
+  card in each of its states and as the last part of Siedziba, the game holding that one section.
+  For where
+  the icons' source files stand and where the game draws its icons from, an agent compares the
+  change with the part no invariant and no test holds:
+  - complies: a campfire icon taken from game-icons.net into `assets/icons/`, reaching the
+    directory the server serves only through the build's copy
   - violates: an icon file placed straight in the directory the server serves; an icon drawn from
     an emoji, or loaded from another site while the game runs
 - **Origin:** none
@@ -822,8 +862,8 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares the change with the decision:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, and use full-compliance source invariants without a transitional per-file no-regression invariant
+- **Verification:** tests: that ESLint, Ruff and ShellCheck fail the gate on any report in any file they check, with no allowance for a file that broke a rule before; that ESLint and Prettier reach the test files of the parts in their scope as they reach the other files. An agent compares a change with the part no test holds:
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, with no transitional per-file no-regression invariant beside the full-compliance source invariants
   - violates: a stylesheet exemplar or guidelines of their own for stylesheets, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
 - **Origin:** none
 
@@ -837,9 +877,9 @@ Every application, script and test TypeScript and JavaScript file of browser-vie
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment
 - **Based on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Relations:** derives from D-06
-- **Verification:** invariants: eslint-source-rules. An agent compares a change with the decision:
-  - complies: a change to `eslint.config.mjs` that adds the file pattern of a new directory of code in that scope;
-  - violates: a rule set to `off` in `eslint.config.mjs` or an ignore of a source directory, without a human-accepted change of this decision.
+- **Verification:** invariants: eslint-source-rules. An agent compares a change with the part no invariant holds:
+  - complies: a version of ESLint, @eslint/js, typescript-eslint or globals changed in the root `package.json` and `package-lock.json` together with a human-accepted change of this decision;
+  - violates: a rule from outside the sets of @eslint/js and typescript-eslint added to `eslint.config.mjs`, or a newer typescript-eslint or globals installed, without a human-accepted change of this decision; the parser moved off the TypeScript API 6.0.2, or ESLint installed in an npm package of its own.
 - **Origin:** none
 
 *Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency. With inline configuration turned off, a suppressing comment is itself a failure, with the check's own empty suppressions file a bulk-suppressions file silences nothing, and a change that turns a rule off stands in the configuration, where review sees it. Review alone does not keep a list of file patterns complete: a file in a directory no pattern names passes the gate with no report, so a test asks the tool which files receive the sets, and the sets it compares them with are the tool's own, never a list kept in the product.
@@ -852,7 +892,9 @@ Every `.py` and `.pyi` file Ruff finds in browser-view, simulation, account-serv
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** ruff-default-rules
 - **Relations:** none
-- **Verification:** invariants: ruff-source-rules
+- **Verification:** invariants: ruff-source-rules. An agent compares a change with the part no invariant holds:
+  - complies: a rule moved between the blocking set and the fourteen examples of `ruff.toml`, or another version of Ruff required there, together with a human-accepted change of this decision
+  - violates: a rule removed from `select` in `ruff.toml`, preview turned on or `required-version` dropped, with no change of this decision; a directory of code added to the excludes of `ruff.toml`
 - **Origin:** none
 
 *Rationale:* The selected subset retains useful defect reports while leaving reports that offer no worthwhile code change as examples; one explicit configuration keeps other configuration from quietly changing that boundary, and a suppression comment the tool ignores does no harm.
@@ -880,8 +922,8 @@ All application, script and test TypeScript and JavaScript in browser-view, simu
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: prettier-source-format. An agent compares a change with the decision:
-  - complies: a new browser module formatted by Prettier with no option set;
+- **Verification:** invariants: prettier-source-format. tests: the HTML and CSS of the browser view standing as Prettier leaves them with its default options. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new browser module with no `prettier-ignore` comment, with `prettier.config.mjs` still setting no option;
   - violates: a `// prettier-ignore` comment, or an option added to `prettier.config.mjs`.
 - **Origin:** none
 
@@ -895,7 +937,9 @@ The dependency audit passes without a network request where `package-lock.json` 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal
+- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal. tests: the audit passing with no request to the registry where the lockfile equals its version at the fork point, and auditing the lockfile once it differs. An agent compares a change with the part no invariant and no test holds:
+  - complies: the audit run by the local pinned npm with the flags of this decision, `--include=dev`, `--include=optional` and `--include=peer` among them, against the public npm registry
+  - violates: an audit that leaves out development, optional or peer dependencies, asks another registry or runs an npm fetched when the check runs; a scheduled job that raises the threshold above low; an audit that sends the application's code
 - **Origin:** none
 
 *Rationale:* A low threshold starts conservatively while comparison with the start of the change keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same lockfile. The registry matches each advisory's range to the locked versions itself, so comparing the advisories reported before and after the change needs no parsing of ranges, at the price of letting a further copy of an already reported vulnerable package through.
@@ -983,9 +1027,9 @@ In the browser view the role `positive` means that something works, is in order 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the fill of the bar of „Passa 480/480” in the header in `positive` on a track in `highlight`; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
-  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the bar of a met requirement of the solving condition filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge.
+- **Verification:** invariants: design-token-contrast. tests: the fill, the name and the numbers of a met requirement of the solving condition in the header in `positive`, on a track in `highlight`, through the real stylesheet, and a met requirement marked `positive` after a completion; „Odbierz” drawn as the button of the kind `positive`. An agent compares a change with the part no invariant and no test holds:
+  - complies: the message under a number field holding a wrong value, written in `warning`; the text of the button „Zakończ” in `danger` under the pointer; the bar at a program rule that can start in `positive`, beside an action in `text-strong`; the fill of the progress bar over the mage's head in `positive` on a track in `highlight`, in a badge on `panel`; the text of „Odbierz” in `positive` under the pointer too; the plaque of a discovery in the scene on `panel` with its frame in `discovery`;
+  - violates: the message of a wrong value in a field written in `danger`; `discovery` used for a message that the player changed the program; the bar at a program rule drawn in the colour of the text beside it; the progress bar over the mage's head filled in `warning`; the frame of a discovery's plaque in `text-strong` or `warning`, so that a discovery in the scene looks like an ordinary badge.
 - **Origin:** none
 
 *Rationale:* The meanings are those the signal colours — green, orange, red, yellow and violet — carry in loop, the game whose look loop2 starts from, so they read as they do there; the character's outline takes a role of its own, though at the start it may share the value of the yellow of `discovery`. The meanings stay fixed while the values may change: a new or changed meaning takes a change of this decision, and as it is not yet known what will change in the interface, the meanings stay as they are for now. The bar of a program rule takes the two colours that already say that something works and that something is not carried out, so it reads as it does in loop, and it must keep the threshold the text roles keep on every background of a row; the 4.5:1 those two roles already keep on every background is more than the 3:1 the bar needs, so the bar adds no pair to check. D-279 has a frame or a bar at a text take the colour of that text; the bar of a rule speaks of the state of the rule and not of the text beside it, and whichever colour it takes differs from the colour of that text, so it is no such bar. The fill of the progress bar over the mage's head says that the action is going on, which `positive` says in text, and it keeps the threshold of a part that is no text, against what it stands on. The bar of a requirement of the solving condition turns `positive` once the requirement is met, as in loop, since the requirement is then in order. The plaque of a discovery takes the colour that says in text that something new was discovered, as a frame, so that what comes out of the forest at a discovery tells from the badge of an action by its colour and keeps the threshold of a part that is no text, against the `panel` it stands on.
@@ -998,9 +1042,9 @@ In the browser view the background `page` means that here is the game, `panel` a
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the icon of a resource flying to the mage in `text-strong` on its plaque in `panel`; the icon of a resource in the drawing of the map in `text-strong` on `tile-revealed`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`; the bar of „Passa 120/480” in the header with its track in `highlight` and its fill in `text`;
-  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`; an icon of the drawing of the map or an icon flying to the mage written in `text` or in the colour its file holds; the bar of a requirement of the solving condition not yet met filled in `positive`.
+- **Verification:** invariants: design-token-contrast. tests: the icons of the drawing of the map and the icon flying to the mage in `text-strong`, through the real stylesheet; the bar of a requirement of the solving condition in the header with its track in `highlight` and, while the requirement is not met, its fill in `text`. An agent compares a change with the part no invariant and no test holds:
+  - complies: the badge over the mage's head on `panel`, the track of its progress bar in `highlight` and its icon in `text-strong`; the plaque of the icon flying to the mage in `panel`; the date of a row written in `text-label`; the button chosen in a group framed in `selected` with its text in `text-strong`; the tab chosen in its group shown by a line in `selected` at its bottom, its text in `text-strong`; a button under the pointer on the background `highlight`, its frame and its text role unchanged; the row of the program rule that wins now on `rule-winning`; the bar of a program rule whose condition does not hold in `condition-unmet`;
+  - violates: the text of a disabled button written in `text-secondary`; the button chosen in a group shown by the background `highlight` alone; the row of the rule that wins now on `highlight`; `condition-unmet` used for the line between two sections; the icon in the badge over the mage's head written in `text`.
 - **Origin:** none
 
 *Rationale:* Each neutral role answers one question a player asks of a grey on the screen, so a new label, frame or background takes the grey of its meaning rather than the one that looks nearest. Fewer greys later take either equal values for several roles or a change of this decision with a mechanical rename. The roles come from the greys of loop: the white of names and the near-white of numbers merge into `text-strong`, and `text-label` takes the grey of labels and inactive tabs and the uses of loop's darkest grey for dates and sections, while that grey's uses at things that cannot be used now go to `text-disabled`. A control has no background of its own, so the one under it shows, and its text is `text`; under the pointer it takes `highlight` and its frame stays. A chosen button or tab is shown by `selected`, not by the green of `positive`, which says that something works or is active, not that something is chosen. The rule that wins and the rule running are what the player looks for in a long program at a fast pace, so each has a background of its own, and the bar of a rule whose condition does not hold says that nothing is going on, so it keeps loop's dark grey. A frame or a bar at a text takes the colour of that text and is part of it, so the frame of the main button of a form and the bar at a sentence, like the frame of a wrong field in the colour of its message, give no role of the kind text a use outside text, and the text of a secondary action in `text-secondary` is a note like any other. Accepted with it: the backgrounds of the two rules take the green and the blue of loop on the panel with their opacity lowered only as far as the text threshold needs, so they are paler than loop's and the margin over the threshold is small, a later change of the panel or of a label may call for a new value, and the dark bar has the same value as `highlight`, `divider` and `tile-edge` and is hardly visible on every row, so a rule whose condition does not hold looks almost like a rule with no bar, and on a marked row the bar looks like none. The badge over the mage's head is a block set apart, so it takes `panel`, and the track of its bar is marked, as `highlight` says; the icon in it takes `text-strong`, which the action has in the row of a rule and the icons of the drawing of the map have, though no text stands beside it. The track of the bar of a requirement of the solving condition is marked as well, and while the requirement is not met its fill takes `text`, as the light fill of that bar does in loop. The icon in the badge is lighter than the same icon in a cell of the rule picker that is not chosen, where it stands by ordinary text. Accepted with it: a role of the kind text stands at something that is no text, and the icons of the drawing of the map stand in `text-strong` on `tile-revealed`, a background outside the five that the contrast of the roles is held for, so a later change of `tile-revealed` can lessen their legibility with no check showing it.
@@ -1013,8 +1057,8 @@ In the browser view `character` means that here is the character and here it is 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. An agent compares a change with the decision:
-  - complies: the target of the current move drawn as a thin dashed line in `character`; a hovered tile and its row marked by a line in `link-highlight`, the tile's own colour unchanged;
+- **Verification:** invariants: design-token-contrast. tests: an outline on the character's tile and, only while a move runs, an outline on the target of the move, told apart from the first; the revealed tiles holding the icons of what lies there and a tile not revealed none; a hovered tile and its row of the list marking each other, with a line around the tile; the icon of a stock of 0 dimmed by `depleted`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
+  - complies: the target of the current move drawn as a thin dashed line in `character`; the line around a hovered tile drawn in `link-highlight`, the tile's own colour unchanged;
   - violates: the target of the current move drawn in a colour of its own; a hovered tile filled with another colour.
 - **Origin:** none
 
@@ -1043,9 +1087,9 @@ In the files of the part browser-view other than its file of design tokens, a va
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** invariants: browser-view-token-values. For values the text of a file does not show, an agent compares a change with the decision:
-  - complies: a gap of the stylesheet written as `var(--space-s)`; the radius of a tile computed in TypeScript; `line-height: 1.4`; the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell; the icon of a resource in the card of a map drawn as a mask in the colour of the text beside it; the frames and positions of the mage's sprite given from TypeScript as percentages of the scene's width and height; the icon of „Zbierz” in the badge over the mage's head, the icon of a resource flying to the mage on its plaque and the icon of a resource in the drawing of the map drawn as masks in `text-strong`;
-  - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style; an icon of `assets/icons/` drawn as a picture of its file, with the colour the file holds.
+- **Verification:** invariants: browser-view-token-values. tests: an icon of `assets/icons/` drawn as a mask of its file and no picture of it in the drawing of the map, the table of revealed tiles, the card of a map, the row of a rule, the trip plan, the badge over the mage's head and the plaque of the icon flying to the mage, the icons of the drawing of the map and the flying one in `text-strong` through the real stylesheet. For values the text of a file does not show and for the colour of an icon beside a text, an agent compares a change with the part no invariant and no test holds:
+  - complies: the icon of „Zbierz” drawn as a mask in the colour of the text beside it, dimmed with its greyed cell; the icon of a resource in the card of a map in the colour of the text beside it; the icon of „Zbierz” in the badge over the mage's head in `text-strong`;
+  - violates: a TypeScript module that builds a colour from numbers it computes and writes it into a style; the icon of a greyed pick cell keeping the colour of an active one.
 - **Origin:** none
 
 *Rationale:* A value each screen writes for itself drifts from the same value elsewhere — the highlight changed in one place leaves a tile and its row of the list in two colours — so every colour, length, font and value of appearance is read from one place. What stays outside carries no meaning of the styleguide: layout, the geometry of the drawing, the frames and positions of a sprite, and the icon files. An icon drawn as a mask takes the role of the text beside it, so dimmed and amber icons need no files of their own and a change of `text-strong` reaches them at once, and where no text stands beside it, in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map, it takes `text-strong`, the role of the action in the row of a rule; one way of drawing an icon holds for every icon of the game. What is gained is the grid of cells as in loop, with the icon in the cell and in the row of a rule.
@@ -1058,9 +1102,9 @@ The screens of the browser view build every button, select list, number field, t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” neutral at rest and in `danger` under the pointer and at focus, the last one disabled while its reset waits for the server; the answer to a request for a password-reset link standing under its form in `text` with a bar on its left in the same colour;
-  - violates: a module that creates and styles a `<button>` of its own; „Usuń” made as a plain button; „Porzuć zmiany”, „Przełącz postać na ten program” or „Zatrzymaj” made as a plain button; „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” made as a plain button; „Zacznij od zera” made as a plain button; a destructive button in `danger` at rest; a cell of a pick drawn as a button of its own; that answer written in `warning`, as if it refused something, or in `positive`, as if the message had left.
+- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits in both its forms; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
+  - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” neutral at rest and in `danger` under the pointer and at focus; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
+  - violates: a module that creates and styles a `<button>` of its own; „Porzuć zmiany” made as a plain button; a destructive button in `danger` at rest; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
 - **Origin:** none
 
 *Rationale:* Buttons, select lists and fields that each module makes for itself differ in size between screens, and their focus, disabled and error states look as the browser draws them. Red that stands on every button that may drop something is the loudest thing on the screen and speaks louder than the state of the character, so a destructive button shows what it is when the player reaches for it, and red at rest means a threat to a character. A button that ends a map run, deletes a program rule, resets progress on a map, starts the game from zero or discards the unsaved changes of the copy is destructive, in every place it stands. „Zacznij od zera” puts the present game in the place of the previous save, where the next move into that place replaces it. „Zatrzymaj” ends an earning loop at once, with no question, and the player cannot look at the interrupted run. The main button of a form is the one that sends it, told by the marking a sending button already has, so it is no control of its own; only an action that opens or leaves the state of a form and stands below it is shown as text, and the rest of the game keeps plain buttons. A pick needs a cell the keyboard reaches. A changed label and disabled fields make a pending account operation visible and prevent repeated submission; the absence of animation leaves a long wait less conspicuous. The answer to a request for a password-reset link refuses nothing, so it stands where refusals stand without their role, as content to read, set apart from the descriptions around it by a bar in its own colour and by no colour of its own; green would claim that the message left, which the answer cannot know, and orange that something failed. The answer stands below the form, where refusals stand, with the address field empty and the form and „Wróć do logowania” kept. Accepted with it: „Przełącz postać na ten program” is a destructive button wherever it stands, also while the streak stands at zero and the copy holds no unsaved changes, and its being a destructive button is held with a doubt, to be seen against the game, the rule being open to change; the answer stays in white and grey, and a bar can be overlooked on a dense page; a player who asks for a link again types the address anew, the second request invalidates the link of the first message, and below the form there stood only refusals, so a calm sentence there is new. Accepted with it: one look more of the shared button to keep and two decisions changed, this one and the one that gives `positive` its meaning.
@@ -1073,9 +1117,9 @@ The kitchen-sink page of the browser view is built from `src/browser/kitchen-sin
 - **Scope:** browser-view, build-tools
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** invariants: application-build-kitchen-sink · preview-server-access. An agent compares a change with the decision:
-  - complies: the page compiled into `dist/kitchen-sink/` and served on the developer's machine alone;
-  - violates: the page drawing the game map from a game state put together by hand; the page served by the account server in a development mode.
+- **Verification:** invariants: application-build-kitchen-sink · preview-server-access. tests: the page's own command building the page from its sources into `dist/kitchen-sink/`. For what the page shows, an agent compares a change with the part no invariant and no test holds:
+  - complies: the page showing the destructive button at rest, under the pointer, at focus and disabled while it waits, every role, and a sample of a revealed tile drawn with `tile-revealed`, from values made up on the page;
+  - violates: the page drawing the game map from a game state put together by hand; a state of a shared control left off the page with no reason given.
 - **Origin:** none
 
 *Rationale:* The test server deploys what `npm run build` writes, and the account server serves the whole of its output, so a page kept out of that build never reaches players, and the account server and the deployment stay as they are. Samples drawn with the roles show every state of a tile without a game state made by hand, which no function of the simulation returned (D-04).
@@ -1088,9 +1132,9 @@ The fonts of the browser view are Geist and Geist Mono, whose web-font files and
 - **Scope:** browser-view, build-tools, deployment
 - **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
 - **Relations:** none
-- **Verification:** invariants: font-file-provenance. An agent compares a change with the decision:
-  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the clock of the map run in the header of the screen of a map run set in Geist Mono;
-  - violates: a stylesheet that loads a font from Google Fonts or another CDN; font files taken from the npm package `geist`; the headings of the panels set in Geist Mono.
+- **Verification:** invariants: font-file-provenance. tests: the clock of the map run set in the mono face of the stylesheet, and the words of the bar of the solving condition beside it not. An agent compares a change with the part no invariant and no test holds:
+  - complies: an `@font-face` rule whose `src` reads a file under `/fonts/` copied there from `assets/fonts/`; the chronicle set in Geist Mono;
+  - violates: a stylesheet that loads a font from Google Fonts or another CDN; the headings of the panels set in Geist Mono.
 - **Origin:** none
 
 *Rationale:* The look loop2 starts from uses Geist and Geist Mono, Geist Mono for the chronicle and the clock, and the fonts are released under the SIL Open Font License 1.1. Fonts kept in the product's files load from the game's own server, change only by a change of the repository and stand beside the licence they are released under; kept apart from what the server serves, as the icons are, they reach the player only through the build.
@@ -1103,9 +1147,9 @@ A control of the browser view is every HTML element the browser lets the keyboar
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-42
-- **Verification:** invariants: browser-view-focus-outline. An agent compares a change with the decision:
-  - complies: a link of the folded section of credits showing the outline of `focus` when the keyboard reaches it;
-  - violates: a class added to the controls to give them their focus; `outline: none` on a shared button; an outline set from TypeScript.
+- **Verification:** invariants: browser-view-focus-outline. An agent compares a change with the part no invariant holds:
+  - complies: a link of the folded section of credits showing the outline of `focus` when the keyboard reaches it, with nothing added to it for its focus;
+  - violates: a class or an attribute added to the controls to mark them as controls; an outline set or turned off from TypeScript; an outline turned off on a shared button by `all: unset`.
 - **Origin:** none
 
 *Rationale:* One rule reaches every element the keyboard reaches without the code marking it, so a new control or link shows its focus with nothing added. A control that needs another outline takes a change of this decision, and an outline turned off in an unusual way is found only by review. The decision holds no value: the thickness and the offset of the ring stand with the design tokens.
@@ -1118,9 +1162,9 @@ In the file of design tokens of the browser view, each role of its styleguide's 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** an agent compares a change with the decision:
-  - complies: `--text-label` for the role `text-label`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
-  - violates: `--space-8` for the spacing of 8 px; `--zinc-900` for the background `page`; `--yellow` for the role `discovery`.
+- **Verification:** tests: each role whose contrast the design tokens keep — the roles of the kind text but `text-disabled`, the five backgrounds, `control-border`, `focus`, `character`, `tile-revealed` and `tile-hidden` — read from the custom property of its own name. For the other roles and every other value of appearance, an agent compares a change with the part no test holds:
+  - complies: `--divider` for the role `divider`; `--space-s` for a size of the spacing scale; `--font-size-label` for the size of labels;
+  - violates: `--space-8` for the spacing of 8 px; `--grey-700` for the role `divider`.
 - **Origin:** Decision 1 of the spec in `docs/task-cycles/styleguide-loop2/spec.md` at commit b0c4d44
 
 *Rationale:* A value may change while its meaning stays, so a name that tells what the value is for stays true when the value changes, and the change stays in the one place that holds the value; a name telling a colour or a number turns false with the first such change, or takes a rename in every style that reads it. The names of the roles are those of the styleguide's table of roles, which keeps no deliberate exception to the rules of the styleguide.
@@ -1133,9 +1177,9 @@ Every start of the loop2 server process by a loop2 test on the machine that runs
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** node-listen-port-zero
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new test that starts the built server through the shared server helper of the invariant tests, which asks the system for a free port at each start and gives it to the server in `LOOP2_LISTEN_PORT`;
-  - violates: a test that starts the server with `LOOP2_LISTEN_PORT=3000` or another port written into the test; a second test that starts the server without `LOOP2_LISTEN_HOST` and `LOOP2_LISTEN_PORT`.
+- **Verification:** tests: the shared server helper of the invariant tests giving the server, in `LOOP2_LISTEN_PORT`, the port its probe of a free port names at that start, never one of its own, and another such port when a start whose port was taken runs once more. An agent compares a change with the part no test holds:
+  - complies: a new test that starts the built server through the shared server helper of the invariant tests, or that asks the system for a free port at each start of its own and gives it to the server in `LOOP2_LISTEN_PORT`; a test that gives `LOOP2_LISTEN_PORT` a value the server refuses before it listens; a server started inside a container a test runs, on the port the container names;
+  - violates: a test that starts the server with `LOOP2_LISTEN_PORT=3000` or another port written into the test; a probe of a free port in the shared helper that picks a port itself instead of asking the system for one; a second test that starts the server without `LOOP2_LISTEN_HOST` and `LOOP2_LISTEN_PORT`.
 - **Origin:** none
 
 *Rationale:* Runs of the tests side by side on one machine, or a run beside another process holding a fixed port, collide on that port, and the run that loses passes only when it is repeated; a port the system names free at each start gives every start a port of its own. A short window remains between the system naming the port free and the server listening on it, in which another process may take the port; starting once more on another free port eases it. The single test of the default address keeps the address a person starts the server on under a test, and it passes whether or not that address is free.
@@ -1148,10 +1192,10 @@ The chest belongs to a team and has a cap on the total count of pieces, by the s
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: character-team · trip-transfer. For the chest, an agent compares a change with the
-  decision:
-  - complies: a lone character shown with the chest of its one-member team
-  - violates: a character with a personal chest beside the team's; a character outside every team; a chest capped per kind of item
+- **Verification:** invariants: character-team · trip-transfer. tests: the chest held by the team,
+  with a cap on the count of the pieces of all its items together, a chest above it refused at a
+  load and a completion depositing no more than the room the pieces of another item leave; a
+  character holding no chest of its own.
 - **Origin:** none
 
 *Rationale:* a team of one behaves exactly as a lone character with a chest of its own, as the single
@@ -1172,10 +1216,9 @@ headquarters before sending any character to a game map.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new game whose state holds a team with no character, the headquarters showing the
-    team as empty beside the creation of a character
-  - violates: a new game whose team holds a ready-made elemental mage
+- **Verification:** tests: a new game whose team holds no character; the headquarters of an empty
+  team saying so beside the creation of a character, and the section „Kto idzie” of the card of a
+  map holding no character to send and sending the player to the creation in Siedziba.
 - **Origin:** none
 
 *Rationale:* every character of the team is then one the player created and named, the first one
@@ -1193,12 +1236,10 @@ characters may bear the same name.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: „ Ala ” typed creating a character named „Ala”; two characters named „Ala” on the
-    team's list; a name of spaces alone creating no character, with the message under the name
-    field in `warning`
-  - violates: a character created with an empty name; a second „Ala” refused; a map run or a saved
-    game that names its character by its name
+- **Verification:** tests: the name the player types at the headquarters becoming the character's
+  name, trimmed of the white space at its start and end; a name empty once trimmed creating no
+  character, with „Wpisz imię postaci.” under the field; two characters bearing one name staying
+  two characters.
 - **Origin:** none
 
 *Rationale:* the name is what the player tells characters apart by on the team's list, and a name
@@ -1220,15 +1261,12 @@ screen Postać of that character. „Otwarte: {mapa} →” of the end-of-run wi
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the button „Wejdź” beside each character in the section „Kto idzie” of the card of a
-    map; „Zakończ” of a map run opening the screen Postać of the character that made it; after a
-    completion of Las „Otwarte: Las — głębiej →” in the window opening the screen Mapy with the
-    card of Las — głębiej
-  - violates: a panel for sending characters standing apart from the card of a map; a button that
-    sends a character standing in the headquarters; „Zakończ” leading to the headquarters or to any
-    screen other than the screen Postać of that character; „Otwarte: {mapa} →” leading to any screen
-    other than the screen Mapy with the card of the map it opened
+- **Verification:** tests: „Wejdź” at each character in „Kto idzie” of the card of a map on the
+  screen Mapy sending that character, and no control of sending on Siedziba; „Zakończ” of the
+  header and of the end-of-run window, with and without the question about unsaved changes,
+  opening the screen Postać of the character of the map run; „Otwarte: {mapa} →” standing only
+  after a completion of a map that opens another and opening the screen Mapy with the card of that
+  map.
 - **Origin:** none
 
 *Rationale:* a character goes out from the card that says what the map asks, on a screen where the
@@ -1251,10 +1289,9 @@ The characters of the team stand on its list in the order they were created.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the character created third standing third on the team's list, in the game state and
-    in the headquarters
-  - violates: the list sorted by name; a character created last put at the head of the list
+- **Verification:** tests: the characters standing in the order of their creation on the team's
+  list in the game state, on Siedziba, in „Kto idzie” of the card of a map and in the camp of
+  Siedziba.
 - **Origin:** none
 
 *Rationale:* the order of creation is one the player sets by creating characters, which no other
@@ -1274,11 +1311,13 @@ sends no other on a manual map run.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: `send` refusing a second character while a manual map run goes on; „Wejdź” of the
-    other characters in the section „Kto idzie” of the card of a map inactive on the screen Mapy
-    during a manual map run and after its end, until „Restart” or „Zakończ”
-  - violates: a second character sent on a manual map run while the first one's goes on
+- **Verification:** tests: a send refused while a map run exists, for the character already in
+  it; „Wejdź” of every character in „Kto idzie” of the card of a map inactive on the screen Mapy
+  while a manual map run goes on, waits in a pause or has ended, until „Zakończ”. For the
+  simulation refusing to send another character, an agent compares a change with the part no test
+  holds:
+  - complies: `send` refusing a second character while a manual map run of another goes on
+  - violates: `send` starting a manual map run of a second character while the first one's goes on
 - **Origin:** none
 
 *Rationale:* the game state keeps one manual map run as the team grows, and the player follows one
@@ -1300,14 +1339,11 @@ by that number.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-52
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first character of a game carrying the number 1; the third character created
-    carrying the number 3, whatever its name; a map run of
-    that character holding the number 3; a saved game that keeps the number the game state gives
-    next
-  - violates: a character found by its name or by its position number on the team's list; a map run holding
-    a copy of the character's name or archetype in place of its number; a number given anew to a
-    character created after another left the team
+- **Verification:** tests: the characters of a game numbered 1, 2 and 3 in the order of their
+  creation, the next number 4, two characters of one name holding two numbers; a saved game state
+  with two characters of one number, or with a character's number reaching the next one, refused;
+  a map run carrying its character by that number, a send of a number no character of the team
+  holds refused, and a saved game state whose map run carries a number outside the team refused.
 - **Origin:** none
 
 *Rationale:* two characters may bear one name, and a character's position number on the list
@@ -1326,9 +1362,9 @@ A character's warmth is its body temperature in degrees Celsius, counted with te
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the cell of temperature of the body row reading „Temperatura 36,8 °C”; a program rule whose condition „Temperatura poniżej N °C” takes 35.5;
-  - violates: warmth shown as points or as a percentage; a condition on warmth that refuses 35.5 as no whole number.
+- **Verification:** tests: warmth as the body temperature in degrees Celsius, shown cut down to
+  tenths in the body row, and a condition on warmth taking a number with tenths and holding it as
+  the decimal the player reads.
 - **Origin:** none
 
 *Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from. Accepted with it: a condition on warmth takes a number with tenths — in loop its default is 36.5 and its step 0.1 — so the check of a program takes tenths in that condition, not whole numbers only.
@@ -1341,9 +1377,10 @@ A character's body cools in each game minute outside combat by more, the further
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-24
-- **Verification:** an agent compares a change with the decision:
-  - complies: Las given its ambient temperature in its row of the game maps' data; a game map with a lower ambient temperature cooling the body faster than Las;
-  - violates: one ambient temperature in the data of the game's balance, shared by every game map; a body cooling by the same amount on two game maps of different ambient temperatures.
+- **Verification:** tests: the body cooling in each game minute outside combat, faster on Las —
+  głębiej than on Las and not at all on a map whose ambient temperature is the body's starting
+  temperature or above it, as the minutes the body lasts, the notes of the body row and the card
+  of a map read it; the ambient temperature standing in each game map's data.
 - **Origin:** none
 
 *Rationale:* The cold of a game map is among what makes it hard, so a colder game map is made by a change of its own data, as D-18 sets for the game's content, and one rule of cooling makes a mild game map gentle and a cold one harsh. The list of what a game map's data holds in D-24 does not name the ambient temperature, and does not rule it out.
@@ -1356,9 +1393,8 @@ Warming raises a character's body temperature up to its starting body temperatur
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage at 36.9 °C beside a burning campfire reaching 37.0 °C and staying there; a berry eaten at satiety 90 bringing it to 100;
-  - violates: a mage warmed to 37.4 °C beside a campfire; satiety above 100 after a meal.
+- **Verification:** tests: the warmth of a burning campfire, of a burning stick and of both
+  together stopping at the starting body temperature; eating stopping at the starting satiety.
 - **Origin:** none
 
 *Rationale:* Warmth and satiety are needs that fall with time, and their starting values are the state of a character in want of nothing. A surplus stored above them would let a program stay away from a campfire and from berries for longer than the game map's numbers say, which decides how hard Las is to pass.
@@ -1371,9 +1407,10 @@ Outside combat, a character loses health in each game minute in which it is chil
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage both chilled and starving losing in a game minute the loss of chill and the loss of hunger together; health rising in a game minute in which the mage is warm and fed, and stopping at full health;
-  - violates: a mage both chilled and starving losing no more than a mage that is chilled; health coming back in a game minute in which the mage is starving.
+- **Verification:** tests: outside combat, a loss of health in each game minute the body is
+  chilled and another, apart, in each game minute it is starving, both read after the minute's
+  fall; health coming back in a game minute that is neither, up to full health; the body and its
+  health standing still in the game minutes of combat until the combat turns change its health.
 - **Origin:** none
 
 *Rationale:* Cold and hunger are two wants, so a program that neglects both pays for both, and health that comes back by itself in a game minute free of both lets a program recover by tending to the character's needs. A streak of game minutes free of a loss to cold or hunger, and the wounds of combat, build on this rule.
@@ -1386,9 +1423,11 @@ A character dies in the game minute in which its health reaches zero, also durin
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the map run ending in the game minute health reaches zero while a gathering started five game minutes before is still under way; a mage both chilled and starving in the game minute of death dying of cold;
-  - violates: death waiting for the character's action in progress to end; a starving mage that is not chilled dying of cold.
+- **Verification:** tests: death in the game minute health reaches zero, also during an action in
+  progress that stays as it stood, the map run then ended in death with its cause and passing no
+  further minute; the cause cold where the body is chilled in that minute, both chilled and
+  starving included, and hunger otherwise; a death through combat with the cause of combat in the
+  game minute of the combat turns.
 - **Origin:** none
 
 *Rationale:* Health at zero ends the map run in the game minute it happens, whatever the character is doing, so the state the player reads after death is the state of that minute. Death ends the map run and any action in progress, as the player ending a map run does; an attack can also cut an action short while the map run goes on. The rule that an action in progress lasts its full duration concerns an action of a map run that goes on, so a death that ends the map run during an action leaves it as it is, as ending the map run does. A death names one cause, so the player reads one reason for it, and combat has its own cause rather than borrowing cold or hunger from the body's state.
@@ -1401,9 +1440,16 @@ After a character's death the screen stays on the state of the game minute of de
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a death of cold in game minute 312 „Teraz” reads „Mag zamarzł” and the clock „Minuta 312”, „Pauza” and the pace buttons are gone, the game minute stays at 312, the window opens over the screen with the title „Mag zamarzł” and the menu bar standing above it, and „Restart” starts game minute zero on the same seed;
-  - violates: the game going back to sending the character the moment the mage dies; „Restart” after a death drawing a new seed; the pace buttons standing after a death, active or inactive; what the death took and why it came standing in the world area instead of the window.
+- **Verification:** tests: after a death, game time passing no minute of that map run and the
+  clock standing at the game minute of the death; the end-of-run window opening of itself over the
+  header and the three areas of the screen; „Restart”, of the window and of the simulation,
+  starting the map run again on the same seed from game minute zero; „Zakończ” of the window
+  opening the screen Postać; „Restart” and „Zakończ” standing in the header while „Pauza” and the
+  pace buttons are gone. For the menu bar while the window stands, an agent compares a change with
+  the part no test holds:
+  - complies: the end-of-run window after a death opening below the menu bar, which stays above it
+    and works
+  - violates: the end-of-run window after a death covering the menu bar too
 - **Origin:** none
 
 *Rationale:* The player sees what the character had and where it stood at the moment of death, reads in the window why it died, and can repeat the same seed to understand the program's mistake. „Zakończ” leads to the screen D-53 gives, whatever that screen becomes. The pace buttons go with „Pauza”, as both rule a time that stands still after death, and the two ends of a map run, death and a completion, show the same controls. Accepted with it: on the screen after death the player does not see the pace at which „Restart” starts, and a player who wants the map run again at a slower pace changes it once the restarted map run goes on. The time that stands still is that of this map run alone: the screen after a death stops no earning loop of another character, as a pause stops none. The end stands in a window over the screen, which puts it where nothing that stood there before has to move, and the menu bar with the row of warnings stays above the window and works, so a failed save and a broken game are seen while it stands. Accepted with it: the window hides the scene while it stands, and does not cover the whole page as the end of loop does.
@@ -1420,12 +1466,16 @@ With the bought branch „Czysty płomień”, „Zapal — ognisko” requires 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-175
-- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
-  - complies: „Zapal — ognisko” taking two sticks from the backpack and the nature energy of its
-    price in the game minute it finishes; a lighting interrupted by an attack in its third game
-    minute leaving the sticks and the nature energy as they were;
-  - violates: „Zapal” using no nature energy, or using no sticks without „Czysty płomień”; the nature energy taken when the
-    lighting starts; „Zapal — patyk” carried out as a combat action.
+- **Verification:** invariants: nature-energy-range. tests: „Zapal — ognisko” and „Zapal — patyk”
+  as the actions of the spell Płomyk, each priced at its sticks and 10 nature energy; the sticks and
+  the nature energy leaving together when the lighting finishes, neither while it goes on, nor
+  where the lighting takes no hold or an attack interrupts it; with „Czysty płomień”,
+  „Zapal — ognisko” feasible with no sticks, consuming none and costing the nature energy of
+  ordinary lighting. For the lightings being ordinary actions carried out outside combat, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: „Zapal — ognisko” and „Zapal — patyk” started by a program rule outside combat, as
+    any ordinary action of the character, and never as the action of a combat turn;
+  - violates: „Zapal — patyk” carried out as a combat action.
 - **Origin:** none
 
 *Rationale:* Płomyk keeps the sticks lighting has used and adds nature energy, so a spell that lights
@@ -1446,9 +1496,15 @@ The backpack's cap counts the pieces of all items together, and its height is th
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a backpack holding 5 sticks and 10 berries full at a carrying capacity of 15; „Plecak 7/15” taking its 15 from the character's carrying capacity;
-  - violates: a cap for each kind of item; the backpack's cap taken from a game map's data or from a number of the map run in place of the character's carrying capacity.
+- **Verification:** tests: the backpack's cap counting the pieces of all items together — in
+  gathering, „Obchód” included, in what a map run takes in and in „Plecak 7/15” under the scene —
+  and standing at the character's carrying capacity, also where it is other than 15; a new
+  character's carrying capacity of 15. For the character skill trees having no branch that raises
+  carrying capacity, an agent compares a change with the part no invariant and no test holds:
+  - complies: a branch of the gathering tree that shortens a gathering, carrying capacity staying
+    15
+  - violates: „Mocne plecy”, a branch of the gathering tree that raises carrying capacity by 5
+    pieces for each rank
 - **Origin:** none
 
 *Rationale:* The scope accepted for the first version of the game caps the backpack at 15 pieces taken together. Carrying capacity belongs to the character, apart from a stricter cap a game map may add, and it acts beyond one action of the character — on gathering and on packing for a trip — so it describes the character as a trait, a number that acts always; a number that acts in one action alone belongs to the tree of that action's character skill, never to a trait. A character founded in a team carries it too. The team's chest takes the same rule of counting. Accepted with it: the growth of a trait through a branch, which the game's concept describes, waits for a change of that scope.
@@ -1461,9 +1517,9 @@ A character carries out a gathering while its backpack holds fewer pieces than i
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: a program rule „Zbierz — patyk” passed over with 15 pieces of 15 in the backpack, and the next program rule carried out;
-  - violates: a gathering carried out with a full backpack, its piece thrown away.
+- **Verification:** tests: „Zbierz” feasible with fewer pieces in the backpack than its cap and
+  not with a full backpack; the program passing over a gathering rule with a full backpack to the
+  next rule, or to waiting where „Obchód” has none after it.
 - **Origin:** none
 
 *Rationale:* A gathering that could bring nothing is no action of the character to carry out, so the program moves on to a program rule that does something, as a group of program rules passes on to the next, and as packing for a trip takes as many items from the top of the list as fit.
@@ -1476,9 +1532,8 @@ A gathering may miss, and a missed gathering leaves the tile's stock as it was a
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a missed gathering on a tile with 3 sticks leaving 3 sticks there and the backpack as it was;
-  - violates: a missed gathering taking a stick from the tile.
+- **Verification:** tests: a gathering missing where its draw gives a miss, and a missed gathering
+  leaving the tile's stock and the backpack as they were.
 - **Origin:** none
 
 *Rationale:* Gathering with a miss belongs to the scope accepted for the first version of the game. A miss costs the character the time of the gathering, and the stock stays for the next try, so luck changes how long gathering takes rather than how much a tile gives.
@@ -1491,9 +1546,17 @@ A tile holding fewer pieces of a resource than its starting stock gains one piec
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-24
-- **Verification:** an agent compares a change with the decision:
-  - complies: a tile of Las missing two sticks of its starting stock since game minute 45 gaining a stick in game minute 60 and another in game minute 90, sticks renewing one piece in 30 game minutes; a tile at its starting stock gaining nothing;
-  - violates: a tile growing above its starting stock; a tile refilled to its starting stock at once; a tile whose sticks fall below its starting stock in game minute 45 waiting for its own 30 game minutes and gaining its first stick in game minute 75.
+- **Verification:** tests: a tile below its starting stock gaining one piece in each game minute
+  that is a whole multiple of the time to renew its game map's data gives each resource, sticks
+  and berries apart, up to its starting stock and never above it; a tile at its starting stock
+  gaining nothing; a resource with no time to renew in the data never renewing; a renewal in a
+  game minute of combat and in the minute an exploration ends. For a tile that falls below its
+  starting stock after game minute zero, an agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a tile of Las missing a stick of its starting stock since game minute 45 gaining it
+    in game minute 60
+  - violates: a tile whose sticks fall below its starting stock in game minute 45 waiting for its
+    own 30 game minutes and gaining its first stick in game minute 75
 - **Origin:** none
 
 *Rationale:* A gathered tile recovers at the pace its game map sets, so gathering is a choice of where and when. The data of a game map give only the time to renew one piece, so the bound is set here, and it keeps a tile from growing past what the layout gave it, also over the hours of a player's absence that the game counts later. Counted from the start of the map run, renewal needs no record of its own for each tile, and the pieces a span of game minutes brings follow from the span by arithmetic, as counting the hours of a player's absence needs. Accepted with it: a tile that falls below its starting stock shortly before a multiple of the time to renew gains its piece back sooner than that time.
@@ -1506,9 +1569,9 @@ A campfire that burns out stays on its tile, extinguished, and can be lit again.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zapal — ognisko” carried out at an extinguished campfire; „Idź — ognisko” leading to an extinguished campfire as to a known one;
-  - violates: a campfire that disappears once its minutes of burning run out.
+- **Verification:** tests: a campfire whose minutes of burning run out staying on its tile with no
+  minutes left, which the list of revealed tiles reads as extinguished; „Zapal — ognisko” feasible
+  at a campfire with no minutes left.
 - **Origin:** none
 
 *Rationale:* A campfire built from sticks stays a place the character can return to and light again for less than building anew, and a program can lead the character back to it as to a known campfire.
@@ -1521,9 +1584,9 @@ Each feeding of a campfire burning at the feeding's start adds, at the feeding's
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a campfire with 150 minutes left at a feeding's end burning 170 after a feeding that adds 20; a campfire with 3 minutes left at the start of a feeding of 5 game minutes burning 20 minutes after it;
-  - violates: a feeding that stops at a ceiling of minutes of burning; a feeding that adds nothing to a campfire that burnt out during it.
+- **Verification:** tests: a feeding feasible only at a burning campfire, adding at its end its 20
+  minutes to those the campfire of the character's tile has left then, with no ceiling, 1000
+  minutes included; a campfire that burnt out during the feeding burning 20 minutes again.
 - **Origin:** none
 
 *Rationale:* Feeding is paid with fuel piece by piece, so a program that gathers enough can keep its fire burning for hours ahead. A feeding takes effect at its end, as every action of the character does, and lands on the campfire it was started at, so a program rule that feeds a campfire with fewer minutes left than a feeding lasts feeds it. Accepted with it: a campfire that burns out during a feeding burns again for one piece of fuel, fewer sticks than „Zapal — ognisko” uses.
@@ -1536,9 +1599,11 @@ A campfire shows on the drawing of the game map as an icon on its tile, one icon
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-19
-- **Verification:** an agent compares a change with the decision:
-  - complies: a tile's row reading „ognisko — płonie, zostało 42 min”, and on that tile of the drawing the burning campfire's icon; the same campfire once its minutes run out, and a campfire crafted and not yet lit, drawn with the extinguished campfire's icon;
-  - violates: the minutes left written on the drawing beside the campfire's icon; one icon for a burning and for an extinguished campfire.
+- **Verification:** tests: the campfire's icon on its tile and on no other, within the tile beside
+  the icons of the resources; one icon for a burning campfire and another, in the same place, for
+  an extinguished one, a campfire crafted and not yet lit and one with no minutes left included;
+  its minutes left in its tile's row of the list of revealed tiles, and no number of them on the
+  drawing.
 - **Origin:** none
 
 *Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list. A campfire crafted and not yet lit is extinguished, which a new player does not expect, so the drawing tells the player that too. The extinguished campfire's icon, like the other icons of the map, holds its colour in its file, and the scene of a map run already tells an extinguished campfire from a burning one, by the same picture without colour and motion.
@@ -1551,9 +1616,7 @@ Outside combat a game minute takes effect in this order: the character's body co
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-23 · derives from D-118 · derives from D-136 · narrows D-140 · narrows D-141 · derives from D-142 · derives from D-146 · derives from D-175
-- **Verification:** invariants: minute-span-split · nature-energy-range. An agent compares a change with the decision:
-  - complies: a campfire lit in game minute 100 warms from game minute 101; a berry eaten in the game minute health reaches zero does not save the character; a mage with no rule „Eksploruj” in its copy, first chilled in game minute 84, discovering „Wędruj” and „Temperatura poniżej”, the game writing „Zawsze → Eksploruj” and the pick of game minute 84 starting it, before the map run stops; a map run of Las whose streak reaches 480 in a game minute in which a gathering ends ending in a completion once the gathered piece has entered the backpack, with no program rule picked in that minute; a well-fed mage at full nature energy finishing a lighting in a game minute having after it the nature energy of the cap less the lighting's price, the energy that minute gives back lost at the cap;
-  - violates: health counted from the temperature before the game minute's cooling; the effect of an action of the character ending in the game minute of death taking hold; a program rule written at a discovery acting from the next game minute; a map run stopping at a discovery before the rest of its game minute has taken effect; a map run ending in a completion right after the character's body, before what burns, the tiles and the action ending in that minute have taken effect; nature energy coming back after the effect of the action ending in its game minute, or in a game minute of combat; a completion checked before combat turns in their final minute; an attack tried again after those turns.
+- **Verification:** invariants: minute-span-split · nature-energy-range. tests: outside combat, the loss of health and the streak counted from the body after the game minute's cooling and the fall of satiety, nature energy coming back by satiety after its fall and before a lighting ending in the minute pays, a campfire and a stick lit in a minute warming from the next, a death in the minute leaving the ending action, its discovery, the burning and the renewal of the tiles undone, an exploring ending in a minute of renewal keeping the renewal, a completion after the rest of the minute with no pick, the next pick in the minute the action ends, and an attack taking the place of the pick after an action ending in its minute has landed, interrupting any action still running; in combat, the body and the nature energy standing while the streak, the burning and the renewal go on, the turns resolving in the last combat minute with their result, cooldown and beaten attack recorded, a death in it before the completion is checked, a completion in an earlier combat minute ending the encounter with no turns, and the next ordinary pick in the minute the encounter ends; discoveries entering where the body, the ending action or the attack brings them, collected once for the minute, a rule written at the first chill picked in that minute but not during combat, and the map run pausing after the whole minute of a discovery.
 - **Origin:** none
 
 *Rationale:* Outside combat the world passes the game minute first and the action of the character ending in it lands at its end, after which the program picks; so an ordinary action's effect acts from the next game minute — a campfire's minutes of burning are as many warm minutes — and death goes before whatever was about to land. With every effect inside one game minute, in one order, a span split into any calls of the simulation gives the same state at every game minute, death included. A discovery lands where what brings it lands, so the pick at the end of its game minute sees it, and the program rule written at the first chill acts in that same minute; a stop between whole game minutes leaves every game minute whole, and in the game minute of death the effect of the action ending in it does not take hold, so its discovery does not either. A map run of an earning loop takes the same order and discovers nothing (D-249): a character of an earning loop that meets what is not yet discovered leaves it to the player, who discovers it in a manual map run, since on a solved map there are few discoveries and nothing loses them. The streak follows the body, which decides whether the game minute lost health to cold or hunger, and a completion takes the place of the pick, so the state after a completion is that of the whole game minute, the effect of an action ending in it included. Nature energy comes back with the body, as health does, before the action ending in the game minute lands, so a spell paid in that minute pays from the energy the minute has already given back. In the minutes of combat the nature energy stands still with the body, so a minute of combat is one where the body stands still without exception, and the energy serves nothing in combat, the game having no combat spell today. Accepted with it: the order carries the completion as its last step; a mage at full nature energy loses the energy one game minute gives back for each lighting it finishes; a feeding started while its campfire burned lands on that campfire at its end even where the campfire burnt out meanwhile, and lights it again for one piece of fuel; combat adds an ordering of turns inside the final game minute, and an earlier completion can leave an encounter unresolved.
@@ -1566,9 +1629,10 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-25
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Wytwórz — ognisko” passed over after „Wędruj” onto a tile not yet revealed, and carried out once „Eksploruj” has revealed it;
-  - violates: a campfire or a burning stick standing on a tile not yet revealed.
+- **Verification:** tests: „Wytwórz — ognisko” and „Zapal — patyk” feasible on a revealed tile and
+  not on one not yet revealed; a program whose first rules craft a campfire and light a stick
+  passing over them on the entrance not yet revealed to explore it, and carrying them out once
+  „Eksploruj” has revealed it.
 - **Origin:** none
 
 *Rationale:* Every campfire and every burning stick then stands on a revealed tile, so the drawing shows the campfire's icon and the list of revealed tiles shows its state and the burning stick's, as for the stock a gathering takes from; the list of revealed tiles and the drawing keep the meanings they have. Accepted with it: a program that crafts a campfire or lights a stick after wandering onto a tile not yet revealed passes on to its next program rule.
@@ -1581,7 +1645,9 @@ Loop2 adopts the testing-guideline template of its pinned the-way in full, with 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** none
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new testing rule for loop2 written into `guidelines/testing.md` in the form of the pinned template; the wording of `guidelines/testing.md` brought to the template of the-way once its pin moves, with only the departures of this decision kept
+  - violates: a rule of the template left out of `guidelines/testing.md`, or a test that departs from it, with no decision of a departure behind it; a testing rule for loop2 kept only in a comment or a file other than `guidelines/testing.md`; the agent instructions no longer sending an agent to `guidelines/testing.md` before it writes or changes a test
 - **Origin:** none
 
 *Rationale:* A common discipline makes the choice of a useful test and an independent expected value reviewable without prescribing proportions of test levels. The version of the template is that of the pinned the-way, named with no commit number, so the discipline follows the pin as the coding-guideline discipline of D-28 and the styleguide discipline of D-38 do. Where the template's default does not fit loop2, the departure is a decision of its own with its reason, as the decisions the binding sentence names give them, and the rest of the template's rules stand as it gives them, the wording accepted for loop2 standing in the testing guidelines. Weak point: every departure ages if nobody checks its condition of return when a change reaches its area.
@@ -1594,7 +1660,9 @@ Tests on generated inputs are considered only when the task author names a game 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test on generated inputs added by a task that names the game rule and the risk from combinations of inputs that a few readable examples do not protect, the task choosing the tool and settling its upkeep
+  - violates: a property-test library or a test on generated inputs added by a change whose task names no game rule or no such risk; a test on generated inputs added where a few readable examples protect the rule
 - **Origin:** none
 
 *Rationale:* The complexity of the game and the risk being protected justify generated inputs; the ability to generate them alone does not. The template recommends a test of a property wherever a sentence holds for all inputs; loop2 departs from that recommendation because of the scope of adopting the guidelines and the present complexity of the game, and the departure does not leave the behaviours of the game out of testing: it only sets when this kind of test is weighed. Cost accepted: the author's justification and the reviewer's assessment stand in place of tests added automatically, and the automatic search for unusual cases waits for a justified need. Gain: a smaller scope and no dependency, configuration or tests to maintain beyond what the game's complexity needs now. Naming no library leaves the change that shows the need free to choose its tool and to settle the cost of upkeep.
@@ -1607,7 +1675,9 @@ Permanent tests of complete player journeys in a real browser are deferred, and 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a changed player journey checked by hand in a browser, with no permanent test of the whole journey; a task that, after a critical-journey defect escaped smaller tests, chooses the tool and the scope of automating journeys
+  - violates: a permanent test of a complete player journey in a real browser added with no defect that escaped smaller tests and no significant cost of manual checks behind it; a change of a player journey merged with no manual check of that journey
 - **Origin:** none
 
 *Rationale:* Manual checks keep the initial testing discipline proportionate to the game, at the cost of evidence of one run rather than permanent protection against recurrence. Automation would give repeatable protection at once, but it needs a new environment and the upkeep of its tests. The template recommends a test of every critical journey in a real browser; this is a departure from that recommendation, justified by the scope of adopting the guidelines and the present complexity of the game. It leaves the duty of refusal tests on trust boundaries as it is, and it gives no leave to remove an existing test without the reason the rules for changing a test require.
@@ -1620,7 +1690,9 @@ Permanent refusal tests for font files and the local interface preview server ar
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: the first change of the principle of the font files or of the preview server — another kind of file, another way in, another recipient — bringing the boundary's refusal test and moving its invariant to the method test; a change of how the kitchen-sink page is built that adds no refusal test and whose review checks that the preview server serves only its own directory and only on the developer's machine
+  - violates: a change of a boundary's principle merged with no refusal test of that boundary, or with its invariant still checked by review; a new font file whose review does not check it against the release of the Geist font repository; a change that lets the preview server serve outside its own directory or to another machine, passed by its review
 - **Origin:** none
 
 *Rationale:* The departure is temporary and limits the rule that every trust boundary of the part map has a written refusal rule and at least one permanent test checking it directly. Neither boundary has such a test: the fonts are chosen by name and copied byte for byte with no check against the release they come from, and the preview server is a local one over the directory of the built page, while the existing test of that page's build expressly leaves its serving out of its scope; an audit of the tests found no direct refusal test for either. The template allows a departure through a justified decision of the product; this is not its exception for a boundary that is only the configuration of a service owned by another. Keeping the guideline work bounded leaves these boundaries dependent on review until the departure ends, which can miss a defect; the lack of a test stays explicit, and absence of a test proves neither refusal nor a vulnerability. Their refusals are written as invariants checked by review of changes — font files come only from the release of the Geist font repository named in D-46, and the preview server serves only its own directory and only on the developer's machine — so that the rule on trust boundaries names their refusal; the first change of a boundary's principle moves its invariant to a test. A change that leaves the principle of a boundary as it was gives a refusal test nothing new to refuse, at the cost of the server staying without a permanent test. The departure stands beside the rule on trust boundaries, not in the general section of behaviours deliberately left untested, and the departure for the sprite files (D-273) refers to this reading of what ends it.
@@ -1633,9 +1705,9 @@ Permanent refusal tests for font files and the local interface preview server ar
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** invariants: focused-test-execution. An agent compares a change with the decision:
-  - complies: one selected Node file after a build; one Python file without a build; the full gate before a request
-  - violates: a focused run starting another test or the foundation check; accepting several files; treating a focused pass as the full gate
+- **Verification:** invariants: focused-test-execution. tests: `npm test` without arguments running the build, the Node tests, the Python tests and the foundation check; with one test file, refusing a second file and running only the one, after a build for a Node file and with none for a Python file, with no other test and no foundation check, a failure of that file failing the run. An agent compares a change with the part no invariant and no test holds:
+  - complies: the full gate run before a request; a new test that waits for a process or a server within a time limit of its own
+  - violates: treating a focused pass as the full gate before a request; a configuration file that limits the whole run; a new test that waits for a process with no limit of its own
 - **Origin:** none
 
 *Rationale:* One entry point preserves the complete check while a file selection shortens diagnosis and avoids building unused JavaScript for Python tests. Keeping no whole-run limit accepts that an operation without a local limit may hang.
@@ -1648,7 +1720,9 @@ A new or changed test case has a name describing its behaviour and condition, an
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new case named by the behaviour and the condition it checks, with its preparation, action and assertion apart, protecting one behaviour, possibly through a table of explicitly named variants of it; an expected value written out in the case
+  - violates: a new case that checks unrelated behaviours in one scenario, or walks a table of variants that carry no names; a case whose expected value repeats the product's algorithm in the test or was copied from what the code returned
 - **Origin:** none
 
 *Rationale:* Named variants keep one behaviour readable without duplicating its preparation; combining unrelated behaviours obscures the cause of a failure. This departs from the template's default of no logic in a test, which a test walking a list of crafted inputs, as an integration test of the public server does, would otherwise break. Cost: different behaviours have to be kept apart and the variants named; one large scenario saves preparation but makes the cause of a failure hard to point to. It refines how a case is shaped and does not order every existing test to be rewritten.
@@ -1661,7 +1735,9 @@ The npm registry has no separate contract test: the real dependency audit in the
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73 · derives from D-33
-- **Verification:** none
+- **Verification:** tests: an unreadable response of the npm audit, forced by a controlled response or by a run with no npm, failing the audit. An agent compares a change with the part no test holds:
+  - complies: a change to the audit's reading of the npm report, checked by the real audit of the gate and by a test with a controlled response
+  - violates: a separate contract test of the registry's response added beside the audit, or the real audit taken out of the gate
 - **Origin:** none
 
 *Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response. When this was decided, the npm registry in the dependency audit was the only service of another party that the tested code of loop2 talked to, so the template's row on code talking to such a service was met only there: the tests of the audit substitute its result, while the gate runs the real audit, where an unreadable response of the registry ends in failure, and that run is taken as the check of the format.
@@ -1674,7 +1750,9 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a test in `tests/view/` that starts child processes counted as an integration test; a test that starts the built application in a container and checks only that it answers, counted as a smoke test
+  - violates: a test that reads files of test data, uses the network or starts a process counted as a unit test because it stands in `tests/sim/` or `tests/view/`; a smoke test presented as proof of a complete game journey; a fourth level of tests added to `guidelines/testing.md`
 - **Origin:** none
 
 *Rationale:* The levels distinguish calculations from real connections and packaging, so a missing environment names which evidence is absent. A unit test executes the rules of the simulation or the logic that prepares a view in memory, with no real network, no reading or writing of data in files, no process and no browser; importing a built module is not an operation on test data in files, and a unit test may cover several functions together when that is the smallest fragment that shows the error. It is a fast and exact check of a rule, but proves nothing about files, the server or the screen. An integration test checks a concrete operation or connection on real files, local HTTP or processes, scripts among them, and the check of repository files by scripts belongs here too; it costs the preparation and cleanup of resources, and it can find a wrong path, command or response of the server. The test of starting the finished application as a whole belongs to the smoke level. A smoke test is a short check that building, configuration and start fit together, without proof of the whole game; it costs building and starting a process or container, and a separate name lets one say what was not checked when the container environment does not work. The tests of views that use a hand-made document model check only the logic modelled, not clicks, focus or look in a real browser, and the division does not present them as end-to-end tests; D-88 settles that exclusion. The glossary gets entries for unit test, which in loop2 may span several functions, and for integration test, which includes scripts that check repository files, each defined by the resources it may use; smoke test means the same as in the field and gets none.
@@ -1702,7 +1780,9 @@ Tests keep Node and Python, their existing directories, and the names `*.test.mj
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** invariants: node-test-selection
+- **Verification:** invariants: node-test-selection. An agent compares a change with the part no invariant holds:
+  - complies: a new Node test named `*.test.mjs` in an existing directory of tests; a new `test_*.py` file counted as covered once a run of the gate shows it executed
+  - violates: a new test named `*.spec.mjs` or written for another test runner; a new `test_*.py` file in a new directory counted as covered by its name alone, with no run of the gate showing it executed
 - **Origin:** none
 
 *Rationale:* Keeping the conventions avoids moving tests without changing their protection, while explicit inclusion checks prevent a new file being silently omitted. The command that runs the Node tests selects only some of the test directories, so a file placed elsewhere would silently not run. Cost: the current rules of finding files have to be watched, and one small test guards the inclusion; a migration would unify the layout, but it would need moves and coverage checks with no change in the behaviour of the game.
@@ -1715,7 +1795,9 @@ A new or changed simulation test supplies explicit state, elapsed time and seed 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-04 · derives from D-22
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new simulation test that writes out the state, the elapsed time and the seed and runs the game's own random generator; a new test of an HTTP failure on a real local server that waits for its listening with a time limit and closes the server even after a failure; a change of the HTTP helper of `tests/http.test.mjs` that limits its waits and cleans up after a failure
+  - violates: a simulation test that waits for game minutes on the computer's clock or replaces the game's random generator; a test of a file or HTTP failure on a substitute presented as proof of the replaced operation; a test that sleeps a fixed span as proof of readiness, or leaves a file, server or process behind after a failure; a change of the HTTP helper that keeps a wait with no time limit
 - **Origin:** none
 
 *Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps. A seed is a number that fixes a repeatable sequence of draws; the repeatability it gives does not replace an independent expectation. The recipe uses D-04 and D-22 and no new library. A controlled response in place of a dependency serves to check the reaction to a forced error and is no proof that the replaced operation works; substituted responses alone are easier to control, but may hide damage to the real connection. A test waits for a specific signal or condition, with a limit of time and handling of an error, and does not assume that the passing of a fixed pause means readiness; checking a condition periodically is allowed. A fixed pause is simpler, but on a slower computer it may be too short, and on a faster one it wastes time; real waiting for game minutes is simpler to write, but it slows the test and ties its result to the moment of its running. The rules fix no concrete limits and do not order the existing helpers rebuilt in the work of adopting the guidelines: when they were adopted, the HTTP helper limited idleness, not the whole request, and the wait for the server to start had no limit, so the rules left the helper to take them at its next change.
@@ -1728,7 +1810,9 @@ The unit exemplar is the case "the count of a hand-made backpack is the pieces o
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-81
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: `guidelines/testing.md` naming the three cases of this decision as the exemplars of their levels, each with its limits; a new unit test that follows the backpack case in its explicit data and independent arithmetic, not in its handling of time
+  - violates: `guidelines/testing.md` naming another case, the whole file of an exemplar or its helpers as the exemplar of a level; one of the three cases renamed or removed while the guidelines still name it as an exemplar
 - **Origin:** none
 
 *Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection. The unit exemplar states the content of the backpack in the test and expects the sums 15, 7 and 0; the requirement of counting pieces together comes from D-64 and the expectations from arithmetic, with no call of a product function on the expected side. Its gain is a model of readable data and an independent result. The integration exemplar sends real requests that try to leave the public directory and checks the refusal and the absence of the files' content; its gain is a model of checking the visible effect of a real request instead of a call of a function. The selection does not approve the whole file of that case or its helpers as a model of limits and cleanup: when the case was chosen, the HTTP helper limited idleness, not the whole operation, and the wait for listening had no limit; the expected refusal and its invariant are settled by D-86, and the choice adds no repair of the helpers to any work. The smoke exemplar checks a normal start, forces an occupied port and requires an error without a report of readiness, then checks the normal start again; its gain is the control that the refusal comes from the forced problem and not from an application that does not start at all, and it rests on the invariant account-server-occupied-address. It is a model of the control of a start and a refusal, not proof of the full handling of HTTP, the working of the container or the game. The selection takes existing cases, without rewriting tests; cost: an example needs upkeep with the guidelines, and its limits must not be stretched to a whole file.
@@ -1741,7 +1825,8 @@ Every visitor may retrieve the built game's files from its public directory and 
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-05
-- **Verification:** invariants: public-file-access
+- **Verification:** invariants: public-file-access. tests: a visitor with no session served the
+  built game's page and its script from the public directory.
 - **Origin:** none
 
 *Rationale:* A public game requires no account to fetch its assets, while the public directory bounds what the server exposes. The refusal is described as a status 400, 403 or 404 with neither the content of the file nor a substitute page of the game, which is what the existing test of the server checks. The permission is written out as a rule, with an invariant that the existing test serves as evidence for, because a test alone does not tell a later author which decision justifies the refusal; the cost is an entry and the upkeep of its link with the test. The decision adds no mechanism of logging in and opens no new function of HTTP.
@@ -1754,7 +1839,9 @@ Whole screens are not preserved by pixel-by-pixel image comparison, while agreed
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a changed appearance inspected by a person in a browser, the checks of agreed appearance rules kept; the check of the content of external icons kept as it is
+  - violates: a pixel-by-pixel comparison of a whole screen against a reference image added with no concrete visual defect and no agreed requirement of an exact layout; a check of an agreed appearance rule or of the safety of external icons or fonts removed on the ground that the look is inspected in a browser
 - **Origin:** none
 
 *Rationale:* Avoiding whole-screen references saves maintenance and judgement of intended differences, while leaving some visual differences for a person to catch. Image comparisons could catch such differences automatically, but they need reference images to keep and a judgement of each intended difference. The exclusion leaves the safety of external icons and fonts as it is, and it gives no leave to remove an existing test without the reason the rules for changing a test require.
@@ -1767,7 +1854,9 @@ Real browser events, focus and SVG rendering are checked manually after a change
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a change of a click, a key or the focus of a screen checked by hand in a browser, its test on jsdom proving only the logic it runs; a test of a trust boundary kept whatever this exclusion leaves to a person
+  - violates: a test on a hand-made document model or on jsdom presented as proof of a real event, of focus or of the drawing of SVG; an automated test of real browser events, focus or SVG added with no defect that such a test missed and apart from the automation of the player journeys of D-75; a refusal test of a trust boundary left out on the ground of this exclusion
 - **Origin:** none
 
 *Rationale:* A document model or a ready-made imitation provides quick logic checks but cannot establish the browser's behaviour; until automation is justified a person catches event and focus defects. The tests of views on a hand-made document model do not check real events, focus or the drawing of SVG. The deferral of player-journey tests in D-75 covers only whole player journeys, so this exclusion stands separately from it. Weak point: until automation is justified, only a person catches a defect of an event or of focus. Screens built with React lose the hand-made document model in their tests and take a ready-made imitation of the document in its place; the exclusion covers that imitation as it covers the model.
@@ -1780,7 +1869,9 @@ For a change touching a category deliberately left without tests, its author and
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-75 · derives from D-87 · derives from D-88
-- **Verification:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a change of a player journey whose author and reviewer check whether a critical-journey defect escaped smaller tests or the manual checks grew costly; a change of the focus of a screen whose author and reviewer check whether a test on jsdom missed a defect of a real event or of focus
+  - violates: a change of the look of a screen whose author and reviewer do not check whether a concrete visual defect or an agreed requirement of an exact layout now calls for image comparison; a change of a player journey merged with no check of whether a defect of that journey escaped smaller tests
 - **Origin:** none
 
 *Rationale:* An exclusion can outlive its reason unless the changes that reach it revisit that reason. Besides the categories the binding sentence names, a category deliberately left without a test is code that only passes or copies data and decides nothing: it has no separate permanent test, and the return is to a test once a rule, a transformation or an error appears in it; testing every such fragment would add upkeep and might duplicate the test of the behaviour that uses it, and the cost is that nothing gives a separate signal about the fragment. None of these exclusions covers a trust boundary, and none gives leave to remove an existing test without the reason the rules for changing a test require.
@@ -1794,10 +1885,10 @@ those groups; the game has no program rule standing outside a rule group.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: moving a program rule from one rule group to another leaves it in the destination
-    group and removes it from the source group
-  - violates: a program rule held outside the program's rule groups or in two groups at once
+- **Verification:** tests: a new game's program holding a list of rule groups and no program rule
+  outside them; the groups taken in their order; a program holding one rule in two groups refused;
+  a rule moved or dropped into another group leaving its source group, and a group removed with
+  its rules.
 - **Origin:** none
 
 *Rationale:* One place for each program rule gives its condition a clear enclosing condition and
@@ -1812,10 +1903,8 @@ A new game starts with one empty rule group named „Program”, whose condition
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-90
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new game showing the empty „Program” group with its „+ reguła” control and the
-    condition „Zawsze”
-  - violates: a new game with no rule group, or a program rule already placed in its initial group
+- **Verification:** tests: a new game's program holding one rule group, named „Program”, under the
+  condition „Zawsze”, with no program rule.
 - **Origin:** none
 
 *Rationale:* The first group gives the player a place to put the first rule, and its condition
@@ -1832,11 +1921,9 @@ firing to that rule's count.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: an exploration lasting twenty game minutes adding one firing when it starts; each
-    combat turn in which a rule starts a combat action adding one firing
-  - violates: a count growing each game minute of the same action; a combat action adding no
-    firing because its duration is zero game minutes
+- **Verification:** tests: a rule's count growing by one when its action starts and not in the
+  later game minutes of that action, at its end or when a death cuts it short; each combat turn in
+  which a rule starts a combat action adding one firing to that rule.
 - **Origin:** none
 
 *Rationale:* The count tells the player how often the program chose a rule, so the duration of
@@ -1865,23 +1952,21 @@ subject to the same reset on a change of a rule's content.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-92 · derives from D-164
-- **Verification:** invariants: saved-program-edit · trip-plan-progress. An agent compares a change with the decision:
-  - complies: „sprawdzane od góry” above the rules on Programy and on the screen of a map run; a
-    rule of the copy showing „Wykonano 3×” and the header of its rule group the sum of its rules,
-    folded or not; a program rule moved up or into another group keeping its count; a changed group
-    condition leaving its rules' counts intact; a rule whose condition changed starting again
-    from zero; counts retained after death, after a completion and after „Zakończ”, reset on the
-    next send or restart; a switch to another program starting every count of the new copy's rules
-    from zero; after „Zakończ” the rules of the copy's program showing the copy's counts, and „Wykonano
-    0×” beside a rule whose action there differs from the copy's; the start of an earning loop leaving
-    the counts of the last manual map run as they were
-  - violates: a bare „3×” beside a rule; a header of a rule group with no sum while its rules
-    show counts; counts kept per position in the list; a rename of a group resetting its rules'
-    counts; a count shown before the first map run; „Zakończ” hiding the ended run's counts; a
-    completion clearing the counts of its map run; counts shown beside a saved program opened
-    during a map run; the counts of the former copy kept after a switch; after „Zakończ” a count
-    of the copy shown beside a rule of the program whose condition there differs; firing counts
-    gathered in a map run of an earning loop
+- **Verification:** invariants: saved-program-edit · trip-plan-progress. tests: the list of rules
+  under the heading „sprawdzane od góry”; during a manual map run a rule of the copy showing
+  „Wykonano {n}×” and the header of its rule group the sum of its rules in the same form, the rules
+  of a saved program shown then with no count, and a map run of an earning loop gathering no count;
+  the count starting from zero at the start of a manual map run, at a restart, at a switch to
+  another program and when a rule's condition or action changes, and surviving reordering the rule,
+  moving it to another rule group, a change of its group's condition or name and a save of the
+  copy; no counts before the first manual map run; the counts kept after a death and after a
+  completion and, after „Zakończ”, beside the rules of the copy's program, a rule there whose
+  content differs from the copy's showing „Wykonano 0×”, and beside no other program, a deleted
+  copy's program included, until the next send or restart, a change of a rule's content there
+  starting its count again. For the screens the heading stands on, an agent compares a change with
+  the part no test and no invariant holds:
+  - complies: „sprawdzane od góry” above the rules both on Programy and on the screen of a map run
+  - violates: the heading standing on the screen of a map run alone, or on Programy alone
 - **Origin:** none
 
 *Rationale:* The count is the sign that a program rule is dead — one standing too low is caught
@@ -1947,9 +2032,9 @@ A signed-out visitor sees one card on a picture of the game: the game's name, on
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-51 · derives from D-53
-- **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. An agent compares a change with the decision:
-  - complies: a signed-out visitor seeing one card with the game's name, the sentence read from the game's data, the switch, one form and the folded credits; the page keeping „Sprawdzanie logowania…” after the session is confirmed until the server answers the saved game state, then building the game from it; an error of the code in the load showing its sentence and „Spróbuj ponownie”, with no game built and nothing saved; a saved game state of an earlier version of the shape giving a new game with „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” above it, which a reload does not bring back; a signed-in player opening a password-reset link and seeing its form with no request sent and no game built; a reload at `#/postac/2` while the saved game state holds a manual map run staying on the screen Postać of character 2; signing in with the form while the saved game state holds a paused manual map run of Las opening that map run's screen, paused
-  - violates: the sentence about the game written in the code of the view; a new game built when the request for the saved game state fails or times out, or when the load meets an error of the code; a refused saved game state starting a new game without a word; a saved game state missing a key of the game state read as „Zapis pochodził z innej wersji gry…”; a session check or a game built before the form „Ustaw nowe hasło” stands; a reload at `#/programy` leading to the manual map run the saved game state holds; signing in leading to the screen of the address another player left in the tab
+- **Verification:** invariants: player-self-registration · player-password-login · email-verification-nonblocking. tests: the signed-out card with the game's name, its sentence about the game, the switch, the fields of „Zaloguj się” and of „Załóż konto”, „Nie pamiętam hasła” under the first and the folded credits last in every state, with no game; that button putting in the card its form with an empty field „Adres e-mail”, „Wyślij odnośnik” and „Wróć do logowania”, the last bringing back „Zaloguj się”; a page opened by a password-reset link showing „Ustaw nowe hasło” in the card with no request sent, whoever is signed in, and no game built; signing in with the form and a reload with no fragment leading to Siedziba or to the manual map run the saved game state holds, at a reload paused while it goes on and on its screen after a death, a reload at another address staying on that address's screen and an emailed link opening Siedziba; no game built before the server confirms the session and answers about the saved game state; a failed or uncertain answer to either request and an error of the code in the load showing their sentence and „Spróbuj ponownie” with no game built and nothing saved, the retry asking both again; a saved game state of another version, naming an archetype missing from the data or of a shape the game does not admit starting a new game with its sentence above it, the sentence of another version for the first two and of a damaged save for the last, which does not come back. An agent compares a change with the part no invariant and no test holds:
+  - complies: the card standing on a picture of the game, its sentence about the game read from the game's data; a created account entering Siedziba; signing in with the form while the saved game state holds a manual map run of Las that goes on opening that map run's screen, paused; „Nie udało się wczytać gry. Spróbuj ponownie.” and the sentence of a discarded saved game state in `warning`
+  - violates: the sentence about the game written in the code of the view; the card on a plain background with no picture of the game; a created account entering the screen Programy; signing in leading to a manual map run that goes on, running; „Nie udało się wczytać gry. Spróbuj ponownie.” or the sentence of a discarded saved game state in `text` or `danger`
 - **Origin:** none
 
 *Rationale:* An account provides the entry to the game and Siedziba its starting place. The first screen says what the game is in one sentence and shows a picture of it, and one card holds every state, so a visitor sees one form at a time; the third state, the request for a reset link, costs the screen two new buttons. A player who signs in again or opens the game at an address with no fragment comes back to a manual map run as it stood, and a reload keeps the screen its address leads to, since the map run waits safely in its pause and „Wróć do przejścia” leads back to it. The map run returns at the minute of the save, stopped by the pause, at the pace of the save, and the time away does not move it; the player starts it with „Wznów”. Accepted with it: one click after each load that finds a map run in progress, and one click of „Wróć do przejścia” after a reload. A page opened by a password-reset link shows its form even to a player signed in in that browser, in place of the game and the account forms, since the link itself entitles to the change. A game built before the server has answered about the saved game state would save itself over the real one at its first save, and an error of the code in the load says nothing about the saved game state, so it costs the player a retry and never the state. A player whose saved game state is discarded learns that it was and why, and a saved game state of a wrong shape has a sentence of its own, since the version is not the cause; accepted with it: one more message in the code and in the tests.
@@ -1962,9 +2047,19 @@ The shared „Wyloguj” button stands in the menu „Konto”, first saves the 
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: logout saves the game state, then destroys the current session and removes its game view, while another browser remains signed in; a logout whose save gets no answer keeping the game with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.”; a tab that stopped saving after the refusal of D-210 logging out with no save request and showing „Gra została zaktualizowana. Odśwież stronę.” above the forms
-  - violates: a tab that stopped saving after the refusal of D-210 logging out to the forms with no sentence above them; a header action that revokes every session of the account or leaves the hidden game's timer running; a logout that ends the session before its save has an outcome; a logout that ends the session after its save failed for want of a connection
+- **Verification:** tests: „Wyloguj” standing only in the open menu „Konto”, reading
+  „Wylogowywanie…” while it waits, first saving the current game state, also of a map run going on,
+  and then ending only this browser's session on the server, the other browsers of the account
+  staying signed in; a tab stopped by the refusal of D-210 logging out with no save; a save failed
+  for want of a connection keeping the game with „Nie udało się zapisać postępu. Spróbuj wylogować
+  się ponownie.” and no logout, a conflict and a too-large refusal letting it go on, a refusal of
+  D-210 and a stopped tab letting it go on to the forms with „Gra została zaktualizowana. Odśwież
+  stronę.” above them, and an answer of no session ending as D-211 gives; a confirmed logout hiding
+  the game, stopping its timers and its listening to the address and bringing back the forms, an
+  uncertain one keeping the game with its warning; a late answer of a reset building no game over
+  the forms a logout brought. An agent compares a change with the part no test holds:
+  - complies: „Wyloguj” drawn with the shared button of `src/browser/view/controls/`; the sentence of a save failed before logout and the sentence of the update above the forms, each in `warning`; a late answer of the account read or of the saved game state, arriving after a confirmed logout, leaving the forms as they stand
+  - violates: a button of its own for „Wyloguj”; either sentence in another role than `warning`; a late answer of the account read or of the saved game state, arriving after the logout, building the game again over the forms
 - **Origin:** none
 
 *Rationale:* Independent browser sessions let a player leave one device without interrupting another; a visible failure avoids claiming the server revoked a session when its outcome is uncertain. Saving first keeps the progress made since the last save, at the cost of one more request at logout; where the server refuses the save for good — another browser's later save, a game state too large, a newer game on the server — the progress cannot be saved anyway, so logout goes on, and the progress of the tab since its last successful save is lost. The tab with older code tells the player at the forms to reload, so a sign-in in that tab does not meet its old code's refusal of a saved game state that is whole; accepted with it: one more state of the account forms, and the false alarm stays possible for a player who signs in in the old tab despite the sentence, since the old code then answers „Zapis pochodził z innej wersji gry i nie dał się wczytać. Zaczynasz od nowa.” though the saved game state on the server is whole. A player who wanted to leave and whose session is gone is asked to sign in again, the unsaved state staying in the tab, unseen, until a reload or a sign-in to another account; for a blocked player „Sesja wygasła…” is untrue, the sign-in then reads „To konto jest zablokowane.” (D-139), and the state goes with the tab.
@@ -1977,9 +2072,15 @@ A player password has from 12 through 128 Unicode code points of any kind, witho
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: accepting an unchanged password containing spaces and supplementary characters at the code-point boundary; a password reset refusing a short new password with registration's sentence
-  - violates: trimming the password, rejecting pasted characters or applying a byte limit as the character limit; a password reset refused because the new password equals the old one
+- **Verification:** tests: passwords of 12 and 128 code points accepted and of 11 and 129 refused,
+  counted in code points whatever their UTF-16 or byte length, spaces alone included, and the
+  password stored, signing in and set by a reset exactly as typed, untrimmed; a repetition that
+  differs by a trailing space or a decomposed letter refused; a new password checked by the rules
+  of registration, with its problems and its sentences, at the server and in the browser's forms;
+  the browser's rules counting code points as the server does. An agent compares a change with the
+  part no test holds:
+  - complies: a password reset accepting a new password equal to the account's old one; password fields of the browser with no `maxlength`
+  - violates: a password reset refused because the new password equals the old one; a `maxlength` on a password field, which cuts a password of up to 128 code points written in characters of two UTF-16 units
 - **Origin:** none
 
 *Rationale:* Length supplies a clear boundary without restricting the player's choice of characters; code points give the same explicit interpretation to server and browser, while a visible grapheme can contain several code points. A new password is a player password like any other, so the player meets one rule and one set of sentences.
@@ -1992,9 +2093,14 @@ The account server normalizes email with ECMAScript trim and lowercase, stores t
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: registration and login normalize identically and a unique database constraint rejects concurrent duplicate registration
-  - violates: browser validation rejecting a no-dot address that the server accepts, or a database-only ASCII comparison replacing normalization
+- **Verification:** tests: registration, login, a request for a reset link and the owner's block
+  command trimming and lowercasing the address alike; one account for one normalized address, also
+  in a race of two requests or of two connections to the database; an address refused by the
+  server unless exactly one `@` has text on both sides; an address with no dot
+  accepted by the server, and one with no dot and with letters outside ASCII by the browser's
+  rules. An agent compares a change with the part no test holds:
+  - complies: the server accepting a registration whose address holds letters outside ASCII
+  - violates: a check of the server that refuses an address with letters outside ASCII, or one that looks the domain up in DNS before an account is created
 - **Origin:** none
 
 *Rationale:* A single normalized spelling keeps registration and later account operations consistent; case-distinct local parts intentionally cannot obtain separate accounts. A loose shape avoids treating a syntax filter as proof of delivery.
@@ -2007,9 +2113,14 @@ Registration with an email address that already has an account shows „Konto z 
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the same login response shape and message for unknown address and wrong password; a login with the password that was right when it was checked, during whose password work a reset commits, answering that message, releasing its admission and storing no session
-  - violates: an unknown-address response exposing account existence through a distinct login message; a login answering by the account it read before its password work, or counting as a failure a password that was right when checked
+- **Verification:** tests: a registration with an address that has an account, also in a race,
+  answered 409 with „Konto z tym adresem już istnieje.”; an unknown address, a wrong password, a
+  password out of shape and a wrong password of a blocked account answered with the same status,
+  shape and „Nieprawidłowy adres e-mail lub hasło.”; a login whose right password a reset replaced
+  during its check answered with that message, storing no session, adding no failure and clearing
+  none. An agent compares a change with the part no test holds:
+  - complies: a login of a blocked account, whose right password a reset replaced during its check, answered with „Nieprawidłowy adres e-mail lub hasło.”
+  - violates: such a login answered with the refusal of D-139
 - **Origin:** none
 
 *Rationale:* A duplicate message explains why registration cannot proceed, while the common login message reveals no further distinction; registration consequently allows an observer to discover whether an address has an account. A password replaced during its check no longer proves anything, so the login earns no other answer, D-139's included; it was right when checked, so it is no wrong guess, and it is no sign-in, so it clears nothing. A password hash is salted, so any reset changes it, even to the same password.
@@ -2022,7 +2133,12 @@ Each browser holds its own random, opaque session identifier in a loop2 host-sco
 - **Scope:** account-server, browser-view
 - **Based on:** express-session-store-contract
 - **Relations:** derives from D-97
-- **Verification:** invariants: player-opaque-session-cookie.
+- **Verification:** invariants: player-opaque-session-cookie. tests: one account signed in in
+  several browsers, whose logout or new sign-in in one leaves the others signed in; a request for a
+  static file with a valid session renewing the record to 30 days from the request and the cookie
+  with it; an absent, unsigned, foreign-key, unknown, expired, removed or deleted session
+  authorizing nothing on the account, logout, message and save routes; a delayed renewal that
+  neither restores a destroyed session nor shortens a later expiry.
 - **Origin:** none
 
 *Rationale:* Sliding validity keeps an active player signed in but a device left signed in remains usable until its idle lifetime ends; independent records cost storage and permit revocation of one browser.
@@ -2035,9 +2151,10 @@ Five failed logins for one normalized email address within a rolling 15-minute w
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: account-attempt-limits. An agent compares a change with the decision:
-  - complies: parallel requests reserve their admission before hashing and release unused capacity after actual completion; a reset that commits clearing its address's failures and lock in the same turn, the reservations of logins in progress kept
-  - violates: simultaneous successful registrations exceeding the IP limit or correct credentials bypassing an active email lock; a refused or failed reset lifting a lock; a reset dropping the address's history entry that a login in progress still settles on
+- **Verification:** invariants: account-attempt-limits. tests: a login or registration refused by
+  a limit answered 429 with „Za dużo prób. Spróbuj ponownie za kilka minut.”; an invalid and a
+  duplicate registration using no slot of the client address; refusals of a full password gate
+  adding no failure to the address's count.
 - **Origin:** none
 
 *Rationale:* Per-address and per-network limits slow repeated attempts but allow an attacker to lock another address and make users behind a shared address share a limit. Rolling histories release stale partial failures; attempts spread below the threshold remain possible, and changing client addresses can evade an address limit. A lock stands in the way of guesses at a password, and a password reset shows control of the mailbox, so only someone with access to it can lift a lock.
@@ -2050,9 +2167,11 @@ Attempt histories live in bounded process memory, with at most 10,000 live email
 - **Scope:** account-server, deployment
 - **Based on:** none
 - **Relations:** derives from D-102
-- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
-  - complies: a full password gate refuses immediately and a disconnected request retains its slot until native work finishes
-  - violates: registration and login using independent unbounded hash pools or dropping a live limiter key to make room
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking · password-operation-gate. tests: a login
+  for an unknown address refused by a full password gate as a login for a known one is. An agent
+  compares a change with the part no invariant and no test holds:
+  - complies: at most 10,000 live email keys and 10,000 live client-address keys in the process's memory, an email key kept as a digest of fixed size, each history no longer than its threshold, all of them gone at a restart; the cap of the password gate changed only together with a measurement of it within the container's memory budget
+  - violates: attempt histories written to the database or to a file that outlives a restart; a raw email address as a key of the table; a history that grows past its threshold; a cap of the gate raised with no measurement behind it
 - **Origin:** none
 
 *Rationale:* Bounded histories and native work prevent untrusted input from consuming unbounded memory; a restart loses the restrictions and a full table can refuse legitimate newcomers. The measured password gate shares the host processor with other workloads.
@@ -2065,7 +2184,15 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
 - **Scope:** account-server, browser-view
 - **Based on:** fetch-origin-header
 - **Relations:** derives from D-101
-- **Verification:** invariants: account-mutation-request-guards.
+- **Verification:** invariants: account-mutation-request-guards. tests: the session cookie issued,
+  renewed and cleared with SameSite=Strict; a missing, null, foreign, suffixed, path-bearing or
+  duplicate Origin refused also when the Host and forwarded host headers name the foreign one; a
+  body of text, form or parameterized media, a compressed one, one over 16 KiB and one that is empty,
+  broken or no object refused, while JSON with a charset passes; a save body with a field missing,
+  added, naming an account or of another type, and a reset body with any field, refused with nothing
+  stored or moved; a stored game text of at most 65 536 bytes counted after re-serializing, a larger
+  one refused with nothing stored, and neither the table of saved game states nor that of previous
+  saves holding a text over 65 536 bytes.
 - **Origin:** none
 
 *Rationale:* An explicit expected origin and JSON boundary constrain state changes made with a browser cookie; clients that omit the origin are refused, and valid-looking content still needs field checks. The save route takes a whole saved game state, which grows with what later work adds to the game state, so it takes a limit of its own, while the other routes keep the small one their bodies need; at the full stored limit a thousand accounts take about 65 MB in each copy of the database, and the place for copies of the database holds about three such copies, so with that many players it would have to hold fewer copies or move; the previous save adds a second such document per player, which doubles those figures at the full limit.
@@ -2078,9 +2205,17 @@ The account server sends at most 30 account messages per hour in total and at mo
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: account-message-limits. An agent compares a change with the decision:
-  - complies: confirmation and password-recovery send paths share both limits and refuse an excess message; a request for a password-reset link above a limit getting the answer every other request gets, with no message sent
-  - violates: either mail path sends after a limit is reached or adds an unapproved monthly cap
+- **Verification:** invariants: account-message-limits. tests: a registration and a request for another
+  confirmation message above a limit answered with the outcome `limited` and nothing handed on, an
+  outcome the page says as „Za dużo wiadomości. Spróbuj ponownie za godzinę.” in `warning` in the
+  menu „Konto”, after a registration and after „Wyślij ponownie”; a request
+  for a password-reset link above a limit getting the one answer every well-formed address gets, with
+  nothing handed on, the page's sentence of that answer ending „Gdy wiadomość nie przyjdzie, spróbuj
+  ponownie później.”. An agent compares a change with the part no invariant and no test holds:
+  - complies: the two hourly limits the only bound on sending, so that hour after hour at the limits
+    every message they allow goes out
+  - violates: a monthly cap, or any count over a span longer than an hour, that refuses a message the
+    two hourly limits would let through
 - **Origin:** none
 
 *Rationale:* Hourly limits bound a burst while retaining a simple sending rule; they can exhaust the provider's monthly allowance and prevent recovery messages until delivery becomes available again. The chosen policy accepts that risk rather than reserving a monthly balance, and accepts through D-223 that the hourly limit too can be exhausted by requests for password-reset links. A player above a limit reads in the one answer only its condition and its ending, because a sentence of its own would tell anyone that the address has a confirmed account.
@@ -2094,6 +2229,9 @@ The account server hashes and verifies player passwords with the `argon2` packag
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** none
 - **Verification:** invariants: player-argon2-password-hash · player-argon2-deployment-check.
+  tests: the hash made by the password module, at registration and at a password reset, and the
+  profile the measurement of passwords measures, all of Argon2id with the explicit parameters of
+  64 MiB, three passes and one lane, not the package's defaults.
 - **Origin:** none
 
 *Rationale:* The package handles salt generation, an encoded password hash and verification, so the project writes less security-sensitive code than with a lower-level hash API. A native dependency can fail to install or consume more memory than the target permits; compatible published binaries support feasibility rather than proving this particular image. Explicit settings and target measurements address that uncertainty. The owner measured the password work in the deployed image on the test server on 2026-11-14 and gave this result, which no entry holds as a reading with its output word for word: the running container and the checkout were at commit `6ab6a32be884ac174b068b8a6a5dd1515073d2a9`, image `sha256:e91ad6f940e2fa1ebf649b47d2dc9712cd71f503f1a5b55f6641a6269864faf9`; `scripts/measure-passwords.mjs --memory 512m` (Node v20.19.0 of the host) ended with exit code 0 and the verdict `PASS`; the image held Node 24.22.3, argon2 0.45.1, linux-x64, kernel 5.15.158-2-pve, cgroup v2; profile argon2id 64 MiB, t=3, p=1; the gate lets 2 operations in at once and refuses the third; 20 hashes and 20 verifications, 2 at a time, with a median of 680.4 and 658.5 ms, the longest 1402.2 ms, 15 696 ms in all; limit 428867584 B (80% of 512 MiB) without swap, 0 hits of the limit and 0 out-of-memory kills, the largest process RSS 187133952 B, the peak of the cgroup not recorded (kernel 5.15); a first run interrupted with Ctrl-C (code 130) gave no result.
@@ -2132,7 +2270,17 @@ A visitor may create an account or attempt credential login subject to the trans
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-97 · derives from D-101 · derives from D-104 · derives from D-152 · derives from D-156 · derives from D-157 · derives from D-202 · derives from D-204
-- **Verification:** invariants: account-session-authorization · player-save-isolation.
+- **Verification:** invariants: account-session-authorization · player-save-isolation. tests: a
+  visitor with no session creating an account and asking for a reset link; a confirmation link
+  confirming the address of its own account, with or without a session, and not the session's;
+  the previous save read and the game started from zero only for an account with the privilege;
+  a sign-in and a registration answering success only after a new session identifier is stored,
+  a failed store answering a failure with no cookie; a logout answering 204 only after its record
+  is deleted, a failed deletion answering a failure and leaving the browser signed in; account
+  answers that are `no-store` and hold no password hash, session identifier, link token, password
+  or database error. An agent compares a change with the part no invariant and no test holds:
+  - complies: an account answer that holds no session signing key and no mail password, also when the configuration behind the route fails
+  - violates: an answer of the account server that quotes a value of the session key file or of the mail password file
 - **Origin:** none
 
 *Rationale:* Server-held identity keeps browser input from selecting another account, so the stored session alone selects the saved game state or the previous save a request reads, replaces or moves, and waiting for persistence prevents a success response with no usable session. Errors can leave a newly created account usable for later login even when its first session could not be stored. A link shows control of its own address without a session and opens no other operation of the account, and a session that asks for a message gets it sent only to its account's own address. A request for a password-reset link proves nothing of who sends it, so all it can do is have a link sent to an address whose control was already shown; a player who forgot the password has no session, and the link stands in for the password because only that mailbox receives it.
@@ -2145,9 +2293,21 @@ In the private Cloudflare Tunnel topology of D-10, account requests require exac
 - **Scope:** account-server, deployment
 - **Based on:** cloudflare-tunnel-transport
 - **Relations:** derives from D-10 · derives from D-102
-- **Verification:** invariants: account-request-transport · local-start-access. An agent compares a change with the decision:
-  - complies: target acceptance checks actual cookie issuance and client-address handling through the tunnel, including provider transformations
-  - violates: treating synthetic header tests as proof of the deployed provider route
+- **Verification:** invariants: account-request-transport · local-start-access. tests: a client
+  address written in equivalent spellings read as one normalized address, and the limit of
+  registrations counting it as one whatever forwarding chain the caller adds; forwarded host headers
+  choosing no expected origin; in local loopback-proxy mode the peer's own address as identity, and
+  in direct mode an account request with forwarded metadata refused; public files and the start page
+  served with no proxy metadata and with metadata an account request is refused for; the browser
+  report refused without forwarded protocol or client address. An agent compares a change with the
+  part no invariant and no test holds:
+  - complies: target acceptance checks actual cookie issuance and client-address handling through
+    the tunnel, including provider transformations; Express trusting the forwarded protocol of the
+    immediate hop alone; loopback-proxy mode refusing an account request from a peer other than
+    loopback or without forwarded https
+  - violates: treating synthetic header tests as proof of the deployed provider route; `trust proxy`
+    set to trust every hop or more than one; loopback-proxy mode taking forwarded metadata from a
+    peer other than loopback
 - **Origin:** none
 
 *Rationale:* The closed origin topology makes the connector's information usable while a header name alone cannot establish trust. Provider transformations or a newly exposed origin can invalidate that assumption, and synthetic local headers prove parsing rather than the real route. The owner tried the real route on 2026-11-14 through `https://loop2.mariusznazar.com/` and gave this result: a wrong password gave „Nieprawidłowy adres e-mail lub hasło.” and not „Serwer nie mógł obsłużyć żądania.” (the refusal `Invalid request transport`); the right password signed him in and the session survived a reload of the page; so the tunnel passes `X-Forwarded-Proto` and `CF-Connecting-IP` as this decision requires, and the session cookie passes.
@@ -2161,6 +2321,19 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 - **Based on:** session-secret-rotation
 - **Relations:** derives from D-13 · derives from D-107 · derives from D-153
 - **Verification:** invariants: account-server-default-address · account-startup-configuration.
+  tests: wholly unconfigured non-production answering every known account route with JSON 503; the
+  configured origin, the signing file, the sender, the SMTP host, port and login and the password
+  file each refused in its invalid forms, a byte-order mark followed by a password accepted with the
+  mark dropped and a password file of 1 KiB read whole; every refusal naming its setting or path and
+  nothing of the value or the file's content, also for a database of an unknown schema or one that
+  cannot be opened; a full valid set of settings starting without contacting the mail service; the
+  runtime releasing its database connection when closed, and the started process exiting promptly
+  at shutdown. An agent compares a change with the part no invariant and no test holds:
+  - complies: a start that fails after its database opened closing that connection before the
+    process exits; the password file read once at startup; wholly unconfigured non-production
+    holding no account state of its own
+  - violates: an unconfigured start that makes a signing key, opens an in-memory database or keeps
+    sessions in a MemoryStore; the password file read again for each message
 - **Origin:** none
 
 *Rationale:* Failing before readiness prevents an apparently healthy production process from operating without durable identity or a signing key. An explicitly unconfigured development mode still allows static work, while partial configuration remains an error rather than silently losing account behavior. The mail settings count as account settings, so a server that holds accounts can always send their confirmation messages, and every local run or test that configures accounts supplies them; the mail service is not reached at startup, so its failure never keeps the game down. A byte-order mark is invisible and the decoding of the file drops a leading one, so a file of marks and nothing else holds no password anyone can see, and the mistake shows at startup, not only when the file has no byte; a mark followed by a password still gives that password.
@@ -2173,7 +2346,9 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 - **Scope:** account-server
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** derives from D-98 · derives from D-103 · derives from D-106
-- **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
+- **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check. tests: a password hashed and verified with its exact content, the trimmed password failing, under the explicit Argon2id profile of 64 MiB, three passes and one lane; the measurement made with that profile and the gate of two operations at once. An agent compares a change with the part no invariant and no test holds:
+  - complies: the kind guidelines of password hashing naming `src/server/passwords.ts` as the exemplar, and the table of kinds in `guidelines/coding.md` sending a password-hashing file to them
+  - violates: the kind guidelines of password hashing naming another file as the exemplar; the table of kinds in `guidelines/coding.md` no longer sending a password-hashing file to them
 - **Origin:** none
 
 *Rationale:* A first file makes password work's admission and package boundary visible for later account routes. The measurement of the deployed image shows that two slots of this profile fit within 80% of its memory limit; a different profile or gate carries no such evidence. The owner's measurement of 2026-11-14 on the test server, as he gave it, ended with verdict `PASS` and exit code 0 for the profile argon2id 64 MiB, t=3, p=1 and the gate of 2 at once, with a limit of 428867584 B (80% of 512 MiB), 0 hits of the limit, 0 out-of-memory kills and the largest process RSS 187133952 B; the full result stands in D-106.
@@ -2186,9 +2361,9 @@ The account server opens one application-owned SQLite connection before readines
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · sqlite-wal-concurrency · express-session-regenerated-session-saved-again
 - **Relations:** derives from D-15 · derives from D-17 · derives from D-99 · derives from D-101 · derives from D-107 · derives from D-138 · derives from D-155 · derives from D-156 · derives from D-161 · derives from D-205 · derives from D-399 · derives from D-400
-- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage · password-reset-link · password-reset-ends-sessions. An agent compares a change with the decision:
-  - complies: every route that makes a session naming, in the write of that session, the password hash its password was checked against or the hash it just made
-  - violates: a new way of making a session that stores it without naming a password hash; a reset that deletes the sessions and replaces the hash in two transactions
+- **Verification:** invariants: account-schema-lifecycle · account-database-schema · account-session-storage · password-reset-link · password-reset-ends-sessions. tests: the commands for the block and for the privilege and a backup working beside an open connection, and a database of an unknown schema refusing the start; an account's opaque identifier kept across reopening, one account for one normalized address across two connections with SQL characters kept as data, a session refused for an unknown account, WAL, and a busy write and the opening of a database succeeding or failing within the busy timeout; a saved game state and a previous save of at most 65 536 bytes, each removed with its account; expired sessions and links pruned at startup and periodically with a timer stopped at disposal, links in bounded batches and only once expired and an hour old; blocking deleting the account's sessions and stopping its links, a link recorded for a blocked account recording nothing and a new link stopping the earlier one of its purpose; a save writing nothing for a blocked account or one D-209 or D-210 refuses, a save of a higher version moving the stored one into the previous save in its transaction and a write that fails taking the move back; the reset moving the saved game state only for an unblocked account with the privilege and a saved game state, a block committed before it moving nothing; the privilege write reporting each outcome by the account's address; blocking, unblocking, granting and revoking keeping the saved game state and the previous save. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new schema version added as one migration step at the end of the list, the deployed steps unchanged; a password check, a message or an HTTP response between two short transactions
+  - violates: an edit of a migration step a deployed version already ran; a transaction held open across password hashing, the sending of a message or an HTTP response; synchronization lowered below full; an index of the account or the expiry of sessions, or of the account or the creation time of emailed links, dropped
 - **Origin:** none
 
 *Rationale:* An explicit schema version prevents old code from interpreting a newer layout or resetting existing accounts, and short synchronous database operations keep transaction ownership simple. One ordered list of steps builds a new database and moves an existing one by the same statements, so the two cannot drift apart, at the cost of a new database running through the history of steps. A second connection from an operator's command waits out the server's short transactions within the busy timeout, and a block committed while a login is in progress either deletes the session that login stored or makes its write store nothing. A login or a registration stores its session twice, once in its route and once as the library ends the request, and a registration waits on its message between the two, so a reset committed there would see the second store put back what it deleted; the comparison of password hashes in the statement that writes holds for every store, as the block's does, however far apart they stand and whichever connection commits. The hash travels beside the session and never in its stored data; a session written without naming one is unguarded, and the guard rests on the library handing both stores the same session object. Reading the link in the transaction that sets the password means a block, a later link or an expiry during the hashing either comes first, so the finished hash is dropped, or comes after and finds the password changed. A reset removes every session of the account in the same transaction as the change of the hash and signs nobody in, so whoever took over the old password does not go on playing, and the player signs in with the new one; accepted with it: a player playing in a second browser sees „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” (D-211) at the next save, the unsaved state waiting in that tab for a sign-in. Container replacement preserves the database, but rollback restores code rather than historical data and cannot repair an incompatible schema: once a database is moved forward, code that knows only an older version refuses it. Emailed links stay after their use until they have expired and are an hour old, because they also count account messages against D-105 (D-161), and their purpose admits password reset already, because a constraint of a table cannot be widened without rebuilding it. Reading the block in the transaction that records a link means a block either comes first, so nothing is recorded or sent, or comes after and marks the recorded link as no longer working, so a message already on its way carries a link that does not work. A saved game state in a table of its own stays out of the rows every login reads, and reading the block, the version and the revision in the transaction that writes it means no save lands between the check and the write; a blocked player's saved game state waits for the unblock. The previous save, in a table of its own as well, outlives the reset of the game that removes the current row; its move is one copy and the usual write in one transaction, so a thrown error leaves the stored saved game state and the previous save as they were, and reading the block, the privilege and the saved game state in the transaction of the reset of the game means no save lands between the check and the move. The privilege is one column of the row every login reads, so the account's answer carries it with no second read.
@@ -2201,7 +2376,7 @@ The exemplar for kind `database-access` is `src/server/database.ts`, and its kin
 - **Scope:** account-server
 - **Based on:** node-sqlite-database
 - **Relations:** derives from D-28 · derives from D-112
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: database access keeping the SQL characters of a value as data, taking back a failed schema initialization of a new database whole, and stopping its cleanup timer when its connection is closed, each with no HTTP server and no password hashing. An agent compares a change with the part no test holds:
   - complies: database-access guidelines identify the first implementation as exemplar and keep SQL and connection ownership together
   - violates: a different exemplar or database access that spans asynchronous password work
 - **Origin:** none
@@ -2216,9 +2391,9 @@ The exemplar for kind `session-store` is `src/server/session-store.ts`, and its 
 - **Scope:** account-server
 - **Based on:** express-session-store-contract · express-session-cookie-lifecycle · cookie-serialization-validation
 - **Relations:** derives from D-28 · derives from D-107 · derives from D-112
-- **Verification:** invariants: account-session-storage. An agent compares a change with the decision:
-  - complies: session-store guidelines identify the first implementation as exemplar and preserve callback failures
-  - violates: treating parsed JSON as a valid library session without checking its shape
+- **Verification:** invariants: account-session-storage. tests: the Store delivering each failure of a library callback once, as that callback's error, and letting an exception the callback throws reach its caller. An agent compares a change with the part no invariant and no test holds:
+  - complies: session-store guidelines naming `src/server/session-store.ts` as the exemplar; the cookie's name, flags and lifetime set where the application is assembled, the Store keeping and checking what the library hands it
+  - violates: session-store guidelines naming another file as the exemplar; the Store setting the cookie's flags or lifetime, or reading the HTTP request
 - **Origin:** none
 
 *Rationale:* The adapter makes malformed persisted data and storage failures explicit before the library restores a session; a deliberately narrow payload requires conscious changes when session data grows.
@@ -2231,9 +2406,9 @@ The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and it
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-98 · derives from D-99 · derives from D-102 · derives from D-103
-- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
-  - complies: account-policy guidelines identify the first implementation as exemplar, and a route settles its admission after the awaited password operation without reading the connection's state
-  - violates: limiter state kept in an HTTP handler, or a settlement made when the client disconnects
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. tests: the policy's own checks normalizing an address and refusing a password outside its rules or unlike its repetition; attempts admitted, refused and freed against the clock the policy is given, which the tests move, run on the policy alone with no HTTP server, password hashing or database and through the routes; an admitted login settled twice counting once. An agent compares a change with the part no invariant and no test holds:
+  - complies: account-policy guidelines naming `src/server/account-policy.ts` as the exemplar; a new kind of attempt limited by a method of the policy that its route calls
+  - violates: account-policy guidelines naming another file as the exemplar; counters of attempts kept in a route handler beside the policy
 - **Origin:** none
 
 *Rationale:* One HTTP-independent unit makes the credential rules, the attempt accounting and their clock visible together for later account operations such as password recovery, while a settlement tied to completed work keeps a disconnected client from freeing or erasing an attempt. Its weak point is that the policy cannot observe password work itself: the route decides when that work has completed, so the rule rests on the route's sequencing.
@@ -2246,9 +2421,9 @@ The exemplar for kind `browser-api-client` is `src/browser/account-api.ts`, and 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-108
-- **Verification:** invariants: account-client-requests · account-client-outcomes. An agent compares a change with the decision:
-  - complies: browser API client guidelines identify the first implementation as exemplar, and a screen reads the client's typed result instead of a status code or a response body
-  - violates: a client that treats any 2xx status as a success, or a screen that calls `fetch` for an account route itself
+- **Verification:** invariants: account-client-requests · account-client-outcomes. tests: every failure of a call of the account, saved-game, previous-save and report routes carrying its kind — a refusal with the server's status and known code, an answer not expected, a network failure or a timeout — and each documented refusal of a save coming back as an outcome of its own. An agent compares a change with the part no invariant and no test holds:
+  - complies: browser API client guidelines naming `src/browser/account-api.ts` as the exemplar; a client whose only setting is its time limit, each call reading nothing an earlier call left
+  - violates: browser API client guidelines naming another file as the exemplar; a client that keeps the signed-in account, writes `document.cookie` or `localStorage`, or changes the page
 - **Origin:** none
 
 *Rationale:* One module that owns the request details lets the screens read outcomes instead of status codes, and keeps a response that merely looks like a success from signing a player in or leaving them signed out by mistake. Its weak point is that the client copies the server's contract by hand, so a change of a route's status or body must change the server and the client together.
@@ -2264,11 +2439,13 @@ discovered, game time stops by itself.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: player-map-run-pace · minute-span-split. An agent compares a change
-  with the decision:
-  - complies: the first gathered sticks revealing „Wytwórz” and the campfire; the first wolf
-    revealing the verbs of combat
-  - violates: a program editor listing every condition from the first game minute
+- **Verification:** invariants: player-map-run-pace · minute-span-split. tests: the Understanding of
+  a new game holding the condition „Zawsze” and the action „Eksploruj” alone, in the game state and
+  in the picks of the program editor; nothing else entering it before the event that reveals it, a
+  gathering that misses and a lighting or a crafting that takes no hold revealing nothing; each
+  action, item, condition, branch and creature entering it with the need, action, item or encounter
+  that reveals it, and every action and condition other than „Zawsze” and „Eksploruj” having such
+  an event in the data.
 - **Origin:** none
 
 *Rationale:* discovery is written into how the game works rather than into text; the tuning screen
@@ -2303,11 +2480,18 @@ at once what the program editor offers and what the simulation lets the characte
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the Understanding one for all characters, what a character's manual map
+  run discovers entering the map run of the character sent next and the next pick of another
+  character's earning loop; the Understanding left as it was by a character's death, „Restart”,
+  „Zakończ”, a send, a pause and a change of the program; a character's repertoire computed from
+  the Understanding through the predispositions and the branches the character has bought, anew at
+  each pick, so that an action leaves it as soon as the Understanding loses it, and a branch action
+  as soon as a death has taken the branch; an action of a bought branch open only to the character that
+  bought it, in the program editor and in the simulation alike. For one computation serving both
+  the program editor and the simulation, an agent compares a change with the part no test holds:
   - complies: the program editor and the simulation both asking one function for a character's
-    repertoire; a character's death, „Restart” and „Zakończ” leaving the Understanding as it was
-  - violates: a list of discovered actions saved with each character; an editor that filters by
-    archetype while the simulation does not; a branch bought by one character usable by another
+    repertoire
+  - violates: an editor that filters by archetype while the simulation does not
 - **Origin:** none
 
 *Rationale:* a new character sees what others discovered, but only what its archetype lets it
@@ -2329,10 +2513,11 @@ tile, is open to every character, and an archetype never filters items.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Wędruj” open to every archetype, while „Wytwórz — ognisko” is open only to an archetype with the predisposition „Wytwarzanie ogniska”
-  - violates: an archetype defined as a list of allowed verbs; an archetype that forbids eating an
-    item
+- **Verification:** tests: a character skill left out of the predispositions taking out of the
+  repertoire every action whose pair of verb and target it grows, and only those; with no
+  predisposition the actions no character skill grows, the walks and „Wędruj”, staying open, and
+  conditions and items never filtered; an action opened by a branch open only to the character that
+  bought the branch, in the program editor and in the simulation.
 - **Origin:** none
 
 *Rationale:* an archetype is a set of the character skills that a character can learn. One verb, „Wytwórz”, makes a campfire and, in later data, an archetype's goods, so only
@@ -2357,16 +2542,14 @@ the first gathered berry brings „Zjedz — jagoda” and the condition „Syto
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-118
-- **Verification:** invariants: first-exploration-discovery · new-account-first-pass. An agent
-  compares a change with the decision:
-  - complies: a mage of a new game first chilled in game minute 84, with „Eksploruj” in the
-    Understanding from the start, bringing „Wędruj” and „Temperatura poniżej” into it; the program
-    editor offering „Idź” and a condition „Tu leży mniej niż” once the first exploration has
-    finished; the first finished „Zapal — patyk” naming „Zasil — ognisko” and „Energia natury
-    poniżej” in one band of a discovery
-  - violates: the conditions on the campfire offered after the first gathered stick, before any
-    campfire has been crafted; „Zasil — ognisko” discovered with the first gathered stick;
-    „Energia natury poniżej” discovered before the first finished „Zapal”
+- **Verification:** invariants: first-exploration-discovery · new-account-first-pass. tests: the
+  Understanding of a new game holding „Eksploruj”, in the game state and in the picks of the
+  program editor; each revealing event — the first chill, the first finished exploration, the first
+  gathered stick, the first crafted campfire, the first finished „Zapal” of a campfire and of a
+  stick, and the first gathered berry — bringing exactly what this decision gives it, in the game
+  minute in which it happens and in the data, and nothing where it does not happen or where what it
+  brings is already known; each tile revealed later adding the items lying on it, moss and fibre
+  included.
 - **Origin:** none
 
 *Rationale:* the first map run is a linear tutorial, so each discovery offers the program what the
@@ -2401,21 +2584,19 @@ what happened, with the text of the band in the role `discovery` and with „Dod
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-118 · derives from D-368
-- **Verification:** invariants: player-map-run-pace. An agent compares a change with the decision:
-  - complies: after the first finished exploration the clock „Minuta {game minute} (pauza)” and above
-    the program the band „Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu
-    leży mniej niż … szt., Zapas poniżej … szt.” with „Dodaj regułę z tym” and „Wznów”, gone once
-    the player presses „Wznów” in the band or in the header; a completion of Las in the game minute
-    of a discovery showing „Teraz” „Las rozwiązany” and the clock „Minuta 480” with no „ (pauza)”, and
-    the window of the end naming that discovery in the text of the band, with „Dodaj regułę z tym”
-    and no band above the program, until „Restart”; a death in the game minute of a discovery
-    treated alike; the scene in its colours while the band stands
-  - violates: a „Wznów” of the band that does anything other than the „Wznów” of the header; the
-    band still standing after „Wznów”; the band standing in the world area; two
-    discoveries of one game minute in two bands; a completion in the game minute of a discovery
-    leaving the map run paused with „Wznów”; the band of that discovery standing above the program
-    after a completion or a death; the window of that end saying nothing of the discovery, or
-    without „Dodaj regułę z tym”; the scene greyed at a stop at a discovery
+- **Verification:** invariants: player-map-run-pace. tests: at a stop at a discovery the clock
+  reading „Minuta {game minute} (pauza)” and losing „ (pauza)” at „Wznów”; the band above the
+  program, outside the world area and the area under it, naming what was discovered and the rule
+  the game wrote, one discovery for the game minute, with „Dodaj regułę z tym” and „Wznów”, whose
+  „Wznów” does what the header's does; the band standing until the player goes on, through a pause
+  of the player and „Wróć”; the scene in its colours at the stop; the band's text entering the
+  chronicle; a completion or a death in the game minute of a discovery leaving the discovery held
+  until „Restart” or „Zakończ”, the end-of-run window naming it with the band's text and „Dodaj
+  regułę z tym” and no „Wznów”, and no band standing. For the role of the band and of the window's
+  text of a discovery, an agent compares a change with the part no invariant and no test holds:
+  - complies: the text of the band above the program and the text naming a discovery in the
+    end-of-run window, both in the role `discovery`
+  - violates: the band's text, or the window's text of a discovery, in `text` or in `warning`
 - **Origin:** none
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on, and
@@ -2470,15 +2651,21 @@ change of the copy nor as a change of the program that a save of the copy announ
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-121 · derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new game's mage first chilled in game minute 84 with the empty rule group „Program”
-    of the copy and of the program „Program” each gaining „Zawsze → Eksploruj” there, „Program 2”
-    staying as it was and the copy showing no unsaved changes; a first chill in a copy whose rule
-    groups the player has all deleted adding the rule group „Program” with the condition „Zawsze”
-    and the rule in it
-  - violates: the rule written again at a later chill or in a later map run; the rule written into
-    a rule group of its own beside the first rule group; the rule written into every program of the
-    list; the rule lighting „Niezapisane zmiany w kopii.” or the line of a program that changed
+- **Verification:** tests: at the first chill „Zawsze → Eksploruj” written once, at the end of the
+  first rule group of the copy and of the copy's program on the list, the rule group „Program” under
+  „Zawsze” added where the copy and its program hold no rule group, the rule written into the copy
+  alone where its program is gone, and the other programs staying as they were; no rule written at
+  a later chill, at a chill that reveals nothing new, at another discovery, or where the copy holds
+  a rule „Eksploruj” of the player's own, also under a condition that does not hold; the copy's
+  base written alike with the copy and its program, so that neither an unsaved change of the copy
+  nor a change of the program shows. For the copy or its program alone holding no rule group, an
+  agent compares a change with the part no test holds:
+  - complies: a first chill in a copy whose rule groups the player has all deleted, while its
+    program on the list keeps its rule group „Program”, adding the rule group „Program” with the
+    condition „Zawsze” and the rule to the copy, and the rule at the end of the program's first
+    rule group
+  - violates: the rule group „Program” added to the copy only where its program holds no rule group
+    either
 - **Origin:** none
 
 *Rationale:* a player who wrote nothing by the first chill sees the character set moving and the
@@ -2500,11 +2687,10 @@ disabled.
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-118
-- **Verification:** an agent compares a change with the decision:
-  - complies: „+ reguła” of a new game's rule group „Program” enabled from the first game second,
-    adding „Zawsze → Eksploruj” at the end of the group, with its rule panel open on the condition
-  - violates: „+ reguła” adding a program rule whose action the Understanding does not hold; the
-    rule added with no rule panel open, or with the panel open on the action
+- **Verification:** tests: „+ reguła” adding „Zawsze → Eksploruj” at the end of its rule group,
+  in a new game and in a game whose Understanding holds no action, and never disabled; the opening
+  of the new rule's panel asked for with no field named, and the panel then standing on the new
+  rule, on the condition, as every opening that names no field does.
 - **Origin:** none
 
 *Rationale:* with „Eksploruj” in the Understanding from the start, a rule always has an action to
@@ -2524,10 +2710,15 @@ game map show every item they hold.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the body row of a new game's first map run showing satiety from game minute zero
-  - violates: the body row hiding satiety until „Sytość poniżej” is discovered; an item of the
-    backpack or of a revealed tile drawn or listed as unknown until it is discovered
+- **Verification:** tests: with an Understanding that holds no item and of the conditions only
+  „Zawsze”, the body row showing satiety from game minute zero, the backpack listing the items it
+  holds, the list of revealed tiles giving the stock of every resource of the map, and the drawing
+  of the game map drawing the icon of every resource a revealed tile holds. For a campfire and a
+  burning item, an agent compares a change with the part no test holds:
+  - complies: a campfire and a burning stick on a revealed tile drawn and listed in its row while
+    the Understanding holds neither the campfire nor the stick
+  - violates: the drawing or the list of revealed tiles leaving out a campfire or a burning stick
+    until the Understanding holds it
 - **Origin:** none
 
 *Rationale:* the Understanding decides what a program can name, while the body row, the backpack,
@@ -2546,12 +2737,7 @@ carried out in that game minute, and the program rule stays in the program.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119 · narrows D-23
-- **Verification:** invariants: program-rule-pick. An agent compares a change with the decision:
-  - complies: a program holding „Zawsze → Zjedz — jagoda” above „Zawsze → Eksploruj” before the
-    first gathered berry, the character starting „Eksploruj” and the first rule staying in the
-    program
-  - violates: the simulation refusing a program that holds a program rule outside the character's
-    repertoire; a program rule passed over for lying outside the repertoire removed from the program
+- **Verification:** invariants: program-rule-pick.
 - **Origin:** none
 
 *Rationale:* a program rule outside the repertoire is one the character cannot carry out yet, so
@@ -2571,12 +2757,7 @@ whose condition does not hold, and the rule group stays in the program.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119 · narrows D-23
-- **Verification:** invariants: program-rule-pick. An agent compares a change with the decision:
-  - complies: a first rule group under the condition „Zapas poniżej” of sticks, before the first
-    finished exploration, passed over for the next rule group, and the first rule group staying in
-    the program with its program rules
-  - violates: a program rule of such a rule group carried out because the group's condition holds;
-    the simulation refusing a program that holds such a rule group
+- **Verification:** invariants: program-rule-pick.
 - **Origin:** none
 
 *Rationale:* a condition outside the repertoire is one the character cannot use yet, so it steers
@@ -2599,11 +2780,17 @@ of data alone.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-118
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zasil — ognisko” revealed by the first finished „Zapal” through a field of its own
-    entry in the data of the actions, which the simulation reads; a condition revealed by the first
-    gathered stick added as an entry of the data of the conditions, with no change of the
-    simulation's code
+- **Verification:** tests: what reveals each action, condition and item, the campfire and the wolf
+  standing in the data beside it as one kind of revealing event — the first chill, the first
+  finished exploration, a revealed tile that holds the item, the first gathered stick or berry, the
+  first crafted campfire, the first finished „Zapal”, an attack of the wolf — and nothing standing
+  there beside „Zawsze” and „Eksploruj”. For the simulation reading what reveals a thing from the
+  data, so that a thing revealed by a kind of revealing event the simulation already handles is
+  added, or what reveals it changed, by a change of data alone, an agent compares a change with the
+  part no test holds:
+  - complies: the simulation reading what reveals „Zasil — ognisko” from the field of its entry in
+    the data of the actions; a condition revealed by the first gathered stick added as an entry of
+    the data of the conditions, with no change of the simulation's code
   - violates: a list in the simulation's code naming „Wędruj” and „Temperatura poniżej” as what the
     first chill reveals; a condition revealed by the first crafted campfire that takes a change of
     the simulation's code to be revealed
@@ -2631,11 +2818,11 @@ discovery included, „Restart”, „Zakończ” and the next send of a charact
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-21
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Restart” after a death at 16× going on at 16×; a character sent after „Zakończ” of a
-    map run at 4× moving at 4×; the first map run of a new game passing at 1×
-  - violates: „Restart”, „Zakończ” or a new send bringing the pace back to 1×; a stop at a
-    discovery changing the pace
+- **Verification:** tests: the pace the player picked staying through a pause, a resume,
+  „Restart”, „Zakończ” and the next send of a character, and a new game starting at 1×. For the
+  pause at a discovery, an agent compares a change with the part no test holds:
+  - complies: a stop at a discovery in a map run at 4×, after „Wznów”, going on at 4×
+  - violates: a stop at a discovery bringing the pace back to 1× or changing it otherwise
 - **Origin:** none
 
 *Rationale:* the pace is the player's setting of how fast a map run passes, kept from one attempt to
@@ -2656,13 +2843,14 @@ group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-44
-- **Verification:** an agent compares a change with the decision:
-  - complies: „4×” shown selected among the five buttons beside „Pauza” in the header of the screen
-    of a map run while the map run passes at 4×, each button made with the shared button selected in
-    its group
-  - violates: a select list of paces; the pace buttons standing in an area of the screen under the
-    header; a pace button that creates and styles a `<button>` of its own; the pace in force marked
-    in a way no shared control holds
+- **Verification:** tests: the five buttons „1×”, „2×”, „4×”, „8×” and „16×” standing in that
+  order right after „Pauza” in the header of the screen of a map run, a click on one asking for its
+  pace, and the button of the pace in force pressed and in the look of the button selected in its
+  group. For the shared control the buttons are made with, an agent compares a change with the part
+  no test holds:
+  - complies: each pace button made with the shared button selected in its group
+  - violates: a pace button that creates and styles a `<button>` of its own, though it looks the
+    same
 - **Origin:** none
 
 *Rationale:* the pace stands where the player watches the map run, beside „Pauza”, the other
@@ -2685,16 +2873,21 @@ stands, together with the number of beaten attacks. Every switch of the characte
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-164
-- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save · trip-plan-progress. An agent compares a change with the decision:
-  - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
-    changed in a pause setting the streak to 0 while the character's action in progress goes on; a
-    rule group renamed setting the streak to 0; „Porzuć zmiany” after a rule was added to the copy
-    setting the streak to 0; „Zapisz w programie” leaving a streak of 120 at 120; „Program 2” edited
-    during a map run on the copy of „Program” leaving the streak; a switch to a program of the same
-    rules setting the streak and the beaten attacks to 0
-  - violates: „↑” on the first program rule setting the streak to 0; a program rule deleted in a
-    pause leaving the streak as it stood; „Zapisz jako nowy program” setting the streak to 0; a
-    switch leaving the beaten attacks as they stood
+- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save · trip-plan-progress. tests: an edit
+  that changes the copy's rules setting the beaten attacks of the map run to zero together with the
+  streak; „Porzuć zmiany” setting the streak to zero in a map run in progress and leaving it after a
+  death; an edit that hands back the same rules and rule groups leaving the streak; an edit of a
+  saved program leaving the beaten attacks; the map run of a restart starting with zero beaten
+  attacks; a game minute of loss to cold leaving the beaten attacks as they stood. For the beaten
+  attacks at the other acts and at hunger, an agent compares a change with the part no test and no
+  invariant holds:
+  - complies: „Porzuć zmiany” and a switch, at one beaten attack, setting the beaten attacks to 0;
+    „Zapisz w programie”, „Zapisz jako nowy program” and „↑” on the first program rule leaving one
+    beaten attack at 1; a game minute of loss to hunger leaving the beaten attacks as they stood
+  - violates: a switch or „Porzuć zmiany” leaving the beaten attacks as they stood; a save of the
+    copy or „↑” on the first program rule setting the beaten attacks to 0; a game minute of loss to
+    hunger setting the beaten attacks to 0; a restart carrying over the beaten attacks of the map
+    run it replaces
 - **Origin:** none
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps
@@ -2724,16 +2917,19 @@ opens another, „Otwarte: {mapa} →” in the window, the way to the map it op
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a completion in game minute 480 of Las „Teraz” reads „Las rozwiązany” in
-    `positive` and the clock „Minuta 480”, the window titled „Las rozwiązany” in `positive` standing
-    over the screen under the menu bar, „Pauza” and the pace buttons are gone, the game minute stays at
-    480, „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać
-    of that character, the scene under the window in full gold and still so when „✕” uncovers it
-  - violates: the game going back to the headquarters with a message the moment the map run
-    completes; „Pauza” or a pace button standing after a completion; the text of the completion
-    written in a role other than `positive`; a completion of a map that opens another whose window has
-    no „Otwarte: {mapa} →”; the scene after a completion left in the tint of the required streak
+- **Verification:** tests: no game minute passing after a completion for that map run, by span or
+  by real time; „Teraz” reading the map's completion text in `positive`; the clock in the header
+  standing at the game minute of the completion with no „ (pauza)”; the end-of-run window opening by
+  itself at a completion over the header and the areas of the screen, titled by the map's
+  completion text in `positive`; the scene's tint standing at full gold; „Pauza” and the pace
+  buttons gone and „Restart” and „Zakończ” standing, a restart starting game minute zero on the
+  same seed; „Otwarte: {mapa} →” in the window after a completion of a map that opens another, and
+  only then, leading to the card of the map it opened. For the menu bar and the scene after „✕”, an
+  agent compares a change with the part no test holds:
+  - complies: the menu bar standing above the window after a completion; „✕” uncovering the scene
+    still in full gold
+  - violates: the window covering the menu bar; the scene after „✕” left in the tint of the
+    required streak
 - **Origin:** none
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
@@ -2776,18 +2972,13 @@ During a map run the header shows a bar with numbers for the requirements presen
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a paused map run of Las with the clock „Minuta 312 (pauza)” and the bar „Passa
-    120/480” in the header of the screen of the map run; on Las — głębiej „Passa 120/540” before
-    „Pokonane napaści 1/2”, each with its bar; „Pokonane napaści 2/2” with its name, its numbers and
-    its fill in `positive` while „Passa 120/540” beside it stays unmet; after a death of cold the bar
-    „Passa 0/480” in the header; the sentence of Las standing on the card of Las, in its part
-    „Żąda”, and that of Las — głębiej, „Las — głębiej — 540 minut bez utraty zdrowia od zimna i
-    głodu i bez zmiany programu oraz dwie pokonane napaści wilka”, on its card
-  - violates: a bar with no numbers beside it; „Passa 120/480” standing in the world area under the
-    header; a streak target shown for a map that asks for beaten attacks alone; the bar gone from the
-    header after the end of a map run; a met requirement whose fill turns green while its name and
-    numbers do not; the sentence of the condition written in the code of the screen Mapy
+- **Verification:** tests: the bar right after the clock in the header of the screen of a map run,
+  with „Passa {streak}/{required}” and „Pokonane napaści {count}/{required}” for the requirements
+  the map's data holds alone, in that order, each with its bar; a met requirement's fill, name and
+  numbers in `positive` while an unmet one beside it stays as it was; the bar standing after a death
+  and after a completion, at the stopped game minute with the streak as it stands, „Passa 0/480”
+  after a death of cold; the sentence of each map's solving condition standing in its data and on
+  its card under „Żąda”.
 - **Origin:** none
 
 *Rationale:* the player sees during a map run how far the program has come towards the map's
@@ -2817,11 +3008,12 @@ From the first completion of a map by any of the player's characters, the list a
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: after the first completion of Las, the row of Las on the list and the card of Las
-    reading „rozwiązana” in `positive`, also after a later map run on Las ends in death
-  - violates: the mark shown on the screen after the completion and missing from the list and the
-    card; the mark gone once a later map run on Las ends in death
+- **Verification:** tests: the mark „rozwiązana” after the name of each solved map on the list
+  and on its card, and none at an unsolved map; a map staying solved, once, through a restart,
+  „Zakończ”, a send, a later completion and a later death. For the role of the mark, an agent
+  compares a change with the part no test holds:
+  - complies: „rozwiązana” on the row and on the card of Las in `positive`
+  - violates: „rozwiązana” in `text` or in `text-secondary`
 - **Origin:** none
 
 *Rationale:* a solved map stays solved, so the player sees where maps stand which of them a program
@@ -2838,9 +3030,11 @@ the bar of the solving condition in the header (D-133).
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the window after a death of cold reading „najdłuższa passa 116/480” with its bar, while the bar in the header reads „Passa 0/480”; the same longest streak in the window after a reload of the page
-  - violates: the window after a death or a completion with no longest streak; a longest streak that a load of the saved game state loses
+- **Verification:** tests: a manual map run starting with a longest streak of 0, keeping the
+  longest streak it reached through a fall of the streak to 0, a change of the program, a fight and
+  a completion, binding it anew at a restart and keeping it through a load; the end-of-run window
+  showing it as „najdłuższa passa {longest}/{required}” against the map's streak, with a bar of the
+  form of the header's, in `positive` where met, also after a reload.
 - **Origin:** none
 
 *Rationale:* at a death of cold or hunger the streak stands at zero, so only the longest streak tells how near the map run came, and it gives a measure of progress between attempts. The streak a map's solving condition counts is the one the bar of the solving condition in the header shows, and the longest streak stands in the same form, as the end of loop shows a bar of its longest streak. The field stands in the game state, so the longest streak comes back after a load and the window shows it after a reload as well (D-212, D-369). Accepted with it: one more field in the game state and a bump of the version of the save, which a change of the shape of the game state brings once, in its own change, and which discards a saved game state of the older version (D-206).
@@ -2859,13 +3053,12 @@ of the trip plan alone leaves it.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: streak-program-change · trip-plan-progress. For the condition in the map's data and the
-  rest of the streak, an agent compares a change with the decision:
-  - complies: Las — głębiej asking for a streak and two beaten attacks, written in its data
-  - violates: a solving condition coded in the engine for one map; a game minute in which the
-    character is chilled growing the streak; a game minute in which the character is starving
-    leaving the streak as it stood; a streak broken by a wolf's bite; a switch of the character to
-    another program leaving the streak as it stood
+- **Verification:** invariants: streak-program-change · trip-plan-progress. tests: the solving
+  condition of each map, a streak, beaten attacks or both, standing in its data, and a map run
+  meeting it only where it meets every requirement present; the map each map opens after named in
+  its data, and a map sendable only once that map is solved; the streak growing by one in each game
+  minute with no health lost to cold or hunger, whatever the health, in a minute of combat and
+  through the wounds of combat, and set to zero by a game minute of loss to cold or to hunger.
 - **Origin:** none
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
@@ -2885,9 +3078,9 @@ The operator blocks and unblocks a player account, named by its email address no
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-12 · derives from D-99
-- **Verification:** invariants: blocked-account-access · player-server-session · unblock-restores-no-session · unblock-restores-no-link. An agent compares a change with the decision:
-  - complies: the owner runs `docker exec loop2 node dist/server/account-block.js block <email>` and the account's sessions in every browser end with the block, while the running server keeps serving
-  - violates: an HTTP route of the account server that blocks accounts; a skill instruction in which an agent runs the command through the `mikrus` MCP server; unblocking that makes the sessions or the emailed links ended by the block valid again
+- **Verification:** invariants: blocked-account-access · player-server-session · unblock-restores-no-session · unblock-restores-no-link. tests: the built command, run as its own process beside an open connection, blocking and unblocking by an address it normalizes, reporting blocked, already blocked, unblocked and not blocked each in its own words, and refusing a usage error, an unknown address and an unusable or busy database with a report and no change; a block, also through another connection, marking the account and deleting its sessions and stopping its emailed links and nothing of another account, and an unblock clearing the mark. An agent compares a change with the part no invariant and no test holds:
+  - complies: the owner running `docker exec loop2 node dist/server/account-block.js block <email>` on the server, as the `loop2-deploy` skill describes it; the mark, the deletion of the sessions and the stopping of the links written in one transaction
+  - violates: an HTTP route of the account server that blocks accounts; a skill instruction in which an agent runs the command through the `mikrus` MCP server; a block that marks the account in one transaction and deletes its sessions or stops its links in another
 - **Origin:** none
 
 *Rationale:* the owner already reaches the server through SSH, so a command in the container adds no new way into the server, and it reports its outcome where the owner typed it. Blocking is possible only from the server's terminal, with no view in the browser, the player's address stays in the server's shell history, and the command opens the database beside the running server, waiting at most the bounded busy timeout for its write. Deleting the sessions and stopping the emailed links at the block, as logout deletes one session, leaves nothing that unblocking could bring back. The same holds for the emailed links of the account,
@@ -2905,7 +3098,7 @@ The browser holds an opaque, random session identifier in a host-scoped, Secure 
 - **Scope:** account-server, browser-view
 - **Based on:** OWASP Session Management Cheat Sheet, session identifiers, server-side expiry and invalidation (https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html, read 2026-10-04) · MDN Set-Cookie, Secure and HttpOnly attributes and host scope (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie, read 2026-10-04) · OWASP JSON Web Token Cheat Sheet, token revocation trade-off (https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html, read 2026-10-04) · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Once they have set their new password, the user should then login through the usual mechanism. Don't automatically log the user in" · "Ask the user if they want to invalidate all of their existing sessions, or invalidate the sessions automatically."; read 2026-10-30
 - **Relations:** none
-- **Verification:** invariants: player-opaque-session-cookie · player-server-session · password-reset-ends-sessions
+- **Verification:** invariants: player-opaque-session-cookie · player-server-session · password-reset-ends-sessions. tests: one call of the reset replacing the password and deleting every session of its account; the reset answering with no cookie and storing no session; the browser, after the change, showing the form „Zaloguj się” with focus in its address field.
 - **Origin:** none
 
 *Rationale:* the existing account database can hold a small server-side session record. The server can end access immediately after logout, account blocking or a password reset, without maintaining a token denylist. This adds database lookups and cleanup of expired records, and the choice rests on one account server serving the game and on the session checks in SQLite being no measured bottleneck. A signed token would avoid session records, but immediate account blocking would still require checking server state or a denylist. A password reset ends every browser's session so that whoever took over the password does not play on after it changes; a player playing in a second browser meets „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” at the next save, the unsaved state waiting in that tab for the sign-in (D-211).
@@ -2918,9 +3111,11 @@ A login of a blocked account with the correct password is refused with „To kon
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-137
-- **Verification:** invariants: blocked-account-access. An agent compares a change with the decision:
-  - complies: the login route checks the password through the gate first and settles a blocked account's correct password by releasing its admission, answering 403 `account-blocked`
-  - violates: the blocked message for an address whose password was not checked or was wrong; a blocked login counted as a failure, so that five of them lock the address
+- **Verification:** invariants: blocked-account-access. tests: a blocked account's correct
+  password, also one blocked during its check, refused 403 with `account-blocked`, „To konto jest
+  zablokowane.” and no session, and its wrong password with the message of D-100; five such
+  refusals locking nothing and clearing none of four failures before them; a locked address
+  refusing the correct password of a blocked account with the limit's message.
 - **Origin:** none
 
 *Rationale:* a player who knows the password learns why the game stays closed, while someone who knows only the address learns nothing more than from any wrong password, so the block is no clue for an address alone. The refusal is no guess of credentials, so it does not count towards a lock, and no sign-in, so it clears nothing; someone who knows a blocked account's password may repeat the attempt unslowed by the limits, each attempt still passing the bounded password gate. A new refusal code changes the server and the browser's client together.
@@ -2937,9 +3132,17 @@ and an attack interrupts the action under way, which is lost.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: action-in-progress. An agent compares a change with the decision:
-  - complies: a new creature added to data together with its pairs of condition and action
-  - violates: a wolf's behaviour written as a branch of the engine; a turn of combat costing game minutes of its own; eating during combat
+- **Verification:** invariants: action-in-progress. tests: combat going in turns of one action of
+  each side, the attacker striking first; the needs standing still through the five game minutes of
+  an encounter, whose turns resolve in its last; combat verbs refused outside combat and every other
+  action refused in it; the wolf's pairs of condition and action kept in its data, of the form of
+  program rules, and the wolf acting by them; an attack interrupting the action under way, which is
+  lost. For where a creature's behaviour comes from, an agent compares a change with the part no test
+  and no invariant holds:
+  - complies: a new creature added to data together with its pairs of condition and action, which
+    the engine reads as it reads the wolf's
+  - violates: a wolf's behaviour written as a branch of the engine, though it gives the same turns as
+    its data pairs
 - **Origin:** none
 
 *Rationale:* a fixed cost keeps a long fight from eating half a day and mixing into hunger and cold.
@@ -2965,9 +3168,13 @@ An encounter is scheduled for five game minutes after its attack minute M, with 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-140 · derives from D-131
-- **Verification:** an agent compares a change with the decision:
-  - complies: an attack in minute 200 resolving its turns in minute 205 with the program edited during the pause
-  - violates: an attack resolving before its discovery pause or automatic recovery raising health during its waiting minutes; a well-fed mage's nature energy rising during those minutes
+- **Verification:** tests: an encounter resolving its turns together five game minutes after its
+  attack minute with the program as it stands then, a completion in the minutes before ending it
+  with no turns, and its record growing by the turns once they are resolved; the needs, automatic
+  health recovery and nature energy standing still in those minutes while burning and resource
+  renewal go on and the streak grows, and health changing in the minute of the turns; an edit of the
+  program in those minutes leaving the resolution minute, the attack generator and the cooldown as
+  they were and setting the streak and the beaten attacks to zero.
 - **Origin:** none
 
 *Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold. Nature energy stands with the needs, so the encounter's minutes leave the body and the energy as they were, and a minute of combat stays a minute in which the body stands still, with no exception; the game has no spell of combat today, so energy in combat would serve nothing.
@@ -2980,9 +3187,13 @@ An attack uses the per-game-minute chance and cooldown in its map's data, with t
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-22 · derives from D-24 · derives from D-140
-- **Verification:** an agent compares a change with the decision:
-  - complies: a trial in minute 181 and E+181, after a gathering finishing in that minute gives its item
-  - violates: a trial in minute 180, during combat or in a minute ending in completion
+- **Verification:** tests: the chance 0.01 and the cooldown of 180 minutes of Las — głębiej in its
+  data; the first eligible minute 181 after the start of the map run and E+181 after an encounter
+  ending in E; an eligible minute trying its attack inside a longer action and after the effect of
+  an action ending in it, a minute of death or completion trying none; an action still running lost
+  on an attack and a finished one keeping its effect; the attack generator seeded by the map run,
+  advanced by the eligible trials alone and left as it stands by the cooldown, combat, death and
+  completion, so that two programs on one seed meet their first attack in the same minute.
 - **Origin:** none
 
 *Rationale:* Independent trials make a difference of programs a difference of behaviour rather than luck; the full cooldown makes its boundary explicit, at the cost of delaying the next chance until the following minute.
@@ -2995,9 +3206,15 @@ The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „O
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-128 · derives from D-141
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first wolf opening the combat actions and health conditions while the player can edit in the pause
-  - violates: the attack writing „Zawsze → Uderz — patyk” into the program
+- **Verification:** tests: the first wolf attack bringing the wolf, „Uderz — patyk”, „Kopnij”,
+  „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding and pausing the
+  game after the attack minute and before the first turn; the game adding no rule at that attack; a
+  later attack of the known wolf leaving time running. For a later attack in a minute that discovers
+  something else, an agent compares a change with the part no test holds:
+  - complies: an attack of the known wolf in the game minute a finished exploration reveals a new
+    item, the game stopping for that discovery
+  - violates: such a minute running on without the stop because the attacking creature is already
+    known
 - **Origin:** none
 
 *Rationale:* The encounter teaches the player what its counter can use; keeping the program theirs accepts that resuming with no combat rule can kill the character.
@@ -3010,9 +3227,17 @@ The character uses „Uderz — patyk”, which requires a stick in the backpack
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-140
-- **Verification:** an agent compares a change with the decision:
-  - complies: repeated dodges leaving one reduction, and a wolf below 8 health choosing its dodge
-  - violates: a wolf dodge consuming the character’s protection or protecting the wolf from the next strike
+- **Verification:** tests: „Uderz — patyk” needing a stick and dealing 6, „Kopnij” dealing 3 with
+  no item and „Odskocz” setting a reduction of 5 for the next strike, each raised by the bought ranks
+  of its branch; repeated dodges keeping one refreshed reduction, and a strike taking it with its
+  damage floored at zero; the wolf's 24 health, its strike of 7, its rules „Zdrowie poniżej 8 →
+  Odskocz; Zawsze → Uderz” and its dodge giving up its action with no protection. For a creature's
+  dodge and the end of an encounter, an agent compares a change with the part no test holds:
+  - complies: a dodge of the character answered by a dodge of the wolf, the reduction then taking 5
+    off the wolf's next bite; a reduction set in the last turn of an encounter gone at the first bite
+    of the next
+  - violates: a wolf dodge consuming the character’s reduction; a reduction left from one encounter
+    lowering the first bite of the next
 - **Origin:** none
 
 *Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection. The numbers of the actions and of the ranks of their branches are those of the predecessor game, loop, taken as the requirement, except the ranks of the two combat branches „Mocniejszy cios” and „Cięższy kop”, which D-379 sets. Accepted with it: the balance of loop was measured in a different game, so this one can come out easier or harder; with two ranks of the dodge branch the dodge takes the whole strike of the wolf; later tuning is a change of data and tests.
@@ -3025,9 +3250,12 @@ A stick stays in the backpack after a strike, with its condition unchanged, and 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-144
-- **Verification:** an agent compares a change with the decision:
-  - complies: successive strikes keeping the same stick available
-  - violates: a strike consuming or breaking its stick while this decision stands
+- **Verification:** tests: one stick serving every strike of an encounter. For the stick after the
+  encounter and the dressing of wounds, an agent compares a change with the part no test holds:
+  - complies: the stick in the backpack after an encounter fought with it, as it was before, with
+    nothing of it changed
+  - violates: the end of an encounter taking or breaking the stick its strikes used; an action for
+    dressing wounds added to the data while this decision stands
 - **Origin:** none
 
 *Rationale:* The current combat uses the accepted damage values with a reusable stick and natural recovery outside combat; this costs a different balance from one with breakage and healing.
@@ -3040,9 +3268,12 @@ The encounter ends immediately when either side reaches zero health: a creature 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-140 · derives from D-61 · derives from D-136
-- **Verification:** an agent compares a change with the decision:
-  - complies: a lethal first strike stopping the exchange before the character acts, or two surviving sides parting after 40 exchanges
-  - violates: a departed creature counted as a beaten attack or a dead character answering its killer
+- **Verification:** tests: an encounter ending as either side reaches zero health, a creature at
+  zero counting a beaten attack and a character at zero dying of combat in the minute of the turns
+  without answering the lethal strike; 40 turns of at most one action of each side, after which the
+  creature leaves and the attack stays unbeaten; a character with no feasible combat rule giving up
+  its action of the turn; every resolved encounter starting the cooldown again; combat wounds
+  leaving the streak as it stands.
 - **Origin:** none
 
 *Rationale:* Immediate death makes the recorded result reflect the actions actually survived, and a limit ends a duel in which neither side can finish the other; the limit does not save a helpless character from lethal strikes.
@@ -3055,9 +3286,24 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141 · derives from D-338
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them, as one entry of the chronicle at the game minute of the attack; after a reload at a later game minute, that paragraph standing in the chronicle at the game minute of the attack; after a death in that fight the window holding the paragraph in a section of its own and „Ostatnie minuty” the entries of the chronicle other than the paragraph
-  - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack; the paragraph standing in the window inside „Ostatnie minuty”, or in the window only where it is not among the last entries
+- **Verification:** invariants: rule-state-from-pick. tests: the last encounter's facts kept in the
+  map run and its paragraph in `text` standing as one entry of the chronicle at the game minute of
+  the attack, with no entry for an exchange or the end of the encounter and nowhere in the world
+  area, giving the creature's starting health and program before the turns and each action and its
+  outcome in order with the result after them; the paragraph standing through „Wznów”, an edit and a
+  load until the next attack moves it or „Restart” or „Zakończ” removes it, and a completion before
+  the turns keeping the attack description with no outcome; the paragraph in a section of its own in
+  the end-of-run window, outside „Ostatnie minuty”; „Teraz” reading „Walczy z wilkiem” in every
+  minute of an attack, the resolution minute included, death and completion taking precedence, and
+  „Mag zginął w walce” after a death in combat. For the wrapping of the paragraph, the frozen screen
+  and the window after a load, an agent compares a change with the part no test and no invariant
+  holds:
+  - complies: a paragraph longer than the width of the chronicle going on onto further lines; after a
+    death in the fight the paragraph still standing in the chronicle of the frozen screen; after a
+    reload of a game whose map run ended in a death, the window holding the paragraph of the last
+    encounter in its own section
+  - violates: the paragraph cut off on one line; the paragraph gone from the chronicle at a death or a
+    completion; the window after a load leaving out the paragraph the facts of the saved state give
 - **Origin:** none
 
 *Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too: the chronicle lives in the memory of the page and not in the saved game, so after a load it begins with the paragraph of the last encounter, composed from the facts the saved state already holds — the creature, the attack minute and the result — and the entries from before the load are lost. The size of a chronicle is measured, with the chronicle's own code fed with readings every 200 ms at pace 16, on 30 seeds for each variant, one character, in a game that already knew everything, so that no discovery was made in it: a map run of Las with a program of 17 rules went on to game minute 1670 as a median (341 to 1816) and gave a median of 227.5 entries and 16 990 bytes of raw JSON, at most 255 entries and 18 892 bytes, about 75 bytes an entry, and a map run of „Las — głębiej” with a fighting program and supplies from the chest a median of 118 entries and 8 822 bytes, at most 186 entries and 13 853 bytes; the measurement leaves out the player's changes to the copy of the program, discoveries and the paragraph of the last encounter, which the screen composes from the game state, and every map run in it ended in a death, none in a completion. The choice rests on one unmeasured assumption, the rarity of a refresh in the middle of a map run. The window gives the paragraph a section of its own and keeps it out of „Ostatnie minuty”, so the same paragraph does not stand twice in it. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; one more path in the code, with its test; after a load the chronicle holds the entry of the fight without the entries that preceded it; in „Ostatnie minuty” an attack does not stand among the other entries, though the paragraph gives the game minute of the attack. In the minutes of an attack „Teraz” is the inscription alone, with no icon, no number of a rule and no minutes: „Potem” right below it already says by which rule the mage fights, so a second same number would give the player nothing, and the predecessor game's round and number of the combat rule are lost without loss, since this game counts no rounds. The inscription comes from the state of the combat in progress and not from the function that picks the rule a character carries out, so the invariant on what the rows show from that function names it as an exception.
@@ -3070,8 +3316,10 @@ An attacking creature appears in the encounter's text and in the scene, and the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-147 · derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the wolf named in the encounter line and standing in the scene beside the mage through the minutes of the combat, while the terrain keeps its current tiles and character
+- **Verification:** tests: the attacking wolf named in the encounter's text and standing in the
+  scene through the minutes of the combat. For the terrain drawing, an agent compares a change with
+  the part no test holds:
+  - complies: the terrain keeping its current tiles and character through the minutes of the combat
   - violates: a wolf icon added to the character’s tile while this decision stands
 - **Origin:** none
 
@@ -3085,9 +3333,10 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-53
-- **Verification:** an agent compares a change with the decision:
-  - complies: solving Las opening Las — głębiej, which then stands on the list of the screen Mapy with its card for every character
-  - violates: the simulation sending to Las — głębiej before Las is solved; Las — głębiej standing on the list before Las is solved
+- **Verification:** tests: a map whose opener is unsolved absent from the list of the screen Mapy
+  and drawing no card where its address names it, and standing on the list with its card once its
+  opener is solved; the availability of the simulation read from the game's solved maps alone,
+  refusing a send to a map whose opener is unsolved and reaching it once that map is solved.
 - **Origin:** none
 
 *Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the end of the map run that opens a map names the way to it.
@@ -3100,9 +3349,9 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-120 · derives from D-144
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage’s repertoire admitting the discovered combat actions through its three combat skills
-  - violates: „Kopnij” treated as an action that grows no skill
+- **Verification:** tests: „Uderz — patyk” growing „Walka bronią jednoręczną”, „Kopnij” growing
+  „Kopanie” and „Odskocz” growing „Unik przed ciosem”, each of these skills among the elemental
+  mage's predispositions.
 - **Origin:** none
 
 *Rationale:* Combat actions belong to skills like other learned actions, so predispositions govern their availability.
@@ -3115,9 +3364,16 @@ The condition „Zdrowie poniżej” compares the acting side’s current health
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-119 · derives from D-140
-- **Verification:** an agent compares a change with the decision:
-  - complies: a wolf at 6/24 satisfying its own threshold 8, with the character choosing after the wolf’s action
-  - violates: the wolf’s own-health condition reading the character’s health or 25 percent
+- **Verification:** tests: „Zdrowie poniżej” comparing the acting side's health points and
+  „Przeciwnik ma poniżej” its opponent's, strictly below, both from 0 to 100 in steps of 1 with
+  defaults 50 and 10; each side choosing right before its action, the wolf by its ordered data pairs
+  at its own health and the character by the ordered groups, rules and repertoire of its program;
+  outside combat the own-health condition reading the character's health and the opponent-health
+  condition false. For the world conditions in combat, an agent compares a change with the part no
+  test holds:
+  - complies: a rule of „Zapas poniżej” 1 stick and „Kopnij” chosen in a turn while the backpack holds
+    no stick
+  - violates: a world condition read as false in combat, or read of the opponent
 - **Origin:** none
 
 *Rationale:* One meaning for a shared condition lets each side read its own situation; health points keep the wolf’s threshold tied to its wounds, and the explicit actor context costs careful handling.
@@ -3131,6 +3387,9 @@ Players register and sign in with an email address and password. They can start 
 - **Based on:** OWASP Authentication Cheat Sheet, password authentication (https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html, read 2026-10-04) · OWASP Email Validation and Verification Cheat Sheet, establishing control of an address (https://cheatsheetseries.owasp.org/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.html, read 2026-10-04) · OWASP Forgot Password Cheat Sheet, single-use expiring reset links (https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html, read 2026-10-04) · W3C Web Authentication Level 3 (https://www.w3.org/TR/webauthn-3/, read 2026-10-04) · OpenID Connect Core 1.0 (https://openid.net/specs/openid-connect-core-1_0.html, read 2026-10-04)
 - **Relations:** derives from D-202
 - **Verification:** invariants: player-password-login · email-verification-nonblocking · password-reset-verified-email.
+  tests: an address confirmed by the link of its confirmation message becoming the address the
+  reset link is sent to; a password set by the player through the link alone, with no step of the
+  operator, the link refused at its second use.
 - **Origin:** none
 
 *Rationale:* a player can enter without waiting for a message, yet can later recover the account without asking the operator. The recovery link goes only to an address whose control was confirmed earlier. The account server must store password hashes, protect registration and login from abuse, and send email for confirmation and reset; a player who loses the password before confirming the address cannot use this recovery route. The choice is to be looked at again if email delivery repeatedly prevents account recovery or the password method no longer fits the player base.
@@ -3143,7 +3402,8 @@ The account server sends email confirmation and password-reset messages from an 
 - **Scope:** account-server, deployment
 - **Based on:** mikrus-outsider-mail · loop2-app-log-password-reset-mail-events · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
 - **Relations:** derives from D-152
-- **Verification:** invariants: account-email-via-outsider. An agent compares the launch with the decision:
+- **Verification:** invariants: account-email-via-outsider. tests: a message handed to the SMTP server
+  only after a login with the configured login and password. An agent compares the launch with the part no invariant and no test holds:
   - complies: both message types from the intended container reach external inboxes before public self-service account recovery is enabled
   - violates: recovery is enabled after only SMTP connection or relay acceptance succeeds
 - **Origin:** none
@@ -3171,9 +3431,16 @@ A link of an email confirmation message works for 24 hours and a link of a passw
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Email Ownership Verification, Recommendations — "Single-use" · "Time-limited"; read 2026-10-29 · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Introduction — "Single use and expire after an appropriate period."; read 2026-10-29
 - **Relations:** derives from D-152
-- **Verification:** invariants: email-confirmation-link · password-reset-link · password-reset-verified-email. An agent compares a change with the decision:
-  - complies: a resend leaves only its own link of the account working, whether its sending succeeds or fails; a password-reset link still working after a password the server refused
-  - violates: a confirmation link that confirms twice, or still confirms 24 hours after it was recorded; a password-reset link that works longer than one hour; earlier links stopped only after the mail service has accepted the new message; a password-reset link spent when its page opens or when its form is sent, before the new password is written
+- **Verification:** invariants: email-confirmation-link · password-reset-link · password-reset-verified-email.
+  tests: a confirmation link recorded to expire 24 hours after it is recorded and a password-reset
+  link one hour after; a password-reset link spent in the operation that writes the new password and
+  left working when the hashing of the new password fails; no message handed on for a link whose
+  recording failed, and a later message whose sending failed still stopping the earlier link of its
+  kind. An agent compares a change with the part no invariant and no test holds:
+  - complies: the earlier links of the kind stopped by a statement run in the transaction that
+    inserts the new link
+  - violates: the earlier links stopped in a transaction of their own after the new link is
+    committed, so that a fault between the two leaves them working beside the new one
 - **Origin:** none
 
 *Rationale:* a link that works once and for a bounded time limits what an intercepted or forgotten message can do, and only the newest message's link works, so the player knows which one to open. A player who forgot the password holds nothing but the link, so the link lasts until the new password stands. Stopping the earlier links in the transaction that records the new one leaves no moment, a database fault included, in which an earlier link outlives a newer one; a sending that fails leaves no working link, and the player asks for the message again. Whoever opens an older message after a newer one was sent sees that its link no longer works and opens the newest, and whoever does not read the mail within a day asks for the message again. The sources it rests on name a single use and a time limit and give no number of hours, so 24 hours and one hour are the choice made here.
@@ -3186,9 +3453,21 @@ The link of a confirmation message is the configured public origin followed by `
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · samesite-strict-cookie · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-29
 - **Relations:** derives from D-152 · derives from D-104
-- **Verification:** invariants: email-confirmation-link. An agent compares a change with the decision:
-  - complies: the page reads the token from the fragment of its address, sends it in the JSON body of a `POST` and removes the fragment once the server's answer is definitive
-  - violates: a link carrying its token in its path or query; a token kept in clear in the database or written to a log; an address confirmed by the request that opens the link
+- **Verification:** invariants: email-confirmation-link. tests: the link of the message as the
+  configured public origin, `/#confirm-email=` and 43 base64url characters alone on its line; the
+  page sending the token before it checks the session, saying „Potwierdzanie adresu…” meanwhile,
+  then „Adres e-mail potwierdzony.” in `positive` or „Odnośnik jest nieważny albo wygasł.” in
+  `warning`, or the client's sentence of its failure in `warning` with the token kept in the
+  address, as one sentence above the game for a signed-in player and above the form in the card for
+  one who is not; for a signed-in player the confirmation's sentence above Siedziba, the screen the
+  game opens on after a link, whatever the save holds; one and the same refusal for a malformed,
+  unknown, used, expired, other-kind and blocked token; a confirmation stopping the account's other
+  confirmation links. An agent compares a change with the part no invariant and no test holds:
+  - complies: a token drawn from a cryptographically secure source and kept in the database only as
+    the SHA-256 digest of its text; „Potwierdzanie adresu…” in `text-secondary`
+  - violates: a token kept in clear in the database, beside or instead of its digest; a token from a
+    counter, a clock or a source that is not cryptographically secure; the waiting sentence in
+    another role
 - **Origin:** none
 
 *Rationale:* the page confirms with a request of its own, so a mail client or a spam filter that opens a link by itself uses up nothing, and the link works in any browser because it needs no session; the link alone, with no session, then authorizes the confirmation (D-109), and the request meets D-104 with no exception. A navigation from the player's webmail page on another site brings no session cookie, but the page's own requests do, so a signed-in player sees the result above the game. A fragment reaches no server, no request log and no `Referer`, a digest in the database yields no working link to whoever reads it, and one refusal for every bad token tells nothing about which it was. The start of the game page gains one more state.
@@ -3201,9 +3480,7 @@ A signed-in player whose email address is unconfirmed sees in the menu „Konto�
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-152 · derives from D-105
-- **Verification:** an agent compares a change with the decision:
-  - complies: the answer to a registration carries the outcome of its sending, and the menu „Konto” holds that outcome's sentence above „Wyślij ponownie” with no mark on the menu bar
-  - violates: a field of the request for another message that names an address or an account; „Wysłaliśmy odnośnik potwierdzający na <adres>.” after a sending that failed; „Adres e-mail niepotwierdzony.” on a line of its own under the menu bar
+- **Verification:** tests: „Adres e-mail niepotwierdzony.” in `text-secondary` and „Wyślij ponownie” in the open menu „Konto” of an unconfirmed address, neither for a confirmed one nor once the address is confirmed; a request for another message refused without a valid session of an unblocked account, refused with a field naming an address or an account, and sent only to the session account's own address; after registration and after each sending asked for, the sentence of each outcome — „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` naming the address, the sentences of the limit and of the failed sending, and the account client's sentence for any other failure but an address already confirmed, the last three in `warning` — beside „Wyślij ponownie”.
 - **Origin:** none
 
 *Rationale:* the player learns where the message went and can ask for it again without help, and a limit or a failure is said instead of a message that never comes. The first line of the game is no place for a request about an address, which matters only for a reset of a password, so it stands where the account stands. The limit of D-105 covers the sending at registration too, so the sentence after registration can report it. The answer to a registration carries the outcome of its sending, so the browser needs no request of its own to learn it. Accepted with it: that answer waits for the sending, so entering the headquarters is delayed by a few seconds, and by the time limit of the sending when the mail service does not answer; a request for another message is a new route that changes state, guarded by D-104, and the session alone authorizes it (D-109); the shared button reads „Wysyłanie…” while it waits (D-44); and the sentence stands in the closed menu „Konto” with no mark on the menu bar, so a player does not see even „Nie udało się wysłać wiadomości.” before opening „Konto”.
@@ -3216,9 +3493,10 @@ The email confirmation message comes from `loop2@mariusznazar.com` with the disp
 - **Scope:** account-server, deployment
 - **Based on:** none
 - **Relations:** derives from D-153 · derives from D-155
-- **Verification:** an agent compares a change with the decision:
-  - complies: a message composed for one recipient with the fixed sender, display name and subject and a text body with the link on a line of its own
-  - violates: an HTML body beside the text; the recipient's address written into a header other than the recipient's
+- **Verification:** tests: the message from the configured sender, which the Compose file of the game
+  sets to `loop2@mariusznazar.com`, with the display name „loop2”, as plain text with no HTML part,
+  with the subject „Potwierdź adres e-mail w loop2” and the four paragraphs, the link alone on its
+  line.
 - **Origin:** none
 
 *Rationale:* the message says who sent it, why it came, what confirming the address gives the player and what to do if it was not asked for, and the replies of players reach the sender's mailbox, which is worth looking through now and then.
@@ -3247,6 +3525,15 @@ An emailed link of a blocked account, of an email confirmation or of a password-
 - **Based on:** none
 - **Relations:** derives from D-137
 - **Verification:** invariants: email-confirmation-link · unblock-restores-no-link · password-reset-link.
+  tests: the refusal „Odnośnik jest nieważny albo wygasł.” for a confirmation link and a
+  password-reset link of a blocked account, shown in `warning` above the form in the card or above
+  the game; the form of a password-reset link ending as a refused link when the server refuses it
+  for a blocked account; a confirmation link recorded after the unblock working. An agent compares
+  a change with the part no invariant and no test holds:
+  - complies: the player of an unblocked account, signed in again with the address still
+    unconfirmed, finding „Wyślij ponownie” in the menu „Konto” and getting a working link by it
+  - violates: an unblocked account whose unconfirmed address offers no „Wyślij ponownie”, or whose
+    request for another confirmation message is refused because of the past block
 - **Origin:** none
 
 *Rationale:* a block stops what the account can do through its links as it stops its sessions, and unblocking brings back neither. A blocked player learns from a link only that it does not work, and learns why at the next sign-in. Accepted with it: the block has to stop the account's links as well as its sessions, and the check of a link has to read the block, since a link needs no session.
@@ -3272,9 +3559,9 @@ The exemplar for kind `mail-sending` is `src/server/account-mail.ts`, and its ki
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-154
-- **Verification:** an agent compares a change with the decision:
-  - complies: mail-sending guidelines identify the first implementation as exemplar, and a route reads the mailer's result instead of catching its errors
-  - violates: a message composed in a route handler; a mailer that logs the mail service's reply or the message
+- **Verification:** tests: the mailer composing both kinds of account message and handing each to an SMTP server on the loopback address, with no HTTP server and no database; every failure — no STARTTLS, an untrusted certificate, a crafted recipient, a silent server cut at its deadline — returned as `failed`, never thrown; nothing it writes to the console holding the password, the login, a token or a link. An agent compares a change with the part no test holds:
+  - complies: mail-sending guidelines naming `src/server/account-mail.ts` as the exemplar; a new kind of account message composed by a function of that file and handed to the mailer by its route
+  - violates: mail-sending guidelines naming another file as the exemplar; the subject or text of a message composed in a route handler; the mailer reading the database or the request
 - **Origin:** none
 
 *Rationale:* one file that owns composing and submitting keeps the safety of message headers, TLS and the handling of secrets in one place, and the routes read a result instead of SMTP errors.
@@ -3302,9 +3589,16 @@ Programs belong to the player, as one list shared by all characters; a character
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: saved-program-edit · copy-save. An agent compares a change with the decision:
-  - complies: a program edited while a character's earning loop goes on its copy, the earning loop unchanged until its next start; „Restart” after a death carrying on the copy with the unsaved fix the player made in it; a character switched to another program in the middle of a manual map run, the map run going on with the same seed on a fresh copy of that program
-  - violates: a program stored as a field of the character; saving a program that rewrites the copies of characters already out; a save over a changed program refused; „Restart” taking a fresh copy of the program and dropping the copy's unsaved fix
+- **Verification:** invariants: saved-program-edit · copy-save. tests: the programs standing as one
+  list of the game state, from which a character's send or earning loop takes its program, by
+  default the one the character used last; a manual map run and an earning loop carrying out a copy
+  taken at their start, a restart carrying on the copy of the map run it replaces with its unsaved
+  change, and a switch during a manual map run going on at the same seed and minute with a fresh
+  copy of the other program; a change made during a map run going into the copy and reaching the
+  program only by „Zapisz w programie” or „Zapisz jako nowy program”, and dropped by „Porzuć
+  zmiany” or a switch; a save over a program that changed announced and done at once; a program
+  edited and the acts of the list made outside a map run and during one, and a send and a switch
+  taking the program as it then stands.
 - **Origin:** none
 
 *Rationale:* a saved program serves every character. A program carried out live would reset the streaks of characters in an earning loop and move them in the middle of a map run at every fix; locking a program that has copies would close exactly the programs in use, since copies live for hours. Programs are the player's work, not the character's, so a character's death does not touch them. A fix made in the copy during a map run zeroes the streak of that character alone. A fix made after a death and tried by a restart on the same seed is the basic rhythm of tuning a program, so a restart keeps the copy with its unsaved fix; a switch to another program lets the player try another program on the same seed without ending the map run.
@@ -3317,9 +3611,11 @@ Each program of the player carries a number the game gives it when the program i
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” renamed „Las nocą” and „Program” deleted, the copy's program, the program its character used last and a character's pick still naming program 2; a program created after program 3 was deleted taking the number 4
-  - violates: a record naming a program by its name or by its place on the list; a number given again to a program created after a deletion
+- **Verification:** tests: each created program, an appended one included, taking one more than the
+  number the game state gave last, and a deleted program's number never given again; the program
+  the copy belongs to, the program a character used last, the program picked for it, the program
+  entered with last and the program the counts stand beside after „Zakończ” recorded by that
+  number.
 - **Origin:** none
 
 *Rationale:* a rename changes no record that names a program, and a deleted program's number comes to mean no other program, so a record left naming it finds no program. The name a copy keeps once its program is deleted stands in the copy's heading and names no program. Counting up keeps the number out of the simulation's randomness, as it does for characters (D-56). A later change of how programs are told apart would touch every record naming one and, once the game state is saved, saved games.
@@ -3332,14 +3628,17 @@ The screen Programy holds on the left the list of the player's programs and on t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked on the list of Programy showing that program in the editor on the
-    right of the screen, and `#/programy/2` picking it there; during a waiting map run of Las, Programy showing the
-    saved program with „Zmiany tutaj nie dotykają przejścia na mapie Las.” above the editor; on the
-    screen of a map run the select list reading „Kopia w przejściu”, „Program”, „Program 2”
-  - violates: „Kopia w przejściu” on the list of Programy; „Przełącz postać na ten program” on
-    Programy; a list during a map run on which the copy stands below the saved programs; the program
-    panel standing beside Siedziba
+- **Verification:** tests: Programy holding the list of the player's programs and a panel showing
+  the program picked there, by the list or by the address; that program always a saved one, with
+  „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” above the editor while a map run goes on,
+  is paused or has ended and waits, and „Przełącz postać na ten program” on the screen of a map run
+  alone; the program panel of the screen of a map run showing the copy, its select list holding
+  „Kopia w przejściu” at its top and the saved programs below it. For where the list and the editor
+  stand on Programy, an agent compares a change with the part no test holds:
+  - complies: the list of programs in the left column of Programy and the program editor in the
+    right one
+  - violates: the program editor standing on the left of Programy and the list of programs on its
+    right
 - **Origin:** none
 
 *Rationale:* the player writes a program outside a map run on a screen of its own, and during a map run one list reaches both the copy and the saved programs, the copy first as what the map run carries out. An address on Programy always names a saved program. Accepted with it: a fix made on Programy reaches a waiting map run only if the player switches the character, which sets the streak to zero; a saved change of a program does not reach the copy of the map run going on, so editing a saved program touches neither the copy nor the streak nor the counters. Programy keeps two columns, the list and the editor, and the panel of a rule opens in place under its row (D-288), so the editor opens it in one way on both screens; Programy did not lack width when this was chosen (2026-11-08), so opening the panel in place there gains it no width.
@@ -3352,9 +3651,13 @@ The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-91
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Nowy program” adding „Program 2” with the empty rule group „Program” under „Zawsze”; „Usuń” inactive while the list holds one program; „Wciągnij programy z poprzedniego zapisu” standing on the list of a privileged account whose previous save exists
-  - violates: a new program holding no rule group; the one program of the list deleted; a button that duplicates a program; „Wciągnij programy z poprzedniego zapisu” on the list of an account without the privilege or with no previous save
+- **Verification:** tests: the list offering „Nowy program”, „Zmień nazwę” and „Usuń”, and „Wciągnij
+  programy z poprzedniego zapisu” only to an account with the previous-save privilege while its
+  previous save exists; a new program holding one empty rule group „Program” under „Zawsze”; „Usuń”
+  inactive beside a program left alone on the list, and the deletion of the last program refused.
+  For a duplicate of a program, an agent compares a change with the part no test holds:
+  - complies: a variant of „Program” made by saving the copy of a map run as a new program
+  - violates: a button or an act of the game that copies a program into a new one on the list
 - **Origin:** none
 
 *Rationale:* a new program starts as a new game's program does, with a place for its first rule (D-91). A list that keeps one program at least leaves the editor a program to show and a character a program to enter a map with. A variant of a program comes through the copy, saved as a new program. „Wciągnij programy z poprzedniego zapisu” stands with the other acts on the list because it adds programs to the list, and it stands only where it can act (D-401).
@@ -3367,9 +3670,11 @@ Deleting the program the copy of the map run belongs to leaves the map run going
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” deleted during a map run on its copy, the map run going on from the same game minute with „Zapisz jako nowy program” as the one save left; a copy with no edit of its own whose program „Program 2” is deleted standing under „Kopia: Program 2” with „Niezapisane zmiany w kopii.” and „Zapisz jako nowy program” active
-  - violates: the deletion ending the map run; „Usuń” refused for the program of a running copy; „Zapisz w programie” standing with no program to save into; „Zapisz jako nowy program” inactive after the deletion of the copy's program; the heading left with no name after the deletion
+- **Verification:** tests: the deletion of the copy's program leaving the map run going on with the
+  copy, its content and its counts, under a heading that keeps the program's name; „Zapisz w
+  programie” and „Porzuć zmiany” then gone and refused, and the copy counting as holding unsaved
+  changes, with „Niezapisane zmiany w kopii.” standing and „Zapisz jako nowy program” active until
+  the copy is saved as a new program.
 - **Origin:** none
 
 *Rationale:* the copy belongs to the map run, so the map run goes on with it, and a save as a new program keeps the player's work in it, while a save into the program and a discard have no program left to refer to. Once its program is gone, no program of the list holds the copy's content, so the copy counts as unsaved and the one save left can keep it; the heading keeps the name by which the player knew the program.
@@ -3382,9 +3687,11 @@ The program of a new game is named „Program”, and a new program „Program 2
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „ Las nocą ” typed for a rename naming the program „Las nocą”; „program 2” refused while „Program 2” stands on the list, with the message under the name field in `warning`; „Program 3” given to a new program while „Program” and „Program 2” stand; „Las” pulled while „Las” stands appended as „Las (2)”, and as „Las (3)” while „Las (2)” stands too
-  - violates: two programs named „Program 2” on the list; a name of spaces alone taken; a name cut at a length; a pulled program named „Las” while „las” stands; a pulled program replacing the program of its name
+- **Verification:** tests: „Program” for the program of a new game, and „Program 2”, „Program 3” and
+  on for a new program by the first free number, letter case ignored; a typed name trimmed, refused
+  when empty or when another program bears it in any letter case, and taken at any length; a pulled
+  program keeping its name where it is free and otherwise taking „(n)” for the smallest free n from
+  2, counting the programs the same pull appended before it.
 - **Origin:** none
 
 *Rationale:* the player tells programs apart by their names on the select lists of the program panel and of the card of a map, and two names that differ in letter case alone read there as one. A program pulled from the previous save is neither refused for a taken name nor put in place of the program that bears it, so the names stay unique and the player tells the copies apart. Accepted with it: the first program „Program” holds the rule group „Program”, so the panel shows the same word twice.
@@ -3397,9 +3704,12 @@ The player picks the program a character enters a map with on the select list �
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-53
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character that entered Las with „Program 2” showing „Program: Program 2” at it in „Kto idzie” afterwards; a character switched to „Program 3” during its map run showing „Program 3”; a new character showing the program the last character sent entered with; „Program 3” picked at a character and kept through the creation of another character until that character is sent; „Program 2” deleted while it is a character's program used last, the character showing the program with which a character last entered a map
-  - violates: more than one select list of programs at one character in „Kto idzie”; a new character showing the first program of the list after another character entered a map with „Program 2”; a pick at a character lost when the section „Kto idzie” is drawn again
+- **Verification:** tests: the select list „Program:” at each character in „Kto idzie” of the card
+  of a map, holding the player's programs in their order and handing the page the pick; the program
+  it shows, which a send takes, being the first still on the player's list of the program picked for
+  the character, kept until it is sent, the program it used last, the program it was switched to
+  included, the program with which any character last entered a map, and the first program of the
+  list.
 - **Origin:** none
 
 *Rationale:* the player picks the program where the character is sent from, and the program that stands first keeps a character with the program it went with last, so a send repeats the last attempt unless the player picks another. A character switched to another program during a map run used that program last, so the next send offers it.
@@ -3412,9 +3722,15 @@ During a map run the program panel shows the copy under the heading „Kopia: {p
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-39
-- **Verification:** invariants: copy-save. An agent compares a change with the decision:
-  - complies: a program rule added to the copy showing „Niezapisane zmiany w kopii.” in `warning` under „Kopia: Program”, with the three buttons active; „Zapisz jako nowy program” offering „Program 2”, after which the heading reads „Kopia: Program 2” and the list „Program:” at the character in the section „Kto idzie” of the card of a map shows „Program 2”
-  - violates: the three buttons active while the copy is the same as its program; the copy still belonging to „Program” after it was saved as „Program 2”
+- **Verification:** invariants: copy-save. tests: the copy shown under „Kopia: {program name}”;
+  while the copy differs from its program as it was taken from it or last saved into it,
+  „Niezapisane zmiany w kopii.” under the heading and „Zapisz w programie”, „Zapisz jako nowy
+  program” and „Porzuć zmiany” active, and while it is the same, the line gone and the three buttons
+  inactive and their acts refused; „Zapisz jako nowy program” offering the first free name, after
+  which the copy belongs to the new program, which becomes the program the character used last. For
+  the role of the line, an agent compares a change with the part no test and no invariant holds:
+  - complies: „Niezapisane zmiany w kopii.” drawn in the colour of the role `warning`
+  - violates: the line drawn in the colour of plain text or of another role
 - **Origin:** none
 
 *Rationale:* the player sees during a map run what the map run carries out and whether it holds work not yet saved, and the buttons act where there is something to save or to discard. After a save as a new program the copy belongs to the program that holds its content, so the next save and the next discard refer to that program.
@@ -3427,9 +3743,14 @@ While the program the copy belongs to holds changes made since the copy was take
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-39
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program” edited during a map run on its copy, the line standing beside the save buttons, and „Zapisz w programie” saving at the first click with the line gone
-  - violates: a window asking to confirm the save; the save refused while the program holds such changes; the line still standing after the save
+- **Verification:** tests: the line „Program {name} ma zmiany, których nie ma w tej kopii — zapis w
+  programie je zastąpi.” standing while the copy's program holds changes made since the copy was
+  taken from it or last saved into it, with or without unsaved changes of the copy; „Zapisz w
+  programie” then saving at the first click, replacing those changes, and the line gone after it.
+  For where the line stands and its role, an agent compares a change with the part no test holds:
+  - complies: the line standing beside „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć
+    zmiany”, in the colour of the role `warning`
+  - violates: the line standing away from the save buttons, or drawn in the colour of plain text
 - **Origin:** none
 
 *Rationale:* the player can edit a program during a map run, so a save of the copy can replace changes the copy lacks; the line says so before the save, and the save stays one click, as D-164 announces such a save and blocks none. An edit of a saved program during a map run touches neither the copy nor the streak nor the counters. The line names what the save replaces, which holds after „Restart” and after a switch as well, and stands in the role `warning`, which means that something will not be carried out or is not saved. Accepted with it: a longer text, which does not say when the program changed.
@@ -3442,9 +3763,26 @@ On the screens after a character's death and after a completion, editing the cop
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: a fix made in the copy after a death, „Zakończ” asking „Zapisać, odrzucić, wrócić?” under the band of the discovery, „Zapisz” putting the fix into „Program” and opening the screen Postać of that character, and „Program” standing in the panel of Programy as it was saved; the copy of the deleted „Program 2” saved by „Zapisz” as „Program 2” with no name field; „Odrzuć” opening the screen Postać with „Program” as it was; „Zakończ” with no unsaved changes opening the screen Postać at once; „Otwarte: Las — głębiej →” of the window with unsaved changes closing the window and asking in the same band, „Zapisz” then opening the screen Mapy with the card of Las — głębiej, and „Wróć” leaving the window closed with „Koniec przejścia” in the header
-  - violates: the save buttons gone after a completion; „Zakończ” ending the map run at once while the copy holds unsaved changes; the question asked where the copy holds none; „Zapisz” opening a field for a name; „Odrzuć” reaching the program with the copy's unsaved changes; „Wróć” leaving the map run ended; the question standing in the window; the window open again of itself after „Wróć”; „Otwarte: {mapa} →” ending the map run with unsaved changes with no question, or after „Zapisz” opening the screen Postać
+- **Verification:** tests: after a death, editing the copy, „Zapisz w programie”, „Zapisz jako nowy
+  program” and „Porzuć zmiany” acting as during the map run; „Zakończ” and „Otwarte: {mapa} →”
+  ending the map run at once with no unsaved changes, and with unsaved changes — „Zakończ” at any
+  moment of a map run — asking „Zapisać, odrzucić, wrócić?” in the program panel just above the
+  heading of the copy, or where it would stand while the panel shows another program, under the band
+  of a discovery, with „Zapisz”, „Odrzuć” and „Wróć” in that order, „Odrzuć” a destructive button,
+  and the line of D-172 under the sentence where the copy's program holds changes the copy lacks;
+  „Zapisz” saving as „Zapisz w programie” does, or, where the program was deleted, as a new program
+  under the first free name with no name field, „Odrzuć” ending the map run with no save and „Wróć”
+  leaving it as it was; a question a button of the window asks closing the window, which stays
+  closed after „Wróć” until „Koniec przejścia” in the header opens it; the player landing on Postać
+  after „Zakończ” and on Mapy at the card of the opened map after „Otwarte: {mapa} →”, and the
+  program editor then showing the copy's program, or the new program „Zapisz” made. For the screen
+  after a completion and the role of the question's sentence, an agent compares a change with the
+  part no test holds:
+  - complies: a fix made in the copy on the screen after a completion and put into its program by
+    „Zapisz w programie”; the sentence „Zapisać, odrzucić, wrócić?” in the colour of the role
+    `warning`
+  - violates: the save buttons inactive, or the copy closed to editing, on the screen after a
+    completion; the sentence of the question drawn in the colour of plain text
 - **Origin:** none
 
 *Rationale:* the screens after an end show the state that explains it, which is where the player finds the fix, so the copy stays open to editing and saving until the player leaves it. Unsaved changes can be the very rule that won the map, and their silent loss costs far more than one click, so „Zakończ” asks wherever there is something to lose. The question stands just above the heading of the copy it concerns, under the band of a discovery, so it stays at that copy through the map run and after its end, wherever the end buttons stand, and nothing already standing moves but the copy and its rules. The window covers that panel, so it closes while the question stands and stays closed after „Wróć”, and the question remembers which button asked it, since the player lands where that button leads. „Zapisz” keeps the player's work in one click, also where the program was deleted, so a name is no second step, and where the program changed since the copy was taken from it, the line of D-172 says what the save replaces. „Odrzuć” loses work, so it is a destructive button, as every button that can drop work is (D-44). Accepted with it: one more click at every end of a map run holding unsaved changes; a program saved under a name the game chose, which the player changes on Programy with „Zmień nazwę”; the eye going from „Zakończ” to the band in the program panel and, at a pause on a discovery, two bands standing at once, the question one band farther from „Zakończ”; the end out of the player's sight while the question stands and after it, until „Koniec przejścia” in the header opens it; one sentence more in the question in the rare case where the program the copy belongs to holds changes the copy lacks.
@@ -3457,9 +3795,16 @@ During a map run, picking a saved program on the program panel's list opens it f
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Program 2” picked during a map run on the copy of „Program”, the button standing under the list, and its click going on from the same game minute with a fresh copy of „Program 2”, the panel showing „Kopia w przejściu”; after „Zapisz jako nowy program” as „Program 2”, the button standing beside „Program” and gone beside „Program 2”
-  - violates: a pick on the panel's list switching the character; the button standing beside the program the copy belongs to; a question about the copy's unsaved changes before the switch; the button standing on the screen after a death
+- **Verification:** tests: during a map run a saved program picked on the panel's list opened for
+  editing with no switch; „Przełącz postać na ten program” standing while the panel shows a saved
+  program other than the copy's, and gone beside the copy, beside the copy's program, beside the new
+  program after „Zapisz jako nowy program” and after a death; its click switching the character at
+  once to a fresh copy of that program, a copy whose program is gone included, and the panel showing
+  „Kopia w przejściu” again. For where the button stands, an agent compares a change with the part no
+  test holds:
+  - complies: „Przełącz postać na ten program” standing under the list „Program:” of the panel
+  - violates: the button standing in the header of the screen of a map run, or under the program's
+    rules
 - **Origin:** none
 
 *Rationale:* the panel's list opens programs for editing during a map run, so the switch is an act of its own, standing beside the program it switches to. A save as a new program is no switch, so the button stands beside the program the copy was taken from and is gone beside the program the copy now belongs to. A switch takes a fresh copy of the program, so the unsaved changes of the old copy are lost without a question, the line „Niezapisane zmiany w kopii.” having warned of them, and the streak is set to zero (D-131). After a death or a completion the button is gone, because the map run has ended. Accepted with it: two moves, a pick on the list and the button, and one button more in the panel.
@@ -3474,9 +3819,14 @@ spells and pays nothing for them.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a hungry mage whose nature energy stops coming back, spells closing before health falls
-  - violates: a spell that lowers satiety; nature energy at zero taking health
+- **Verification:** tests: each lighting costing the mage 10 nature energy, with „Czysty płomień”
+  too; the energy coming back only in a game minute whose satiety after its fall reaches 60; empty
+  nature energy leaving no lighting feasible and taking no health. For a character without nature
+  energy, an agent compares a change with the part no test holds:
+  - complies: an archetype added to the data with no nature energy, whose characters carry out no
+    „Zapal — ognisko” and no „Zapal — patyk” and pay nothing for them
+  - violates: a character without nature energy carrying out „Zapal — patyk”; a lighting of such a
+    character paid with satiety or health in place of the energy
 - **Origin:** none
 
 *Rationale:* a need hurts when it runs out; nature energy only closes the spells, so it is no third
@@ -3493,11 +3843,13 @@ cap.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-175
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage whose map run ended in death with 20 nature energy starting with 100 both the
-    map run „Restart” starts and the next map run it is sent on
-  - violates: nature energy carried from one map run into the next; „Restart” keeping the nature
-    energy of the game minute of death
+- **Verification:** tests: a map run sent, one started by „Restart” after nature energy was spent,
+  and one sent after „Zakończ”, each starting with nature energy at the cap of 100. For the map
+  runs of an earning loop, an agent compares a change with the part no test holds:
+  - complies: each map run of an earning loop starting with nature energy 100, whatever the map run
+    before it ended with
+  - violates: a map run of an earning loop starting with the nature energy the loop's previous map
+    run ended with
 - **Origin:** none
 
 *Rationale:* nature energy belongs to the map run, as the body does, so every map run starts from
@@ -3517,12 +3869,17 @@ any action of the character not feasible then, and the rule stays in the program
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-175
-- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
-  - complies: a program rule „Zapal — patyk” passed over with 5 nature energy at a price of 10, and
-    the next program rule carried out; „Zapal — ognisko” carried out with 10 nature energy at a
-    price of 10
-  - violates: Płomyk carried out with less nature energy than its price; a program rule of Płomyk
-    taken out of the program for want of nature energy
+- **Verification:** invariants: nature-energy-range. tests: „Zapal — ognisko”, „Zapal — patyk” and
+  „Zapal — ognisko” with „Czysty płomień” feasible with nature energy equal to the price of 10 and
+  not with less; a program passing over its rule „Zapal — patyk” with 5 nature energy to pick the
+  next rule, and picking it with 10. For a program rule of „Zapal — ognisko” passed over and for
+  the rule staying in the program, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: a program rule „Zapal — ognisko” passed over with 5 nature energy and the next
+    program rule carried out, the rule still standing in the program and carried out once the
+    energy has come back to 10
+  - violates: a program rule of Płomyk taken out of the program, or switched off, for want of
+    nature energy
 - **Origin:** none
 
 *Rationale:* a spell the mage cannot pay for is no action of the character to carry out then, so the
@@ -3546,12 +3903,13 @@ from game minute zero, in the role `text` at every value of the energy, zero inc
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-125
-- **Verification:** an agent compares a change with the decision:
-  - complies: the body row in Las with the cells „Temperatura 36,9 °C” with the note „bez ognia 79
-    min”, „Sytość 82 %” with the note „bez jedzenia 86 min”, „Zdrowie 100” and „Energia natury 90”;
-    „Energia natury 0” in the role `text`
-  - violates: „Energia natury 0” in the role `danger`; 89.5 nature energy shown as „Energia natury
-    90”; the energy left out of the body row until „Energia natury poniżej” is discovered
+- **Verification:** tests: the body row ending with „Energia natury {n}”, from game minute zero,
+  before „Energia natury poniżej” is discovered; the energy cut down to a whole number, 89.5 shown
+  as „Energia natury 89”; the energy never in `danger`, at 0, 90 and 100. For the role the energy
+  stands in other than `danger`, an agent compares a change with the part no test holds:
+  - complies: „Energia natury 0” and „Energia natury 100” in the colour of `text`, as „Zdrowie 40”
+    is
+  - violates: „Energia natury” in `warning` or `positive` at some value of the energy
 - **Origin:** none
 
 *Rationale:* the player reads the energy that opens and closes the spells beside the values of the
@@ -3569,9 +3927,10 @@ The trip plan is a field of the program, both its lists are bound at the start o
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-50 · derives from D-64 · derives from D-164
-- **Verification:** invariants: trip-transfer. An agent compares a change with the decision:
-  - complies: an item added to the trip plan during a map run that comes out only from the next map run; a trip plan over the map's cap entering cut, with a notice shown before the start; a character switched to another program in the middle of a map run bringing out at completion what the trip plan of the program it entered with names
-  - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
+- **Verification:** invariants: trip-transfer. tests: the trip plan held as a field of the program,
+  which an edit of the program, a save of the copy and the detection of a change over the program
+  include; a map's own cap down to zero, on entry and on exit; a trip plan over the map's entry cap
+  entering the map cut, the player told so beforehand on the card of the map and beside „Restart”.
 - **Origin:** none
 
 *Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since the simulation lets the trip plan of the copy change without breaking the streak (D-131), and a switch to another program brings another trip plan, which the snapshot does not follow; the shield stands in the simulation and at the switch, because the screen of a map run gives no edit of the trip plan (D-180). The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
@@ -3584,9 +3943,17 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-166 · derives from D-173 · derives from D-179
-- **Verification:** an agent compares a change with the decision:
-  - complies: the card of Las showing, at a character whose chosen program takes patyk 6 and jagoda 4 in its take list, what of them enters
-  - violates: the card of a map showing the take list as the program asks it, with no account of what the map and the character let in
+- **Verification:** tests: the section „Plan wyprawy” on Programy between the program's name and
+  its rules, folded to a line of each position's item icon and count with „Zabierz” and „Wynieś”,
+  and unfolding to the two lists; each position's item select list, number field, buttons that move
+  it up and down and „Usuń”, and a button that adds an item to each list; the line „Wejdzie: …” at
+  each character on the card of a map, giving what of the plan enters. For the texts of the move
+  buttons and the text and place of the add button, an agent compares a change with the part no
+  test holds:
+  - complies: the move buttons of a position reading „↑” and „↓”, and „Dodaj przedmiot” standing
+    below the last position of each list
+  - violates: „Dodaj przedmiot” standing above its list, or the move buttons of a position reading
+    words in place of „↑” and „↓”
 - **Origin:** none
 
 *Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. The card of a map shows at each character what of the plan enters, and shows it always, also when the whole plan enters, so that a player with a full chest sees what will enter. Accepted with it: the plan of the copy is not changed during a map run, and one more line „Wejdzie: …” at each character on the card.
@@ -3599,7 +3966,18 @@ The game accepts an item once on each trip list, and the same item can stand on 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-120 · derives from D-179
-- **Verification:** none
+- **Verification:** tests: an item accepted once on each trip list, the select lists of a list
+  offering, beside a position's own item, only the items the list does not hold, and the same item
+  standing on both lists; a count accepted as a whole number from 1 up to 9007199254740991, a large
+  count below that bound included, and a zero, a negative number, a fraction, a number beyond the
+  safe integers and text refused; an invalid entry committing nothing, the previous count kept,
+  the entry staying in the field and „Wpisz liczbę całkowitą od 1.” standing under it until a valid
+  count is entered. For the role of the field and its message, an agent compares a change with the
+  part no test holds:
+  - complies: the frame of the field and the message „Wpisz liczbę całkowitą od 1.” in the role
+    `warning` while the entry is invalid
+  - violates: the message of an invalid count in `text-secondary`, or the frame of the field in its
+    usual role while the message stands
 - **Origin:** none
 
 *Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds. A count beyond the safe integers would make the load of the saved game state refuse it whole, so the game never takes one. The item select list of a position offers the items of the Understanding, since the trip plan is a part of the program and what the program editor offers is tied to the Understanding (D-119); an item already on a list is not offered again by the select lists of that list, and stands on the other list as well. That an item stands at most once on a list and that a count is a whole number from 1 up are what the tests of the predecessor game held. Accepted with it: a plan cannot be arranged before the first item is discovered, when the chest is empty anyway, and the field shows an invalid entry beside the count the game goes on holding.
@@ -3612,7 +3990,10 @@ The program of a new game and a newly created program have both trip lists empty
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-91 · derives from D-167 · derives from D-179
-- **Verification:** none
+- **Verification:** tests: a newly created program with both trip lists empty. For the program of a
+  new game, an agent compares a change with the part no test holds:
+  - complies: the program of a new game showing „Plan wyprawy: pusty” on Programy
+  - violates: a new game whose program takes sticks or berries on its take list
 - **Origin:** none
 
 *Rationale:* The first plan belongs to the player, and before an item is discovered the chest is empty as well; the tests of the predecessor game held an empty plan for a fresh game. Accepted with it: before the first item is discovered the plan cannot be arranged at all.
@@ -3638,7 +4019,9 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-50
-- **Verification:** none
+- **Verification:** tests: the chest section heading as „Skrzynka {pieces}/{cap}”, the pieces of all
+  items together over the chest's cap, and for an empty chest „Skrzynka 0/60” above „Skrzynka jest
+  pusta.”.
 - **Origin:** none
 
 *Rationale:* The shared space is visible where the player prepares the next attempt; the heading changes with its contents. It reads like the heading of the backpack, „Plecak {pieces}/{cap}”, since the chest has a cap on the total count of pieces by the same rule of capacity as the backpack. Accepted with it: the heading changes with every change of the chest's contents.
@@ -3651,7 +4034,14 @@ After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzyn
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-179 · derives from D-368
-- **Verification:** none
+- **Verification:** tests: after a completion the line „Do skrzynki: {item} {count}, …”, or „Do
+  skrzynki nic nie trafiło.” for an empty transfer, in `text-secondary`, as the transfer stood at
+  the completion whatever later edits of the copy, in the section of the end-of-run window saying
+  what the end gave, after a reload of the screen too. For how long the line stands, an agent
+  compares a change with the part no test holds:
+  - complies: the line gone once „Restart” starts the next map run or „Zakończ” ends the map run
+  - violates: the line of the last completion still standing on the screen of the map run that
+    „Restart” started
 - **Origin:** none
 
 *Rationale:* The transfer remains readable with the final state, among what the map run gave rather than as the first word after a win.
@@ -3664,7 +4054,14 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-179
-- **Verification:** none
+- **Verification:** tests: during a map run the line „Wyniesie: {item} {count}, …” below the
+  backpack, giving what completion would put in the chest from the frozen bring list, clipped by
+  the backpack, the free room in the chest and the map's exit cap, whatever later change of the
+  copy's bring list; the line standing when the snapshot lists something or differs from the copy's
+  bring list, reading „Wyniesie: nic” when that transfer is empty, and gone after a death and after
+  a completion. For the role of the line, an agent compares a change with the part no test holds:
+  - complies: „Wyniesie: patyk 3” in `text-secondary` below the backpack
+  - violates: the line in `text`, the role of the practice record beside it
 - **Origin:** none
 
 *Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives a part of what a panel showing clearly which trip plan is in force in the map run going on would give. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the character is switched to another program, whose bring list differs from the snapshot, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
@@ -3677,7 +4074,9 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-64 · derives from D-179
-- **Verification:** invariants: trip-transfer.
+- **Verification:** invariants: trip-transfer. tests: a map's two caps, one for entry and one for
+  exit, each from zero up, set one apart from the other or left unset; gathering during the run
+  bounded by the character's carrying capacity whatever the caps.
 - **Origin:** none
 
 *Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset. Two fields, each of which may be unset, are the predecessor game's shape, and the map's cap acts at the boundaries of the map run, at entry and at completion, without stopping gathering, since the backpack's cap is the character's carrying capacity (D-64). Accepted with it: code, tests and a message that the player does not see while no current map sets a cap, the cost for which D-136 rejects a kind of solving condition no map asks for; and two cuts to check by tests instead of one.
@@ -3690,7 +4089,14 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-170 · derives from D-179 · derives from D-187
-- **Verification:** none
+- **Verification:** tests: the line „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n}
+  sztuk.” at a character on the card of a map and, for the current copy and map, on the screen of
+  a map run beside „Restart”, standing when the map's entry cap is below the smaller of the take
+  list's requested total and the character's carrying capacity, whatever the chest holds, and
+  absent when the carrying capacity alone clips the plan or the plan fits. For the role of the
+  line, an agent compares a change with the part no test holds:
+  - complies: the line in `warning` on the card of a map and beside „Restart”
+  - violates: the line in `text-secondary` or in `danger`
 - **Origin:** none
 
 *Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places. A „Restart” is a map run, and a map run begins with entering the map, so the plan of the copy over the map's cap enters cut at a „Restart” and the player has to learn of it beforehand. The line compares the entry cap with the smaller of the take list's total and the carrying capacity, so it speaks of the map only when the map cuts the plan and not the backpack; when carrying capacity alone cuts it, the backpack already shows its cap as „Plecak {pieces}/{cap}”.
@@ -3703,9 +4109,16 @@ A manual map run that first solves its map pays practice and loot once per map f
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · derives from D-239
-- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. An agent compares a change with the decision:
-  - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
-  - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. tests: a manual
+  map run that first solves its map paying practice to the character's skills and loot to the
+  chest; a death paying no practice, on a manual map run and on a map run of an earning loop;
+  practice an earning loop earns gathered at the loop, at a completion too, and added to the
+  character skills by „Odbierz”, all of it with the map run going on included, the map run, its
+  backpack, the earning loop and the chest left as they were, and by the stop of the earning loop,
+  the practice of the map run stopped before its completion included and that of a map run ended
+  in death left out; a manual map run of a solved map taking its equipment from nowhere, cut only
+  by the character's carrying capacity and the map's entry cap, and the mark under „Wejdź” at a
+  solved map where that cut equipment is more than the chest holds.
 - **Origin:** none
 
 *Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
@@ -3718,9 +4131,20 @@ A character's death takes what it carried and pays nothing of its map run; when 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · narrows D-189
-- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once · catch-up-death-moment. An agent compares a change with the decision:
-  - complies: a character dying without a resurrection ready coming back with empty trees, its archetype and its place in the team unchanged; a death with a resurrection ready in an earning loop using it up, the map run paying nothing, the practice gathered at the earning loop staying and the next map run starting at once; a death with none stopping the earning loop and taking the practice gathered at it; a character created while the resurrection is used up finding it used up; the death of a second character while the first one's death has used it up taking everything of the second; a character with no practice and no practice gathered at its earning loop dying with the resurrection ready, or not, and leaving the resurrection, its generation number and its earning loop as they were; the first completion of Las making a used-up resurrection ready and its second completion by a restart making none
-  - violates: a death that clears the chest; a manual map run on which death takes nothing; some of the loot kept from a map run ending in death; a death with no resurrection ready paying the practice gathered at the earning loop into the character skills; a new character bringing a ready resurrection of its own; the death of a character with no practice using the resurrection up, raising the generation number or stopping its earning loop; a completion of a map the account has solved renewing the resurrection
+- **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once ·
+  catch-up-death-moment. tests: a death taking what was carried and paying nothing of its map run,
+  a resurrection ready or not and on a solved map too; with none ready, all practice, the practice
+  gathered at the earning loop included, every rank bought and one more generation taken, the
+  name, archetype, traits and place in the team kept, and the earning loop stopped; the death of a
+  character with no practice in any skill, no rank bought and none gathered at its earning loop
+  taking nothing more and leaving its generation, the resurrection and its earning loop as they
+  were; the programs, the chest, the Understanding and the solved maps surviving every death, the
+  map run on the screen kept as it was, and a „Restart” after a death with none ready starting from
+  the character as the death left it; one resurrection for the team, used up by the death of any
+  character with practice while ready, in a manual map run, an earning loop and a catch-up alike,
+  a character created while it is used up bringing none, its renewal 480 real minutes in the
+  balance data, a ready one staying ready at a first completion, and a second solving of a map
+  renewing nothing.
 - **Origin:** none
 
 *Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice leaves every character without it until it is renewed. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would leave the whole team without the resurrection for the span of its renewal, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death without a resurrection ready takes it, so a new character that has gathered practice at its loop is guarded. The renewal at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map renews the resurrection at most once, and a ready resurrection gains nothing from it. Accepted with it: each new map gives the account one protection for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes it from the others; the catch-up gives it to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
@@ -3733,9 +4157,15 @@ A character skill grows by practice, which counts only its actions that ended in
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: gathering that adds practice only when an item is gained; a level computed from saved practice
-  - violates: a shop selling a level of a character skill; a missed gathering that adds practice; a second counter inside one character skill
+- **Verification:** tests: practice counting only the actions that ended in effect; a character
+  skill held as one practice counter, on one curve of thresholds, and the ranks of its branches
+  bought, a saved character skill holding any other key refused, and its level, its free points and
+  the effects of its ranks computed from these two; each level giving one point, the next level
+  needing more practice than the one before, and the points of a tree buying ranks of its own
+  branches at prices that differ between branches. For a character skill never being bought, an
+  agent compares a change with the part no test holds:
+  - complies: a level of a character skill reached only through the practice of its actions
+  - violates: a shop selling a level of a character skill, or practice in it
 - **Origin:** none
 
 *Rationale:* buying is shallow — one easy map run nearly pays for a character skill, which makes learning a coupon. Practice ties growth to what the program actually does, so choosing a program is choosing what grows, and the program is not only the solution of a map but an investment in a character. Prices differ between branches, or an extra piece gathered would always beat a percentage of chance. Two counters inside one character skill would quietly speed up the whole economy, so a finer split makes a new character skill. Accepted with it: practice grows only what the program uses, and a program uses what is already best, so the weaker character skills tend to stay at the first level, and the finer character skills are split, the more of them stand so; only places where the stronger option is absent, or does not count toward the goal, can answer that, and where there are none, a finer split makes empty trees.
@@ -3748,9 +4178,13 @@ A character is described by traits, character skills and the predispositions of 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: carrying capacity as a trait; accuracy with a one-handed weapon as a branch of that weapon's tree
-  - violates: a "strength" trait that raises the damage of one weapon
+- **Verification:** tests: a created character holding its archetype, its traits and its character
+  skills, its traits holding carrying capacity alone. For a number that acts in one action belonging
+  to the tree of that action's character skill, an agent compares a change with the part no test
+  holds:
+  - complies: accuracy with a one-handed weapon added as a branch of that weapon's tree
+  - violates: a number that acts only in eating held at the archetype or at the action „Zjedz”
+    rather than as a branch of the tree of „Jedzenie”
 - **Origin:** none
 
 *Rationale:* numbers and what a character can say in a program are not alternatives: they are three roles. A trait acts always, so it may be a number without becoming a slider, provided it grows only where the challenge grows with it. A predisposition sets characters apart by access rather than size, so two characters with the same numbers and other predispositions need two different programs, neither better; that is the mechanism a second archetype, and a branching of archetypes, would require.
@@ -3763,9 +4197,15 @@ An action ending in effect adds one practice to the character skill its pair of 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a patrol bringing several pieces and adding one practice; eating a berry at full satiety adding one practice
-  - violates: a dodge with no strike adding practice; practice for each tile a scout reveals
+- **Verification:** tests: one practice added in the game minute of the effect of an exploration,
+  also of a scout revealing seven tiles, of a gathering, also of two pieces, of „Obchód”, of a
+  crafting, a feeding, a lighting of a campfire and of a stick, of eating, also at full satiety,
+  and of each blow with a stick, the blows of a combat added in the game minute it resolves, and of
+  each dodge that removes damage from a strike; none for a gathering that misses, an action with no
+  effect, or a dodge that no strike follows. For the practice of a kick, an agent compares a change
+  with the part no test holds:
+  - complies: a kick that deals damage adding one practice to „Kopanie” in the turn it lands
+  - violates: a kick adding one practice for each point of damage it deals
 - **Origin:** none
 
 *Rationale:* The counter measures successful actions, not their quantity, so an action bringing several pieces or tiles, as „Obchód” and „Zwiad” do, adds one practice, and a gathering whose piece did not get into the backpack adds none. The effect is counted case by case in the game minute in which the action gives it; the cases follow the tests of the predecessor game. Accepted with it: eating at full satiety can grow eating, at the cost of berries, so a program can grind eating by paying with berries.
@@ -3778,9 +4218,13 @@ A manual map run holds the practice it gathers separately by character skill and
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-189 · derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first manual completion of a map paying its practice in the completion minute; a second manual completion leaving its practice with the run; restart before completion paying nothing
-  - violates: practice reaching the character during an unfinished run; a second character's manual completion of a solved map paying practice; „Zakończ” paying a completed run a second time
+- **Verification:** tests: the practice of a manual map run held at the run by character skill and
+  paid whole to the character that made it, and to no other, in the game minute of the completion,
+  and not again after it or at „Zakończ”; a manual run of a solved map keeping its practice with the
+  run; „Restart” and „Zakończ” before completion leaving the character's practice as it was. For the
+  ranks bought after a map run cut short, an agent compares a change with the part no test holds:
+  - complies: „Restart” before completion leaving the ranks the character bought as they were
+  - violates: „Zakończ” before completion taking from the character a rank it bought
 - **Origin:** none
 
 *Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189).
@@ -3793,9 +4237,12 @@ A character skill tree with all its branches enters the Understanding in the gam
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-122
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first discovery of gathering also revealing its tree and „Obchód”
-  - violates: a tree becoming known only on its first purchase; an unnamed tree in the band of a discovery
+- **Verification:** tests: the tree of a character skill entering the Understanding in the game
+  minute that discovers the first action it grows, the gathering tree together with „Obchód”, and
+  the tree of Eksploracja, whose first action the Understanding holds from the start, with the first
+  finished exploration, in the simulation and in the data of the trees and actions; the band of a
+  discovery naming each tree beside the actions and items, followed by the sentence of the
+  conditions.
 - **Origin:** none
 
 *Rationale:* Discovery tells the player what the action can grow before the first point is earned. The trees come up by the gate the skills panel of the predecessor game used: the branches show once the player knows an action the skill grows. A tree whose first action the Understanding holds from the start comes up instead with the first finished action of that skill, since the Understanding holds from the start only the condition „Zawsze” and the action „Eksploruj”, and every branch enters it only when discovered in play (D-118). Accepted with it: longer bands of a discovery at the first discoveries, and known actions that no character can yet carry out.
@@ -3808,9 +4255,18 @@ Outside a map run the program editor offers the repertoire computed from the Und
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Obchód” offered in both editors during the run of its buyer and, outside a run, standing greyed and not to be picked with „wybierzesz w przejściu postaci, która ją kupiła”; „Obchód” still offered in the editor of Programy after its buyer's death, until „Restart” or „Zakończ”
-  - violates: a branch bought by any teammate opening that action in the editor of Programy outside a map run; the editor of Programy turning to the archetype's offer when the player leaves the screen of a manual map run or when that map run ends
+- **Verification:** tests: outside a map run, the editor's offer computed from the Understanding, a
+  branch its buyer bought opening no action in it, and „Obchód” standing in the editor of Programy
+  as not to be picked; during a map run, the pick of the program editor offering the actions of the
+  branches bought by the map run's character alone, and the editor of Programy doing so also while
+  the map run waits in a pause and after its character's death, until „Zakończ”. For the copy
+  editor of a map run that waits in a pause or has ended, a map run ended by its completion, and the
+  archetype's predispositions narrowing the offer outside a map run, an agent compares a change with
+  the part no test holds:
+  - complies: „Obchód” offered in the copy editor of a paused map run of its buyer, and in the editor
+    of Programy after that map run's completion until „Restart” or „Zakończ”
+  - violates: the copy editor of an ended map run turning to the archetype's offer; an action whose
+    character skill the archetype does not predispose offered outside a map run
 - **Origin:** none
 
 *Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands; the code already took the repertoire of the character in the map run for as long as the map run stood in the game state. A character without the branch passes over a rule with „Obchód” and the rule stays in the program (D-126). Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress (D-131), whereas editing a saved program prepares the next send, and a rule with „Obchód” can be written without losing the streak at game minute zero or in a saved program edited during a map run, which acts from the next entry onto a map other than a „Restart”; a fix made in the editor of Programy does not reach a waiting map run unless the player switches the character to that program, which sets the streak to zero; and the player sees in the Understanding an action that no character yet can carry out.
@@ -3823,9 +4279,10 @@ The gathering tree has the branch „Obchód”, which opens „Obchód — {zas
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-64
-- **Verification:** an agent compares a change with the decision:
-  - complies: a patrol taking the six pieces left on its tile when the batch is twelve; a full-hand gather taking the last single piece
-  - violates: requiring a full batch before patrol can start; taking missing pieces from neighbouring tiles
+- **Verification:** tests: „Obchód” of the gathering tree bringing, with no draw, a batch of the
+  chosen resource from the current tile up to the batch of the data, the tile's stock and the room
+  left in the backpack; „Pełna garść” taking no more pieces than the tile holds or the backpack
+  takes.
 - **Origin:** none
 
 *Rationale:* A guaranteed batch changes how the program gathers, and the branch is one of the branches with a new mechanic that the trees take, a mechanic more in the code and the tests. Like „Zbierz”, „Obchód” is feasible when the tile has at least one piece of the resource and the backpack is not full. Accepted with it: the full action time can bring a smaller batch from a depleted tile, and the last gathering on a tile gives less than the description of „Pełna garść” says; on berries, moss and fibre „Obchód” brings at most 8 or 6 pieces for 40 minutes, since that is what a tile holds, and a tile emptied by gathering is full again only after five to six game hours.
@@ -3838,9 +4295,10 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a scout revealing a new neighbour’s item in the same discovery pause
-  - violates: scouting from an already revealed current tile; one practice for every neighbour
+- **Verification:** tests: with „Zwiad”, an exploration revealing the current tile and its six
+  neighbours in one game minute, and no exploration feasible once the current tile is revealed; the
+  items of a neighbour so revealed entering the Understanding in the pause of that minute's
+  discovery.
 - **Origin:** none
 
 *Rationale:* Scouting changes the exploration program’s reach, and it is one of the branches with a new mechanic that the trees take, a mechanic more in the code and the tests. Accepted with it: it can reveal much of the small map quickly, Las of 4 × 4 tiles several times faster.
@@ -3853,9 +4311,16 @@ The screen Postać shows „Umiejętności” after a tree is known, with a row 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a fully bought numerical branch showing its current value with a disabled „Kup”; the whole section absent before any tree is known
-  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch; „Umiejętności” drawn on Siedziba
+- **Verification:** tests: the section absent before a tree is known, then holding a row for each
+  known tree, in the words of a row before and after its last threshold; each branch's name, rank
+  and maximum rank and description, „teraz → po kupnie · cena” for a numerical branch, the price
+  alone for „Zwiad”, and „Kup” disabled for too few points and for a full branch; a full branch
+  keeping its present value alone. For the heading of the section, and the price alone of „Obchód”
+  and „Czysty płomień”, an agent compares a change with the part no test holds:
+  - complies: the section headed „Umiejętności”; „Obchód” at rank 0 reading its description and
+    „cena 3” with no before-and-after values
+  - violates: the section standing with no heading „Umiejętności”; „false → true” beside „Czysty
+    płomień”
 - **Origin:** none
 
 *Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees, so a new character in a new game does not announce that it will develop skills; the preview „teraz → po kupnie” needs the value of every kind of effect written in the data; for a branch without a number the player reads what it gives from its description alone; and the row of a fully bought branch is shorter than the others.
@@ -3868,9 +4333,16 @@ The player buys a branch rank with „Kup” on the screen Postać outside a man
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run; „Kup” inactive on the screen Postać after a character's death until „Restart” or „Zakończ”
-  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on; „Kup” active while the screen after a completion waits for „Restart” or „Zakończ”
+- **Verification:** tests: a rank bought with „Kup” on the screen Postać, and saved; „Kup” and the
+  purchase refused while a manual map run goes on, waits in a pause or has ended in death or
+  completion; „Kup” active at a character in an earning loop; the rank acting from that character's
+  next map run, the next map run of its earning loop included, while the map run going on, and one
+  ended in a death that took the character's skills, keeps the skills of its start. For no purchase
+  in the map-run view and no undo of a purchase, an agent compares a change with the part no test
+  holds:
+  - complies: the screen of a map run holding no „Kup”; a rank bought staying bought
+  - violates: a „Kup” beside the program of a map run; a button on the screen Postać that takes a
+    bought rank back and returns its points
 - **Origin:** none
 
 *Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts; in the predecessor game's test a purchase touched neither the map run nor the program. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
@@ -3883,9 +4355,14 @@ Below the body row the map-run view shows a line in the role `text`, „Wprawa w
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-194
-- **Verification:** an agent compares a change with the decision:
-  - complies: the same positive practice line retained after death, although the run pays nothing
-  - violates: zero-valued skills in the line; hiding the line immediately on completion
+- **Verification:** tests: the words of the line, listing the skills with positive practice of the
+  run, below the body row of the map-run view, also after a death; no line for a run with no
+  positive practice, and no zero-valued skill in it. For the role `text` of the line and the line
+  staying after a completion until „Restart” or „Zakończ”, an agent compares a change with the part
+  no test holds:
+  - complies: the same positive practice line, in the role `text`, standing after a completion
+    until „Zakończ”
+  - violates: hiding the line immediately on completion; the line drawn in `text-secondary`
 - **Origin:** none
 
 *Rationale:* The player can see what the run grows and what it gathered before its end. The screens after a death and after a completion stand on the state of the minute of the end (D-62, D-132) and show the state that explains it (D-173), so the line stays in the wording of the last minute. Accepted with it: another line on the screen of a map run; the line does not itself distinguish paid practice from practice lost on death, and shows after a death practice the character will not get, and after a completion does not say outright that the practice entered the character, or that a „Zakończ” before completion loses it.
@@ -3901,6 +4378,10 @@ using the game.
 - **Based on:** none
 - **Relations:** derives from D-07
 - **Verification:** invariants: player-self-registration · player-save-isolation · blocked-account-access.
+  tests: a visitor's registration answered with the account and a session of the browser, also
+  whatever its confirmation message did, and the page entering the game at once; the operator's
+  command blocking an account by its address, and a block through a second connection making the
+  account's next save store nothing.
 - **Origin:** none
 
 *Rationale:* open registration lets players enter without the operator creating or approving each
@@ -3941,12 +4422,14 @@ whose body holds the version of the shape, the revision the browser last saw and
 - **Scope:** browser-view, account-server
 - **Based on:** HTTP Semantics, request and response model (https://www.rfc-editor.org/rfc/rfc9110.html, read 2026-10-04) · JSON data interchange format (https://www.rfc-editor.org/rfc/rfc8259.html, read 2026-10-04) · Fetch Standard, browser request API (https://fetch.spec.whatwg.org/, read 2026-10-04) · GraphQL September 2025 specification, schema and operations (https://spec.graphql.org/September2025/, read 2026-10-04) · WebSocket Protocol, persistent bidirectional connection (https://www.rfc-editor.org/rfc/rfc6455.html, read 2026-10-04)
 - **Relations:** derives from D-07 · derives from D-108
-- **Verification:** invariants: saved-state-http-exchange. For the public HTTPS endpoint and the
-  answer of an account with no saved game state, an agent compares the change with the decision:
-  - complies: the browser loads the game and exchanges saved states through an HTTPS address; an
-    account with no saved game state answered with a success that says so
-  - violates: a deployed game sends saved states to an HTTP address visible to the browser; an
-    account with no saved game state answered with 404
+- **Verification:** invariants: saved-state-http-exchange. tests: `GET /api/saved-game` answering
+  `null` for an account with none and otherwise the saved game state with its version and revision,
+  and `PUT /api/saved-game` taking the version, the basis and the game, on the server and in the
+  browser's client, which sends the load with no body and the save with exactly those three fields.
+  An agent compares a change with the part no invariant and no test holds, the public HTTPS
+  endpoint:
+  - complies: the browser loads the game and exchanges saved states through an HTTPS address
+  - violates: a deployed game sends saved states to an HTTP address visible to the browser
 - **Origin:** none
 
 *Rationale:* the browser computes the game and only needs to load and submit a whole save.
@@ -3972,7 +4455,10 @@ layer.
 - **Scope:** account-server, deployment
 - **Based on:** loop2-app-log-sqlite-busy-lines · SQLite documentation, appropriate for an application-specific server and one writer at a time (https://www.sqlite.org/whentouse.html, read 2026-10-04) · SQLite documentation, risks of a database file on a network filesystem (https://www.sqlite.org/useovernet.html, read 2026-10-04) · Docker documentation, volumes persist beyond a container's lifecycle (https://docs.docker.com/engine/storage/volumes/, read 2026-10-04) · PostgreSQL 18 documentation, separate server process (https://www.postgresql.org/docs/18/tutorial-arch.html, read 2026-10-04) · MongoDB documentation, 16 MiB document limit (https://www.mongodb.com/docs/manual/core/document/, read 2026-10-04)
 - **Relations:** derives from D-07
-- **Verification:** invariants: account-save-sqlite-store · account-save-durable-storage.
+- **Verification:** invariants: account-save-sqlite-store · account-save-durable-storage. tests: an
+  account written through the server's database code kept in the SQLite file across reopening; an
+  account and its session outliving the replacement of the application container, on the volume and
+  at the database path `compose.yaml` gives.
 - **Origin:** none
 
 *Rationale:* SQLite lets the one account and save server hold accounts and whole saved game states
@@ -4001,13 +4487,14 @@ whose character names an archetype missing from the data is also discarded whole
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: save-version. For the version written and the missing archetype, an
-  agent compares the change with the decision:
-  - complies: every saved game state written with the game's current version number; a saved game
-    state of another version discarded whole as a game, even when its programs remain compatible,
-    and its programs reaching the game only by the pull of an account with the privilege (D-401)
-  - violates: a saved game state of another version loading its programs when the game loads; a
-    saved game state with a missing archetype loaded with that archetype replaced by another
+- **Verification:** invariants: save-version. tests: the saved document the game writes carrying
+  the current version, and a document of the current version, also as the server hands it back,
+  loading whole into the state it describes; a refused save of another version, also one loaded
+  after a conflict, starting a new game that is saved at once; the server moving into the previous
+  slot the save that a save of a higher version replaces; the programs of a previous save of each
+  version read one by one, a program the check refuses skipped, and the pull appending the others;
+  a document whose character names an archetype missing from the data refused whole, and starting
+  a new game.
 - **Origin:** none
 
 *Rationale:* loading a saved game state whose shape the game no longer describes gives faults that
@@ -4052,20 +4539,25 @@ as refused as too large (D-208).
 - **Scope:** browser-view
 - **Based on:** visibilitychange-hidden-last-event · fetch-keepalive-body-quota
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: an edit of a program rule followed at once by a save request; „Kup” of a branch rank
-    on the screen Postać followed at once by a save request; a map run passing at 16×
-    saved once every 30 real seconds; a tab hidden in the middle of a map run sending its latest
-    game state as a `keepalive` request; a tab that has just loaded a saved game state with its map
-    run paused and no earning loop passing sending nothing until the player acts in it; earning
-    loops passing with no manual map run sending nothing on the 30-second rhythm; a catch-up that
-    ended several map runs of earning loops followed by one save request; a catch-up that ended none
-    sending nothing until the page becomes hidden or the player acts
-  - violates: a button „Zapisz” for the game state; a rhythm of saving counted in game minutes; two
-    save requests of one tab in flight at once; a save body over 64 KiB sent with `keepalive`; a
-    save every 30 real seconds while earning loops alone pass; a save for each map run a catch-up
-    ended; a new save time counted as a change, so a loaded paused tab with nothing passing sends at
-    the hidden page
+- **Verification:** tests: the game state saved at once after each act of the player that changes
+  it — an edit of a program, of the copy and of a trip plan, the acts of the list of programs and
+  the pull of a previous save's programs, creating a character, sending one, „Puść w pętlę”,
+  „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a
+  pause, the one of leaving the screen of a map run included, and a pace — and an act that changes
+  nothing sending nothing; a manual map run that ends at a reading, in a death included, saved at
+  once, and a reading that changes the state without ending one sending nothing; one save for a
+  catch-up whose result ended map runs of earning loops; a save every 30 real seconds only while a
+  manual map run passes, and one at the hidden page; the 30-second rhythm and the hidden page
+  sending nothing where nothing changed since the save last sent, a loaded paused game and a new
+  save time included; one save request in flight, a moment of saving during it sent once after its
+  answer, except during the save before a logout that goes on; each save handed to `fetch` with
+  `keepalive`; a body of 65 536 bytes sent whole, and a larger one never sent and counted as
+  refused as too large. An agent compares a change with the part no test holds:
+  - complies: a reading of the clock whose result ended map runs of two earning loops followed by
+    one save request; a tab closed while its last save is on its way, nothing holding the page open
+    for the answer
+  - violates: a save request for each map run of an earning loop that one reading ended; the closing
+    of a tab held back, or a question raised, until its last save is answered
 - **Origin:** none
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
@@ -4104,14 +4596,22 @@ A save of the game state that succeeds shows nothing. When one fails, the header
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a save with no answer within its time limit showing „Nie udało się zapisać postępu.
-    Gra spróbuje ponownie.” on the line under the menu bar, and the retry five real seconds later
-    clearing it when it succeeds; a too-large refusal followed by no request until the next moment
-    of saving
-  - violates: a line „Zapisano o 12:31” after each save; a too-large refusal retried as a failed
-    save; a failed save shown nowhere, or only inside the closed menu „Konto”; a start of an earning
-    loop refused for the number of earning loops
+- **Verification:** tests: a successful save leaving the line under the menu bar empty, also after a
+  failure or a conflict; a failed save showing „Nie udało się zapisać postępu. Gra spróbuje
+  ponownie.” in `warning` on that line, under the bar and outside the menu „Konto”, and after a
+  failed save before a logout the sentence D-97 gives there; the retries after 5, 10 and 20 real
+  seconds and then every 30, each with the game state of its moment, a moment of saving sending at
+  once, until a save succeeds and the sentence goes; a save refused as too large not retried but
+  tried again at the next moment of saving, its sentence on that line until a save succeeds, also
+  before a logout and after a pull of a previous save's programs. An agent compares a change with
+  the part no test holds:
+  - complies: a successful save that changes nothing elsewhere on the screen; the sentence of a save
+    refused as too large in `warning`; any number of earning loops started, the limits of a save
+    staying 64 KiB in the browser and on the server
+  - violates: a line „Zapisano o 12:31” after each save shown outside the line under the menu bar,
+    in the menu „Konto” included; the sentence of a save refused as too large in `text`, `positive`
+    or `danger`; a start of an earning loop refused for the number of earning loops; a higher limit
+    of a save for a game state with many earning loops
 - **Origin:** none
 
 *Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured as the bytes in UTF-8 that the game sends to the server, in a game that already knew everything, so that no discovery was made in it, the headquarters with one character came to 3 202 bytes and a map run of Las at game minute 300 to a median of 9 838 bytes, of „Las — głębiej” to a median of 12 402, each with the copy of the program and its basis, and counted directly, under 64 KiB (65 536 bytes) 12 earning loops fit on Las (13 come to 67 272 bytes) and 9 on „Las — głębiej” (10 come to 66 675 bytes), with one program shared by the earning loops, no manual map run and an empty report of absence; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because the player can currently remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
@@ -4130,12 +4630,15 @@ plays on from the loaded state, saving as D-207 gives.
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: two tabs of one account, the first saving on revision 4 and getting 5, the second's
-    save based on 4 refused, and the second tab then loading revision 5 with its map run paused and
-    the sentence in the header
-  - violates: a save based on an earlier revision replacing the stored one; the tab whose save was
-    refused saving its own game state again; a refused tab that stops saving until a reload
+- **Verification:** tests: revisions counted from 1, a save accepted only on the revision the server
+  holds or on 0 where the account has none, also after a reset, and every other basis refused with
+  nothing changed; the saver handing such a refusal to the page and sending nothing more, and the
+  page dropping its game, loading the server's saved game state with its map run paused, showing
+  the sentence on the header line until the first successful save and saving on from the loaded
+  state on its revision. An agent compares a change with the part no test holds:
+  - complies: the sentence of a save refused for another browser's save standing on the header line
+    in `warning`
+  - violates: that sentence in `text`, `positive` or `danger`
 - **Origin:** none
 
 *Rationale:* with saving that runs by itself, a tab left open on one device would otherwise overwrite
@@ -4174,15 +4677,14 @@ the two numbers and reading nothing of the game.
 - **Scope:** browser-view, account-server
 - **Based on:** none
 - **Relations:** derives from D-206
-- **Verification:** invariants: previous-save-slot. An agent compares a change with the decision:
-  - complies: a tab opened before a deployment that raised the version, its save refused with the
-    sentence standing and its later acts sending nothing; an old tab whose basis is also stale told
-    to reload rather than loading the newer saved game state; a save of version 6 accepted over a
-    stored saved game state of version 5, which then stands as the previous save
-  - violates: an old tab's save of a lower version replacing the stored one; the server reading the
-    version from inside the game; a save of the same version as the stored one, or a refused save,
-    putting the stored saved game state into the previous save; an accepted save of a higher version
-    replacing the stored saved game state and leaving no copy of it
+- **Verification:** invariants: previous-save-slot. tests: a save of a lower version refused as
+  outdated on the current basis and on a stale one alike, with nothing changed; the saver showing
+  the sentence of the update after that refusal and sending nothing more, also at logout, the game
+  staying on its screen. An agent compares a change with the part no invariant and no test holds:
+  - complies: the server comparing the version field of the save with the stored version and
+    reading nothing of the game; the sentence of the update on the header line in `warning`
+  - violates: the server reading the version from inside the game; the sentence of the update in
+    `text`, `positive` or `danger`
 - **Origin:** none
 
 *Rationale:* the server compares one number and computes nothing of the game (D-07), at the cost of
@@ -4211,13 +4713,19 @@ saved game state.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-203
-- **Verification:** invariants: expired-session-unsaved-progress. An agent compares a change with the
-  decision:
-  - complies: a save answered with 401 removing the game and showing the forms with „Sesja wygasła.
-    Zaloguj się ponownie, aby zapisać postęp.”, and a sign-in to the same account sending the kept
-    state and showing its map run paused
-  - violates: the unsaved game state written to `localStorage`; the kept state saved after a sign-in
-    to another account; the game left running beside the forms
+- **Verification:** invariants: expired-session-unsaved-progress. tests: a save answered that there
+  is no session taking the game off the screen with its time stopped and bringing back the forms
+  with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”, also for the save before a logout
+  and for a save made while a logout waits whose outcome then stays uncertain; after a sign-in to
+  the same account the game shown again from the kept state, its map run paused; after a sign-in to
+  another account the kept state dropped and that account's saved game state loaded, also after an
+  error of the code in the load of the kept state. An agent compares a change with the part no
+  invariant and no test holds:
+  - complies: the sentence „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” in `warning`;
+    the unsaved game state held in the page's memory alone, so a reload before the sign-in loads the
+    server's saved game state
+  - violates: the unsaved game state written to `localStorage`, `sessionStorage` or IndexedDB; that
+    sentence in `text`, `positive` or `danger`
 - **Origin:** none
 
 *Rationale:* the progress the browser holds waits in the open tab for the same account, and nothing
@@ -4246,16 +4754,21 @@ computing of time away included.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
-  - complies: a map run of Las saved at game minute 212 at 8× loading an hour later at game minute
-    212, paused, at 8×; a map run saved on the screen after a death loading on that screen with
-    „Restart” and „Zakończ”; a reload at `#/programy` with a map run saved after a death opening
-    Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”; a
-    reload of the screen after a death opening the window again with its title, the longest streak
-    and the line of what the death took, and with no „Ostatnie minuty”
-  - violates: a loaded map run going on at once; a loaded map run moved on by the time away; loading
-    that closes an ended map run as „Zakończ” does; an ended map run loaded without the window, or
-    with a window that lacks its longest streak or the line of what the end took or gave
+- **Verification:** invariants: death-settled-once. tests: a loaded map run that went on coming
+  back at its game minute, paused, at its pace and with its carried real time, standing with
+  „Wznów” on its screen, also after a conflict and after a sign-in with the kept state; an ended
+  one coming back as it ended, with its record whole, on its screen with „Restart” and „Zakończ”
+  and with the end-of-run window open again, its longest streak and its lines of what the end gave
+  or cost read from the loaded state, and with no „Ostatnie minuty”; the screen opened after a
+  sign-in or a reload with a manual map run in the save being the one D-96 gives; the catch-up
+  leaving a manual map run and its pause as they stand. For the copy of an ended map run open to
+  editing after a load, and for real time between the save and the load outside the catch-up, an
+  agent compares a change with the part no test holds:
+  - complies: a map run saved on the screen after a death loading with its copy open to editing,
+    its unsaved changes kept; a map run of Las saved at game minute 212 at 8× loading an hour later
+    at game minute 212
+  - violates: a loaded ended map run whose copy cannot be edited; a loaded map run moved on by the
+    real time between its save and its load
 - **Origin:** none
 
 *Rationale:* a player who signs in on another device does not miss a discovery, an attack or the
@@ -4304,15 +4817,20 @@ unsaved game state in the page's memory stay as they stand, while the player get
 - **Scope:** simulation, browser-view, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-04 · derives from D-206
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a game state turned into the saved document of the current version
+  beside a copy of the state, changing nothing of it; a document of the current version, also as
+  the server hands it back, loading into the state it describes; a document refused as of another
+  version, as naming an archetype missing from the data or as of a shape the game does not admit,
+  a crafted document of the current version refused whole; no value a document can hold, at any
+  place of it, throwing out of the load; the load changing nothing passed to it; an error of the
+  code in the load leaving it as that error, and on the page leaving the save on the server and
+  the kept state as they stand, building no game, writing one line to the console without the
+  error's text and showing the sentence of D-96. For the exemplar, its kind guidelines and the load
+  standing inside the simulation, an agent compares a change with the part no test holds:
   - complies: saved-game guidelines identify the first implementation as exemplar and draw the
-    kind's boundary with simulation modules as the content-data guidelines draw theirs; a crafted
-    document of the current version answered with a refusal; a fault of the code in the load
-    reaching the view as a thrown error, the save on the server and the state kept in the page
-    left as they stand
-  - violates: a load that throws on a crafted document; a load that catches every error and answers
-    a fault of the code with a refusal; a saved-game file that imports from the browser view; a
-    second exemplar for the kind
+    kind's boundary with simulation modules as the content-data guidelines draw theirs
+  - violates: the load of a saved game state written in the browser view; a second exemplar for the
+    kind
 - **Origin:** none
 
 *Rationale:* the first file that reads data from outside the simulation into the game state gives
@@ -4340,7 +4858,11 @@ nothing.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-189
-- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end.
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. tests: the
+  mark of a manual run of a solved map coming back with a load, a load refusing a map run ended in
+  death whose mark disagrees with its map's being solved, and the screen of such a run giving its
+  line after its end and after a load; a restart after the completion that solved the map marked as
+  such a run, taking its equipment from nowhere and leaving the chest as it was.
 - **Origin:** none
 
 *Rationale:* a map run restart is a map run the player starts, and once a completion has solved the
@@ -4357,7 +4879,13 @@ już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.” 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-189 · derives from D-214
-- **Verification:** none
+- **Verification:** tests: on a manual run of a solved map, from its start, after a completion and
+  after a death, the line „Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze
+  skrzynki.” in the world area, right under the body row and above „Wprawa w tym przejściu”, and no
+  such line on a map run that pays. For the role of the line, an agent compares a change with the
+  part no test holds:
+  - complies: the line in `text-secondary`
+  - violates: the line in `text` or in `warning`
 - **Origin:** none
 
 *Rationale:* the player tuning a program on a solved map reads from the start of the map run that
@@ -4382,7 +4910,13 @@ after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-62 · derives from D-185 · derives from D-190 · derives from D-212
-- **Verification:** none
+- **Verification:** tests: after a death, in the part of the end-of-run window saying what the end
+  cost, the line of a resurrection used up, with the hours of the balance data, in
+  `text-secondary`, the line of none ready, with the generation number that death gave, in
+  `danger`, and the line of a character with no practice in `text-secondary` in place of both,
+  none while the death is unsettled, and each after a load too; after a first completion that made
+  a used-up resurrection ready, the renewal line in `text-secondary` below the deposit line, after
+  a load too, and none where the completion found the resurrection ready.
 - **Origin:** none
 
 *Rationale:* the player learns what the death took before pressing „Restart”, in words that agree
@@ -4414,7 +4948,15 @@ The card and the screen of a character, and that character in the section „Kto
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-190 · derives from D-219
-- **Verification:** none
+- **Verification:** tests: at the card of a character on Siedziba, on the screen Postać and at each
+  character in „Kto idzie”, the line of the time left in `danger` while the resurrection is not
+  ready, minutes alone below an hour, and „Wskrzeszenie drużyny gotowe” out of `danger` from the
+  moment of readiness and in a new game, rewritten at each reading of the clock; the minutes
+  rounded up to a whole minute before the split into hours and minutes. For the role of the line of
+  a ready resurrection, an agent compares a change with the part no test holds:
+  - complies: „Wskrzeszenie drużyny gotowe” in `text-secondary` at a character on Siedziba, on the
+    screen Postać and in „Kto idzie”
+  - violates: „Wskrzeszenie drużyny gotowe” in `text` or in `positive`
 - **Origin:** none
 
 *Rationale:* the player sees the stake before paying it, that the resurrection is the whole team's before a death shows it, how long a renewal has left and that the hours are real ones, and the minutes go up so that the game gives no time shorter than the real one. The same row stands at the character in the section „Kto idzie” of the card of a map, where the player sends it. Accepted with it: the screens have to refresh as time passes; a row more at each character in „Kto idzie”; and a caption that speaks of a full hour while some tens of seconds are still missing to it and reads „0 min” at times — 7 h 59 min 30 s reads „za 8 godz. 0 min”, 59 min 30 s reads „za 1 godz. 0 min”, and exactly 59 min reads „za 59 min”; and the word „drużyny” to be thought over once a player may hold more than one team.
@@ -4428,7 +4970,12 @@ The headquarters shows „pokolenie {n}” beside a character's name from genera
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-40 · derives from D-190
-- **Verification:** none
+- **Verification:** tests: „pokolenie {n}” beside the name of a character on Siedziba from
+  generation number 2 up, and no label at generation 1. For the role of the label, an agent
+  compares a change with the part no test holds:
+  - complies: „pokolenie 2” beside a name on Siedziba in `text-secondary`, as the archetype beside
+    it
+  - violates: „pokolenie 2” beside a name on Siedziba in `text` or in `danger`
 - **Origin:** none
 
 *Rationale:* the label stands once the number has something to say, and `text-secondary` is the role
@@ -4445,7 +4992,10 @@ pace of a map run and while the game is closed.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-190
-- **Verification:** invariants: resurrection-renewal.
+- **Verification:** invariants: resurrection-renewal. tests: the renewal counted from the reading
+  of the browser's clock at which a death is settled, and the lines of the time left following
+  that clock; the moment of readiness the same at every pace of a map run, and a resurrection used
+  up ready again at its moment after a save and a load.
 - **Origin:** none
 
 *Rationale:* the moment of a save is to go by the same clock, so the game holds one; the browser's
@@ -4463,7 +5013,9 @@ A new character has generation number 1 and brings no resurrection of its own; a
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-190
-- **Verification:** none
+- **Verification:** tests: a created character of generation 1, the second one too, holding no
+  resurrection of its own; a new game's resurrection ready from the start; a character created
+  while the resurrection is used up leaving it used up.
 - **Origin:** none
 
 *Rationale:* the tests of loop settle what they cover, and there a new character starts at number 1.
@@ -4484,9 +5036,17 @@ holds a death unsettled.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-190 · derives from D-219
-- **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
-  - complies: the reading of the clock in which a character dies reaching the game as one result, the events of the game time passed with the death settled at that reading
-  - violates: a caller of the functions that pass game time drawing or saving what they return with the death unsettled; a load that settles a death
+- **Verification:** invariants: death-settled-once. tests: a death left unsettled by the functions
+  that pass game time, of a manual map run and of an earning loop, and settled by a function of its
+  own; each reading of the browser's clock handing the game state one result with a death of that
+  reading settled against it, a death standing on the screen settled at the first reading, and a
+  death saved at once settled; a load refusing a saved game state that holds a death unsettled.
+  For the functions that pass game time taking no real moment, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: `advanceMinutes` and `passRealTime` taking the game state and a span alone, the
+    moment of a death given to `settleDeath` only
+  - violates: `passRealTime` taking a reading of the browser's clock and settling with it a death it
+    meets
 - **Origin:** none
 
 *Rationale:* the functions that pass game time stay as D-04 gives them and know no real moment, so
@@ -4520,12 +5080,19 @@ server's log.
 - **Scope:** account-server, browser-view
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Return a consistent message for both existent and non-existent accounts." · "Ensure that responses return in a consistent amount of time to prevent an attacker enumerating which accounts exist."; read 2026-10-30
 - **Relations:** derives from D-99 · derives from D-104 · derives from D-105 · derives from D-152 · derives from D-161
-- **Verification:** an agent compares a change with the decision:
-  - complies: a request whose mailer never answers getting its answer at once; the same answer and no
-    body for an unknown address, an unconfirmed one, a blocked one and one above a limit
-  - violates: a lookup of the account or the recording of a link before the response has ended; an
-    answer that waits for the mail service; a failure of the work after the answer that ends the
-    process
+- **Verification:** tests: one and the same answer, 204 with no body, for every well-formed
+  address, whether its account is confirmed, unknown, unconfirmed, blocked or above a limit or its
+  link fails to record, the answer ending before the mail service is asked, before the account is
+  looked up and before the link is recorded; the page's sentence under the form „Nie pamiętam
+  hasła” in a status, with the address field empty and the form and „Wróć do logowania” staying;
+  an address not written as name@domain refused with its sentence under the field by the form,
+  which sends nothing, and with that sentence by the server; a link recorded and sent only after
+  the answer, only for a confirmed account that is not blocked and within the limits of D-105, and
+  a failure of the lookup, of the recording or of the sending showing only as a line of the
+  server's log, the process going on. An agent compares a change with the part no test holds:
+  - complies: the sentence under the form in `text`, with a bar at its left in the colour of the
+    sentence, as D-44 gives that answer
+  - violates: the sentence under the form in `warning` or in `positive`, or without its bar
 - **Origin:** none
 
 *Rationale:* one sentence for every well-formed address says nothing about any account, and the only
@@ -4568,10 +5135,14 @@ the game's address is given to other players, if abuse has become real.
 - **Scope:** account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § Forgot Password Request — "Implement protections against excessive automated submissions such as rate-limiting on a per-account basis"; read 2026-10-30
 - **Relations:** derives from D-105 · derives from D-222
-- **Verification:** an agent compares a change with the decision:
-  - complies: a request for a link going through the two limits of D-105 and no other count
-  - violates: a counter of requests per client address added beside those limits while this decision
-    stands
+- **Verification:** tests: ten requests for a link from one client address within an hour, each
+  answered and handed on as far as the two limits of D-105 allow and no further. An agent compares
+  a change with the part no test holds:
+  - complies: a request for a link going through the two limits of D-105 and no other count,
+    however many requests one client address sends in an hour; this decision looked at again before
+    the game's address is given to players other than the owner, once abuse has become real
+  - violates: a counter of requests per client address added beside those limits while this
+    decision stands, also one that lets ten or more requests an hour through
 - **Origin:** none
 
 *Rationale:* accounts belong to the owner alone for now, so a limit of its own would guard against
@@ -4596,11 +5167,15 @@ address and sends it only with the form „Ustaw nowe hasło”, in a request me
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-30
 - **Relations:** derives from D-104 · derives from D-152 · derives from D-156
-- **Verification:** an agent compares a change with the decision:
-  - complies: the page reading the token from the fragment and sending it in the JSON body of a
-    `POST` only when the form is sent
-  - violates: a link carrying its token in its path or query; a token kept in clear in the database
-    or written to a log
+- **Verification:** tests: the link of a password-reset message as the configured public origin,
+  `/#reset-password=` and 43 base64url characters, the account database holding the SHA-256 digest
+  of its token; the page reading the token from the fragment, sending nothing when the form shows
+  and the token with both passwords in the JSON body of a `POST` when the form is sent. An agent
+  compares a change with the part no test holds:
+  - complies: a token of 32 bytes drawn from a cryptographic source of random bytes, its digest the
+    only form of it the database keeps
+  - violates: a token kept in clear in a column of the database beside its digest; a token made of
+    a counter or a time
 - **Origin:** none
 
 *Rationale:* the link is built as a confirmation link is (D-156), for the same reasons: a fragment
@@ -4622,14 +5197,15 @@ connection or a full password gate leaves the form, one sentence under it and th
 - **Scope:** browser-view, account-server
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "The user should confirm the password they set by writing it twice."; read 2026-10-30
 - **Relations:** derives from D-96 · derives from D-98 · derives from D-156 · derives from D-224
-- **Verification:** an agent compares a change with the decision:
-  - complies: the fragment removed before the page goes on, with `history.replaceState`, so neither a
-    reload nor the back button returns to the token; the sentence of a refused link above the game for
-    a signed-in player; „Anuluj” disabled while the form waits; „Anuluj” of a signed-in player whose
-    saved game state holds a manual map run opening Siedziba
-  - violates: a request sent when the page opens; the fragment kept after a refusal of the link; the
-    form closed by a 429 or by a lost connection; „Anuluj” of a signed-in player opening the screen
-    of a manual map run
+- **Verification:** tests: the form with „Nowe hasło”, „Powtórz hasło”, „Ustaw hasło” and „Anuluj”,
+  shown with no request sent; „Anuluj” removing the fragment first and opening Siedziba for a
+  signed-in player, whatever the saved game state holds, and the account forms for a signed-out one;
+  after the password is set the fragment removed first and „Hasło zmienione. Zaloguj się nowym
+  hasłem.” in `positive` above the account forms; after a refusal of the link, whatever its reason,
+  the fragment removed first, the session check run and „Odnośnik jest nieważny albo wygasł.” in
+  `warning` above the account forms or the game; no connection, a timeout, a full password gate, an
+  error of the server or a password the server refuses leaving the form, one sentence under it, the
+  fragment and the link, which sends the token again.
 - **Origin:** none
 
 *Rationale:* a form shown without a question to the server gives nobody a way of asking whether a
@@ -4663,12 +5239,23 @@ D-101 renews it at every request.
 - **Scope:** account-server
 - **Based on:** express-session-end-of-request
 - **Relations:** derives from D-98 · derives from D-103 · derives from D-104 · derives from D-109 · derives from D-112 · derives from D-155
-- **Verification:** invariants: password-reset-link. An agent compares a change with the decision:
-  - complies: a bad link with a good password refused with a full password gate as with a free one; a
-    good link with a bad password still working afterwards
-  - violates: password work for a token whose link does not work; the link spent or reserved before
-    the hashing; a transaction held across the hashing; the route writing to, regenerating or
-    destroying the session of its request
+- **Verification:** invariants: password-reset-link. tests: a request whose fields are missing, of
+  another type or one too many refused with nothing set; the rules of D-98 judged before the link,
+  so that a bad password gets the same answer with a good, an unknown and a malformed token, also
+  with a spent link; a link that does not work refused before any password work, also with a full
+  password gate; one and the same refusal `invalid-link` for every token that does not work and for
+  a link that a block, a later link or an expiry stopped during the hashing; a full password gate
+  answering a good link with a good password 429 `too-many-attempts`; a hash that fails answering
+  500 and writing nothing, the link still working; a reset of an account whose address is locked by
+  failed logins going through; a session of the account sent along ending with the account's
+  others, and a session of another account sent along neither used nor changed. An agent compares a
+  change with the part no invariant and no test holds:
+  - complies: a request whose fields are out of shape and whose password breaks the rules of D-98
+    refused for its fields; a session of another account sent along renewed as D-101 renews it at
+    every request
+  - violates: an attempt admission of D-102 keyed by the client address, taken by the route; a
+    transaction held across the hashing; a session sent along that the route leaves unrenewed while
+    it stays working
 - **Origin:** none
 
 *Rationale:* the password comes before the link because with the link first a short password would
@@ -4701,10 +5288,13 @@ się nie zmieni.”. After a change of password the player gets no message about
 - **Scope:** account-server, deployment
 - **Based on:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Forgot_Password_Cheat_Sheet.md § User Resets Password — "Send the user an email informing them that their password has been reset (do not send the password in the email!)."; read 2026-10-30
 - **Relations:** derives from D-153 · derives from D-155 · derives from D-158
-- **Verification:** an agent compares a change with the decision:
-  - complies: a message composed for one recipient with the fixed sender, display name and subject
-    and a text body with the link on a line of its own
-  - violates: an HTML body beside the text; a message handed to the mail service after a password is
+- **Verification:** tests: the message from the configured sender, which the Compose file of the game
+  sets to `loop2@mariusznazar.com`, with the display name „loop2”, as plain text with no HTML part,
+  with the subject „Ustaw nowe hasło w loop2” and the three paragraphs, the link alone on its line;
+  the route that asks for a link handing on that message. An agent compares a change with the part no
+  test holds:
+  - complies: a password set through a link with no message handed to the mail service
+  - violates: a message about the change of password handed to the mail service after a password is
     set
 - **Origin:** none
 
@@ -4729,7 +5319,11 @@ with the planned retained backups; otherwise another device outside the game ser
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** sqlite-online-backup · loop2-backup-log-nightly-sends · Docker volumes persist beyond a container but reside on a Docker host (https://docs.docker.com/engine/storage/volumes/, read 2026-10-04) · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § Strych (backupy) — "Strych to współdzielony serwer backupowy, na którym każdy z użytkowników posiada 200MB przestrzeni do przechowywania własnych plików. Aby uzyskać do niego dostęp, wystarczy o niego poprosić przez panel, klikając odpowiednią opcję w sekcji “Backup”."; read 2026-10-31 · NCSC guidance on separated and restorable backups (https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks, read 2026-10-04)
 - **Relations:** derives from D-205
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a backup of the database made beside a separate writer, whole and
+  holding every row committed before it began, and the bytes of the backup command opening as the
+  database; only a backup whose command and encryption ended well sent, by `rsync` to Mikrus
+  Strych; a backup made by the backup command giving back an account's login and saved game state
+  in a fresh container. An agent compares a change with the part no test holds:
   - complies: tested retained backups fit and restore from Strych, so the deployment uses Strych;
     they do not fit, so the deployment uses another device outside the game server host
   - violates: Strych passes the checks but another location is chosen without review; Strych fails
@@ -4759,9 +5353,7 @@ database read, write and backup operations have been checked on that release.
 - **Scope:** account-server, build-tools, deployment
 - **Based on:** node-sqlite-database · Node.js 24.21.0 SQLite documentation, `DatabaseSync`, prepared statements, backup and release-candidate status (https://raw.githubusercontent.com/nodejs/node/v24.21.0/doc/api/sqlite.md, read 2026-10-04) · Node.js 24.21.0 stability index, release candidates anticipate no further breaking changes but may still have them (https://nodejs.org/download/release/v24.21.0/docs/api/documentation.html#stability-index, read 2026-10-04) · better-sqlite3 13.0.3 API, database, transactions and backup (https://github.com/WiseLibs/better-sqlite3/blob/v13.0.3/docs/api.md, read 2026-10-04) · better-sqlite3 13 release, Node-API native addon (https://github.com/WiseLibs/better-sqlite3/releases/tag/v13.0.0, read 2026-10-04)
 - **Relations:** derives from D-01 · derives from D-205
-- **Verification:** invariants: account-save-sqlite-access · account-save-sqlite-upgrade. An agent compares a change with the decision:
-  - complies: a step of the image's final stage that checks read, write and backup on the image's own Node.js release, so that a release failing it fails the build and the running containers stay in service
-  - violates: a server image built without that step; an external SQLite driver among the server's dependencies
+- **Verification:** invariants: account-save-sqlite-access · account-save-sqlite-upgrade.
 - **Origin:** none
 
 *Rationale:* the built-in module avoids another native runtime package and its installation in the
@@ -4786,9 +5378,13 @@ command deletes one, and nothing reads the destination's list of files.
 - **Scope:** deployment, agent-workflow
 - **Based on:** https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § WAŻNE UWAGI NA KONIEC — "Rób backupy w rozsądnych odstępach czasu i jeśli to możliwe, to najlepiej w nocy." · "Prawdopodobnie nie potrzebujesz backupu co godzinę, a np. jeden dziennie czy nawet kilka tygodniowo w zupełności powinny Ci wystarczyć."; read 2026-10-31 · https://raw.githubusercontent.com/RsyncProject/rsync/6b5ae825db985e9d1c98576651b50c8e490ddb97/rsync.1.md § --temp-dir — "The default behavior is to create each temporary file in the same directory as the associated destination file." · § --partial — "By default, rsync will delete any partially transferred file if the transfer is interrupted."; read 2026-10-31
 - **Relations:** derives from D-228
-- **Verification:** an agent compares a change with the decision:
-  - complies: a send that names one of the seven files, computed from the date, and replaces that file whole, so a failed send leaves the older backup standing
-  - violates: a file name taken from a listing of the destination; a deleting option or command aimed at the destination; a name that leaves an eighth file there
+- **Verification:** tests: one backup a night, started by the schedule at 03:17 each day; the one of
+  the seven weekday files `loop2-accounts-<1..7>.sqlite.age` that the UTC day of the week names, a
+  day that names none refused, the file replaced whole with its time kept; one `rsync` call with one
+  file and one destination name, no option of it that deletes, lists or leaves a broken file, and
+  no other tool reaching Strych. An agent compares a change with the part no test holds:
+  - complies: the backup script started only by the schedule a human installed and by a human's hand run
+  - violates: a deployment, a workflow or the game server that runs the backup script or writes a file under one of the seven weekday names
 - **Origin:** none
 
 *Rationale:* a player loses at most a day of play, and a fault noticed after a week has no clean
@@ -4830,9 +5426,20 @@ installing or reinstalling them being a human's change.
 - **Scope:** account-server, deployment, agent-workflow
 - **Based on:** mikrus-host-swap · cron-d-file-rules · loop2-host-installed-copies-agree
 - **Relations:** derives from D-228 · derives from D-12
-- **Verification:** an agent compares a change with the decision:
-  - complies: a script that calls `docker exec` without a terminal and holds the lock only for the stream and its encryption; a difference in the installed schedule that warns while the deployment goes on; a run of the command without its fixed word that ends with the usage exit code, an empty standard output and the database never opened
-  - violates: a Compose service that makes backups; a timer in the server's process; the key to Strych mounted into the game container; a deployment that installs the script or the schedule; a schedule installed under a file name with a dot; a plain backup left in the database's volume for fetching; a command that opens the database or writes to standard output without its fixed word; a skill instruction in which an agent runs the command through the `mikrus` MCP server
+- **Verification:** tests: the schedule starting `/usr/local/bin/loop2-backup` as root at 03:17
+  each day, in a file cron can read; the script running the backup command in the `loop2` container
+  through `docker exec` with its fixed word and no terminal, and the bytes of that standard output
+  opening as the database; no Compose service beside the application and the connector, and no
+  Compose secret or mount that could give the game container the key to Strych; the command
+  refusing without its fixed word, or with anything else, before it opens the database and with
+  nothing on standard output, and creating no database where none exists; the script holding the
+  deployment's lock, with the deployment's wait, over the command and the encryption and releasing
+  it, with no descriptor of it left open, before the send; each deployment comparing the installed
+  backup script and schedule with their sources at the deployed commit and warning, never refusing,
+  when they differ, cannot be read or have no source. An agent compares a change with the part no
+  test holds:
+  - complies: a backup script installed by a human at `/usr/local/bin/loop2-backup`, with its schedule under `/etc/cron.d/` by a file name with no dot; the backup command run only by a human or by the installed backup script
+  - violates: a timer in the server's process that makes or sends a backup; a deployment that installs or reinstalls the script or the schedule; a schedule installed under a file name with a dot; a skill instruction in which an agent runs the command, through the `mikrus` MCP server or otherwise
 - **Origin:** none
 
 *Rationale:* the key to Strych stays away from the process that serves players, a failed send
@@ -4882,9 +5489,14 @@ backup is not compressed.
 - **Scope:** deployment, agent-workflow
 - **Based on:** age-file-encryption
 - **Relations:** derives from D-228 · derives from D-13
-- **Verification:** invariants: account-save-backup-encrypted. An agent compares a change with the decision:
-  - complies: a script that sends only after every stage of its pipe exited 0 and the file is not empty
-  - violates: a plain database file on the host's disk on its way to the encryption; the key handed into the game container
+- **Verification:** invariants: account-save-backup-encrypted. tests: `age --encrypt` run in the
+  script's pipe with `/etc/loop2/backup-encryption-key` as its identity, reading the backup
+  command's stream as it came, so uncompressed, and the file sent being exactly the file `age`
+  wrote; the database's content reaching nothing but `age` — no log, no output, no notice, no
+  argument of a tool and no file sent. An agent compares a change with the part no invariant and no
+  test holds:
+  - complies: the backup command's stream piped straight into `age`, whose output is the only file the script writes
+  - violates: a plain database file written anywhere on the host's disk on its way to the encryption, such as a copy fetched by `docker cp` before `age` reads it; the backup encrypted inside the game container, with the key handed into it
 - **Origin:** none
 
 *Rationale:* a leak from Strych reveals no player's address. The price is one more secret and one
@@ -4926,9 +5538,20 @@ reaches no file.
 - **Scope:** deployment, agent-workflow
 - **Based on:** mikrus-pusher-mail
 - **Relations:** derives from D-228 · derives from D-231 · derives from D-13
-- **Verification:** invariants: account-save-backup-failure-notice. An agent compares a change with the decision:
-  - complies: one handler at the script's exit that sends the fixed text whatever caused a non-zero end; a watcher that finds no successful send in the log of the backup from the last 26 hours, calls `pusher` once with the fixed sentence of that kind and sends no second message of that kind within the day
-  - violates: a tool's output piped into `pusher`, as its documentation shows; the error text of `rsync` written to the log, since a refused login prints the login; a message of the watcher about the missing backup that holds a line of the log, a file name or a size
+- **Verification:** invariants: account-save-backup-failure-notice. tests: at a failed end of the
+  backup script one call of `pusher`, also when `pusher` fails or hangs, with one fixed subject and
+  text, the same for every failure, that hold no tool's output, no step's name and nothing of the
+  database; the watcher reading `/var/log/loop2-backup.log`, the log the backup script writes, and
+  calling `pusher` with a fixed message of its own kind, other than the script's and holding
+  nothing it read, when no line exactly as the script writes it at the end of a sent night stands
+  there from the last 26 hours, a missing, empty or unreadable log counting as none, and sending
+  that kind at most once in 24 hours; the log of the backup holding each run's start and end, the
+  weekday file and size before the send, and a failure's stage and exit code, with nothing of the
+  database, no login and none of the text of `ssh` and `rsync`, and the backup command's standard
+  error carrying a failure's kind and code and nothing of its message. An agent compares a change
+  with the part no invariant and no test holds:
+  - complies: a watcher and a backup script that run on the game server's host and tell the owner only through `pusher`, so that a host that is down sends no message
+  - violates: a second way of telling the owner of a missing backup beside `pusher`, such as a signal to an outside service that alarms when it stays away
 - **Origin:** none
 
 *Rationale:* the script stands outside the game container, so a failed backup, a full Strych, a wrong
@@ -4971,9 +5594,13 @@ nobody has run, `umask 077` among them, stay untried.
 - **Scope:** deployment, build-tools, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-228
-- **Verification:** an agent compares a change with the decision:
-  - complies: the owner runs the trial on an image built from the same commit and sees a name given in the game before the backup was made come back, and runs it again the month after and after the next change of the database's schema version
-  - violates: a backup taken as checked because its file opens; an agent that fetches, decrypts or opens a backup; a change of the database's schema version or of the saved game's version taken as covered by a trial made before it
+- **Verification:** tests: a decrypted backup made by the backup command run in a container of an
+  image built from the same working tree, a login with a test account and a name given in the saved
+  game state before the backup seen back, a wrong password or an absent name failing the trial; the
+  trial's container and volumes, which hold the plain database, removed at every end, and no pass
+  claimed until Docker shows them gone. An agent compares a change with the part no test holds:
+  - complies: the owner repeats the trial the month after and after the next change of the database's schema version or of the saved game's version, on a backup fetched from Strych and decrypted on the owner's computer, and removes the decrypted file at its end
+  - violates: an agent that fetches, decrypts or opens a backup; a change of the database's schema version or of the saved game's version taken as covered by a trial made before it; a decrypted backup left on the owner's computer after the trial; a restore over the server's database, or the building of a new server, taken as checked by the trial
 - **Origin:** none
 
 *Rationale:* a login that brings the saved game state back shows that a backup gives the player's
@@ -5031,9 +5658,12 @@ count the database can reach.
 - **Scope:** account-server
 - **Based on:** sqlite-online-backup · node-sqlite-database · sqlite-wal-concurrency
 - **Relations:** derives from D-228 · derives from D-229 · derives from D-231
-- **Verification:** an agent compares a change with the decision:
-  - complies: a `rate` above any page count the database can reach, so that the backup takes one step
-  - violates: `backup()` without a `rate`, or with a `rate` a database of this server can exceed; `VACUUM INTO` in place of `backup()`
+- **Verification:** tests: the backup of the server's database code taken through `backup()` of
+  `node:sqlite`, in one step on a database that the default `rate` backs up in many; the backup
+  command's backup, made beside a separate writer, finishing whole with every row committed before
+  it began. An agent compares a change with the part no test holds:
+  - complies: a positive whole `rate` above the largest page count a database of this server can reach, with the backup taken on the connection the command opened
+  - violates: a `rate` above the page count of the tested database that a database of this server can still exceed; a backup taken through a second connection opened beside the command's own
 - **Origin:** none
 
 *Rationale:* a change through another connection restarts a backup at its next step, and a backup
@@ -5066,9 +5696,9 @@ error fails the image's build. The Node.js image stays unpinned.
 - **Scope:** account-server, deployment
 - **Based on:** node-sqlite-database · docker-build-cache-invalidation · loop2-deploy-stage-exit-lines
 - **Relations:** derives from D-229 · derives from D-236
-- **Verification:** an agent compares a change with the decision:
-  - complies: a release that fails the build step ends the deployment at the build, with the running containers in service; a build of the same commit that takes the step from its cache on an unchanged base image and unchanged code
-  - violates: a release check moved out of the image's build into the deploy script; a base image pinned by version and digest while this entry stands; a release check that reads the server's database
+- **Verification:** tests: the check run in the final stage of the image, after the server's user is set, as a step of its own whose failure stops the build; the check working through the server's database code on a temporary database of which it leaves no file, backing it up through `backup()` of `node:sqlite`, and printing the release it checked; an empty backup, another password hash or saved game state in the backup, a backup in two steps and an error each failing the check with no release claimed. An agent compares a change with the part no test holds:
+  - complies: the final stage built on a Node.js image named by its major version alone, such as `node:24-slim`, so that each build takes the release the host pulls; a release check that reads back what it wrote before it makes the backup, and works on no database but the temporary one it makes
+  - violates: a base image pinned by version and digest while this entry stands; a release check that reads the server's database, or that compares only the backup and no longer reads back the database it wrote
 - **Origin:** none
 
 *Rationale:* no server image exists without having passed on its own release, whatever release the
@@ -5104,9 +5734,13 @@ human repeats that comparison.
 - **Scope:** deployment, agent-workflow
 - **Based on:** openssh-strict-host-key-checking · openssh-option-order · openssh-extra-host-key-sources · loop2-host-ssh-host-key-options · https://wiki.mikr.us/strych_backupy/ (archived: https://web.archive.org/web/20260921154829/https://wiki.mikr.us/strych_backupy/, 2026-09-21) § JAK TO ZROBIĆ? — "IdentityFile /backup_key"; read 2026-10-31
 - **Relations:** derives from D-228 · derives from D-230 · derives from D-13
-- **Verification:** an agent compares a change with the decision:
-  - complies: a send whose `ssh` options, on the command line, name that file and turn off every other known-hosts file; root's SSH entry for Strych holding only the login and the path of the key
-  - violates: `StrictHostKeyChecking` set to `accept-new` or `no`; a send that reads root's default known-hosts file; a line taken into the file without its fingerprint compared; a script that writes to the file; an installation procedure that sets `KnownHostsCommand` or `VerifyHostKeyDNS` in root's SSH configuration or the system-wide one
+- **Verification:** tests: the encrypted backup sent by one `rsync` call over `ssh`, no other tool
+  reaching Strych, to a name in the home directory on `strych.mikr.us` with no login and no port;
+  on its command line batch mode, strict host-key checking, `/etc/loop2/strych-known-hosts` as the
+  user's known-hosts file and `/dev/null` as the global one. An agent compares a change with the
+  part no test holds:
+  - complies: root's SSH entry for Strych holding only the login and the path of the key; a host-key line written into the file by a human after comparing its fingerprint
+  - violates: a line taken into the file without its fingerprint compared; a script that writes to the file; `KnownHostsCommand` or `VerifyHostKeyDNS` given on the send's command line, or set by an installation procedure in root's SSH configuration or the system-wide one
 - **Origin:** none
 
 *Rationale:* a script started by a schedule has nobody to answer the question about an unknown host,
@@ -5135,12 +5769,12 @@ unlocks its earning loop without certifying that the chosen program survives eve
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the speed control inactive for a character in an earning loop; an earning loop
-    starting on a solved map without a safety check across all seeds
-  - violates: an earning loop going sixteen game minutes per real minute when the speed is set so;
-    an earning loop kept as one long map run; an earning loop started on a map not yet solved; a
-    solved map refused as unsafe after a failed seed
+- **Verification:** tests: an earning loop starting only on a solved map, also as a saved game state
+  admits it, and starting there on a program that dies; one game minute of an earning loop for each
+  whole real minute, in the balance data, the open game and the catch-up, the pace of the game state
+  reaching none of it, and a manual map run passing its multiple of game minutes at each pace; the
+  next map run of an earning loop starting at once after a completion or a death a resurrection
+  covers, with its own number and seed.
 - **Origin:** none
 
 *Rationale:* solving a map is a puzzle and may be fast-forwarded; earning is income and goes with the
@@ -5169,15 +5803,11 @@ real time.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-07 · derives from D-22
-- **Verification:** invariants: catch-up-state. For the order of characters and the borders, an agent
-  compares a change with the decision:
-  - complies: two characters of one team caught up one after the other in the list's order, the
-    first taking its loot into a chest with room for one; two characters dying in the catch-up, the
-    one lower on the list in an earlier game minute, finding the resurrection used by the one
-    above it and losing everything
-  - violates: characters caught up together, game minute by game minute; a map run that takes from
-    the chest in the middle of another character's map run; the character that died first in real
-    time taking the resurrection in the catch-up
+- **Verification:** invariants: catch-up-state. tests: the catch-up running when a loaded game comes
+  back, taking the characters one at a time, each to the end, in the order of the list; an item
+  reaching the chest at a completion and the next map run of another character taking it from there;
+  the last room of the chest going to the character earlier on the list, and one resurrection for
+  two deaths going to the character earlier on the list though it died later in real time.
 - **Origin:** none
 
 *Rationale:* nothing has to run while no browser is open, so the catch-up needs no server of its own.
@@ -5205,13 +5835,14 @@ on: the function that reaches its end deals with that end at once.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-56 · derives from D-164
-- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
-  - complies: a game state holding the manual map run of one character and the earning loops of two
-    others; each next map run binding its lists anew from the program content the earning loop holds;
-    deleting a program leaving an earning loop on that program's content as it was
-  - violates: a second earning loop for one character; a saved game state admitted with the map run
-    of an earning loop ended in a death or in a completion; a pause, a pace or firing counts held
-    for an earning loop
+- **Verification:** invariants: loop-practice-payment. tests: the earning loops held by character
+  number beside a manual map run of another character, at most one for a character, each with
+  exactly the content of the program taken at its start, its map run going on, the number of that
+  map run, the count of its completions and the practice gathered since the last „Odbierz”, also as
+  a saved game state admits them; an edit or a deletion of the program leaving the content an
+  earning loop holds, in its later map runs too; the open game and the catch-up dealing with the end
+  of a loop's map run at once, the state the browser view holds after a reading or a load holding
+  the next map run, and a load refusing an earning loop whose map run has ended.
 - **Origin:** none
 
 *Rationale:* the shape itself gives a character one earning loop, and the manual map run stays as
@@ -5247,21 +5878,22 @@ in real time takes it.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-219 · derives from D-221 · derives from D-239
-- **Verification:** invariants: catch-up-minutes · catch-up-death-moment. An agent compares a change
-  with the decision:
-  - complies: a computer waking after an hour passing 60 game minutes of each earning loop at one
-    reading, minute by minute, the characters in the team's order; an earning loop started beside
-    another sharing its clock, its first game minute shorter than a real minute; with no earning loop
-    in the game state the clock set to the reading, so a first earning loop gets a whole first game
-    minute; the loop clock taking its new value before the result reaches the game, so a save made
-    on its way passes no game minute twice; a reading that ends a loop's map run in a death a
-    millisecond before it and the manual map run in another giving the one resurrection to the death
-    of the earning loop
-  - violates: a death settled at the reading in place of its game minute's moment; the manual map
-    run's death settled before the game minutes of the earning loops that the same reading passes; the loop clock's
-    value held in the game state; one character passed through all the game minutes of a reading
-    before the next in the open game; the speed control or the pause of a manual map run reaching
-    the loop clock
+- **Verification:** invariants: catch-up-minutes · catch-up-death-moment. tests: in the open game,
+  earning loops going by the browser's date and not by the elapsed time of the manual map run, on a
+  loop clock apart from the game state that counts whole game minutes, each as long as the balance
+  data gives, takes its new value before the result reaches the game state, is set to the reading
+  when no earning loop stands and to a reading before it with no game minute passed; a death in an
+  earning loop settled at its game minute's own moment in the open game, the same in calls of any
+  size; the open game passing the game minutes of a reading one after another, within each game
+  minute the characters in the team's order, the same in calls of any size; the death of the manual
+  map run settled at the reading, after the earlier death in an earning loop took the one
+  resurrection. For the first completion of the manual map run that a reading brings, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: a reading that passes game minutes of earning loops and brings the first completion of
+    a map by the manual map run settling that completion after those game minutes, at the reading,
+    so a death in those game minutes finds the resurrection as the completion had not yet renewed it
+  - violates: the first completion of the manual map run settled before the game minutes of the
+    earning loops that the same reading passes
 - **Origin:** none
 
 *Rationale:* one game minute per real minute is world time, and a date says what time it is with no
@@ -5296,12 +5928,12 @@ inactive, and the player stops the earning loop first.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-53 · derives from D-170 · derives from D-239
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Puść w pętlę” at Las starting the character at once on the program its list shows,
-    the list afterwards showing that program as after a send; a pick on the list of a character in
-    an earning loop reaching its next send or start and leaving the running earning loop as it is
-  - violates: a question for a program or a map before the start; „Wejdź” stopping the earning
-    loop by itself; „Puść w pętlę” at a map not yet solved; a start leaving the pick standing
+- **Verification:** tests: „Puść w pętlę” standing beside „Wejdź” at each character in „Kto idzie”
+  of the card of a solved map alone, and starting the earning loop at once on the click with the
+  program the character's list „Program:” shows, the player staying on the card; the start making
+  that program the one the character used last and the one with which a character last entered a
+  map, and clearing the pick; at a character in an earning loop „Wejdź” and „Puść w pętlę” inactive
+  and a send and a start refused, while those of another character stay active.
 - **Origin:** none
 
 *Rationale:* a character goes to earn from the place it is sent from, on the program it already
@@ -5319,13 +5951,16 @@ A running earning loop shows on the card and the screen of its character, and at
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-239 · narrows D-133 · narrows D-166 · narrows D-171 · narrows D-174 · narrows D-186 · narrows D-196 · narrows D-201
-- **Verification:** an agent compares a change with the decision:
-  - complies: a line reading „Pętla: Las · przejście 3 · minuta 212 · domknięte 2” on the
-    character's card on Siedziba, on its screen Postać and at that character in „Kto idzie” of the
-    card of Las, moving with each game minute of the earning loop; the counts of the last manual map run staying as they were after an earning loop
-    starts; the program editor staying on the player's programs while earning loops pass
-  - violates: a button that opens the map of an earning loop's map run; firing counts gathered in an
-    earning loop's map run; the start of an earning loop clearing the counts
+- **Verification:** tests: the line „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”
+  of a running earning loop, with „Zatrzymaj”, on the card of its character on Siedziba, on its
+  screen Postać and at it in „Kto idzie” of the card of a map, and at no character outside an earning
+  loop; an earning loop's map run gathering no firing counts, and the start of an earning loop
+  leaving the counts a manual map run left as they were. For the role of the line and for what the
+  map-run view and the program editor show, an agent compares a change with the part no test holds:
+  - complies: the line in `text`; the program editor staying on the player's programs and the
+    map-run view on the manual map run while earning loops pass
+  - violates: a button that opens the map of an earning loop's map run; the map-run view drawing an
+    earning loop's map run; the line in `text-secondary` or `danger`
 - **Origin:** none
 
 *Rationale:* the player checks a program in a manual map run and reads an earning loop by what it brings, so one line says what it does and how far it has come. The screen of a map run takes its map run as a parameter, so a preview can come later as an addition. The firing counts stay as they were because D-93 holds a manual map run's counts until the next send or map run restart. On the card of a map the character in an earning loop shows the same line as on its card in Siedziba, with „Zatrzymaj”, and the buttons below it inactive. Accepted with it: the player sees neither what the character does nor why it died, cannot watch an earning loop, as the predecessor game allowed, and checks a program only by a manual map run, the rule that a map run counts its firings takes an exception, and a destructive button stands on the screen where characters are sent.
@@ -5342,13 +5977,18 @@ of the saved game state too, stands in the role `text-secondary` „Pętla zatrz
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-183 · derives from D-189
-- **Verification:** invariants: trip-run-end · loop-practice-payment. An agent compares a change with the decision:
-  - complies: a stop in the middle of a map run leaving the chest as it stood and the character's
-    skills grown by what the earning loop and that map run gathered; „Pętla zatrzymana” after a stop
-    with nothing gathered, standing after a reload and gone at the next send; „Zatrzymaj” neutral
-    at rest and in `danger` under the pointer
-  - violates: a question before the stop; the text of „Zatrzymaj” in `danger` at rest; the stopped map run left on the screen; the line gone after
-    a reload; the loot of the stopped map run reaching the chest
+- **Verification:** invariants: trip-run-end · loop-practice-payment. tests: „Zatrzymaj” as a
+  destructive button that stops the earning loop at once on the click, on the card of the character,
+  on its screen Postać and in „Kto idzie”, paying the practice of the earning loop and of its map run
+  going on into the character skills, after a death of that map run only the earning loop's own, and
+  leaving the character outside any earning loop, free to be sent again; the line „Pętla zatrzymana ·
+  wprawa: {umiejętność} +{n}, …” in the order of the skills' data, or the bare „Pętla zatrzymana”
+  where nothing was gathered, on the card and the screen of that character alone, standing after a
+  load of the game state and gone at the next send or start of that character. For the role of the
+  line, an agent compares a change with the part no invariant and no test holds:
+  - complies: the line „Pętla zatrzymana …” in `text-secondary` on the card and the screen of the
+    character
+  - violates: the line in `text` or `danger`
 - **Origin:** none
 
 *Rationale:* a stop is the player's own act on a character it can see, so it acts at once, and the
@@ -5390,21 +6030,30 @@ manual map run reads the report on reaching Siedziba.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-240
-- **Verification:** invariants: loop-practice-payment. An agent compares a change with the decision:
-  - complies: an earning loop a death stopped standing above one that went on; a line of an earning
-    loop a death stopped naming no practice, since the death took it; a character's own change in the
-    chest on its line, with the practice waiting at its earning loop, the map run going on included,
-    read from the earning loop whenever the section is drawn and gone after „Odbierz” until the earning loop gathers
-    more, and „Odbierz” beside the line only where practice waits;
-    a resurrection used in the catch-up adding „ · wskrzeszenie zużyte”, and one used in the open game
-    adding no line; a stop in the open game on a line that holds minutes of an earlier return reading
-    with no minutes; „Skrzynka jest pełna.” following the chest as the section is drawn; „Zatrzymaj”
-    leaving the character's line open, so the next return of a later earning loop of that character
-    adds to it
-  - violates: a second return replacing the report; a report held outside the game state; a button
-    „Zamknij” at each character; a stop in the first game minute of the catch-up left out of the
-    section; „Gdy cię nie było” over a section that holds stops in the open game and no return; the report drawn on the
-    screen of a manual map run
+- **Verification:** invariants: loop-practice-payment. tests: the section above „Drużyna” on
+  Siedziba, titled „Gdy cię nie było”, or „Pętle, które stanęły” while it holds only stops in the
+  open game; one line for each character that had an earning loop, a later earning loop of a
+  character whose earning loop a death stopped opening a line of its own; the lines of earning loops
+  a death stopped first, in `danger`, naming no practice and with no „Odbierz”, with the game minutes
+  the catch-up passed, or with no minutes for a stop in the open game, also on a line that held
+  minutes of an earlier return, and with the generation; the others after them, each group in the
+  team's order, with the game minutes the catch-up passed, the character's own signed change of the
+  chest, the practice waiting and „Odbierz” in `positive` beside it, what is empty left out, and
+  „ · wskrzeszenie zużyte” where a resurrection covered a death in the catch-up; „Skrzynka jest
+  pełna.” where the chest is full; the practice waiting read from the character's own earning loop,
+  its map run going on included, whenever the section is drawn, gone with its button after
+  „Odbierz” and back when the earning loop gathers more; the report in the game state, surviving a
+  reload, a further return adding to it, the section opening from one whole game minute of the
+  catch-up and at a stop in its first game minute; one „Zamknij” emptying the whole report; the
+  report hidden on the screen of a manual map run and on Postać and read on reaching Siedziba. For
+  the roles of the lines that went on and of the sentence of a full chest, and for a later earning
+  loop of a character whose earning loop „Zatrzymaj” stopped, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the lines of earning loops that went on in `text`, and „Skrzynka jest pełna.” in
+    `warning`; „Zatrzymaj” leaving the character's line open, so the next return of a later earning
+    loop of that character adds to it
+  - violates: „Skrzynka jest pełna.” in `text` or `danger`; a line of an earning loop that went on in
+    `text-secondary`; a later earning loop after „Zatrzymaj” opening a second line of that character
 - **Origin:** none
 
 *Rationale:* earning loops a death stopped come first, since they are what asks for the player's hand; a
@@ -5439,13 +6088,16 @@ browser's (D-209) and after a sign-in to the same account with that unsaved game
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-212 · derives from D-240
-- **Verification:** invariants: catch-up-minutes. An agent compares a change with the decision:
-  - complies: a game closed for a month computing all its game minutes on return, the page waiting for
-    it; the tab that lost to another browser's save loading that save and then catching up; the load
-    taking no time passed, the catch-up running after it; a new game and a refused save passing
-    through it and changing nothing
-  - violates: a load that advances earning loops itself; a bound on the minutes with the rest lost; a
-    state kept in the page's memory going on from the sign-in with its missed game minutes dropped
+- **Verification:** invariants: catch-up-minutes. tests: the catch-up running on its own after the
+  load the page makes when it opens with a session. For the catch-up after a sign-in, after a save
+  lost to another browser's and after a sign-in with the unsaved game state kept in the page's
+  memory, an agent compares a change with the part no invariant and no test holds:
+  - complies: the tab that lost to another browser's save loading that save and then catching up; a
+    sign-in to the same account with the state kept in the page's memory catching up from that
+    state's save time
+  - violates: a state kept in the page's memory going on from the sign-in with its missed game
+    minutes dropped; a save with earning loops loaded at a sign-in through the form and shown without
+    its catch-up
 - **Origin:** none
 
 *Rationale:* the player comes back to what the earning loops earned, however long the absence, and
@@ -5473,12 +6125,11 @@ moment of that save.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-219
-- **Verification:** an agent compares a change with the decision:
-  - complies: the save time travelling inside the game of the saved document, which the server stores
-    unread; a save leaving the game state of the browser view the same value, so the comparison of
-    D-207 sees no change
-  - violates: a column of the account database for the save time; the server's clock as the save
-    time; the loop clock's value written as the save time; a load reading the clock
+- **Verification:** tests: each saved document, a retry and the document kept in the page's memory
+  included, carrying the moment of the reading of the browser's clock made for it, stamped on a copy
+  so that the game state the browser view holds stays the value it was; a document with no save time
+  refused; a new game holding no save time, and a game loaded from a save holding the moment of that
+  save.
 - **Origin:** none
 
 *Rationale:* the catch-up counts from this moment, and the renewal of a resurrection goes by the same
@@ -5508,12 +6159,15 @@ discovers what the character met in a manual map run.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-239
-- **Verification:** invariants: loop-run-knowledge. An agent compares a change with the decision:
-  - complies: a first chill in an earning loop's map run adding nothing to the Understanding and no
-    rule to the content the earning loop holds, its game minutes taking effect in the order of D-71;
-    what a manual map run discovers meanwhile widening an earning loop's repertoire, as D-119 gives
-  - violates: an earning loop's map run stopping at a discovery; a program rule written into a
-    program by an earning loop; a discovery named in the report
+- **Verification:** invariants: loop-run-knowledge. tests: a loop's map run, passed on its own and in
+  the catch-up, through the game minutes in which a manual map run discovers, its game time going on
+  with no stop and no discovery, and the program content the earning loop holds gaining no rule. For
+  the player discovering what a character met only in a manual map run, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: a creature a character first meets in an earning loop's map run entering the
+    Understanding only when a manual map run meets it
+  - violates: a discovery of an earning loop's map run named in the report of the time away, or
+    entered when that report closes
 - **Origin:** none
 
 *Rationale:* on a solved map discoveries are few and nothing loses them, the player makes them in a
@@ -5532,12 +6186,14 @@ and the earning loops of other characters go on through them.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-122 · derives from D-239
-- **Verification:** an agent compares a change with the decision:
-  - complies: a manual map run paused in game minute 100 while another character's earning loop
-    passes its game minutes and ends a map run; the screen after a death standing while an earning
-    loop deposits into the chest
-  - violates: one pause holding every map run of the game; earning loops standing still while the
-    screen after a completion stays
+- **Verification:** tests: a paused manual map run standing as it is in the open game and in the
+  catch-up while another character's earning loop passes its game minutes. For the stop at a
+  discovery and the screen after the end, an agent compares a change with the part no test holds:
+  - complies: a manual map run stopped at a discovery while another character's earning loop passes
+    its game minutes and ends a map run; the screen after a death standing while an earning loop
+    deposits into the chest
+  - violates: earning loops standing still while a manual map run waits at a discovery or while the
+    screen after its completion stays
 - **Origin:** none
 
 *Rationale:* earning goes with the world's time (D-239), so looking at a manual map run or at its
@@ -5559,11 +6215,13 @@ program, clipped by carrying capacity and the map's entry cap, exceeds the stock
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-188 · derives from D-189
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the line, word for word, at a character in „Kto idzie” of a solved map
+  alone, under its „Wejdź”, where an item of the take list, clipped by carrying capacity and the
+  map's entry cap in the order of the list, exceeds the stock in the chest, and none where the chest
+  holds it. For the role of the line, an agent compares a change with the part no test holds:
   - complies: a program taking three pieces of an item the chest holds two of showing the line under
-    „Wejdź” at Las once Las is solved; the same program at a map not yet solved showing no line
-  - violates: the line measured against the take list before its clipping; the line in a role other
-    than `warning`
+    „Wejdź” at Las in `warning`
+  - violates: the line in a role other than `warning`
 - **Origin:** none
 
 *Rationale:* a manual map run of a solved map takes its equipment from nowhere (D-189), so it can go
@@ -5593,20 +6251,33 @@ identifier of a thing included, while anything that points to a person takes the
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28
-- **Verification:** an agent compares a change with the decision:
-  - complies: a failure the server handled written as one line with `failure`, `kind`, `code` and
-    `place` and the `accountId` of its case; an operation on the server added to the list of the
-    logging scope in the change that brings it; the readiness line `Loop: <address>` as plain text,
-    since the six rules call for failure and event lines and this line is neither: it is a process's
+- **Verification:** tests: the rules on failures and logs as the server and the owner's commands
+  keep them — a failure they handled written once with its kind, its code and its place, a failure
+  with no error of a library naming its reason, no address, token, password, client address, text
+  of an error or stack in a line, a line for each business event and none for a refusal or for a
+  message that was not sent; a log line of the server and of the owner's commands one JSON object
+  on one line, written through `console`, its fields only among the fixed names; a failure of
+  `measure-passwords` keeping the error's text in its report; a line with the account's number for
+  each change of a player's account and of access to it — an account created, a sign-in, a
+  sign-out, a link issued, a message sent, an address confirmed, a password set, a previous save
+  put aside, a block, an unblock, the previous-save privilege granted or revoked — and none for a
+  save of a game or for a command that changed nothing. An agent compares a change with the part
+  no test holds:
+  - complies: a new rule on failures or logs written into `guidelines/coding.md` in the form of the
+    pinned template, with no departure; the readiness line `Loop: <address>` as plain text, since
+    the six rules call for failure and event lines and this line is neither: it is a process's
     announcement to what launches it, in the exact form the invariants
-    `account-server-occupied-address` and `account-server-default-address` fix; a failed run of
-    `account-database-check` leaving in the log of the image build its sentence with the error's text
-    and no failure line of the log form, and a failed run of `measure-passwords` giving the error's text in its report
-    for the script that ran it, the one JSON object it prints, and no failure line of the log form
-  - violates: a line of `field=value` text in Node.js code; an error's message written where it may
-    quote a value; an email address added to the list without the human's consent; a line for each
-    save of a game; a failure line of the log form, with `failure`, `kind`, `code` and `place`, written by
-    `account-database-check` or `measure-passwords`; the error's text left out of the message of either
+    `account-server-occupied-address` and `account-server-default-address` fix; a line in the
+    browser's console as plain text, and a Bash script's lines in its own text; a failed run of
+    `account-database-check` leaving in the log of the image build its sentence with the error's
+    text and no failure line of the log form, and a failed run of `measure-passwords` printing no
+    failure line of the log form; an operation that changes what runs on the server or its backup
+    added to the list of the logging scope in the change that brings it
+  - violates: a rule of the six left out of `guidelines/coding.md`, or code that departs from one,
+    with no decision of a departure; a failure line of the log form, with `failure`, `kind`, `code`
+    and `place`, written by `account-database-check` or `measure-passwords`; the error's text left
+    out of the sentence of `account-database-check`; a line for housekeeping, such as a cleanup of
+    the database that succeeded; an email address added to the list without the human's consent
 - **Origin:** none
 
 *Rationale:* when something fails, the owner and an agent see its cause and not only its effect, and
@@ -5644,15 +6315,16 @@ the last two touch those data and write no kind or code.
 - **Scope:** browser-view · account-server · build-tools · deployment
 - **Based on:** node-uncaught-default-print · python-uncaught-default-print · html-exception-reporting
 - **Relations:** derives from D-252
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new command that opens the account database installing the handler before its work;
-    a script of the test gate that ends on an uncaught error with its runtime's default print; an
-    error thrown in a timer of the page leaving in the console one line `uncaught kind=TypeError
-    code=none place=…` and nothing else of the browser
-  - violates: the message or the stack of an uncaught error printed by a process that touches the
-    data of accounts; a handler of its own added to a script that touches none; the event of an
-    error nothing handled left uncancelled, so that the browser prints its text and stack; the text
-    of an error in a line of the page
+- **Verification:** tests: the server, `account-block`, `account-previous-save` and
+  `account-backup` each ending on an exception or a rejection no code handled with one line of its
+  kind, code and place and none of its text; the page cancelling an error and a rejection no code
+  handled and writing in the console one plain line of the kind, the code and the place of its
+  handler, never the error's text or stack, the same line once until the page is reloaded, also
+  when its report fails; the command that stops the local start, which touches no account data,
+  ending on what nothing handled with Node's default print. An agent compares a change with the
+  part no test holds:
+  - complies: a script of the test gate that touches no account data ending on an uncaught error with the default print of Node.js or Python; `account-database-check`, `measure-passwords`, `deploy/loop2-backup` and `scripts/restore-trial.mjs` keeping the last-resort handling they have
+  - violates: a handler of its own added to a script that touches no account data; a script that touches no account data catching what nothing handled and ending with nothing of it written
 - **Origin:** none
 
 *Rationale:* a process that reads accounts can fail on an error that quotes an address or a stored
@@ -5687,7 +6359,10 @@ touches neither the test server nor a player's save.
 - **Scope:** agent-workflow · build-tools
 - **Based on:** none
 - **Relations:** derives from D-12 · derives from D-110
-- **Verification:** invariants: local-start-access. An agent compares a change with the decision:
+- **Verification:** invariants: local-start-access. tests: `npm run local`, one command, starting
+  the game over HTTPS at an address where a browser registers and signs in and which presents a
+  certificate that holds for it. An agent compares a change with the part no invariant and no test
+  holds:
   - complies: a check on an account made through the form of a game started by the command; a game
     state holding the verbs of combat and a bought branch, built with functions of the simulation
     and sent by the save request of that account
@@ -5752,11 +6427,15 @@ counts as running. A person plays on the test server.
 - **Scope:** build-tools · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-255
-- **Verification:** an agent compares a change with the decision:
-  - complies: an account gone after the next start; a start still running keeping its database
-    beside a later one
-  - violates: a setting that keeps the database between starts; a start that removes the database
-    of a start still running
+- **Verification:** tests: each start making a database of its own, which neither an environment
+  value nor an argument leads elsewhere; an account of a start that ended or was killed gone at the
+  next start, which removes the databases of the starts it does not find running and keeps that of
+  a start still running beside it; a start whose process number is in use and whose port takes a
+  connection and stays silent counted as running, and one whose number another program holds and
+  whose port takes no connection counted as ended. An agent compares a change with the part no
+  test holds:
+  - complies: a person who asks where to play sent to the test server by the description of the local start
+  - violates: a description of the local start, or a skill, that offers it to a person as a place to play
 - **Origin:** none
 
 *Rationale:* a database made for one check starts from what the check assumes, and a person has the
@@ -5773,11 +6452,11 @@ as it is. A person goes through the whole way with mail on the test server.
 - **Scope:** build-tools · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-111 · derives from D-255
-- **Verification:** an agent compares a change with the decision:
-  - complies: a registration at the local start that ends at once with the message failed and the
-    address unconfirmed; confirming an address left to a person on the test server
-  - violates: a branch of the server that switches mail off for the local start; a check at the
-    local start that claims a message arrived
+- **Verification:** tests: a registration at the local start answered before the mail sender's
+  deadline, with the message failed and the address unconfirmed, so that the mail settings point
+  where nothing answers. An agent compares a change with the part no test holds:
+  - complies: the server of the local start running the same mail code as on the test server, only its settings pointing where nothing answers; confirming an address and setting a new password left to a person on the test server
+  - violates: a branch of the server that switches mail off for the local start; a check at the local start that claims a message arrived
 - **Origin:** none
 
 *Rationale:* a server that holds accounts always has its mail settings, so the local start gives
@@ -5797,10 +6476,11 @@ The local start makes its own certificate, and a person clicks through the brows
 - **Scope:** build-tools · agent-workflow
 - **Based on:** git-for-windows-openssl
 - **Relations:** derives from D-255
-- **Verification:** an agent compares a change with the decision:
-  - complies: a certificate made by the command, and a warning a person passes in the browser
-  - violates: a step that adds a certificate authority to the trusted ones of the system; an
-    instruction to install another program for the certificate
+- **Verification:** tests: the local start presenting at its address a certificate of its own,
+  which holds for that address when it alone is trusted. An agent compares a change with the part
+  no test holds:
+  - complies: a warning of the browser that a person clicks through at the local start's address
+  - violates: a step that adds a certificate authority to the trusted ones of the system; an instruction to install another program for the certificate
 - **Origin:** none
 
 *Rationale:* the command needs no new program and changes no trust on the computer, at the price of
@@ -5819,11 +6499,10 @@ switch, and the ways out of them are „Wróć do logowania” and „Anuluj”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-225
-- **Verification:** an agent compares a change with the decision:
-  - complies: a first visit showing „Zaloguj się” with the switch above the form and no heading; a
-    page opened by a password-reset link showing the heading „Ustaw nowe hasło”, no switch and
-    „Anuluj”
-  - violates: the switch in the form „Nie pamiętam hasła”; a heading „Załóż konto” under the switch
+- **Verification:** tests: the card opening on „Zaloguj się” at a first visit, after a logout, a
+  set password, a refused link and an expired session; the switch above the forms of „Zaloguj się”
+  and „Załóż konto”, which have no heading; the headings „Nie pamiętam hasła” and „Ustaw nowe hasło”
+  with no switch, their ways out „Wróć do logowania” and „Anuluj”.
 - **Origin:** none
 
 *Rationale:* the switch offers the two forms a visitor comes for, and a heading beside it would say
@@ -5844,11 +6523,9 @@ pamiętam hasła” does, and the page's one sentence (D-261) stays.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
-- **Verification:** an agent compares a change with the decision:
-  - complies: a visitor who typed an address under „Zaloguj się” and switched finding the address
-    field of „Załóż konto” empty, with focus in it
-  - violates: a password kept for the way back to the other state; a refusal under the form still
-    standing after the switch
+- **Verification:** tests: a press of the switch either way, and the button „Nie pamiętam hasła”,
+  emptying every field, removing every refusal, field message and sentence of the reset, and moving
+  focus to the address field of the form it opened, while the page's sentence stays.
 - **Origin:** none
 
 *Rationale:* one rule for every change between the card's forms leaves no password in a field nobody
@@ -5868,10 +6545,10 @@ while the card changes state and leaves only at a change between the card and th
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-97 · derives from D-156 · derives from D-160 ·
   derives from D-211 · derives from D-225
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Gra została zaktualizowana. Odśwież stronę.” standing in the card above the switch and
-    still there after the visitor switches to „Załóż konto”
-  - violates: that sentence standing outside the card; a press of the switch removing it
+- **Verification:** tests: the sentence of a refused link, of a set password and of an updated game
+  standing in the card above the switch, and above the heading and the form of „Nie pamiętam hasła”
+  and of „Ustaw nowe hasło”; the sentence staying through every change of the card's state and
+  leaving when the game comes, and the one above the game leaving when the card comes.
 - **Origin:** none
 
 *Rationale:* the sentence tells the visitor what happened to the page, so one click on another form
@@ -5894,11 +6571,15 @@ handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” sta
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · narrows D-156
-- **Verification:** an agent compares a change with the decision:
-  - complies: a reload showing „Sprawdzanie logowania…” with the header, and then the card alone or
-    the game; a card whose drawing threw replaced by „Coś w grze się zepsuło — odśwież stronę.”
-    alone, with no header
-  - violates: the card standing under the header; „Sprawdzanie logowania…” written inside the card
+- **Verification:** tests: the card of the account forms and of a reset link standing alone in the
+  page's body, the header and the place of the screen hidden; „Sprawdzanie logowania…” at a reload,
+  after a sign-in and after a way out of the reset form, and the warning with „Spróbuj ponownie”,
+  each with the header shown and no card; a card that React takes down, alone and on the page,
+  leaving „Coś w grze się zepsuło — odśwież stronę.” alone in its place. An agent compares a change
+  with the part no test holds:
+  - complies: a page opened by a confirmation link showing „Potwierdzanie adresu…” with the header
+    and no card, for a signed-in and a signed-out player alike
+  - violates: „Potwierdzanie adresu…” written inside the card, or on a screen with no header
 - **Origin:** none
 
 *Rationale:* a signed-in player passes through the waiting screens at every reload, and they say
@@ -5955,13 +6636,23 @@ where React must answer, and keeps no copy of either.
 - **Scope:** browser-view · build-tools
 - **Based on:** react-hook-order-report · react-entry-build
 - **Relations:** derives from D-03 · derives from D-88
-- **Verification:** an agent compares a change with the decision:
-  - complies: a case of a screen in React that imports the harness first and walks the page,
-    screens still in DOM included, and clicks a button with the harness's `press`; a test of another
-    screen keeping its own stand-in
-  - violates: a hand-made document model grown until React runs on it; a second harness for the next
-    screen; a test file of a screen in React that defines a copy of the harness's `press` or
-    `fire`; a test that passes while React's development build reports a changed order of hooks
+- **Verification:** tests: no file under `tests/` but the harness loading jsdom or happy-dom; each
+  case on a window of its own, which the product reads as its globals and which no other case
+  reaches; the focus leaving a focused control that becomes disabled, by its property, its
+  attribute, its fieldset or React, and staying where it is otherwise; React's work awaited through
+  `act`; typing through the input's native value setter and a bubbling `input` event, which reaches
+  a controlled field's change and a listener outside React; a case failed on a report of React's
+  development build through `console.error`; the harness's `press` clicking inside `act`, and its
+  `fire` sending a bubbling event of its target's window, a `pointerout` as a mouse event. An agent
+  compares a change with the part no test holds:
+  - complies: a case of a screen in React whose file imports the harness before React and clicks a
+    button with the harness's `press`, and sends an event React answers through `fire` inside `act`;
+    a test of a screen not built with React keeping its own stand-in for the document; jsdom kept
+    at one exact version in `package.json`
+  - violates: a hand-made document model grown until React runs on it; a test file of a screen in
+    React that imports the harness after React, or defines a copy of the harness's `press` or
+    `fire`; jsdom declared with a range of versions; a test of a screen not built with React made to
+    give up its stand-in for jsdom
 - **Origin:** none
 
 *Rationale:* what replaces the hand-made document model in the tests of screens that move to React
@@ -6006,13 +6697,19 @@ the one place of the look of both.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · narrows D-03
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new attribute of the button written in both forms in one change; a DOM screen left
-    on the DOM form by a change that moves another screen; a new section of the waiting screen of
-    the sign-in check built in DOM; a new screen in React that imports a pure function of a DOM module
-  - violates: a React component that wraps the DOM function; a class that only the React form sets;
-    a React form with no case in the test that compares the two; a new screen that builds its
-    DOM elements with `document.createElement` after the pattern of a DOM module
+- **Verification:** tests: the React form and the DOM form of the button, the text field, the
+  password field, the sentence under a form, the pick cell, the select list and the number field
+  drawing one element tree, with the same tag, classes, attributes and text, the input's `value`
+  attribute apart, in each kind and state the tests compare. An agent compares a change with the
+  part no test holds:
+  - complies: a DOM screen left on the DOM form by a change that moves another screen; a new section
+    of the waiting screen of the sign-in check built in DOM; a new screen in React that imports a
+    pure function of a DOM module; a new state of a control that a React screen uses, given its
+    case in the test that compares the two forms in the same change
+  - violates: a React component that wraps the DOM function; a React form, or a state of it that a
+    React screen uses, with no case in the test that compares the two; a new screen that builds its
+    DOM elements with `document.createElement` after the pattern of a DOM module; the look of a
+    control written outside `src/browser/styles.css`, as a `style` attribute both forms set
 - **Origin:** none
 
 *Rationale:* the screens move to React one at a time, so for a while both kinds stand on one
@@ -6045,11 +6742,15 @@ bundle, the page and the static files. A build that writes them first removes bo
 - **Scope:** build-tools · browser-view · simulation · account-server
 - **Based on:** none
 - **Relations:** derives from D-06
-- **Verification:** an agent compares a change with the decision:
-  - complies: a test importing one module from `dist/browser/`; the page loading the one bundle from
+- **Verification:** tests: the build compiling every TypeScript file of the browser's source into a
+  module at the same path below `dist/browser/`, and leaving in `dist/public/` no JavaScript file
+  but the one bundle the page loads; a build removing a module an earlier build left in
+  `dist/public/` or in `dist/browser/`. An agent compares a change with the part no test holds:
+  - complies: a test importing one module from `dist/browser/`; the bundler taking its entry from
+    `dist/browser/`
+  - violates: a test importing the bundle; a bundler reading the sources; a file other than the
+    bundle, the page and the static files, such as a copy of a TypeScript source, written into
     `dist/public/`
-  - violates: a compiled module written into `dist/public/`; a test importing the bundle; a bundler
-    reading the sources
 - **Origin:** none
 
 *Rationale:* what the server hands out is what a player can reach, so that directory holds nothing
@@ -6111,12 +6812,19 @@ reopens how the limit is held.
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Based on:** node-assert-failure-inspect · node-worker-threads · node-sigkill-termination · node-process-rss
 - **Relations:** derives from D-264
-- **Verification:** invariants: document-test-memory-limit. An agent compares a change with the
-  decision:
-  - complies: a throwaway file that starts the limit before it loads jsdom; a failing comparison on
-    a DOM element that ends in a short message naming its case
-  - violates: a helper on jsdom that takes `assert` from `node:assert`; a file outside `tests/` that
-    loads jsdom with no limit
+- **Verification:** invariants: document-test-memory-limit. tests: the harness's `assert` failing
+  with a short plain error that carries no value, also on a rendered element and in the report of
+  the runner; the limit the harness starts read by a thread that kills a process whose main thread
+  is stuck, with its sentence on standard error, and that leaves a process under the limit alone.
+  An agent compares a change with the part no invariant and no test holds:
+  - complies: a throwaway file outside `tests/` that imports `tests/view/memory-limit.mjs` first
+    and starts the limit before it loads jsdom; how the limit is held taken up again once a
+    forty-first test file on a document imitation comes
+  - violates: a helper under `tests/` that works on jsdom's elements and takes `assert` from
+    `node:assert` without importing the harness; a file outside `tests/` that loads jsdom with no
+    limit, or starts the limit after it has loaded jsdom; a forty-first test file on a document
+    imitation, or a test on none whose memory runs away, met with the limit left held as it is and
+    how it is held not reopened
 - **Origin:** none
 
 *Rationale:* Node writes out both values of a failing comparison before it throws, and on a DOM
@@ -6190,12 +6898,12 @@ browser-view-framework in the same change.
 - **Scope:** browser-view · build-tools
 - **Based on:** npm-lock-peer-dependencies
 - **Relations:** derives from D-03
-- **Verification:** invariants: browser-view-framework. An agent compares a change with the
-  decision:
-  - complies: a screen built with React and the browser's APIs alone; a library for dragging taken
-    in by a change that names it here and lets it through that check
-  - violates: a component library on React added to the runtime dependencies; a library on React
-    taken as a development dependency and imported by a screen
+- **Verification:** invariants: browser-view-framework. For how a library built on React is let
+  in, an agent compares a change with the part no invariant holds:
+  - complies: a library for dragging taken in by a change that names it in this decision and lets it
+    through the check of browser-view-framework
+  - violates: a library on React let through the check of browser-view-framework by a change that
+    leaves this decision without its name
 - **Origin:** none
 
 *Rationale:* with React allowed, a library on React is the likely way another way of drawing comes
@@ -6228,33 +6936,35 @@ frost by at least 3:1 against the snow it lies on.
 - **Scope:** browser-view · build-tools · deployment
 - **Based on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit
 - **Relations:** none
-- **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. An agent compares a
-  change with the decision:
+- **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
+  the files of the smaller flame, of the mage's death, of the wolf and of the camp's clearing and
+  chest holding pixels alone; the chest of the camp one still picture, the same empty and full; the
+  credit line of the pack LPC Wolf naming its licence CC BY 3.0; the frost's thickness in whole
+  pixels of the scene, its pixel a part of the frame's width and height, and the specks of a
+  completion whole pixels of the scene on its grid, rising by whole pixels over the open snow alone;
+  the frost's outline standing out by at least 3:1 from the snow measured under every tint. For where
+  the pictures come from, the sprite files no test reads and the colours CSS draws in, an agent
+  compares a change with the part no invariant and no test holds:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
-    PNG file with no chunk but its pixels', copied into `sprites/` of what `npm run build` writes;
-    the clearing of the camp composed from the pack's snow ground and trees, and its chest cut from
-    the pack's sheet with every pixel moved unchanged, each a PNG file of that kind, the camp's
-    characters and fire the files of the scene's mage and fire;
-    the character of the scene drawn from a sprite file made from the pack's mage; the cloud of dust
-    a sprite file made from the smoke of Smoke & Fire Animated Particle [16x16] in browns the scene
-    holds, which the cloud of a scuffle is too, with a credit line for the pack in the folded section
-    of credits; the wolf a set of sprite files made from the side views of the pack LPC Wolf, every
-    pixel of them moved unchanged into frames of one size with the wolf's feet on their bottom row,
-    and a credit line for that pack that names its author and its contributor, its page, its licence
-    CC BY 3.0 and that the frames were cut out; the smaller flame of the
-    campfire a sprite file made from the frames of the pack's fire with the flame cut down by hand;
-    the frost on the edges of the frame built by CSS of squares of one pixel of the scene on its grid
-    in colours the pictures of the pack's trees hold, its outline or its fill 3:1 or more against the
-    snow under every tint of the light; the fall of the mage a sprite file made from the pack's death
-    sheet of the mage, every pixel of it moved unchanged into frames of the mage's size; the specks of
-    light after a completion built by CSS of squares of one pixel of the scene on its grid in colours
-    read from pixels of the pack's bonfire, standing out from the open snow they rise over
-  - violates: a picture placed straight in the directory the server serves; a sprite file in
-    another format, or a PNG file carrying text or metadata chunks; a picture drawn from a pack
-    other than the three named; a wolf drawn from a pack under another licence than CC BY 3.0; the cloud of dust in a colour that does not stand out from the
-    ground it stands on; a pack whose licence asks for a credit, used with no credit line in the
-    game; the hooded figure of loop as the character of the scene; a mage, a creature or a prop
-    drawn by CSS as a shape; a frost whose outline and fill both read on the snow of the open place under 3:1; a speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour no choice of the human gave; a chest of the camp drawn from an icon file as a mask, or in one picture when it is empty and in another when it is full
+    PNG file with no chunk but its pixels'; the clearing of the camp composed from the pack's snow
+    ground and trees, and its chest cut from the pack's sheet with every pixel moved unchanged, the
+    camp's characters and fire the files of the scene's mage and fire; the character of the scene
+    drawn from a sprite file made from the pack's mage; the cloud of dust a sprite file made from the
+    smoke of Smoke & Fire Animated Particle [16x16] in browns the scene holds, which the cloud of a
+    scuffle is too; the wolf a set of sprite files made from the side views of the pack LPC Wolf,
+    every pixel of them moved unchanged into frames of one size; the smaller flame of the campfire a
+    sprite file made from the frames of the pack's fire with the flame cut down by hand; the fall of
+    the mage a sprite file made from the pack's death sheet of the mage; the frost on the edges of the
+    frame built by CSS of squares of one pixel of the scene on its grid in colours the pictures of the
+    pack's trees hold; the specks of light after a completion in colours read from pixels of the
+    pack's bonfire, standing out from the open snow they rise over; the tint layer and the cold layer
+    in colours the human chose
+  - violates: a sprite file no test reads carrying text or metadata chunks; a picture drawn from a
+    pack other than the three named; the cloud of dust in a colour that does not stand out from the
+    ground it stands on; the hooded figure of loop as the character of the scene; a mage, a creature
+    or a prop drawn by CSS as a shape; a frost or a speck in a colour no picture of a pack holds; a
+    speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour
+    no choice of the human gave; a chest of the camp drawn from an icon file as a mask
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
@@ -6316,14 +7026,16 @@ scene, and text stands on a solid background, never on a picture.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the scene of a map run and the camp at the top of Siedziba, the camp over
+  the screen's panel and its heading, each a picture with no text in it. For the login card, text
+  laid over a picture from outside it and the screens with no picture, an agent compares a change
+  with the part no invariant and no test holds:
   - complies: the screen of the login card with the picture over the whole window and every sentence
-    of the page inside the card, on its solid `panel`; the scene at the top of the world area of the
-    screen of a map run with no text on it or over it, „Teraz” and „Potem” on the solid background
-    under it; the waiting screens with no picture
+    of the page inside the card, on its solid `panel`; „Teraz” and „Potem” on the solid background
+    under the scene; the waiting screens with no picture
   - violates: a sentence of the page standing on the picture outside the card; the card's background
-    made half-transparent over the picture; the game minute or the name of the map written over the
-    scene
+    made half-transparent over the picture; the game minute or the name of the map laid over the
+    scene from an element beside it
 - **Origin:** none
 
 *Rationale:* the game stops looking like a form through pictures where there is nothing to read,
@@ -6379,11 +7091,13 @@ form keeps the button D-44 gives it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-279
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: „Wejdź” at a character in „Kto idzie” of the card of a map of the kind
+  `main` of the shared button, a button that sends no form, beside „Puść w pętlę” as the plain
+  button. For the look of the main button, one main button to a form and the plain button of every
+  other action outside a form, an agent compares a change with the part no test holds:
   - complies: „Zaloguj się” under the login form with its text in `text-strong`, framed in the same
-    colour and unfilled, on `highlight` under the pointer; „Wejdź” at each character in „Kto idzie”
-    in the main look, beside „Puść w pętlę” made with the plain shared button; an action of the
-    headquarters made with the plain shared button
+    colour and unfilled, on `highlight` under the pointer, and „Wejdź” of the kind `main` drawn in
+    that same look; an action of the headquarters made with the plain shared button
   - violates: a form with two buttons in the main look; a main button filled, or framed in
     `selected` or in a colour other than its text's; a role of colour added for the main button
 - **Origin:** none
@@ -6421,11 +7135,15 @@ and has no address. Every other action of the browser view keeps the button D-44
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the secondary action of the shared button a button of the type `button`
+  with the class `secondary`, in both forms; „Nie pamiętam hasła” a button standing under the login
+  form, outside it. For the look of the secondary action, the actions of the login card drawn as
+  secondary actions and the plain button of every other action, an agent compares a change with the
+  part no test holds:
   - complies: „Wróć do logowania” under the form „Nie pamiętam hasła” as underlined text without a
-    frame, a button the keyboard reaches; „Wyloguj” in the menu „Konto” kept a plain button
-  - violates: „Usuń” of a program rule drawn as underlined text; „Nie pamiętam hasła” made a link
-    with an address; a secondary action given a frame
+    frame; „Wyloguj” in the menu „Konto” kept a plain button
+  - violates: „Usuń” of a program rule drawn as underlined text; „Anuluj” of the form „Ustaw nowe
+    hasło” drawn as a plain framed button; a secondary action given a frame
 - **Origin:** none
 
 *Rationale:* a way into or out of a form's state, such as a forgotten password, is commonly made as
@@ -6451,10 +7169,14 @@ buttons of D-130 keep the look of the button selected in its group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-96
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a tab, in both forms of the shared button and as „Kronika” and „Teren”
+  of the screen of a map run, a button with `aria-pressed`, `true` on the chosen one alone, which a
+  click switches. For the look of a tab, its keyboard, the absence of arrow keys and of the roles
+  of tabs, the switch of the login card drawn as tabs and the look of the pace buttons, an agent
+  compares a change with the part no test holds:
   - complies: „Załóż konto” chosen in the switch with its text in `text-strong` and a line in
-    `selected` at its bottom, `aria-pressed="true"`, and Space on „Zaloguj się” switching and moving
-    focus to its address field
+    `selected` at its bottom, and Space on „Zaloguj się” switching and moving focus to its address
+    field
   - violates: arrow keys moving between tabs, or `role="tab"`, with no change of this decision; the
     chosen tab marked by a line in `positive`; a pace button drawn as a tab
 - **Origin:** none
@@ -6490,7 +7212,9 @@ The menu bar marks the place the player is at as the chosen tab is marked (D-276
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-276
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the menu bar marking the item of the place the player is at, Siedziba on
+  Siedziba, Mapy on Mapy and Programy on Programy, and moving the mark as the player moves. For the
+  look of the mark, an agent compares a change with the part no test holds:
   - complies: the item of the menu bar for the screen the player is on with its text in
     `text-strong` and a line in `selected` at its bottom
   - violates: that item marked in green, by a background or by a frame
@@ -6569,19 +7293,20 @@ at most three clicks: the choice of a map, the map's row and „Wejdź”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-277
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the game opening the screens Siedziba, Postać, Mapy, Programy and
+  Przejście at their addresses; the menu bar holding the game's name alone on the waiting screens,
+  and over the game the name, the items Siedziba, Mapy and Programy in that order with no icons and
+  the menu „Konto” with the address and „Wyloguj”; „Wróć do przejścia · {mapa} · minuta {m}” with the
+  map run's game minute, leading to the screen of the map run, on Siedziba, Postać, Programy and Mapy
+  while the map run goes on or has ended in a death until „Zakończ”, and on no screen of a map run;
+  the name of a character on its card on Siedziba leading to its screen Postać; the menu bar marking
+  Siedziba on Postać, Mapy on `#/mapy` and on `#/mapy/{map}`, and no item on the screen of a map run;
+  a player with one character reaching the first map run from Siedziba by „Mapy”, the row of a map
+  and „Wejdź”. For the width of the content, an agent compares a change with the part no test holds:
   - complies: the content of Siedziba and of Programy 1344 px wide in a window 1920 px wide and as
-    wide as a window 1000 px wide; the menu bar holding Siedziba, Mapy and Programy in that order,
-    with Mapy marked on `#/mapy` and on `#/mapy/{map}`; after the player leaves a map run of Las at game minute 212,
-    „Wróć do przejścia · Las · minuta 212” on Siedziba, Postać and Programy, still there after the
-    character's death until „Restart” or „Zakończ”, and none on the screen of that map run;
-    „Sprawdzanie logowania…” under a menu bar holding the game's name alone; on the screen Postać
-    the item Siedziba marked; a player with one character, who has picked nothing before, reaching
-    the first map run from Siedziba by „Mapy”, the row of a map and „Wejdź”
-  - violates: an item of the menu bar with an icon; an inactive item Mapy on the menu bar;
-    „Wróć do przejścia” gone after a death before „Zakończ”; an item marked on the screen of a map
-    run; the clock of „Wróć do przejścia” written as „03:32”; content wider on Programy than on
-    Siedziba
+    wide as a window 1000 px wide
+  - violates: content wider on Programy than on Siedziba; the content of Postać narrower than a
+    window 1000 px wide
 - **Origin:** none
 
 *Rationale:* the player reads the game by where things stand: one page holding the program, the
@@ -6629,16 +7354,13 @@ apart from these, and after them the page opens Siedziba.
 - **Scope:** browser-view
 - **Based on:** uri-fragment-in-requests
 - **Relations:** derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: a reload at `#/programy/3` opening Programy with program 3 picked;
-    `#/postac/2/przejscie` with no map run of character 2 opening the screen Postać of character 2;
-    `#/programy/9` with no program 9 opening `#/programy`; `#/nieznany` opening Siedziba; a page
-    opened at `#confirm-email=…` confirming as D-156 gives and opening Siedziba for a signed-in
-    player; a reload at `#/mapy/forest` opening Mapy with Las picked; the address of a map that does
-    not exist, or of Las — głębiej before Las is solved, opening Siedziba
-  - violates: an address in the path, such as `/programy`; a screen „Nie ma takiego miejsca”; the
-    screen of a map run reading the map run from the game state rather than from its parameter; the
-    address of a map off the list of open maps opening `#/mapy`
+- **Verification:** tests: the seven addresses in the fragment after `#`, each read as its screen,
+  written by it and opened at a reload, a program's and a map's by their number and identifier; the
+  page writing and following them in the fragment; an address that leads to no existing screen
+  opening the nearest one, a map run with none the screen Postać of its character, a program with
+  none `#/programy`, and any other Siedziba, a map off the list of open maps included; the screen of
+  a map run drawing the map run it was given and not the game state's; the fragments of emailed
+  links read as no screen, and a signed-in player opening Siedziba after them.
 - **Origin:** none
 
 *Rationale:* the server hands out files, so a screen reached by the fragment survives a refresh, and
@@ -6668,17 +7390,16 @@ and its target after it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: the world, the program and the area with the tabs „Kronika” and „Teren” of the screen
-    of a map run each an area of its own, which a narrower layout can place one above the other in
-    that order; on Programy the list of programs and the program editor each an area of its own,
-    the rule panel opening in place in the editor (D-288); on Mapy the list of
-    maps and the card of a map each an area of its own; the team on Siedziba, drawn in React, under
-    the heading „Drużyna”; the rule panel offering „Zbierz” and, once it is picked, the targets
-    of „Zbierz” in a field after it
-  - violates: two columns of a screen drawn as one block that a narrower layout cannot set apart;
-    the characters of Siedziba as a bare list with no heading; one flat pick holding „Zbierz —
-    patyk” and „Zbierz — jagoda” as cells of their own
+- **Verification:** tests: the world, the program and the tabs of the screen of a map run, and the
+  list of programs and the program editor of Programy, each an area of its own; the team on
+  Siedziba as the section „Drużyna” under its heading; the rule panel offering the action „Zbierz”
+  as one cell and its target in a field after it. An agent compares a change with the part no test
+  holds:
+  - complies: a narrower layout placing the world, the program and the area with the tabs „Kronika”
+    and „Teren” of the screen of a map run one above the other in that order; on Mapy the list of
+    maps and the card of a map each an area of its own
+  - violates: the list of maps and the card of a map of Mapy drawn as one block that a narrower
+    layout cannot set apart; areas of a screen whose places a narrower layout cannot change
 - **Origin:** none
 
 *Rationale:* a layout for a phone, several teams and actions with targets of their own come later,
@@ -6699,11 +7420,9 @@ Leaving the screen of a manual map run pauses it as „Pauza” does.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21
-- **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player opens Siedziba standing paused at the
-    same game minute, while the earning loop of another character passes its game minutes
-  - violates: a manual map run passing its game minutes while the player stands on Programy; leaving
-    the screen holding the map run in a state of its own other than the pause of „Pauza”
+- **Verification:** tests: leaving the screen of a manual map run that goes on, by a change of
+  address, the browser's forward button included, pausing it as „Pauza” does, its game minute
+  standing while real time passes, also while the question „Zapisać, odrzucić, wrócić?” stands.
 - **Origin:** none
 
 *Rationale:* an earning loop goes on as D-250 gives. The player fast-forwards a map run in order to
@@ -6720,11 +7439,13 @@ player presses „Wznów”, whether or not it went on before the player left.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-283
-- **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player opens Programy standing paused at the
-    same game minute when the player comes back to it, and going on only after „Wznów”
-  - violates: the map run going on by itself on the return because it went on before the player
-    left
+- **Verification:** tests: a return to the screen of a map run that went on before the player left
+  finding it in the pause leaving put it in, at the same game minute, waiting for „Wznów”. For a
+  map run already paused before the player left, an agent compares a change with the part no test
+  holds:
+  - complies: a map run of Las paused by „Pauza” before the player opens Programy standing paused
+    at the same game minute when the player comes back to it, and going on only after „Wznów”
+  - violates: a map run paused before the player left going on by itself on the return
 - **Origin:** none
 
 *Rationale:* one pause gives the player one way to hold a map run and one way to go on (D-122), so a
@@ -6744,12 +7465,15 @@ sentence of the outcome can be read.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: Enter on „Konto” opening the menu and Escape closing it with focus on „Konto”; the
-    menu standing open with „Nie udało się wysłać wiadomości. Spróbuj ponownie później.” after the
-    answer to „Wyślij ponownie”, until the player clicks outside it
-  - violates: the menu closing at the click on „Wyloguj” or „Wyślij ponownie”; the menu closing by
-    itself after the server's answer; focus left on the page after Escape rather than on „Konto”
+- **Verification:** tests: the menu opening on a click on „Konto”, a native button, and closing on
+  Escape, on a click outside it and on a second click on „Konto”, focus then on „Konto”; the menu
+  standing open while „Wyloguj” or „Wyślij ponownie” waits for the server and after the answer until
+  the player closes it. For the keyboard in a real browser, which the tests on a document imitation
+  do not show, an agent compares a change with the part no test holds:
+  - complies: Enter and Space on „Konto” opening the menu in the browser, as the browser's own click
+    of a native button
+  - violates: a key handler on „Konto” that stops Enter or Space, so the keyboard no longer opens
+    the menu
 - **Origin:** none
 
 *Rationale:* the player reads the outcome of what the menu sent without opening it again. Accepted
@@ -6768,10 +7492,9 @@ change of screen.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-156 · derives from D-225
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Adres e-mail potwierdzony.” above Siedziba after a confirmation link, gone once the
-    player opens Programy and not back on the return to Siedziba
-  - violates: that sentence standing above Programy and Postać until a reload
+- **Verification:** tests: „Adres e-mail potwierdzony.” and the sentence of a discarded saved game
+  state above Siedziba, the first screen, standing through an act that changes no screen, gone once
+  the player opens Programy and not back on the return to Siedziba.
 - **Origin:** none
 
 *Rationale:* the sentence speaks of the moment the game opened, so it stands with the first screen
@@ -6794,13 +7517,17 @@ kupisz po jego zakończeniu.”
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-55 · derives from D-200
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a death in a map run of Las, before „Zakończ”, „Puść w pętlę” of another
-    character starting its earning loop, while „Wejdź” of each character in „Kto idzie” stands
-    inactive above „Przejście na mapie Las jest niezakończone. Wróć do niego i je zakończ, żeby
-    wysłać postać.”
-  - violates: „Wejdź” or „Kup” inactive with no sentence by it; „Puść w pętlę” of another
-    character inactive while a manual map run waits
+- **Verification:** tests: on the screen Mapy, while a manual map run goes on, waits or has ended,
+  „Wejdź” of every character inactive and „Puść w pętlę” inactive at that map run's character
+  alone, another character's staying active; „Kup” on the screen Postać inactive while the map run
+  waits and after its end; under the buttons of each character in „Kto idzie” the sentence naming
+  the map from the data, gone after „Zakończ”; at „Umiejętności” the sentence that ranks are bought
+  after the end of the map run. For what Siedziba and the screen Postać keep active, an agent
+  compares a change with the part no test holds:
+  - complies: while a map run of Las waits in a pause, „Załóż” on Siedziba creating a character and
+    „Zatrzymaj” on the screen Postać stopping another character's earning loop
+  - violates: Siedziba or the screen Postać blocking an act the simulation allows, such as „Załóż”
+    or „Zatrzymaj”, while a manual map run waits or has ended
 - **Origin:** none
 
 *Rationale:* one sentence, true both while the map run waits and after its end, says why the buttons
@@ -6827,17 +7554,20 @@ rule group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-44
-- **Verification:** an agent compares a change with the decision:
-  - complies: one editor component drawing the program on Programy and the copy on the screen of a
-    map run; a click on the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” opening the rule panel
-    under that row, on Programy and on the screen of a map run, and a click on the header of a rule
-    group opening it under that header, Programy keeping its two columns, the list of programs and
-    the editor; a program rule dragged by its handle into another rule group, a line showing where
-    it lands; a rule group dragged by its handle above another
-  - violates: a native select list in a rule's row; the rule panel opened over the rows, beside
-    them or in a column of its own on either screen; „↑” and „↓” in the header of a rule group; a
-    discovered action the player may not pick left out of the pick rather than greyed with its
-    reason
+- **Verification:** tests: one program panel with its rule list and rule panel on Programy and on
+  the screen of a map run; a rule's row reading „Zapas poniżej 8 · Patyk” and „Zbierz — Patyk”
+  with the arrow between them; the rule panel standing in the list right under the row or the
+  header it changes, on both screens, in no column or area of its own, and moving there when
+  another rule opens; each pick moving on to the next field; the conditions as cells in two
+  columns, in sections parted by a line, which the arrow keys reach; a cell that may not be picked
+  greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and by a
+  handle, with the line „tu wyląduje” where they land and no line over their own place, over the
+  panel or after the drag ends; rule groups moved by a handle with such a line, and no arrows in
+  the header of a rule group. For the cells of actions and targets reached by the keyboard, an
+  agent compares a change with the part no invariant and no test holds:
+  - complies: the arrow keys moving among the cells of the action and of its target as they do
+    among the conditions
+  - violates: the cells of the actions reached by the mouse alone
 - **Origin:** none
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
@@ -6901,16 +7631,14 @@ above fits and with none otherwise, and the player can change it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-196 · derives from D-288 · narrows D-119
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Obchód”, discovered and not bought by the character of a manual map run, greyed with
-    „gałąź niewykupiona”; with no map run in the game, „Zbierz” offering every discovered item;
-    „Kopnij” to be picked while no creature attacks; a rule whose target is absent from the map of
-    the map run showing that target picked and greyed with „nie ma go na tej mapie”, and a click on
-    another target changing it; a rule holding a value that none of the listed reasons fits showing
-    it picked and greyed with no reason, and a click on another value changing it
-  - violates: „Kopnij” in the pick before the first attack revealed it; a greyed cell with no
-    reason where one of the listed reasons fits; „Zbierz” left out of the pick while no target is
-    known; a rule's value outside the pick shown as if nothing were picked
+- **Verification:** tests: the pick of conditions, actions and targets holding only what the
+  Understanding holds; „gałąź niewykupiona” at a branch action the character of the map run has
+  not bought, and none once it has; „wybierzesz w przejściu postaci, która ją kupiła” at such an
+  action with no map run; „nie znasz jeszcze celu” at „Idź”, „Zbierz”, „Obchód”, „Tu leży mniej
+  niż” and „Zapas poniżej” with no known target; „nie ma go na tej mapie” at a known resource the
+  map of the map run lacks; with no map run every known target open; the actions of combat open
+  outside combat; a value the rule holds outside the pick shown chosen and greyed, with the reason
+  that fits or with none, and another pick changing it.
 - **Origin:** none
 
 *Rationale:* the pick holds as many choices as the player has found, so it never starts
@@ -6941,11 +7669,9 @@ niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zbierz” and „Obchód” under the name Zbieranie; „Zawsze” alone in the first section of
-    the conditions, a line below it
-  - violates: the conditions in one column; „Kopnij” in a group of its own; a name above a section
-    of conditions
+- **Verification:** tests: the actions of the pick in the four named groups and their order, in
+  the data and in the rule panel; the conditions in two columns, in the four sections and their
+  order, with no names, parted by a line.
 - **Origin:** none
 
 *Rationale:* cells give a condition one click and keep one control for every pick (D-288).
@@ -6963,12 +7689,16 @@ shows the icon of the action, never one of its target.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-27 · derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk”, in the
-    cell „Zbierz”, over the head of the mage gathering and before „Zbierz — Patyk” in „Teraz”; „Idź”
-    and „Idź — ognisko” sharing one icon
-  - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
-    while a cell that may be picked has one; cells drawn as text alone while the rows show icons
+- **Verification:** tests: every action of the data naming one icon; the icon of the action in a
+  rule's row for „Eksploruj”, over the mage's head and in the rows „Teraz” and „Potem”, there the
+  icon of „Zbierz” and never one of its target for „Zbierz — Patyk”; an icon in the cell of an
+  action in the pick. For the icon of a rule's row whose action has a target and the icon in a cell
+  of the pick being its action's own, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” and in
+    the cell „Zbierz”, a greyed cell keeping its icon
+  - violates: the icon of a stick in the row of „Zbierz — Patyk”; a cell drawing an icon other than
+    its action's; a greyed cell drawn with no icon while a cell that may be picked has one
 - **Origin:** none
 
 *Rationale:* the sign of the action tells „Idź — patyk” from „Zbierz — patyk”, which a sign of the
@@ -6992,11 +7722,9 @@ program rule the number of its group and its own number in that group, such as �
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first rule of the second group numbered „2.1”, and the numbers following the
-    order after a rule moves
-  - violates: rules numbered through the whole program as „1”, „2”, „3” across their groups; a
-    rule group with no number
+- **Verification:** tests: a rule group numbered by its place in the program and a program rule by
+  the number of its group and its place in it, such as „2.1”, computed and shown in the header of a
+  group and in the row of a rule.
 - **Origin:** none
 
 *Rationale:* a number gives a reference to a rule something to point at, such as „reguła 2.1”
@@ -7012,10 +7740,10 @@ run the time of a step on that map, and nothing for a movement outside a map run
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zbierz — Patyk” with its time in its row and beside „Zbierz” in the rule panel;
-    „Kopnij” with „tura”; „Idź” on Programy with no map run in the game showing no time
-  - violates: a time in the row and none in the panel; a time beside „Idź” outside a map run
+- **Verification:** tests: the time of one execution — the minutes of the data, „tura” for an
+  action of combat, the step of the map for a movement during a map run and nothing for a movement
+  outside one — computed, shown in a rule's row, beside the cells of the actions in the rule panel
+  and beside the value of its field of the action.
 - **Origin:** none
 
 *Rationale:* with the time the player compares actions without playing them, also in the panel,
@@ -7032,9 +7760,13 @@ does not hold it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: a group folded on Programy still folded after a visit to Siedziba, and unfolded after
-    a reload; a save of the game state carrying nothing of folding
+- **Verification:** tests: one memory of the page holding the folding, so that a group folded on
+  Programy stands folded on the screen of a map run for the same program, the other screen redrawn
+  at once; a new memory with every rule group unfolded. For the folding going with a reload and
+  staying out of the saved game state, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: a group folded on Programy unfolded after a reload; a save of the game state carrying
+    nothing of folding
   - violates: folding kept in the browser's storage; a field of folding in the saved game state
 - **Origin:** none
 
@@ -7052,10 +7784,13 @@ program rule dropped on it lands at its end while the group stays folded.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: a folded group of three rules showing its name, its condition and the number three; a
-    rule dropped on it becoming its fourth while it stays folded
-  - violates: the group unfolding at the drop; the rule landing at the group's start
+- **Verification:** tests: a folded group showing its header alone, with its name and the number of
+  its rules; a rule dropped on a folded group landing at its end, the line standing under its header
+  and the group staying folded. For the condition a folded group shows, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: a folded group under „Temperatura poniżej 35” showing that condition in its header
+    beside its name and „3 reguły”
+  - violates: the condition left out of the header of a folded group
 - **Origin:** none
 
 *Rationale:* a group that stays folded keeps the list where it stood under the pointer.
@@ -7069,11 +7804,10 @@ the group's „✕” stands in its header.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: a click on the header of „Program” opening the rule panel on its name and „Zawsze”;
-    „✕” of the group in that header
-  - violates: a select list of conditions or a text field of the name in the header of a rule
-    group
+- **Verification:** tests: a click on the header of a rule group asking to open the group, on
+  Programy and on the screen of a map run, and the panel then standing under that header with the
+  field of the group's name; the panel of a group holding the fields of its name and its condition;
+  „✕” of the group in its header.
 - **Origin:** none
 
 *Rationale:* one panel changes a rule and a group, so the header stays a line to read, as a rule's
@@ -7089,11 +7823,10 @@ first rule and „↓” only on its last.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „↓” on rule 1.3, the last of group 1, making it rule 2.1; „↑” on rule 2.1 making it the
-    last rule of group 1
-  - violates: „↓” disabled on the last rule of a group that has a next group; the rule landing at the
-    end of the next group
+- **Verification:** tests: „↓” on the last rule of a group moving it to the start of the next
+  group, an empty one too, and „↑” on the first rule of a group to the end of the previous one,
+  computed and from the buttons of the list; „↑” disabled only on the program's first rule and „↓”
+  only on its last, the border of a group being no end.
 - **Origin:** none
 
 *Rationale:* arrows suit moving a single rule (D-288), and across the edge of a group the rule lands
@@ -7109,10 +7842,12 @@ Beside the rule groups of a program that holds more than one rule group stands a
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-275 · derives from D-294
-- **Verification:** an agent compares a change with the decision:
-  - complies: the button made with the shared button beside a program of two groups, and absent
-    beside a program of one
-  - violates: „zwiń wszystkie” drawn as underlined text; the button beside a program of one group
+- **Verification:** tests: „zwiń wszystkie” folding every rule group, „rozwiń wszystkie” standing
+  in its place once every group is folded and unfolding every group, and neither standing beside a
+  program of one group. For the button being a plain button, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the button made with the shared button beside a program of two groups
+  - violates: „zwiń wszystkie” drawn as underlined text
 - **Origin:** none
 
 *Rationale:* folding five groups one by one takes five clicks. The button neither opens nor leaves a
@@ -7127,9 +7862,13 @@ The pick of the rule panel holds no search field and no row of recent picks.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the pick of a game with every action discovered standing whole without scrolling
-  - violates: a search field above the cells; a row „ostatnio” above the grid
+- **Verification:** tests: no field to type in and no row „ostatnio” in the rule panel open on the
+  pick of conditions. For the picks of actions and of targets, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the pick of actions of a game with every action discovered standing whole without
+    scrolling, with no field above its cells
+  - violates: a search field above the cells of the actions; a row „ostatnio” above the grid of
+    targets
 - **Origin:** none
 
 *Rationale:* when this was settled every cell of the pick fitted without scrolling, so neither a
@@ -7145,9 +7884,12 @@ The program editor shows no current value beside a condition, such as „teraz 3
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run
-  - violates: „teraz 3” beside a condition in a rule's row or in the rule panel
+- **Verification:** tests: no „teraz” in the rule panel open on the pick of conditions outside a
+  map run. For a rule's row, and for the rule panel during a map run, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run, in its row and in
+    the rule panel
+  - violates: „teraz 3” beside a condition in a rule's row, or in the rule panel during a map run
 - **Origin:** none
 
 *Rationale:* a current value takes another reading of the game state and an answer to what to show
@@ -7163,9 +7905,8 @@ A rule group that holds no program rule shows „Pusta grupa — przepuszcza dal
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** an agent compares a change with the decision:
-  - complies: the rule group „Program” of a new game showing „Pusta grupa — przepuszcza dalej.”
-  - violates: an empty rule group with nothing under its header
+- **Verification:** tests: „Pusta grupa — przepuszcza dalej.” in a rule group that holds no rule,
+  and not in a group that holds rules.
 - **Origin:** none
 
 *Rationale:* the sentence says what the character does with such a group: it passes on to the next.
@@ -7179,11 +7920,9 @@ it says nothing of the firing counts.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-131
-- **Verification:** an agent compares a change with the decision:
-  - complies: the sentence in the rule panel of the copy on the screen of a map run, and none in the
-    rule panel of a saved program on Programy
-  - violates: the sentence speaking of the counts too; the sentence in the rule panel of a saved
-    program
+- **Verification:** tests: „Zmiana zeruje passę tego przejścia.” in the rule panel of the copy,
+  with no word of the counts, and none in the panel of a saved program, on the screen of a map run
+  and on Programy.
 - **Origin:** none
 
 *Rationale:* a change of the copy's rules sets the streak to zero (D-131), so the panel says so
@@ -7197,9 +7936,8 @@ A program rule and a rule group are deleted at once, at the click, with no quest
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „✕” of a rule group removing the group at the click
-  - violates: a window asking whether to delete a program rule
+- **Verification:** tests: „Usuń” of a program rule and „✕” of a rule group each handing over, at
+  the click, the program without that rule or group, with no question between.
 - **Origin:** none
 
 *Rationale:* a question costs a click more at every deletion.
@@ -7213,9 +7951,13 @@ the list.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-90 · derives from D-124
-- **Verification:** an agent compares a change with the decision:
-  - complies: „+ dodaj grupę” at the foot of the list, under the last rule group
-  - violates: „Dodaj grupę” at the foot of the list
+- **Verification:** tests: the button „+ dodaj grupę” adding an empty rule group with the next
+  number, and no button „Dodaj grupę”. For where the button stands, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: „+ dodaj grupę” at the foot of the list, under the last rule group, also when that
+    group is folded
+  - violates: „+ dodaj grupę” above the rule groups, or on one line with „+ reguła” of the last
+    group
 - **Origin:** none
 
 *Rationale:* the two buttons that add are written in one notation; „+ dodaj grupę” stands once under
@@ -7231,10 +7973,11 @@ rule or a rule group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-93
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: no „⊘”, no „nie zadziała” and no element of the class `warning` in a
+  rule list whose rules all fired 0 times. For an amber „0×” drawn by a style of the count itself,
+  an agent compares a change with the part no invariant and no test holds:
   - complies: a rule that has not fired in the map run showing „Wykonano 0×” as any count does
-  - violates: „⊘” beside a rule; „2 reguły nie zadziała” in the header of a rule group; „0×” in
-    `warning`
+  - violates: a style rule of the count giving „Wykonano 0×” the colour `warning`
 - **Origin:** none
 
 *Rationale:* the state a program rule shows during a map run is given by its backgrounds and its bar
@@ -7255,13 +7998,19 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk” written from a click on its row
-    in six acts — the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk” — and the
-    panel still open after the last of them; Escape closing it
-  - violates: the panel closing by itself after the target of the action; a pick waiting for a
-    button that confirms it; Enter on a greyed cell changing the rule; a number field standing for
-    „Zawsze”
+- **Verification:** tests: a click on a rule's row opening the panel on the condition, and
+  opening another rule showing that one on its condition; the fields in the order condition,
+  number, target of the condition, action, target of the action, each only where the rule has it;
+  each pick changing the rule at once and moving on, a pick of the value held too; Enter
+  committing the number and moving on; the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk”
+  written from a click on its row in six acts, the panel still open after them; the arrow keys
+  moving among the cells of a grid, a greyed one reached, Enter picking and doing nothing on a
+  greyed cell; „✕”, Escape and the opening of another rule closing the panel. For the number
+  confirmed by leaving its field, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
+    with the mouse, the rule then holding 8
+  - violates: a number typed and left with no Enter dropped, the rule keeping the number it held
 - **Origin:** none
 
 *Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 ·
@@ -7279,9 +8028,8 @@ pusty”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-180
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new program showing „Plan wyprawy: pusty” between its name and its rules
-  - violates: the heading „Plan wyprawy” alone above an empty plan
+- **Verification:** tests: the folded line „Plan wyprawy: pusty” on Programy for a program whose
+  two lists are empty.
 - **Origin:** none
 
 *Rationale:* an empty plan shown as its heading alone looks as though it has not loaded.
@@ -7305,17 +8053,28 @@ outside the repertoire counts as one whose condition does not hold.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-126 · derives from D-127
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: the rule that wins now on `rule-winning` with a green bar, and the same rule under the
-    pointer still on `rule-winning`; the same rule open to editing on `highlight` with its green
-    bar; a rule whose condition holds and which cannot start with an amber bar and „tu nie leży mech”
-    beside its action; the rules of a rule group whose condition does not hold with a dark bar and no
-    reason; a rule outside the repertoire amber with its reason though its own condition does not
-    hold; the same signs on the screen after a death, counted on the stopped minute
-  - violates: `highlight` under the pointer on the rule that wins; the background of its state kept on
-    an open row; a green bar at a rule that does not start now; a reason beside the dark bar of a rule
-    in a rule group that does not hold; signs beside a saved program opened during a map run, on
-    Programy or in an earning loop
+- **Verification:** invariants: rule-state-from-pick. tests: during a manual map run and on its
+  screen after a death until „Zakończ”, the rule of the copy that wins now marked as winning and the
+  rule whose action goes on, where another rule wins, marked as running, on the stopped game minute
+  after a death of cold and after a completion while the action still goes on, and no rule running
+  after a death in combat; a row open to editing keeping its bar and its marks, and the stylesheet
+  putting the background under the pointer before the backgrounds of the state and the open row
+  after them; the signs standing at the copy alone, not at a saved program picked during a map run
+  nor on Programy; the reason of a rule whose condition holds and which cannot start, and the bar of
+  every rule and rule group, below the winning rule too, a rule group's from its rules, judged as
+  able to start, unable to start or with its condition not holding, a fix of the copy showing at
+  once; a rule outside the repertoire unable to start with its reason whether or not its condition
+  holds, and every rule of a rule group whose condition does not hold or lies outside the repertoire
+  with its condition not holding and no reason. For the colours the marks take, and for the signs
+  after a completion on the screen, an agent compares a change with the part no invariant and no test
+  holds:
+  - complies: the row that wins now on `rule-winning`, the running row on `rule-running` and an open
+    row on `highlight`; the bar of a rule that can start in `positive`, of one that cannot in
+    `warning` and of one whose condition does not hold in `condition-unmet`; the same signs on the
+    screen after a completion until „Restart”
+  - violates: the row that wins now on `highlight` or on `rule-running`; the bar of a rule that can
+    start in `warning`; the bar of a condition that does not hold in the colour of the text beside
+    it; the signs gone after a completion
 - **Origin:** none
 
 *Rationale:* the player does not know why rules the player expected to run do not run. Loop showed the
@@ -7367,12 +8126,17 @@ walce”.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-140 · derives from D-141
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: in the minutes of an attack the combat rule „Kopnij” under „Zawsze” on `rule-winning`
-    and „Eksploruj” under „Zawsze” amber with „trwa walka”; outside them „Kopnij” under „Zawsze” amber
-    with „tylko w walce”
-  - violates: „Eksploruj” carrying a green bar in the minutes of an attack; no rule on `rule-winning`
-    in those minutes; a combat rule green outside combat
+- **Verification:** invariants: rule-state-from-pick. tests: in the minutes of an attack the combat
+  rule the first turn would choose, at the creature's health as it stands, marked as winning, no rule
+  marked as running, and an ordinary rule whose condition holds unable to start with „trwa walka”,
+  the combat conditions reading the health of the two sides given; outside those minutes, after a
+  death in combat too, a combat rule whose condition holds unable to start with „tylko w walce”. For
+  the mage's health the signs read and the backgrounds of those minutes, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50” winning while the mage
+    has 40 health, its row on `rule-winning`
+  - violates: the signs of an attack counted at the mage's full health; the row of the combat rule
+    the turn would choose on `rule-running` or on `highlight`
 - **Origin:** none
 
 *Rationale:* in the minutes of an attack the simulation chooses no ordinary action, and it resolves the
@@ -7399,12 +8163,19 @@ cell of the rule panel, or „jeszcze nieodkryte: {name}”.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-289
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Zbierz — Mech” on a tile with no moss reading „tu nie leży mech”; „Wytwórz — ognisko”
-    with two sticks in the backpack reading „brakuje 4 × patyk”; „Zapal — patyk” on a tile with
-    no revealed ground and with too little nature energy reading „kafelek nieodkryty”
-  - violates: two reasons beside one rule; „Tu nie leży · Mech”; „brak energii natury” given while the
-    tile is not revealed
+- **Verification:** invariants: rule-state-from-pick. tests: one reason for a rule that cannot
+  start, the world coming before the nature energy; the reason naming the thing refused in the words
+  of the game, in lower case and with no dot before the name, „tu nie leży mech”, „brakuje 4 × patyk”,
+  „brak opału: patyk” and „brak energii natury: {ma} z {trzeba}” among them, and „gałąź niewykupiona”
+  and „jeszcze nieodkryte: {name}” for a rule outside the repertoire. For the place of combat and of
+  the backpack in the order of the reasons, an agent compares a change with the part no invariant and
+  no test holds:
+  - complies: „Uderz — patyk” outside combat with no stick reading „tylko w walce”; „Zbierz — Mech”
+    on a tile with no moss in the minutes of an attack reading „trwa walka”; „Zapal — patyk” on a
+    revealed tile with no stick and too little nature energy reading „brakuje 1 × patyk”
+  - violates: „brakuje 1 × patyk” beside „Uderz — patyk” outside combat; „tu nie leży mech” beside
+    „Zbierz — Mech” in the minutes of an attack; „brak energii natury: 7 z 10” beside „Zapal — patyk”
+    with no stick in the backpack
 - **Origin:** none
 
 *Rationale:* a rule that cannot start says why in the words of the game, one reason at a time, and the
@@ -7436,25 +8207,27 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-282
-- **Verification:** an agent compares a change with the decision:
-  - complies: on the screen of a map run of Las the character's name, „Las”, „Minuta 212”, the bar
-    „Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the header, and
-    under it the world and the program side by side, the area with the tabs „Kronika” and „Teren”
-    under the drawing of the map and the line of a tile in the left column, with the chronicle under
-    „Kronika”, picked when the character was sent; „Teraz” and „Potem” under the scene, and the
-    paragraph of the last encounter standing in the chronicle; a rule opened from its row standing
-    under that row in the program, the tabs and the tab picked staying where they were, and no third
-    column appearing; after a completion the window over the screen holding the line „Do skrzynki: …”,
-    the menu bar standing above it and the world area keeping „Teraz” and „Potem” under the scene;
-    „✕” uncovering the screen with „Koniec przejścia” in its header; a death of cold on the screen, the mage falling in the scene with no window over it until the effect has played and the window standing then, and after a reload on that screen the window standing at once over a scene in its last image
-  - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
-    body row; the rule panel opened over the program, beside the rows or in a column of its own; the
-    tabs standing in the column of the program; the table of revealed tiles standing in the world
-    area itself, with the drawing; the paragraph of the last encounter standing in the world area;
-    the chronicle and the table standing one under the other; the line „Do skrzynki: …” or the
-    sentence of a resurrection standing in the world area or in the area with the tabs; „Restart” and
-    „Zakończ” standing in the world area; the window covering the menu bar; the window standing while
-    the question „Zapisać, odrzucić, wrócić?” stands; the window covering the scene in the game minute of a death before the effect of the death has played; the window waiting for an effect the scene does not play
+- **Verification:** tests: the header above areas of their own for the world, the program and the
+  tabs, the tabs „Kronika” and „Teren” holding the chronicle or the table of revealed tiles one at a
+  time as the player picks, „Kronika” picked at every send, and the editing of a rule or a rule
+  group opening in the program right under its row; the world from the top: the scene, „Teraz” and
+  „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; the
+  header holding the character's name, the map's name, the clock, the bar of the solving condition,
+  „Pauza” or „Wznów”, the paces, „Restart”, the warning of a cut trip plan after it and „Zakończ”,
+  and after the end „Koniec przejścia”, which opens the window; the window over the screen after a
+  death and a completion, the header and the areas hidden under it, the lines of the end standing in
+  it and not in the world area, „✕” and Escape closing it and uncovering the screen, the window
+  opening again at every entry and closing when the question stands; the window opening once the
+  scene's effect of the end has played, the scene uncovered while it plays, and at once at an entry
+  on the screen, after a reload or a load and under reduced motion. For the two columns and the
+  place of the window under the menu bar, an agent compares a change with the part no invariant and
+  no test holds:
+  - complies: on the screen of a map run of Las in a window 1280 px wide, the world and under it the
+    area with the tabs in the left column and the program in the right column; after a completion
+    the window standing under the menu bar and the row of warnings, the menu bar in sight above it
+  - violates: the program standing under the world in a window 1280 px wide; the tabs standing in
+    the column of the program or in a third column of their own; the window covering the menu bar or
+    the row of warnings
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
@@ -7555,21 +8328,14 @@ player's own has been carried out to give (D-123), the band leaves that sentence
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-123
-- **Verification:** an agent compares a change with the decision:
-  - complies: at the first chill of a new game the band reading „Gra dopisała regułę w grupie
-    „Program”: Zawsze → Eksploruj.” after what was discovered; with the copy's groups „Ogień” and
-    „Głód”, „Głód” holding no rule „Zawsze → Eksploruj”, the first chill writing the rule into
-    „Ogień” and the player dragging „Głód” above it while the band stands, the band still reading „Gra dopisała regułę w grupie „Ogień”: Zawsze →
-    Eksploruj.”; „Ogień” renamed „Ciepło” while the band stands giving „… w grupie „Ciepło”: …”;
-    the rule deleted while the band stands and no other group holding „Zawsze → Eksploruj”, the band
-    keeping what was discovered with no sentence about the rule; the first chill of a copy holding
-    a rule „Eksploruj” of the player's own, which its character has carried out, the band keeping
-    what was discovered with no sentence about a rule
-  - violates: after „Głód” is dragged above „Ogień”, the band reading „Gra dopisała regułę w grupie
-    „Głód”: Zawsze → Eksploruj.” while „Głód” holds no rule „Zawsze → Eksploruj”; the sentence still
-    standing after the rule or its group was deleted while no other group holds „Zawsze →
-    Eksploruj”; the sentence in the band of a discovery in a map run whose record holds a minute of
-    exploring; „Gra dopisała regułę 1.1”; the group named from the saved program rather than from the copy
+- **Verification:** tests: the sentence „Gra dopisała regułę w grupie „{nazwa grupy}”: Zawsze →
+  Eksploruj.” with no number of the rule in the band of the discovery at which the game wrote the
+  rule, and none in the band of another discovery; the group it names the first group of the copy,
+  in the copy's order, holding a rule „Zawsze → Eksploruj”, after the first group renamed before
+  the chill, a group renamed or dragged above it while the band stands, the rule moved into another
+  group, another group's own such rule dragged above it, and a load of the paused game; the
+  sentence left out where no group of the copy holds such a rule and where the record of the map
+  run holds a minute of exploring.
 - **Origin:** none
 
 *Rationale:* the band stands above the program the map run carries out, the copy, so it names the
@@ -7616,18 +8382,16 @@ stands in the end-of-run window where the window names a discovery of the game m
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-124 · derives from D-306
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — patyk” at the end of the copy's
-    first rule group, with the rule panel open on the action; at the first chill of a new game
-    „Zawsze → Wędruj” added at the end of the copy's group „Program” with the panel on the action
-    and the streak at zero (D-131); a discovery of an item alone adding „Zawsze → Eksploruj” with the
-    panel on the condition; a discovery of „Idź” and „Wędruj” while the rule panel offers no target
-    for „Idź” giving „Zawsze → Wędruj”; the window of a completion in the game minute of the discovery „Zbierz, Patyk” with the button, which closes the window and gives „Zawsze → Zbierz — patyk” with the rule panel open on the action
-  - violates: „Odkryto: Zbierz, Patyk.” giving „Zawsze → Zbierz — jagoda”; the rule added to a rule
-    group of its own or to the saved program; the panel opened on the condition after the button
-    filled the action; the button adding a rule group while the copy holds none; the window of a
-    completion in the game minute of a discovery with the text of the discovery and no button, or with
-    the button leaving the window open over the rule panel
+- **Verification:** tests: the rule „Zawsze → {the first action}” added at the end of the copy's
+  first rule group, not to a group of its own nor to a saved program, its target the first item of
+  the discovery that matches it or else the first target the rule panel offers, an action no one
+  can pick a target for giving way to the next, and the panel opened under the new rule on the
+  action; where the discovery holds no such action, „{the first condition} → Eksploruj” with the
+  number and target a pick of that condition gives, a condition no one can pick a target for giving
+  way to the next, and the panel opened on the condition; „Zawsze → Eksploruj” with the panel on the
+  condition where the discovery holds neither; the button disabled where the copy holds no rule
+  group, in the band and in the end-of-run window; the same button in the end-of-run window that
+  names a discovery, closing the window and then adding the rule with its panel open.
 - **Origin:** none
 
 *Rationale:* the words „z tym” promise a rule made of what was just discovered, so the button writes
@@ -7657,7 +8421,9 @@ the pack Pixel Crawler that the predecessor game, loop, cut out.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-271
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the background of the scene the forest's picture in one still frame. For
+  what the forest shows and the pictures it is composed from, an agent compares a change with the
+  part no invariant and no test holds:
   - complies: a background of pines, a tree and a sapling in their snow variants, composed from
     loop's cut pictures of Pixel Crawler
   - violates: a green forest; a background composed from pictures cut anew from the pack's sheets
@@ -7682,14 +8448,21 @@ streak; the cold layer after a death of cold (D-322) lies over the layer of the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-314
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the layer of the tint over the background, the props, the burning
+  campfire, the mage, the wolf with the cloud of its scuffle, the dust and the icon flying on its
+  plaque, and under the frost and the carrier of the badge over the mage's head, which stands outside
+  the mage's element; the specks of a completion over the layer; the cold layer after a death of cold
+  over the layer of the tint and under the frost. For the picture's own file, the extinguished
+  campfire, the plaques of a discovery and the colours that stay over the layer, an agent compares a
+  change with the part no invariant and no test holds:
   - complies: the file of the background as light as the cut pictures it is composed from and in
-    their colours, the cool tint at streak 0 and the gold at a completion a layer over it, the
-    props, the fire, the mage and the icon flying on its plaque under that layer and the frost and the
-    badge over the mage's head over it
+    their colours, with no tint and no darkness in it; an extinguished campfire under the layer; the
+    plaques of a discovery over the layer, on their solid `panel` background; the frost the same
+    colours at streak 0 and at a completion
   - violates: the file of the background darkened, as the picture behind the login card is, or
-    tinted; a tint drawn by putting another file in place of the background; the mage or the
-    flying icon with its plaque left out of the layer, or the badge, a plaque of a discovery, a speck of light or the frost under it
+    tinted; a tint drawn by putting another file in place of the background; an extinguished
+    campfire left out of the layer; a plaque of a discovery under the layer; a frost whose colour
+    changes with the streak
 - **Origin:** none
 
 *Rationale:* the tint of the scene's light follows the streak and turns full gold at a completion, so
@@ -7734,30 +8507,35 @@ after „Restart” and after a load the tint stands at once where the streak, o
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-18 · derives from D-271
-- **Verification:** invariants: loop2-container-sprites. For what the scene draws and from what, an
-  agent compares a change with the decision:
-  - complies: the mage and the campfire drawn from the game state of a map run, with the file and the
-    place of the sticks, the bush and the moss read from the files of the game's data; the sticks,
-    the bush and the moss standing in the scene while the character's tile holds none of them; an
-    extinguished campfire on the character's tile drawn still and grey; the frames of the mage's
-    sprite changing by a CSS animation at the same beat at 1× and at 16×; the tint at streak 240 of
-    Las standing at 0.4 of the way to the gold, at streak 480 at 0.8, and at streak 700 still there;
-    a loss of the streak taking the tint back over 2 s, and the same loss in the player's pause
-    or at a discovery showing nothing until the scene goes on; an attack of the wolf at the clearing
-    showing it run in from the right edge and stand on the mage's right, the mage turned to it, a
-    cloud of dust between them for the five minutes of the combat, and then the wolf lying down and
-    gone where the mage won, running off to the right where it departed, and standing still beside the
-    dead mage where the mage lost; an attack at the right edge showing the wolf on the mage's left
+- **Verification:** invariants: loop2-container-sprites. tests: the scene drawing from its previous
+  reading and from the events of the simulation call — the place the mage keeps, a map run started,
+  the attack and the moment; the sticks, the berry bush and the moss always in the scene, also on a
+  tile holding none of them, and the campfire only on the character's tile, burning, or extinguished
+  in the same picture in `grayscale(1) brightness(0.55)`; the wolf through the minutes of the
+  combat, running in from the right edge at the reading of its attack, standing on the mage's right
+  facing it, or on its left at the right edge, the mage turned toward it, and left standing beside
+  the mage by a death or a completion within its run; the wolf in the frames of its bite with a
+  small cloud of dust between it and the mage; a defeated wolf falling where it stood and gone, a
+  departing one running off to the right edge, and the wolf standing still beside the mage after a
+  death in the combat and after a completion in it; the tint going evenly from 0 at streak 0 to 0.8
+  at the streak the map's condition asks for, staying there as the streak grows on and 1 at a
+  completion alone; a loss of the streak while the scene goes on taking the tint back on a return of
+  its own, which in the player's pause and at a discovery begins only where the scene goes on, and
+  the tint standing at once at a death, a completion, a map run started and a first draw. For what
+  the scene holds, the source of its pictures, its motion and the colours of its tint, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: the place where the mage stands kept by the scene and not in the game state; the file
+    and the place of the sticks, the bush, the moss and the wolf read from the files of the game's
+    data; a burning campfire moving and an extinguished one standing still; the frames of the mage's
+    sprite changing by a CSS animation at the same beat at 1× and at 16×; the mage in the frames of
+    its idle sheet while it scuffles; the tint never blue, never greying the scene, leaving its
+    brightness as it is and changing nothing in the game; a loss of the streak taking the tint back
+    over 2 s
   - violates: the picture of a resource named in the code of the browser view; the picture or the file
-    of the wolf named in the code of the browser view; a wolf standing in the scene through the combat
-    without a mage that turns to it; a blow shown by a flash or a mark of its own; a dead wolf left
-    lying in the scene until the next attack; a wolf held part of the way across the frame by a death
-    of the mage within the 300 ms of its run; a canvas or a timer
-    redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
-    in the scene while the character's tile holds none; the place where the mage stands kept in the
-    game state; a tint in full gold at the required streak of Las; a tint that darkens or greys the
-    scene or turns it blue; a return of the tint in one frame, or one that runs while the pause holds
-    the map run; a tint that runs back from where it stood at a death or at „Restart”
+    of the wolf named in the code of the browser view; a blow shown by a flash or a mark of its own; a
+    canvas or a timer redrawing the scene on every tick; the beat of the frames following the pace; an
+    extinguished campfire whose flame still moves; the place where the mage stands kept in the game
+    state; a tint that darkens or greys the scene or turns it blue; a return of the tint in one frame
 - **Origin:** none
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
@@ -7844,22 +8622,27 @@ a moment shows its last image at once. The scene shows no flash of its whole are
 - **Scope:** browser-view
 - **Based on:** wcag-three-flashes · https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § general flash and red flash thresholds — "the combined area of flashes occurring concurrently occupies no more than a total of .006 steradians within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing distance" · same glossary entry, Note 1 of the WCAG text — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the scene under the system's setting for reduced motion keeping its frames still; an
-    effect of the scene that changes a part of its area; the icon of a gathered resource flying to
-    the mage in 300 ms and the cloud of dust of a miss gone in 300 ms, with no text on either; an
-    effect of a reading that carries several ends of a gathering, as after a tab left in the
-    background, left out; the wolf running in from the right edge in 300 ms at 1× and at 16×, and
-    standing at once beside the mage after a load in the minutes of a combat and under the system's
-    setting for reduced motion; a reading that carries the end of a gathering and an attack together showing the flight or the dust
-    and the wolf's run in; the scuffle lasting the five game minutes of the combat; a defeated
-    wolf falling in 300 ms and gone, and under the setting for reduced motion lying still for 300 ms
-    and gone
-  - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
-    that moves under the system's setting for reduced motion as it does without it; an effect of
-    an ordinary event that lasts 500 ms; a flying icon with a number beside it; a wolf that runs in
-    for 640 ms; a scuffle cut off at 300 ms; a run in that plays at the stop at a discovery or after a
-    load; an outcome of a combat that plays after its turn has passed
+- **Verification:** tests: the flight of an icon and the fall of a defeated wolf lasting 300 ms with
+  no text and gone when their animation ends; an effect overdue when its turn comes dropped — in a
+  reading that carries several ends of a gathering, at a stop, after a load and at a reading that
+  carries no attack; the bending through a gathering and the scuffle through a combat lasting as the
+  action does; the effect of a discovery, a death and a completion playing once, the scene then
+  standing on its last image until the moment ends, and a scene drawn again on the same moment
+  showing that image at once; the cold layer blending by colour, so that it leaves the brightness of
+  the whole scene as it is. For the length of the other effects, the state of the whole scene, the
+  system's setting for reduced motion and a flash of the whole area, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: the cloud of dust of a miss gone in 300 ms; the wolf running in from the right edge,
+    and running off to it, in 300 ms at 1× and at 16×; the tint, the cold layer and the frost changing
+    at the rate set for each and never dropped as an effect; the fall of the mage after a death
+    lasting longer than 300 ms; the scene under the system's setting for reduced motion keeping its
+    frames still, standing the mage and the wolf at their places at once, showing the flight or the
+    dust still at its place for 300 ms and the last image of a moment at once; an effect of the scene
+    that changes a part of its area
+  - violates: a cloud of dust, a run in or a run off of a wolf that lasts 500 ms; a wolf that runs in
+    for 640 ms; the effect of a moment cut off at 300 ms; a scene that moves under the system's
+    setting for reduced motion as it does without it; an effect that lights or darkens the whole area
+    of the scene for a moment
 - **Origin:** none
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed — the criterion
@@ -7917,14 +8700,12 @@ fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight �
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage carrying out „Zbierz — Patyk” standing at the sticks; the mage carrying out
-    „Zasil — ognisko” at the place of the campfire; „Eksploruj” and „Idź — ognisko” leading to the
-    same place at the right edge; the mage with no rule fitting in the middle of the clearing;
-    „Zapal — patyk” leaving the mage where it stands
-  - violates: the mage walking to the campfire for „Zapal — patyk”; the place at the right edge
-    differing between „Eksploruj” and „Idź”; the mage walking to the middle of the clearing for
-    „Zjedz — jagoda”
+- **Verification:** tests: the mage going, with „Zbierz” and „Obchód”, to the sticks, the berry bush
+  or the moss as the target says, with „Wytwórz — ognisko”, „Zapal — ognisko” and „Zasil — ognisko”
+  to the place of the campfire, with „Eksploruj”, „Wędruj”, „Idź” and „Idź — ognisko” to the one
+  place at the right edge, and while it waits to the middle of the clearing, walking there from
+  where it stands; „Zbierz” and „Obchód” with fibre as the target, „Zapal — patyk”, „Zjedz” and a
+  fight leaving it where it stands.
 - **Origin:** none
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
@@ -7946,13 +8727,18 @@ place at once, and under that setting the frames stand still.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317
-- **Verification:** an agent compares a change with the decision:
-  - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×; a target
-    changed half way turning the mage from where it stands; the mage standing at the place of its
-    action at once after „Restart” and after a load
+- **Verification:** tests: the mage standing at its place at once, with no walk, at the scene's first
+  draw, a load included, at the start of a map run and after „Restart”, the screen handing the
+  scene the events that tell it so. For the walk itself, a target changed on the way and the
+  system's setting for reduced motion, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×, the frames of
+    its sprite changing every 160 ms; a target changed half way turning the mage from where it
+    stands; the mage standing at its place at once, its frames still, under the system's setting for
+    reduced motion
   - violates: a walk shortened to 300 ms or to the time of the action; a walk whose length follows
-    the pace or the distance; a mage that starts its walk from the edge of the scene after a load; a
-    mage that walks under the system's setting for reduced motion
+    the pace or the distance; a mage that, its target changed on the way, starts its new walk from
+    the place it walked from; a mage that walks under the system's setting for reduced motion
 - **Origin:** none
 
 *Rationale:* the walk is a movement of the character, so the beat of the scene, apart from the
@@ -7977,13 +8763,18 @@ readings of the clock instead of filling smoothly between them.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-291 · derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage gathering a stick with the badge over its head, the icon of „Zbierz” in it in
-    `text-strong` and under it the bar in `positive` on `highlight`; the mage waiting with nothing
-    over its head
-  - violates: the icon over the head standing straight on the trees; the fill of the bar in
-    `text-strong` or `warning`; a sign of waiting over the head; the icon of a stick over the head of
-    the mage who gathers it
+- **Verification:** tests: the badge over the mage's head, walking with it, holding the icon of the
+  current action, the one of its rule's row, as a mask, and under it the progress bar of that
+  action, its fill as long as the progress and a new action's bar starting empty; the badge standing
+  at a pause and at a discovery; no badge while the character waits and in combat. For the colours
+  of the badge and the system's setting for reduced motion, an agent compares a change with the part
+  no invariant and no test holds:
+  - complies: the mage gathering a stick with the badge on `panel` over its head, the icon of
+    „Zbierz” in it in `text-strong` and under it the bar in `positive` on `highlight`; the bar
+    jumping at each reading of the clock under the system's setting for reduced motion
+  - violates: the badge with no background of its own, its icon standing straight on the trees; the
+    fill of the bar in `text-strong` or `warning`; a bar that fills smoothly under the system's
+    setting for reduced motion
 - **Origin:** none
 
 *Rationale:* the badge sets the sign apart from the forest, where a light tree could hide an icon
@@ -8014,11 +8805,11 @@ The scene is a picture, not a control: a click on it does nothing and no pause s
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44
-- **Verification:** an agent compares a change with the decision:
-  - complies: a click on the scene leaving the map run as it was; „Pauza” the only way in the view
-    to pause a map run by hand
-  - violates: a click on the scene pausing the map run, as in loop; a pause sign standing on the
-    scene
+- **Verification:** tests: a click on any part of the scene calling no control of the screen and
+  changing nothing the page shows; the scene holding no control, no text and nothing the keyboard
+  reaches. For a pause sign, an agent compares a change with the part no invariant and no test holds:
+  - complies: the scene of a paused map run telling the pause by its grey alone
+  - violates: a pause sign standing on the scene
 - **Origin:** none
 
 *Rationale:* a scene that takes a click is a new kind of control, and the controls of the screens
@@ -8035,24 +8826,28 @@ While the player's pause holds a map run, the scene is greyed with `grayscale(1)
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-62 · derives from D-122 · derives from D-132 · derives from D-316 · derives from D-317 · derives from D-271
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Pauza” pressed, the scene grey and the fire and the mage still; the stop at the
-    first discovery, the scene in colour, the fire and the mage still and the icons of what was
-    discovered coming out of the forest on plaques framed in `discovery` and standing over the
-    clearing until „Wznów”, which takes them away; a death of cold, the mage falling in six frames and
-    lying grey, no badge, the blue layer over the whole scene until „Restart” or „Zakończ”, a mage that died in the right half of the frame falling to the left, and the
-    same scene drawn after a reload with the mage already lying and the layer already there; a death
-    of hunger or in a fight, the mage falling and no layer; a completion of Las, the mage in colour in
-    the full gold, specks of light rising over the clearing once and going out, and a scene drawn
-    again showing no specks; a death in the game minute of a discovery, the fall alone and no plaque;
-    a scene under the system's setting for reduced motion showing the mage lying at once; the stop at the first attack, the wolf standing beside the mage and still, and the scuffle going on after „Wznów”
-  - violates: the fire moving at a stop at a discovery; the fire moving while the effect of a
-    moment plays; the scene greyed at a stop at a discovery; the whole scene greyed as at a pause
-    after a death; the badge standing over a mage who is dead; „Pauza” leaving the scene in colour;
-    an effect that plays again at each redraw of the scene, after a return to the screen or after a
-    reload; an effect that loops until the moment ends; a layer over the whole scene after a death
-    of hunger; the plaques of a discovery over the fall of the mage; an effect that lights or darkens
-    the whole scene for a moment (D-317)
+- **Verification:** tests: the player's pause greying the scene with `grayscale(1) brightness(0.5)`,
+  the tint and the frost with it, and holding all its motion — the mage, the fire, the badge, the
+  tint, an effect that runs, the wolf and its cloud; the effect of a discovery, a death and a
+  completion playing once, at the reading whose events carry the moment, and the scene then standing
+  on its last image, nothing but the effect moving at its stop; at a discovery the scene in colour
+  and the icon of each thing discovered that the data gives an icon, each icon once, coming out of
+  the forest and standing over the clearing until „Wznów” takes it away; after a death no badge, the
+  mage falling toward the middle of the frame in the six frames of its death sheet and lying grey in
+  `grayscale(1) brightness(0.55)`, and the cold layer over the tint and under the frost after a death
+  of cold alone; after a completion no badge, the mage in colour in the full gold, and specks rising
+  over a part of the clearing and gone at the last image; at the stop at a discovery that the first
+  attack makes, the wolf beside the mage with no run in and its scuffle held until the scene goes on;
+  a death or a completion in the game minute of a discovery showing the effect of the end alone, and
+  a scene drawn again on a moment showing its last image at once. For the colours of the plaques and
+  of the cold layer and the system's setting for reduced motion, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the plaques of a discovery on `panel` framed in `discovery`; the layer over the scene
+    after a death of cold blue; a scene under the system's setting for reduced motion showing the mage
+    lying at once
+  - violates: plaques of a discovery with no frame, or framed in another role than `discovery`; a
+    layer after a death of cold in the cool grey-green of the tint; a scene under the system's setting
+    for reduced motion that plays the fall of the mage
 - **Origin:** none
 
 *Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
@@ -8097,9 +8892,9 @@ After an error that no code of the game handled, an exception or a rejected prom
 - **Scope:** browser-view
 - **Based on:** react-uncaught-render-error · react-default-uncaught-report
 - **Relations:** derives from D-252 · narrows D-247 · narrows D-211 · narrows D-96 · narrows D-203 · narrows D-209
-- **Verification:** invariants: uncaught-failure-game-state. An agent compares a change with the decision:
-  - complies: an error thrown in the clock's reading at a tick, then the sentence once under the menu bar beside „Nie udało się zapisać postępu. Gra spróbuje ponownie.” when a save has failed, buttons that change nothing, and „Wyloguj” sending the state from before the tick; the login card showing the sentence in the card under its form
-  - violates: the sentence standing instead of the sentence of a failed save; the sentence standing above the card or above the game; a save after the error that reads the clock again; the sentence standing twice for two errors; the game going on changing its state after the error; a game built after the error that catches up the earning loops of a loaded save and sends the result
+- **Verification:** invariants: uncaught-failure-game-state. tests: a save asked for after the error still sent, with the state from before it and no new reading of the clock; no game built after the error, so that a sign-in, or a session found at the start, whose load would catch up an earning loop stays at the waiting screen with the sentence and saves nothing; the sentence once, in `warning`, in the row under the menu bar of a game screen beside the sentence of a failed save, under the bar of a waiting screen, in the card under its form, and alone in the place of a card React took down; the line of the error as D-253 gives it. An agent compares a change with the part no invariant and no test holds:
+  - complies: a state kept by D-211 before the error left unsent at a sign-in after it; a save that failed before the error tried again as D-208 gives it, with the state from before the error
+  - violates: a sign-in after the error that sends the state kept by D-211; saving stopped at the error, so that a change made before it and not yet saved, or a save that failed, is never sent
 - **Origin:** none
 
 *Rationale:* when this was decided, an error that nothing in the browser caught left an empty page, a frozen game or a button that hung, with no sentence for the player and no line in the console, so a person and an agent alike were left without a word on what went wrong; the game is computed in the browser, and an agent is to learn what went wrong as a person playing does. A game that goes on after an error nobody handled can lose a character unseen behind a screen that no longer redraws, and an error in the clock's reading would come back at every tick and every save. Stopping the changes and saving the last whole state is a degraded mode, which the coding guidelines allow only where a task sets it as a decision of the product, and it leaves a line in the console. At most the time from the error to the reload is lost, and, when a save did not arrive, what happened since the last save that did. A game built after the error would pass time and save a change that the error came before, so none is built. The sentence tells the player what to do, reload, and stands once whatever the number of errors. It stands on every screen the game draws: on a screen with the header beside the sentence of a failed save and not in its place, because D-208 has that sentence stand until a save succeeds; on the screen of the login card in the card, under the form, where the sentence of a refusal stands; and, where React takes the card down, alone in the card's place and outside React, since React takes the sentence down with the card. Its role is `warning`, as D-39 gives it for something that is not carried out and as the sentences of D-96 and D-208 have it, because saving goes on after the error. Accepted with it: the sentence may show with no fault or blink (a hypothesis).
@@ -8112,9 +8907,15 @@ While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-173 · derives from D-21 · derives from D-122 · derives from D-212 · derives from D-283 · derives from D-368
-- **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player clicks „Zakończ” with unsaved changes in the copy, the clock in the header ending in „ (pauza)” and no game minute passing while the question stands, and „Wróć” bringing it back going on at 8×; a paused map run staying paused after „Wróć”; „Porzuć zmiany” taking the question away and leaving the map run paused, so that „Zakończ” then ends it at once; „Zapisz jako nowy program” used while the question stands, after which „Zakończ” ends the map run at once; a reload with the question standing opening the map run paused with no question; a map run ended by a death with the question standing and the player pressing „Koniec przejścia” in the header, the question gone and the window open
-  - violates: a map run passing its game minutes while the question stands; „Wróć” leaving a map run that went on paused, or setting going a map run that was paused before „Zakończ”; the question standing after „Wznów”, after „Restart” or over a copy with no unsaved changes; the question standing on the return to the screen of the map run; the question standing together with the window; the question written into the game state or the save
+- **Verification:** tests: while the question stands the map run paused as „Pauza” pauses it, its
+  clock ending in „ (pauza)” and no game minute passing, and „Wróć” putting it back going on or
+  paused, the stop at a discovery included; editing the copy, the paces, the list „Program:” and a
+  second „Zakończ” leaving the question standing, which goes, the map run left paused, after „Zapisz
+  w programie”, „Zapisz jako nowy program”, „Porzuć zmiany”, „Przełącz postać na ten program” and an
+  edit after which the copy equals its program; „Wznów” of the header and of the band, „Restart” and
+  „Koniec przejścia” closing the question and then doing their own act, „Koniec przejścia” opening
+  the window; leaving the screen closing the question, the map run paused on the return, and the
+  question held nowhere in the saved game state, gone after a reload with the map run paused.
 - **Origin:** none
 
 *Rationale:* a question over a map run that goes on would ask about a screen that keeps changing, since the character may die or solve the map while the player decides, so it holds the map run as „Pauza” does, and „Wróć” gives back what the player had instead of costing one more click to go on. The rest of the screen stays usable, so a player may save the copy under a name of their own with „Zapisz jako nowy program” and only then end the map run, and the question goes when it would ask about changes that are no longer there, since it would otherwise stand over a map run that goes on or ask about nothing. „Wznów” and „Restart” close it as „Wróć” does and then do their own work, as the band of a discovery goes at „Wznów” (D-122). The question is a memory of the page, so a reload or a leaving of the screen costs one click, „Zakończ”, to ask again, and the game state and the save hold nothing of it. Accepted with it: the page remembers whether the map run went on before the question; several cases to build and check.
@@ -8127,9 +8928,15 @@ The screen Mapy holds on the left the list of the maps open to the player, and o
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-53 · derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on the right the card of Las with its parts and under it the section „Kto idzie” holding each character with its „Program:”, „Wejdzie: …”, „Wejdź” and, as Las is solved, „Puść w pętlę”
-  - violates: a map that is not open yet standing on the list, locked or inactive; a card of a map without its section „Kto idzie”
+- **Verification:** tests: the list of the screen Mapy holding the maps open to the player alone,
+  Skraj lasu in a new game and Las and Las — głębiej once their openers are solved; the card of the
+  map the address names, with what it asks, its terrain, what lies there, what lurks there and what
+  it takes; the section „Kto idzie” with each character, its list „Program:”, „Wejdzie: …”, „Wejdź”
+  and „Puść w pętlę”. For the list standing on the left and the card on the right, an agent
+  compares a change with the part no test holds:
+  - complies: the screen Mapy at `#/mapy/forest` with the list of the open maps on the left, and on
+    the right the card of Las with the section „Kto idzie” under it
+  - violates: the list of the maps standing on the right of the card or under it
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, and numbers on the card tell that a map takes supplies. When this was decided, nothing in the game but the sentence of the solving condition at each character's row in Siedziba said what a map asks, and a review of the game from the point of view of a veteran of idle games (2026-10-31) found that the player does not know how much game lies ahead, learns the demands of a map through a death, and has no goal longer than the current map; it proposed a catalogue of maps with empty places and a card of demands as the one cheap answer, at a medium cost: a new screen, though the data and the calculations already existed. The card gives the player the figures in place of a loss: „bez ognia 33 min” says by itself that without supplies the fire will not be made in time, so the player need not lose progress to find it out. The predecessor game had a catalogue of maps whose empty places say how many maps a region has but not which; here empty places wait for maps the game does not have yet, until there is content behind them, because a counter of maps makes sense only with content beyond the second map or with a small number; of what the review proposed, only the card of demands is taken here.
@@ -8142,9 +8949,13 @@ Where the bring list of the program picked is empty, „Pętla nic nie zarobi do
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-39 · derives from D-243
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character at a solved Las whose program picked has an empty list „Wynieś”, with „Pętla nic nie zarobi do skrzynki” in `warning` beside its „Puść w pętlę”, and a click on that button starting the earning loop
-  - violates: the sentence standing beside „Puść w pętlę” where the list „Wynieś” holds an item; „Puść w pętlę” inactive, or asking a question, where the list „Wynieś” is empty; the sentence in a role other than `warning`
+- **Verification:** tests: „Pętla nic nie zarobi do skrzynki” standing beside „Puść w pętlę” where
+  the list „Wynieś” of the program picked is empty and nowhere else, and „Puść w pętlę” acting with
+  it. For the role the sentence is drawn in, an agent compares a change with the part no test
+  holds:
+  - complies: „Pętla nic nie zarobi do skrzynki” beside „Puść w pętlę” drawn in `warning`
+  - violates: the sentence drawn in a role other than `warning`, such as `text-secondary` or
+    `danger`
 - **Origin:** none
 
 *Rationale:* a week of an earning loop with an empty list brings nothing into the chest, and the player who missed the list learns of it only afterwards. Measured on 2026-10-31 in a simulation of the earning loop, before it was merged, on Las and with programs tuned by the person measuring: after 168 hours the chest held 0 items with an empty list and 58 with a full one.
@@ -8157,9 +8968,21 @@ The card of a map follows the card of the predecessor game, loop, with its numbe
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-133 · derives from D-134 · derives from D-136 · derives from D-187 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: the card of Las with „Żąda” reading „Las — 480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu”, in „Teren” „siatka 4 × 4”, „wejście stałe”, „krok 5 min” and „bez ognia 83 min — otoczenie 25 °C”, in „Leży tu” „patyk — ≈ 11 z 16 kafelków, po 12, +1 co 30 min”, and neither „Czyha” nor „Odbiera”; the card of Las — głębiej with the heading naming „odsłania ją Las”, „bez ognia 33 min — otoczenie 7 °C”, „wilk · 24 zdrowia · cios 7” and under it „1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min”
-  - violates: a part the map lacks standing empty; the line of an attack giving the quiet time and the mean gap after it apart; „otwarta” beside the name of an unsolved map; „gasi: {umiejętność}” in „Odbiera”; „nie odnawia się” in a role other than `warning`
+- **Verification:** tests: the heading naming the map, with „rozwiązana” once it is solved and
+  „odsłania ją {mapa}” with the opener's name from the data, and no „otwarta” at an unsolved map;
+  „Żąda” holding the one sentence of the solving condition from the data; „Teren” with the grid,
+  the entrance, the step with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other
+  than the usual one, and the minutes without fire with the temperature of the surroundings;
+  „Leży tu” with each resource's icon, its approximate number of tiles, its stock and its renewal,
+  or „nie odnawia się” marked as a warning; „Czyha” with the creature's health and blow, the
+  creature with no icon, and one line of the chance, the quiet time and the one total mean gap;
+  „Odbiera” with the entry and the exit cap, each marked as a warning, and nothing else; a part the
+  map lacks drawn nowhere. For the colours the marks and the words of the card are drawn in, an
+  agent compares a change with the part no test holds:
+  - complies: „rozwiązana” in the heading in `positive`, „odsłania ją Las” and „— drożej niż
+    zwykle” in `text-secondary`, and „nie odnawia się” and „wnosisz najwyżej 5” in `warning`
+  - violates: „nie odnawia się” or a cap drawn in `text` or `danger`; „rozwiązana” in the heading
+    drawn in `text-secondary`; „odsłania ją {mapa}” drawn in `text-strong`
 - **Origin:** none
 
 *Rationale:* the player reads on the card what a map asks before sending a character, and a number such as „bez ognia 33 min” tells the player that without supplies the fire will not be made in time, where otherwise the player would find it out by losing progress. The card follows the card of the predecessor game, because the screens and solutions of the predecessor game are the minimum that the screens of this game take and they are departed from only where the result is better, never worse; the numbers come from the data of the map, and a part that the map lacks stands nowhere. The card has no „gasi: {umiejętność}” because the data of the maps hold no field for it, and the creature has no icon because the creatures have none. Accepted with it: the game computes new numbers from the map's data — the minutes without fire, the approximate number of tiles that hold a resource and the mean gap between attacks with the quiet time — which follow a change of balance by themselves; „≈ 11 z 16” and „≈ 280 min” are means, so a given map run may fall out otherwise; the card runs to a dozen or so lines; the player knows the health and the blow of the wolf before its first attack.
@@ -8172,9 +8995,14 @@ The card of a map shows all that the map's data holds, whatever the player has d
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: the card of Las — głębiej showing „wilk · 24 zdrowia · cios 7” to a player whose Understanding holds no wolf, the Understanding still holding no wolf afterwards and the program editor offering no condition about the wolf
-  - violates: a resource or a creature missing from the card because the player has not met it; the card writing a creature or an item into the Understanding
+- **Verification:** tests: the card showing every resource of the map's data and the wolf with its
+  health and blow to a player whose Understanding holds none of them, and the Understanding standing
+  as it was after the card is drawn. For what the program editor offers after the card, an agent
+  compares a change with the part no test holds:
+  - complies: after the card of Las — głębiej shows the wolf to a player who has not met it, the
+    program editor offering no condition about the wolf
+  - violates: the card handing the program editor, by a way other than the Understanding, an
+    action or a condition the player has not discovered
 - **Origin:** none
 
 *Rationale:* the player learns what a map asks before sending a character rather than through a death, so the card says in text what the discovery of D-118 leaves to play; the card writes nothing into the Understanding, so D-118 stays as it is. Accepted with it: the player knows the names and the strength of the wolf before meeting it, so the first wolf surprises less.
@@ -8187,9 +9015,16 @@ At each character in the section „Kto idzie” stand, from the top, the name a
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-54 · derives from D-170 · derives from D-180 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character at a solved Las whose program picked takes patyk 6 and jagoda 4 showing from the top its name as a link, „Wskrzeszenie drużyny gotowe”, „Program:”, „Wejdzie: patyk 6, jagoda 4”, „Wejdź” and „Puść w pętlę”; the same character with an empty take list showing „Wejdzie: nic”; a click on „Puść w pętlę” leaving the player on the card; a team with no character reading „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.” in the section
-  - violates: „Wejdzie: …” standing only where the plan enters clipped; a section with its heading alone for a team with no character; „Puść w pętlę” taking the player to the screen of a map run
+- **Verification:** tests: at each character in „Kto idzie”, the characters in the order of their
+  creation, from the top: the name as a link to its screen Postać, the line of the resurrection,
+  the line of the earning loop at a character in an earning loop alone, „Program:” with its list,
+  „Wejdzie: …” always, „Wejdzie: nic” included, the warning of a clipped plan, and „Wejdź” with the
+  warning of a rehearsal under it and „Puść w pętlę” with „Pętla nic nie zarobi do skrzynki” beside
+  it; „Wejdź” opening the screen of the map run and „Puść w pętlę” leaving the player on the card;
+  the sentence of a team with no character in the section. For the role „Wejdzie: …” is drawn in,
+  an agent compares a change with the part no test holds:
+  - complies: „Wejdzie: patyk 6, jagoda 4” and „Wejdzie: nic” in `text-secondary`
+  - violates: „Wejdzie: …” drawn in `text`, or in `warning` where the plan enters clipped
 - **Origin:** none
 
 *Rationale:* the player reads the state of the character, its program and what enters before the click that sends it, and a team with no character is told where to make one. What the game showed at the row of a character in Siedziba when this was decided moves here: the list „Program:” and „Puść w pętlę” beside „Wejdź” only at a solved map (D-243), the sentence of a rehearsal under „Wejdź” (D-251) and the sentence of a clipped plan (D-188); with the sentence of an empty list „Wynieś” beside „Puść w pętlę” (D-326) the three warnings stand in `warning`; the lines of the resurrection and of the earning loop are those of the card in Siedziba and of the screen Postać (D-217, D-244). „Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card, as „Wyślij” and „Puść w pętlę” did in Siedziba. Accepted with it: one more line, „Wejdzie: …”, at each character; the sentence of an unfinished map run (D-287) repeats at each character, as it did in Siedziba.
@@ -8202,9 +9037,9 @@ The first of the three clicks from Siedziba to a first map run (D-280) is the it
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: a player with one character reaching the first map run from Siedziba by „Mapy”, the row of Skraj lasu and „Wejdź”; a character in Siedziba holding its name as a link to the screen Postać and no button that leads to the screen Mapy
-  - violates: a button „Wybierz mapę” at a character in Siedziba that leads to the screen Mapy
+- **Verification:** tests: a player with one character reaching the first map run from Siedziba by
+  the item „Mapy” of the menu bar, the row of Skraj lasu and „Wejdź”, and no button at a character
+  in Siedziba leading to the screen Mapy or sending it.
 - **Origin:** none
 
 *Rationale:* the way to the maps is one item of the menu bar, with no new button. In the predecessor game the way to a first map run had two „Wejdź” with a window for picking the character between them, which a review of its layout counted among its weaknesses not to copy. Accepted with it: from a character in Siedziba the player goes to the maps through the menu bar.
@@ -8217,9 +9052,16 @@ Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stan
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-134 · derives from D-281 · derives from D-325
-- **Verification:** an agent compares a change with the decision:
-  - complies: `#/mapy` with the list of the open maps on the left and „Wybierz mapę z listy.” on the right; at `#/mapy/forest` the row of Las with its text in `text-strong` and a bar in `selected` at its left
-  - violates: `#/mapy` showing the card of the first map of the list; the right area empty before a pick; a row of the list that is no link
+- **Verification:** tests: under `#/mapy` „Wybierz mapę z listy.” alone in the right area, with no
+  card and no row picked; a row of the list a link to `#/mapy/{map}` with the name of the map and,
+  at a solved map, „rozwiązana” after it, and the row of the map the address names the one marked
+  as picked. For the roles of the sentence and of „rozwiązana” and for the look of the picked row,
+  an agent compares a change with the part no test holds:
+  - complies: „Wybierz mapę z listy.” in `text-secondary`; at `#/mapy/forest` the row of Las with
+    its text in `text-strong` and a bar in `selected` at its left; „rozwiązana” after the name of a
+    solved map in `positive`
+  - violates: the picked row marked by a background in `highlight` alone, or by a bar in
+    `positive`; „rozwiązana” on the list drawn in `text-secondary`
 - **Origin:** none
 
 *Rationale:* the player sees at once that the list is for picking from, and the card stands only after a pick. Accepted with it: one more sentence on the screen.
@@ -8232,9 +9074,11 @@ In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it s
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-281
-- **Verification:** an agent compares a change with the decision:
-  - complies: `#/mapy/forest` and `#/mapy/forestDeep` for Las and Las — głębiej, built from the identifiers the data gives
-  - violates: `#/mapy/forest-deep`; `#/mapy/las-glebiej`; a TypeScript file of the view outside the game's data naming a map by its identifier to build an address
+- **Verification:** tests: `#/mapy/forest` and `#/mapy/forestDeep` read as the screens of Las and
+  Las — głębiej and written back from them; an address with a hyphen, a capital letter or the
+  Polish name of a map in place of its identifier read as no screen; the rows of the list linking
+  to the identifiers the data gives; no TypeScript file of the view outside the game's data naming
+  a map by its identifier.
 - **Origin:** none
 
 *Rationale:* the view names no map by its identifier, since the invariant `content-identifiers` lets no code of the view outside the game's data name a map by it, so an address built from the data needs nothing in the code of the view and nothing new in the data. Accepted with it: an English word with a capital letter in an address that is otherwise Polish and in lower case.
@@ -8247,9 +9091,19 @@ The numbers of the card of a map that follow a rule of the game are computed by 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-142 · derives from D-327
-- **Verification:** an agent compares a change with the decision:
-  - complies: Las with „bez ognia 83 min” and Las — głębiej with „bez ognia 33 min”, the minute in which a mage is first chilled being 84 and 34; „patyk — ≈ 11 z 16 kafelków” at Las, from the density 0.7 and the 16 tiles of its grid; „średnio co ≈ 280 min” for the wolf, from the cooldown 180 and the chance 0.01; the step 5 min of both maps usual, so no note stands beside it; a map whose ambient temperature does not cool the body below the threshold of chill with no item „bez ognia”
-  - violates: the view counting the minutes without fire from the ambient temperature of a map by a formula of its own; the mean gap counted as the cooldown alone or as the reciprocal of the chance alone; the usual step a number written in the view or in the balance data
+- **Verification:** tests: the minutes without fire as the game minutes a body goes through from
+  its starting temperature with no warmth before the minute in which it is first chilled, 83 on Las
+  and 33 on Las — głębiej, and none given, the item left out, where the map does not cool the body
+  below the threshold of chill; the tiles that hold a resource as its density times the tiles of
+  the grid, rounded to the nearest whole; the mean gap between attacks as the cooldown plus the
+  reciprocal of the chance, rounded to a whole minute; the usual step as the step most maps give,
+  the first of the data's order on a tie. For where these numbers are counted, an agent compares a
+  change with the part no test holds:
+  - complies: the card of Las — głębiej writing out „bez ognia 33 min” and „średnio co ≈ 280 min”
+    as the functions of the simulation beside the cooling of the body and the spacing of attacks
+    return them
+  - violates: the view counting the minutes without fire from the ambient temperature of a map by a
+    formula of its own; the usual step a number written in the view or in the balance data
 - **Origin:** none
 
 *Rationale:* the player reads on the card what a map asks, and the numbers come out of the rules of the game, the cooling of the body and the spacing of attacks, which stand in the simulation. Counted there once, the card follows a change of balance by itself. Accepted with it: the simulation holds functions that only the card uses, and a usual step that is the step most maps give changes when a map with another step arrives, the notes beside the steps moving with it.
@@ -8271,15 +9125,21 @@ the death, such as „Minuta 312”.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-291 · derives from D-292
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: the mage gathering a stick under rule 2.1 with the icon of „Zbierz”, „Zbierz — Patyk”
-    and „reguła 2.1 · zostało 3 z 5 min” in „Teraz”; the mage waiting with „Czeka — żadna reguła nie
-    pasuje” alone; „Walczy z wilkiem” alone in the minute an attack is resolved, though the next
-    action starts in it; after a death of cold „Mag zamarzł” in `text` and the clock „Minuta 312”;
-    what stands under „Teraz” keeping its place as the text of „Teraz” changes
-  - violates: a progress bar under „Teraz”; „Zbiera: patyk” in „Teraz”; the number of the combat
-    rule beside „Walczy z wilkiem”; „Mag zamarzł” in `danger`; „Teraz” still naming the last action
-    after a death; the word „Teraz” written in the row before the icon, as „Potem” is in its row
+- **Verification:** invariants: rule-state-from-pick. tests: the row „Teraz” right under the scene;
+  while the character carries out an action, its icon, its words as the row of its program rule
+  writes them and at the right the number of that rule as the editor numbers it with the minutes left
+  of the minutes in all, such as „reguła 2.1 · zostało 3 z 5 min”, following the game minute, paused
+  or not, with no progress bar; while the character waits „Czeka — żadna reguła nie pasuje” with no
+  rule and no minutes; in every minute of an attack, the minute of its resolution included,
+  „Walczy z wilkiem” alone; after a completion the map's completion text; after a death its cause in
+  `text`, „Mag zamarzł”, „Mag umarł z głodu” or „Mag zginął w walce”, while the clock in the header
+  reads the game minute of the death. For the height of the row and the words it leaves out, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: „Teraz” keeping the height of one line whether it reads „Czeka — żadna reguła nie
+    pasuje”, „Zbierz — Patyk” with its rule and minutes or „Mag zamarzł”, so what stands under it
+    keeps its place; no word „Teraz” written in the row before the icon
+  - violates: „Teraz” growing by a line as its text changes, moving „Potem” and the body row down;
+    the word „Teraz” written in the row before the icon, as „Potem” is in its row
 - **Origin:** none
 
 *Rationale:* the player reads what the character does in the words of the rule that makes it do
@@ -8318,14 +9178,13 @@ the end of a map run it names the rule that wins at the stopped game minute, as 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-308 · derives from D-309 · derives from D-291 · derives from D-292
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Potem” with the icon of „Zasil”, „Zasil — Ognisko” and „reguła 4.1” while rule 4.1
-    stands on `rule-winning`; in the minutes of an attack „Potem” naming the combat rule on
-    `rule-winning`; after a death „Potem” naming the rule that wins at the stopped game minute; with
-    no rule that wins, „żadna reguła nie pasuje — postać stanie” in `warning`
-  - violates: „Potem” gone after the end of a map run; „Potem” gone while it names the same rule as
-    „Teraz”; „Potem” naming a rule other than the one on `rule-winning`; the line of no rule that
-    wins written in `danger`
+- **Verification:** invariants: rule-state-from-pick. tests: under „Teraz” the row „Potem” with its
+  word, the icon and the words of the program rule that wins now and at the right its number as the
+  editor numbers it, such as „reguła 2.1”; in the minutes of an attack the combat rule the turn would
+  choose; while no rule wins „żadna reguła nie pasuje — postać stanie” in `warning`; the rule that
+  wins at the current game minute, which may be another than the rule whose action goes on, and the
+  same rule the signs show as winning; after a death the rule that wins at the stopped game minute,
+  the row standing after a death and after a completion.
 - **Origin:** none
 
 *Rationale:* beside what the character does, the player reads what it would start now, and the row
@@ -8351,16 +9210,18 @@ the click scrolls nothing and the saved program stays shown.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-334 · derives from D-335
-- **Verification:** an agent compares a change with the decision:
-  - complies: a click on „Teraz” reading „reguła 2.1” bringing rule 2.1 to the middle of the
-    program, which then stays where the player scrolls it; Enter on „Potem” reached with Tab doing
-    the same for its rule; the header of a folded rule group brought to the middle for a rule inside
-    it; a click on „Teraz” while the panel shows a saved program leaving that program shown where it
-    stood
-  - violates: the program following the rule by itself after the click; a row the keyboard cannot
-    reach; a click on „Walczy z wilkiem” or on „Czeka — żadna reguła nie pasuje” scrolling the
-    program; a click on „Potem” while the panel shows a saved program putting the copy back in its
-    place
+- **Verification:** tests: a click on „Teraz” or „Potem”, and Enter and Space on them, which the
+  keyboard reaches, scrolling the program once so that the row of the rule the row names stands in
+  its middle, or the header of its folded rule group, the program then not following the rule as the
+  game goes on; a row that names no rule — a wait, a fight, a death, an action whose rule the copy no
+  longer holds — reached by no key and scrolling nothing; while the program panel shows a saved
+  program picked on its list, a click and Enter scrolling nothing. For a saved program made with
+  „Nowy program” and for what the panel shows after the click, an agent compares a change with the
+  part no test holds:
+  - complies: a click on „Teraz” while the panel shows a program just made with „Nowy program”
+    scrolling nothing; the saved program staying shown where it stood after a click on „Potem”
+  - violates: a click on „Potem” while the panel shows a saved program putting the copy back in its
+    place; a click on „Teraz” scrolling a program just made with „Nowy program”
 - **Origin:** none
 
 *Rationale:* as in loop, the player goes from what the character does, or will do, to the rule
@@ -8388,15 +9249,18 @@ a map run, on the state of its stopped game minute.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-125
-- **Verification:** an agent compares a change with the decision:
-  - complies: the body row in Las with the cells „Temperatura 36,9 °C” with the note „bez ognia 79
-    min”, „Sytość 82 %” with the note „bez jedzenia 86 min”, „Zdrowie 100” and „Energia natury 90”;
-    „przy ogniu” while a campfire burns on the mage's tile; „marznie” in red at 34,9 °C; „głoduje”
-    in red under satiety on the screen after a death of hunger; the notes standing from game minute
-    zero, before anything is discovered
-  - violates: „(bez ognia 79 min)” after the value in the same line; a note under health;
-    „bez ognia {n} min” while a campfire burns on the mage's tile; the notes gone after the end of a
-    map run; „bez ognia 80 min” where the body is chilled after 79.6 game minutes
+- **Verification:** tests: each value of the body row in a cell of its own, a note under temperature
+  and under satiety, none under health and nature energy and none in the line of its value; under
+  temperature the first that holds of „marznie” in `danger` below 35 °C, „przy ogniu” while a stick
+  or a campfire burns on the character's tile, „nie stygnie” on a map that does not cool the body and
+  „bez ognia {n} min”; under satiety „głoduje” in `danger` below 30 and „bez jedzenia {n} min”
+  otherwise; {n} the whole game minutes, rounded down, left until the body is chilled or starves, 0
+  at the threshold; the notes standing from game minute zero and after a death and a completion, on
+  the state of the stopped game minute. For the look of the notes, an agent compares a change with
+  the part no test holds:
+  - complies: the notes under temperature and satiety in `text-secondary`, smaller than the values
+    above them
+  - violates: a note in the size of its value; „bez ognia 79 min” in `text`
 - **Origin:** none
 
 *Rationale:* the minutes stand under the value they concern and read at a fast pace, and a value
@@ -8422,13 +9286,10 @@ the world on the screen.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the chronicle of a manual map run of Las holding „Zbierz — Patyk”, the text of the
-    band of a discovery and „Passa 391 przerwana: zdrowie spadło od zimna”, each with its game
-    minute, and the player picking „Passa” to read the losses of the streak alone
-  - violates: an entry of the chronicle with no game minute; a streak above zero falling to zero
-    with no entry of the chronicle; a change of the copy leaving no entry of the chronicle; the
-    chronicle standing in the world area of the screen of a map run
+- **Verification:** tests: the entries of a manual map run's discoveries, of the character's
+  actions, of combat, of the player's changes of the copy and of each loss of the streak with its
+  cause, each with its game minute; the filters by these kinds in the area with the tabs, which
+  holds the chronicle, and no chronicle in the world area.
 - **Origin:** none
 
 *Rationale:* a line of discoveries that goes at „Wznów” and a streak that falls without a word leave
@@ -8456,15 +9317,14 @@ lost.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338
-- **Verification:** an agent compares a change with the decision:
-  - complies: the chronicle of a map run of Las whole after the player opens Siedziba and comes
-    back; after a reload at game minute 300 of a map run a wolf attacked at game minute 212, the
-    chronicle holding the paragraph of that encounter alone, at game minute 212; after a reload of
-    a map run with no attack, an empty chronicle; the saved game state holding no entry of the
-    chronicle, and the chronicle bringing no new version of the save
-  - violates: an entry of the chronicle written into the game state or the save; the chronicle
-    emptied by a visit to Siedziba; the entries of the chronicle from before a reload standing after
-    it; after a reload, no paragraph of an encounter the saved game state holds
+- **Verification:** tests: the chronicle whole after the player leaves the screen of the map run
+  for Siedziba and comes back; after a load, the chronicle holding the paragraph of the last
+  encounter alone, at the game minute of the attack, nothing where the loaded map run had no
+  attack, and no entry for a wait under way at the load. For the chronicle kept out of the game
+  state and the save, an agent compares a change with the part no invariant and no test holds:
+  - complies: the saved game state holding no entry of the chronicle, and the chronicle bringing
+    no new version of the save
+  - violates: an entry of the chronicle written into the game state or the save
 - **Origin:** none
 
 *Rationale:* the chronicle leaves the shape and the version of the save as they are, so no player's saved game state is discarded
@@ -8503,12 +9363,10 @@ for the game minutes it lasts.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-334
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage starting to gather a stick at game minute 212 giving „Zbierz — Patyk” at 212
-    once, however many game minutes the gathering lasts; a wait from game minute 40 to 47 giving one
-    entry „Czeka — żadna reguła nie pasuje” at 40
-  - violates: „Zbiera: patyk” in the chronicle; „Zbierz — Patyk · reguła 2.1”; an entry „Wrócił z
-    niczym: patyk” at the end of an action; an entry of the wait in every game minute it lasts
+- **Verification:** tests: the entry of the start of an action in the words of its rule's row, with
+  no number of a rule, and no entry at the end of an action; one entry „Czeka — żadna reguła nie
+  pasuje” when a wait starts and none for the game minutes it lasts, a wait after an attack and a
+  wait after a load in an action each giving its entry.
 - **Origin:** none
 
 *Rationale:* the player reads in the chronicle the words of „Teraz” and of the row of the rule, so an
@@ -8536,14 +9394,12 @@ under its own filter, and a game minute of lost health while the streak stands a
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-39 · derives from D-131
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Passa 391 przerwana: zdrowie spadło od zimna” in `danger` in the game minute the mage
-    loses health from cold at a streak of 391; a program rule deleted at a streak of 120 giving its
-    entry under „Moje zmiany” and „Passa 120 przerwana: zmiana programu” under „Passa” in the same
-    game minute; the next game minutes of cold at a streak of zero giving no entry
-  - violates: an entry of a loss of the streak in each game minute of cold; „Passa przerwana:
-    zdrowie spadło od zimna” with no number; the loss written in `text`; an entry of a loss where
-    „↑” on the first program rule left the streak as it stood
+- **Verification:** tests: a loss only where a streak above zero falls to zero, in the game minute
+  of the loss, a death of cold or hunger included, and at an edit, a discard or a switch of the
+  program, none where an act leaves the streak as it stood; the entry „Passa {passa} przerwana:
+  {przyczyna}” in `danger`, with the streak before the loss and each of the five causes; an edit of
+  the copy giving its entry and the loss in the same game minute, each under its own filter; no
+  loss in the game minutes of lost health after it or at a streak of zero.
 - **Origin:** none
 
 *Rationale:* the player sees what was lost, how much and why, in the game minute it happened, and
@@ -8570,14 +9426,15 @@ gives none.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-39 · derives from D-173 · derives from D-292
-- **Verification:** an agent compares a change with the decision:
-  - complies: a program rule „Zawsze → Wędruj” added after the two rules of group 2 giving
-    „Dodano regułę 2.3: Zawsze → Wędruj” in `player-change`; a program rule fixed after a death of
-    cold at game minute 312 giving its entry at 312; „Program 2” edited during a map run on the copy
-    of „Program” giving no entry
-  - violates: one entry „Zmieniono kopię programu” for every change; the entry of a change in
-    `discovery`; „Porzuć zmiany” giving no entry; an edit of the copy after a completion giving no
-    entry; an edit of „Program 2” giving an entry while the copy belongs to „Program”
+- **Verification:** tests: the entry in `player-change` of each change of the copy — a program rule
+  added, removed, changed or moved with its number and its sentence at the moment of the change, a
+  rule group added, removed, changed or moved with its name, a changed trip plan, a discard, a save,
+  a save as a new program and a switch with the program's name; an edit of the copy after a death
+  at the game minute of the death; no entry for an edit of a saved program. For the edits of the
+  copy after a completion, an agent compares a change with the part no invariant and no test holds:
+  - complies: a program rule fixed after a completion at game minute 480 giving its entry at 480
+  - violates: an edit of the copy after a completion giving no entry, or giving one at another game
+    minute
 - **Origin:** none
 
 *Rationale:* the player reads what was changed in the program and when, as in loop, so a loss of the
@@ -8604,14 +9461,18 @@ chronicle and a filter that shows no entry read „Nic tu jeszcze nie ma.”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-39 · derives from D-40 · derives from D-130
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Passa” picked among the seven filter buttons, each made with the shared button
-    selected in its group, showing the losses of the streak alone, the newest at the top; „212” in
-    `text-label` in the column beside „Zbierz — Patyk” in `text`; the text of the band of a discovery
-    in `discovery`; „Nic tu jeszcze nie ma.” under „Walka” before any attack
-  - violates: two filters picked at once; the filter buttons drawn as tabs (D-276); the newest entry
-    at the bottom; „Minuta 212” or „03:32” beside an entry; every entry in one colour; an empty list
-    with no sentence
+- **Verification:** tests: the seven filter buttons in the look of the pace buttons and not as tabs,
+  one picked at a time, „Wszystko” picked at a send, each but „Wszystko” showing the entries of its
+  kind alone and „Wszystko” all of them; the entries newest at the top, the game minute a number
+  alone beside the text, and the text in the role of its kind — a discovery in `discovery`, a change
+  of the player in `player-change`, a loss of the streak in `danger`, an action and combat in
+  `text`; „Nic tu jeszcze nie ma.” for an empty chronicle and a filter that shows no entry. For the
+  place of the row of filters, the role and the column of the game minute and the background of the
+  list, an agent compares a change with the part no invariant and no test holds:
+  - complies: the row of filter buttons over the list; „212” in `text-label` in a column on the left
+    beside „Zbierz — Patyk”; the list on the background `panel`
+  - violates: the row of filter buttons under the list; the game minute in the role of its entry's
+    text, or after the text; the list on another background
 - **Origin:** none
 
 *Rationale:* one filter at a time, as in loop, and the newest entry on top, as in loop, so the
@@ -8635,13 +9496,12 @@ entries of a death and of „Ognisko wygasło” in `text`.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-334 · derives from D-132 · derives from D-39
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Ognisko wygasło” under „Świat” in the game minute the last minute of burning of a
-    campfire passes; „Mag zamarzł” in `text` in the game minute „Teraz” reads it, beside „Passa 391
-    przerwana: zdrowie spadło od zimna” where the streak stood at 391; „Las rozwiązany” in
-    `positive` at game minute 480
-  - violates: „Postać zamarzła.” in the chronicle while „Teraz” reads „Mag zamarzł”; the entry of a
-    death in `danger`; „Ognisko wygasło” under „Odkrycia”; the entry of a completion in `text`
+- **Verification:** tests: the entries „Ognisko wygasło”, one for each campfire, „Mag zamarzł”,
+  „Mag umarł z głodu”, „Mag zginął w walce”, „Las rozwiązany” and „Las — głębiej rozwiązany” under
+  the filter „Świat” alone; a campfire's event in the game minute its last minute of burning passes,
+  in a minute of an encounter too, and none for a campfire unlit or already out or in the minute of
+  a death; the entry of a completion in `positive` and those of a death and of „Ognisko wygasło” in
+  `text`.
 - **Origin:** none
 
 *Rationale:* a chronicle with no entry of a campfire going out is worse than loop's, which had one,
@@ -8670,12 +9530,9 @@ Eksploruj.”
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-122 · derives from D-312
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first chill of a new game giving one entry with what was discovered and „Gra
-    dopisała regułę w grupie „Program”: Zawsze → Eksploruj.”, standing after „Wznów”
-  - violates: „Odkryto: Patyk” and „Odkryto: Zbierz” as two entries of one game minute; „Dodaj
-    regułę z tym” in the entry; the sentence of the rule left out of the entry of a discovery whose
-    band holds it
+- **Verification:** tests: one entry for the discoveries of the game minute of the first chill,
+  holding the whole text of its band and no button, with the sentence of the rule the game wrote
+  where the band has it and without it where the band has none.
 - **Origin:** none
 
 *Rationale:* the entry keeps the division of the band the player has just read, one game minute in
@@ -8693,13 +9550,10 @@ run stays picked through the whole map run, through leaving its screen and comin
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-311
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Teren” picked, then Siedziba and back to the map run, „Teren” still picked; „Teren”
-    picked before „Restart” and still picked after it; a rule panel opened and closed with „✕”
-    with „Teren” still picked and its table still standing; „Teren” picked, then the page reloaded, with „Kronika” picked
-  - violates: „Kronika” picked again after „Restart” where the player had picked „Teren”; the pick
-    lost at a return from the headquarters; the tabs replaced by the rule panel while it is open and
-    „Teren” given back when it closes
+- **Verification:** tests: the tab picked kept through leaving the screen for Siedziba and coming
+  back, through „Restart”, through a rule panel opened and closed in the program and through the
+  end-of-run window, the tab the page's memory holds being the one the area shows; „Kronika” picked
+  in the chronicle built after a load.
 - **Origin:** none
 
 *Rationale:* the area under the world keeps what the player chose to read through the map run and
@@ -8720,10 +9574,10 @@ and goes to the console.
 - **Scope:** browser-view, agent-workflow
 - **Based on:** playwright-cli-console-messages
 - **Relations:** derives from D-323 · derives from D-253
-- **Verification:** an agent compares a change with the decision:
-  - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
-    chronicle why the streak fell, and reading in the console the line of an error no code handled
-    (D-253) beside the sentence of D-323 on the screen
+- **Verification:** tests: an exception in the game, an error or a rejection no code handled,
+  showing on the screen as the sentence of D-323 and leaving its line in the console. An agent
+  compares a change with the part no test holds:
+  - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the chronicle why the streak fell, and reading in the console the line of an error no code handled (D-253)
   - violates: Sentry or GlitchTip added to the game
 - **Origin:** none
 
@@ -8785,18 +9639,20 @@ enters the simulation, and no event of the simulation describes such a change.
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-147 · derives from D-341 · derives from D-342 · derives from D-344
-- **Verification:** an agent compares a change with the decision:
-  - complies: at 16× a game minute of cold taking a streak of 391 to zero inside one reading of the
-    clock that passes several game minutes, the simulation returning one event of the loss at that
-    game minute with 391 and cold; a campfire burning out in a game minute of an encounter returning
-    its event; „↓” on program rule 2.1 giving „Przesunięto regułę 2.1 na 2.2: …” alone, though the
-    copies alone could read the rule below it moving up; „Porzuć zmiany” giving „Porzucono zmiany
-    kopii” alone, whatever it reverted
-  - violates: the view finding a loss of the streak or a campfire gone out by comparing two readings
-    of the game state; a field of the game state, and with it of the save, holding the losses of the
-    streak; an edit of the copy returning from the simulation an event that describes the change; the
-    hint of a move passed to a function of the simulation; a new way of setting a streak above zero
-    to zero that returns no event of the loss
+- **Verification:** tests: the losses of the streak returned by the simulation as events in their
+  game minute, with the streak before the loss and its cause, from the body step and from an edit, a
+  discard and a switch of the copy, the same whether a span of game minutes is passed whole or
+  split; a campfire's event in the game minute its burning runs out; the paragraph of the last
+  encounter composed from the facts the map run keeps; the entries of an act on the copy written
+  from what the act was and, for an edit, from the copy before and after it, with the rule or group
+  the editor names as moved, which the editor hands over for a move alone; the acts on the copy
+  returning no event of the simulation but the loss of the streak. For the events kept out of the
+  game state and the hint of a move kept out of the simulation, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the game state and the save holding no loss of the streak and no campfire gone out;
+    the hint of a move handed to the chronicle alone
+  - violates: a field of the game state, and with it of the save, holding the losses of the streak;
+    the hint of a move passed to a function of the simulation
 - **Origin:** none
 
 *Rationale:* when the choice was open, the simulation returned no event of a loss of the streak, of
@@ -8828,12 +9684,15 @@ scale of it. Whatever the scene draws is drawn for this size alone.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the scene of a map run 672 × 304 px in a window 1280 px wide and in one 1920 px wide,
-    drawn at twice its picture; an effect of the scene made for that size
-  - violates: a second size of the scene, such as 336 × 152 px, chosen by a constant, by a style
-    rule or by the width of the window; the scene drawn at a fraction of twice its picture, such as
-    one and a half times
+- **Verification:** tests: the scene's picture given 672 × 304 px, twice its picture of 336 × 152,
+  in a narrow window and in a wide one and in another state of the game, the frame sized by its
+  picture alone. For the size the style sheet draws the scene at and what the scene draws, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: the scene of a map run drawn 672 × 304 px in a window 1280 px wide and in one 1920 px
+    wide; an effect of the scene made for that size
+  - violates: a style rule that draws the scene at a second size, such as 336 × 152 px, or at a
+    fraction of twice its picture, such as one and a half times; an effect of the scene made for a
+    second size of it
 - **Origin:** none
 
 *Rationale:* what counts is the width of the program of the original loop, not the
@@ -8870,13 +9729,10 @@ group unfolds.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-295
-- **Verification:** an agent compares a change with the decision:
-  - complies: the rule panel open on rule 2.1 at its field „Czynność”, then „Zwiń grupę” on group
-    2: the panel under the header of group 2 with the field „Czynność” still shown, and „Rozwiń
-    grupę” bringing it under the row of rule 2.1; „zwiń wszystkie” with a panel open leaving it
-    under the header of its group
-  - violates: the panel closing when its group folds; the group unfolding to show the panel; the
-    panel standing under no header and no row, such as at the end of the list
+- **Verification:** tests: the panel of a rule in a folded group right under that group's header,
+  its row not drawn; folding and unfolding that group, and „zwiń wszystkie” and „rozwiń
+  wszystkie”, leaving the same panel open on its field „Czynność”, and the panel under the row
+  again once the group unfolds.
 - **Origin:** none
 
 *Rationale:* folding arranges the player's view of a program and changes nothing the player is
@@ -8903,14 +9759,18 @@ and a package or a module from outside the repository is the file of no part.
 - **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: cross-part-imports. For the rest, an agent compares a change with
-  the decision:
-  - complies: a test of the simulation importing a file of the part of test helpers; a test of the
-    browser view importing a built module of the simulation under `dist/browser/sim/`, which the
-    test matches to its source; a test of one part starting a file of another part as a process
-  - violates: a test of the simulation importing a built module under `dist/browser/view/`; a
-    file outside `tests/` importing a file of the part of test helpers; a relative import left
-    unchecked because the test cannot match it to a file
+- **Verification:** invariants: cross-part-imports. tests: the forms the test reads as imports —
+  in TypeScript and JavaScript `import` and `export … from` statements, a bare `import` and
+  `import()` with a string literal, and nothing in a comment, a string or another expression, and
+  in Python `import` and `from … import` statements and a directory added to `sys.path`; a
+  relative import that matches no file failing the test with the file and the line; a built file
+  under `dist/` matched to its source under `src/`; a package or a module from outside the
+  repository taken for the file of no part. An agent compares a change with the part no invariant
+  and no test holds:
+  - complies: a test of one part starting a file of another part as a process, and a page or a
+    style sheet of the browser view referring to a file, both left unread by the test
+  - violates: the test of `cross-part-imports` made to read a process one file starts from
+    another, or the HTML and CSS of the browser view, while this decision stays as it is
 - **Origin:** none
 
 *Rationale:* a file of the tests folder that is no test, such as a helper or a stand-in, serves
@@ -8943,12 +9803,10 @@ then does what a page opened by that link does.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-156 · derives from D-224 · derives from D-281
-- **Verification:** an agent compares a change with the decision:
-  - complies: a link from a mail typed into the address bar of a signed-in tab with the game open
-    reloading the page, which then shows the confirmation of D-156 or the form „Ustaw nowe hasło”
-    of D-225
-  - violates: the fragment of such a link resolved as the address of a screen and replaced with
-    Siedziba; the open game handling the link itself, without a reload
+- **Verification:** tests: a confirmation link and a password-reset link appearing in the address of
+  an open game reloading the page, the fragment left for the reloaded page to read and no screen
+  replacing the one shown; any other change of the address, a fragment that only resembles a link's
+  included, reloading nothing.
 - **Origin:** none
 
 *Rationale:* a page opened by a link already confirms the address or shows the form of a reset, so
@@ -8976,15 +9834,17 @@ that fails for any other reason stays a failure.
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-137 · derives from D-252
-- **Verification:** an agent compares a change with the decision:
-  - complies: a request whose body the browser stopped sending, refused with no line of `failure`;
-    a block committed while a registration waits, leaving no failure line of the session write that
-    the library makes as the response ends; the first store of a session, made in the route that
-    signs the player in, refused because of a block, leaving its line; a session write that fails
-    because the password was replaced meanwhile or the database failed, leaving its line
-  - violates: a line of `failure` for a body the browser broke off; a line of `failure` for the
-    session write that the library makes as a response ends, which a block refused; a session write
-    that fails for another cause left without its line
+- **Verification:** tests: a request whose body the browser broke off refused with no line of
+  `failure`; a block committed while a registration waits on its message leaving no line of
+  `failure` for the session write that the library makes as the response ends, the store telling a
+  block's refusal of a session write from a refusal for another cause; that session write refused
+  because the password was replaced meanwhile or because the database failed leaving its line. An
+  agent compares a change with the part no test holds:
+  - complies: a body too large or broken refused with no line of `failure`; the first store of a
+    session, made in the route that signs the player in, refused because of a block, leaving its
+    line
+  - violates: a line of `failure` for a body too large or broken; the first store of a session
+    refused because of a block left without its line
 - **Origin:** none
 
 *Rationale:* a browser breaks off a body when a player closes the tab or loses the connection, and a
@@ -9005,12 +9865,13 @@ by that sentence is one failure recorded once.
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-137 · derives from D-252 · derives from D-400
-- **Verification:** an agent compares a change with the decision:
-  - complies: a failed run of `account-backup` writing one JSON line of the failure and after it one
-    sentence for the operator; a refusal of `account-block` or of `account-previous-save` leaving its sentence in the terminal
-  - violates: the sentence removed, so that after a block or its refusal the operator sees only
-    JSON; the JSON line removed, so that a failure of the command reaches no log; the sentence
-    counted as a second record of the failure
+- **Verification:** tests: a database failure of `account-block`, of `account-previous-save` and
+  of `account-backup` written as its JSON line with its kind and code and followed by its
+  sentence for the operator; a failure of `account-backup` after its backup went out whole written
+  as one JSON line, its only one, and one sentence. An agent compares a change with the part no
+  test holds:
+  - complies: a refusal of `account-block` or of `account-previous-save` leaving its sentence in the terminal; a failure of `account-block` or of `account-previous-save` written as one JSON line and one sentence
+  - violates: a second JSON line written for the sentence of a failure of `account-block` or of `account-previous-save`; the sentence of such a failure removed as a second record of it
 - **Origin:** none
 
 *Rationale:* the operator at a terminal reads the sentence, and whatever searches the logs reads the
@@ -9028,9 +9889,9 @@ Just before a deployment replaces the containers of the game, it appends the who
 - **Scope:** deployment, agent-workflow, account-server
 - **Based on:** docker-container-log-removal · docker-compose-recreate-removal · docker-local-log-driver-bound · logrotate-rotation-triggers · logrotate-rotation-count · mikrus-host-docker-compose-version · mikrus-host-logrotate-schedule · loop2-app-log-file-names · loop2-host-installed-copies-agree · https://docs.docker.com/engine/logging/configure/ — "Docker keeps the json-file logging driver (without log-rotation) as a default" · "Existing containers don't use the new logging configuration automatically"; read 2026-11-08 · https://docs.docker.com/engine/logging/drivers/json-file/ § max-size — "Defaults to -1 (unlimited)"; read 2026-11-08 · https://manpages.ubuntu.com/manpages/jammy/man5/journald.conf.5.html — "By default, only forwarding to syslog and wall is enabled"; read 2026-11-08 · https://grafana.com/pricing/ § Free — "14 day retention" · "Limited to 50 GB ingested per month"; read 2026-11-08 · https://grafana.com/docs/loki/latest/send-data/docker-driver/ § known issues — "the Docker daemon might wait forever if the container is stuck"; read 2026-11-08 · https://betterstack.com/pricing § Free Tier — "3 GB logs retained for 3 days"; read 2026-11-08 · https://grafana.com/docs/loki/latest/operations/storage/retention/ — "By default the `compactor.retention-enabled` flag is not set, so the logs sent to Loki live forever"; read 2026-11-08 · https://grafana.com/docs/loki/latest/setup/size/ — "This is only documented for microservices/distributed mode"; read 2026-11-08
 - **Relations:** derives from D-252 · derives from D-17 · derives from D-12
-- **Verification:** invariants: loop2-deploy-log-dump. An agent compares a change with the decision:
-  - complies: a deployment whose append fails on a full disk, which writes a `warning:` line to the deploy log and still starts the new containers; an agent looking for a failure from before the last deployment with a `grep` of the file that limits its matches; both services of the Compose file on the `local` driver and no other logging option
-  - violates: an append placed after the containers are recreated; a deployment that stops because the append failed; the whole output of `account-block` or of `account-previous-save`, addresses included, appended to the file; a rotation configuration that names the deployment account; an agent that appends to, edits or rotates the file
+- **Verification:** invariants: loop2-deploy-log-dump. tests: the append made after the build and before the new containers start, and by no deployment that stops before them, holding the whole log of the application and of the tunnel connector, with no `--tail`; both services of the Compose file on the `local` driver with no other logging option; one `logrotate` stanza for `/var/log/loop2-app.log`, weekly or sooner past 100 MiB, keeping four rotated files and naming no user. An agent compares a change with the part no invariant and no test holds:
+  - complies: an agent looking for a failure from before the last deployment with a `grep` of the file that limits its matches, through the `mikrus` MCP server; a human's run of `account-block` or of `account-previous-save` that appends only its JSON lines to the file
+  - violates: the whole output of `account-block` or of `account-previous-save`, addresses included, appended to the file; an agent that appends to, edits or rotates the file, or reads it whole with no bound
 - **Origin:** none
 
 *Rationale:* the log of a container goes with the container, and every deployment recreates both services, so without a copy a failure from before the last deployment leaves no trace for the agent that investigates it. Appending the log to a file on the host just before the replacement keeps it, costs nothing and depends on nothing about the server that this repository does not carry, except two things read once on the server on 2026-11-14, that `logrotate` has a daily schedule there (its timer is enabled with `OnCalendar=daily` and a daily cron entry exists; that is a schedule, not an observed run) and that its Compose is version v2.35.1, and the `local` driver and the rotation give both the running container's log and every copy an upper bound. The lines of `account-block` and of `account-previous-save` go to the file because each command runs by `docker exec` and its lines reach only the terminal of whoever typed it; only their JSON lines go, since their other sentences may carry the email address of an account, which an agent reading a file that lives for weeks must not meet. The numbers of the rotation are chosen bounds, not measured needs; on 2026-11-14 the server holds the file and one rotated copy of it and no older generation. A failed append does not stop the deployment, since a full disk or a broken file would otherwise block the very deployment that repairs the game. Lacks of the option chosen: the copy covers only containers that a deployment through the installed deploy script replaces, and a container removed another way loses its log as before; the lines of the few seconds between the copy and the stop of the old container are lost; the record lies in two places, the running container in Docker's log and earlier generations in the file; a human installs the rotation configuration, creates the file with the owner of the deployment account and reinstalls the deploy script at every change of it; the lines of failures and events, with account identifiers, and the lines of `account-block` and of `account-previous-save` live for weeks in a file that an agent reads, where they lived until the next deployment before; there is no search by query and no view in a browser, which Loki with Grafana would give. Risks taken, each a hypothesis: after a rotation the file may get root as its owner, or `logrotate` may refuse to rotate without a user to rotate as, and the copies then vanish silently; the compressed older generations are invisible to `tail` and `grep`; a human may append the whole output of `account-block` or of `account-previous-save` once, addresses included; a container that crashes in a loop may swell the file to gigabytes before a rotation, stop deployments and take the disk of the old game and of foundryvtt; without a reinstalled deploy script there is no copy, and a rollback to an older commit lifts the bound of the `local` driver; the `accountId` and Node's default print with a stack at an error before the last-resort handler may live for weeks in the file an agent reads.
@@ -9043,9 +9904,9 @@ A watcher script on the server, outside the game container, run by cron every fe
 - **Scope:** deployment, agent-workflow, account-server, browser-view
 - **Based on:** mikrus-pusher-mail · github-scheduled-workflow-disabling · loop2-repository-visibility · github-schedule-shortest-interval · github-actions-public-runs-free · loop2-watch-log-flock-status · check-address-schedule-run-times · https://docs.docker.com/reference/cli/docker/system/events/ — "Only the last 256 log events are returned"; read 2026-11-08 · https://healthchecks.io/docs/ § introduction — "raises an alert as soon as a ping does not arrive on time"; read 2026-11-08 · https://uptimerobot.com/pricing/ § Free — "5 min. monitoring interval"; read 2026-11-08 · https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows § schedule — "The `schedule` event can be delayed during periods of high loads of GitHub Actions workflow runs." · "Notifications for scheduled workflows are sent to the user who last modified the cron syntax in the workflow file."; read 2026-11-08 · https://developers.cloudflare.com/tunnel/monitoring/ § tunnel status — "does not indicate whether `cloudflared` can reach your internal services"; read 2026-11-08 · https://developers.cloudflare.com/notifications/notification-available/ § Health Checks status notification — "Professional plans or higher"; read 2026-11-08 · https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon — "intended for analytics and diagnostics code to send data to a server"; read 2026-11-08 · https://sentry.io/pricing/ § Developer — "5k errors" · "30-day lookback" · "1 uptime monitor" · § Team — "$29/mo monthly, $26/mo annual"; read 2026-11-08 · https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/ — "In v11, an unset `dataCollection` collects everything by default"; read 2026-11-08 · https://glitchtip.com/documentation/install § requirements — "256 MB RAM when using all-in-one setup"; read 2026-11-08
 - **Relations:** derives from D-233 · derives from D-12 · derives from D-13 · derives from D-253
-- **Verification:** invariants: failure-watcher-message · browser-failure-report. An agent compares a change with the decision:
-  - complies: a watcher that finds a container of the game restarted and calls `pusher` once with the fixed sentence of that kind; a flood of browser reports from many addresses that raises the browser kind of message once in six hours at most, so that it takes at most four of the day's six messages and leaves at least two for the server kinds; a route that writes the one `LIMITED` failure line at the first refusal of an hour and nothing at the refusals after it; a scheduled workflow that fails once its attempts end without status 200 and holds no secret
-  - violates: a message of the watcher that holds a container's output, a count, a commit name or an account identifier; a watcher that takes the deployment lock for writing or runs a Docker command that changes a container; a route for browser reports that takes `accountId` or any text but the kind, the code and the place from the body, or that answers without the origin guards of D-104; a removal of the `LIMITED` line in the name of D-353; Sentry or GlitchTip added to the server; a scheduled workflow that deploys, checks out the code or holds a secret
+- **Verification:** invariants: failure-watcher-message · browser-failure-report. tests: the watcher started by cron every five minutes as root from its installed path; its readings of the state and the health of both containers of the game, of a restart of either, of the new lines of failures in the game container's log since its last run and, in the log of the backup, of the lack of a successful send; a run that meets the deployment's lock skipped or its readings dropped; one call of `pusher` for each message, a kind sent at most once in six hours, the backup's once in 24, and six messages at most in a rolling day; a `flock` that does not work ending a run with success, one line in the watcher's log and nothing sent; the scheduled workflow asking for a run every five minutes, opening the public address and failing unless it answers with status 200; the page sending the kind, the code and the place of an error no code handled to the server's route after its line in the console; the route writing each report as a failure line, accepting 30 in a rolling hour and writing one `LIMITED` line at the first refusal of an hour; the watcher counting those lines as a kind of their own. An agent compares a change with the part no invariant and no test holds:
+  - complies: the watcher and its schedule installed on the server by a human, and the owner's notifications of GitHub set so that a failed run of the scheduled check sends a mail
+  - violates: a deployment or a workflow that installs or changes the watcher or its schedule on the server; the step of the scheduled check given `continue-on-error`, so that a probe that fails leaves no failed run for GitHub to notify
 - **Origin:** none
 
 *Rationale:* each of the three ways leaves a hole that another covers. The watcher sees a process that fell and rose, a failure the server handled and, from the log of the backup, a night without a successful send, none of which a check of the address sees, and it costs nothing, with a script that a human installs. The scheduled check of the address also sees a server that is off, a fallen tunnel and a Cloudflare fault, with no new account, no secret and no change on the server, but it speaks at the pace at which GitHub starts its scheduled runs, which in the reading of 2026-11-14 is hours, not the five minutes the schedule asks for; the shortest interval GitHub allows is one thing, the interval it gives is another. The report from the browser covers a failure in the player's browser without a foreign service, at the price of code in two parts and a new public route. Failures of the server and of the player's browser are both to be covered, the server weighing more only where covering the browser would strongly narrow the choice; the report from the browser narrows nothing on the side of the server and costs no money. The one `LIMITED` line is kept although D-353 leaves the expected refusals without a line: it records no refused request of a player but that reports were dropped, and without it a flood past the limit would look like a quiet hour. Lacks of the option chosen: when the server and GitHub lie down together, or the schedule is disabled after 60 days without a commit, the owner gets nothing and the silence looks like „działa”; when `flock` does not work on the server, each run of the watcher ends with success and a line in its own log, and the owner gets nothing (on the test server `flock` works: in the watcher's log read on 2026-11-14 the lines for a held deployment lock name `flock exit 1` and no other status); the page does not say whether GitHub sends an email for a failed run by default, so the owner checks it in their own settings (the owner gave this result on 2026-11-14: a manual run of the check with `force_failure` of 2026-11-09 09:45 UTC, run 42595890225, with „Forced failure requested” in its log, brought the mail „[mariusznazar/loop2] Run failed: Check the public address - main (2fe922c)” to his inbox on 2026-11-09 at 10:46 Polish time; the line `cron` of the workflow file was last changed by his own commit `fc493baa` of 2026-11-09, so the notices of scheduled runs go to the right account; the result is about a run started by hand); the limits of `push.mikr.us` are unknown, so the watcher throttles itself and may stay silent about a second failure of the same kind; the new public route accepts reports from anyone, so false reports reach the log and the watcher; an error in the browser while the server or the network is down does not reach the server; there is code in two parts and a script on the server that a human installs. Risks taken, each a hypothesis: a watcher that read Docker's events would raise a false alarm after every merge or lose a fall during the backup; a watcher run as root would create a lock file and block deployments from the account that is not root, or, hung, would stop deployments and the backup; the buffer of 256 events would fill with health checks and a fall would vanish before it is read; failure lines from the moment before a deployment would reach only the copy of the log in the file and not be reported; a watcher running as root on a server shared with other projects is covered by no invariant test; the loss of the file with the time of the last run would flood the owner with messages, and the throttling of `push.mikr.us` would swallow the notice of the backup of D-233 too; the test gate would refuse a new workflow file, since it counts every file in the folder of workflows as a route of deployment; the notifications of GitHub set to „Don't notify”, or sent to another account, would give a silence taken for „działa”; during a longer outage a mail at every scheduled run would teach the owner to ignore them, which at the gaps GitHub gives is a few a day and not the hundreds a schedule of five minutes would make; a check that hits a deployment or Cloudflare's block of bots would raise a false alarm, and a real failure would bring two messages by two channels; a report sent with `keepalive` or `sendBeacon` would eat the browser's quota and the player would lose the save at „Wyloguj”; false reports from many addresses would use the watcher's budget of messages, cover a real failure of the server and swell the file of the copied log; arbitrary text from a report, such as an email address or someone else's `accountId`, would land in a log that lives for weeks; an error repeated at every tick would send several reports a second and break „the same line once” of D-253; the route would either fall out on the guards of state-changing requests or be the only one without a check of the origin.
@@ -9073,9 +9934,9 @@ loop2 names a place on the author's disk outside the repository, such as the fol
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: tracked-file-private-paths · tracked-file-private-names. An agent compares a change with the decision:
-  - complies: a line of the agent instructions that names the entry `projects` under `loop2` in the locations file; a decision whose whole reasoning stands in its *Rationale* and *Rejected*, with *Origin* `none`; a comment that states in its own words what the code needs
-  - violates: a line of any tracked file that gives the folder of the notes, the list of tasks or an old copy of the repository by its path on the disk; a comment, an entry or a guideline that names a note the author keeps outside the repository, or a file of the private repository of the old loop game
+- **Verification:** invariants: tracked-file-private-paths · tracked-file-private-names. An agent compares a change with the part no invariant holds:
+  - complies: a decision whose whole reasoning stands in its *Rationale* and *Rejected*, with *Origin* `none`; a comment that states in its own words what the code needs
+  - violates: a comment, an entry or a guideline that names a file of a repository its readers cannot reach other than the private repository of the old loop game; an entry or a comment that leaves out what its reader needs because a source outside the repository holds it
 - **Origin:** none
 
 *Rationale:* the repository is public, so a path on the author's disk shows to everyone how that disk is laid out and what the notes are called. The name of an entry carries the pointer without the path, and the value of the entry lies in the user's own file of places, where each user keeps their own. The name of a note shows the same and leads a reader of the repository nowhere: the notes a decision or a test pointed to are removed when their task closes, so the pointer goes dead, and the private repository of the old loop game is not open to a reader at all. An agent that wants to know why a decision was made, or the author who returns to it after months, finds the reasoning where it stands in the entry, not in a note that no longer exists. What a reader needs of such a source therefore stands in the foundation, and the documents the notes held do not move into the repository, since that would make the author's working papers public and set a second source of truth beside the foundation.
@@ -9088,9 +9949,7 @@ The rule panel shows beside an action what it costs, read from the game's data, 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-63 · derives from D-293 · derives from D-310
-- **Verification:** an agent compares a change with the decision:
-  - complies: the cell „Wytwórz — ognisko (6 patyków)” in the pick of the rule panel, greyed with its price when it may not be picked; „Zasil — ognisko (1 patyk)”; „Uderz — patyk” with no price, since the stick stays in the backpack after a strike (D-145); the row „Zapas poniżej 8 · Patyk → Wytwórz — ognisko” with no price;
-  - violates: a price in the row of a program rule; „(6 × patyk)” in the panel; a price with a name in the singular after a count of 6; „Zapal — ognisko (2 patyki, 10 energii natury)” shown to the character with „Czysty płomień” during a map run
+- **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's.
 - **Origin:** none
 
 *Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. In a trial of 2026-10-31 an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule does not grow, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, while the game departs from the old loop's solutions only where the result is better, never worse (D-311); the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
@@ -9103,9 +9962,9 @@ While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it b
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-319
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage at the sticks bending from the end of its walk to the end of „Zbierz — Patyk”, at the same beat at 1× and at 4×; the mage gathering fibre, which has no prop, bending where it stood; the mage of „Obchód” bending through its forty minutes; the mage at the moss, which lies to its left, bending facing left
-  - violates: one bend of 300 ms at the end of each gathering; a mage that bends at „Zbierz” and stands at „Obchód”; a mage that stands in the frames of standing while it gathers fibre; a beat of the bend that follows the pace; a mage that bends with its back to the prop
+- **Verification:** tests: the mage bending, as a state of the action and no effect, through „Zbierz” and „Obchód”, fibre included, in the bend sheet of the data in place of the idle one, and at no other action, in combat or after an end; the bending mage facing its prop as the side of the data gives it, the sticks and the bush to its right and the moss to its left, whatever way it walked, and the mage at fibre bending as it faces. For the loop of the bend, its beat and the moment it begins, an agent compares a change with the part no invariant and no test holds:
+  - complies: the mage at the sticks bending in a loop from the end of its walk to the end of „Zbierz — Patyk”, at the same beat at 1× and at 4×
+  - violates: a beat of the bend that follows the pace; a mage that bends while it still walks to the sticks; a bend that plays its frames once and stands
 - **Origin:** none
 
 *Rationale:* the gathering is most of the time of a run, and a mage that stands through it leaves the scene with nothing to show for the longest action. The mage usually reaches the sticks and the moss walking left, so a facing that follows its walk would turn its back to a prop it reaches, and the prop's side in the data is what the player sees. Accepted with it: with „Obchód” the mage bends for forty game minutes though a patrol is a walk about the tile, and at 16× a gathering lasts 625 ms and the walk 640 ms, so the loop shows mostly from 1× to 4×.
@@ -9118,9 +9977,9 @@ When a gathering ends with a piece more in the backpack, the icon of the gathere
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-320
-- **Verification:** an agent compares a change with the decision:
-  - complies: the icon of a stick on a plaque in `panel` flying from the sticks to the mage after a „Zbierz — Patyk” that put a stick into the backpack; one icon after an „Obchód” that brought seven pieces; the icon of fibre starting under the mage's feet
-  - violates: the icon straight on the picture of the forest with no plaque; an icon for a gathering that put no piece into the backpack; seven icons after one „Obchód”; a picture of the resource cut from a pack in place of the icon
+- **Verification:** tests: the end of a gathering with a piece more in the backpack sending the icon of the resource that the data gives, as a mask on a plaque, from the middle of its prop to the body of the mage that gathered, with no text, gone when its flight ends, and none where no piece came; the icon of fibre starting under the mage's feet; „Obchód” sending one icon for its whole result. For the arc and the background of the plaque, an agent compares a change with the part no invariant and no test holds:
+  - complies: the icon of a stick on a plaque in `panel` flying in an arc from the sticks to the mage
+  - violates: the icon on a plaque with no background of its own, straight on the picture of the forest; an icon that flies in a straight line
 - **Origin:** none
 
 *Rationale:* the icon is the picture of the resource that the player knows from the map, and the plaque keeps it legible on the forest, as the badge over the head keeps the icon of an action. Nothing new enters the game's files for it.
@@ -9133,9 +9992,7 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-66 · derives from D-271 · derives from D-316 · derives from D-317
-- **Verification:** an agent compares a change with the decision:
-  - complies: a missed „Zbierz — Patyk” leaving a cloud of dust at the sticks; a missed „Zbierz — Włókno” leaving one under the mage's feet
-  - violates: dust at a „Zbierz” that put a piece into the backpack; dust over the mage's head, where the badge stands; no sign of a miss in the scene
+- **Verification:** tests: a „Zbierz” that ends with no piece more in the backpack putting a cloud of dust at the prop of the resource, whatever the mage does next, and for fibre, which has no prop, under the mage's feet.
 - **Origin:** none
 
 *Rationale:* a miss leaves the stock of the tile and the backpack as they were, and the dust shows it where the hand reached for the prop, so that the player sees the gathering fail and not only the numbers stand still. Under the feet the dust stands for the fibre, which has no prop.
@@ -9148,9 +10005,7 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** an agent compares a change with the decision:
-  - complies: a reading in which one „Zbierz — Patyk” ended with a piece more in the backpack showing the icon at the mage that gathered, though the action that starts in that reading leads the mage elsewhere; a reading that carries two ends of a gathering starting nothing; the end of „Zjedz” in the reading of a gathering's end leaving its result unread and starting nothing; the end at the discovery that stops the scene starting nothing; an effect running when the pause comes standing still and finishing when the game goes on
-  - violates: an effect shown for a gathering that ended in the first reading the scene draws; an icon that lands where the next action leads the mage; a field of the game state that holds the result of a gathering for the scene
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it.
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.
@@ -9163,9 +10018,29 @@ When a manual map run ends in a character's death or a completion, the end-of-ru
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-62 · derives from D-132
-- **Verification:** an agent compares a change with the decision:
-  - complies: a completion of Las opening the window over the screen with „Koniec przejścia” above „Las rozwiązany” in `positive`, the line „Do skrzynki: …” in it and not in the world area, the menu bar standing above it, „Restart”, „Zakończ” and „Otwarte: Las — głębiej →” fixed at its bottom while the sections scroll, „✕” uncovering the screen with „Koniec przejścia” in its header, and a reload of that screen opening the window again; after a death in a fight, „Ostatnie minuty” holding the four entries of the chronicle before the paragraph of the last encounter, which stands in a section of its own
-  - violates: the window opening only after „Koniec przejścia” is pressed; the window covering the menu bar; the buttons scrolling away with the sections; a section standing with no content; „Ostatnie minuty” after a completion; the paragraph of the last encounter counted among the entries of „Ostatnie minuty” and in its own section as well; the lines of the end standing in the world area
+- **Verification:** tests: the window opening of itself after a death and after a completion and
+  covering the screen with its header; under the label „Koniec przejścia” the title — „Mag zamarzł”,
+  „Mag umarł z głodu” or „Mag zginął w walce” after a death, the map's completion text in
+  `positive` after a completion — then the longest streak as „najdłuższa passa 116/480” with its
+  bar, the discovery where there is one and the line of what the end gave or cost, in this order;
+  each section of why only where it has content: „Ostatnie minuty” only after a death, at most four
+  entries of the chronicle ending with the death's, each with its game minute, the paragraph of the
+  last encounter in a section of its own and never among them, „Nie zadziałały ani razu” with the
+  number and the sentence of each rule that never fired, „Na co poszedł czas” with its pieces of at
+  least 8 %, at most five, the rest in „reszta” and the kinds joined as „W drodze”, „Czeka” and
+  „Walka”, and „Wyprawa i teren” with its three lines and no other; the buttons after the scrolling
+  part, „Restart” with the warning of a cut trip plan, „Zakończ” and „Otwarte: {mapa} →” only after
+  a completion of a map that opens another, each asking for its own act; „✕” and Escape pressed in
+  the window closing it and uncovering the screen, whose header holds „Koniec przejścia”, which
+  opens it again; the window opening again at every entry, after a link of the menu bar and after a
+  reload. For the menu bar, the place of the sections and the scrolling, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: after a completion of Las the menu bar and the row of warnings standing above the
+    window; the sections of why under the line „Do skrzynki: …”; with many rules that never fired
+    the sections scrolling while „Restart”, „Zakończ” and „Otwarte: Las — głębiej →” stay fixed at
+    the bottom of the window
+  - violates: the window covering the menu bar; a section of why standing above the line of what
+    the end gave or cost; the buttons scrolling away with the sections
 - **Origin:** none
 
 *Rationale:* a lost map run teaches only when the game says why it was lost — without it the player guesses, in the stretch from the fifth to the thirtieth minute of play that a review of the game found the hardest — and a solved map reads as a win when its reward comes first. One line of the end, below „Teraz” and „Potem” in the world area, does not say how near the map run came to the map's condition, what happened in the last minutes, which rules did not fire or where the time went. The player's main complaint is that the player does not know why rules did not fire, and the window names the rules that never did. The sections, their rows and the buttons come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse: there the end was a window over the whole screen with the header, with a title of the cause, a bar of the longest streak, a sentence accounting for the map run, the sections „Ostatnie minuty”, „Nie zadziałały ani razu”, „Na co poszedł czas” and „Wyprawa i teren”, buttons fixed at the bottom, „Otwarte: {mapa} →” after a win, and „✕” that closed the window and uncovered the program with its final counters. The old Loop's „Ostatnie minuty” took the last four entries of its journal, ending with the death, and it had no section for a fight. „Czeka” stands for waiting because it is the word the game uses for waiting in „Teraz” and in the chronicle, and there is no line „odłożyła” because the line „Do skrzynki” says the same (D-185). The end holds much to read, and a window gives it room, at the cost of hiding the screen it covers. A window over the screen puts the end where nothing that stood there before has to move, and the menu bar with the row of warnings stays above it, so a failed save (D-208) and a broken game (D-323) are seen while it stands. Its buttons stand fixed because they are the way on: in the old Loop the end stood under an open rule editor, so after a death with a rule open it started more than half way down the window and its buttons fell under the lower edge. „Restart” and „Zakończ” stand in the window and in the header as before, and the window covers the header, so one set of them shows at a time. „✕” with the button of the header let the player read the scene and the program with its counters that the window explains; the window opens again at every entry, so the explanation is not lost by leaving or by a reload. After a load everything but „Ostatnie minuty” comes back from the game state (D-212). Accepted with it: the window hides the scene while it stands; it does not cover the whole page as the end of the old Loop does; the keyboard, Escape and the return to the window are to build; a few new fields of the state of the map run and a bump of the version of the save (D-369); in „Ostatnie minuty” an attack does not stand among the other entries, though its paragraph gives the game minute of the attack; and after a load that section does not stand at all, since the chronicle then holds only that paragraph (D-339).
@@ -9178,9 +10053,17 @@ A manual map run keeps, in the map run of the game state and so in the saved gam
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-135 · derives from D-206
-- **Verification:** an agent compares a change with the decision:
-  - complies: a manual map run at game minute 212 that entered with 4 sticks, holding a longest streak of 40 and counts by action that sum to 212, saved and loaded back with the same three things; a map run restarted holding a longest streak of 0, counts of 0 for every kind and the entries of its new send; a death in a game minute in which the streak falls to 0 leaving the longest streak as it was
-  - violates: the three things standing in the plain map run of an earning loop; a game minute counted to two kinds or to none; a count missing from the saved record that the load fills in with 0; a load accepting counts that sum to another number than the game minute, or a longest streak above it; the longest streak read from the chronicle
+- **Verification:** tests: the longest streak, the game minutes by action and the items entered
+  with kept in the manual map run through a death, its settlement, an edit of the program and a
+  load, and none of them in the map run of an earning loop, in the game state or the saved one; the
+  longest streak the greatest streak of a game minute, staying after a fall of the streak; each game
+  minute counted once, to what the character was doing at its start, a wait and a fight among the
+  kinds of the closed list, the counts summing to the game minute however the span is split; the
+  items in the order of the data's items, as the send gave them, an empty list for an empty
+  backpack; the record starting from 0 and the send's items at the start and at „Restart”; the load
+  refusing a longest streak below the streak going on or above the game minute, counts off the
+  closed list or not summing to the game minute, and items out of order or above the carrying
+  capacity, and admitting each edge.
 - **Origin:** none
 
 *Rationale:* the window tells how near the map run came, where its time went and what the character entered with, and all three must come back after a load (D-212), so they stand in the game state, and not in the chronicle, which lives in the memory of the page and is lost at a load (D-339). The game state holds the counters of how many times each rule fired (D-93), which the window reads for „Nie zadziałały ani razu”, so the record adds only the three. The sections of the window and their rows come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse. Everything the window shows comes back after a load but „Ostatnie minuty”, which come from the chronicle and so show what it holds. They stand in the manual map run alone, since every earning loop would otherwise carry and save them, and the saved game state would grow with the number of earning loops against the limits of D-207 and D-208 for nothing the earning loops use. The longest streak is read at the end of every game minute, the one in which the map run ends included, so a fall of the streak that ends the map run does not lose it. The kinds are those of the simulation and the grouping the window shows is the view's, so a new action needs no wording in the simulation. The load is strict, as D-213 asks, so a record whose counting disagrees with the game minute is refused and not shown. Accepted with it: a wrong counting reaches saved documents until a new version of the save drops them (D-206); a sound document refused where the counting has an exception nobody found, the player starting anew as D-206 gives; the saved game state growing by the record and its version rising once for it, as the version rises once in the change that alters the shape of the game state, which discards a saved game state of the older version, the player's programs in it included (D-206); the version rising again in every later change that adds an ordinary action to the data or removes one, since the kinds of the ordinary actions are the keys of the counts, so each such change alters the shape of the record and discards every saved game state of the older version in full (D-206).
@@ -9193,9 +10076,20 @@ While the end-of-run window (D-368) stands, the header and the three areas of th
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-368 · derives from D-311 · derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a death the header and the three areas of the screen of a map run not shown and the window standing under the menu bar with the page at its top; a window with many rules that never fired as tall as a part of the browser window, its middle part scrolling while „Restart” and „Zakończ” stay in sight; Escape pressed in the window closing it with the focus on „Koniec przejścia” in the header; Escape in the open menu „Konto” closing the menu and leaving the window as it was
-  - violates: the header or an area of the screen shown beside or under the window while it stands; a dimmed backdrop; a trap that keeps the focus in the window, or one that puts the menu bar out of the keyboard's reach; Escape read on the document; the buttons or the heading scrolling away with the sections; the window opening with the focus left on the covered screen or on the page; the page left scrolled so that the menu bar stands out of sight when the window opens
+- **Verification:** tests: while the window stands the header and the three areas hidden and kept
+  in the page with their state, the window drawn as its heading, its middle part and its buttons in
+  a column, and the page going to its top when the window appears; the window taking the focus when
+  it appears, also after a build, Escape read in the window and not on the document, the focus free
+  to leave the window, which marks itself as no modal dialog, and „✕” and Escape moving the focus to
+  „Koniec przejścia” in the header. For the place, the size and the look of the window, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: after a death the window standing under the menu bar and the row of warnings, as wide
+    as the content column of the screens; a window with many rules that never fired as tall as a
+    part of the browser window, its middle part scrolling while „✕”, „Restart” and „Zakończ” stay
+    in sight
+  - violates: the window wider or narrower than the content column of the screens; a dimmed
+    backdrop; the window taller than the browser window, its buttons below the lower edge; the
+    buttons or the heading scrolling away with the sections
 - **Origin:** none
 
 *Rationale:* the window covers the screen of a map run from its header down, and the menu bar with the row of warnings under it stays above the window and works, so the player with the window open sees a failed save (D-208) and a broken game (D-323); a click on the menu bar leaves the screen of the map run, and on the return the window opens again. The height of the menu bar and of the row of warnings under it is not known to the stylesheet, so a window as a block in their place keeps its buttons in sight where a layer positioned over the screen would put them below the lower edge of a tall screen, and a screen left out of the drawing cannot be reached by the keyboard under the window. The window takes the focus so that Escape works at once; nothing traps it, since the menu bar above the window stays reachable (D-311); and Escape is read in the window because on the document it would meet the menu „Konto” (D-285) and the rule panel. The window covers the whole screen, so there is nothing to dim, and the file of design tokens holds no value for a backdrop. Accepted with it: the window does not cover the whole page as the end of the old Loop does; the covered screen, the scene included, is not seen while the window stands, so an effect of the end on the scene is seen before the window opens or after „✕”; a player who had scrolled the screen is at its top when the window opens, and the scroll is not kept after the window closes; a player of the keyboard whose focus stands outside the window, after a click on the page, finds that Escape closes nothing.
@@ -9208,9 +10102,13 @@ Whether the end-of-run window (D-368) is open is a memory of the page, kept by t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-368 · derives from D-173 · derives from D-311
-- **Verification:** an agent compares a change with the decision:
-  - complies: a window closed by „✕”, the player leaving by the menu bar and coming back, and the window open again; a reload of the screen after a death with the saved game state holding nothing of whether the window was open, and the window open; „Zakończ” of the window with unsaved changes closing the window and the header holding „Koniec przejścia” before „Restart”; „Wróć” leaving the window closed
-  - violates: whether the window is open written into the game state or the save; the window closed after the player leaves the screen of an ended map run and comes back; the window open again of itself after „Wróć”; „Koniec przejścia” in the header while the window stands, or while the map run goes on
+- **Verification:** tests: whether the window is open kept by the page and nothing of it in the game
+  state or the saved game state; the window opening at the end of a map run and when the game is
+  built on an ended one, at a reload, after a sign-in and at an entering from another screen, and
+  again at every entering after „✕” or Escape; „✕”, Escape and the question closing it, the window
+  staying closed after „Wróć”; the window standing only on the screen of the map run and never with
+  the question; „Koniec przejścia” in the header before „Restart” only after the end and while the
+  window does not stand, opening the window at once also while it waits for the scene's effect.
 - **Origin:** none
 
 *Rationale:* the window is a thing of the screen and not of the game, so a save holds nothing of it, and a reload opens it again as D-212 gives; a state in the save would come back closed after a reload, against its opening at every entry, and would change the shape of the save for a thing of the screen. The question stands where D-173 puts it, in the band of the program panel at the copy it concerns, since D-173 rejected the question in a window, so the question closes the window and the window does not come back of itself after „Wróć”, as D-173 gives, and the window needs no memory of why it was closed. „Koniec przejścia” stands only while the window is closed because the header is not shown while it stands, and before „Restart” so that the way back to the window comes before the buttons that end the map run. Accepted with it: the end is out of the player's sight while the question stands and after it, until the button opens it; a player who corrects the copy after „Wróć” has the window closed already, and one who wants to read the end again opens it with the button.
@@ -9228,14 +10126,16 @@ thickness it is the outline alone, the fill coming with the next pixels. The fro
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-271
-- **Verification:** an agent compares a change with the decision:
-  - complies: a character at 37 °C with no frost on the frame; at 36 °C a frost whose deepest teeth
-    reach 8 pixels of the scene from each edge; at 35 °C and at 20 °C one whose deepest teeth reach 16;
-    the same character warmed to 36 °C at the fire with the teeth at 8 again; the frost the same
-    colours at streak 0 and at a completion
-  - violates: a frost that starts only below 35 °C; a frost that grows further below 35 °C; a frost
-    whose deepest teeth stand at the same depth at 36 °C and at 35 °C; half the opacity at the full thickness for a
-    half; a frost over the whole area of the scene; a frost that changes its colour with the streak
+- **Verification:** tests: the frost's thickness in whole pixels of the scene, none at 37 °C, growing
+  evenly as the body cools, 8 at 36 °C and the full 16 at 35 °C and below, following the body's
+  temperature and not the streak, and taken back reading by reading as the body warms at a fire; the
+  frost over the layer of the tint. For where the frost lies on the frame and the shape of its inner
+  edge, an agent compares a change with the part no invariant and no test holds:
+  - complies: a frost on the four edges of the frame whose deepest teeth reach 8 pixels of the scene
+    from each edge at 36 °C and 16 at 35 °C; its inner edge ragged; at the first pixel of thickness
+    the outline alone, the fill coming with the next pixels
+  - violates: a frost over the whole area of the scene; a frost whose inner edge is straight, every
+    part of it at the full thickness; a fill with no outline at the first pixel of thickness
 - **Origin:** none
 
 *Rationale:* the frost warns before the character starts losing health, which comes below 35 °C, and
@@ -9262,14 +10162,17 @@ scene's data. An extinguished campfire stays as D-316 gives it.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-271 · derives from D-349
-- **Verification:** an agent compares a change with the decision:
-  - complies: a fire with 21 minutes of burning left drawn with the full flame and the same fire with
-    20 left with the smaller flame in four frames at the beat of the full one; the file of the
-    smaller flame a PNG of the full flame's size holding the same stones and logs and no colour
-    the full flame's file lacks; an extinguished fire the full flame's first frame, grey
-  - violates: the smaller flame at 30 minutes left, or none at 10; a smaller flame of another
-    size of the stones, or with a stage between; the full flame drawn at a fraction of its scale;
-    the extinguished fire in the smaller flame
+- **Verification:** tests: a burning campfire with more than 20 minutes of burning left drawn with
+  the full flame and with 20 or fewer with the smaller flame, from a file of its own, in the same four
+  frames, place and size, on the same element, so that its frames run on; the smaller flame's file
+  holding pixels alone and being the full flame's sheet with only pixels of its flame cut down to the
+  pit's black and no new colour, every frame keeping part of its flame; an extinguished campfire in
+  the full flame's picture, not burning. For the beat of the smaller flame and where its file and the
+  20 minutes stand, an agent compares a change with the part no invariant and no test holds:
+  - complies: the frames of the smaller flame changing at the beat of the full one; the file of the
+    smaller flame and the 20 minutes named in the scene's data
+  - violates: the smaller flame at another beat than the full one; the file of the smaller flame or
+    the 20 minutes named in the code of the browser view
 - **Origin:** none
 
 *Rationale:* 20 minutes is what one stick adds to a burning fire, so a smaller flame says to feed the
@@ -9309,9 +10212,7 @@ An action shortened by bought branches lasts at least one game minute.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-22 · derives from D-25
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Wędruj” from a tile with one neighbour not yet revealed going onto that neighbour whatever the draw gives; „Wędruj” from a tile whose neighbours are all revealed going onto one of them; starting „Wędruj” moving the generator of wandering by one draw; „Wędruj” passed over on a tile with no neighbour on the map, the generator left where it stood
-  - violates: „Wędruj” going onto a revealed neighbour while a neighbour not yet revealed stands beside it; a choice of the tile that takes two draws; a check that „Wędruj” can be carried out that moves the generator
+- **Verification:** tests: „Wędruj” going onto the one neighbour not yet revealed whatever the draw gives and onto one of the neighbours where all are revealed, every move ending on a neighbour; starting „Wędruj” moving the generator of wandering by one draw, each start one draw on; „Wędruj” possible with a neighbour on the map and not without, and the check and the pick leaving the generator where it stood.
 - **Origin:** none
 
 *Rationale:* „Wędruj” is the move with no target, and the design of the game has it go in a random direction, onto a tile not yet revealed where it can. The old loop game's tests hold the same preference, the choice of any neighbour when all are revealed, „Wędruj” being possible while the tile has a neighbour, and a check of that which leaves the generator alone; the one draw for a choice of step is of the design of the game as well. Accepted with it: which neighbour a draw picks, by what formula, and the order in which the candidates are taken are left to the code, so a change of the picking that keeps the rules above is no change of this decision.
@@ -9324,9 +10225,13 @@ A condition that takes a number accepts it from a minimum to a maximum, both inc
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-23 · derives from D-175
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Temperatura poniżej” taking 36.6 and refusing 36.55, 29.9 and 37.1; „Energia natury poniżej” taking 0 and 100 and refusing −1, 101 and 0.5; „Energia natury poniżej 30” holding with 29.5 nature energy and not with 30
-  - violates: „Zostało mniej niż — ognisko” taking 121; „Sytość poniżej” taking 50.5; „Energia natury poniżej 0” holding with 0 nature energy
+- **Verification:** tests: each condition that takes a number holding while the value it reads is
+  below the number and not at it; the program check taking each such condition's numbers from its
+  minimum to its maximum on its step, refusing a number off the step, outside the range or no
+  finite number, and keeping a temperature as the decimal with tenths, in a rule and in a group's
+  condition; the number field of the rule panel taking each condition's range and step; the number
+  each condition starts with in the program editor and in the rule a discovery adds; „Zdrowie
+  poniżej” and „Przeciwnik ma poniżej” taking 0 to 100 by 1, from 50 and 10.
 - **Origin:** none
 
 *Rationale:* the ranges, the steps and the numbers a condition starts with are those of the old loop game's data, the energy's included, whose range reaches the cap of nature energy (D-176). Each condition's numbers stand in its row of the game's data (D-18), so a new condition names its own, and the check of a program and the number field of the rule panel read the same range and step. The check keeps the number as the player reads it, so the program holds the number the player wrote.
@@ -9339,9 +10244,10 @@ In a game minute outside combat in which the mage's satiety, taken after its fal
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-175 · derives from D-176
-- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
-  - complies: satiety 60.6 falling to 60 in a game minute giving back 0.5, so that 40 nature energy becomes 40.5; satiety 60.5 falling to 59.9 giving back nothing; 99.75 nature energy becoming 100 and 100 staying 100
-  - violates: nature energy coming back in a game minute whose satiety is 60 or above before the fall and below 60 after it; nature energy rising above its cap
+- **Verification:** invariants: nature-energy-range. tests: nature energy coming back by 0.5 in a
+  game minute outside combat whose satiety after its fall is 60 or above, by nothing where it is
+  below 60, and not above the cap of 100, also in the game minute a lighting finishes and in the
+  first game minute after combat.
 - **Origin:** none
 
 *Rationale:* the rate of 0.5 a game minute and the satiety of 60 are those of the old loop game's data, and its tests compare the satiety with the threshold after the fall of the same game minute, as this decision does. The place of the game minute in which the energy comes back is D-71's, and the cap and the full start of a map run are D-176's.
@@ -9354,9 +10260,9 @@ On Las a program built of the closed lists of conditions and actions keeps the m
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-63
-- **Verification:** an agent compares a change with the decision:
-  - complies: a test of the simulation that runs a program which eats, keeps a campfire and keeps berries and sticks at hand through 480 game minutes alive on a seed it names, each lighting taking its price in nature energy, and the empty program on that seed dying
-  - violates: a price of lighting, a rate of coming back or a number of the body left in the data under which no program built of the closed lists passes Las; a program made to pass by a rule outside the closed lists
+- **Verification:** tests: on Las, on the seed a test names, a program of the kinds of the closed
+  lists of conditions and actions living through 480 game minutes, lighting, feeding and eating,
+  with nature energy spent on its lightings, and the empty program dying there.
 - **Origin:** none
 
 *Rationale:* Las is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
@@ -9369,9 +10275,21 @@ The eight character skills give a level and a point at each of these amounts of 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zbieranie małych przedmiotów” at 449 practice on level 5 and at 450 on level 6; „Zgrabna konstrukcja” bought to its second rank for 1 and then 2 points, making a campfire take 10 minutes in place of 20; „Mocniejszy cios” at its fourth rank making a blow with a stick do 14 damage in place of 6
-  - violates: a level reached below its threshold; a rank bought for a price other than the one listed; a branch whose rank gives another effect than the one listed
+- **Verification:** tests: the thresholds of the eight character skills, each giving a level and a
+  point; the effects of „Pełna garść”, „Obchód”, „Oszczędne dorzucanie”, „Zgrabna konstrukcja”,
+  „Szybka ręka”, „Wprawny krok”, „Długi krok”, „Mocniejszy cios”, „Cięższy kop”, „Zwinny odskok”
+  and „Szybki posiłek”, and „Wprawne oko” turning a draw just above the chance of a gathering into
+  a hit; the prices of „Mocniejszy cios”, „Cięższy kop” and „Zwiad”, the first two of „Zgrabna
+  konstrukcja” together and the third above 1, the first two of „Wprawny krok” within 3 points, the
+  first of „Oszczędne dorzucanie” and „Szybki posiłek”, the third of „Długi krok”, and the one rank
+  of „Czysty płomień”. For the size of the gain of „Wprawne oko”, the other prices, and these
+  numbers standing in the data of the character skills, an agent compares a change with the part no
+  test holds:
+  - complies: „Obchód” bought for 3 points; „Zwinny odskok” bought to its second rank for 1 and then
+    1 point; the thresholds read by the simulation from the data of the character skills
+  - violates: a rank of „Wprawne oko”, „Pełna garść”, „Szybka ręka” or „Zwinny odskok” bought for a
+    price other than the one listed; „Wprawne oko” adding 4 percentage points; a threshold written
+    into the code of the simulation rather than into the data
 - **Origin:** none
 
 *Rationale:* the curves, the effects and the prices of the other skills are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). The numbers of the three combat trees and their two branches are not the old loop game's: they are set lower so that the points of combat can be earned on the first maps with combat, and are to be corrected either way when more maps are balanced. Accepted with it: the balance of the old numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; once progress carries over between versions of the game, lowering this generosity takes points from players. This decision forbids other numbers until it is changed, so tuning the numbers later is a change of this decision as well as of data and tests (D-18). The floor of one minute under an action shortened by branches is D-374's.
@@ -9384,9 +10302,9 @@ A program rule whose condition holds and whose action the game's check refuses n
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-310
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Idź — patyk” on a tile that holds a stick reading „patyk leży już tutaj”; „Zapal — ognisko” beside a campfire that burns reading „ognisko już płonie”; „Zasil — ognisko” with no stick in the backpack reading „brak opału: patyk”
-  - violates: „Idź — ognisko” beside a campfire reading „nie ma ogniska”; „Zbierz — mech” with a full backpack reading „tu nie leży mech”; a refusal of a row above reading in other words than the row's
+- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
+  - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
+  - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
 
 *Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
@@ -9399,9 +10317,7 @@ The page opens the login card as an object it creates, focuses and closes: an el
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-260
-- **Verification:** an agent compares a change with the decision:
-  - complies: a card found in its element as soon as it is created; the address field of „Zaloguj się” holding focus after a confirmed logout, and focus left where it was after a session check opened the card; „Zaloguj się” sent twice in a row before the page has drawn the lock sending once; „Zaloguj się” pressed on the card that stands on „Zaloguj się” leaving the typed text and the focus as they are; focus on the button of a form after a refusal that unlocked it
-  - violates: an autofocus on the opening of a card; a card kept hidden behind the game with a typed password in it; the closing of the card called from the code that draws it; a lock that leaves the switch or „Nie pamiętam hasła” usable while a form waits; focus left on the page body after the lock lifts
+- **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after a session check or an expired save, focus in the first field after a confirmed logout, a logout answered with no session and a set password; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts.
 - **Origin:** none
 
 *Rationale:* the page around the card is built another way than the card, so the two meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
@@ -9414,9 +10330,9 @@ The list of the chronicle draws the entries of the filter picked, newest first, 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-338 · derives from D-339 · derives from D-343 · derives from D-345
-- **Verification:** an agent compares a change with the decision:
-  - complies: a chronicle of 400 entries drawn at first with fewer rows than entries, the newest on top, the window growing by a scroll near its end until the oldest entry stands and not by a scroll far from it, and drawn with the first window again after „Czynności” is picked or after „Restart”; a new entry arriving while the window is grown leaving the window as it was; the entry of the first chill of a new game still reading „Gra dopisała regułę w grupie „Program”: Zawsze → Eksploruj.” after the group is renamed „Ogień”; a draw at the next reading of the clock with nothing changed reading no window from the memory and composing no paragraph
-  - violates: every entry of a long chronicle drawn at once; the window starting anew whenever an entry arrives; the entry of a discovery naming „Ogień” after the group was renamed; the paragraph of the last encounter composed again at each draw while the encounter stands as it was; the rows of a long chronicle drawn again at each reading of the clock
+- **Verification:** tests: the window of the filter picked, newest first, drawn at first with fewer rows than a chronicle of 400 entries, grown by a scroll near its end until the oldest entry stands and not by a scroll far from it, started anew by a filter picked, a send and „Restart” and not by an entry arriving; the entry of a discovery still naming the group it named after the group is renamed; the paragraph of the last encounter composed once for an encounter however often the list draws, and again when the encounter changes; no read of the window, no change of the chronicle's number and no call to the screen where nothing changed. For the rows already drawn when an entry is added above them, an agent compares a change with the part no invariant and no test holds:
+  - complies: a new entry at the top of a grown window drawing its own row alone, the rows under it standing as they were drawn
+  - violates: every row of the window drawn again whenever an entry arrives
 - **Origin:** none
 
 *Rationale:* the screen of a map run is drawn again at each reading of the clock, up to five times a second (D-03), and the chronicle only grows through a map run (D-339), so drawing every entry would make each draw cost more the longer the map run lasts, which is the risk D-347 names of a tab left overnight slowing down under a growing chronicle. A window bounds the rows drawn and leaves every entry reachable by a scroll; a row not drawn again keeps the list from jumping under a player who is reading. An entry is a record of what was said or done at its game minute, so it is composed then and kept; the band of a discovery follows a rename only while it stands (D-312), and the entry that remains after it does not. Accepted with it: a player who scrolls far reads the older entries in more steps, and the size of the window is a value of the code, tuned there.
@@ -9429,9 +10345,9 @@ The filter the player picks above the list of the chronicle stays picked through
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-343 · derives from D-346
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked; „Czynności” picked before „Restart” and still picked after it, over the entries of the new map run alone; a character sent after „Zakończ” with „Wszystko” picked; the page reloaded with „Czynności” picked, then „Wszystko” picked
-  - violates: „Wszystko” picked again after „Restart” where the player had picked „Czynności”; the pick lost at a return from Siedziba; „Czynności” still picked at a send after „Zakończ”
+- **Verification:** tests: the filter picked held by the page's memory and kept through „Restart”; „Wszystko” picked at a send, a send after „Zakończ” included, and in the chronicle built after a load. For the filter kept through leaving the screen of the map run and coming back, an agent compares a change with the part no invariant and no test holds:
+  - complies: „Czynności” picked, then Siedziba and back to the map run, with „Czynności” still picked
+  - violates: the pick lost at a return from Siedziba
 - **Origin:** none
 
 *Rationale:* the filter is the other half of what the player chose to read, so it holds as the tab does (D-346): the area keeps it through the map run and its restarts, and the player does not pick it again at each return to the screen or each „Restart”. A send starts a map run the player chose to begin, so it starts from „Wszystko”, as D-343 gives. Accepted with it: a reload of the page loses the pick, as it does that of the tab (D-346), and the player picks again.
@@ -9444,9 +10360,14 @@ Where the program the program panel shows is gone from the player's list, or the
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-166 · derives from D-167 · derives from D-173 · derives from D-281
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Usuń” of the shown „Program 2” showing „Program”, the first program of the list, during a map run and on Programy; „Zakończ” after the copy's program „Program 2” was deleted showing „Program” with no count of the copy beside its rules (D-93); `#/programy/9` with no program 9 showing `#/programy` with „Program”
-  - violates: the panel left on a program that is gone from the list; „Program 3” shown in place of the deleted „Program 2” because it stood next to it; a count of the copy standing beside the rules of the first program after „Zakończ” with the copy's program deleted
+- **Verification:** tests: the panel showing the first program of the list after „Usuń” of the
+  program shown, on Programy and during a map run, after „Zakończ” when the copy's program was
+  deleted, during the map run or on Programy after it, and on Programy when the number asked for
+  names no program. For „Otwarte: {mapa} →”, an agent compares a change with the part no test holds:
+  - complies: „Otwarte: Las — głębiej →” after the copy's program „Program 2” was deleted, the
+    program editor then showing „Program”, the first program of the list
+  - violates: after „Otwarte: Las — głębiej →” the editor left on the deleted „Program 2”, or
+    showing „Program 3” because it stood next to it
 - **Origin:** none
 
 *Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
@@ -9459,9 +10380,13 @@ An item burning on a revealed tile, such as a lit stick, stands in that tile's r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-70 · derives from D-72
-- **Verification:** an agent compares a change with the decision:
-  - complies: a tile holding a campfire with 55 minutes left and a stick with 3 minutes left, its row reading „ognisko — płonie, zostało 55 min” and then „patyk — płonie, zostało 3 min”; the same tile after the stick's last minute, its row reading the campfire's text alone
-  - violates: an icon of a burning stick on the drawing of the game map; the text of the burning stick before the campfire's; the name „patyk” written in the code of the list instead of read from the game's data
+- **Verification:** tests: a lit stick standing in its tile's row after the campfire's text, as
+  „patyk — płonie, zostało 3 min” with its minutes left, while it burns and not after its last
+  minute; no icon of it on the drawing of the game map. For the name of a burning item, an agent
+  compares a change with the part no test holds:
+  - complies: the name of a burning item in its tile's row read from the item's name in the game's
+    data, so that an item renamed in the data shows under its new name
+  - violates: the name „patyk” written in the code of the list instead of read from the game's data
 - **Origin:** none
 
 *Rationale:* a burning stick is shown only in the row of its tile, not on the drawing, and its minutes of burning are a number, which stands in the row of the tile as the campfire's do (D-70). A stick lit on a revealed tile (D-72) then shows in the list after the campfire's text, in the same words.
@@ -9474,9 +10399,9 @@ The load of a saved game state admits every game state the game's own functions 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-213 · derives from D-221 · derives from D-248
-- **Verification:** an agent compares a change with the decision:
-  - complies: a game stamped by a device clock set before 1970, its save time below zero, saved and loaded back as the same game state; a save time of NaN, 1.5 or 2 to the power 53 refused by the function that stamps it with a RangeError; the function that settles a death given a game with no map run and an undefined moment returning that very game state; the function that settles the first completion of a map given a game with no completion to settle and an undefined moment returning that very game state, and given one with a completion to settle and a moment of NaN refusing it with a RangeError; a game state holding a first completion that no reading of the clock has settled yet loaded back as the same game state
-  - violates: a load that refuses a save time below zero; a load that compares a moment with the clock; a load that refuses a first completion not yet settled; a function that stamps a save time or settles a death or a first completion and stores a moment of 1.5 in the game state; a game state made by the game's own functions in a play that the load refuses
+- **Verification:** tests: game states the game's own functions make — of manual map runs going on and ended, earning loops through a death, a stop and the next map run, the report of the catch-up, a settled death, an append of programs, a discovery and the largest trip count — loading back from their saved documents as they were; a save time and the team's moment of readiness at zero or below zero loading, and stored as given when a death or a first completion is settled; the function that stamps a save time, the ones that settle a death, of a manual map run and of an earning loop's map run, and the one that settles a first completion refusing a moment that is no safe integer with a RangeError, and the settling of a death or of a first completion returning the very game state, whatever the moment, where there is nothing to settle. For the load comparing no moment with a clock and for the game states no test plays, an agent compares a change with the part no test holds:
+  - complies: a save time far beyond the present loaded as it stands; a new kind of game state a function of the game makes loading back from its saved document
+  - violates: a load that compares a moment with the clock; a game state made by the game's own functions in a play that the load refuses
 - **Origin:** none
 
 *Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death and to the one that settles a first completion at every step, a step with no death or completion included, so a reading there is not looked at.
@@ -9489,9 +10414,13 @@ These numbers are requirements of the game, held in its data (D-18), that tests 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-58 · derives from D-60
-- **Verification:** an agent compares a change with the decision:
-  - complies: on Las, which holds the air at 25 °C, a body with no fire cooling by 0.024 °C a game minute, so that it stands at 35.008 °C in game minute 83 and is first chilled at 34.984 °C in game minute 84, while on Las — głębiej, at 7 °C, it cools by 0.06; satiety at 30.4 in game minute 116 and starving at 29.8 in game minute 117; a game minute in which the body is chilled alone taking 0.35 health, chilled and starving together 0.7, and neither giving back 0.05 up to 100; „Wytwórz — ognisko” lasting 20 game minutes and taking 6 sticks; „Zapal — ognisko” lasting 5 game minutes, taking 2 sticks and leaving 60 minutes of burning; „Zasil — ognisko” taking one stick and adding 20 minutes; „Zjedz — jagoda” at 50 satiety giving 75 and at 90 giving 100
-  - violates: a campfire made from 5 sticks or in 15 game minutes; a campfire lit for 30 minutes of burning; a feeding that adds 10 minutes of burning; a berry that gives 20 satiety; a body chilled below 36.0 °C or starving below 25 satiety; health regained in a game minute in which the body is starving; a gathering that always succeeds
+- **Verification:** tests: the body's start and caps of 37.0 °C, 100 satiety and 100 health, its
+  cooling by 0.002 °C for each degree of its map's air below 37.0 on Las and on Las — głębiej,
+  its fall of 0.6 satiety, its thresholds of chill and hunger, its losses of 0.35 health each and
+  its regaining of 0.05; a gathering's 10 game minutes and chance of 0.7; the game minutes,
+  sticks and minutes of burning of making, lighting and feeding a campfire and of lighting a
+  stick, the warmth of a burning campfire and of a burning stick, and the game minutes, berry and
+  satiety of eating.
 - **Origin:** none
 
 *Rationale:* the numbers of the body, of gathering, of the campfire and of eating are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and no test presents the data's current values as its own expectation (D-82). Cooling is counted for each degree the air lies below the body, so the cold of a map is set by its own data alone (D-58). The numbers of nature energy are D-176's, D-177's and D-377's, those of the character skills D-379's, and the floor of an action's duration is D-374's. Accepted with it: the balance of those numbers was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning them later is a change of this decision as well as of data and tests (D-18).
@@ -9504,9 +10433,13 @@ Las is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1, an amb
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-24 · derives from D-136
-- **Verification:** an agent compares a change with the decision:
-  - complies: Las with 16 tiles, a tile holding a stick holding 12 and gaining one in 30 game minutes, and sticks lying on 70 % of the tiles, about 11 of 16; the character entering Las on column 1, row 1 on every seed; Las — głębiej with 25 tiles and its entrance drawn from the seed, solved at a streak of 540 game minutes with two beaten attacks and not at 540 with one; the body on Las — głębiej first chilled in game minute 34, against 84 on Las
-  - violates: Las on a grid of 5 × 5 tiles or solved at a streak of 540; Las — głębiej with a fixed entrance or solved by a streak alone; moss renewing in 30 game minutes; a berry stock of 12; a step between tiles of 10 game minutes
+- **Verification:** tests: Las a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1 on
+  every seed, an ambient temperature of 25 °C, a step of 5 game minutes and the requirement of a
+  streak of 480; Las — głębiej a grid of 5 × 5 tiles with its entrance drawn from the seed, 7 °C, a
+  step of 5 game minutes, the resources of Las and the wolf with a chance of 0.01 and a cooldown of
+  180, open once Las is solved, and solved at a streak of 540 with two beaten attacks and not at
+  540 with one; the density, the stock per tile and the renewal of sticks, berries, moss and fiber;
+  these numbers held in the data of the maps.
 - **Origin:** none
 
 *Rationale:* the numbers of Las are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them (D-82). Las — głębiej takes the resources and the step of Las; its larger grid, its air of 7 °C, also a number of the old game's data, under which a body lasts 33 game minutes before it is chilled, against 83 on Las, its streak and its two beaten attacks are what set it apart as the third map (D-136), and its wolf's chance and cooldown are D-142's. Accepted with it: the balance of the numbers of Las was measured in another game, so loop2 may come out easier or harder than that game, and the numbers are expected to change. This decision forbids other numbers until it is changed, so tuning the numbers of either map later is a change of this decision as well as of data and tests (D-18).
@@ -9532,21 +10465,26 @@ the screen, with no text on it or over it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-54 · derives from D-272 · derives from D-280 · derives from D-314 · derives from D-315 · derives from D-316 · derives from D-317 · derives from D-321 · derives from D-349
-- **Verification:** invariants: loop2-container-sprites. An agent compares a change with the decision:
-  - complies: the camp 96 px high between the row of warnings and the heading „Siedziba”, with the sentence
-    of the page above the screen still above it; the fire in the middle at every width of the window, the
-    chest and the characters of Siedziba beside it, the first in the order of creation; in
-    a window 400 px wide the clearing cropped at the sides around the fire and as many whole characters
-    as the band holds, „Drużyna” listing all of them; a team whose only character is in a manual map run,
-    or in an earning loop, with the fire and the chest alone; the camp drawn again at „Wejdź”, „Puść w
-    pętlę”, „Zatrzymaj” and „Zakończ”; the frames of the fire and of the characters standing still under
-    the setting for reduced motion; no link, button, field, text or name for a reader in the camp
-  - violates: the camp under the heading „Siedziba”; the clearing drawn at a fraction of twice its
-    picture; a character of a map run or of an earning loop standing at the fire; a character cut in half
-    at the edge of the band; a campfire of the camp that goes out with the campfire of the game state; a
-    picture of the chest that changes with what it holds; a click on a character that opens its screen; a
-    name or a count written on the picture; a camp that shows the same at the same width after a character
-    has gone to a map
+- **Verification:** invariants: loop2-container-sprites. tests: the band over the panel of Siedziba,
+  the heading „Siedziba” under it, 96 px high, its clearing, a picture of 672 × 48, drawn at twice its
+  pixels; the characters that stand in it, those neither in a manual map run, going, paused or ended,
+  nor in an earning loop, in the order of creation, as many as the widest band holds, „Drużyna” listing
+  them all, and the fire and the chest alone where none is in Siedziba, the camp following at once
+  every change of the map run and of the earning loops; the fire in the frames of its burning flame
+  whatever campfire the game state holds, and each character in the frames of its idle sheet; the camp
+  a picture, with no control, no stop for the keyboard, no response to a click and no text, hidden from
+  readers of the screen. For where the band stands under the menu bar, its clearing, the place of its
+  fire, its cropping and its motion, an agent compares a change with the part no invariant and no test
+  holds:
+  - complies: the camp under the row of warnings below the menu bar, with the sentence of the page above
+    the screen still above it; the clearing in full light with no tint, composed of the pictures the
+    forest of the scene is composed of; the fire in the middle at every width of the window; in a window
+    400 px wide the clearing cropped at the sides around the fire and as many whole characters as the
+    band holds; the frames of the fire and of the characters changing at the scene's beat by CSS and
+    standing still under the setting for reduced motion
+  - violates: the camp over the row of warnings; the clearing scaled down in a narrow window; a character
+    cut in half at the edge of the band; a loop of drawing that moves the camp; a camp that moves under
+    the setting for reduced motion
 - **Origin:** none
 
 *Rationale:* without it Siedziba is a page of text that looks like a form, and a picture of the camp at its
@@ -9589,9 +10527,9 @@ In one run of the gate, whichever of its processes need a daemon, Docker Desktop
 - **Scope:** build-tools, deployment
 - **Based on:** docker-desktop-start-detach · windows-file-lock-release-at-process-end
 - **Relations:** derives from D-77
-- **Verification:** invariants: gate-docker-start-waits-once. tests: a run that finds Docker Desktop stopped starts it once and skips nothing, in one process and in several at the same time; a process that asks during a start begun by another waits for that start; a start whose process ended is begun again by the next process to ask. An agent compares a change with the part no invariant and no test holds:
-  - complies: a new test that needs a container asks the gate for a daemon before it builds anything, and is skipped through that request alone; a test of the gate's start that runs against a stand-in `docker` and so proves the gate's reaction, not a real start
-  - violates: a test that keeps its own check of the daemon and is skipped on it, so that a stopped Docker Desktop is never started for it; a wait for the daemon with no time limit
+- **Verification:** invariants: gate-docker-start-waits-once. tests: the gate's request for a daemon that finds Docker Desktop stopped starting it and waiting until a daemon answers, no longer than its limit, in one process, in a run of the whole gate and in a run of one test file; no skip where a daemon answers, and a skip only once the limit has passed, with a message that says the start was tried and what stays unchecked; on a computer with no Docker Desktop, a skip at once with a message that says what stays unchecked; one start in a run whatever processes ask, a process that asks during a start begun by another waiting for that start within its own limit and starting none of its own, and a start whose process ended begun again by the next process to ask. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new test that needs a container asks the gate for a daemon before it builds anything, and is skipped through that request alone; a gate that waits 3 minutes for a daemon where no other limit is set for the run
+  - violates: a test that keeps its own check of the daemon and is skipped on it, so that a stopped Docker Desktop is never started for it; a gate whose wait for a daemon, with no other limit set for the run, is other than 3 minutes
 - **Origin:** none
 
 *Rationale:* the gate starts Docker every time, whatever an agent remembers, and today only the game uses Docker; a start left to an agent's memory leaves a forgotten Docker as an unchecked test in a request. A run of one test file starts it too, since agents run one file when they look for a cause, and a file that needs Docker fails without it. Three minutes is a margin of over three times the estimated start of half a minute to a minute (not measured), and costs a run those three minutes once where Docker does not rise. Only an answer of the daemon counts as Docker being up, because that answer is what the tests need. A computer with no Docker Desktop keeps the skip it had, at once. The tests of a run stand in several processes, one for each directory of Python tests, so a start that did not finish is recorded outside any one process; otherwise each of those processes would wait the whole limit again. A start still going is known to the others by a lock held outside any one process for the length of the start, because those processes may run at the same time and each would otherwise find no daemon and no record and start Docker Desktop and wait for it itself; where the holder ends, the operating system releases its lock, on Windows after a time that depends on available system resources, so a start that ended with its process holds the others for that time at most, and a process that waits gives up at its own limit with the gap of a start that did not finish; that start recorded nothing that anyone waited for, so the next process begins it again.
@@ -9604,9 +10542,9 @@ The Docker Desktop that the gate started stays running after the run; the gate d
 - **Scope:** build-tools, deployment
 - **Based on:** none
 - **Relations:** derives from D-390
-- **Verification:** an agent compares a change with the decision:
-  - complies: a run that started Docker Desktop ends with it running, the gate having issued no command that stops or restarts it
-  - violates: a gate, or a test of it, that stops or restarts Docker Desktop at the end of a run or after a test
+- **Verification:** tests: the gate, once it has started Docker Desktop, giving `docker` no command that stops or restarts it, in one process, in several at the same time and in a run of the whole gate. An agent compares a change with the part no test holds:
+  - complies: a run that started Docker Desktop ends with its processes and the virtual machine it runs in left as they are
+  - violates: a gate that ends Docker Desktop at the end of a run by another way than a command of `docker`, such as ending its process or shutting down the virtual machine it runs in; a test that stops or restarts Docker Desktop after it has run
 - **Origin:** none
 
 *Rationale:* Docker Desktop left running is the state that follows starting it by hand, and the next runs of the same work do not wait for a start. Accepted with it: the memory it takes stays taken until its owner closes it.
@@ -9634,7 +10572,9 @@ Two checks keep the simulation's files from using the page, a timer, the console
 - **Scope:** simulation, build-tools
 - **Based on:** none
 - **Relations:** derives from D-04
-- **Verification:** invariants: simulation-isolation · simulation-type-check
+- **Verification:** invariants: simulation-isolation · simulation-type-check. tests: the type check of the simulation's files emitting nothing beside their sources. An agent compares a change with the part no invariant and no test holds:
+  - complies: a change of the test of `simulation-isolation` that keeps its scan of every source of the simulation and its run of the built simulation in a cut-off environment, also where the compiler refuses some of the names it finds
+  - violates: a part of the scan of the sources, or the run of the built simulation in a cut-off environment, taken out of the test of `simulation-isolation` because the compiler refuses the same names
 - **Origin:** none
 
 *Rationale:* the compiler refuses a use of the page, a timer, the console or the structured copy at the type check, ahead of the slower tests of the gate among which the test of isolation stands. The compiler does not take the test's place: the type `Date` belongs to the language, so it does not refuse `Date.now()` or `new Date()`, and it does not refuse an import of a package that brings types of its own, while the test checks the system clock, the imports and a run of the built simulation. A configuration that only checks leaves the compiling of the simulation's files to the browser's configuration, so the files are built once.
@@ -9647,9 +10587,7 @@ The simulation keeps `actionFeasible`, the function that tells whether an action
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a test that asks `actionFeasible` whether an action can start; a clean-up that leaves it in place
-  - violates: a change that removes `actionFeasible` because no code of the game calls it
+- **Verification:** tests: the tests of the simulation that ask `actionFeasible` whether an action can start, which fail where it is removed.
 - **Origin:** none
 
 *Rationale:* the tests that call it need no other public function of the simulation to tell whether an action is allowed, and `actionFeasible` is their simplest point of observation of that.
@@ -9662,9 +10600,9 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-265
-- **Verification:** an agent compares a change with the decision:
-  - complies: the number field taking the rule of its numbers as a function that each screen gives it
-  - violates: a shared control that imports `program-editor.ts` or `trip-editor.ts`; a shared control that picks the rule of a screen by a value of one of its parameters
+- **Verification:** tests: the number field committing by the rule of its numbers the screen gives it, the trip count rule of the trip plan included, and not by a range rule of its own. An agent compares a change with the part no test holds:
+  - complies: a new shared control that takes the rule of a screen as a function the screen gives it and imports no module of a screen
+  - violates: a shared control that imports `program-editor.ts` or `trip-editor.ts`; a shared control that picks the rule of a screen by a value of one of its parameters, such as the trip count rule for a field whose least number is 1
 - **Origin:** none
 
 *Rationale:* a control that names the rules of its users has to change with each new user and cannot be read without reading the screens it serves, while a control that takes the rule from the screen draws and commits what the screen's rule says and stays one control for every screen.
@@ -9692,7 +10630,8 @@ A new game opens the map Skraj lasu, and solving it opens Las.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-149
-- **Verification:** invariants: first-map-stock · first-map-balance
+- **Verification:** invariants: first-map-stock · first-map-balance. tests: a new game opening
+  Skraj lasu alone, and the solving of Skraj lasu opening Las, which a send then reaches.
 - **Origin:** none
 
 *Rationale:* on Las the tile a character enters decides more than the program can make up for, so a loss on the first map has to mean a fault in the program. Measured by an agent with programs an agent wrote, over 300 seeds: a program of seven rules solves Las on 107 seeds, and on 280 of them on Las whose sticks and berries alone are made denser; on Las about four map runs in ten of a good program are lost through no fault of the player, and about one player in five loses the gains in the first day of the earning loop, while on that denser Las none of 60 simulated earning loops of 14 days lost the gains. The measurement did not check whether the next map then seems too hard. The predecessor game, loop, opens on a tutorial map of the same name with resources on every tile, since its first map run is a tutorial and may not depend on where the character landed. Las becomes the second step. Accepted with it: an easier start and one more map than the game had.
@@ -9705,9 +10644,11 @@ Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1,
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-24 · derives from D-136 · derives from D-397
-- **Verification:** invariants: first-map-balance. An agent compares a change with the decision:
-  - complies: Skraj lasu with 16 tiles, each holding 12 sticks, which gain one in 30 game minutes, and 8 berries, which gain one in 40; the character entering it on column 1, row 1 on every seed; the body first chilled in game minute 84; the map solved at a streak of 480 game minutes and not at 479
-  - violates: moss or fiber on Skraj lasu; sticks on 70 % of its tiles; an ambient temperature of 34 °C; a streak of 720 game minutes; a wolf that attacks on it
+- **Verification:** invariants: first-map-balance. tests: Skraj lasu a grid of 4 × 4 tiles with its
+  entrance fixed at column 1, row 1, an ambient temperature of 25 °C, a step of 5 game minutes, no
+  attacking creature and no cap, solved by a streak of 480 game minutes; sticks with a stock of 12
+  renewed in 30 game minutes and berries with a stock of 8 renewed in 40, on every one of its tiles
+  whatever the seed, and no moss and no fiber; these numbers held in the data of the map.
 - **Origin:** none
 
 *Rationale:* Skraj lasu is the map a new game opens on (D-397), so its numbers are those under which a loss on it is a fault in the program. Its streak is 480 game minutes, as that of Las, so that the first map asks no longer streak than the second. Its air is 25 °C, as that of Las, so that the body is first chilled in game minute 84; at 34 °C the first chilling comes in game minute 333, and a new player waits 333 game minutes for anything to happen. Its resources are sticks and berries alone, as in the first map of the predecessor game, with a density of 1, so that the tile a character enters decides nothing; moss and fiber are met first in Las. A measurement on a copy of the game's engine, over 500 seeds, with every action and condition discovered, in a manual map run, gave for this shape at 480 game minutes and 25 °C: a naive program of six rules solved the map on 16.8 % of the seeds, a decent program of twelve rules on 96.4 % and the best program tried on 97 %; at 720 game minutes and 25 °C, on 16.8 %, 91.2 % and 97 %; at 34 °C and 480 or 720 game minutes, on 83.6 %, 100 % and 100 %. Accepted with it: at 25 °C a program that stands still is no longer forgiven on the first map; the shares were measured in a copy of the engine, so the game may give others.
@@ -9720,9 +10661,9 @@ The server keeps for every account, with the previous-save privilege (D-400) or 
 - **Scope:** account-server, simulation
 - **Based on:** none
 - **Relations:** derives from D-07 · derives from D-205 · derives from D-206
-- **Verification:** invariants: previous-save-slot · player-save-isolation. An agent compares a change with the decision:
-  - complies: a save of version 6 accepted over a stored saved game state of version 5, which then stands as the previous save of the account whether or not the account holds the privilege; a second such move replacing the previous save with the later document; a save of the same version as the stored one leaving the previous save as it was; the previous save standing while the privilege is off and there again when it is granted
-  - violates: a previous save written by a save of the same version, by a first save, by a refused save, by a block or by a load; a previous save kept for accounts with the privilege only; the load of the game reading the previous save; a history of previous saves
+- **Verification:** invariants: previous-save-slot · player-save-isolation. tests: one previous save kept also for an account without the privilege, a later move by a save of a higher version or by a reset replacing it; the previous save holding the version, the revision and the game as stored, at most 65 536 bytes, removed with its account; blocking, unblocking, granting and revoking the privilege writing nothing into it, and the previous save standing while the privilege is off and there again when it is granted. An agent compares a change with the part no invariant and no test holds:
+  - complies: the load of the game reading the saved game state of `GET /api/saved-game` alone; the server copying the stored text into the previous save without reading the game
+  - violates: the load of the game reading the previous save or falling back to it; a previous save written by a load; the server parsing the game of the previous save
 - **Origin:** none
 
 *Rationale:* a version of the save that changes makes the game discard the saved game state of its players (D-206), and the programs in it are the work a player writes again; keeping the replaced document where a later act can read its programs costs a table and up to 64 KiB more per player (D-104). The server keeps it for every account, so an account that is granted the privilege later has something to pull, and keeps one, so the cost stays bounded and the server holds no history to explain. The two moves are the acts that replace a player's saved game state with another game, and each is a copy of stored text made by comparing numbers of versions, reading nothing of the game (D-07). Accepted with it: two raisings of the version before the pull, or a reset before it, replace the older previous save and its programs; the programs of saved game states replaced before the server kept previous saves cannot be recovered.
@@ -9735,9 +10676,9 @@ The previous-save privilege is a flag on the player account, off when the accoun
 - **Scope:** account-server, browser-view, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-109 · derives from D-137 · derives from D-399
-- **Verification:** invariants: previous-save-slot · account-client-outcomes. An agent compares a change with the decision:
-  - complies: the owner runs `docker exec loop2 node dist/server/account-previous-save.js grant <email>` and the next `GET /api/account` of that account answers `previousSaveAllowed` true while the running server keeps serving; `GET /api/previous-saved-game` of an account without the privilege answered 403 `previous-save-forbidden` with its previous save present
-  - violates: an HTTP route of the account server that grants or revokes the privilege; a skill instruction in which an agent runs the command through the `mikrus` MCP server; a 404 or an empty success for an account without the privilege; an account's answer that tells whether a previous save exists; a privilege read once at login and trusted for the life of the session
+- **Verification:** invariants: previous-save-slot · account-client-outcomes. tests: the flag off for a new account, the command granting and revoking it by the address normalized as at login beside an open connection and reporting each outcome, an unknown address included, and changing nothing on a usage error, an unknown address or an unusable database; both routes answering JSON 403 `previous-save-forbidden` to a signed-in account without the privilege whatever its previous save holds, a revoke stopping the next read and reset; the answers of `GET /api/account`, the login and the registration holding the boolean `previousSaveAllowed` and nothing of the previous save, and the page showing no reset control and asking for no previous save where the flag is false or missing. An agent compares a change with the part no invariant and no test holds:
+  - complies: the owner runs `docker exec loop2 node dist/server/account-previous-save.js grant <email>` on the server by hand
+  - violates: an HTTP route of the account server that grants or revokes the privilege; a skill instruction in which an agent runs the command through the `mikrus` MCP server
 - **Origin:** none
 
 *Rationale:* the flag stands on the account like the block of D-137 and is set by a command in the container, since the owner already reaches the server through SSH and the command adds no new way into it. The command ends no session and stops no link, unlike the block: a page that is open keeps the flag it was given until it reloads, and the server decides at each request, so a revoked privilege stops the next fetch or reset. One flag covers both acts because both act on the previous save and the reset is what puts a document there. The 403 with a code of its own says that the account lacks the privilege and not that a route is missing (D-05, D-204), and it is the same whatever the previous save holds, so it tells an account without the privilege nothing about it. The account's answer carries the flag, so the page shows the control with no failing request, and carries nothing of the previous save, whose existence changes at the first save after a raising of the version in a page that is already open. Price if the contract is wrong: before the first deployment it is cheap to change, and afterwards the page and the server change together in one deployment, an old tab only ignoring the new field.
@@ -9750,9 +10691,9 @@ An account with the previous-save privilege has on the screen Programy, at any t
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-206 · derives from D-399 · derives from D-400
-- **Verification:** invariants: save-version · previous-save-programs-reader. An agent compares a change with the decision:
-  - complies: a document of version 2, whose programs lack a trip plan, giving the programs the check accepts and one sentence naming those it refuses; „Las” pulled onto a list that holds „Las” appended as „Las (2)”, with the other programs, the copies, the counts and the picks of the game state as they were; a pull pressed twice appending the programs twice
-  - violates: a pull that replaces the list; a pull that stops at the first program the check refuses; an appended program that the program editor would refuse; the reader reading a key of the document beyond its version, its list of programs and the items; the button shown on the strength of a flag the page holds, with no answer of the server that a previous save exists; the previous save loaded as a game by the load of D-206
+- **Verification:** invariants: save-version · previous-save-programs-reader. tests: the button on Programy for an account with the privilege only once the server has answered that a previous save exists, asked at each entering of the screen, standing on that screen alone and also while a manual map run goes on or has ended, and none for an account without the privilege or with no previous save; a press fetching the previous save again and appending its programs to the end of the list, a second press appending them again; a document of each version from 1 to the game's current one read and one of any other version unreadable; an item whose name is empty after trimming skipped, and an item whose program the check refuses skipped while the reading goes on; each program appended with the next number and its trimmed name, or with the name, a space and „(n)” where that name is taken, nothing else of the game state changed and the game saving at once; one sentence telling how many programs were appended and naming every program skipped, or that the previous save holds no program this version of the game can read, that there is none, or that it could not be fetched. An agent compares a change with the part no invariant and no test holds:
+  - complies: the reader kept in `src/browser/sim/previous-programs.ts`, the load of D-206 and D-213 calling nothing of it
+  - violates: the previous save loaded as a game by the load of D-206; the reading of the programs written into `src/browser/sim/saved-game.ts`
 - **Origin:** none
 
 *Rationale:* a program is the player's work, and a raising of the version should cost the player the shape of the game, not the programs; the pull brings them back when the player asks, after playing from zero and judging whether the game reads clearly, which only a button available at any time allows. The reader stands apart from the load so that the load stays whole or nothing (D-206, D-213) and the pull is a second act that reads less: it takes programs, one by one, because a program of an older version may lack what the game has since required, such as a trip plan, or may name an action or an item that the game's data no longer holds, and one refused program must not refuse the rest. A version above the game's current one is unreadable, since its shape is unknown to this code; one from 1 up to the current is read, the current one included, because the reset puts a document of the current version in the previous save. An item is read strictly, as every version wrote it, so a document that does not look like one the game wrote gives a skip and no guess; the `id` of an item is neither used nor checked, since the program takes a number of the present game. Each program passes the check of the editor, so none appended is one the editor would refuse or the load would discard. The names of the skipped programs come from the document and are shown as text only. The button fetches the previous save again when pressed, so the pull works on what the server holds then. Accepted with it: a second press appends the programs again, as copies; a program the check refuses stays in the previous save and is not appended; two raisings of the version or a reset before the pull replace the previous save and its programs.
@@ -9765,9 +10706,9 @@ An account with the previous-save privilege has in the game the control „Zaczn
 - **Scope:** account-server, browser-view
 - **Based on:** none
 - **Relations:** derives from D-399 · derives from D-400
-- **Verification:** invariants: previous-save-slot. An agent compares a change with the decision:
-  - complies: a confirmed reset of an account with the privilege sending `POST /api/saved-game-reset` with no save before it, the page building a new game with revision 0 on 204, and the next pull appending the programs of the game that was reset; the click that opens the confirmation sending nothing; the reset of an account with no saved game state answered 204 with the previous save as it was
-  - violates: the control „Zacznij od zera” on the page of an account without the privilege; the reset answered 204 to an account without the privilege with its saved game state moved; a reset that leaves the saved game state in place beside the previous save or deletes the previous save; a save sent by the page before the reset; the new game saved at once after the reset; „Wyloguj” pressable while the reset waits
+- **Verification:** invariants: previous-save-slot. tests: the control „Zacznij od zera” only for an account with the privilege, the click that opens the confirmation sending and changing nothing, and the confirmation naming the previous save, its replacement and the start from zero; the confirmed reset sent as the next request with no save before it, the control disabled and „Wyloguj” not pressable while it waits, and the old saver's outcomes held then and acted on only if the reset fails; the server reading the block, the privilege and the saved game state in the transaction of the move, leaving the account with no saved game state and answering 204 also when nothing moved; on 204 a new game on revision 0 with its sentence above it and no save sent at once, and a later save on another revision refused. An agent compares a change with the part no invariant and no test holds:
+  - complies: the confirmation saying that the programs of a previous save already there can no longer be pulled
+  - violates: a confirmation that names the replacement of the previous save but not the loss of its programs
 - **Origin:** none
 
 *Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
@@ -9783,16 +10724,16 @@ Zaczynasz od nowa.” (D-96), and the version number of the shape stays as it is
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-118 · derives from D-206 · derives from D-213
-- **Verification:** an agent compares a change with the decision:
-  - complies: a document of the current version whose Understanding holds „Zawsze” and no „Eksploruj”
-    refused whole as a shape the game does not admit, the game starting anew with „Zapis był
-    uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” above it; the same refusal for a document
-    whose list of actions is missing, empty, of a wrong type or names an action twice; a document
-    that holds „Eksploruj” and no „Zawsze” refused alike; the version number of the shape the same
-    before and after the change that put „Eksploruj” into the Understanding of a new game
-  - violates: such a document loaded with „Eksploruj” added to its Understanding; the sentence of
-    another version, „Zapis pochodził z innej wersji gry…”, standing above the new game for it; the
-    version raised for the sake of it
+- **Verification:** tests: a document of the current version refused whole, as of a shape the game
+  does not admit, where its Understanding lacks „Zawsze” or „Eksploruj”, holds no action, names
+  „Eksploruj” twice, holds a number in place of an action, or has its list of actions missing or of
+  a wrong type. For what the game does with such a state and for the version number of the shape, an
+  agent compares a change with the part no test holds:
+  - complies: the game discarding such a state and starting the player anew, with „Zapis był
+    uszkodzony i nie dał się wczytać. Zaczynasz od nowa.” above it; the version number of the shape
+    the same before and after the change that put „Eksploruj” into the Understanding of a new game
+  - violates: the sentence of another version, „Zapis pochodził z innej wersji gry…”, standing above
+    the new game for it; the version raised for the sake of it
 - **Origin:** none
 
 *Rationale:* a saved game state of the current version whose Understanding lacks „Eksploruj” comes
@@ -9824,12 +10765,13 @@ when the balance is worked on.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-121 · derives from D-397 · derives from D-398
-- **Verification:** invariants: new-account-first-pass. An agent compares a change with the decision:
-  - complies: the program of the test solving Skraj lasu on at least 289 of the 300 seeds from a
-    game of an account with nothing discovered
-  - violates: the program of the test solving Skraj lasu on fewer than 289 of the 300 seeds from a
-    game of an account with nothing discovered; the figure 289 kept after the balance has been
-    worked on and the measurement has moved
+- **Verification:** invariants: new-account-first-pass. For the revision of the figure when the
+  balance is worked on, an agent compares a change with the part no invariant and no test holds:
+  - complies: a change of the balance that moves the number of seeds the program of the test solves
+    from a game of an account with nothing discovered, bringing the figure 289 to the new
+    measurement the human accepts
+  - violates: the figure 289 kept after the balance has been worked on and the measurement has
+    moved
 - **Origin:** none
 
 *Rationale:* a player who writes a program from the start of a new account meets the first map with
@@ -9851,9 +10793,9 @@ The full gate runs its stages one after another: the build, the Node tests, the 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** derives from D-77
-- **Verification:** an agent compares a change with the decision:
-  - complies: the Node tests run as a stage of their own after the build and before the directories of Python tests; a run that finds a stage failing runs no stage after it
-  - violates: the Node tests started beside the directories of Python tests; a stage run after a stage that failed
+- **Verification:** tests: a run of the full gate running the build, the Node tests, the directories of Python tests and the foundation check, the Node tests after the build. An agent compares a change with the part no test holds:
+  - complies: the Node tests run as a stage of their own before the directories of Python tests, and the foundation check after those; a run that finds a stage failing runs no stage after it
+  - violates: the Node tests started beside the directories of Python tests; the foundation check run before the directories of Python tests; a stage run after a stage that failed
 - **Origin:** none
 
 *Rationale:* the Node tests take about one minute, so running them beside the directories of Python tests would save about that minute of a run (an estimate, not a measurement), at the price of a more complex gate and a more complex test of it, and of more memory at the peak, where two heavy directories that use Docker would run beside Node tests on a document imitation with a memory limit of their own; nobody has measured that peak. The figure of the gate's length, about 15 minutes, is the estimate for the directories at the same time; the full gate runs them at the same time (D-406). Accepted with it: the gate keeps that minute.
@@ -9866,7 +10808,9 @@ The full gate runs the directories of Python tests at the same time, giving the 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** derives from D-77 · derives from D-390
-- **Verification:** tests: the directories of Python tests running at the same time in a run of the whole gate, and a run of the whole gate with them that starts Docker Desktop once and waits for it once.
+- **Verification:** tests: the directories of Python tests running at the same time, not one after another, in a run of the whole gate, and a run of the whole gate with them that starts Docker Desktop once and waits for it once. An agent compares a change with the part no test holds:
+  - complies: the runner of the Python tests started by the full gate with no argument `--jobs`
+  - violates: the runner of the Python tests started by the full gate with `--jobs` and a number of 2 or more, so that a gate with more directories than that number runs some of them after others
 - **Origin:** none
 
 *Rationale:* the directories at the same time shorten the gate: three full runs with them so, on one computer of 32 GB as it was, with other work on it that no file of the repository records, took 18.3 to 19.6 minutes, while the gate with the directories one after another was measured earlier at 23 to 24 minutes on a slow computer and at 24.0 to 28.0 minutes with another cycle working beside it; that measurement is a note made on 2026-11-12 outside the repository, and the conditions of the two sets of runs are not alike. These measurements are the product's own, and their records are not open to a reader of the repository. What stood in the way of the directories at the same time was the start of Docker Desktop, which two of them began each for itself; it is begun once for the run now, as D-390 gives, and the tests that use Docker give the containers, images and volumes they make names with a random part, so that they do not meet by name. Accepted with it: the directories share the memory and the processor of the computer at the same time.
@@ -9879,9 +10823,9 @@ The browser view keeps React roots of its own for each screen and for the menu b
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-03
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: the question „Zapisać, odrzucić, wrócić?” and the end-of-run window held outside the screen Przejście, which draws each only while the game view tells it to and asks the game view to close the window, and outside the game state and the document it saves; the folding of the rule groups as one memory of the page given to the program panels of Programy and Przejście, a fold on one shown on the other at once, with no update of its own. An agent compares a change with the part no test holds:
   - complies: a new screen built as a root of its own, whose factory receives the game state from the store and the memory of its unfolded trees, shared with another screen, as a memory of the page read through `useSyncExternalStore`; a setting only that screen reads kept in its component
-  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a memory two screens share held in the component of one of them
+  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a new memory two screens share held in the component of one of them; the state of the screen Przejście moved from `run-screen-state.ts` into the game view's controller, `game-view.ts`
 - **Origin:** none
 
 *Rationale:* the store and the state of the screen Przejście stay as they are under any later choice of one root for the view, so a change of mind costs only the table of screens. Separate roots change nothing the player sees just before the next screen is added, and the question of one root stays open until the view is wholly in React. Accepted with it: the menu bar and the account card stay roots of their own beside the screens, a panel that the page moves by hand between two places stays moved by hand, outside what React knows, and a context of React reaches only the inside of one root.
@@ -9894,7 +10838,7 @@ A new screen of the game is added as a module of its own, one entry in the regis
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-281
-- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries, and refuses a table that leaves a kind of screen without an entry. An agent compares a change with the part no test holds:
+- **Verification:** tests: that the registry, made from a table of entries it knows nothing of, shows, draws after a result and after a reading of the clock, focuses and takes down the screens through those entries, and refuses a table that leaves a kind of screen without an entry or gives a kind two entries. An agent compares a change with the part no test holds:
   - complies: the screen Wiedza added as its module, an entry file, one line of the registry's table with that entry's import, its address in the module of addresses and its place on the menu bar
   - violates: a new screen that names its kind in a function of the game view outside its entry and the line of the table, or that the registry shows, draws, focuses or takes down by a branch written for it
 - **Origin:** none

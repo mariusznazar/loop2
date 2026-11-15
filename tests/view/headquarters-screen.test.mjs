@@ -127,6 +127,8 @@ const sectionOf = (root, heading) =>
 // Catches a screen without its heading, a team drawn as a bare list with no heading (D-282) and the
 // sections in an order other than the report, the team, the chest.
 test("the screen holds its heading Siedziba, then the sections „Drużyna” and „Skrzynka {n}/{cap}” under it", async () => {
+  // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading"
+  // decision: D-184 "The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}”, such as „Skrzynka 12/60”, and for an empty chest as „Skrzynka 0/60” above „Skrzynka jest pusta.”"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
     assert.equal(text(page.root, "h2"), "Siedziba");
@@ -142,6 +144,7 @@ test("the screen holds its heading Siedziba, then the sections „Drużyna” an
 // Catches the credits of the icons left off Siedziba, opened by default, standing above the last
 // part of the screen (D-27), or lost at a refresh of the game state.
 test("the folded section „Autorzy grafiki” stands last on the screen, whatever the team and the chest hold, and stays as the player left it", async () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part"
   await withPage(async (page) => {
     const state = teamOf(1);
     const { screen } = await mount(page, propsOf(state));
@@ -176,6 +179,9 @@ test("the folded section „Autorzy grafiki” stands last on the screen, whatev
 // Catches the order of the team changed to the name's or the last created's (D-54), a name that is no
 // link or leads elsewhere than to the character's screen, and a generation label at generation 1.
 test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
+  // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character"
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   await withPage(async (page) => {
     const state = withCharacter(teamOf(), 2, { generation: 2 });
     await mount(page, propsOf(state));
@@ -205,6 +211,7 @@ test("each character stands in the order of creation with its name as a link to 
 // Catches the empty team drawn as an empty list, with no sentence, or with the sentence of the screen
 // Mapy (D-51); the creation of the first character must stand beside it.
 test("an empty team says „Drużyna nie ma jeszcze postaci.” and still offers the creation of a character", async () => {
+  // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   await withPage(async (page) => {
     await mount(page, propsOf(newGame()));
     assert.equal(
@@ -221,6 +228,7 @@ test("an empty team says „Drużyna nie ma jeszcze postaci.” and still offers
 // Catches the chest heading without the capacity (D-184), a list for an empty chest and a line that
 // does not follow the data's order of items.
 test("the chest heading reads the pieces and the capacity, its lines follow the items, and an empty chest says so under „Skrzynka 0/60”", async () => {
+  // decision: D-184 "The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}”, such as „Skrzynka 12/60”, and for an empty chest as „Skrzynka 0/60” above „Skrzynka jest pusta.”"
   await withPage(async (page) => {
     const state = teamOf(1);
     const { screen } = await mount(
@@ -248,6 +256,7 @@ test("the chest heading reads the pieces and the capacity, its lines follow the 
 // Catches a resurrection line drawn once and left, a line that loses `danger` late or early, and a
 // line rebuilt as a new element at every reading, which would drop what stands on it (D-217).
 test("the resurrection line follows the clock's moment in the very same element, in danger until ready", async () => {
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
     const state = withResurrection(teamOf(1), readyAt);
@@ -277,6 +286,10 @@ test("the resurrection line follows the clock's moment in the very same element,
 // reach the page's `stop` with the character's number, and the line of a stop missing after it (D-244,
 // D-245).
 test("a running loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped loop shows its line instead", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
+  // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   await withPage(async (page) => {
     const state = teamOf(2);
     const looping = { ...state, loops: { 2: LOOP } };
@@ -323,6 +336,8 @@ const reported = () => ({
 // Catches the section drawn below „Drużyna”, the stopped line not first, `danger` missing or on the
 // wrong line, and the title of a return missing (D-246).
 test("a report stands above „Drużyna”, titled „Gdy cię nie było”, the loop that stopped first and in danger", async () => {
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   await withPage(async (page) => {
     await mount(page, propsOf(reported()));
     const section = page.root.querySelector(".away-report");
@@ -350,6 +365,9 @@ test("a report stands above „Drużyna”, titled „Gdy cię nie było”, the
 // Catches the title chosen by the presence of a stop rather than by where it happened (the stop in
 // the open game gives „Pętle, które stanęły”), and a full chest that is not said (D-246).
 test("only stops in the open game give the title „Pętle, które stanęły”, and a full chest adds „Skrzynka jest pełna.”", async () => {
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
+  // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
+  // decision: D-246 "Teraz to pokolenie {n}.”, the title reading „Pętle, które stanęły” where the section holds no line of a return, and a player returning to a manual map run reads the report on reaching Siedziba"
   await withPage(async (page) => {
     const state = withChest(
       {
@@ -373,6 +391,7 @@ test("only stops in the open game give the title „Pętle, które stanęły”,
 // page has emptied the report, and focus left on the body once the button is gone, which the next
 // key press would lose (D-246).
 test("„Zamknij” asks the page to close the report; once the report is empty the section goes and the focus stands on „Drużyna”", async () => {
+  // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   await withPage(async (page) => {
     const open = reported();
     let screen = null;
@@ -433,6 +452,10 @@ const waiting = (practice, runPractice = {}) => ({
 // Catches the practice of the loop and the map run going on not both in the line, a button on a
 // line with nothing waiting and a button that does not carry the name of its character.
 test("practice waiting at a loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive`"
+  // decision: D-39 "`positive` also stands as the text of the button „Odbierz”, which pays the practice waiting at an earning loop, at rest and under the pointer"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     await mount(
       page,
@@ -462,6 +485,7 @@ test("practice waiting at a loop reads in its line with „Odbierz” in `positi
 // Catches an „Odbierz” that does not reach the page with its character, and a focus left on the
 // body once the button is gone with the practice it paid (D-246).
 test("„Odbierz” hands the page its character; once nothing waits the button goes and the focus stands on „Zamknij”", async () => {
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     const before = waiting({ eating: 4 });
     let screen = null;
@@ -509,6 +533,7 @@ test("„Odbierz” hands the page its character; once nothing waits the button 
 // Catches practice that is back after a redraw with the loop gathering more (D-246): the button
 // returns at the next change of the loop.
 test("the part about practice and „Odbierz” come back when the loop gathers more", async () => {
+  // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(waiting({})));
     assert.equal(buttonNamed(page.root, "Odbierz"), undefined);
@@ -523,6 +548,7 @@ test("the part about practice and „Odbierz” come back when the loop gathers 
 
 // D-246: a line of a loop a death stopped has no practice waiting, so it has no button either.
 test("a line of a loop a death stopped has no „Odbierz”", async () => {
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   await withPage(async (page) => {
     const state = {
       ...waiting({ eating: 4 }),
@@ -540,6 +566,7 @@ test("a line of a loop a death stopped has no „Odbierz”", async () => {
 // Catches a name handed to the page untrimmed, a field that keeps its text after a creation and a
 // creation that does not reach the page at all.
 test("„Załóż” hands the page the trimmed name and empties the field; Enter in the field does the same", async () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(newGame()));
     assert.equal(
@@ -564,6 +591,7 @@ test("„Załóż” hands the page the trimmed name and empties the field; Ente
 // Catches a character created from a name that is empty once trimmed, a message missing under the
 // field or standing after the player has begun to type (the field's error state, D-44).
 test("a name empty once trimmed creates nothing and says „Wpisz imię postaci.” under the field until the player types", async () => {
+  // decision: D-52 "A character has a name, which the player types when creating it; a name that is empty, also once the white space at its start and end is trimmed, creates no character, and two characters may bear the same name"
   await withPage(async (page) => {
     const { calls } = await mount(page, propsOf(newGame()));
     await typeInto(nameField(page.root), "   ");
@@ -622,6 +650,9 @@ const sentInto = (state, id) =>
 // the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the
 // text of the screen is the text of its panel, so the band adds none.
 test("the camp stands over the panel of the screen, the heading under it, and adds no text", async () => {
+  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
+  // decision: D-389 "The camp moves as the scene does"
+  // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(teamOf(2)));
     const camp = screen.element.firstElementChild;
@@ -643,6 +674,7 @@ test("the camp stands over the panel of the screen, the heading under it, and ad
 // for a reader, or a picture a reader would announce (D-272, D-321): the screen's names in „Drużyna” lead
 // to the character (D-280), the camp leads nowhere.
 test("the camp is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
+  // decision: D-389 "The camp moves as the scene does"
   await withPage(async (page) => {
     const { screen, calls } = await mount(page, propsOf(teamOf(3)));
     const camp = page.root.querySelector(".camp");
@@ -678,6 +710,7 @@ test("the camp is a picture: nothing in it takes the keyboard or a click, and it
 // picture would come out unequal and shake in motion (D-349): the band is 96 px high, its clearing 672 × 48
 // pixels of picture drawn at 1344 × 96, the fire of 32 × 32 at 64 × 64, a character's cell 32 wide at 64.
 test("the camp is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
+  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
     const camp = page.root.querySelector(".camp");
@@ -700,6 +733,7 @@ test("the camp is drawn at twice the pixels of its pictures, in a band 96 px hig
 // change only at a change of the team or of a loop, and not at „Wejdź” and „Zakończ”. Every change of the
 // four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the camp at once, and „Drużyna” still lists all.
 test("the camp follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
+  // decision: D-389 "The characters that stand in it are those"
   await withPage(async (page) => {
     const state = teamOf(3);
     const { screen } = await mount(page, propsOf(state));
@@ -751,6 +785,8 @@ test("the camp follows the manual map run and the earning loops, and „Drużyna
 // Catches a control of sending left on Siedziba (D-330): the list „Program:”, „Wejdź”,
 // „Puść w pętlę”, a button that leads to the screen Mapy or a link other than a character's name.
 test("nothing on the screen sends a character or leads to the screen Mapy", async () => {
+  // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
   await withPage(async (page) => {
     const state = { ...reported(), loops: { 2: LOOP } };
     await mount(page, propsOf(state));

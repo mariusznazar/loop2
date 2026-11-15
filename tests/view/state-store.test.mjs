@@ -192,6 +192,7 @@ test("an act without catch-up reads no clock and passes no time", async () => {
 // Catches a moment of saving missing after an act, a second one for an act that changed nothing,
 // and a save request counted twice for one act.
 test("an act that changes the state sends one save, and one that changes nothing sends none", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character"
   await onStore(newGame(), async ({ store, sent }) => {
     store.act((take) => take(createCharacter(store.get(), "Ala")));
     await turns();
@@ -241,6 +242,7 @@ test("a result that holds the very state the store holds is ignored, and an act'
 
 // Catches a map run that ends at a reading and is not saved at once (D-207).
 test("a reading that ends a manual map run is one moment of saving, and a reading that changes the state without ending it is none", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death"
   await onStore(
     oneMinuteBeforeTheEnd(passing()),
     async ({ store, sent, taken, pass }) => {
@@ -265,6 +267,7 @@ test("a reading that ends a manual map run is one moment of saving, and a readin
 
 // Catches one save for each loop's map run that a result ended, where D-207 gives one for the result.
 test("a catch-up whose result ended the map runs of two earning loops is one moment of saving", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   const state = withSaveTime(loopingPair(), CLOCK_MS - 60_000);
   await onStore(state, async ({ store, sent, taken }) => {
     store.catchUp();
@@ -283,6 +286,7 @@ test("a catch-up whose result ended the map runs of two earning loops is one mom
 // Catches a send or a loop start that is not a moment of saving. The clock's own flush before each is
 // pinned by tests/view/clock.test.mjs.
 test("a send and a start of a loop are each one moment of saving", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   await onStore(idle(), async ({ store, sent }) => {
     store.send({ mapId: "forest", characterId: 1 });
     await turns();
@@ -303,6 +307,8 @@ test("a send and a start of a loop are each one moment of saving", async () => {
   );
 });
 
+// decision: D-409 "An act of the player that depends on the passing of time goes through the store of the game state, which reads the clock"
+// decision: D-409 "A new character and the purchase of a branch rank do not catch up time"
 // Catches a moment of the clock that does not move with the reading, which the resurrection lines read.
 test("the moment of the store is the date of the clock's latest reading", async () => {
   await onStore(newGame(), async ({ store, dateReads }) => {
@@ -351,6 +357,7 @@ test("the clock's interval is registered before the saver's, and dispose clears 
 // Catches a store that takes a result after an error nothing handled, or reads the clock for a save
 // afterwards, whose error would come back with every save (D-323).
 test("after halt() no result is taken, no act changes the state, and keep makes no reading", async () => {
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock"
   await onStore(
     passing(),
     async ({ store, sent, taken, readings, intervals, pass }) => {

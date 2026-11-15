@@ -174,6 +174,7 @@ class ActionInProgress(unittest.TestCase):
 
     def test_actions_last_their_full_duration_through_program_changes(self):
         # invariant: action-in-progress
+        # decision: D-20 "The program chooses again at the next free game minute"
         runs = drive(scenario(MAIN, 25))
         self.assertEqual(sorted(runs), list(range(0, 26)), "the run did not pass minute by minute")
 

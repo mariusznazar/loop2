@@ -220,6 +220,10 @@ function withTiles() {
 // drawing beside the program, the program panel or the table in the world, and a host for the rule
 // panel standing in the screen, which the panel opening in the program no longer has.
 test("the header stands above three areas of their own in the order world, program and tabs, holding the world, the program panel and the tabs with the chronicle, and no host for the rule panel", async () => {
+  // decision: D-282 "Each column of a screen is an area of its own"
+  // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
+  // decision: D-338 "The player filters it by these kinds in the area with the tabs under the world"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -261,6 +265,7 @@ test("the header stands above three areas of their own in the order world, progr
 // D-122. Catches the band standing in the world area, under the program panel, or
 // outside the program's area.
 test("at a discovery the band stands in the program's area, above the program panel", async () => {
+  // decision: D-122 "A band in the role `discovery` above the program"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
     const [world, program, tabs] = areasOf(screen.element);
@@ -281,6 +286,8 @@ test("at a discovery the band stands in the program's area, above the program pa
 // screen asks for it, in the world or the area under the drawing, above the band of a discovery, outside the
 // program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
 test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
+  // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, firstChill());
     const [world, program, tabs] = areasOf(screen.element);
@@ -310,6 +317,9 @@ test("the question stands in the program panel, directly above the heading of th
 // D-281, D-166. Catches the screen, its program
 // panel with the copy included, drawing the map run of the game state beside the one it was given.
 test("the screen draws the map run it was given, the copy of that map run in its program panel, not the game state's", async () => {
+  // decision: D-281 "The screen of a map run takes its map run as a parameter and reads no map run of the game state by itself"
+  // decision: D-166 "On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it"
+  // decision: D-171 "During a map run the program panel shows the copy under the heading „Kopia: {program name}”"
   await withPage(async (page) => {
     // The game state holds Ala's map run on the copy of „Program” at game minute 0; the screen is
     // given her map run on the copy of „Program 2” at game minute 7, as a second map run would be.
@@ -352,6 +362,9 @@ test("the screen draws the map run it was given, the copy of that map run in its
 // the header it changes, the tabs and their content leaving while it is open, the drawing leaving
 // with them, and „✕” changing the tab picked, whichever it was.
 test("an open rule panel stands in the program under its header, the tabs and their content and the drawing stay where they were, and „✕” leaves the tab picked as it was", async () => {
+  // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
+  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, pausedRun());
     const element = screen.element;
@@ -418,6 +431,9 @@ test("an open rule panel stands in the program under its header, the tabs and th
 // opened outside the program, not under the new rule's row, or on the condition, the tabs taken away
 // by it, and the streak left as it stood.
 test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group, opens its panel in the program under the new rule on the action, the tabs stand, and the streak goes to zero", async () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -476,6 +492,8 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
 // D-122. Catches the band's „Wznów” doing anything other than the header's one
 // resumption, and the band standing after it.
 test("„Wznów” of the band goes on as the header's „Wznów” does, and the band goes", async () => {
+  // decision: D-122 "When something is discovered in a map run the player starts, the map run stops in the same pause as after „Pauza”: the clock in the header reads „Minuta {game minute} (pauza)”, and the player goes on with „Wznów”"
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   await withPage(async (page) => {
     const game = await wiredScreen(page, firstChill());
     const [, program] = areasOf(game.screen.element);
@@ -489,6 +507,7 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
 // D-19, D-346. Catches the hovered tile kept by the drawing
 // alone, so that the table in another area marks no row, its line shows no numbers, and a hovered row marks no tile.
 test("a hovered tile of the drawing marks its row in the table of the area under the drawing and the line gives its numbers; a hovered row marks its tile", async () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, withTiles());
     const [world, , area] = areasOf(screen.element);
@@ -618,6 +637,7 @@ function scrolledTo(scroll) {
 // D-336. Catches rows that are no control (no tab stop), a click or Enter that does nothing, a row
 // that scrolls the rule of the other row, and a scroll that puts the rule anywhere but the middle.
 test("a click on Teraz and on Potem, and Enter and Space on them, scroll the row of their rule to the middle of the window", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const { screen } = await wiredScreen(page, diverged());
@@ -660,6 +680,7 @@ test("a click on Teraz and on Potem, and Enter and Space on them, scroll the row
 // D-336, D-295. Catches a rule of a folded group looked for as a row that is not drawn, and a header
 // of another group.
 test("for a rule of a folded group Teraz and Potem scroll the header of that group", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const { screen } = await wiredScreen(page, diverged());
@@ -694,6 +715,7 @@ test("for a rule of a folded group Teraz and Potem scroll the header of that gro
 // D-336, D-267. Catches a program that follows the rule (a scroll made by an effect on every update)
 // instead of a scroll once per click.
 test("the program scrolls once per click and does not follow the rule when the game goes on", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const game = await wiredScreen(page, diverged());
@@ -709,6 +731,7 @@ test("the program scrolls once per click and does not follow the rule when the g
 // D-336. Catches a wait, a fight, a death, a completion and a Potem without a winner
 // being a tab stop or scrolling, and an action whose rule the copy no longer holds scrolling to nothing.
 test("a row that names no rule is no control: the keyboard does not reach it and it scrolls nothing", async () => {
+  // decision: D-336 "A click on the row „Teraz” or „Potem”, with the mouse or from the keyboard, scrolls the program once"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const waitingState = setProgram(
@@ -766,6 +789,7 @@ test("a row that names no rule is no control: the keyboard does not reach it and
 // D-336, D-166. Catches a scroll in the program panel while it shows a saved program, whose rows
 // carry the same numbers as the copy's.
 test("while the program panel shows a saved program a click on Teraz scrolls nothing", async () => {
+  // decision: D-336 "While the program panel shows a saved program in place of the copy"
   await withPage(async (page) => {
     const scrolls = recordScrolls(page.window);
     const game = await wiredScreen(page, diverged());
@@ -826,6 +850,10 @@ function coveredState(screen) {
 // over a map run that goes on, a header or an area left visible under the window, and a screen
 // that stays covered after the window is set closed.
 test("told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
+  // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     assert.equal(windowIn(game.screen), undefined, "not drawn until told");
@@ -847,6 +875,8 @@ test("told the window stands, the screen of an ended map run draws it and hides 
 // Catches the covered header and areas leaving the tree, which would drop what they hold: the
 // program panel's element, the hovered tile and the tabs picked stand through the window.
 test("what the window covers stays in the tree and keeps its state: the tab picked and the program panel stand through the window", async () => {
+  // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     const [, program, tabs] = areasOf(game.screen.element);
@@ -872,6 +902,10 @@ test("what the window covers stays in the tree and keeps its state: the tab pick
 // D-368, D-370. Catches „✕” that does not ask the game view to close the window,
 // and a focus left on nothing: it goes to „Koniec przejścia” in the header, which the closing shows.
 test("„✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-368 "The window scrolls in itself while its buttons"
+  // decision: D-370 "The window takes the focus when it opens"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     await inAct(() => game.screen.setWindow(true));
@@ -889,6 +923,7 @@ test("„✕” asks the game view to close the window and the focus goes to „
 
 // D-368. Catches window buttons wired to the header's act, to another map, or to none.
 test("the buttons of the window ask for „Restart”, „Zakończ” and the opening of the map they name", async () => {
+  // decision: D-368 "The window scrolls in itself while its buttons"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
     await inAct(() => game.screen.setWindow(true));
@@ -910,6 +945,7 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
 // D-313. Catches the window left standing over the rule panel „Dodaj regułę z tym”
 // opens, and the rule added before the window closes, which would give the panel no room to focus.
 test("„Dodaj regułę z tym” of the window closes the window and then does what the panel's button does: the rule is added and its panel stands open", async () => {
+  // decision: D-313 "The same button stands in the end-of-run window"
   await withPage(async (page) => {
     const chilled = firstChill();
     const game = await wiredScreen(page, completedRun(chilled));
@@ -941,6 +977,7 @@ test("„Dodaj regułę z tym” of the window closes the window and then does w
 // D-368, D-147. Catches the entries of „Ostatnie minuty” read from anywhere but the chronicle
 // memory the screen was given, and a death whose window shows none.
 test("the window's „Ostatnie minuty” are the entries of the chronicle memory the screen was given, up to the death", async () => {
+  // decision: D-368 "Each section of why stands only where it has content"
   await withPage(async (page) => {
     const game = await wiredScreen(page, freezingRun());
     await inAct(() => game.apply(advanceMinutes(game.state, 5000)));
@@ -975,6 +1012,7 @@ test("the window's „Ostatnie minuty” are the entries of the chronicle memory
 // appearance, and only then, or the menu bar stays out of sight above the window. Catches no scroll,
 // a scroll at every draw while the window stands, and a scroll with no window drawn.
 test("the page scrolls to its top when the window appears, and at no other draw", async () => {
+  // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async (page) => {
     const writes = [];
     Object.defineProperty(page.document.documentElement, "scrollTop", {

@@ -59,6 +59,7 @@ const ONE_RULE = () =>
   programWithRules([{ condition: ALWAYS, action: EXPLORE }]);
 
 test("the discovery „Odkryto: Zbierz, Patyk.” adds „Zawsze → Zbierz — patyk” at the end of the first group and opens the panel on the action", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   const state = running(
     ONE_RULE(),
     knowing({
@@ -77,6 +78,7 @@ test("the discovery „Odkryto: Zbierz, Patyk.” adds „Zawsze → Zbierz — 
 });
 
 test("the target of the action is the first item of the same discovery the pick offers, not the first the grid offers", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   // The grid offers stick first; the discovery names moss, so the rule gathers moss.
   const state = running(
     ONE_RULE(),
@@ -96,6 +98,7 @@ test("the target of the action is the first item of the same discovery the pick 
 });
 
 test("of several items of the discovery that name a resource, the first in the order the discovery holds is the target", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   const state = running(
     ONE_RULE(),
     knowing({
@@ -111,6 +114,7 @@ test("of several items of the discovery that name a resource, the first in the o
 });
 
 test("an action that takes a target with no matching item in the discovery takes the first target the grid offers", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   // The discovery names only the campfire, which no rule can name; the grid offers berry first.
   const state = running(
     ONE_RULE(),
@@ -130,6 +134,7 @@ test("an action that takes a target with no matching item in the discovery takes
 });
 
 test("a first action that needs a target nobody can pick yet gives way to the next action of the discovery", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   // No item is held, so „Idź” has nothing to name and its cell stands greyed in the panel.
   const state = running(
     ONE_RULE(),
@@ -146,6 +151,9 @@ test("a first action that needs a target nobody can pick yet gives way to the ne
 });
 
 test("the first chill adds „Zawsze → Wędruj” at the end of the group „Program” and opens the panel on the action", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   // The real first chill of a new game: the discovery holds „Wędruj” and „Temperatura poniżej”, and
   // the copy already holds the rule the game wrote, „Zawsze → Eksploruj” (D-123).
   let state = createCharacter(withEdgeSolved(newGame()), "Ala").state;
@@ -170,6 +178,8 @@ test("the first chill adds „Zawsze → Wędruj” at the end of the group „P
 });
 
 test("a discovery of conditions alone adds „{first condition} → Eksploruj” with the number a pick of that condition gives, and opens the panel on the condition", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-313 "Where the discovery holds no such action but a condition"
   const state = running(
     ONE_RULE(),
     knowing({ actions: ["explore"], conditions: ["temperatureBelow"] }),
@@ -185,6 +195,8 @@ test("a discovery of conditions alone adds „{first condition} → Eksploruj”
 });
 
 test("the first condition is the first the discovery holds", () => {
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
+  // decision: D-313 "Where the discovery holds no such action but a condition"
   const state = running(
     ONE_RULE(),
     knowing({
@@ -200,6 +212,7 @@ test("the first condition is the first the discovery holds", () => {
 });
 
 test("a condition that names a target takes the target a pick of that condition gives", () => {
+  // decision: D-313 "Where the discovery holds no such action but a condition"
   // „Zapas poniżej” names an item of the backpack, „Tu leży mniej niż” a resource of the map.
   const understanding = knowing({
     actions: ["explore"],
@@ -235,6 +248,7 @@ test("a condition that names a target takes the target a pick of that condition 
 });
 
 test("a condition that needs a target nobody can pick yet gives way to the next condition of the discovery", () => {
+  // decision: D-313 "Where the discovery holds no such action but a condition"
   const state = running(
     ONE_RULE(),
     knowing({
@@ -250,6 +264,8 @@ test("a condition that needs a target nobody can pick yet gives way to the next 
 });
 
 test("a discovery that holds an action and a condition writes the action, with the condition „Zawsze”", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
+  // decision: D-313 "Where the discovery holds no such action but a condition"
   const state = running(
     ONE_RULE(),
     knowing({
@@ -268,6 +284,7 @@ test("a discovery that holds an action and a condition writes the action, with t
 });
 
 test("a discovery of an item, a creature or a tree alone does what „+ reguła” does: „Zawsze → Eksploruj”, the panel on the condition", () => {
+  // decision: D-313 "Where the discovery holds no such action but a condition"
   const understanding = knowing({
     actions: ["explore"],
     items: ["stick"],
@@ -296,6 +313,7 @@ test("a discovery of an item, a creature or a tree alone does what „+ reguła�
 });
 
 test("the rule stands last in the first group, takes the copy's next rule identity, and every other group and rule stays as it was", () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   const program = {
     groups: [
       {
@@ -363,6 +381,7 @@ test("the program it gives is one the game takes whole, and handing it over sets
 });
 
 test("where the copy holds no rule group, there is nothing to add to", () => {
+  // decision: D-313 "Where the copy holds no rule group, the button is disabled"
   const state = running(
     { ...ONE_RULE(), groups: [] },
     knowing({ actions: ["explore"] }),

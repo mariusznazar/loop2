@@ -217,6 +217,7 @@ const RETRYING = "Nie udało się zapisać postępu. Gra spróbuje ponownie.";
 // --- one request at a time -------------------------------------------------------------------
 
 test("a moment during a request in flight sends once more, after the answer, with the state of that time", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -261,6 +262,8 @@ function sentenceOf(saver) {
 }
 
 test("a save that succeeds keeps its revision for the next save and takes away the sentence that stood from a conflict", async () => {
+  // decision: D-209 "The browser whose save it refuses so drops its unsaved game state, loads the server's saved game state — a manual map run that went on coming back paused (D-212) — shows „Gra została zapisana w innej przeglądarce. Wczytano ten zapis.” in `warning` on the header line of D-208 until its first successful save"
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -277,6 +280,8 @@ test("a save that succeeds keeps its revision for the next save and takes away t
 });
 
 test("a failed save shows that the game retries, and the retries follow after 5, 10 and 20 s and then every 30 s, each with the state of its time", async () => {
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -304,6 +309,8 @@ test("a failed save shows that the game retries, and the retries follow after 5,
 });
 
 test("a moment while a retry waits sends at once, and its failure waits for the next step of the rhythm", async () => {
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -334,6 +341,8 @@ test("a moment while a retry waits sends at once, and its failure waits for the 
 });
 
 test("a moment during a request that then fails sends once more at once after the answer, not after the retry's wait", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -350,6 +359,8 @@ test("a moment during a request that then fails sends once more at once after th
 });
 
 test("a save refused as too large shows its sentence and is not retried; a moment, or a check that finds a changed state, tries again", async () => {
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
+  // decision: D-208 "When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.” in `warning` until a save succeeds"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -375,6 +386,7 @@ test("a save refused as too large shows its sentence and is not retried; a momen
 });
 
 test("a conflict and a missing session go to the page's callback, and the saver sends nothing more", async () => {
+  // decision: D-209 "The browser whose save it refuses so drops its unsaved game state"
   for (const [kind, call] of [
     ["conflict", "conflict"],
     ["signed-out", "signedOut"],
@@ -404,6 +416,7 @@ test("a conflict and a missing session go to the page's callback, and the saver 
 });
 
 test("a save refused as outdated shows its sentence, tells the page, and nothing is sent any more", async () => {
+  // decision: D-210 "The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in `warning` on the header line of D-208 and saves nothing more"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(passing());
@@ -426,6 +439,7 @@ test("a save refused as outdated shows its sentence, tells the page, and nothing
 // --- the checks for changes ------------------------------------------------------------------
 
 test("an untouched game sends nothing at the 30-second check or at hiding, and sends at the player's first act", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
   // D-248: every document is stamped, and the load refuses one that is not.
   const loaded = loadSavedGame(savedGame(withSaveTime(passing(), CLOCK_MS)));
   // Precondition: a loaded map run comes back paused, so real time changes nothing in it.
@@ -454,6 +468,8 @@ test("an untouched game sends nothing at the 30-second check or at hiding, and s
 });
 
 test("a passing map run is saved at the 30-second check and at hiding, and a hiding during a request in flight sends nothing more", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(passing());
@@ -479,6 +495,7 @@ test("a passing map run is saved at the 30-second check and at hiding, and a hid
 // D-207. Catches a rhythm that sends every 30 seconds for loops alone, which the player left on
 // overnight, and a hidden page or an act that no longer sends.
 test("the 30-second check is silent while no manual map run passes, though the state changes at every reading; hiding and an act still send", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
   const cases = [
     ["no manual map run", withCharacter()],
     ["a paused manual map run", setPaused(passing(), true).state],
@@ -523,6 +540,8 @@ const documentOf = ({ version, game }) => ({ version, revision: 9, game });
 // D-248. Catches a document unstamped, which the load refuses, a moment read before
 // the reading that sends, so older than the state it stamps, and a stamp written into the state held.
 test("each document holds the moment of the reading made for it and loads, and the state held stays what it was", async () => {
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -564,6 +583,9 @@ test("each document holds the moment of the reading made for it and loads, and t
 // D-207, D-248. Catches a stamped state taken for the one last sent, so that the
 // comparison by identity finds a change at every check, and a tab that has only loaded sending.
 test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
+  // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const savedMs = CLOCK_MS - 60_000;
   const { state } = loadSavedGame(savedGame(withSaveTime(passing(), savedMs)));
   await onPage(async () => {
@@ -591,6 +613,8 @@ test("a loaded paused game sends nothing, and a save of it changes nothing the 3
 // --- before logout ---------------------------------------------------------------------------
 
 test("before logout the saver waits for the request in flight, then sends the current state and reports it saved", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -613,6 +637,8 @@ test("before logout the saver waits for the request in flight, then sends the cu
 });
 
 test("before logout a refusal is reported for logout to go on, without the page's callbacks, and a too-large one is not retried", async () => {
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210)"
+  // decision: D-208 "When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.”"
   for (const kind of ["conflict", "too-large", "outdated", "signed-out"]) {
     await onPage(async () => {
       const held = heldClient();
@@ -632,6 +658,9 @@ test("before logout a refusal is reported for logout to go on, without the page'
 });
 
 test("a failed save before logout asks to log out again, and the retries go on under that sentence until one succeeds", async () => {
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.”"
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -660,6 +689,7 @@ test("a failed save before logout asks to log out again, and the retries go on u
 // is in flight is not sent after its answer. Catches a saver that sends that moment anyway, a save
 // request going out beside the logout that ends the session.
 test("a moment during the save before a logout that goes on is not sent after its answer", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer, unless that request is the save before a logout that goes on (D-97)"
   for (const outcome of [SAVED(4), { kind: "too-large" }]) {
     await onPage(async () => {
       const held = heldClient();
@@ -701,6 +731,8 @@ test("before logout a request in flight that fails is followed by the logout's o
 });
 
 test("a saver stopped as outdated reports so before logout without sending anything", async () => {
+  // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session; a tab that stopped saving after the refusal of D-210 ends it without saving"
+  // decision: D-210 "The tab whose save it refuses so shows „Gra została zaktualizowana. Odśwież stronę.” in `warning` on the header line of D-208 and saves nothing more"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());

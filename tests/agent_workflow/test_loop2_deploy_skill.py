@@ -70,6 +70,7 @@ class Loop2DeploySkill(unittest.TestCase):
         self.assertNotIn("disable-model-invocation", text)
 
     def test_no_ipv6_literal_and_no_mikrus_server_name(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository"
         for name in FILES:
             text = read_bytes(CLAUDE_COPY, name).decode("utf-8")
             self.assertIsNone(IPV6_LITERAL.search(text), name)

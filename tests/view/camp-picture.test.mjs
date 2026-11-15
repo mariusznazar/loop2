@@ -31,6 +31,7 @@ const ids = (state) => campDrawing(state).members.map((member) => member.id);
 // Catches a camp drawn only where the team has someone in Siedziba (a team of none, as in a new game, would
 // draw no camp at all), or one that drops the fire or the chest with the characters.
 test("a team with nobody in Siedziba shows the fire and the chest alone", () => {
+  // decision: D-389 "The characters that stand in it are those"
   const empty = campDrawing(newGame());
   assert.deepEqual(empty.members, []);
   assert.equal(empty.fire.href, "/sprites/fire.png");
@@ -45,6 +46,8 @@ test("a team with nobody in Siedziba shows the fire and the chest alone", () => 
 // Catches a camp that draws the whole team (a character on a map or in a loop standing at the fire), one
 // that forgets one of the three ways a character is away, or one that reorders the characters (D-54).
 test("only the characters in Siedziba stand in the camp, in the order of creation", () => {
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-389 "The characters that stand in it are those"
   // 1 stays, 2 is in the manual map run, 3 in an earning loop, 4 had its loop stopped, 5 stays.
   const base = send(teamOf(5), { mapId: MAP, characterId: 2 }, NOW).state;
   const state = {
@@ -59,6 +62,7 @@ test("only the characters in Siedziba stand in the camp, in the order of creatio
 // Catches a manual map run that is read only while it goes: a paused run and one that has ended and waits for
 // „Restart” or „Zakończ” are still the run of that character, so it is not in Siedziba.
 test("the character of a manual map run is away while the run goes, is paused or has ended", () => {
+  // decision: D-389 "The characters that stand in it are those"
   const going = send(teamOf(2), { mapId: MAP, characterId: 1 }, NOW).state;
   const paused = { ...going, paused: true };
   const died = {
@@ -75,6 +79,8 @@ test("the character of a manual map run is away while the run goes, is paused or
 // Catches a capacity that counts the fire's half or the gap wrong, which would draw a character no band holds
 // or leave a place at the widest band empty. 672 / 2 − 32 / 2 − 6 = 314 pixels of the row, 32 to a cell.
 test("the camp draws as many characters as the widest band holds, the first in the order of creation", () => {
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-389 "The characters that stand in it are those"
   assert.equal(campCapacity(), 9);
   const crowded = teamOf(12);
   assert.deepEqual(ids(crowded), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
@@ -85,6 +91,7 @@ test("the camp draws as many characters as the widest band holds, the first in t
 // Catches a chest drawn in another picture, or another frame, when it holds more (D-271, D-184): how much it
 // holds is told by the section „Skrzynka {n}/{cap}”, not by the camp.
 test("the chest is one still picture, the same empty and full", () => {
+  // decision: D-271 "The pictures of the camp at the top of Siedziba"
   const state = teamOf(1);
   const full = {
     ...state,
@@ -97,6 +104,7 @@ test("the chest is one still picture, the same empty and full", () => {
 // Catches a camp that has a fire of its own state, standing still or out: the fire of the camp burns in its
 // frames always, whatever a campfire of the game state is (D-316 draws that one in the scene).
 test("the fire of the camp is the burning fire in its frames, whatever the game state holds", () => {
+  // decision: D-389 "The camp moves as the scene does"
   const away = send(teamOf(1), { mapId: MAP, characterId: 1 }, NOW).state;
   const fire = campDrawing(away).fire;
   assert.equal(fire.frames, 4);
@@ -106,6 +114,7 @@ test("the fire of the camp is the burning fire in its frames, whatever the game 
 // Catches a character in a sheet of another pose or a size that is not the file's: the camp shows the idle
 // sheet, four frames of 64 × 64, with the figure in its lower half, which the files hold.
 test("a character stands in the idle sheet of its archetype", () => {
+  // decision: D-389 "The camp moves as the scene does"
   const [member] = campDrawing(teamOf(1)).members;
   assert.deepEqual(member.idle, {
     href: "/sprites/mage-idle.png",

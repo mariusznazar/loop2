@@ -244,6 +244,7 @@ class StreakProgramChange(unittest.TestCase):
 
     def test_control_an_edit_that_hands_back_the_same_program_leaves_the_streak(self):
         # invariant: streak-program-change
+        # decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule, changing its condition or action, and changing a rule group — also while the map run is paused; an act of the program editor after which the copy is the same as before it, an edit or discard changing the trip plan alone, a save of the copy and an edit of a saved program leave the streak as it stands, together with the number of beaten attacks"
         for paused in (False, True):
             for name, base in (("the same program", BASE), ("twin rules", TWINS)):
                 with self.subTest(program=name, paused=paused):

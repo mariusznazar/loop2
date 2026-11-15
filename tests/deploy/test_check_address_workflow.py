@@ -78,6 +78,7 @@ def run_script():
 class CheckAddressWorkflow(unittest.TestCase):
 
     def test_triggers_are_the_schedule_and_the_manual_run_only(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes"
         match = re.search(r"^on:\s*\n((?:[ \t]+.*\n?|\n)+)", code(), re.MULTILINE)
         self.assertIsNotNone(match, "no `on:` block")
         block = match.group(1)
@@ -86,6 +87,7 @@ class CheckAddressWorkflow(unittest.TestCase):
         self.assertNotRegex(block, r"push|pull_request")
 
     def test_schedule_runs_every_five_minutes_off_the_hour(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes"
         cron = re.findall(r"cron:\s*[\"']([^\"']+)[\"']", code())
         self.assertEqual(len(cron), 1, f"expected one cron expression, found {cron}")
         fields = cron[0].split()
@@ -147,6 +149,7 @@ class CheckAddressWorkflow(unittest.TestCase):
         self.assertEqual(len(steps), 1, steps)
 
     def test_only_host_is_the_declared_public_address(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address"
         text = code()
         deployed = declared_public_address(read(DEPLOY_WORKFLOW))
         self.assertEqual(declared_public_address(text), deployed)
@@ -217,12 +220,14 @@ class RunScriptOnStandIns(unittest.TestCase):
         return result, calls, sleeps
 
     def test_status_200_passes_at_once(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200"
         result, calls, sleeps = self.run_step(["200"])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(calls, 1)
         self.assertEqual(sleeps, [])
 
     def test_a_non_200_fails_after_six_attempts_twenty_seconds_apart(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200"
         result, calls, sleeps = self.run_step(["404"] * ATTEMPTS)
         self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(calls, ATTEMPTS)
@@ -230,6 +235,7 @@ class RunScriptOnStandIns(unittest.TestCase):
         self.assertIn("::error::", result.stdout + result.stderr)
 
     def test_a_non_200_then_200_passes_after_a_retry(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200"
         result, calls, sleeps = self.run_step(["503", "000", "200"])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(calls, 3)
@@ -242,6 +248,7 @@ class RunScriptOnStandIns(unittest.TestCase):
         self.assertEqual(sleeps, [])
 
     def test_input_false_leaves_the_check_to_the_address(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200"
         result, calls, _sleeps = self.run_step(["200"], force_failure="false")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(calls, 1)

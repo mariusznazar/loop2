@@ -52,6 +52,11 @@ function prepared(program = KICK) {
 }
 
 test("an eligible attack interrupts a long exploration before it finishes", () => {
+  // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules, and an attack interrupts the action under way, which is lost"
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
   const state = prepared();
   const result = advanceMinutes(state, 1);
   assert.ok(result.events.some((event) => event.kind === "attacked"));
@@ -81,6 +86,8 @@ function fighting(program = KICK, attackMinute = 181) {
 }
 
 test("start cooldown protects minute 180 and the first draw can attack at 181", () => {
+  // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
   const state = prepared();
   state.run.minute = 179;
   const protectedMinute = advanceMinutes(state, 1);
@@ -92,6 +99,10 @@ test("start cooldown protects minute 180 and the first draw can attack at 181", 
 });
 
 test("cooldown starts at combat end E and protects E+180, but not E+181", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
+  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const done = advanceMinutes(fighting(), 5).state;
   assert.equal(done.run.attackCooldownStart, 186);
   const state = {
@@ -112,6 +123,8 @@ test("cooldown starts at combat end E and protects E+180, but not E+181", () => 
 });
 
 test("eligible misses consume one draw even inside an unfinished activity", () => {
+  // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
   const state = prepared();
   state.run.attackRandom = 0;
   assert.ok(nextRandom(0).value > 0.01, "precondition: this draw misses");
@@ -122,6 +135,8 @@ test("eligible misses consume one draw even inside an unfinished activity", () =
 });
 
 test("death, completion and a map without attackers consume no attack draw", () => {
+  // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
   const dying = prepared();
   dying.run.body = { temperature: 30, satiety: 0, health: 0.1 };
   const completed = prepared();
@@ -145,6 +160,10 @@ test("death, completion and a map without attackers consume no attack draw", () 
 });
 
 test("an action ending in attack minute lands, while an interrupted move leaves no target or later movement", () => {
+  // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules, and an attack interrupts the action under way, which is lost"
+  // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
   const ending = prepared();
   ending.run.current.endMinute = 181;
   const landed = advanceMinutes(ending, 1);
@@ -178,6 +197,15 @@ test("an action ending in attack minute lands, while an interrupted move leaves 
 });
 
 test("five combat minutes freeze needs and recovery while fire, renewal and streak advance once each", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
+  // decision: D-60 "During the game minutes of combat the character's needs and health stand still until the combat actions change its health"
+  // decision: D-67 "A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
+  // decision: D-140 "Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes first; the needs stand still during combat, and the whole combat costs a fixed number of game minutes"
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
+  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   let state = fighting(KICK, 235);
   state.run.body = { temperature: 30, satiety: 0, health: 100 };
   state.run.streak = 12;
@@ -211,6 +239,9 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
 });
 
 test("nature energy stands through the five combat minutes and comes back after them", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-377 "In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   // D-71, D-377: in the minutes of combat nature energy stands, as the needs and recovery do; the
   // next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
   let state = fighting(KICK, 235);
@@ -228,6 +259,10 @@ test("nature energy stands through the five combat minutes and comes back after 
 });
 
 test("a lighting interrupted by an attack takes neither its sticks nor its nature energy", () => {
+  // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
+  // decision: D-63 "The sticks and the nature energy leave together when the lighting finishes, and a lighting an attack interrupts takes neither"
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules, and an attack interrupts the action under way, which is lost"
+  // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
   // D-63. Satiety 50 falls below 60, so no energy comes back meanwhile and the energy shows only
   // a payment.
   const state = prepared();
@@ -255,6 +290,9 @@ test("a lighting interrupted by an attack takes neither its sticks nor its natur
 });
 
 test("each waiting minute M+1 through M+4 can complete without turns or an invented result", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   for (const offset of [1, 2, 3, 4]) {
     const state = fighting();
     state.run.streak = 540 - offset;
@@ -273,6 +311,12 @@ test("each waiting minute M+1 through M+4 can complete without turns or an inven
 });
 
 test("combat death in M+5 wins over completion and keeps the streak", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
+  // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
+  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const state = fighting();
   state.run.minute = 185;
   state.run.streak = 539;
@@ -291,6 +335,12 @@ test("combat death in M+5 wins over completion and keeps the streak", () => {
 });
 
 test("M+5 starts ordinary work immediately, counts every combat action once and still shows combat", () => {
+  // decision: D-20 "The program chooses again at the next free game minute, and before the character's action in each combat turn"
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
   const program = programFromRules(
     { condition: ALWAYS, action: { kind: "kick" } },
     { condition: ALWAYS, action: { kind: "wander" } },
@@ -314,6 +364,14 @@ test("M+5 starts ordinary work immediately, counts every combat action once and 
 });
 
 test("editing during the wait preserves encounter state and resolves with the newly written program", () => {
+  // decision: D-20 "The program chooses again at the next free game minute, and before the character's action in each combat turn"
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-141 "Editing the program during the encounter leaves its resolution minute, attack generator and cooldown intact, and resets solving progress as D-131 gives"
+  // decision: D-145 "A stick stays in the backpack after a strike"
+  // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const state = fighting();
   state.run.character.backpack.stick = 1;
   state.run.streak = 100;
@@ -347,6 +405,8 @@ test("editing during the wait preserves encounter state and resolves with the ne
 });
 
 test("combat filters unavailable actions and group conditions through the current repertoire", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
+  // decision: D-151 "A side chooses its rule immediately before its action, with the creature using its ordered data pairs and the character using the ordered groups and repertoire of its program"
   for (const blocked of ["action", "group"]) {
     const program = programFromRules(
       { condition: ALWAYS, action: { kind: "strikeWithStick" } },
@@ -390,6 +450,12 @@ test("combat filters unavailable actions and group conditions through the curren
 });
 
 test("a creature-only discovery pauses before turns and does not write a combat rule", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const state = prepared();
   state.understanding.creatures = [];
   const result = passRealTime(state, 10000);
@@ -414,6 +480,10 @@ test("a creature-only discovery pauses before turns and does not write a combat 
 // next attack must use that very knowledge, not an independently knowing game.
 // Sources: foundations/decisions.md:2008, :2032, :2575.
 test("the discovered wolf stays known through another attack, restart and end", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-119 "The Understanding belongs to the player"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else"
   const initial = prepared();
   initial.understanding.creatures = [];
   const discovered = advanceMinutes(initial, 1).state;
@@ -446,6 +516,14 @@ test("the discovered wolf stays known through another attack, restart and end", 
 });
 
 test("an ending exploration and first wolf produce one catalog-ordered discovery", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band"
+  // decision: D-142 "Each eligible ordinary game minute tries its attack after the ending action's effect and the completion check, including a minute inside a longer action; an action still running is lost on an attack, while a finished action keeps its effect"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   const state = prepared();
   state.understanding = {
     actions: ["explore", "wander"],
@@ -482,6 +560,15 @@ test("an ending exploration and first wolf produce one catalog-ordered discovery
 });
 
 test("first chill and attack in one minute keep the automatic exploration rule but never start it during combat", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   const state = prepared(programFromRules());
   // The Understanding of a new game: „Zawsze” and „Eksploruj”.
   state.understanding = {
@@ -514,6 +601,12 @@ test("first chill and attack in one minute keep the automatic exploration rule b
 });
 
 test("a departed creature starts cooldown but adds no defeated attack", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once, and in combat each turn in which the program rule starts a combat action adds one firing to that rule's count"
+  // decision: D-140 "Combat goes in turns, the sides exchanging one action each, and the side that attacked strikes first; the needs stand still during combat, and the whole combat costs a fixed number of game minutes"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-144 "Another dodge refreshes that reduction"
+  // decision: D-146 "The current data limits an encounter to 40 combat turns, each an exchange with at most one action of each side; if both survive that limit the creature leaves and the attack remains unbeaten"
+  // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
   const state = fighting(
     programFromRules({ condition: ALWAYS, action: { kind: "dodge" } }),
   );
@@ -527,6 +620,11 @@ test("a departed creature starts cooldown but adds no defeated attack", () => {
 });
 
 test("known attacks do not pause and restart clears combat while reproducing its attack stream", () => {
+  // decision: D-119 "The Understanding belongs to the player"
+  // decision: D-131 "A map run starts with zero beaten attacks"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
+  // decision: D-143 "The discovery leaves writing combat rules to the player; the game adds no rule at this attack, and later attacks of an already known creature leave time running unless the minute discovers something else"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const attacked = advanceMinutes(prepared(), 1).state;
   assert.equal(attacked.paused, false);
   const restarted = restart(attacked).state;
@@ -569,6 +667,8 @@ test("stepMinute and game advancement have the same attack and combat ordering",
 });
 
 test("two different ordinary programs on a shared seed meet their first attack in the same minute", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
   const map = {
     ...MAPS.forestDeep,
     ambientTemperature: 37,
@@ -597,6 +697,8 @@ test("two different ordinary programs on a shared seed meet their first attack i
 });
 
 test("M+5 counts the second defeated attack before checking both map requirements", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
   const state = prepared();
   state.run.minute = 185;
   state.run.current = null;
@@ -689,6 +791,13 @@ const COMBAT_SPLITS = [
 
 for (const scenario of COMBAT_SPLITS) {
   test(`combat time splitting preserves every state and ordered event: ${scenario.name}`, () => {
+    // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+    // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+    // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+    // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
+    // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
+    // decision: D-146 "A character that finds no feasible combat rule gives up its action of that turn; every resolved encounter starts the cooldown again, and combat wounds leave the streak as it stands"
+    // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
     const initial = prepared(scenario.program);
     initial.understanding.creatures = scenario.creatures;
     if (scenario.creatures.length === 0) initial.run.minute = 179;
@@ -762,6 +871,9 @@ for (const scenario of COMBAT_SPLITS) {
 // random state, clock, counters or body: even the initial whole states agree.
 // Sources: foundations/invariants.md:165, :309; decisions.md:450 (D-22).
 test("restart replays the actual attack stream and combat minute by minute", () => {
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"
+  // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
   const initial = sent();
   const reference = traceChunks(initial, Array(250).fill(1000), passRealTime);
   const final = reference.at(-1);

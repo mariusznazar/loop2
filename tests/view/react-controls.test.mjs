@@ -115,6 +115,7 @@ function domTree(document, element) {
 const BUTTON_TEXT = "Zaloguj";
 
 test("a plain button is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -128,6 +129,7 @@ test("a plain button is the same element in both forms", async () => {
 });
 
 test("a button with an accessible name carries it as aria-label", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -141,6 +143,7 @@ test("a button with an accessible name carries it as aria-label", async () => {
 });
 
 test("a submit button is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -156,6 +159,7 @@ test("a submit button is the same element in both forms", async () => {
 });
 
 test("a button selected in its group is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -169,6 +173,7 @@ test("a button selected in its group is the same element in both forms", async (
 });
 
 test("a button not selected in its group is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -184,6 +189,8 @@ test("a button not selected in its group is the same element in both forms", asy
 // button, a plain `<button>` with the class `secondary`. The class is written out in each case,
 // since two forms that both leave it out would agree and show a plain button.
 test("a secondary action is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-275 "An action that opens or leaves a state of a form and stands under that form — „Nie pamiętam hasła”, „Wróć do logowania” and „Anuluj” of the login card — is a secondary action: underlined text in `text-secondary` without a frame, and a button still, since it changes the state of the screen and has no address"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -207,6 +214,7 @@ test("a secondary action is the same element in both forms", async () => {
 });
 
 test("a secondary action locked with its text is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -228,6 +236,7 @@ test("a secondary action locked with its text is the same element in both forms"
 // The destructive button (D-44): „Usuń”, „Zatrzymaj” and the rest draw the class `destructive`
 // beside `button`, in both forms.
 test("a destructive button is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -244,6 +253,7 @@ test("a destructive button is the same element in both forms", async () => {
 });
 
 test("a destructive button with an accessible name is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -268,6 +278,7 @@ test("a destructive button with an accessible name is the same element in both f
 // The kind `positive` (D-44, D-39): „Odbierz”, the plain button with its text in `positive`, draws
 // the class `positive` beside `button`, in both forms.
 test("a button in positive is the same element in both forms, of the type button with the class positive", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -286,6 +297,8 @@ test("a button in positive is the same element in both forms, of the type button
 // character in the card of a map. It is a button of the type `button`, never `submit`, with the
 // class `main`, which styles.css draws as it draws a form's submit button.
 test("a main button outside a form is the same element in both forms, of the type button with the class main", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -302,6 +315,7 @@ test("a main button outside a form is the same element in both forms, of the typ
 });
 
 test("a main button locked with its text is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -322,6 +336,7 @@ test("a main button locked with its text is the same element in both forms", asy
 // first, carries `aria-expanded` with the value given; left out, it carries none, and the state
 // has no look of its own, so the class stays `button` in both cases.
 test("a button with aria-expanded true is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -338,6 +353,7 @@ test("a button with aria-expanded true is the same element in both forms", async
 });
 
 test("a button with aria-expanded false is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -354,6 +370,7 @@ test("a button with aria-expanded false is the same element in both forms", asyn
 });
 
 test("a button given no expanded state carries no aria-expanded in either form", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -370,6 +387,7 @@ test("a button given no expanded state carries no aria-expanded in either form",
 });
 
 test("a button whose open state is set on the DOM form is the same element as the React form", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -384,6 +402,8 @@ test("a button whose open state is set on the DOM form is the same element as th
 // The tab (pytania 2 and 2c): the button selected in its group, kept as the same element with
 // `aria-pressed`, with the class `tab` beside `selected`.
 test("a tab selected in its group is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -403,6 +423,8 @@ test("a tab selected in its group is the same element in both forms", async () =
 });
 
 test("a tab not selected in its group is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
+  // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -422,6 +444,7 @@ test("a tab not selected in its group is the same element in both forms", async 
 });
 
 test("a tab locked with its text, selected or not, is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     for (const selected of [true, false]) {
       const drawing = await drawn(
@@ -448,6 +471,8 @@ test("a tab locked with its text, selected or not, is the same element in both f
 });
 
 test("a waiting submit button is the same element in both forms", async () => {
+  // decision: D-44 "A control awaiting a server response is disabled"
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -468,6 +493,7 @@ test("a waiting submit button is the same element in both forms", async () => {
 
 // A button of a card that waits is locked, its text kept: the DOM screen sets `disabled` on it.
 test("a button locked with its text is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -483,6 +509,7 @@ test("a button locked with its text is the same element in both forms", async ()
 });
 
 test("a button of a group locked with its text is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -499,6 +526,7 @@ test("a button of a group locked with its text is the same element in both forms
 });
 
 test("a button that stopped waiting is the same element as one that never waited", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -669,6 +697,7 @@ const FIELD_CASES = [
 
 for (const { name, react, dom } of FIELD_CASES) {
   test(`${name} is the same element tree in both forms`, async () => {
+    // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
     await withPage(async ({ document }) => {
       const { type, ...props } = react();
       const component =
@@ -680,6 +709,7 @@ for (const { name, react, dom } of FIELD_CASES) {
 }
 
 test("a field that leaves the error state by a new render is the same element tree as the DOM form", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const props = { label: "Adres e-mail", visibleLabel: true };
     const drawing = await drawn(
@@ -744,6 +774,7 @@ test("a typed value reaches the screen's handler and stays in a controlled field
 const SENTENCE = "Nie udało się zalogować. Spróbuj ponownie.";
 
 test("the form warning is the same element in both forms, shown and hidden", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const shown = await drawn(
       document,
@@ -765,6 +796,7 @@ test("the form warning is the same element in both forms, shown and hidden", asy
 });
 
 test("the form note is the same element in both forms, shown and hidden", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const shown = await drawn(
       document,
@@ -786,6 +818,7 @@ test("the form note is the same element in both forms, shown and hidden", async 
 });
 
 test("a warning that was shown and then cleared is the same element as one never shown", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -808,6 +841,7 @@ const PICK_ICON = "boot-kick";
 const PICK_REASON = "nie znasz jeszcze celu";
 
 test("a pick cell available is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -821,6 +855,7 @@ test("a pick cell available is the same element in both forms", async () => {
 });
 
 test("a pick cell chosen is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -834,6 +869,7 @@ test("a pick cell chosen is the same element in both forms", async () => {
 });
 
 test("a greyed pick cell with its reason is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -854,6 +890,7 @@ test("a greyed pick cell with its reason is the same element in both forms", asy
 });
 
 test("a pick cell with its icon of an action is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -879,6 +916,7 @@ test("a pick cell with its icon of an action is the same element in both forms",
 });
 
 test("a greyed pick cell with its icon and its reason is the same element in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -982,6 +1020,7 @@ const TRIP_RANGE = {
 };
 
 test("a select list with positions is the same element tree in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -1000,6 +1039,7 @@ test("a select list with positions is the same element tree in both forms", asyn
 });
 
 test("a select list with no positions is the same element tree in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -1013,6 +1053,7 @@ test("a select list with no positions is the same element tree in both forms", a
 });
 
 test("a disabled select list is the same element tree in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -1060,6 +1101,7 @@ test("a choice in a select list reaches the screen's handler and a controlled li
 });
 
 test("a number field is the same element tree in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -1083,6 +1125,7 @@ test("a number field is the same element tree in both forms", async () => {
 });
 
 test("a number field in the error state is the same element tree in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -1107,6 +1150,7 @@ test("a number field in the error state is the same element tree in both forms",
 });
 
 test("a disabled number field is the same element tree in both forms", async () => {
+  // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,
@@ -1237,6 +1281,8 @@ test("a number field commits the clamped number when left after typing, and noth
 // both commit here; a field that drops the draft on blur shows "3" in place of "0" and fails the
 // draft check; a field that reports a count equal to the number shown as a rejection fails too.
 test("a number field under the trip count rule commits nothing on text that is no whole count from 1, keeps its draft and reports it", async () => {
+  // decision: D-395 "A shared control in `src/browser/view/controls/` imports no module of a screen that uses it, and a rule that belongs to one screen, such as the rule of the numbers a field takes, the control receives from that screen"
+  // decision: D-181 "A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count"
   await withPage(async ({ document, window }) => {
     const commits = [];
     let rejects = 0;

@@ -93,6 +93,7 @@ function testFiles() {
 
 test("a child growing on a stuck main thread is killed before its own stop and says why on standard error", () => {
   // invariant: document-test-memory-limit
+  // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error, never `node:assert`, and runs under the limit the harness starts first: 2 GiB of its process's memory, read every 100 ms by a worker thread that above it writes one sentence to standard error and kills the process"
   const result = runChild([child], growing);
 
   // Windows ends a killed process with 1, Linux reports the signal.
@@ -107,6 +108,7 @@ for (const [route, args] of [
 ]) {
   test(`a killed child reads as a failed run with its sentence through ${route}`, () => {
     // invariant: document-test-memory-limit
+    // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error, never `node:assert`, and runs under the limit the harness starts first: 2 GiB of its process's memory, read every 100 ms by a worker thread that above it writes one sentence to standard error and kills the process"
     const result = runChild(args, growing);
     const output = result.stdout + result.stderr;
 
@@ -118,6 +120,7 @@ for (const [route, args] of [
 
 test("a child under its limit ends well and nothing kills it", () => {
   // invariant: document-test-memory-limit
+  // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error, never `node:assert`, and runs under the limit the harness starts first: 2 GiB of its process's memory, read every 100 ms by a worker thread that above it writes one sentence to standard error and kills the process"
   const result = runChild([child], quiet);
 
   assert.equal(result.status, 0, result.stderr);
@@ -129,6 +132,7 @@ test("a child under its limit ends well and nothing kills it", () => {
 
 test("the tree holds no file that goes round the harness of a document imitation", () => {
   // invariant: document-test-memory-limit
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files"
   const files = testFiles();
 
   // Precondition: the guard reads the files that matter, this one included.

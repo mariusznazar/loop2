@@ -46,6 +46,10 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
 // D-91, D-164: the player's programs replace the game's one program, and a
 // new game holds one, „Program”, with no program rule.
 test("a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
+  // decision: D-91 "A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”"
+  // decision: D-129 "The pace the player picks stays until the player picks another, through a pause, the pause at a discovery included, „Restart”, „Zakończ” and the next send of a character, and a new game starts at 1×"
+  // decision: D-50 "The chest belongs to a team and has a cap on the total count of pieces, by the same rule of capacity as the backpack"
+  // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   const state = newGame();
   assert.equal(state.programs.length, 1);
   assert.deepEqual(programRules(state.programs[0].program), []);
@@ -63,6 +67,8 @@ test("a new game has one empty program, a team with no character and an empty ch
 });
 
 test("a send starts a map run at minute 0 with the seed mixed from the last seed and the real time", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
+  // decision: D-56 "A map run names the team's character it carries by that number"
   const { state, events } = sent();
   const seed = mixSeed(INITIAL_SEED, REAL_MS);
   assert.equal(state.lastSeed, seed);
@@ -86,11 +92,13 @@ test("a send starts a map run at minute 0 with the seed mixed from the last seed
 });
 
 test("a send while a map run exists is refused", () => {
+  // decision: D-55 "The game holds one manual map run at a time: while one character is in a manual map run, the game sends no other on a manual map run"
   const { state } = sent();
   assert.throws(() => send(state, SENT, LATER_MS), Error);
 });
 
 test("a program edit during a 20-minute exploration does not interrupt it and applies at minute 20", () => {
+  // decision: D-20 "The program chooses again at the next free game minute"
   let state = advanceMinutes(sent().state, 5).state;
   const exploring = state.run.current;
   state = setProgram(state, WANDER_FIRST).state;
@@ -114,6 +122,7 @@ test("a program edit during a 20-minute exploration does not interrupt it and ap
 // D-164: „Restart” goes on with the copy of the map run it replaces, its
 // unsaved changes included.
 test("Restart starts a new map run at minute 0 with the same seed and tiles and the copy as it stands", () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start"
   const start = sent().state;
   let state = advanceMinutes(start, 45).state;
   state = setProgram(state, WANDER_FIRST).state;
@@ -161,6 +170,7 @@ test("Zakończ ends the map run, keeps the program and the last seed", () => {
 });
 
 test("the next send after Zakończ takes a new seed from the later real time", () => {
+  // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed"
   const first = sent().state;
   const ended = end(first).state;
   const { state: second, events } = send(ended, SENT, LATER_MS);
@@ -181,6 +191,8 @@ test("Restart and Zakończ without a map run are refused", () => {
 // The pace the player picked stays until the player changes it (D-129).
 
 test("setPace sets the pace and nothing else, with a map run or without", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
+  // decision: D-21 "Picking a pace while the map run is paused, the pause at a discovery included, changes the pace and leaves the map run paused until „Wznów”"
   const running = sent().state;
   const held = {
     ...setPaused(running, true).state,
@@ -197,6 +209,7 @@ test("setPace sets the pace and nothing else, with a map run or without", () => 
 });
 
 test("setPace throws on a pace outside the list of paces and leaves the game as it was", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
   const state = sent().state;
   for (const pace of [0, 3, 5, 32, -1, 1.5, "2", null, undefined, Number.NaN]) {
     assert.throws(() => setPace(state, pace), Error, `pace ${String(pace)}`);
@@ -210,6 +223,7 @@ test("setPace throws on a pace outside the list of paces and leaves the game as 
 });
 
 test("the pace survives a pause, a resume, Restart, Zakończ and the next send", () => {
+  // decision: D-129 "The pace the player picks stays until the player picks another, through a pause"
   let state = setPace(sent().state, 8).state;
   state = setPaused(state, true).state;
   assert.equal(state.pace, 8);

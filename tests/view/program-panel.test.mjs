@@ -213,6 +213,8 @@ const groupCount = (program) => program.groups.length;
 // D-180. Catches the section missing
 // from Programy, standing under the rules or above the name, and standing on the screen of a map run.
 test("Programy holds the trip plan between the program's name and its rules; the screen of a map run holds none", async () => {
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
+  // decision: D-307 "Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy: pusty”"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     const order = inOrder(game.root);
@@ -259,6 +261,10 @@ test("Programy holds the trip plan between the program's name and its rules; the
 // is an edit of that program. Catches an edit of the plan reaching the copy or another program, and a
 // section carried from one program to the next with its folding.
 test("an edit of the trip plan on Programy goes to the program shown, and another program's section stands folded", async () => {
+  // decision: D-179 "The trip plan is a field of the program"
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
+  // decision: D-182 "The program of a new game and a newly created program have both trip lists empty"
+  // decision: D-307 "Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy: pusty”"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
@@ -304,6 +310,11 @@ test("an edit of the trip plan on Programy goes to the program shown, and anothe
 // outside the panel on opening, and a closed panel that takes no focus back to the row.
 for (const mode of ["programs", "run"]) {
   test(`the rule panel opens from a row and from a header under it (${mode}), takes the focus, and „✕” and Escape give it back to the row`, async () => {
+    // decision: D-288 "One program editor stands on Programy and on the screen of a map run"
+    // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+    // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+    // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+    // decision: D-296 "A click on the header of a rule group opens the rule panel with the group's name"
     await withPage(async (page) => {
       const game = await wiredPanel(page, gameWithRule(), mode);
       assert.equal(classed(game.root, "rule-panel").length, 0, "closed");
@@ -375,6 +386,8 @@ for (const mode of ["programs", "run"]) {
 // D-288. A rule open in a group that is then folded has no
 // row drawn. Catches the panel vanishing with the row, and one left at the end of the list.
 test("a rule open in a group that gets folded keeps its panel under that group's header, and under its row again once unfolded", async () => {
+  // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -400,6 +413,7 @@ test("a rule open in a group that gets folded keeps its panel under that group's
 // D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
 // panel, as the old editor left it.
 test("„+ reguła” adds the rule and opens its panel on the condition", async () => {
+  // decision: D-124 "„+ reguła” adds a program rule at the end of its rule group and opens its rule panel on the condition"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     await click(buttonNamed(game.root, "+ reguła"));
@@ -435,6 +449,7 @@ test("the open rule stays through the game's minutes and goes when the program s
 // D-302. Catches the sentence missing from the panel of the copy, standing in the
 // panel of a saved program or on Programy, and a word of the counter in it.
 test("the rule panel of the copy says „Zmiana zeruje passę tego przejścia.”; that of a saved program and of Programy does not", async () => {
+  // decision: D-302 "The rule panel of the copy a map run carries out reads „Zmiana zeruje passę tego przejścia.”, and it says nothing of the firing counts"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "run");
     await game.change(send(game.state, SENT, REAL_MS));
@@ -462,6 +477,8 @@ test("the rule panel of the copy says „Zmiana zeruje passę tego przejścia.�
 // folds the saved program, a memory that outlives its page, and a fold that hides a group of another
 // program.
 test("a group folded on one screen stays folded on the other for the same program, the copy's folding is its own, and a new memory forgets", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`"
+  // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens and goes with a reload of the page, after which every rule group stands unfolded"
   await withPage(async (page) => {
     const folding = createFolding();
     const programs = await wiredPanel(
@@ -512,6 +529,8 @@ test("a group folded on one screen stays folded on the other for the same progra
 // The memory is the page's: a fold made while the other panel is hidden still reaches it when it
 // draws next. Catches a panel that reads the memory only at its own updates.
 test("a fold made on one panel redraws the other at once, with no update of its own", async () => {
+  // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`"
+  // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens"
   await withPage(async (page) => {
     const folding = createFolding();
     const programs = await wiredPanel(
@@ -532,6 +551,9 @@ test("a fold made on one panel redraws the other at once, with no update of its 
 // D-166, D-167. Catches a list missing its program or the last
 // program left deletable.
 test("a new game's panel lists „Program”, shows it, and „Usuń” is disabled", async () => {
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
+  // decision: D-167 "A program left alone on the list stays there, „Usuń” leaving it in place"
+  // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
   await withPage(async (page) => {
     const game = await wiredPanel(page);
     const list = programList(game.root);
@@ -548,6 +570,8 @@ test("a new game's panel lists „Program”, shows it, and „Usuń” is disab
 // D-167, D-169: „Nowy program” shows the new program. Catches the panel staying on
 // the old program and an editor edit landing in a program other than the one shown.
 test("„Nowy program” shows „Program 2”, makes „Usuń” active, and the editor edits program 2", async () => {
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
+  // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
   await withPage(async (page) => {
     const game = await wiredPanel(page);
     await click(actionButton(game.root, "Nowy program"));
@@ -566,6 +590,7 @@ test("„Nowy program” shows „Program 2”, makes „Usuń” active, and th
 // D-169, the name field. Catches a missing or wrong message, a
 // program's own name in another letter case refused, and a refused name saved.
 test("„Zmień nazwę” fills the field with the name, warns of an empty or taken name, and saves a trimmed one", async () => {
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length"
   await withPage(async (page) => {
     const game = await wiredPanel(page);
     await click(actionButton(game.root, "Nowy program"));
@@ -632,6 +657,8 @@ test("the name field leaves without saving at „Zmień nazwę” again and at a
 // D-384: „Usuń” of the shown program shows the first of the list; D-167: a program left alone stays.
 // Catches the panel left on a deleted program and the last program deleted.
 test("„Usuń” of the shown program shows the first program of the list, and is disabled with one left", async () => {
+  // decision: D-384 "Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list"
+  // decision: D-167 "A program left alone on the list stays there, „Usuń” leaving it in place"
   await withPage(async (page) => {
     const game = await wiredPanel(page);
     await click(actionButton(game.root, "Nowy program"));
@@ -664,6 +691,10 @@ test("„Usuń” of the shown program shows the first program of the list, and 
 // the list, rename or delete offered for the copy, counts beside a saved program during a map run,
 // a pick changing the game state, and an edit reaching the wrong program.
 test("during a map run the copy stands first and is shown with counts; a saved program picked shows none and takes its own edits", async () => {
+  // decision: D-166 "On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it"
+  // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
+  // decision: D-164 "A program can be edited at any time, and its saved change takes effect at the next manual map entry other than a map run restart, at the next switch to it during a manual map run or at the next start of an earning loop"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());
     await game.change(send(game.state, SENT, REAL_MS));
@@ -720,6 +751,7 @@ function drag(target, type) {
 // swap cannot tell it. Catches a panel that drops the hint on the way, one that names a neighbour,
 // a hint attached to an edit that moves nothing, and one that reaches the edit of a saved program.
 test("„↓” on a rule of the copy and the drop of a rule or a group reach editCopy with the hint of the move", async () => {
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
@@ -774,6 +806,7 @@ test("an edit of a saved program, a move included, carries no hint", async () =>
 // D-212, a loaded map run's copy open to editing. Catches a
 // game built on a state with a map run showing a saved program instead of the copy.
 test("a panel whose first state holds a map run shows the copy, as after a load", async () => {
+  // decision: D-166 "On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
@@ -789,6 +822,9 @@ test("a panel whose first state holds a map run shows the copy, as after a load"
 // leaving a saved program shown, the copy lost after a death, and „Zakończ” showing another
 // program, dropping the counts or putting them beside another program.
 test("„Restart” and a death show the copy with counts; „Zakończ” shows the copy's program with them", async () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
+  // decision: D-166 "On the screen of a map run the program panel shows the copy, and its select list holds „Kopia w przejściu” at its top and the player's saved programs below it"
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());
     await game.change(send(game.state, SENT, REAL_MS));
@@ -825,6 +861,9 @@ test("„Restart” and a death show the copy with counts; „Zakończ” shows 
 // D-168, D-173. Catches „Zakończ” after the copy's program was
 // deleted showing a program that is gone, or a count beside the first program.
 test("„Zakończ” after the copy's program was deleted shows the first program of the list, without counts", async () => {
+  // decision: D-384 "Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list"
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
+  // decision: D-168 "Deleting the program the copy of the map run belongs to leaves the map run going on with the copy, whose heading keeps the name the program had"
   await withPage(async (page) => {
     // Program 2 holds a rule of the same identity and content as the copy's, so a count kept
     // after the copy's program is gone would show beside it.
@@ -943,6 +982,7 @@ test("a number typed into the panel on the screen of a map run at 16× keeps its
 // see is skipped. jsdom does not deliver that second press, so the case holds the cause: the keydown
 // of Enter is consumed. Catches the number's Enter left to the browser.
 test("Enter in the number field is consumed, so the press cannot reach the cell the focus moves to", async () => {
+  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
   await withPage(async (page) => {
     const game = await wiredPanel(page, runWithNumber());
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -996,6 +1036,8 @@ const rulesOfGroup = (group) =>
 // opened anywhere but under the new rule's row, opened on the condition after the button filled the
 // action, the focus left outside the field, and the streak left as it stood.
 test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero", async () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
   await withPage(async (page) => {
     const chilled = firstChill();
     assert.deepEqual(
@@ -1053,6 +1095,8 @@ test("at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj�
 // the panel the call opened, as any. Catches a saved program left shown, or edited, when the call adds
 // the rule, and a request to open that opens again at every draw.
 test("with a saved program shown on the list „Program:”, „Dodaj regułę z tym” shows the copy and opens the new rule there, once", async () => {
+  // decision: D-313 "„Dodaj regułę z tym” in the band of a discovery adds a program rule at the end of the copy's first rule group"
+  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const game = await wiredPanel(page, firstChill());
     await pick(game.root, "1");
@@ -1154,6 +1198,8 @@ const copyButton = (root, text) =>
 // missing or standing without a change, and the three buttons active when the copy equals its
 // program or inactive when it differs.
 test("the copy shows its heading; an edit of the copy brings „Niezapisane zmiany w kopii.” and activates the three buttons", async () => {
+  // decision: D-171 "During a map run the program panel shows the copy under the heading „Kopia: {program name}”"
+  // decision: D-171 "While the copy's program is on the player's list and the copy differs from it as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1201,6 +1247,8 @@ async function editedCopyGame(page) {
 // D-171. Catches the save writing something other than the copy into the
 // program, the line staying after the save, and the buttons staying active.
 test("„Zapisz w programie” writes the copy into its program, and the line and the activity go", async () => {
+  // decision: D-171 "While the copy's program is on the player's list and the copy differs from it as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive"
+  // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   await withPage(async (page) => {
     const game = await editedCopyGame(page);
     const copy = game.state.run.copy.program;
@@ -1217,6 +1265,8 @@ test("„Zapisz w programie” writes the copy into its program, and the line an
 // D-172. Catches the line missing when the program changed and the
 // copy has no changes, the line staying after the save, and a wrong program name in it.
 test("the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie”", async () => {
+  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
+  // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1247,6 +1297,8 @@ test("the line of a changed program stands with and without unsaved changes, and
 // D-171, D-169. Catches an empty or wrong first value of the field, a
 // refused name saved, and the panel leaving the copy or keeping the old program number.
 test("„Zapisz jako nowy program” offers the first free name, refuses a taken one, and the copy then belongs to the new program", async () => {
+  // decision: D-171 "„Zapisz jako nowy program” offers the first free name of a program, and after that save the copy belongs to the new program, which becomes the program the character used last"
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length"
   await withPage(async (page) => {
     const game = await editedCopyGame(page);
     await click(copyButton(game.root, "Zapisz jako nowy program"));
@@ -1279,6 +1331,8 @@ test("„Zapisz jako nowy program” offers the first free name, refuses a taken
 // D-171, D-169. Catches the suggestion ignoring the names taken, the field staying
 // open after the copy lost its changes, and the same action not leaving the field.
 test("„Zapisz jako nowy program” suggests „Program 3” beside „Program 2”, and its field leaves at the same action again", async () => {
+  // decision: D-171 "„Zapisz jako nowy program” offers the first free name of a program, and after that save the copy belongs to the new program, which becomes the program the character used last"
+  // decision: D-169 "The program of a new game is named „Program”, and a new program „Program 2”, „Program 3” and on, by the first free number"
   await withPage(async (page) => {
     const game = await wiredPanel(page, createProgram(gameWithRule()).state);
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1297,6 +1351,8 @@ test("„Zapisz jako nowy program” suggests „Program 3” beside „Program 
 // D-171. Catches the discard leaving the copy's edit, the line staying, and
 // the discard not going to the simulation.
 test("„Porzuć zmiany” restores the copy's program and the line goes", async () => {
+  // decision: D-171 "While the copy's program is on the player's list and the copy differs from it as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive"
+  // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   await withPage(async (page) => {
     const game = await editedCopyGame(page);
     await click(copyButton(game.root, "Porzuć zmiany"));
@@ -1312,6 +1368,9 @@ test("„Porzuć zmiany” restores the copy's program and the line goes", async
 // program, „Zapisz w programie” and „Porzuć zmiany” offered for a program that is gone, and
 // „Zapisz jako nowy program” withdrawn.
 test("a copy whose program was deleted keeps its heading, offers only „Zapisz jako nowy program”, and it is active", async () => {
+  // decision: D-168 "Deleting the program the copy of the map run belongs to leaves the map run going on with the copy, whose heading keeps the name the program had"
+  // decision: D-168 "„Zapisz w programie” and „Porzuć zmiany” are then gone, and the copy counts as holding unsaved changes: the line „Niezapisane zmiany w kopii.” stands and „Zapisz jako nowy program” is active until the copy is saved as a new program"
+  // decision: D-171 "During a map run the program panel shows the copy under the heading „Kopia: {program name}”"
   await withPage(async (page) => {
     const game = await wiredPanel(page, createProgram(gameWithRule()).state);
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1340,6 +1399,9 @@ const SWITCH = "Przełącz postać na ten program";
 // D-174. Catches the button missing beside another program, shown
 // beside the copy's own program or the copy, and a click that does not switch and show the copy.
 test("„Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the copy", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
+  // decision: D-174 "Beside the program the copy belongs to, the button is gone"
   await withPage(async (page) => {
     const game = await wiredPanel(page, createProgram(gameWithRule()).state);
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1370,6 +1432,8 @@ test("„Przełącz postać na ten program” stands beside another saved progra
 // D-174. Catches the button standing beside the new program after
 // „Zapisz jako nowy program”, and not beside the program the copy was taken from.
 test("after „Zapisz jako nowy program” the switch button stands beside the first program and not beside the new one", async () => {
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
+  // decision: D-174 "Beside the program the copy belongs to, the button is gone"
   await withPage(async (page) => {
     const game = await editedCopyGame(page);
     await click(copyButton(game.root, "Zapisz jako nowy program"));
@@ -1384,6 +1448,8 @@ test("after „Zapisz jako nowy program” the switch button stands beside the f
 // D-173, D-174. Catches the switch button standing on the screen after a death
 // and the copy's buttons not working there.
 test("on the screen after a death the copy's buttons work and there is no switch button", async () => {
+  // decision: D-173 "On the screens after a character's death and after a completion, editing the copy, „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” act as during the map run until the player picks „Restart” or ends the map run with „Zakończ” or „Otwarte: {mapa} →”"
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
   await withPage(async (page) => {
     const game = await wiredPanel(page, createProgram(gameWithRule()).state);
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1406,6 +1472,7 @@ test("on the screen after a death the copy's buttons work and there is no switch
 // D-173. Catches the copy's section staying after „Zakończ”, when a saved
 // program is shown.
 test("after „Zakończ” with unsaved changes the copy's section is gone", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
   await withPage(async (page) => {
     const game = await editedCopyGame(page);
     await game.change(end(game.state));
@@ -1454,6 +1521,8 @@ const WAITING = [
 // the copy's buttons still standing, the sentence missing, and an edit reaching the copy.
 for (const [stage, shape] of WAITING) {
   test(`Programy beside a map run ${stage} shows the saved program, with the sentence above the editor and no list, copy or switch`, async () => {
+    // decision: D-166 "That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone"
+    // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
     await withPage(async (page) => {
       const started = send(gameWithRule(), SENT, REAL_MS).state;
       const game = await wiredPanel(page, shape(started), "programs");
@@ -1492,6 +1561,7 @@ for (const [stage, shape] of WAITING) {
 
 // Catches the sentence standing with no map run to name, and standing on after „Zakończ”.
 test("the sentence stands only while the game state holds a map run: not before a send, gone after „Zakończ”", async () => {
+  // decision: D-166 "That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     assert.deepEqual(runNotes(game.root), []);
@@ -1505,6 +1575,8 @@ test("the sentence stands only while the game state holds a map run: not before 
 // Catches the panel of a map run's screen losing the copy's section, or taking the sentence of
 // Programy: the sentence belongs to the other screen, where the copy is not shown.
 test("the panel of a map run's screen holds the sentence of Programy nowhere", async () => {
+  // decision: D-166 "That program is always a saved one, never the copy: while a manual map run goes on, or has ended and waits for „Restart” or „Zakończ”, „Zmiany tutaj nie dotykają przejścia na mapie {mapa}.” stands above the editor, and „Przełącz postać na ten program” stands on the screen of a map run alone"
+  // decision: D-174 "Beside the program the copy belongs to, the button is gone"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());
     await game.change(send(game.state, SENT, REAL_MS));
@@ -1519,6 +1591,8 @@ test("the panel of a map run's screen holds the sentence of Programy nowhere", a
 // Catches a program shown that is not the one asked for, a pick that changes the game state, an
 // edit landing in another program, and a program gone from the list left shown.
 test("showProgram shows the saved program asked for and takes its edits; one gone from the list gives way to the first", async () => {
+  // decision: D-384 "Where the program the program panel shows is gone from the player's list, or the number asked for names no program, the panel shows the first program of the list"
+  // decision: D-166 "The screen Programy holds on the left the list of the player's programs and on the right the program editor with the program picked there"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
@@ -1607,6 +1681,8 @@ function patrolOffered(root) {
 // the offer following the player's choice of a saved program instead of the map run's character,
 // and a branch of a teammate who is not in the map run opening an action.
 test("the offer of Programy follows the character of the map run held by the game state, an ended one included, and goes with „Zakończ”", async () => {
+  // decision: D-196 "Outside a map run the program editor offers the repertoire computed from the Understanding through the archetype’s predispositions; bought branches contribute no actions to that editor's offer"
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
   await withPage(async (page) => {
     const game = await wiredPanel(page, patrolBought(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1679,6 +1755,8 @@ const openField = (root) =>
 // Catches the panel mounted anew at its new place after a fold: the focus goes into its grid and the
 // field goes back to the condition.
 test("folding and unfolding the group of the open rule leaves the focus on the fold button and the panel on its field", async () => {
+  // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1723,6 +1801,7 @@ test("folding and unfolding the group of the open rule leaves the focus on the f
 
 // Catches the same remount by „zwiń wszystkie” and „rozwiń wszystkie”.
 test("„zwiń wszystkie” and „rozwiń wszystkie” leave the focus on the button pressed and the panel on its field", async () => {
+  // decision: D-350 "Folding or unfolding that group, or every group at once, closes no panel and changes no field of it, and the panel stands under the row again when the group unfolds"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));
@@ -1748,6 +1827,9 @@ test("„zwiń wszystkie” and „rozwiń wszystkie” leave the focus on the b
 // The player opens a rule: that is an opening, so the focus goes into the panel, and so again for
 // another rule in another group.
 test("opening a rule, and then a rule of another group, takes the focus into the panel each time", async () => {
+  // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own"
+  // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
+  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));

@@ -202,6 +202,8 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_each_failed_end_calls_pusher_once_with_the_one_fixed_notice(self):
         # invariant: account-save-backup-failure-notice
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed, with no player's data, no tool's output and no step's name"
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure"
         notices = set()
         for arrange in FAILED_ENDS:
             with self.subTest(arrange.__name__):
@@ -228,6 +230,8 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_a_reader_that_leaves_before_the_size_ends_the_run_with_one_notice(self):
         # invariant: account-save-backup-failure-notice
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once"
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure"
         for lines in (0, 1):
             with self.subTest(lines=lines):
                 result = self.fixture().run(reader_lines=lines)
@@ -240,6 +244,7 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_a_signal_with_a_trap_is_named_by_its_exit_code_in_the_log_too(self):
         # invariant: account-save-backup-failure-notice
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure"
         for signal_name, exit_code in EXIT_CODE_OF_SIGNAL.items():
             with self.subTest(signal_name):
                 fixture = self.fixture()
@@ -250,6 +255,7 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_the_line_that_meets_a_gone_reader_stands_in_the_log(self):
         # invariant: account-save-backup-failure-notice
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup"
         result = self.fixture().run(reader_lines=1)
         self.assertRegex(result.log, rf"\b{support.CIPHERTEXT_SIZE}\b", result)
 
@@ -263,6 +269,7 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_a_failing_pusher_is_logged_and_called_once(self):
         # invariant: account-save-backup-failure-notice
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once"
         fixture = self.fixture()
         fixture.answer("rsync", exit_code=12)
         fixture.answer("pusher", exit_code=6)
@@ -273,6 +280,7 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_a_hanging_pusher_ends_the_run(self):
         # invariant: account-save-backup-failure-notice
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once"
         fixture = self.fixture()
         fixture.write_copy(NOTICE_WAIT_SECONDS="1", KILL_WAIT_SECONDS="1")
         fixture.answer("rsync", exit_code=12)

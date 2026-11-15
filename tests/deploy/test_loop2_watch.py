@@ -113,6 +113,9 @@ class WithFixture(unittest.TestCase):
 class TheKinds(WithFixture):
 
     def test_each_kind_calls_pusher_once_with_its_own_fixed_notice(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server, which limits the reports it accepts, writes each as a failure line that the watcher counts and reports"
         # The break: a notice paired with the wrong kind, or two calls for one trouble.
         arrangements = {
             "down": lambda f: f.set_container(support.GAME, support.GAME_ID, status="exited"),
@@ -133,6 +136,7 @@ class TheKinds(WithFixture):
                 self.assert_sent(result, kind)
 
     def test_the_six_notices_differ_and_none_is_the_backup_scripts(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
         # The break: the backup kind worded as the backup script's own notice, so the owner could
         # not tell a failed night from the night that is missing.
         subjects = [subject for subject, _text in support.NOTICES.values()]
@@ -143,6 +147,7 @@ class TheKinds(WithFixture):
         self.assertNotIn("Kopia bazy loop2 nie udała się.", texts)
 
     def test_a_container_that_is_not_running_is_down_whatever_it_is_doing_instead(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         for status in ("created", "paused", "restarting", "removing", "exited", "dead"):
             with self.subTest(status):
                 fixture = self.primed()
@@ -150,6 +155,7 @@ class TheKinds(WithFixture):
                 self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
 
     def test_a_missing_container_is_down(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         for name in (support.GAME, support.TUNNEL):
             with self.subTest(name):
                 fixture = self.primed()
@@ -157,11 +163,13 @@ class TheKinds(WithFixture):
                 self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
 
     def test_docker_that_cannot_be_read_is_down_and_only_down(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         fixture = self.primed()
         fixture.answer("docker", exit_code=1)
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "down")
 
     def test_an_answer_off_the_expected_shape_is_down_and_never_used(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         # The break: an id or a time taken as it comes, into the state or a command.
         shapes = ("", "not a container line\n", "0123 running none 2026-11-08T22:00:00Z\n",
                   f"{support.GAME_ID} running none 2026-11-08T22:00:00Z extra\n",
@@ -184,6 +192,7 @@ class TheKinds(WithFixture):
                     [line for line in before.splitlines() if line.startswith("container")])
 
     def test_a_service_that_is_unhealthy_is_reported_and_one_that_is_starting_is_not(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, health="starting")
         self.assert_quiet(fixture.run_at(T0 + FIVE_MINUTES))
@@ -191,6 +200,7 @@ class TheKinds(WithFixture):
         self.assert_sent(fixture.run_at(T0 + 2 * FIVE_MINUTES), "unhealthy")
 
     def test_a_flood_of_browser_lines_and_the_limited_line_raise_the_browser_kind_only(self):
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server, which limits the reports it accepts, writes each as a failure line that the watcher counts and reports"
         # The break: browser reports counted with the server's failures, so a flood spends the
         # server kind's budget.
         fixture = self.primed()
@@ -198,22 +208,28 @@ class TheKinds(WithFixture):
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "browser")
 
     def test_failure_lines_of_the_server_raise_the_failures_kind_only(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         fixture = self.primed()
         fixture.set_log(failure_line("database") + failure_line("mail") + EVENT_LINE)
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "failures")
 
     def test_a_word_that_only_begins_like_browser_is_a_failure_of_the_server(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # The break: a prefix cut before its closing quote.
         fixture = self.primed()
         fixture.set_log(failure_line("browsers") + failure_line("browser-extra"))
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "failures")
 
     def test_both_log_kinds_in_one_window_go_in_order_each_once(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server, which limits the reports it accepts, writes each as a failure line that the watcher counts and reports"
         fixture = self.primed()
         fixture.set_log(BROWSER_LINE + failure_line() + BROWSER_LINE + failure_line())
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "failures", "browser")
 
     def test_every_kind_due_at_once_goes_in_the_order_of_the_table(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
+        # decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server, which limits the reports it accepts, writes each as a failure line that the watcher counts and reports"
         # The break: the backup kind listed before the server's failures or after the browser's.
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
@@ -225,6 +241,7 @@ class TheKinds(WithFixture):
         self.assert_sent(result, "down", "unhealthy", "restarted", "failures", "backup", "browser")
 
     def test_only_a_line_that_begins_as_a_failure_object_counts(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # The break: a match anywhere in the line, so a player's text or a quoted object counts.
         quoted = '{"event":"link-issued","note":"{\\"failure\\":\\"x\\"}"}\n'
         fixture = self.primed()
@@ -234,6 +251,7 @@ class TheKinds(WithFixture):
         self.assert_quiet(fixture.run_at(T0 + FIVE_MINUTES))
 
     def test_a_line_on_the_standard_error_counts_like_one_on_the_standard_output(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         fixture = self.primed()
         fixture.set_log("", errors=failure_line())
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "failures")
@@ -252,6 +270,7 @@ class TheWindow(WithFixture):
         return [call for call in result.of("docker") if call[:1] == ["logs"]]
 
     def test_the_window_runs_from_the_end_of_the_last_run_to_the_start_of_this_one(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # The break: a window that starts at the end of the run, or ends when the reading does.
         fixture = self.primed()
         result = fixture.run_at(T0 + FIVE_MINUTES)
@@ -279,6 +298,7 @@ class TheWindow(WithFixture):
                          [["logs", "--since", str(T0 - DAY), "--until", str(T0), "loop2"]], result)
 
     def test_a_log_that_cannot_be_read_leaves_the_window_open_and_reports_nothing(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         fixture = self.primed()
         fixture.answer("docker", exit_code=1, match="logs *", stdout=failure_line().encode())
         result = fixture.run_at(T0 + FIVE_MINUTES)
@@ -293,6 +313,7 @@ class TheWindow(WithFixture):
         self.assert_sent(result, "failures")
 
     def test_a_game_container_that_cannot_be_read_leaves_the_window_open_too(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         fixture = self.primed()
         fixture.remove_container(support.GAME)
         result = fixture.run_at(T0 + FIVE_MINUTES)
@@ -314,6 +335,7 @@ class TheWindow(WithFixture):
         self.assertIn(f"window_end {T0 + FIVE_MINUTES}\n", fixture.state_text())
 
     def test_the_end_of_a_window_is_the_start_of_the_run_not_the_end_of_the_readings(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # The break: lines written during the readings would fall in no window. The clock stands at
         # the run's start for the whole run, so the end the state keeps is that start.
         fixture = self.primed()
@@ -418,6 +440,7 @@ class TheState(WithFixture):
         self.assertTrue(os.path.isdir(fixture.state_directory))
 
     def test_a_replaced_container_raises_no_restarted_and_is_recorded(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them"
         # The break: a deployment's new container taken for a restart of the old one.
         fixture = self.primed()
         fixture.set_container(support.GAME, support.OTHER_ID, health="healthy",
@@ -430,12 +453,14 @@ class TheState(WithFixture):
         self.assert_sent(fixture.run_at(T0 + 2 * FIVE_MINUTES), "restarted")
 
     def test_a_restart_is_reported_once(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them"
         fixture = self.primed()
         fixture.set_container(support.TUNNEL, support.TUNNEL_ID, started=support.RESTARTED)
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "restarted")
         self.assert_quiet(fixture.run_at(T0 + 2 * FIVE_MINUTES))
 
     def test_a_container_new_to_the_state_is_recorded_silently(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them"
         fixture = self.primed()
         fixture.write_state(state_text(T0, containers={
             GAME: (support.GAME_ID, support.STARTED)}))
@@ -476,6 +501,8 @@ class TheBackupKind(WithFixture):
     """No successful send of a backup in the log of the backup for 26 hours (D-233, D-356)."""
 
     def test_a_send_26_hours_old_or_less_counts_and_one_second_older_does_not(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a limit of another length, or a comparison off by one second.
         for age in (0, 26 * HOUR - 1, 26 * HOUR):
             with self.subTest(age=age):
@@ -486,6 +513,8 @@ class TheBackupKind(WithFixture):
             self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_a_missing_empty_or_unreadable_log_counts_as_no_send(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a log that cannot be read taken for a quiet night.
         arrangements = {"missing": lambda f: f.remove_backup_log(),
                         "empty": lambda f: f.write_backup_log(""),
@@ -497,6 +526,8 @@ class TheBackupKind(WithFixture):
                 self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_a_log_that_never_gives_its_lines_is_cut_off_and_counts_as_no_send(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: the reading with no time limit, which would hold the watcher's own lock for
         # good, so that every later run ended as "another run holds the lock" and nothing was sent.
         fixture = self.stated()
@@ -508,6 +539,8 @@ class TheBackupKind(WithFixture):
         self.assertNotIn("another run holds", fixture.run_at(NOW + FIVE_MINUTES).log)
 
     def test_the_kind_is_sent_once_and_then_held_for_24_hours(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind, under the same limits on its content, at most once a day"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         # The break: the six hours of the other kinds, which would bring four mails a day.
         fixture = self.stated("")
         self.assert_sent(fixture.run_at(NOW), "backup")
@@ -519,6 +552,7 @@ class TheBackupKind(WithFixture):
                 self.assert_sent(fixture.run_at(NOW), *kinds)
 
     def test_the_kind_counts_in_the_budget_and_stands_after_failures_and_before_browser(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         # The break: a message of this kind outside the budget of six a day, or listed before the
         # server's failures or after the browser's, so that it takes the last slot of another.
         recent = [NOW - HOUR]
@@ -538,6 +572,7 @@ class TheBackupKind(WithFixture):
             NOW, last={"failures": NOW, "backup": NOW}, messages=recent * 4 + [NOW] * 2))
 
     def test_a_first_run_and_a_damaged_state_do_not_evaluate_it(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a missing or lost state file read as a night with no backup, which floods.
         fresh = self.fixture()
         fresh.write_backup_log("")
@@ -549,6 +584,7 @@ class TheBackupKind(WithFixture):
         self.assert_quiet(damaged.run_at(T0))
 
     def test_a_deployment_lock_held_at_the_first_look_ends_the_run_and_at_the_second_drops_it(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
         first = self.stated("")
         before = first.state_text()
         first.hold_deploy_lock_from(1)
@@ -669,6 +705,8 @@ class TheBackupLogAsInput(WithFixture):
     sent its file."""
 
     def test_a_line_that_is_not_exactly_the_end_of_a_sent_night_counts_for_nothing(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a match anywhere in the line, a loose timestamp, a dot, a digit class or a
         # program name read too freely, or a reading that loses a byte and so makes a line exact.
         for name, lines in LOOK_ALIKES.items():
@@ -677,6 +715,8 @@ class TheBackupLogAsInput(WithFixture):
                 self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_all_the_look_alikes_beside_one_exact_line_do_not_hide_it(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The control of the test above: the reading is whole, not broken by a line it refuses.
         everything = [line for lines in LOOK_ALIKES.values() for line in lines]
         for name, lines in (("before", [EXACT_LINE] + everything),
@@ -686,6 +726,8 @@ class TheBackupLogAsInput(WithFixture):
                 self.assert_quiet(fixture.run_at(NOW))
 
     def test_a_send_older_than_the_limit_beside_many_newer_failed_nights_counts_for_nothing(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: any line of the night read as a success, or the newest night taken for the send.
         log = support.night(NOW - 27 * HOUR).encode()
         for step in range(30):
@@ -694,6 +736,8 @@ class TheBackupLogAsInput(WithFixture):
         self.assert_sent(fixture.run_at(NOW), "backup")
 
     def test_a_day_that_is_not_on_the_calendar_does_not_count_and_a_leap_day_does(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a stamp read by its digits alone, so that the 29th of February of a year that
         # has none stands in the window of the first of March. Each clock is half past midnight.
         for year, counts in ((2027, False), (2028, True)):
@@ -704,6 +748,8 @@ class TheBackupLogAsInput(WithFixture):
                 self.assert_sent(fixture.run_at(now), *(() if counts else ("backup",)))
 
     def test_a_log_far_longer_than_the_part_read_is_read_from_its_end(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: the whole file read, which a flood of error text would turn into a slow run,
         # or its start read, which would miss the night that has just ended.
         limit = int(deploy_support.constants(
@@ -718,6 +764,8 @@ class TheBackupLogAsInput(WithFixture):
             self.assert_quiet(fixture.run_at(NOW))
 
     def test_a_line_of_millions_of_bytes_neither_counts_nor_stops_the_reading(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         huge = b"A" * 3_000_000
         with self.subTest("an exact line at the end of it"):
             fixture = self.stated(huge + EXACT_LINE.encode() + b"\n")
@@ -727,6 +775,8 @@ class TheBackupLogAsInput(WithFixture):
             self.assert_quiet(fixture.run_at(NOW))
 
     def test_a_last_line_with_no_newline_counts_when_it_is_exact(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         fixture = self.stated(EXACT_LINE)
         self.assert_quiet(fixture.run_at(NOW))
 
@@ -752,6 +802,8 @@ class TheWatcherCountsWhatTheBackupScriptWrites(WithFixture):
         self.assertEqual(support.stamp(self.BACKUP_START), support.backup_support.TIMESTAMP)
 
     def test_the_end_of_a_night_that_the_backup_script_sent_counts_for_26_hours(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The break: a watcher and a script that word the end of a sent night differently, so a
         # watcher that never counts a send raises its kind every day. Both ends of the week's names
         # stand here, the first and the seventh day.
@@ -766,6 +818,8 @@ class TheWatcherCountsWhatTheBackupScriptWrites(WithFixture):
                     self.assert_sent(fixture.run_at(self.BACKUP_START + 26 * HOUR + 1), "backup")
 
     def test_a_night_whose_send_failed_does_not_count(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         log = self.log_of_a_run("1", send_exit=12)
         self.assertIn("loop2-backup: end: failed (exit 8)", log)
         fixture = self.stated(log, window=self.BACKUP_START)
@@ -778,6 +832,7 @@ class TheDeploymentLock(WithFixture):
         return [call for call in result.of("flock") if "--shared" in call]
 
     def test_a_held_lock_ends_the_run_before_any_reading_and_leaves_the_state_alone(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
         # The break: a run during a deployment, which reads containers that are being replaced.
         fixture = self.primed()
         before = fixture.state_text()
@@ -791,6 +846,7 @@ class TheDeploymentLock(WithFixture):
         self.assertRegex(lines[0], r"skipped.*(deployment|lock)", result)
 
     def test_a_lock_taken_during_the_readings_drops_them_and_leaves_the_window_open(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
         fixture = self.primed()
         before = fixture.state_text()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
@@ -810,6 +866,8 @@ class TheDeploymentLock(WithFixture):
         self.assert_sent(result, "down", "failures", "browser")
 
     def test_the_log_line_of_a_held_lock_says_held_and_that_of_a_broken_flock_names_its_status(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
+        # decision: D-356 "A human installs the watcher and its schedule and sets the notifications of GitHub, and nothing is sent when the server and GitHub are both down, when the watcher's schedule does not start, when `flock` does not work on the server, where the watcher ends with success and a line in its own log and sends nothing"
         # The break: any non-zero status of `flock` named a held lock, so a host without `flock`
         # looked like a deployment that never ends.
         held = self.primed()
@@ -835,6 +893,8 @@ class TheDeploymentLock(WithFixture):
                 self.assertNotRegex(lines[0], r"is held|holds")
 
     def test_a_broken_flock_at_the_second_look_drops_the_readings_and_names_its_status(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
+        # decision: D-356 "A human installs the watcher and its schedule and sets the notifications of GitHub, and nothing is sent when the server and GitHub are both down, when the watcher's schedule does not start, when `flock` does not work on the server, where the watcher ends with success and a line in its own log and sends nothing"
         # The break: any non-zero status at the second look named as a held lock, so a broken
         # `flock` looks like a deployment that is running while the readings are dropped.
         for status in (2, 127):
@@ -873,6 +933,7 @@ class TheDeploymentLock(WithFixture):
             self.assertEqual(calls[index + 1], ["--unlock", "8"], calls)
 
     def test_a_missing_lock_file_means_no_deployment_and_is_not_created(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
         # The break: the file made by the watcher as root, which locks the deploy account out.
         fixture = self.primed()
         os.remove(fixture.deploy_lock)
@@ -902,6 +963,7 @@ class TheDeploymentLock(WithFixture):
             self.assertNotRegex(line, r"(touch|flock)\s+.*DEPLOY_LOCK_FILE", line)
 
     def test_the_lock_is_the_deployments_own(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment"
         watcher = deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(watcher["DEPLOY_LOCK_FILE"], deploy_support.constants()["LOCK_FILE"])
 
@@ -921,6 +983,7 @@ class TheWatchersOwnLock(WithFixture):
         self.assertRegex(lines[0], r"skipped", result)
 
     def test_the_log_line_of_a_taken_lock_says_so_and_that_of_a_broken_flock_names_its_status(self):
+        # decision: D-356 "A human installs the watcher and its schedule and sets the notifications of GitHub, and nothing is sent when the server and GitHub are both down, when the watcher's schedule does not start, when `flock` does not work on the server, where the watcher ends with success and a line in its own log and sends nothing"
         # The break: any non-zero status of `flock` named another run, so a host without `flock`
         # looked like a run that is always in the way.
         taken = self.primed()
@@ -962,6 +1025,7 @@ class TheWatchersOwnLock(WithFixture):
 class TheThrottles(WithFixture):
 
     def test_a_kind_is_not_sent_again_within_six_hours_and_is_sent_after_them(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         # The break: a message per run for a trouble that stays.
         fixture = self.fixture()
         fixture.write_state(state_text(T0, last={"down": T0 - 3 * HOUR}))
@@ -980,6 +1044,7 @@ class TheThrottles(WithFixture):
         self.assert_sent(fixture.run_at(T0 + FIVE_MINUTES), "failures")
 
     def test_at_most_six_messages_go_in_a_rolling_24_hours(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         fixture = self.fixture()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         last_old = T0 - 7 * HOUR
@@ -988,6 +1053,7 @@ class TheThrottles(WithFixture):
         self.assert_quiet(fixture.run_at(T0 + FIVE_MINUTES))
 
     def test_the_budget_counts_a_message_the_second_before_it_leaves_the_day_but_not_after(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         now = T0 + DAY
         fixture = self.fixture()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
@@ -999,6 +1065,7 @@ class TheThrottles(WithFixture):
         self.assert_sent(fixture.run_at(now), "down")
 
     def test_kinds_due_together_go_in_order_until_the_budget_ends(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         fixture = self.fixture()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         fixture.set_container(support.TUNNEL, support.TUNNEL_ID, health="unhealthy")
@@ -1012,6 +1079,7 @@ class TheThrottles(WithFixture):
             messages=recent + [T0 + FIVE_MINUTES] * 2))
 
     def test_what_is_held_back_is_counted_in_the_log_only(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         fixture = self.fixture()
         fixture.write_state(state_text(T0, last={"down": T0 - HOUR}))
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
@@ -1021,6 +1089,7 @@ class TheThrottles(WithFixture):
         self.assertRegex(lines[0], r"held.*down", result)
 
     def test_a_message_that_pusher_reports_as_failed_still_counts_as_sent(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         # The break: a retry on the next run, which is a flood when pusher stays down.
         fixture = self.primed()
         fixture.answer("pusher", exit_code=6)
@@ -1032,6 +1101,7 @@ class TheThrottles(WithFixture):
         self.assert_quiet(fixture.run_at(T0 + 2 * FIVE_MINUTES))
 
     def test_a_message_that_pusher_never_finishes_is_cut_off_and_counts_as_sent(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends"
         fixture = self.primed()
         fixture.write_copy(PUSHER_WAIT_SECONDS="1", KILL_WAIT_SECONDS="1")
         fixture.answer("pusher", action="hang")
@@ -1042,6 +1112,7 @@ class TheThrottles(WithFixture):
         self.assertIn(f"last down {T0 + FIVE_MINUTES}\n", fixture.state_text())
 
     def test_one_pusher_call_goes_for_each_message_and_none_for_the_watcher_itself(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives, passes over the window of a deployment and limits how many messages it sends, and calls `pusher` with a fixed subject and text that say only which kind of trouble it found"
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
         fixture.set_log(BROWSER_LINE)
@@ -1052,6 +1123,7 @@ class TheThrottles(WithFixture):
 class TheDockerCommands(WithFixture):
 
     def test_every_docker_command_is_a_read_of_the_two_containers_in_one_fixed_form(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log"
         # The break: a command that changes a container, or a second form of the reading.
         fixture = self.primed()
         fixture.set_container(support.GAME, support.GAME_ID, status="exited")
@@ -1096,6 +1168,7 @@ class TheDockerCommands(WithFixture):
                                    r"\"\$(DOCKER|PUSHER)_WAIT_SECONDS\"", line)
 
     def test_a_docker_that_never_answers_is_cut_off_and_read_as_down(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
         for pattern in ("inspect *", "logs *"):
             with self.subTest(pattern):
                 fixture = self.primed()
@@ -1265,6 +1338,7 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
                      if line.strip() and not line.lstrip().startswith("#")]
 
     def test_one_line_starts_the_installed_script_every_five_minutes_as_root(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes"
         schedules = [line.split() for line in self.lines if "=" not in line]
         self.assertEqual(schedules, [["*/5", "*", "*", "*", "*", "root",
                                       "/usr/local/bin/loop2-watch"]])
@@ -1273,6 +1347,7 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
         self.assertEqual(self.lines[0], 'MAILTO=""')
 
     def test_cron_can_read_the_file(self):
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes"
         # cron ignores a last line with no newline, and a carriage return breaks the command.
         self.assertTrue(self.data.endswith(b"\n"))
         self.assertNotIn(b"\r", self.data)
@@ -1281,6 +1356,8 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
 class TheConstants(unittest.TestCase):
 
     def test_the_constants_name_the_design_s_own_files_and_containers(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log`"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         # The seam replaces the paths, so a wrong one would show nowhere else.
         block = deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(block["LOG_FILE"], "/var/log/loop2-watch.log")
@@ -1291,6 +1368,8 @@ class TheConstants(unittest.TestCase):
         self.assertEqual(block["TUNNEL_CONTAINER"], "loop2-cloudflared")
 
     def test_the_log_the_watcher_reads_is_the_one_the_backup_script_writes(self):
+        # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log`"
+        # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers, a restart of either of them, the new lines of failures in the game container's log and, in the log of the nightly backup, the lack of a successful send that D-233 gives"
         backup = deploy_support.constants(deploy_support.read_bytes(support.backup_support.SCRIPT))
         block = deploy_support.constants(deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(block["BACKUP_LOG_FILE"], backup["LOG_FILE"])

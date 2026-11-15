@@ -86,6 +86,7 @@ class Dump(DumpTestCase):
 
     def test_a_deployment_appends_the_log_of_the_containers_it_replaces(self):
         # invariant: loop2-deploy-log-dump
+        # decision: D-355 "Just before a deployment replaces the containers of the game, it appends the whole log of the application and of the tunnel connector to `/var/log/loop2-app.log` on the test server"
         support.write_bytes(self.fixture.dump_file, OLDER_CONTENT.encode())
         self.fixture.answer("docker", stdout=LOGS_OUTPUT, match=LOGS_PATTERN)
         result = self.deploy()
@@ -199,6 +200,7 @@ class FailedDump(DumpTestCase):
 class NothingDumpedBeforeAStop(DumpTestCase):
 
     def test_a_deployment_that_stops_before_up_dumps_nothing(self):
+        # decision: D-355 "Just before a deployment replaces the containers of the game"
         stops = {
             "a failed build": (7, lambda: self.fixture.answer("docker", exit_code=1,
                                                               match="compose * build *")),
@@ -218,6 +220,7 @@ class NothingDumpedBeforeAStop(DumpTestCase):
                 self.assertNotIn("dump:", self.fixture.log_text())
 
     def test_a_commit_of_no_accepted_branch_dumps_nothing(self):
+        # decision: D-355 "Just before a deployment replaces the containers of the game"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.fixture.answer("docker", stdout=LOGS_OUTPUT, match=LOGS_PATTERN)
         self.fixture.answer_passing_run(running=PREVIOUS)

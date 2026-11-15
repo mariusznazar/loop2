@@ -103,6 +103,7 @@ class ReleaseCheckedInTheImageBuild(unittest.TestCase):
 
     def test_dockerfile_runs_the_check_in_the_last_stage_after_dist_and_user(self):
         # invariant: account-save-sqlite-upgrade
+        # decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked, and any difference or error fails the image's build"
         self.assertEqual(problems(support.read_required(DOCKERFILE)), [])
 
     def test_reader_accepts_the_step_in_either_form_and_refuses_misplaced_ones(self):

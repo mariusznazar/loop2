@@ -54,6 +54,7 @@ class NodeMajorInPackageFiles(unittest.TestCase):
 
     def test_package_engines_admit_only_node_24(self):
         # invariant: account-server-runtime
+        # decision: D-02 "The account and save server uses Express 5 on Node.js 24"
         engines = load_json("package.json").get("engines", {})
         self.assertIn("node", engines, "package.json declares no engines.node")
         self.assertEqual(range_major(engines["node"]), EXPECTED_MAJOR,
@@ -61,6 +62,7 @@ class NodeMajorInPackageFiles(unittest.TestCase):
 
     def test_lockfile_root_engines_admit_only_node_24(self):
         # invariant: account-server-runtime
+        # decision: D-02 "The account and save server uses Express 5 on Node.js 24"
         root_entry = load_json("package-lock.json").get("packages", {}).get("", {})
         node = root_entry.get("engines", {}).get("node")
         self.assertIsNotNone(node, "package-lock.json's root entry declares no engines.node")
@@ -199,6 +201,8 @@ class NodeMajorInDeployment(unittest.TestCase):
 
     def test_deployment_files_name_only_node_24(self):
         # invariant: account-server-runtime
+        # decision: D-02 "The account and save server uses Express 5 on Node.js 24"
+        # decision: D-10 "Deployment pins the official connector image by version and digest"
         problems = []
         for relative in support.deployment_files():
             text = support.read_text(os.path.join(support.ROOT, *relative.split("/")))

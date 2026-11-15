@@ -48,6 +48,7 @@ function withRun(fields) {
 }
 
 test("a map run starts with a streak of 0, by send and by restart", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const state = sent();
   assert.equal(state.run.streak, 0);
   const later = advanceMinutes(state, 10).state;
@@ -56,12 +57,14 @@ test("a map run starts with a streak of 0, by send and by restart", () => {
 });
 
 test("ten game minutes with no loss to cold or hunger give a streak of 10", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const { state } = advanceMinutes(sent(), 10);
   assert.equal(state.run.minute, 10);
   assert.equal(state.run.streak, 10);
 });
 
 test("a game minute of loss to cold sets the streak to 0, and it stays 0 while the loss goes on", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const at83 = advanceMinutes(sent(), 83).state;
   assert.equal(at83.run.streak, 83);
   const at84 = advanceMinutes(at83, 1).state;
@@ -70,6 +73,8 @@ test("a game minute of loss to cold sets the streak to 0, and it stays 0 while t
 });
 
 test("a game minute of loss to hunger sets the streak to 0", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   // Satiety 30.4 falls to 29.8 below 30: starving; the temperature 36.9 stays above 35.
   const state = withRun({ body: body(36.9, 30.4, 100), streak: 7 });
   const { state: after } = advanceMinutes(state, 1);
@@ -78,6 +83,7 @@ test("a game minute of loss to hunger sets the streak to 0", () => {
 });
 
 test("the streak grows again after a minute of loss once the body no longer loses", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const chilled = withRun({ body: body(34.99, 100, 100), streak: 7 });
   const lost = advanceMinutes(chilled, 1).state;
   assert.equal(lost.run.streak, 0);
@@ -86,6 +92,7 @@ test("the streak grows again after a minute of loss once the body no longer lose
 });
 
 test("a minute that leaves the character neither chilled nor starving grows the streak by one, health below the start included", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const state = withRun({ body: body(37, 100, 20), streak: 41 });
   const { state: after } = advanceMinutes(state, 1);
   assert.equal(after.run.body.health, 20.05, "health regains 0.05");
@@ -93,6 +100,8 @@ test("a minute that leaves the character neither chilled nor starving grows the 
 });
 
 test("a streak of 479 grows to 480 in the next minute, where the map run completes and passes no minute after it", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run"
   // D-132, D-133: a streak at the solving number of Las (480) ends the map run in a completion,
   // so it does not grow past 480.
   const state = withRun({ body: body(37, 100, 100), streak: 479 });
@@ -103,6 +112,7 @@ test("a streak of 479 grows to 480 in the next minute, where the map run complet
 });
 
 test("a map run ended in death holds a streak of 0", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   // Explore runs to minute 20; the body dies in minute 2, after a streak of 5 at minute 0.
   const state = withRun({ body: body(34, 50, 0.7), streak: 5 });
   const died = advanceMinutes(state, 30).state;
@@ -112,6 +122,7 @@ test("a map run ended in death holds a streak of 0", () => {
 });
 
 test("a map run split into calls of one minute holds the same streak as one call", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   let split = sent();
   for (let i = 0; i < 100; i += 1) split = advanceMinutes(split, 1).state;
   const whole = advanceMinutes(sent(), 100).state;
@@ -129,6 +140,8 @@ const lossesIn = (events) =>
   events.filter((event) => event.kind === "streakLost");
 
 test("a game minute of loss to cold at a streak above zero gives one event of the loss, with the streak and the cause", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // 34.99 − 0.024 is below 35.0: chilled in minute 1; satiety 100 − 0.6 is fed.
   const state = withRun({ body: body(34.99, 100, 100), streak: 7 });
   const { events } = advanceMinutes(state, 1);
@@ -138,6 +151,8 @@ test("a game minute of loss to cold at a streak above zero gives one event of th
 });
 
 test("a game minute of loss to hunger at a streak above zero gives one event of the loss with the cause hunger", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Satiety 30.4 falls to 29.8, below 30; the temperature 36.9 stays above 35.
   const state = withRun({ body: body(36.9, 30.4, 100), streak: 7 });
   const { events } = advanceMinutes(state, 1);
@@ -147,6 +162,8 @@ test("a game minute of loss to hunger at a streak above zero gives one event of 
 });
 
 test("a game minute chilled and starving together gives one event of the loss with the cause cold and hunger", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const state = withRun({ body: body(34.99, 30.4, 100), streak: 7 });
   const { events } = advanceMinutes(state, 1);
   assert.deepEqual(lossesIn(events), [
@@ -155,6 +172,8 @@ test("a game minute chilled and starving together gives one event of the loss wi
 });
 
 test("the loss is reported in the game minute it happens, after a streak grown by the game minutes before it", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Minute 84 is the first chilled minute of Las, after a streak of 83.
   const { events } = advanceMinutes(sent(), 100);
   assert.deepEqual(lossesIn(events), [
@@ -163,6 +182,9 @@ test("the loss is reported in the game minute it happens, after a streak grown b
 });
 
 test("a streak of zero gives no event of a loss, and the game minutes after a loss give none either", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-341 "A change of the program that sets the streak to zero gives in its game minute two entries"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const chilledAtZero = withRun({ body: body(34.99, 100, 100), streak: 0 });
   assert.deepEqual(lossesIn(advanceMinutes(chilledAtZero, 5).events), []);
   const lost = advanceMinutes(
@@ -177,6 +199,9 @@ test("a streak of zero gives no event of a loss, and the game minutes after a lo
 });
 
 test("a game minute of an encounter reports no loss, the streak growing in it", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   const fighting = withRun({
     body: body(34.99, 100, 100),
     streak: 7,
@@ -189,6 +214,8 @@ test("a game minute of an encounter reports no loss, the streak growing in it", 
 });
 
 test("a death of cold at a streak above zero reports the loss in its minute, before the death", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Health 0.1 is gone in minute 1, a minute of chill: the streak of 5 falls in the minute of death.
   const state = withRun({ body: body(34, 50, 0.1), streak: 5 });
   const { events } = advanceMinutes(state, 1);
@@ -207,6 +234,8 @@ test("a death of cold at a streak above zero reports the loss in its minute, bef
 });
 
 test("a death of hunger at a streak above zero reports the loss with the cause hunger, before the death", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const state = withRun({ body: body(37, 30.4, 0.1), streak: 9 });
   const { events } = advanceMinutes(state, 1);
   const kinds = events.map((event) => event.kind);
@@ -217,6 +246,8 @@ test("a death of hunger at a streak above zero reports the loss with the cause h
 });
 
 test("a death of cold at a streak of zero reports no loss", () => {
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-341 "A change of the program that sets the streak to zero gives in its game minute two entries"
   const state = withRun({ body: body(34, 50, 0.1), streak: 0 });
   const { events } = advanceMinutes(state, 1);
   assert.deepEqual(lossesIn(events), []);

@@ -174,6 +174,7 @@ class ContainerStartsOneNodeProcess(unittest.TestCase):
 
     def test_compose_runs_one_application_with_the_image_command(self):
         # invariant: loop2-one-serving-process
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec` and sends the file itself, so there is no third Compose service"
         _top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
         self.assertEqual(set(services), {"app", "cloudflared"})
         for name, keys in (("app", services["app"]),):
@@ -193,6 +194,7 @@ class RunningContainerHasOneServingProcess(unittest.TestCase):
 
     def test_running_container_has_one_listening_node_process(self):
         # invariant: loop2-one-serving-process
+        # decision: D-08 "The game and its account and save server run in a dedicated loop2 container"
         support.read_required(DOCKERFILE)
         support.read_required(COMPOSE_FILE)
         docker_gate.require_daemon(self, "the container part of loop2-one-serving-process stays "

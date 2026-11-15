@@ -47,6 +47,7 @@ class WithFixture(unittest.TestCase):
 class OrderOfTheSteps(WithFixture):
 
     def test_the_lock_spans_the_pipe_and_ends_before_the_send(self):
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending"
         result = self.fixture().run()
         self.assertEqual(result.code, 0, result)
         steps = result.tools()
@@ -61,12 +62,14 @@ class OrderOfTheSteps(WithFixture):
         self.assertIn("--unlock", result.of("flock")[1], result)
 
     def test_the_send_holds_no_descriptor_of_the_lock(self):
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the encryption run and releases it before sending"
         # The break: a long send would keep a deployment waiting, as children inherit the lock.
         result = self.fixture().run()
         self.assertEqual(result.code, 0, result)
         self.assertFalse(result.lock_open, result)
 
     def test_the_lock_and_its_wait_are_the_deployments(self):
+        # decision: D-231 "The script holds the deployment's lock, `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds"
         backup = support.deploy_support.constants(support.deploy_support.read_bytes(support.SCRIPT))
         deployment = support.deploy_support.constants()
         self.assertEqual(backup["LOCK_FILE"], deployment["LOCK_FILE"])
@@ -85,6 +88,7 @@ class OrderOfTheSteps(WithFixture):
         self.assertEqual([t for t in result.tools() if t != "date"], ["pusher"], result)
 
     def test_the_weekday_file_and_the_size_stand_in_the_log_before_rsync_starts(self):
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup"
         # A send that never returns must find them there: the rsync stand-in keeps the log it saw.
         fixture = self.fixture()
         fixture.set_weekday("4")
@@ -102,12 +106,15 @@ class OrderOfTheSteps(WithFixture):
 class WhatEachToolIsHanded(WithFixture):
 
     def test_docker_exec_gets_the_fixed_word_and_no_terminal(self):
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec`"
+        # decision: D-231 "That command opens only an existing database file, needs its one fixed word `--to-standard-output`"
         result = self.fixture().run()
         self.assertEqual(result.of("docker"), [
             ["exec", "loop2", "node", "dist/server/account-backup.js", "--to-standard-output"]],
             result)
 
     def test_pusher_gets_the_polish_notice_as_these_bytes(self):
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed"
         # The break: the script saved in another encoding, or a locale that rewrites the text. The
         # expected bytes are the owner's text in UTF-8, by hand: l with stroke is C5 82, e with
         # ogonek is C4 99. The subject goes into a URL path, so it is ASCII.
@@ -118,6 +125,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(result.notice_input, NOTICE_BYTES, result)
 
     def test_rsync_replaces_one_file_whole_keeping_its_time(self):
+        # decision: D-230 "The seven are the weekday files `loop2-accounts-<1..7>.sqlite.age`, one for each day of the week by the UTC date of the run, so a night's backup replaces the one made seven days earlier"
         result = self.fixture().run()
         self.assertEqual(result.code, 0, result)
         options, _words = split_rsync(result.of("rsync")[0])
@@ -125,6 +133,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertIn("--times", options, result)
 
     def test_no_option_deletes_leaves_a_broken_file_or_lists(self):
+        # decision: D-230 "Only the schedule a human installed or a human's hand run replaces a backup, no command deletes one, and nothing reads the destination's list of files"
         result = self.fixture().run()
         options, _words = split_rsync(result.of("rsync")[0])
         names = [option.split("=", 1)[0] for option in options]
@@ -132,6 +141,12 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(set(names) & (IN_PLACE | LISTING), set(), result)
 
     def test_rsync_is_called_once_with_one_file_to_one_computed_name_and_no_login(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
+        # decision: D-228 "A completed, consistent backup of the account and save database is stored outside the game server host"
+        # decision: D-228 "Mikrus Strych is the destination"
+        # decision: D-230 "The seven are the weekday files `loop2-accounts-<1..7>.sqlite.age`, one for each day of the week by the UTC date of the run"
+        # decision: D-230 "Only the schedule a human installed or a human's hand run replaces a backup, no command deletes one, and nothing reads the destination's list of files"
+        # decision: D-238 "The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus Strych"
         # With no destination rsync lists; a login or a port in the destination is an access value.
         fixture = self.fixture()
         fixture.set_weekday("3")
@@ -142,10 +157,14 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(words[1], "strych.mikr.us:loop2-accounts-3.sqlite.age", result)
 
     def test_no_tool_reaches_strych_but_the_one_rsync(self):
+        # decision: D-230 "Only the schedule a human installed or a human's hand run replaces a backup, no command deletes one, and nothing reads the destination's list of files"
+        # decision: D-238 "The backup script sends the encrypted backup by `rsync`"
         result = self.fixture().run()
         self.assertEqual(set(result.tools()) & set(support.NEVER_CALLED), set(), result)
 
     def test_seven_names_over_a_week_by_the_utc_date(self):
+        # decision: D-230 "One backup of the account and save database is made each night, seven stay at the destination"
+        # decision: D-230 "The seven are the weekday files `loop2-accounts-<1..7>.sqlite.age`, one for each day of the week by the UTC date of the run"
         # The date stand-in gives another day to a call without -u, which would name no file.
         fixture = self.fixture()
         names = []
@@ -157,6 +176,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(sorted(names), sorted(support.WEEKDAY_FILES))
 
     def test_a_day_of_no_weekday_file_is_refused(self):
+        # decision: D-230 "The seven are the weekday files `loop2-accounts-<1..7>.sqlite.age`, one for each day of the week by the UTC date of the run"
         for answer in ("0", "8", "12", "", "3 ; id"):
             with self.subTest(answer):
                 fixture = self.fixture()
@@ -166,6 +186,8 @@ class WhatEachToolIsHanded(WithFixture):
                 self.assertEqual(result.code, 9, result)
 
     def test_the_host_key_options_stand(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
+        # decision: D-238 "The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus Strych, giving on the command line batch mode, strict host-key checking and `/etc/loop2/strych-known-hosts` as its one known-hosts file, and those options win over any SSH configuration for those options"
         fixture = self.fixture()
         result = fixture.run()
         program, options = ssh_options(result.of("rsync")[0])
@@ -179,6 +201,10 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertNotIn("User", options, result)
 
     def test_the_constants_name_the_design_s_own_files(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server; runtime credentials live outside the checkout in `/etc/loop2/cloudflared-token` for the tunnel, `/etc/loop2/session-secrets` for session signing, `/etc/loop2/smtp-password` for the mail service and `/etc/loop2/backup-encryption-key`"
+        # decision: D-232 "A backup of the account and save database is encrypted on the game server's host before it leaves it, by `age` in the backup script's pipe, with the identity file `/etc/loop2/backup-encryption-key`"
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end"
+        # decision: D-238 "The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus Strych, giving on the command line batch mode, strict host-key checking and `/etc/loop2/strych-known-hosts` as its one known-hosts file"
         # The seam replaces these, so a wrong path would show nowhere else.
         block = support.deploy_support.constants(support.deploy_support.read_bytes(support.SCRIPT))
         self.assertEqual(block["LOG_FILE"], "/var/log/loop2-backup.log")
@@ -199,6 +225,7 @@ class WhatEachToolIsHanded(WithFixture):
 class WhatTheLogHolds(WithFixture):
 
     def test_a_whole_run_logs_its_start_its_end_the_weekday_file_and_the_size(self):
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup"
         fixture = self.fixture()
         fixture.set_weekday("2")
         result = fixture.run()
@@ -209,6 +236,7 @@ class WhatTheLogHolds(WithFixture):
                          result)
 
     def test_a_failed_run_logs_its_start_its_end_its_stage_and_the_exit_code(self):
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure"
         fixture = self.fixture()
         fixture.answer("age", exit_code=5, stderr=b"age: error: stand-in text\n")
         result = fixture.run()
@@ -218,6 +246,9 @@ class WhatTheLogHolds(WithFixture):
         self.assertRegex(result.log, r"stage stream.*age exit 5", result)
 
     def test_the_marker_of_the_database_reaches_nothing_but_age(self):
+        # decision: D-232 "The plain database exists on the host only in that pipe"
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed, with no player's data"
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
         fixture = self.fixture()
         for arrange in (lambda _fixture: None,
                         lambda fixture: fixture.answer("rsync", exit_code=12),
@@ -233,6 +264,8 @@ class WhatTheLogHolds(WithFixture):
             self.assertNotIn(support.PLAIN_MARKER.encode(), result.sent or b"", result)
 
     def test_a_refused_login_reaches_no_file_and_the_log_keeps_stage_code_and_size(self):
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed, with no player's data, no tool's output"
+        # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data and no access value, so the error text of `ssh` and `rsync` reaches no file"
         fixture = self.fixture()
         text = f"{SENTINEL_LOGIN}@strych.mikr.us: Permission denied (publickey).\n".encode()
         fixture.answer("rsync", exit_code=23, stdout=text, stderr=text)
@@ -267,6 +300,8 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
                      if line.strip() and not line.lstrip().startswith("#")]
 
     def test_one_line_starts_the_installed_script_at_03_17_daily_as_root(self):
+        # decision: D-230 "One backup of the account and save database is made each night"
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout"
         schedules = [line.split() for line in self.lines if "=" not in line]
         self.assertEqual(schedules, [["17", "3", "*", "*", "*", "root",
                                       "/usr/local/bin/loop2-backup"]])
@@ -275,6 +310,7 @@ class TheScheduleAsCronReadsIt(unittest.TestCase):
         self.assertEqual(self.lines[0], 'MAILTO=""')
 
     def test_cron_can_read_the_file(self):
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script"
         # cron ignores a last line with no newline, and a carriage return breaks the command.
         self.assertTrue(self.data.endswith(b"\n"))
         self.assertNotIn(b"\r", self.data)

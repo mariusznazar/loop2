@@ -35,6 +35,7 @@ class TestGate(unittest.TestCase):
         self.assertFalse((self.gate.root / "foundation-stage").exists())
 
     def test_python_selection_imports_sibling_helper_without_build_or_neighbours(self):
+        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests or the foundation check"
         self.gate.write("tests/cases/helper.py", 'VALUE = 42\n')
         self.gate.write("tests/cases/test_selected.py", 'import unittest\n'
                         'from helper import VALUE\n'
@@ -50,6 +51,7 @@ class TestGate(unittest.TestCase):
         self.assert_focused()
 
     def test_node_selection_builds_then_runs_only_the_selected_file(self):
+        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests or the foundation check"
         self.gate.node_test("tests/selected.test.mjs")
         self.gate.write("tests/other.test.mjs", 'throw new Error("not selected");\n')
         result = self.gate.run("tests/selected.test.mjs")
@@ -58,6 +60,8 @@ class TestGate(unittest.TestCase):
         self.assert_focused()
 
     def test_the_whole_gate_runs_its_stages(self):
+        # decision: D-77 "`npm test` without arguments runs the full gate"
+        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests and the foundation check"
         self.gate.write("tests/passing.test.mjs",
                         'import test from "node:test"; test("passes", () => {});\n')
         result = self.gate.run()
@@ -127,6 +131,7 @@ class TestGate(unittest.TestCase):
         self.assert_focused()
 
     def test_more_than_one_file_is_rejected(self):
+        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file"
         self.gate.node_test("tests/one.test.mjs")
         self.gate.node_test("tests/two.test.mjs")
         result = self.gate.run("tests/one.test.mjs", "tests/two.test.mjs")
@@ -134,6 +139,7 @@ class TestGate(unittest.TestCase):
         self.assertFalse((self.gate.root / "built").exists())
 
     def test_failed_tests_and_import_errors_fail_the_selection(self):
+        # decision: D-77 "`npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it"
         cases = {
             "tests/fail.test.mjs": 'import test from "node:test"; test("fails", () => { throw new Error("failed"); });',
             "tests/import.test.mjs": 'import "./absent.mjs";',

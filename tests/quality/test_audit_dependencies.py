@@ -45,6 +45,8 @@ class DependencyAudit(unittest.TestCase):
                               cwd=self.root, capture_output=True, check=False).returncode
 
     def test_audits_only_a_lockfile_changed_from_the_fork_point(self):
+        # decision: D-33 "The dependency audit passes without a network request where `package-lock.json` equals its version at {fork-point}"
+        # decision: D-79 "Tests of the audit use controlled responses to force errors, and an unreadable real response fails the audit"
         self.assertEqual(self.audit(), 0)
         # The main branch moves on with a lockfile of its own; the fork point stays.
         self.git("checkout", "-q", "-b", "upstream")
@@ -58,6 +60,7 @@ class DependencyAudit(unittest.TestCase):
 
     def test_counts_each_advisory_of_low_or_higher_severity(self):
         # invariant: dependency-audit-refusal
+        # decision: D-79 "Tests of the audit use controlled responses to force errors, and an unreadable real response fails the audit"
         report = {"vulnerabilities": {
             "a": {"via": [{"name": "a", "source": 1, "severity": "low"},
                           {"name": "a", "source": 2, "severity": "info"}]},

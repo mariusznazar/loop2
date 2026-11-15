@@ -108,6 +108,10 @@ const click = (element) =>
 // clock standing anywhere but after the map's name and the bar of the solving condition standing
 // anywhere but right after the clock.
 test("the header reads the character's name, the map's name, the clock, the bar of the solving condition, „Pauza”, the paces, „Restart” and „Zakończ”, in that order, with no action of the character", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
+  // decision: D-130 "The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the header of the screen of a map run"
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     const header = container.querySelector(".run-header");
@@ -154,6 +158,8 @@ test("the name is the one of the team member whose map run it is", async () => {
 // D-122: „ (pauza)” after the clock at every pause. Catches a clock that does not follow the pause or
 // keeps the action of the character.
 test("the clock reads the game minute, „ (pauza)” after it while paused, and „Wznów” takes the place of „Pauza”", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const running = advanceMinutes(sent(), 3).state;
     const { container, show } = await draw(document, running);
@@ -166,6 +172,7 @@ test("the clock reads the game minute, „ (pauza)” after it while paused, and
 });
 
 test("the buttons ask for what they say: the pause, the restart and the end", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   await withPage(async ({ document }) => {
     const { container, asked } = await draw(document, sent());
     await click(buttonNamed(container, "Pauza"));
@@ -176,6 +183,7 @@ test("the buttons ask for what they say: the pause, the restart and the end", as
 });
 
 test("„Restart” and „Zakończ” are destructive buttons and the paces and „Pauza” are not (D-44)", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     for (const name of ["Restart", "Zakończ"]) {
@@ -194,6 +202,8 @@ test("„Restart” and „Zakończ” are destructive buttons and the paces and
 });
 
 test("the header shows five pace buttons, 1× to 16×, with the one of the state's pace selected", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
+  // decision: D-130 "The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the header of the screen of a map run, and the button of the pace in force is a button selected in its group"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -217,6 +227,8 @@ test("the header shows five pace buttons, 1× to 16×, with the one of the state
 });
 
 test("a click on a pace button asks for that pace; the buttons stay while paused and go with death", async () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
+  // decision: D-130 "The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the header of the screen of a map run"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, asked, show } = await draw(document, running);
@@ -236,6 +248,10 @@ test("a click on a pace button asks for that pace; the buttons stay while paused
 // D-62, D-334: the cause of the death is not the header's. Catches the cause left in the header and
 // a „ (pauza)” after the end.
 test("after a death the clock stands at the minute of the death with no cause and no „ (pauza)”, „Pauza” and the paces are gone, and „Koniec przejścia”, „Restart” and „Zakończ” stand", async () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
+  // decision: D-62 "After a character's death the pace buttons are gone together with „Pauza”"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -255,6 +271,9 @@ test("after a death the clock stands at the minute of the death with no cause an
 // D-132: the completion text is „Teraz”'s. Catches the completion text left in the header and a
 // „ (pauza)” after the end.
 test("after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Koniec przejścia”, „Restart” and „Zakończ” stand", async () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”"
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -276,6 +295,9 @@ test("after a completion the clock stands at the minute of the completion with n
 // paused, one standing while the window stands over the header, one missing after either end with
 // the window closed, one after „Restart” and one asking for anything but the window.
 test("„Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window", async () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
+  // decision: D-371 "„Koniec przejścia” stands in the header before „Restart”"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, asked, show } = await draw(document, running);
@@ -311,6 +333,10 @@ test("„Koniec przejścia” stands before „Restart” only in an ended map r
 // D-311, D-368: the window covers the header. Catches a header drawn visibly under the window, and a header
 // hidden while the window is closed or while the map run goes on.
 test("the header is hidden while the window stands over an ended map run, and shown otherwise", async () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
+  // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -334,6 +360,10 @@ test("the header is hidden while the window stands over an ended map run, and sh
 });
 
 test("the warning of a cut trip plan follows the current copy's take list", async () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-188 "The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const map = MAPS.forest;
     MAPS.forest = { ...map, carryIn: 2 };
@@ -408,6 +438,7 @@ function addStylesheet(document) {
 // custom property, so the case reads which token the rule of the clock lands on, through the real
 // stylesheet.
 test("the clock stands in the mono face of the stylesheet, with tabular figures", async () => {
+  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const { container } = await draw(document, sent());
@@ -453,6 +484,7 @@ const textOf = (requirement) =>
 // D-133: the bar stands right after the clock, before „Pauza”. Catches a bar at the end
 // of the header, before the clock or after the buttons.
 test("the bar of the solving condition stands right after the clock, with its numbers and its bar", async () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
   await withPage(async ({ document }) => {
     const running = counted(sent(), "forest", { streak: 120 });
     const { container } = await draw(document, running);
@@ -475,6 +507,7 @@ test("the bar of the solving condition stands right after the clock, with its nu
 
 // D-133: the parts of Las — głębiej, in their order. Catches the beaten attacks before the passa.
 test("on Las — głębiej the passa stands before the beaten attacks, each with its own bar", async () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
   await withPage(async ({ document }) => {
     const state = counted(sent(), "forestDeep", {
       streak: 120,
@@ -495,6 +528,7 @@ test("on Las — głębiej the passa stands before the beaten attacks, each with
 
 // D-133: Las asks for a passa alone. Catches a bar for a requirement the map's data lacks.
 test("Las has no part for beaten attacks, as it asks for none", async () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     assert.equal(requirementsOf(container).length, 1);
@@ -530,6 +564,9 @@ test("the fill of each bar is as long as the share of its count, never more than
 // name and its numbers are in `positive`, and the requirement beside it, unmet, stays as it was.
 // Catches a fill always green, a met requirement that turns only its fill and a track in another role.
 test("a requirement not met has its fill in text on a track in highlight, a met one its fill, name and numbers in positive", async () => {
+  // decision: D-40 "The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text"
+  // decision: D-39 "`positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on"
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const state = counted(sent(), "forestDeep", {
@@ -553,6 +590,7 @@ test("a requirement not met has its fill in text on a track in highlight, a met 
 // D-133, D-135: the bar stands after the end, at the stopped minute, with the current
 // streak. Catches the bar gone after a death and the longest streak shown.
 test("after a death of cold the bar stands and reads „Passa 0/480”", async () => {
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`, and the bar stands on the screen after the end of the map run too, on the state of its stopped game minute and with the streak as it stands then, such as „Passa 0/480” after a death of cold"
   await withPage(async ({ document }) => {
     const running = counted(sent(), "forest", { streak: 120 });
     const { container, show } = await draw(document, running);
@@ -579,6 +617,8 @@ test("after a death of cold the bar stands and reads „Passa 0/480”", async (
 });
 
 test("after a completion the bar stands, met, at the minute of the completion", async () => {
+  // decision: D-39 "`positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on"
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`, and the bar stands on the screen after the end of the map run too, on the state of its stopped game minute and with the streak as it stands then, such as „Passa 0/480” after a death of cold"
   await withPage(async ({ document }) => {
     const done = completed(counted(sent(), "forest", { streak: 480 }), 480);
     const { container } = await draw(document, done);
@@ -592,6 +632,7 @@ test("after a completion the bar stands, met, at the minute of the completion", 
 // the solving condition do not; tabular figures keep them from jittering in Geist too. Catches the
 // mono face set on the bar's words.
 test("the words of the bar of the solving condition are not in the mono face of the clock, and keep tabular figures", async () => {
+  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono and every other text in Geist"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const { container } = await draw(document, sent());

@@ -238,6 +238,7 @@ class MapRunTiles(unittest.TestCase):
 
     def test_control_the_layouts_can_show_a_break(self):
         # invariant: map-run-tiles
+        # decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
         result = starts()
         for map_id, resources in MAP_RESOURCES.items():
             for resource in resources:

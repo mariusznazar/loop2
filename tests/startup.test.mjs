@@ -183,6 +183,8 @@ test("listens on the address given by LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT", 
 
 for (const value of ["0", "65536", "abc", "3000x", ""]) {
   test(`rejects LOOP2_LISTEN_PORT=${JSON.stringify(value)} without a readiness line`, () => {
+    // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+    // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
     const result = spawnSync(process.execPath, [entryPoint], {
       encoding: "utf8",
       timeout: 5000,
@@ -223,6 +225,7 @@ test(
   { timeout: 60000 },
   async (t) => {
     // invariant: account-startup-configuration
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
     // Fault: production silently falls back to unconfigured static mode.
     const f = await configurationFixture(t);
     assert.match(
@@ -271,6 +274,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-startup-configuration
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
     // D-111's ordered 32-byte base64url format; decoding alone would admit aliases.
     const f = await configurationFixture(t);
     const noncanonical = "A".repeat(42) + "B";
@@ -319,6 +323,7 @@ test(
   { timeout: 60000 },
   async (t) => {
     // invariant: account-startup-configuration
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
     // Fault: an invalid mail setting is accepted or echoed, so a typo reaches
     // Outsider or a value lands in the log. D-111.
     const f = await configurationFixture(t);
@@ -384,6 +389,7 @@ test(
   { timeout: 60000 },
   async (t) => {
     // invariant: account-startup-configuration
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
     // Fault: a password file with a trailing newline, a directory or a huge or
     // binary file is accepted, hiding a rotation mistake until the first failed login.
     const f = await configurationFixture(t);
@@ -454,6 +460,7 @@ test(
   "a full valid set of settings starts, carries the mail settings and password, and a mailer, without contacting the mail server",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents, and startup does not contact the mail service"
     const f = await configurationFixture(t);
     const connections = [];
     const listener = createServer((socket) => {
@@ -493,6 +500,7 @@ test(
   "configured runtime has a real database and dummy hash and releases its connection",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-111 "After configuration and required resources validate, a start with neither listen variable set retains `127.0.0.1:3000` and the existing occupied-address error, and startup failure or shutdown disposes opened resources"
     const f = await configurationFixture(t);
     const runtime = await openAccountRuntime(f.environment);
     try {
@@ -528,6 +536,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-schema-lifecycle
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
     const f = await configurationFixture(t);
     const future = new DatabaseSync(f.environment.LOOP2_DATABASE_PATH);
     future.exec("PRAGMA user_version = 99");
@@ -565,6 +574,10 @@ test(
   "a start that fails names the setting and the original error's kind and code, so that two causes of one setting read apart",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+    // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
+    // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
+    // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it under the same rules; opening reads the schema version and, in the same transaction, applies in order every migration step after it up to the current version 5 — one step per version, a step never edited once deployed, a later version adding one step at the end — so it initializes a new database, moves an existing older known version forward keeping every account, session, emailed link and saved game state and their values, and refuses an unknown newer schema without changing it"
     // D-111, D-252. Faults: every failure of the database reading as one
     // bad path, which sends the owner to look for a wrong setting; a value of
     // the setting or of a secret file in the line.
@@ -614,6 +627,7 @@ for (const [mode, origin] of [
     `${origin} no code of the server handled ends it with one line of its kind, code and place`,
     { timeout: 20000 },
     async (t) => {
+      // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
       // D-253. Faults: no handler, so the default print
       // writes the message and the stack; a handler that keeps the process.
       const f = await configurationFixture(t);
@@ -651,6 +665,8 @@ test(
   "configured process becomes ready with public health response and exits on shutdown",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-110 "Explicit local loopback-proxy mode trusts only a loopback peer, requires forwarded https and uses the actual peer as identity, while direct mode trusts no forwarding and anonymous static and health requests require no proxy metadata"
+    // decision: D-111 "After configuration and required resources validate, a start with neither listen variable set retains `127.0.0.1:3000` and the existing occupied-address error, and startup failure or shutdown disposes opened resources"
     const f = await configurationFixture(t);
     const port = await freePort();
     const child = spawn(process.execPath, [entryPoint], {

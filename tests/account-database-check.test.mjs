@@ -61,6 +61,7 @@ async function sandbox(t) {
 }
 
 test("the check passes on this Node.js, prints the release it checked and leaves no file", async (t) => {
+  // decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked"
   const directory = await sandbox(t);
   const result = await runCheck(directory);
   assert.equal(result.code, 0, result.stderr);
@@ -72,6 +73,7 @@ test("the check passes on this Node.js, prints the release it checked and leaves
 });
 
 test("the check fails when its temporary directory cannot be written", async (t) => {
+  // decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked, and any difference or error fails the image's build"
   const directory = await sandbox(t);
   // A regular file where the directory should be: nothing can be made in it,
   // on any platform and whoever runs the test.
@@ -89,6 +91,8 @@ test("the check fails when its temporary directory cannot be written", async (t)
 // nothing: the control passes the real backup through and still succeeds.
 test("the check passes under the pass-through stand-in, which it reached", async (t) => {
   // invariant: account-save-sqlite-upgrade
+  // decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked"
+  // decision: D-236 "The backup command of D-231 makes a database backup through `backup()` of `node:sqlite`"
   const directory = await sandbox(t);
   const result = await runCheck(directory, "pass-through");
   assert.equal(result.code, 0, result.stderr);
@@ -107,6 +111,7 @@ const differences = {
 for (const [name, mode] of Object.entries(differences)) {
   test(`the check fails on ${name}`, async (t) => {
     // invariant: account-save-sqlite-upgrade
+    // decision: D-237 "A build step of the server image's final stage, run as the server's own user on the image's own Node.js release, makes a temporary database through the server's database code, writes and reads back an account and a saved game state, makes a backup by the method of D-236 and in its one backup step, opens that backup, reads the same values and prints the release it checked, and any difference or error fails the image's build"
     const directory = await sandbox(t);
     const result = await runCheck(directory, mode);
     assert.ok(result.stderr.includes("standin-reached"), "stand-in reached");

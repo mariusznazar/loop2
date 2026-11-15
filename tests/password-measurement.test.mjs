@@ -59,6 +59,8 @@ function runEntryPoint(args, env = {}) {
 }
 
 test("the entrypoint measures the production profile and gate with synthetic passwords only", async (t) => {
+  // decision: D-106 "Its cost parameters are set explicitly"
+  // decision: D-113 "Hashing and verification share one bounded admission gate, preserve password content, and use one explicit Argon2id profile, measured with that gate"
   const directory = await cgroupDirectory(t, containerCgroup);
   // Account settings in the environment must not lead it to open the database or the secret.
   const databasePath = join(directory, "accounts.sqlite");
@@ -171,6 +173,7 @@ test("the entrypoint measures where the kernel keeps no peak, as kernel 5.15 doe
 });
 
 test("the entrypoint refuses to measure where the cgroup does not count hits of its limit", async (t) => {
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names, while its Bash scripts keep their own text, a line in the browser's console is plain text, and what a command prints to whoever ran it — the readiness line of the server, the sentence of `account-database-check` in the log of an image build, the report of `measure-passwords` for the script that ran it — is no log line, and where the command works on no value of a player's, as `account-database-check` does on a temporary database and `measure-passwords` on made-up passwords, its failure keeps the error's text there"
   const directory = await cgroupDirectory(t, {
     ...kernel515Cgroup,
     "memory.events": "low 0\nhigh 0\noom 0\noom_kill 0\n",
@@ -184,6 +187,7 @@ test("the entrypoint refuses to measure where the cgroup does not count hits of 
 });
 
 test("the entrypoint stops with a failure when its deadline passes first", async (t) => {
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names, while its Bash scripts keep their own text, a line in the browser's console is plain text, and what a command prints to whoever ran it — the readiness line of the server, the sentence of `account-database-check` in the log of an image build, the report of `measure-passwords` for the script that ran it — is no log line, and where the command works on no value of a player's, as `account-database-check` does on a temporary database and `measure-passwords` on made-up passwords, its failure keeps the error's text there"
   const directory = await cgroupDirectory(t, containerCgroup);
   const run = runEntryPoint([
     "--cgroup-directory",

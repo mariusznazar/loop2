@@ -142,6 +142,9 @@ const pressedIn = (container) =>
 // start, both contents standing at once, a pick the memory is not told, and a pick that does not
 // bring the other content.
 test("the area under the drawing holds the tabs Kronika and Teren with Kronika picked first, and a click on a tab tells the chronicle and shows its content alone", async () => {
+  // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"
+  // decision: D-311 "The screen of a map run has two columns under one header"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -179,6 +182,7 @@ test("the area under the drawing holds the tabs Kronika and Teren with Kronika p
 // D-346. Catches the tab picked outside the area under the drawing (a click on the memory made elsewhere) not
 // reaching the screen, which reads the memory.
 test("a tab picked in the memory outside the screen is the tab the area shows", async () => {
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -227,6 +231,9 @@ test("the link between a hovered tile and its row of the table stands only while
 // picked first, two buttons picked at once, the filters drawn as tabs, and a pick not told to the
 // memory.
 test("the filter row holds the seven buttons with Wszystko picked first, one picked at a time, in the look of the pace buttons", async () => {
+  // decision: D-338 "The player filters it by these kinds in the area with the tabs under the world"
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
+  // decision: D-383 "The filter the player picks above the list of the chronicle stays picked"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -263,6 +270,11 @@ test("the filter row holds the seven buttons with Wszystko picked first, one pic
 // role of another kind, the filter showing another kind's entries, and the row of a filter not
 // following the entries recorded under it.
 test("the list holds the entries newest first, each the minute alone beside the text in the role of its kind, and a filter shows its kind alone", async () => {
+  // decision: D-338 "The player filters it by these kinds in the area with the tabs under the world"
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
+  // decision: D-343 "The entries stand newest at the top"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-344 "The entry of a completion stands in the role `positive`"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -329,6 +341,7 @@ test("the list holds the entries newest first, each the minute alone beside the 
 // D-343, D-338. Catches a discovery not in the role `discovery`, and a change of the
 // player not in `player-change`.
 test("a discovery stands in the role discovery and a change of the player in player-change", async () => {
+  // decision: D-343 "The entries stand newest at the top"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -357,6 +370,7 @@ test("a discovery stands in the role discovery and a change of the player in pla
 // D-343. Catches an empty chronicle or an empty filter drawn as nothing, the sentence
 // kept after an entry arrives, and the sentence in the wrong words.
 test("an empty chronicle and a filter that shows nothing say „Nic tu jeszcze nie ma.”, and the sentence goes where an entry comes", async () => {
+  // decision: D-343 "An empty chronicle and a filter that shows no entry read"
   await withPage(async ({ document }) => {
     const empty = createChronicle(readyGame());
     const { container } = await draw(document, empty, sentGame());
@@ -386,6 +400,11 @@ test("an empty chronicle and a filter that shows nothing say „Nic tu jeszcze n
 // at the end, its minute not the attack's, the paragraph kept when the state holds no record of an
 // encounter, and the paragraph not growing when the turns are resolved.
 test("the paragraph of the last encounter stands at its minute among the entries, under Walka alone, and grows when the turns are resolved", async () => {
+  // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
+  // decision: D-382 "The text of an entry is composed once"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const fighting = {
@@ -435,6 +454,9 @@ test("the paragraph of the last encounter stands at its minute among the entries
 
 // D-339. Catches a chronicle built from a loaded state drawn with anything but the paragraph alone.
 test("a chronicle built from a loaded state draws the paragraph alone", async () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
+  // decision: D-339 "After a load of a saved game state"
   await withPage(async ({ document }) => {
     const loaded = {
       ...sentGame(),
@@ -467,6 +489,7 @@ function scrollTo(list, { top, height, client }) {
 // that cannot reach its older entries, a window that grows on a scroll far from its end, and a
 // window that does not start anew with a filter picked.
 test("the list draws a bounded window of the newest entries, grows it on a scroll near its end until every entry is reachable, and starts it anew with a filter", async () => {
+  // decision: D-382 "The list of the chronicle draws the entries of the filter picked"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -517,6 +540,7 @@ test("the list draws a bounded window of the newest entries, grows it on a scrol
 // a send or by „Restart” (the list would draw rows the player has not scrolled to), and a window that
 // starts anew whenever an entry arrives (the list would jump back while the player reads).
 test("the grown window starts anew at a send and at „Restart”, and stays where an entry only arrives", async () => {
+  // decision: D-382 "The list of the chronicle draws the entries of the filter picked"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
@@ -571,6 +595,7 @@ test("the grown window starts anew at a send and at „Restart”, and stays whe
 // again (an entry recorded, a scroll), not only when the encounter changed. The encounter is a plain
 // record whose read of the creature is counted.
 test("the paragraph is composed once for an encounter however often the list draws again", async () => {
+  // decision: D-382 "The text of an entry is composed once"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     let reads = 0;
@@ -599,6 +624,7 @@ test("the paragraph is composed once for an encounter however often the list dra
 // D-382. Catches the window read again at each reading of the clock, which redraws every row of a
 // long chronicle five times a second.
 test("a draw with nothing changed reads no window again, and a recorded entry reads it once", async () => {
+  // decision: D-382 "A draw in which neither the chronicle, nor the filter, nor the window, nor the last encounter changed draws no row again"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     let reads = 0;

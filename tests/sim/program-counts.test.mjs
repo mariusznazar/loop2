@@ -52,12 +52,14 @@ function sent(program = PROGRAM) {
 }
 
 test("counts stay absent through program edits before the first send", () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   assert.equal(newGame().ruleCounts, null);
   assert.equal(ready().ruleCounts, null);
   assert.equal(setProgram(ready(), PROGRAM).state.ruleCounts, null);
 });
 
 test("minute zero counts once; a multi-minute action, its finish and later waits add nothing", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once"
   const program = structuredClone(PROGRAM);
   program.groups[1].condition = { kind: "satietyBelow", value: 0 };
   const start = sent(program);
@@ -77,6 +79,7 @@ test("minute zero counts once; a multi-minute action, its finish and later waits
 });
 
 test("an initial wait leaves every rule at zero", () => {
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const program = structuredClone(PROGRAM);
   for (const group of program.groups)
     group.condition = { kind: "satietyBelow", value: 0 };
@@ -91,6 +94,9 @@ test("an initial wait leaves every rule at zero", () => {
 });
 
 test("later starts count and each restart or new send resets before the minute-zero choice", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once"
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const later = advanceMinutes(sent(), 20).state;
   assert.deepEqual(later.ruleCounts, { 17: 1, 91: 1 });
   assert.deepEqual(restart(later).state.ruleCounts, { 17: 1, 91: 0 });
@@ -103,6 +109,8 @@ test("later starts count and each restart or new send resets before the minute-z
 });
 
 test("pause and death retain counts, including an action interrupted by death", () => {
+  // decision: D-92 "One firing of a program rule is the start of its action, so an action lasting many game minutes counts once"
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const start = sent();
   const paused = setPaused(start, true).state;
   assert.deepEqual(passRealTime(paused, 60000).state.ruleCounts, {
@@ -132,6 +140,7 @@ test("pause and death retain counts, including an action interrupted by death", 
 });
 
 test("identical rules count independently and keep their counts after group reorder and transfer", () => {
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const program = structuredClone(PROGRAM);
   program.groups[1].rules[0].action = { kind: "explore" };
   const start = sent(program);
@@ -159,6 +168,8 @@ test("identical rules count independently and keep their counts after group reor
 });
 
 test("every condition/action content field resets only its edited rule, also after Stop", () => {
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const variants = [
     [
       "condition kind",
@@ -232,6 +243,7 @@ test("every condition/action content field resets only its edited rule, also aft
 });
 
 test("canonical equivalent content preserves history despite key order, extra fields and floating rounding", () => {
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const program = structuredClone(PROGRAM);
   program.groups[0].rules[0].condition = {
     kind: "temperatureBelow",
@@ -257,6 +269,7 @@ test("canonical equivalent content preserves history despite key order, extra fi
 });
 
 test("deleting an active rule removes its count; adding its duplicate starts at zero and completion does not restore it", () => {
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const start = sent();
   const changed = structuredClone(PROGRAM);
   changed.groups[0].rules = [{ ...changed.groups[0].rules[0], id: 92 }];
@@ -277,6 +290,7 @@ test("deleting an active rule removes its count; adding its duplicate starts at 
 });
 
 test("editing an active rule resets it immediately and its old completion adds no count", () => {
+  // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const start = sent();
   const changed = structuredClone(PROGRAM);
   changed.groups[0].rules[0].condition = { kind: "satietyBelow", value: 0 };

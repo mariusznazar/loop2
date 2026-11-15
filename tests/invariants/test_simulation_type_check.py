@@ -96,6 +96,7 @@ class SimulationTypeCheck(unittest.TestCase):
 
     def test_build_refuses_it_too_and_leaves_nothing_to_serve(self):
         # invariant: simulation-type-check
+        # decision: D-06 "Building the application type-checks the simulation's files under a third configuration of their own"
         broken = self.fresh_copy()
         plant_uses(broken)
         code, output = broken.npm("run", "build")
@@ -106,6 +107,8 @@ class SimulationTypeCheck(unittest.TestCase):
 
     def test_the_build_writes_nothing_beside_the_sources_of_the_simulation(self):
         # invariant: simulation-type-check
+        # decision: D-393 "Two checks keep the simulation's files from using the page, a timer, the console or any other name that the browser or Node.js adds to those of the JavaScript language, and both stay: the compiler, which type-checks the simulation's files under a configuration of their own that covers every file of the simulation, holds the library of the language alone and no ambient types, and emits nothing"
+        # decision: D-06 "Building the application type-checks the simulation's files under a third configuration of their own that emits nothing"
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
@@ -116,6 +119,7 @@ class SimulationTypeCheck(unittest.TestCase):
 
     def test_the_configuration_takes_every_typescript_file_of_the_simulation(self):
         # invariant: simulation-type-check
+        # decision: D-06 "Building the application type-checks the simulation's files under a third configuration of their own"
         copy = self.fresh_copy()
         code, output = support.run(["node", copy.file(COMPILER), "-p", SIMULATION_CONFIG,
                                     "--listFilesOnly"], copy.path)

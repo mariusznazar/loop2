@@ -15,6 +15,9 @@ import { programFromRules, programWithRules } from "./program-fixture.mjs";
 import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 test("the map Las has the size, entrance, step and resources of D-388", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const forest = MAPS.forest;
   assert.equal(forest.name, "Las");
   assert.equal(forest.width, 4);
@@ -30,6 +33,13 @@ test("the map Las has the size, entrance, step and resources of D-388", () => {
 });
 
 test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
+  // decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
+  // decision: D-398 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   assert.deepEqual(MAPS.forestEdge, {
     name: "Skraj lasu",
     width: 4,
@@ -50,6 +60,13 @@ test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () =
 });
 
 test("Las — głębiej has the map data, attacker, solving requirements and opening map of D-388", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
+  // decision: D-142 "An attack uses the per-game-minute chance and cooldown in its map's data, with the cooldown counted from the start of the map run and from the end of each encounter; for Las — głębiej the chance is 0.01 and the cooldown protects the full 180 minutes after either point, so the first eligible minute is 181 or E+181 after an encounter ending in E"
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,
@@ -95,6 +112,7 @@ test("each resource's data gives its icon's title as the icon's page on game-ico
 });
 
 test("actions carry their labels, status texts and the fixed explore duration", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature, and a condition or an action the Understanding holds from the start of a new game has none there"
   assert.deepEqual(ACTIONS.explore, {
     label: "Eksploruj",
     group: "move",
@@ -124,6 +142,9 @@ test("actions carry their labels, status texts and the fixed explore duration", 
 });
 
 test("combat actions carry the accepted damage, item requirement and attack revelation", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
   assert.deepEqual(ACTIONS.strikeWithStick, {
     label: "Uderz — patyk",
     group: "foodAndCombat",
@@ -157,6 +178,10 @@ test("combat actions carry the accepted damage, item requirement and attack reve
 });
 
 test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", () => {
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   assert.deepEqual(CREATURES.wolf, {
     name: "wilk",
     revealedBy: { kind: "attacked", creature: "wolf" },
@@ -175,6 +200,8 @@ test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", (
 // D-290: the group of each action and the section and place of each condition in the pick of the
 // rule panel, written out in the order the pick shows them.
 test("each action names its group and each condition its section and place in the pick", () => {
+  // decision: D-290 "The pick of the rule panel sets the actions in four named groups"
+  // decision: D-290 "It sets the conditions in two columns, in sections with no names set apart by a line"
   assert.deepEqual(
     Object.entries(ACTIONS).map(([id, action]) => [id, action.group]),
     [
@@ -218,6 +245,8 @@ test("each action names its group and each condition its section and place in th
 });
 
 test("conditions carry labels and the value range of hereBelow", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   assert.equal(CONDITIONS.always.label, "Zawsze");
   assert.deepEqual(CONDITIONS.hereBelow, {
     label: "Tu leży mniej niż",
@@ -233,6 +262,10 @@ test("conditions carry labels and the value range of hereBelow", () => {
 });
 
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
+  // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   assert.deepEqual(CONDITIONS.healthBelow, {
     label: "Zdrowie poniżej",
     section: "body",
@@ -258,6 +291,9 @@ test("health conditions use the approved thresholds and are revealed by an attac
 });
 
 test("Las has an ambient temperature of 25 degrees in its map data", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
   assert.equal(MAPS.forest.ambientTemperature, 25);
   for (const [id, map] of Object.entries(MAPS)) {
     assert.equal(typeof map.ambientTemperature, "number", id);
@@ -265,6 +301,8 @@ test("Las has an ambient temperature of 25 degrees in its map data", () => {
 });
 
 test("the body starts at its caps, with the rates and thresholds of D-387", () => {
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-387 "A gathering lasts 10 game minutes and succeeds with the chance 0.7"
   assert.deepEqual(BALANCE.body, {
     startTemperature: 37.0,
     startSatiety: 100,
@@ -281,6 +319,7 @@ test("the body starts at its caps, with the rates and thresholds of D-387", () =
 });
 
 test("the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)", () => {
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const { startTemperature, coolingPerDegreeBelow } = BALANCE.body;
   const perMinute =
     (startTemperature - MAPS.forest.ambientTemperature) * coolingPerDegreeBelow;
@@ -288,6 +327,8 @@ test("the cooling in Las is 0.024 degrees a minute: 0.002 × (37 − 25)", () =>
 });
 
 test("a new character's traits hold carrying capacity 15, apart from the archetype", () => {
+  // decision: D-64 "Carrying capacity is 15 pieces"
+  // decision: D-192 "A number that acts in one action only belongs to the tree of that action's character skill, never to a trait"
   assert.deepEqual(TRAITS, { carryingCapacity: 15 });
   for (const archetype of Object.values(ARCHETYPES)) {
     assert.ok(!("carryingCapacity" in archetype));
@@ -297,6 +338,7 @@ test("a new character's traits hold carrying capacity 15, apart from the archety
 // The minutes a stick adds as fuel and burns when lit, its warmth and the satiety of a berry are
 // those of D-387.
 test("the items are the four resources of Las, with their uses", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   assert.deepEqual(Object.keys(ITEMS), ["stick", "berry", "moss", "fiber"]);
   assert.deepEqual(ITEMS.stick, {
     name: "patyk",
@@ -322,6 +364,7 @@ test("the items are the four resources of Las, with their uses", () => {
 // The sticks to craft and to light a campfire, its minutes of burning and its warmth are those of
 // D-387.
 test("the campfire holds its name, costs, burning minutes, warmth and icon", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   assert.deepEqual(CAMPFIRE, {
     id: "campfire",
     name: "ognisko",
@@ -353,6 +396,7 @@ test("every item and every item of the campfire names an item of the data", () =
 // D-190: the resurrection renews after eight hours, 480 real minutes. Real minutes, not game
 // minutes.
 test("the resurrection renews 480 real minutes after the death that used it", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   assert.equal(BALANCE.resurrectionRenewalRealMinutes, 480);
 });
 
@@ -360,6 +404,7 @@ test("the resurrection renews 480 real minutes after the death that used it", ()
 // that every real moment of the loop clock stays a whole number of milliseconds; the speed control
 // does not reach it.
 test("an earning loop goes one game minute in 60 real seconds, a whole number of seconds", () => {
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   assert.ok(
     Number.isInteger(BALANCE.loopMinuteRealSeconds) &&
       BALANCE.loopMinuteRealSeconds >= 1,
@@ -368,6 +413,7 @@ test("an earning loop goes one game minute in 60 real seconds, a whole number of
 });
 
 test("the archetype and the pace are in data", () => {
+  // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×"
   assert.equal(ARCHETYPES.elementalMage.name, "Mag żywiołów");
   assert.equal(BALANCE.gameMinutesPerRealSecond, 1);
   // D-21: the paces 1×, 2×, 4×, 8× and 16×.
@@ -379,6 +425,9 @@ test("the archetype and the pace are in data", () => {
 // The expectations below come from D-118, D-120, D-121 and D-195.
 
 test("the character skills grow the listed pairs of verb and target, and the walks stand in none", () => {
+  // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapal — ognisko” and „Zapal — patyk”"
+  // decision: D-120 "An action that no character skill grows, such as a move onto a neighbouring tile"
+  // decision: D-150 "„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions"
   // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),
@@ -400,6 +449,7 @@ test("the character skills grow the listed pairs of verb and target, and the wal
 });
 
 test("the elemental mage has all listed skills as predispositions", () => {
+  // decision: D-150 "„Uderz — patyk” grows „Walka bronią jednoręczną”, „Kopnij” grows „Kopanie”, and „Odskocz” grows „Unik przed ciosem”, all present among the elemental mage’s predispositions"
   // The created archetype admits every listed character skill.
   assert.deepEqual(
     [...ARCHETYPES.elementalMage.predispositions].sort(),
@@ -409,6 +459,7 @@ test("the elemental mage has all listed skills as predispositions", () => {
 });
 
 test("the tree of Eksploracja, whose first action is held from the start, is revealed by the first finished exploration, and no other tree has an event of its own", () => {
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   // D-195: every other tree enters with the first action it grows.
   assert.deepEqual(SKILLS.exploration.revealedBy, { kind: "explored" });
   assert.deepEqual(
@@ -481,6 +532,11 @@ const ROWS = [
 ];
 
 test("each revealing event reveals exactly the actions, conditions and items of its row", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
+  // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   for (const row of ROWS) {
     const label = JSON.stringify(row.event);
     const is = (def) => JSON.stringify(def.revealedBy) === label;
@@ -504,6 +560,8 @@ test("each revealing event reveals exactly the actions, conditions and items of 
 });
 
 test("every action and condition stands in exactly one row, and Zawsze and Eksploruj in none", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature, and a condition or an action the Understanding holds from the start of a new game has none there"
   // D-121 is the table; D-118: „Zawsze” and „Eksploruj” are known from the start.
   const revealing = (def) =>
     ROWS.filter(
@@ -536,6 +594,8 @@ test("every action and condition stands in exactly one row, and Zawsze and Ekspl
 });
 
 test("the campfire is revealed by the first gathered stick and has an identifier outside the items", () => {
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
+  // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   // D-121: the first gathered stick reveals the campfire.
   assert.deepEqual(CAMPFIRE.revealedBy, { kind: "gathered", item: "stick" });
   assert.equal(CAMPFIRE.id, "campfire");
@@ -580,6 +640,7 @@ test("setProgram accepts every resource of the map data list, in conditions and 
 });
 
 test("setProgram accepts the empty program, both actions without a resource and the ends of the range", async () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const { newGame, setProgram } =
     await import("../../dist/browser/sim/game.js");
   const [resource] = forestMap.resources.map(({ id }) => id);
@@ -634,6 +695,7 @@ test("setProgram rejects a resource id outside the map data list", async () => {
 });
 
 test("setProgram rejects kinds outside the closed list and values outside the data range", async () => {
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   const { newGame, setProgram } =
     await import("../../dist/browser/sim/game.js");
   const [resource] = forestMap.resources.map(({ id }) => id);
@@ -715,6 +777,7 @@ test("every map step and every fixed action duration is a whole number of minute
 });
 
 test("an activity of 0 minutes from faulty data still finishes in the next minute", async () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const { newMapRun, stepMinute } =
     await import("../../dist/browser/sim/run.js");
   const map = { ...forestMap, stepMinutes: 0 };
@@ -732,6 +795,8 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
 });
 
 test("each map's solving condition holds a requirement, each a whole number above zero, and Las's is a streak of 480", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   for (const [id, map] of Object.entries(MAPS)) {
     const requirements = Object.entries(map.solving);
     assert.ok(requirements.length >= 1, `map ${id} solving`);

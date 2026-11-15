@@ -558,6 +558,7 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_each_form_of_a_script_import_is_read_with_its_line(self):
         # invariant: cross-part-imports
+        # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
         text = ("import a from '../../src/view/screen.js';\n"
                 "import { b, c as d } from \"../../src/view/more.js\";\n"
                 "import type { T } from '../../src/view/screen.js';\n"
@@ -576,6 +577,7 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_comments_strings_templates_and_expressions_give_no_import(self):
         # invariant: cross-part-imports
+        # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
         text = ("// import a from '../../src/view/screen.js';\n"
                 "/* import('../../src/view/screen.js');\n"
                 "   import b from '../../src/view/more.js'; */\n"
@@ -592,6 +594,7 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_a_package_or_a_node_module_is_no_file_of_any_part(self):
         # invariant: cross-part-imports
+        # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
         text = ("import fs from 'node:fs';\nimport react from 'react';\n"
                 "import assert from \"node:assert/strict\";\n"
                 "import x from 'https://example.org/x.js';\n")
@@ -599,6 +602,7 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_a_built_file_is_matched_to_its_source_and_its_part(self):
         # invariant: cross-part-imports
+        # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`"
         sources = {
             "tests/core/built.test.mjs":
                 "import { stage } from '../../dist/browser/view/stage.js';\n"
@@ -615,6 +619,7 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_a_relative_import_matching_no_file_fails_with_file_and_line(self):
         # invariant: cross-part-imports
+        # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
         script = {"tests/core/lost.test.mjs":
                   "import a from 'react';\n\nimport b from './missing.js';\n"
                   "import c from '../../dist/browser/nothing.js';\n"
@@ -674,6 +679,8 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_a_python_import_is_read_from_the_code_and_the_directories_it_adds(self):
         # invariant: cross-part-imports
+        # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
+        # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
         sources = {
             "tests/core/test_ok.py":
                 "import os\nimport json, unittest\nfrom tests.support import shared\n"
@@ -698,6 +705,8 @@ class ReadingOfImports(unittest.TestCase):
 
     def test_control_a_directory_added_to_sys_path_is_written_out_of_the_file(self):
         # invariant: cross-part-imports
+        # decision: D-351 "The test reads the imports of TypeScript, JavaScript and Python files"
+        # decision: D-351 "A relative import that the test cannot match to a file git tracks fails it, with the file and the line, an import of a built file under `dist/` is matched to its source under `src/`, and a package or a module from outside the repository is the file of no part"
         expressions = [
             "str(Path(__file__).resolve().parents[1] / 'core')",
             "str(ROOT / 'tests' / 'core')",

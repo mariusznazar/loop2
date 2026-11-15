@@ -25,6 +25,8 @@ class ConnectorImage(unittest.TestCase):
                               errors="replace", timeout=timeout)
 
     def test_nonroot_connector_can_run_the_disconnected_readiness_check(self):
+        # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
+        # decision: D-13 "Compose grants the tunnel file only to `cloudflared` as the read-only secret `/run/secrets/cloudflare_tunnel_token`, preserving the host directory's deployment-account ownership, group 65532 and mode 0750 and the tunnel file's same owner/group and mode 0640"
         docker_gate.require_daemon(self, "connector image capabilities stay unchecked")
         self.docker = shutil.which("docker")
 

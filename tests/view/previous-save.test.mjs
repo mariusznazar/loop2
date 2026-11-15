@@ -271,6 +271,9 @@ const going = () =>
 // Catches the page asking the server, or drawing the button, for an account the privilege flag is
 // false or missing for (D-400): the client given has no `loadPreviousSavedGame`, so a question throws.
 test("an account without the flag, or with it false, never asks and has no button, however often the screen is shown", async () => {
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege and sends no request for the previous save or the reset where the flag is false"
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   for (const allowed of [undefined, false]) {
     await onPage(async () => {
       const saves = [];
@@ -299,6 +302,8 @@ test("an account without the flag, or with it false, never asks and has no butto
 // save exists), the question asked at building on another screen, one not asked at each entering
 // of the screen, and an answer of a document that does not show the button (D-401).
 test("the question is asked at each entering of Programy; while it is open the button is away, and a document shows it", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await onPage(async () => {
     const held = heldClient();
     const { view, address } = await viewOf(newGame(), held.client, {
@@ -332,6 +337,8 @@ test("the question is asked at each entering of Programy; while it is open the b
 // Catches the page built at the address of Programy not asking (the first screen is not entered by
 // a change of address).
 test("a game built at the address of Programy asks at once", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -345,6 +352,8 @@ test("a game built at the address of Programy asks at once", async () => {
 // Catches an answer of null drawn as the button, a sentence for a thing that is no failure, and a
 // failure left silent: null leaves the button away with no line; a failure one sentence (D-401).
 test("an answer of null leaves the button away, and a failure of the check leaves it away with one sentence; the next entering asks again", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await onPage(async () => {
     const held = heldClient();
     const { view, address } = await viewOf(newGame(), held.client, {
@@ -378,6 +387,11 @@ test("an answer of null leaves the button away, and a failure of the check leave
 // the document the check saw instead of fetching again (the server may hold another now), changes
 // anything but the list and its next number, and does not save at once (D-401, D-169, D-165, D-207).
 test("a pull fetches the previous save again and appends its programs in order with free names and the next numbers, and the game saves at once", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list"
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs"
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it"
+  // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(twoPrograms(), held.client, {
@@ -440,6 +454,9 @@ test("a pull fetches the previous save again and appends its programs in order w
 
 // Catches a button that goes away after a pull: a second press appends copies again (D-401).
 test("after a pull the button stays, and a second press appends the programs again as copies", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list"
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207)"
+  // decision: D-169 "A program's name is the typed text trimmed of the white space at its start and end, and it is not empty; the game takes no name another program bears, comparing names regardless of letter case, and sets no limit to a name's length; a program that the pull of D-401 appends keeps its name where the list holds no program of that name, and otherwise takes the name, a space and „(n)” for the smallest n from 2 that makes the name free, counting the programs the same pull appended before it"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -462,6 +479,9 @@ test("after a pull the button stays, and a second press appends the programs aga
 // Catches a pull that stops at the first program the check refuses, a skipped program missing from
 // the sentence or named in a sentence of its own, and a count that counts the skipped ones.
 test("skipped programs stand in one sentence by their names, and the others are appended", async () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped"
+  // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -500,6 +520,7 @@ test("skipped programs stand in one sentence by their names, and the others are 
 // Catches only-skipped documents counted as a pull of zero programs or given the sentence of no
 // readable program, and nothing saved or appended where nothing was accepted.
 test("a document with every program skipped gives the skipped sentence alone and changes nothing", async () => {
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -520,6 +541,8 @@ test("a document with every program skipped gives the skipped sentence alone and
 // program giving anything but the sentence that the save holds no program the game can read, and the
 // button going away for it.
 test("an unreadable document, and one with no program, give the sentence of no readable program; nothing is appended or saved", async () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one"
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read"
   const sentence = pullResultLine({ ok: false }).text;
   for (const document of [
     previous([item(1, "Las", LAS)], 8),
@@ -544,6 +567,9 @@ test("an unreadable document, and one with no program, give the sentence of no r
 // Catches an answer of null at the pull drawn as a failure or leaving the button: the previous save
 // is gone, so one sentence and no control (D-401).
 test("a pull that finds no previous save says so and the button goes away", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button"
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read, that there is no previous save"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -561,6 +587,7 @@ test("a pull that finds no previous save says so and the button goes away", asyn
 // Catches a failed fetch that drops the button, appends something or is drawn as a result, and a
 // retry that does not work: the control stays for a retry (D-401).
 test("a failed fetch is one warning, the button stays, and a retry appends", async () => {
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read, that there is no previous save, or that it could not be fetched"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -604,6 +631,7 @@ test("a 401 at the pull goes to the page as a save's 401, and nothing is appende
 // Catches a 403 of the pull told as a failed fetch, the button kept for an account the server says
 // has no privilege, or an append (D-400).
 test("a 403 previous-save-forbidden says the account has no such privilege now, and the button goes away", async () => {
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await onPage(async () => {
     const held = heldClient();
     const { view, signedOut } = await viewOf(newGame(), held.client, {
@@ -623,6 +651,7 @@ test("a 403 previous-save-forbidden says the account has no such privilege now, 
 
 // Catches a name of the document written into the page as markup (D-401: shown only as text).
 test("names from the document are shown as text, in the sentence and in the list", async () => {
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped"
   await onPage(async () => {
     const held = heldClient();
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -657,6 +686,8 @@ test("names from the document are shown as text, in the sentence and in the list
 // Catches a pull that is not an act through the one place: an act is saved at once (D-207) and a save
 // over the limit shows the sentence of D-208 as any save does.
 test("a state over the limit after a pull gets the sentence of D-208 in the line of saving", async () => {
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207)"
+  // decision: D-208 "When the server refuses a save as larger than its limit of D-104, the game does not retry that save but tries again at its next moment of saving, and the same line reads „Nie udało się zapisać postępu: stan gry jest za duży. Zatrzymaj pętle albo usuń niepotrzebne programy.”"
   await onPage(async () => {
     const held = heldClient({ saveAnswer: { kind: "too-large" } });
     const { view } = await viewOf(newGame(), held.client, { allowed: true });
@@ -677,6 +708,7 @@ test("a state over the limit after a pull gets the sentence of D-208 in the line
 // Catches an answer of the check that arrives after the player left the screen still showing the
 // button on the next entering, or an answer of a game disposed meanwhile doing anything.
 test("an answer of the check that comes after the player left the screen is ignored, and so is one that comes after the game was disposed", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button"
   await onPage(async () => {
     const held = heldClient();
     const { view, address } = await viewOf(newGame(), held.client, {
@@ -730,6 +762,8 @@ test("the answer of a pull that comes after the player left the screen appends n
 // Catches the button tied to there being no map run: it stands and works while a manual map run
 // goes on and while one has ended and waits, and the map run itself is left as it was (D-401).
 test("the pull works while a manual map run goes on and while one has ended", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”"
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207)"
   const ended = () => {
     const state = going();
     return {
@@ -765,6 +799,9 @@ test("the pull works while a manual map run goes on and while one has ended", as
 // Catches the page not giving the game the account's flag (the game then never asks, or asks for
 // every account): the flag comes from the account the server names, a missing flag counts as false.
 test("the page gives the game the account's flag: only a privileged account's game asks for the previous save", async () => {
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege and sends no request for the previous save or the reset where the flag is false"
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”, which fetches the previous save again and appends its programs to the end of the player's list; an account without the privilege, or with no previous save, has no such button"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   const { startApp } = await import("../../dist/browser/view/app.js");
   for (const allowed of [true, false, undefined]) {
     await onPage(async () => {
@@ -824,6 +861,8 @@ test("the page gives the game the account's flag: only a privileged account's ga
 // Catches the button, drawn once, shown on a screen other than Programy: it stands in the screen
 // Programy alone, which the other screens hide.
 test("the button stands in the screen Programy alone", async () => {
+  // decision: D-401 "An account with the previous-save privilege has on the screen Programy, at any time that screen is shown while its previous save exists, the button „Wciągnij programy z poprzedniego zapisu”"
+  // decision: D-167 "The list of programs offers „Nowy program”, „Zmień nazwę” and „Usuń” and, to an account with the previous-save privilege while its previous save exists, „Wciągnij programy z poprzedniego zapisu” (D-401), and a new program holds one empty rule group named „Program”, whose condition is „Zawsze”"
   await onPage(async () => {
     const held = heldClient();
     const { view, address } = await viewOf(newGame(), held.client, {
@@ -866,6 +905,7 @@ test("the word for a count of programs follows Polish plural", () => {
 
 // Catches a result line whose role or parts are wrong where no view case reaches them.
 test("the result line of the reader's answer names the appended count and the skipped programs", () => {
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name, or, where that name is taken, the name, a space and „(n)” as D-169 gives, nothing else of the game state changes and the game saves at once (D-207); one sentence beside the button then tells how many programs were appended and names every program skipped, or that the previous save holds no program this version of the game can read"
   const read = (name) => ({ kind: "read", name, program: {} });
   const skipped = (name) => ({ kind: "skipped", name });
   assert.deepEqual(pullResultLine({ ok: false }), {
@@ -908,6 +948,8 @@ const confirmation = (view) =>
 // Catches the control on an account the page gives no privilege, or a game given no callback for a
 // confirmed reset: the control then stands in the page of no one who may not reset (D-402).
 test("the reset control stands only for a privileged account whose page gives the game a callback", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control"
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege"
   const cases = [
     [undefined, undefined],
     [false, () => {}],
@@ -942,6 +984,7 @@ test("the reset control stands only for a privileged account whose page gives th
 // Catches a click that resets, saves or changes the game before the player confirms (D-402): the
 // click that opens the confirmation sends nothing and changes nothing.
 test("the click that opens the confirmation sends nothing and changes nothing", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];
@@ -963,6 +1006,7 @@ test("the click that opens the confirmation sends nothing and changes nothing", 
 // Catches a confirmation that does not say that an earlier previous save is replaced and that its
 // programs can no longer be pulled, and a withdraw that changes anything (D-402).
 test("the confirmation names the replacement of an earlier previous save, and withdrawing changes nothing", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];
@@ -990,6 +1034,8 @@ test("the confirmation names the replacement of an earlier previous save, and wi
 // waits, a save sent before the page's act, and a failure that does not return the control to rest
 // with its sentence (D-402, D-44).
 test("a confirmed reset calls the page once, waits for its answer, and a failure returns the control to rest with its sentence", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled"
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];
@@ -1141,6 +1187,8 @@ async function confirmReset() {
 // without the privilege or with the flag missing (D-400), and a page that asks the server before the
 // player confirms (D-402).
 test("the page gives the reset control to a privileged account alone, and sends nothing for it before the confirmation", async () => {
+  // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control"
+  // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save, so the page shows no control for the privilege and sends no request for the previous save or the reset where the flag is false"
   for (const allowed of [false, undefined]) {
     await onPage(async () => {
       const page = await startedPage({ allowed });
@@ -1164,6 +1212,7 @@ test("the page gives the reset control to a privileged account alone, and sends 
 // Catches a save of the page's own before the reset (D-402, D-207), a reset sent more than once, and a
 // "Wyloguj" that stays pressable while the reset waits (the logout would save and end the session).
 test("a confirmed reset is the next call after the confirmation, with no save before it, and „Wyloguj” cannot be pressed while it waits", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable"
   await onPage(async () => {
     const page = await startedPage();
     await confirmReset();
@@ -1192,6 +1241,7 @@ test("a confirmed reset is the next call after the confirmation, with no save be
 // Catches a new game built on a revision other than 0, one saved at once, one that loads the server's
 // save again, a missing sentence above it, and the game left on another screen (D-402, D-209).
 test("on 204 the page builds a new game on revision 0 with the sentence above it, and sends no save at once", async () => {
+  // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save"
   await onPage(async () => {
     const page = await startedPage();
     assert.deepEqual(programNames(), ["Program", "Program 2"]);
@@ -1250,6 +1300,7 @@ const HELD_OUTCOMES = [
 // D-211): the outcome waits, and a failure acts on it.
 for (const held of HELD_OUTCOMES) {
   test(`${held.name} of the old saver during the reset waits, and a failed reset acts on it`, async () => {
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
     await onPage(async () => {
       const page = await startedPage();
       await press(pageButton("Nowy program"));
@@ -1263,6 +1314,7 @@ for (const held of HELD_OUTCOMES) {
   });
 
   test(`${held.name} of the old saver during the reset is dropped when the reset succeeds`, async () => {
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
     await onPage(async () => {
       const page = await startedPage();
       await press(pageButton("Nowy program"));
@@ -1279,6 +1331,7 @@ for (const held of HELD_OUTCOMES) {
 // Catches a conflict from the old game's saver, answered after the reset, that the page acts on: it
 // would load the server's save (none) and replace the new game with another new one (D-402, D-209).
 test("a conflict that the old saver gets after the reset is not acted on", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
   await onPage(async () => {
     const page = await startedPage();
     await press(pageButton("Nowy program"));
@@ -1337,6 +1390,7 @@ test("a reset answered with no session shows the forms with the expired sentence
 // Catches a page that stops a reset while a logout waits, or lets the reset's late answer build a
 // game over the forms the logout brought (D-402): the logout's own answer decides what stands.
 test("a reset confirmed while a logout waits is sent, and the logout's answer decides what the page shows", async () => {
+  // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers and owned events, and stale account responses cannot remount it"
   await onPage(async () => {
     const page = await startedPage();
     await press(pageButton("Konto"));

@@ -29,6 +29,8 @@ test("the condition sentence is the map's name, a dash and the solving text of i
 });
 
 test("the list of maps hides maps until their prerequisites are solved; the editor keeps its full map list", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   assert.deepEqual(sendMaps(), ["forestEdge", "forest", "forestDeep"]);
   assert.deepEqual(sendMaps([]), ["forestEdge"]);
   assert.deepEqual(sendMaps(["forestEdge"]), ["forestEdge", "forest"]);
@@ -43,6 +45,7 @@ test("the list of maps hides maps until their prerequisites are solved; the edit
 // with the opener's name from the data at a map another map opens. Catches a heading that drops the
 // solved mark or the opener, or takes the opener's name from the wrong map.
 test("the heading names the map, with the solved mark and the opener's name from the data", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
   assert.deepEqual(cardHeading(forestEdge, false), {
     name: "Skraj lasu",
     solved: null,
@@ -74,6 +77,7 @@ test("the heading names the map, with the solved mark and the opener's name from
 // Catches a grid with its sides swapped, the entrance word the wrong way round, a note on the step
 // the data gives, and a minutes-without-fire line where the map does not cool the body.
 test("the terrain lines give the grid, the entrance, the step and the minutes without fire", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
   assert.deepEqual(terrainLines(forest), [
     { text: "siatka 4 × 4", note: null },
     { text: "wejście stałe", note: null },
@@ -94,6 +98,10 @@ test("the terrain lines give the grid, the entrance, the step and the minutes wi
 // left out. Catches a note on the usual step, a note with the wrong direction, a note left in the
 // text instead of standing apart, and a minutes line for a map that does not cool the body.
 test("a step above the usual costs more, one below costs less, the note standing apart, and a map that does not cool leaves the minutes out", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-333 "The minutes without fire are the game minutes that a body"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
   assert.deepEqual(terrainLines({ ...forest, stepMinutes: 9 }), [
     { text: "siatka 4 × 4", note: null },
     { text: "wejście stałe", note: null },
@@ -118,6 +126,9 @@ test("a step above the usual costs more, one below costs less, the note standing
 // stock and its renewal.
 // Catches a floored count, a renewal given the wrong minutes, and a resource whose line is missing.
 test("each resource gives its name, the tiles that hold it, its stock and its renewal", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(resourceLines(forest), [
     {
       id: "stick",
@@ -164,6 +175,8 @@ test("each resource gives its name, the tiles that hold it, its stock and its re
 // renewal. Catches a „+1 co” given to such a resource, and the words left in the text instead of
 // standing apart.
 test("a resource that does not renew says so apart, in warning, in place of its renewal", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
   const map = {
     ...forest,
     resources: [{ id: "moss", density: 0.4, stock: 6 }],
@@ -181,6 +194,9 @@ test("a resource that does not renew says so apart, in warning, in place of its 
 // gap: 180 + 1 / 0.01 = 280 minutes. Catches a wrong creature field, a cooldown or gap left out,
 // and a mean gap that counts the chance alone.
 test("an attacker gives its name, health and blow, and its chance, quiet time and mean gap", () => {
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(attackerLines(forestDeep), [
     {
       head: "wilk · 24 zdrowia · cios 7",
@@ -195,6 +211,8 @@ test("an attacker gives its name, health and blow, and its chance, quiet time an
 // 180 + 1 / 0.0123 = 261.30 gives 261. Catches a point for the comma, a second decimal, and a gap
 // left unrounded.
 test("the chance is written with a decimal comma and at most one decimal, and the mean gap rounds", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-333 "The minutes without fire are the game minutes that a body"
   const wolfAt = (chancePerMinute) => ({
     ...forestDeep,
     attackers: [{ id: "wolf", chancePerMinute, cooldownMinutes: 180 }],
@@ -213,6 +231,9 @@ test("the chance is written with a decimal comma and at most one decimal, and th
 // gives no line. Catches a zero cap dropped as if unset, a cap line without its warning role, and a
 // map without caps getting a line.
 test("the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
   assert.deepEqual(capLines(forest), []);
   assert.deepEqual(capLines({ ...forest, carryIn: 0, carryOut: 12 }), [
     { text: "wnosisz najwyżej 0", warning: true },

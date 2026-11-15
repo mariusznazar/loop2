@@ -148,6 +148,7 @@ test("a paused map run gets „ (pauza)” appended, and loses it when resumed",
 // stopped by the simulation at the first chill, game minute 84 (the minute the case of the screen
 // of a map run, tests/view/run-screen.test.mjs, relies on).
 test("at a stop at a discovery the clock reads „ (pauza)” as at the player's pause, and loses it at „Wznów”", () => {
+  // decision: D-122 "When something is discovered in a map run the player starts, the map run stops in the same pause as after „Pauza”: the clock in the header reads „Minuta {game minute} (pauza)”, and the player goes on with „Wznów”"
   const started = send(
     createCharacter(withEdgeSolved(newGame()), "Ala").state,
     { ...SENT, mapId: "forest" },
@@ -164,6 +165,8 @@ test("at a stop at a discovery the clock reads „ (pauza)” as at the player's
 // D-62, D-334: the cause of the death is „Teraz”'s (tests/view/now-lines.test.mjs), the clock only
 // stands at the game minute of the death.
 test("after a death the clock stands at the minute of the death, with no cause and no „ (pauza)”, paused or not", () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(clockText(dead(state, 312, "cold").run, false), "Minuta 312");
   assert.equal(clockText(dead(state, 287, "hunger").run, false), "Minuta 287");
@@ -175,6 +178,7 @@ test("after a death the clock stands at the minute of the death, with no cause a
 // D-132: the completion text is „Teraz”'s, the clock only stands at the game minute of the
 // completion.
 test("after a completion the clock stands at the minute of the completion, with no completion text and no „ (pauza)”, paused or not", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”"
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   const done = completed(state, 480);
   assert.equal(clockText(done.run, false), "Minuta 480");
@@ -191,6 +195,7 @@ test("„Pauza” while running, „Wznów” while paused, and no pause button 
 });
 
 test("a mage left without a program dies, and the clock reads the minute of its death", () => {
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   const ended = advanceMinutes(sent([]), 1000).state;
   assert.ok(ended.run.death, "the mage died within 1000 minutes");
   assert.ok(ended.run.death.minute < 1000);
@@ -212,6 +217,7 @@ const EXPLORED_REVEALED = {
 };
 
 test("the text for the first finished exploration of a tile with sticks and berries is the example of D-122", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText(EXPLORED_REVEALED),
     "Odkryto: Idź, Zbierz, Patyk, Jagoda. W regułach można teraz sprawdzić: Tu leży mniej niż … szt., Zapas poniżej … szt.",
@@ -219,6 +225,7 @@ test("the text for the first finished exploration of a tile with sticks and berr
 });
 
 test("the text for the first chill names its action and its condition with the unit", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: ["wander"],
@@ -234,6 +241,8 @@ test("the text for the first chill names its action and its condition with the u
 // D-195: the tree of Eksploracja comes with the first finished exploration, beside what the
 // exploration revealed.
 test("the text for the first finished exploration names the tree Eksploracja beside the actions and items it revealed", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
+  // decision: D-195 "The band of a discovery names the tree beside the action, as „Odkryto: Zbierz, drzewo umiejętności Zbieranie.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one"
   assert.equal(
     discoveryText({
       ...EXPLORED_REVEALED,
@@ -244,6 +253,7 @@ test("the text for the first finished exploration names the tree Eksploracja bes
 });
 
 test("a discovery of an action alone has no second sentence, and the campfire is named with a capital letter", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: ["lightItem"],
@@ -257,6 +267,7 @@ test("a discovery of an action alone has no second sentence, and the campfire is
 });
 
 test("a discovered creature is named from the creature data", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: [],
@@ -270,6 +281,7 @@ test("a discovered creature is named from the creature data", () => {
 });
 
 test("a condition that takes no number is named without a unit, and a discovery of conditions alone has no first sentence", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
   assert.equal(
     discoveryText({
       actions: [],
@@ -283,6 +295,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
 });
 
 test("no pause button after a completion, as after death", () => {
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death"
   const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(pauseLabel(completed(running, 480)), null);
   assert.equal(
@@ -300,6 +313,7 @@ function requirementsOf(mapId, counts) {
 
 // D-133. Catches words in the wrong form, a requirement left out and the two out of their order.
 test("the words of Las read „Passa {streak}/{required}” and those of Las — głębiej read the passa before the beaten attacks", () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
   assert.deepEqual(
     requirementsOf("forest", { streak: 120 }).map(requirementText),
     ["Passa 120/480"],
@@ -314,6 +328,8 @@ test("the words of Las read „Passa {streak}/{required}” and those of Las —
 
 // D-133: one met requirement does not make the other met. The words carry the numbers, not the role.
 test("on Las — głębiej a requirement that is met reads its own numbers while the other stays unmet", () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`"
   const requirements = requirementsOf("forestDeep", {
     streak: 120,
     defeatedAttacks: 2,

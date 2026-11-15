@@ -106,6 +106,7 @@ test("precondition: the knowing game these tests start from holds every action a
 });
 
 test("the map is Las and the send takes the seed named here", () => {
+  // decision: D-378 "On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes"
   assert.equal(forest.name, "Las");
   const sent = send(
     createCharacter(withEdgeSolved(newGame()), "Ala").state,
@@ -116,6 +117,7 @@ test("the map is Las and the send takes the seed named here", () => {
 });
 
 test("the program holds every kind of condition and action of the closed list", () => {
+  // decision: D-378 "On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes"
   const conditions = new Set(
     programRules(ACCEPTANCE_PROGRAM).map((r) => r.condition.kind),
   );
@@ -146,6 +148,7 @@ test("the program holds every kind of condition and action of the closed list", 
 });
 
 test("on Las the program passes 480 game minutes alive on the named seed", () => {
+  // decision: D-378 "On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes, paying nature energy for its lightings"
   const { state, events } = played(ACCEPTANCE_PROGRAM, MINUTES);
   assert.equal(state.run.minute, MINUTES);
   assert.equal(state.run.death, null);
@@ -170,6 +173,11 @@ test("on Las the program passes 480 game minutes alive on the named seed", () =>
 });
 
 test("on the same seed the empty program dies in game minute 243, of cold", () => {
+  // decision: D-60 "Outside combat, a character loses health in each game minute in which it is chilled — its body temperature below the threshold of chill — and loses it again, apart, in each game minute in which it is starving — its satiety below the threshold of hunger"
+  // decision: D-61 "A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause"
+  // decision: D-61 "For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-378 "On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes, paying nature energy for its lightings as well as sticks, on at least one seed that a test of the simulation names, and the empty program dies there"
   const { state, events } = played(EMPTY_PROGRAM, MINUTES);
   assert.deepEqual(state.run.death, { minute: 243, cause: "cold" });
   assert.equal(state.run.minute, 243);

@@ -148,6 +148,8 @@ const range = (from, to) =>
 const burning = (minutesLeft) => [{ at: entrance, minutesLeft }];
 
 test("the six actions are on the closed list with their labels and minutes", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
+  // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapal — ognisko” and „Zapal — patyk”"
   const listed = Object.fromEntries(
     NEW_ACTIONS.map(({ kind }) => [
       kind,
@@ -167,6 +169,10 @@ test("the six actions are on the closed list with their labels and minutes", () 
 });
 
 test("„Wytwórz — ognisko” is feasible on a revealed tile without a campfire, with 6 sticks", () => {
+  // decision: D-26 "A tile holds at most one campfire, which warms only that tile"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-72 "A character crafts a campfire and lights a stick on a revealed tile"
   assert.equal(actionFeasible(at({ [stick]: 6 }), CRAFT), true);
   assert.equal(actionFeasible(at({ [stick]: 9 }), CRAFT), true);
   assert.equal(
@@ -195,6 +201,9 @@ test("„Wytwórz — ognisko” is feasible on a revealed tile without a campfi
 });
 
 test("„Zapal — ognisko” is feasible at a campfire here that is not burning, with 2 sticks", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-68 "A campfire that burns out stays on its tile, extinguished, and can be lit again"
   assert.equal(
     actionFeasible(at({ [stick]: 2 }, burning(0)), LIGHT_CAMPFIRE),
     true,
@@ -226,6 +235,9 @@ test("„Zapal — ognisko” is feasible at a campfire here that is not burning
 });
 
 test("„Zapal — patyk” is feasible on a revealed tile with a stick, and nowhere else", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-72 "A character crafts a campfire and lights a stick on a revealed tile"
   assert.equal(actionFeasible(at({ [stick]: 1 }), LIGHT_ITEM), true);
   assert.equal(
     actionFeasible(at({ [stick]: 1 }, burning(30)), LIGHT_ITEM),
@@ -245,6 +257,9 @@ test("„Zapal — patyk” is feasible on a revealed tile with a stick, and now
 });
 
 test("„Zasil — ognisko” is feasible at a burning campfire here, with a piece of fuel", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-69 "Each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning"
   assert.equal(actionFeasible(at({ [stick]: 1 }, burning(1)), FEED), true);
   assert.equal(
     actionFeasible(at({ [stick]: 1 }, burning(0)), FEED),
@@ -266,6 +281,8 @@ test("„Zasil — ognisko” is feasible at a burning campfire here, with a pie
 });
 
 test("„Zjedz — jagoda” is feasible with a piece of food, and not without", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   assert.equal(actionFeasible(at({ [berry]: 1 }), EAT), true);
   assert.equal(
     actionFeasible(at({ [berry]: 1 }, [], false), EAT),
@@ -277,6 +294,7 @@ test("„Zjedz — jagoda” is feasible with a piece of food, and not without",
 });
 
 test("each action lasts its minutes and takes nothing from the backpack at its start", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const cases = [
     [CRAFT, at({ [stick]: 6 }), 20],
     [LIGHT_CAMPFIRE, at({ [stick]: 2 }, burning(0)), 5],
@@ -303,6 +321,7 @@ test("each action lasts its minutes and takes nothing from the backpack at its s
 });
 
 test("crafting puts an unlit campfire on the tile at its end and uses 6 sticks", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const run = after(endingNext(at({ [stick]: 8, [berry]: 1 }), CRAFT), 1);
   assert.deepEqual(run.campfires, [{ at: entrance, minutesLeft: 0 }]);
   assert.deepEqual(
@@ -314,6 +333,9 @@ test("crafting puts an unlit campfire on the tile at its end and uses 6 sticks",
 });
 
 test("a campfire lit in minute m warms from minute m + 1 for 60 minutes and uses 2 sticks", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
+  // decision: D-68 "A campfire that burns out stays on its tile, extinguished"
   const lit = after(
     endingNext(at({ [stick]: 3 }, burning(0)), LIGHT_CAMPFIRE),
     1,
@@ -329,6 +351,7 @@ test("a campfire lit in minute m warms from minute m + 1 for 60 minutes and uses
 });
 
 test("lighting and feeding land on the campfire of the character's tile alone", () => {
+  // decision: D-69 "Each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   const lit = after(
     endingNext(
@@ -361,6 +384,8 @@ test("lighting and feeding land on the campfire of the character's tile alone", 
 });
 
 test("a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3 and is used", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   const lit = after(endingNext(at({ [stick]: 2 }), LIGHT_ITEM), 1);
   assert.deepEqual(lit.burningItems, [
     { item: stick, at: entrance, minutesLeft: 3 },
@@ -371,6 +396,8 @@ test("a stick lit in minute m burns on the tile, warms in minutes m + 1 to m + 3
 });
 
 test("feeding a burning campfire adds 20 minutes, without a cap, and uses one stick", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
+  // decision: D-69 "Each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning"
   for (const [left, expected] of [
     [150, 169],
     [1000, 1019],
@@ -382,6 +409,8 @@ test("feeding a burning campfire adds 20 minutes, without a cap, and uses one st
 });
 
 test("a feeding during which the campfire burns out makes it burn 20 minutes again", () => {
+  // decision: D-69 "Each feeding of a campfire burning at the feeding's start adds, at the feeding's end, its minutes of burning"
+  // decision: D-68 "A campfire that burns out stays on its tile, extinguished"
   // Minute 1: the campfire drops to 3 and the feeding starts; minutes 2–4 burn it out; minute 6
   // ends the feeding on the extinguished campfire.
   const start = freeNextMinute(at({ [stick]: 1 }, burning(4)));
@@ -398,6 +427,9 @@ test("a feeding during which the campfire burns out makes it burn 20 minutes aga
 });
 
 test("eating adds 25 satiety at its end, not above 100, and uses a berry", () => {
+  // decision: D-59 "Warming raises a character's body temperature up to its starting body temperature, and eating raises its satiety up to its starting satiety"
+  // decision: D-387 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
   for (const [satiety, expected] of [
     [50, 74.4],
     [76, 100],
@@ -417,6 +449,7 @@ test("eating adds 25 satiety at its end, not above 100, and uses a berry", () =>
 });
 
 test("„Idź — ognisko” takes one move toward the nearest campfire, in the minutes of the tile it enters", () => {
+  // decision: D-26 "A program points at a thing of the world only as the nearest known one of its kind, counted in game minutes of walking"
   const near = neighbours(handMade().tiles, entrance)[0];
   const far = offsetToAxial(3, 3);
   assert.equal(hexDistance(far, entrance), 3);
@@ -440,6 +473,8 @@ test("„Idź — ognisko” takes one move toward the nearest campfire, in the 
 });
 
 test("„Idź — ognisko” walks to a far campfire step by step and stays there", () => {
+  // decision: D-25 "A move onto a neighbouring tile is an ordinary action of the character, after which the program picks a program rule anew, as after any action of the character"
+  // decision: D-26 "An action of the character that goes to a thing of the world can be carried out where a thing of its kind is known and the character does not stand on one, and nowhere else"
   const far = offsetToAxial(3, 3);
   const walking = programFromRules(rule(ALWAYS, TO_CAMPFIRE));
   let run = freeNextMinute(at({}, [{ at: far, minutesLeft: 30 }]));
@@ -456,6 +491,9 @@ test("„Idź — ognisko” walks to a far campfire step by step and stays ther
 });
 
 test("„Idź — ognisko” cannot be carried out where there is no campfire or on a campfire's tile", () => {
+  // decision: D-26 "An action of the character that goes to a thing of the world can be carried out where a thing of its kind is known and the character does not stand on one, and nowhere else"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   assert.equal(actionFeasible(at(), TO_CAMPFIRE), false, "none");
   for (const minutesLeft of [0, 30]) {
@@ -479,6 +517,7 @@ test("„Idź — ognisko” cannot be carried out where there is no campfire or
 });
 
 test("„Idź — ognisko” is passed over on a campfire's tile, and the next program rule is picked", () => {
+  // decision: D-26 "An action of the character that goes to a thing of the world can be carried out where a thing of its kind is known and the character does not stand on one, and nowhere else"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   const run = freeNextMinute(
     at({}, [
@@ -495,6 +534,7 @@ test("„Idź — ognisko” is passed over on a campfire's tile, and the next p
 });
 
 test("the action ending in the minute of death takes no effect", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   // Health 0.35 and chilled: the minute's body kills the character before the berry lands.
   const run = endingNext(
     { ...at({ [berry]: 1 }), body: body(34, 50, 0.35) },
@@ -514,6 +554,7 @@ function heldProgram(state) {
 }
 
 test("the program check takes the six actions before sending and during a map run", () => {
+  // decision: D-23 "Which piece of an item an action uses — which fuel goes into a campfire — the simulation chooses, not the program"
   const rules = NEW_ACTIONS.map((action) => rule(ALWAYS, action));
   const during = send(
     createCharacter(withEdgeSolved(newGame()), "Ala").state,
@@ -547,6 +588,10 @@ function withEnergy(run, natureEnergy, satiety = 100) {
 }
 
 test("Płomyk can be cast with nature energy reaching its price of 10, and not with less", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-177 "A mage carries out Płomyk while its nature energy reaches the spell's price"
+  // decision: D-175 "Each spell costs the mage nature energy, which comes back by itself only while the mage is well fed; empty nature energy closes the spells"
   const cases = [
     [LIGHT_CAMPFIRE, at({ [stick]: 2 }, burning(0))],
     [LIGHT_ITEM, at({ [stick]: 1 })],
@@ -574,6 +619,7 @@ test("Płomyk can be cast with nature energy reaching its price of 10, and not w
 });
 
 test("with too little nature energy the program passes over a „Zapal” rule to the next one", () => {
+  // decision: D-177 "A mage carries out Płomyk while its nature energy reaches the spell's price; with less, the program passes over a program rule with „Zapal — ognisko” or „Zapal — patyk” and picks a later one"
   const program = programFromRules(
     rule(ALWAYS, LIGHT_ITEM),
     rule(ALWAYS, WANDER),
@@ -601,6 +647,9 @@ test("with too little nature energy the program passes over a „Zapal” rule t
 });
 
 test("a finished lighting takes its sticks and 10 nature energy together, a campfire and a stick alike", () => {
+  // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk"
+  // decision: D-63 "The sticks and the nature energy leave together when the lighting finishes"
+  // decision: D-175 "Each spell costs the mage nature energy"
   // Satiety 50 falls to 49.4, below 60: no energy comes back in the minute.
   const campfire = after(
     endingNext(
@@ -625,6 +674,7 @@ test("a finished lighting takes its sticks and 10 nature energy together, a camp
 });
 
 test("the energy of a lighting is taken when it finishes, not while it goes on", () => {
+  // decision: D-63 "The sticks and the nature energy leave together when the lighting finishes"
   const program = programFromRules(rule(ALWAYS, LIGHT_ITEM));
   let run = freeNextMinute(withEnergy(at({ [stick]: 1 }), 50, 50));
   const energies = [];
@@ -637,6 +687,8 @@ test("the energy of a lighting is taken when it finishes, not while it goes on",
 });
 
 test("a mage with full nature energy who finishes a lighting has 90 after that minute", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-377 "In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5, up to its cap"
   // D-71: the minute's 0.5 comes back before the lighting takes effect, so it is lost at the cap.
   const full = after(
     endingNext(withEnergy(at({ [stick]: 1 }), 100), LIGHT_ITEM),
@@ -651,6 +703,7 @@ test("a mage with full nature energy who finishes a lighting has 90 after that m
 });
 
 test("a lighting that takes no hold takes no nature energy", () => {
+  // decision: D-63 "The sticks and the nature energy leave together when the lighting finishes"
   const noStick = after(endingNext(withEnergy(at(), 50, 50), LIGHT_ITEM), 1);
   assert.equal(noStick.burningItems.length, 0);
   assert.equal(noStick.natureEnergy, 50);
@@ -668,6 +721,7 @@ test("a lighting that takes no hold takes no nature energy", () => {
 });
 
 test("empty nature energy takes no health", () => {
+  // decision: D-175 "Each spell costs the mage nature energy, which comes back by itself only while the mage is well fed; empty nature energy closes the spells and takes no health"
   // Warm at 37 °C and fed: health comes back by 0.05, whatever the energy.
   const run = { ...handMade({ body: body(37, 100, 50) }), natureEnergy: 0 };
   const next = after(run, 1);
@@ -682,6 +736,11 @@ test("empty nature energy takes no health", () => {
 const CLEAN_FLAME = { flameSpell: { practice: 0, ranks: { cleanFlame: 1 } } };
 
 test("the price of an action names the pieces it uses up and the nature energy it takes, nothing for what takes none", () => {
+  // decision: D-387 "Making a campfire lasts 20 game minutes and uses 6 sticks"
+  // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk"
+  // decision: D-63 "With the bought branch „Czysty płomień”, „Zapal — ognisko” requires and consumes no sticks and costs the nature energy of ordinary lighting"
+  // decision: D-175 "Each spell costs the mage nature energy"
+  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
   const price = (kind, skills = {}) => actionPrice(kind, skills);
   assert.deepEqual(price("craftCampfire"), {
     pieces: [{ item: "stick", count: 6 }],
@@ -716,6 +775,8 @@ test("the price of an action names the pieces it uses up and the nature energy i
 });
 
 test("a finished action takes from the backpack and from the nature energy exactly its price, with and without „Czysty płomień”", () => {
+  // decision: D-63 "The sticks and the nature energy leave together when the lighting finishes"
+  // decision: D-63 "With the bought branch „Czysty płomień”, „Zapal — ognisko” requires and consumes no sticks"
   const rich = { [stick]: 10, [berry]: 5 };
   const cases = [
     [CRAFT, at(rich), {}],
@@ -766,6 +827,9 @@ function stepsWithEvents(run, minutes, stepProgram = IDLE) {
 }
 
 test("a campfire gives its event in the game minute its last minute of burning passes, on its tile", () => {
+  // decision: D-68 "A campfire that burns out stays on its tile, extinguished"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Burning 3 minutes: minutes 1 and 2 leave 2 and then 1; minute 3 passes the last one.
   const start = freeNextMinute(handMade({ campfires: burning(3) }));
   const { run, events } = stepsWithEvents(start, 3);
@@ -776,6 +840,10 @@ test("a campfire gives its event in the game minute its last minute of burning p
 });
 
 test("a campfire going out in a minute of an encounter gives its event too", () => {
+  // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
+  // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const fighting = {
     ...handMade({ campfires: burning(1) }),
     current: null,
@@ -789,6 +857,8 @@ test("a campfire going out in a minute of an encounter gives its event too", () 
 });
 
 test("a campfire crafted unlit, or one already at zero, gives no event", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const crafted = after(endingNext(at({ [stick]: 8 }), CRAFT), 1);
   assert.deepEqual(crafted.campfires, [{ at: entrance, minutesLeft: 0 }]);
   const crafting = stepsWithEvents(freeNextMinute(crafted), 3);
@@ -801,6 +871,9 @@ test("a campfire crafted unlit, or one already at zero, gives no event", () => {
 });
 
 test("the minute of a death gives no event, and the campfire keeps its minutes", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // Health 0.1 is gone in minute 1 of chill: the death comes before the world passes.
   const dying = handMade({ campfires: burning(1), body: body(34, 50, 0.1) });
   const { run, events } = stepsWithEvents(freeNextMinute(dying), 1);
@@ -810,6 +883,8 @@ test("the minute of a death gives no event, and the campfire keeps its minutes",
 });
 
 test("each campfire that goes out gives its own event, and one still burning gives none", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const away = neighbours(handMade().tiles, entrance)[0].at;
   const far = offsetToAxial(3, 3);
   const run = freeNextMinute(
@@ -829,6 +904,8 @@ test("each campfire that goes out gives its own event, and one still burning giv
 });
 
 test("a campfire going out while an activity goes on gives its event, and the activity's end no event", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // A wait running to minute 5 with the campfire's last minute at minute 1: no activity ends in it.
   const running = {
     ...handMade({ campfires: burning(1) }),

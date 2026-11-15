@@ -13,6 +13,7 @@ const map = MAPS.forest;
 const resourceIds = map.resources.map((resource) => resource.id);
 
 test("tiles are row-major, unrevealed, with the map step cost", () => {
+  // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —, cost of a move"
   const { tiles } = drawLayout(map, 1);
   assert.equal(tiles.length, map.width * map.height);
   tiles.forEach((tile, index) => {
@@ -38,6 +39,8 @@ test("only the map resources appear, each with its full stock", () => {
 
 // invariant: first-map-stock
 test("every tile of Skraj lasu holds its full stock of sticks and berries, whatever the seed", () => {
+  // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
+  // decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
   const seeds = [0, ...Array.from({ length: 200 }, (_, index) => index + 1)];
   seeds.push(4294967295);
   for (const seed of seeds) {
@@ -54,6 +57,8 @@ test("every tile of Skraj lasu holds its full stock of sticks and berries, whate
 });
 
 test("the entrance is the fixed one and lies on the map", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —"
   for (const seed of [1, 2, 3]) {
     const { tiles, entrance } = drawLayout(map, seed);
     assert.deepEqual(
@@ -65,6 +70,9 @@ test("the entrance is the fixed one and lies on the map", () => {
 });
 
 test("Las — głębiej draws its entrance from every row-major tile after resources", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-24 "A map is a grid of hexagonal tiles whose dimensions, entrance — fixed, or drawn by the map run —"
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw — attacks, gathering, the map's layout and wandering among them — and the map run draws its map's layout at its start, before the first game minute, in a fixed order"
   const deep = MAPS.forestDeep;
   const seedOne = drawLayout(deep, 1);
   assert.ok(
@@ -100,6 +108,7 @@ test("Las — głębiej draws its entrance from every row-major tile after resou
 });
 
 test("the same seed gives the same tiles, another seed other tiles", () => {
+  // decision: D-24 "Which tile gets what is drawn by the map run from its seed, within the bounds the map sets"
   assert.deepEqual(drawLayout(map, 7), drawLayout(map, 7));
   assert.notDeepEqual(drawLayout(map, 1).tiles, drawLayout(map, 2).tiles);
 });
@@ -117,6 +126,7 @@ test("every resource with positive density lies on at least one tile, seeds 1-20
 });
 
 test("the minimum guarantee places a resource nobody drew", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   const rare = {
     ...map,
     resources: map.resources.map((resource) => ({
@@ -136,6 +146,8 @@ test("the minimum guarantee places a resource nobody drew", () => {
 });
 
 test("a resource of zero density is never placed", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-24 "Which tile gets what is drawn by the map run from its seed, within the bounds the map sets"
   const none = {
     ...map,
     resources: map.resources.map((resource) => ({ ...resource, density: 0 })),
@@ -156,6 +168,7 @@ test("drawLayout does not change the map", () => {
 // Fixed expected values (D-22: the generator, the seed mixing and the draw order are a contract).
 // Written out once from the code; a change to any of the three fails here.
 test("golden values: the layout stream of seed 1, mixSeed(1, 1000) and the stocks of Las for seed 1", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw — attacks, gathering, the map's layout and wandering among them — and the map run draws its map's layout at its start, before the first game minute, in a fixed order"
   let state = streamState(1, "layout");
   const values = [];
   for (let i = 0; i < 3; i += 1) {

@@ -38,6 +38,7 @@ function contrast(a, b) {
 // to `--scene-tint-*` that changes the snow under the frost passes unseen, and its author measures
 // the snow again.
 test("the frost's outline stands out from the snow at every tint, 3:1 at least", () => {
+  // decision: D-271 "CSS may draw in the scene layers"
   const SNOW = {
     "no tint": "#bccae5",
     "streak 0": "#bacfd0",

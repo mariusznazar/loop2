@@ -41,6 +41,10 @@ function character(backpack, carryingCapacity = 15) {
 // The values stand in cells of their own, each with its own note (D-337), so no line that joins the
 // four values by „ · ” is checked.
 test("the body row reads temperature, satiety, health and nature energy in cells, with the minutes under the first two, as D-178 gives for Las", () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
+  // decision: D-337 "The body row holds each of its values in a cell of its own"
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // D-178: „Temperatura 36,9 °C” with „bez ognia 79 min”, „Sytość 82 %” with „bez jedzenia 86 min”,
   // „Zdrowie 100” and „Energia natury 90”; the minutes are worked out by hand in tests/sim/body.test.mjs.
   const cells = bodyCells(
@@ -64,6 +68,7 @@ test("the body row reads temperature, satiety, health and nature energy in cells
 });
 
 test("nature energy is cut down to a whole number and never stands in danger, at zero too", () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
   const body = { temperature: 36.5, satiety: 50, health: 50 };
   assert.deepEqual(bodyValues(body, 89.5)[3], {
     text: "Energia natury 89",
@@ -80,6 +85,7 @@ test("nature energy is cut down to a whole number and never stands in danger, at
 });
 
 test("temperature is cut down to tenths, never rounded up", () => {
+  // decision: D-57 "A character's warmth is its body temperature in degrees Celsius, counted with tenths"
   assert.equal(
     bodyValues({ temperature: 36.976, satiety: 100, health: 100 })[0].text,
     "Temperatura 36,9 °C",
@@ -121,6 +127,7 @@ test("an empty backpack reads „Plecak 0/15”", () => {
 });
 
 test("a backpack holding items reads its count, its cap and each held item in the data's order", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   assert.equal(
     backpackText(character({ berry: 2, stick: 5 })),
     "Plecak 7/15: patyk 5, jagoda 2",
@@ -132,10 +139,12 @@ test("a backpack holding items reads its count, its cap and each held item in th
 });
 
 test("the cap is the character's carrying capacity", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   assert.equal(backpackText(character({ moss: 2 }, 20)), "Plecak 2/20: mech 2");
 });
 
 test("the words of the note under temperature, one for each state", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   // D-337: „marznie” in red; otherwise „przy ogniu”, „nie stygnie” or „bez ognia {n} min”.
   assert.deepEqual(temperatureNoteText({ kind: "chilled" }), {
     text: "marznie",
@@ -160,6 +169,7 @@ test("the words of the note under temperature, one for each state", () => {
 });
 
 test("the words of the note under satiety, one for each state", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   // D-337: „głoduje” in red; otherwise „bez jedzenia {n} min”.
   assert.deepEqual(satietyNoteText({ kind: "starving" }), {
     text: "głoduje",
@@ -176,6 +186,8 @@ test("the words of the note under satiety, one for each state", () => {
 });
 
 test("each note at its threshold: 35,0 °C and 30 % still read minutes, 34,99 °C and 29,99 % read chilled and starving", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   // Thresholds of the body: chilled below 35.0 °C, starving below 30 (D-337, D-39).
   const notesAt = (temperature, satiety) => {
     const [t, s] = bodyCells(runOf({ temperature, satiety, health: 50 }), LAS);
@@ -192,6 +204,7 @@ test("each note at its threshold: 35,0 °C and 30 % still read minutes, 34,99 °
 });
 
 test("by a fire the note under temperature reads „przy ogniu” and the note under satiety keeps its minutes", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const run = runOf({ temperature: 36.5, satiety: 82, health: 100 });
   const at = run.character.at;
   const cells = bodyCells(
@@ -206,6 +219,7 @@ test("by a fire the note under temperature reads „przy ogniu” and the note u
 });
 
 test("a chilled body by the fire still reads „marznie” in danger", () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const run = runOf({ temperature: 34.5, satiety: 82, health: 100 });
   const at = run.character.at;
   const cells = bodyCells(
@@ -216,6 +230,9 @@ test("a chilled body by the fire still reads „marznie” in danger", () => {
 });
 
 test("on a map that does not cool the body the note under temperature reads „nie stygnie”", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature"
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   const warm = { ...LAS, ambientTemperature: 37 };
   const cells = bodyCells(
     runOf({ temperature: 37, satiety: 82, health: 100 }),
@@ -225,6 +242,7 @@ test("on a map that does not cool the body the note under temperature reads „n
 });
 
 test("health and nature energy stand with no note, at their lowest too", () => {
+  // decision: D-337 "The body row holds each of its values in a cell of its own"
   const cells = bodyCells(
     runOf({ temperature: 34, satiety: 10, health: 1 }, 0),
     LAS,
@@ -236,6 +254,7 @@ test("health and nature energy stand with no note, at their lowest too", () => {
 });
 
 test("the cells keep the danger of their values: a value below its threshold in danger, the others not", () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
   const cells = bodyCells(
     runOf({ temperature: 34.99, satiety: 82, health: 40 }, 90),
     LAS,

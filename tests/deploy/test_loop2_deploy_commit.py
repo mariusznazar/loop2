@@ -122,6 +122,7 @@ class Fetch(DeployScriptTestCase):
         self.feature = self.fixture.commit("feature", "on feature", parent=self.fixture.first)
 
     def test_forced_path_fetches_main_only(self):
+        # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit; the server pulls the code from GitHub itself"
         result = self.forced(self.main_tip)
         self.assert_checked_out(result, self.main_tip)
         refs = self.fixture.clone_refs()
@@ -131,6 +132,7 @@ class Fetch(DeployScriptTestCase):
         self.assertFalse(self.fixture.clone_has_object(self.feature))
 
     def test_human_path_fetches_every_branch_head_and_prunes(self):
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository"
         result = self.human(self.main_tip)
         self.assert_checked_out(result, self.main_tip)
         refs = self.fixture.clone_refs()
@@ -154,6 +156,7 @@ class Fetch(DeployScriptTestCase):
 class AcceptedCommit(DeployScriptTestCase):
 
     def test_earlier_ancestor_of_main_accepted_on_both_paths(self):
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit"
         second = self.fixture.commit("main", "second")
         self.fixture.commit("main", "third")
         for run, sha in ((self.forced, self.fixture.first), (self.human, second)):
@@ -184,11 +187,13 @@ class AcceptedCommit(DeployScriptTestCase):
         self.assert_refused(self.human(tree), 3)
 
     def test_commit_only_on_another_branch_refused_on_forced_path_absent_from_clone(self):
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.assertFalse(self.fixture.clone_has_object(feature))
         self.assert_refused(self.forced(feature), 3)
 
     def test_commit_only_on_another_branch_refused_on_forced_path_after_human_fetch(self):
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.assert_checked_out(self.human(feature), feature)
         self.assertTrue(self.fixture.clone_has_object(feature))
@@ -199,6 +204,7 @@ class AcceptedCommit(DeployScriptTestCase):
                          feature, "the refused run moved the checkout")
 
     def test_commit_only_on_another_branch_accepted_on_human_path(self):
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.assert_checked_out(self.human(feature), feature)
 

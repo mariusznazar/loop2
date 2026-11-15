@@ -107,6 +107,11 @@ function statesBy(hit) {
 }
 
 test("„Zbierz” is feasible on a revealed tile holding the resource, with room in the backpack", () => {
+  // decision: D-25 "Exploring reveals the tile the character stands on, cannot be repeated on a revealed tile and brings no item, and gathering takes only from a revealed tile, as much as lies on it"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-65 "A character carries out a gathering while its backpack holds fewer pieces than its cap"
   const run = onSticks();
   assert.equal(actionFeasible(run, gather(stick)), true);
   const almostFull = carrying(run, backpackOf(run, berry, 14));
@@ -114,11 +119,17 @@ test("„Zbierz” is feasible on a revealed tile holding the resource, with roo
 });
 
 test("„Zbierz” is not feasible on a tile not revealed", () => {
+  // decision: D-25 "Exploring reveals the tile the character stands on, cannot be repeated on a revealed tile and brings no item, and gathering takes only from a revealed tile, as much as lies on it"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = withHere(onSticks(), (tile) => ({ ...tile, revealed: false }));
   assert.equal(actionFeasible(run, gather(stick)), false);
 });
 
 test("„Zbierz” is not feasible on a tile without the resource or with 0 of it", () => {
+  // decision: D-25 "Exploring reveals the tile the character stands on, cannot be repeated on a revealed tile and brings no item, and gathering takes only from a revealed tile, as much as lies on it"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const without = onSticks();
   assert.equal(actionFeasible(without, gather(berry)), false);
   const none = onSticks(0);
@@ -127,6 +138,10 @@ test("„Zbierz” is not feasible on a tile without the resource or with 0 of i
 });
 
 test("„Zbierz” is not feasible with a full backpack of 15 pieces of any items", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-65 "A character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then"
   const run = onSticks();
   const full = { ...backpackOf(run, berry, 10), [moss]: 5 };
   assert.equal(actionFeasible(carrying(run, full), gather(stick)), false);
@@ -135,6 +150,7 @@ test("„Zbierz” is not feasible with a full backpack of 15 pieces of any item
 });
 
 test("a gathering lasts 10 game minutes, takes nothing at its start and draws nothing then", () => {
+  // decision: D-387 "A gathering lasts 10 game minutes and succeeds with the chance 0.7"
   const run = onSticks();
   const begun = stepMinute(
     { ...run, current: { ...run.current, endMinute: 1 } },
@@ -152,6 +168,7 @@ test("a gathering lasts 10 game minutes, takes nothing at its start and draws no
 });
 
 test("a map run starts its gathering generator from its seed, apart from the other streams", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
   for (const seed of [1, 3, 77]) {
     const { run } = newMapRun(forest, seed, IDLE, { mapId, characterId });
     assert.equal(run.gatherRandom, streamState(seed, "gather"), `seed ${seed}`);
@@ -177,6 +194,7 @@ test("a hit moves one piece from the tile into the backpack, as the item of that
 });
 
 test("a miss takes no piece and leaves the backpack as it was", () => {
+  // decision: D-66 "A gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack"
   for (const state of statesBy(false)) {
     const start = carrying(onSticks(5), backpackOf(onSticks(5), berry, 2));
     const run = { ...gatheringEndingNext(start, stick), gatherRandom: state };
@@ -210,6 +228,8 @@ test("a hit on a tile of several resources takes only the gathered one, for each
 });
 
 test("each gathering hits exactly where its draw lies below 0.7", () => {
+  // decision: D-66 "A gathering may miss, and a missed gathering leaves the tile's stock as it was and puts no piece into the backpack"
+  // decision: D-387 "A gathering lasts 10 game minutes and succeeds with the chance 0.7"
   let hits = 0;
   for (let state = 1000; state < 1100; state += 1) {
     const run = {
@@ -226,6 +246,9 @@ test("each gathering hits exactly where its draw lies below 0.7", () => {
 });
 
 test("a tile gathered to 0 pieces keeps the key of its resource", () => {
+  // decision: D-25 "Exploring reveals the tile the character stands on, cannot be repeated on a revealed tile and brings no item, and gathering takes only from a revealed tile, as much as lies on it"
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const [state] = statesBy(true);
   const run = {
     ...gatheringEndingNext(onSticks(1), stick),
@@ -238,6 +261,8 @@ test("a tile gathered to 0 pieces keeps the key of its resource", () => {
 });
 
 test("a gathering takes no more than lies on the tile, nor beyond the backpack's cap, at its end", () => {
+  // decision: D-25 "Exploring reveals the tile the character stands on, cannot be repeated on a revealed tile and brings no item, and gathering takes only from a revealed tile, as much as lies on it"
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   const [state] = statesBy(true);
   const empty = {
     ...gatheringEndingNext(onSticks(0), stick),
@@ -258,6 +283,9 @@ test("a gathering takes no more than lies on the tile, nor beyond the backpack's
 });
 
 test("the wander stream gives the same draws with and without gathering", () => {
+  // decision: D-22 "Every random draw of the simulation comes from generators seeded by the seed saved in the map run's state, one generator for each kind of draw"
+  // decision: D-65 "A character carries out a gathering while its backpack holds fewer pieces than its cap; with the backpack full, the program passes over a program rule that gathers and picks a later one, as for any action of the character not feasible then"
+  // decision: D-375 "Choosing the tile takes one draw of the generator of wandering"
   // Every tile revealed with sticks; the backpack holds 12 berries, so gathering stops when it is
   // full and wandering follows. The wander stream's states, at each wander started, are compared.
   const prepared = (() => {

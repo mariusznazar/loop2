@@ -153,6 +153,7 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
 
     def test_commit_only_on_another_branch_refused(self):
         # invariant: loop2-deploy-trigger-input
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.assert_commit_refused(self.fixture.run(ssh_original_command=feature),
                                    self.fixture.first)
@@ -161,6 +162,7 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
         # A human run fetched the other branch, so the clone holds the commit and a
         # remote-tracking ref of it; the forced command still refuses it.
         # invariant: loop2-deploy-trigger-input
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         feature = self.fixture.commit("feature", "only on feature", parent=self.fixture.first)
         self.fixture.git("-C", self.fixture.checkout, "fetch", "--quiet", "origin",
                          "+refs/heads/*:refs/remotes/origin/*")
@@ -172,6 +174,7 @@ class ForcedCommandDeploysOnlyCommitsOfMain(unittest.TestCase):
         # The clone fetched `main` while it held the commit; then `main` was moved back on
         # GitHub. Only `main` as just fetched counts.
         # invariant: loop2-deploy-trigger-input
+        # decision: D-15 "A rollback is a deployment of an earlier commit — a revert merged to `main`, or a human's run of the installed deploy script with that commit, which may name a commit of any branch of the GitHub repository while the automation's key deploys only commits of `main`"
         dropped = self.fixture.commit("main", "dropped from main later")
         self.fixture.git("-C", self.fixture.checkout, "fetch", "--quiet", "origin",
                          "+refs/heads/main:refs/remotes/origin/main")

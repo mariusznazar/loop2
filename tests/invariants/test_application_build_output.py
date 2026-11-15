@@ -191,6 +191,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
     def test_build_emits_every_source_file_of_both_configurations(self):
         # invariant: application-build-output
         # invariant: application-build-layout
+        # decision: D-266 "The per-module output of the browser's compilation stands in `dist/browser/`"
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
@@ -206,6 +207,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
     def test_build_compiles_made_up_source_under_each_configuration(self):
         # invariant: application-build-output
         # invariant: application-build-layout
+        # decision: D-266 "The per-module output of the browser's compilation stands in `dist/browser/`"
         copy = self.fresh_copy()
         for name, (text, _marker) in PROBES.items():
             write_probe(copy, configuration(name)[2], text)
@@ -224,6 +226,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_build_compiles_made_up_tsx_source_into_javascript(self):
         # invariant: application-build-output
+        # decision: D-266 "The per-module output of the browser's compilation stands in `dist/browser/`"
         copy = self.fresh_copy()
         placed = write_probe(copy, "src/browser", TSX_PROBE, ".tsx")
         code, output = copy.npm("run", "build")
@@ -272,6 +275,8 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_the_page_loads_one_file_that_joins_the_browsers_code(self):
         # invariant: application-build-output
+        # decision: D-06 "Building the application type-checks the simulation's files under a third configuration of their own that emits nothing, compiles the browser and server configurations and bundles the browser's code, React included, into the files the server hands out"
+        # decision: D-266 "The per-module output of the browser's compilation stands in `dist/browser/`, where tests import it and from where the bundle is made, and `dist/public/` holds only what the server hands out: that bundle, the page and the static files"
         copy = self.fresh_copy()
         write_probe(copy, "src/browser", BUNDLE_PROBE)
         with open(copy.file("src/browser/main.ts"), "a", encoding="utf-8", newline="\n") as handle:
@@ -294,6 +299,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_a_build_leaves_nothing_of_an_earlier_build(self):
         # D-266: a module left by an earlier build would be served or imported silently.
+        # decision: D-266 "A build that writes them first removes both directories"
         copy = self.fresh_copy()
         left_over = [f"{directory}/{PROBE_NAME}.js"
                      for directory in (SERVED_DIRECTORY, "dist/browser")]

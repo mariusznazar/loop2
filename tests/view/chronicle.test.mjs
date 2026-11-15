@@ -118,6 +118,8 @@ test("a chronicle built from a game with no map run holds nothing, with Kronika 
 // Catches a send that keeps the entries of the map run before it, or keeps the tab and filter picked
 // in it: a send starts the chronicle anew with „Kronika” and „Wszystko” (D-343, D-346, D-383).
 test("a send starts the chronicle anew from the start of the first activity at minute 0, with Kronika and Wszystko picked", () => {
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
+  // decision: D-383 "The filter the player picks above the list of the chronicle stays picked"
   const { chronicle, state } = sentChronicle();
   assert.deepEqual(rowsOf(chronicle), [waitAt(0)]);
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
@@ -135,6 +137,7 @@ test("a send starts the chronicle anew from the start of the first activity at m
 
 // Catches an entry for each game minute of a wait, or a wait after an action given no entry.
 test("a wait gives one entry when it starts and none for the minutes it lasts", () => {
+  // decision: D-340 "A wait gives one entry of the same kind when it starts"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [waitStarted(1), waitStarted(2)]);
   recordEvents(chronicle, state, [waitStarted(3)]);
@@ -149,6 +152,8 @@ test("a wait gives one entry when it starts and none for the minutes it lasts", 
 
 // Catches the number of a rule or the words of the header („Zbiera: patyk”) in an action's entry.
 test("the start of an action gives its entry in the words of the rule's row, with no number of a rule", () => {
+  // decision: D-338 "A manual map run keeps a chronicle of what happened in it"
+  // decision: D-340 "The start of each action of the character gives an entry of the chronicle"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [
     started(10, { kind: "gather", resource: "stick" }),
@@ -166,6 +171,8 @@ test("the start of an action gives its entry in the words of the rule's row, wit
 
 // Catches a loss with no number of the streak, a cause in the wrong words, or a loss not in `danger`.
 test("a loss of the streak gives „Passa {passa} przerwana: {przyczyna}” in danger, for each cause", () => {
+  // decision: D-338 "A manual map run keeps a chronicle of what happened in it"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
   const { chronicle, state } = sentChronicle();
   const lost = (minute, streak, cause) => ({
     kind: "streakLost",
@@ -212,6 +219,8 @@ test("a loss of the streak gives „Passa {passa} przerwana: {przyczyna}” in d
 // Catches the words of loop („Postać zamarzła.”) in place of those of „Teraz”, a death in `danger`, a
 // completion not in `positive` or with the words of another map, and one entry for two campfires.
 test("a campfire going out, a death and a completion give entries of the kind Świat in the words of „Teraz”", () => {
+  // decision: D-344 "Besides the kinds D-338 gives, the chronicle holds the kind „Świat”, with a filter of its own"
+  // decision: D-344 "The entry of a completion stands in the role `positive`"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [
     { kind: "campfireExtinguished", minute: 60, at: { q: 1, r: 1 } },
@@ -237,6 +246,8 @@ test("a campfire going out, a death and a completion give entries of the kind Ś
 // Catches an entry for the end of an action, a step, a tile, an exchange of blows or an end of an
 // encounter: none of them is a kind of the chronicle (D-340, D-147).
 test("the end of an action, a step, a revealed tile, an exchange and the end of an encounter give no entry and change nothing", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-340 "The start of each action of the character gives an entry of the chronicle"
   const { chronicle, state } = sentChronicle();
   const version = chronicle.snapshot().version;
   recordEvents(chronicle, state, [
@@ -253,6 +264,10 @@ test("the end of an action, a step, a revealed tile, an exchange and the end of 
 // Catches the paragraph kept apart from the order of time, an earlier attack's paragraph kept beside
 // the later one, or an entry for each attack (D-147).
 test("an attack places the paragraph at its minute among the entries, and the next attack moves it", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
+  // decision: D-338 "A manual map run keeps a chronicle of what happened in it"
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);
@@ -283,6 +298,7 @@ test("an attack places the paragraph at its minute among the entries, and the ne
 
 // Catches a wait after an attack given no entry: the encounter ended the wait before it.
 test("an attack ends the wait before it, so the next wait gives its entry", () => {
+  // decision: D-340 "A wait gives one entry of the same kind when it starts"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [attacked(5), waitStarted(8)]);
   assert.deepEqual(rowsOf(chronicle), [waitAt(8), { paragraph: 5 }, waitAt(0)]);
@@ -292,6 +308,9 @@ test("an attack ends the wait before it, so the next wait gives its entry", () =
 // the filter the player picked (D-346, D-383), or keeping the wait of the ended map run so that the new
 // map run's first wait gives no entry.
 test("„Restart” clears the entries and the paragraph and keeps the tab and the filter", () => {
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
+  // decision: D-383 "The filter the player picks above the list of the chronicle stays picked"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [attacked(5), started(9, { kind: "eat" })]);
   recordEvents(chronicle, state, [waitStarted(12)]);
@@ -309,6 +328,7 @@ test("„Restart” clears the entries and the paragraph and keeps the tab and t
 // Catches the entries or the paragraph left after „Zakończ”, or a clearing the screen is not told
 // of, since the number stays.
 test("„Zakończ” clears the entries and the paragraph", () => {
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [attacked(5), started(9, { kind: "eat" })]);
   const version = chronicle.snapshot().version;
@@ -339,6 +359,11 @@ function loadedWithEncounter(state) {
 // Catches the paragraph lost at a load, standing at the minute of the load, or entries invented for
 // what came before (D-339).
 test("a chronicle built from a loaded state holds the paragraph of the last encounter alone, at the attack's minute", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-147 "The paragraph stands through „Wznów”, editing, a load of the saved game state and the frozen death or completion screen until another attack replaces it as the last one or „Restart” or „Zakończ” removes its map run; a completion before the turns keeps the attack description and leaves the outcome absent"
+  // decision: D-339 "After a load of a saved game state"
+  // decision: D-346 "The tab „Kronika” or „Teren” the player picks"
+  // decision: D-383 "The filter the player picks above the list of the chronicle stays picked"
   const { state } = sentChronicle();
   const chronicle = createChronicle(loadedWithEncounter(state));
   assert.deepEqual(rowsOf(chronicle), [{ paragraph: 212 }]);
@@ -355,6 +380,7 @@ test("a chronicle built from a loaded state holds the paragraph of the last enco
 });
 
 test("a chronicle built from a loaded state with no attack holds nothing", () => {
+  // decision: D-339 "After a load of a saved game state"
   const { state } = sentChronicle();
   const chronicle = createChronicle({
     ...state,
@@ -367,6 +393,8 @@ test("a chronicle built from a loaded state with no attack holds nothing", () =>
 // Catches a load in the middle of a wait giving the wait an entry at the next minute of it, or a
 // load in an action keeping the next wait from its entry.
 test("a load in the middle of a wait gives that wait no entry, and a load in an action gives the next wait its entry", () => {
+  // decision: D-339 "After a load of a saved game state"
+  // decision: D-340 "A wait gives one entry of the same kind when it starts"
   const { state } = sentChronicle();
   assert.equal(state.run.current.activity.kind, "wait", "precondition");
   const waiting = createChronicle(state);
@@ -395,6 +423,11 @@ test("a load in the middle of a wait gives that wait no entry, and a load in an 
 // chill at minute 84 (tests/view/discovery-band.test.mjs), its streak growing by one in each of the
 // minutes 1 to 83.
 test("the first chill gives one entry of the discovery holding the band's text, the loss of the streak, and no entry of a change", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours, and what it named enters the chronicle"
+  // decision: D-338 "A manual map run keeps a chronicle of what happened in it"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-345 "The discoveries of one game minute give one entry of the chronicle"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const { chronicle, state } = advanced(100);
   assert.equal(
     state.run.minute,
@@ -419,6 +452,9 @@ test("the first chill gives one entry of the discovery holding the band's text, 
 // the copy holds the player's own rule „Eksploruj” at the first chill, so the game writes nothing
 // (D-123, D-345).
 test("the first chill of a copy that holds a rule „Eksploruj” of the player's own gives an entry of the discovery with no sentence about a rule", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours, and what it named enters the chronicle"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
+  // decision: D-345 "The discoveries of one game minute give one entry of the chronicle"
   const own = withRuleAdded(newGame().programs[0].program);
   const before = createCharacter(
     setProgram(withEdgeSolved(newGame()), own).state,
@@ -444,6 +480,9 @@ test("the first chill of a copy that holds a rule „Eksploruj” of the player'
 // Catches an entry that follows the group's later rename, as the band does while it stands (D-312
 // binds the band alone; D-382).
 test("the entry of a discovery keeps the group the band named at the discovery after the group is renamed", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours, and what it named enters the chronicle"
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-382 "The text of an entry is composed once"
   const { chronicle, state } = advanced(100);
   const program = structuredClone(state.run.copy.program);
   program.groups[0].name = "Ogień";
@@ -463,6 +502,10 @@ test("the entry of a discovery keeps the group the band named at the discovery a
 // change of the copy left with no entry (D-341, D-342). Minute 50 of a new game stands before the
 // first chill, so its streak is 50.
 test("an edit of the copy gives its entry and then the loss of the streak it caused, in the same minute", () => {
+  // decision: D-338 "A manual map run keeps a chronicle of what happened in it"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-341 "A change of the program that sets the streak to zero gives in its game minute two entries"
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
   const { chronicle, state } = advanced(50);
   assert.equal(state.run.streak, 50, "precondition: a streak of 50");
   chronicle.record(
@@ -491,6 +534,7 @@ test("an edit of the copy gives its entry and then the loss of the streak it cau
 
 // Catches an entry for an edit of a saved program, which changes no map run (D-342, saved-program-edit).
 test("an edit of a saved program gives no entry", () => {
+  // decision: D-342 "Such entries are given after the end of the map run too"
   const { chronicle, state } = advanced(50);
   const version = chronicle.snapshot().version;
   const saved = state.programs[0];
@@ -505,6 +549,8 @@ test("an edit of a saved program gives no entry", () => {
 // Catches a save, a save as a new program, a switch or a discard with no entry, with the name of
 // another program, or a discard described by what it changed (D-342).
 test("a save, a save as a new program, a switch and a discard each give their entry with the program's name", () => {
+  // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
+  // decision: D-348 "The browser view describes an act of the player on the copy"
   const { chronicle, state } = advanced(50);
   const edit = { kind: "edit", move: null };
   let current = state;
@@ -535,6 +581,7 @@ test("a save, a save as a new program, a switch and a discard each give their en
 // Catches an act after the end given the minute of the clock or none: it stands at the minute of the
 // end (D-342, D-173).
 test("an edit of the copy after a death stands at the game minute of the death", () => {
+  // decision: D-342 "Such entries are given after the end of the map run too"
   const { chronicle, state } = advanced(50);
   const dead = {
     ...state,
@@ -558,6 +605,8 @@ test("an edit of the copy after a death stands at the game minute of the death",
 // Catches a window that draws every entry, one that drops the newest, a filter that shows another
 // kind, or a window that hides that more entries stand beyond it (D-382).
 test("a filter's window holds its newest entries up to its size, newest first, and says whether more stand beyond it", () => {
+  // decision: D-343 "Over the list of the chronicle stands a row of filter buttons"
+  // decision: D-382 "The list of the chronicle draws the entries of the filter picked"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [
     started(1, { kind: "explore" }),
@@ -592,6 +641,8 @@ test("a filter's window holds its newest entries up to its size, newest first, a
 // Catches the paragraph drawn in a window that ends before its place, or left out of one that reaches
 // it.
 test("the paragraph stands in the window of Wszystko only where the window reaches its place", () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-382 "The list of the chronicle draws the entries of the filter picked"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);
@@ -612,6 +663,7 @@ test("the paragraph stands in the window of Wszystko only where the window reach
 // Catches a number that stays at a change, so the screen would not draw it, or one that changes with
 // nothing changed, so the screen would draw the rows again for nothing (D-382).
 test("the number changes at every change of the chronicle, the tab or the filter, and at nothing else", () => {
+  // decision: D-382 "A draw in which neither the chronicle, nor the filter, nor the window, nor the last encounter changed draws no row again"
   const { chronicle, state } = sentChronicle();
   const versions = [chronicle.snapshot().version];
   const changed = () => {
@@ -643,6 +695,7 @@ test("the number changes at every change of the chronicle, the tab or the filter
 // end of the map run comes (the window would start anew while the player reads), or not changing the
 // snapshot the screen compares.
 test("the number of the map run changes at a send and at „Restart”, and at nothing else", () => {
+  // decision: D-382 "The list of the chronicle draws the entries of the filter picked"
   const { chronicle, state } = sentChronicle();
   const first = chronicle.snapshot().runNumber;
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
@@ -670,6 +723,7 @@ test("the number of the map run changes at a send and at „Restart”, and at n
 // entry of one result (the screen would draw again for each), a call where nothing changed, and a
 // listener that goes on being called after it stopped. The screen reads the memory through this.
 test("a listener is called once for a result that changed the chronicle and once for a pick that changed it, and never after it stopped", () => {
+  // decision: D-382 "A draw in which neither the chronicle, nor the filter, nor the window, nor the last encounter changed draws no row again"
   const { chronicle, state } = sentChronicle();
   let calls = 0;
   const stop = chronicle.subscribe(() => {
@@ -701,6 +755,8 @@ test("a listener is called once for a result that changed the chronicle and once
 // paragraph stands at the game minute of the attack and is no entry; the death's entry is the last of
 // the minutes, and an act after the end stands after it.
 test("the entries up to the death end with its entry, oldest first, leave out the paragraph of the last encounter and stay as they were after an edit", () => {
+  // decision: D-147 "At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too"
+  // decision: D-368 "Each section of why stands only where it has content"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);
@@ -729,6 +785,7 @@ test("the entries up to the death end with its entry, oldest first, leave out th
 // Catches the last minutes shown with no death recorded, or with the entries of a chronicle that began
 // at a load, which holds only the paragraph of the last encounter (D-339).
 test("the entries up to the death are empty while no death is recorded and after a load", () => {
+  // decision: D-368 "Each section of why stands only where it has content"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   assert.deepEqual(chronicle.entriesToDeath(4), []);

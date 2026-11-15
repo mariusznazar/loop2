@@ -70,6 +70,7 @@ test("hereBelow reads 0 on an unrevealed tile, whatever lies there", () => {
 });
 
 test("hereBelow compares the true stock of a revealed tile", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const run = withHere(freshRun(), (tile) => ({
     ...tile,
     revealed: true,
@@ -85,6 +86,7 @@ test("hereBelow compares the true stock of a revealed tile", () => {
 });
 
 test("hereBelow with N = 0 never holds", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const run = withHere(freshRun(), (tile) => ({
     ...tile,
     revealed: true,
@@ -146,6 +148,9 @@ test("a wait lasts waitMinutes, one game minute", () => {
 });
 
 test("feasibility and choice do not draw from the wander generator", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-375 "„Wędruj” can be carried out while the character's tile has a neighbour on the map"
   const run = freshRun();
   const before = JSON.stringify(run);
   actionFeasible(run, WANDER);
@@ -177,6 +182,8 @@ const grouped = (...groups) => ({
 const identified = (id, condition, action) => ({ id, condition, action });
 
 test("a new game starts with one empty Program group under always", () => {
+  // decision: D-91 "A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”"
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
   const initial = newGame().programs[0].program;
   assert.ok(
     Array.isArray(initial.groups),
@@ -192,6 +199,7 @@ test("a new game starts with one empty Program group under always", () => {
 });
 
 test("group order skips false, empty and infeasible groups and then takes the first qualifying rule", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups"
   const candidate = grouped(
     group(7, below(stick, 0), [identified(71, ALWAYS, WANDER)]),
     group(5, ALWAYS, []),
@@ -253,6 +261,7 @@ test("identical rule contents keep distinct identities when groups and rules mov
 });
 
 test("group conditions use the same legal number, resource and item values as rules", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const conditions = [
     ALWAYS,
     below(stick, 3),
@@ -275,6 +284,7 @@ test("group conditions use the same legal number, resource and item values as ru
 });
 
 test("group conditions refuse unknown kinds and invalid fields while accepting a legal control", () => {
+  // decision: D-376 "The program check refuses a number that is no finite number, lies outside the range or off the step"
   const valid = grouped(group(5, ALWAYS, []));
   assert.doesNotThrow(() => setProgram(newGame(), valid));
   for (const condition of [
@@ -292,6 +302,8 @@ test("group conditions refuse unknown kinds and invalid fields while accepting a
 });
 
 test("program identities are unique positive integers below the next identity counters", () => {
+  // decision: D-90 "A program holds an ordered list of rule groups, and every program rule belongs to exactly one of those groups"
+  // decision: D-23 "Conditions are chosen from a closed list, never written as expressions, rule groups stand one level deep"
   const valid = grouped(
     group(3, ALWAYS, [identified(7, ALWAYS, EXPLORE)]),
     group(5, ALWAYS, [identified(9, ALWAYS, WANDER)]),

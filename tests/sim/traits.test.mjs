@@ -44,6 +44,8 @@ function sent() {
 }
 
 test("a sent map run's character carries carrying capacity 15 and an empty backpack with cap 15", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
+  // decision: D-64 "Carrying capacity is 15 pieces"
   const { character } = sent().run;
   assert.deepEqual(character.traits, { carryingCapacity: 15 });
   assert.deepEqual(character.backpack, emptyBackpack());
@@ -60,6 +62,7 @@ test("every item of the data has a place in a new backpack", () => {
 });
 
 test("the traits of a character are its own copy, not the data's object", () => {
+  // decision: D-64 "Carrying capacity is 15 pieces"
   const { character } = sent().run;
   assert.notEqual(character.traits, TRAITS);
   assert.notEqual(newTraits(), newTraits());
@@ -74,6 +77,7 @@ test("two sent map runs do not share a backpack", () => {
 });
 
 test("a restart keeps the traits of a character that carries other traits", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   const game = sent();
   const other = {
     ...game,
@@ -105,6 +109,7 @@ test("a restart gives the new map run an empty backpack", () => {
 });
 
 test("the count of a hand-made backpack is the pieces of all items together", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
   const backpack = { ...emptyBackpack(), stick: 5, berry: 10 };
   assert.equal(backpackCount(backpack), 15);
   assert.equal(backpackCount({ ...emptyBackpack(), moss: 2, fiber: 5 }), 7);
@@ -112,11 +117,13 @@ test("the count of a hand-made backpack is the pieces of all items together", ()
 });
 
 test("the cap of a hand-made character is its carrying capacity", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   assert.equal(backpackCap({ traits: { carryingCapacity: 9 } }), 9);
   assert.equal(backpackCap({ traits: { carryingCapacity: 0 } }), 0);
 });
 
 test("newMapRun takes the traits it is given, and a new character's without them", () => {
+  // decision: D-64 "Carrying capacity is 15 pieces"
   const given = newMapRun(forest, 1, NO_RULES, SENT, {
     carryingCapacity: 3,
   }).run;
@@ -127,6 +134,7 @@ test("newMapRun takes the traits it is given, and a new character's without them
 });
 
 test("a created character carries carrying capacity 15 in the team", () => {
+  // decision: D-64 "Carrying capacity is 15 pieces"
   const { characters } = createCharacter(newGame(), "Ala").state.team;
   assert.deepEqual(characters[0].traits, { carryingCapacity: 15 });
   const second = createCharacter(createCharacter(newGame(), "Ala").state, "Ola")
@@ -149,6 +157,7 @@ function withCarrier() {
 }
 
 test("the map run of a sent character carries that character's traits, also where they differ from a new character's", () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   const run = send(withCarrier(), SENT, REAL_MS).state.run;
   assert.equal(run.character.id, characterId);
   assert.deepEqual(run.character.traits, { carryingCapacity: 4 });

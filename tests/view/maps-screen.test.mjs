@@ -143,6 +143,12 @@ function endedRun(state) {
 // D-331, D-149: nothing is picked under #/mapy, and a map whose opener is unsolved is not listed:
 // a new game lists Skraj lasu alone.
 test("with no map named the list holds the open maps alone and the right area says to pick from it", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(newTeamOf("Ala")));
     assert.deepEqual(texts(page.root, ".maps-list-item"), ["Skraj lasu"]);
@@ -179,6 +185,10 @@ test("with no map named the list holds the open maps alone and the right area sa
 // D-134, D-331, D-282: a row is a link to the map's address from the data, the solved mark stands
 // after the name, and the row of the map named is the one marked.
 test("a row is a link to the map's address, a solved map says so after its name and the map named is the marked row", async () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map"
+  // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   await withPage(async (page) => {
     const { screen } = await mount(
       page,
@@ -213,6 +223,9 @@ test("a row is a link to the map's address, a solved map says so after its name 
 
 // A map off the list is no map the screen draws a card for, since sending to it is refused (D-149).
 test("a map named whose opener is unsolved draws no card", async () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(teamOf("Ala"), "forestDeep"));
     assert.equal(page.root.querySelector(".maps-card"), null);
@@ -228,6 +241,11 @@ test("a map named whose opener is unsolved draws no card", async () => {
 // D-327: the card of Skraj lasu, the map a new game opens on, with sticks and berries alone: no
 // opener, no „Czyha”, no „Odbiera”.
 test("the card of Skraj lasu holds its heading, what it asks, its terrain and its sticks and berries alone", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
     await mount(page, propsOf(newTeamOf("Ala"), "forestEdge"));
     assert.equal(text(page.root, ".maps-card-name"), "Skraj lasu");
@@ -256,6 +274,12 @@ test("the card of Skraj lasu holds its heading, what it asks, its terrain and it
 
 // D-327: the card of Las, an unsolved Las with neither „Czyha” nor „Odbiera”, which Skraj lasu opens.
 test("the card of Las holds its heading, what it asks, its terrain and what lies there, and no part Las lacks", async () => {
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
     assert.equal(text(page.root, ".maps-card-name"), "Las");
@@ -305,6 +329,12 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
 // D-327, D-328: a solved Las shows the mark, and Las — głębiej shows its opener, the wolf and the
 // one total number, to a player whose Understanding holds no wolf.
 test("the card of Las — głębiej names its opener, shows the wolf and the mean gap, and the Understanding stays as it was", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
   await withPage(async (page) => {
     const state = solved(teamOf("Ala"));
     const understanding = JSON.stringify(state.understanding);
@@ -364,6 +394,9 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
 // D-327: the parts that no map of the data reaches today still stand in their roles when a map
 // reaches them. The case changes the data of the two maps for its length and restores them.
 test("a step other than the usual one, a resource that does not renew and the entry and exit caps stand in their roles", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   const copies = Object.entries(MAPS).map(([id, map]) => [
     id,
     structuredClone(map),
@@ -426,6 +459,8 @@ test("a step other than the usual one, a resource that does not renew and the en
 
 // D-329: the sentence of an empty team stands under the heading.
 test("a team with no character reads the sentence under the heading of „Kto idzie”", async () => {
+  // decision: D-329 "A team with no character has in the section the sentence"
+  // decision: D-51 "A new game starts with an empty team, and the player creates the first character in the headquarters before sending any character to a game map"
   await withPage(async (page) => {
     await mount(page, propsOf(withEdgeSolved(newGame()), "forest"));
     assert.equal(text(page.root, ".maps-who-heading"), "Kto idzie");
@@ -440,6 +475,13 @@ test("a team with no character reads the sentence under the heading of „Kto id
 // D-54, D-329, D-217, D-170: the characters stand in the order of their creation, and each one's
 // lines stand from the top in the order D-329 gives.
 test("the characters stand in the order of their creation, each with its lines from the top", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
+  // decision: D-180 "The card of a map shows what of the plan enters"
+  // decision: D-54 "The characters of the team stand on its list in the order they were created"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -486,6 +528,8 @@ test("the characters stand in the order of their creation, each with its lines f
 
 // D-217, D-190: the team's one resurrection, not ready, reads the time left in danger at every character.
 test("a resurrection not ready reads the time left in danger at each character and turns ready with the clock", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
     const state = withResurrection(teamOf("Ala", "Bob"), readyAt);
@@ -509,6 +553,9 @@ test("a resurrection not ready reads the time left in danger at each character a
 // D-170: the list shows the program of the row, in the list's order, and a change hands the page
 // the character and the program picked.
 test("the list „Program:” shows the program of the row in the order of the player's list and a change hands the page the pick", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
+  // decision: D-170 "The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list"
   await withPage(async (page) => {
     const state = createProgram(teamOf("Ala", "Bob")).state;
     const [first, second] = state.programs;
@@ -537,6 +584,8 @@ test("the list „Program:” shows the program of the row in the order of the p
 // D-180, D-329: „Wejdzie: …” stands always; it is what the send takes, cut by the chest at a map not
 // yet solved and from nowhere at a solved one.
 test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map, from nowhere at a solved one, and „nic” where it takes none", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-180 "The card of a map shows what of the plan enters"
   await withPage(async (page) => {
     const plan = {
       take: [
@@ -577,6 +626,10 @@ test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map
 
 // D-188: no map of the data cuts a plan today, so the case gives Las an entry cap for its length.
 test("a map that cuts the plan shows the clipped-plan line and what enters cut", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-180 "The card of a map shows what of the plan enters"
+  // decision: D-188 "On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity"
   const copy = structuredClone(MAPS.forest);
   try {
     MAPS.forest.carryIn = 5;
@@ -626,6 +679,9 @@ test("a map that cuts the plan shows the clipped-plan line and what enters cut",
 // D-243, D-274: „Wejdź” in the main look at each map, „Puść w pętlę” the plain button and only
 // at a solved map; both act with the program the row shows.
 test("„Wejdź” is the main button at each map, „Puść w pętlę” the plain one at a solved map alone, and both hand the page the row's program", async () => {
+  // decision: D-274 "„Wejdź” at each character in the section „Kto idzie” of the card of a map has the same main look though it sends no form, while „Puść w pętlę” beside it keeps the plain button"
+  // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
+  // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   await withPage(async (page) => {
     const unsolved = teamOf("Ala");
     const { screen, calls } = await mount(page, propsOf(unsolved, "forest"));
@@ -653,6 +709,8 @@ test("„Wejdź” is the main button at each map, „Puść w pętlę” the pl
 
 // D-326: an empty list „Wynieś” says so beside „Puść w pętlę” in warning, and the button acts.
 test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” beside „Puść w pętlę”, which still acts", async () => {
+  // decision: D-326 "Where the bring list of the program picked is empty"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const empty = solved(teamOf("Ala"));
     const { screen, calls } = await mount(page, propsOf(empty, "forest"));
@@ -684,6 +742,9 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
 
 // D-251: the rehearsal mark stands under „Wejdź” at a solved map when the clipped take exceeds the chest.
 test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
   await withPage(async (page) => {
     const plan = { take: [{ item: "stick", count: 3 }], bring: [] };
     const state = withChest(withPlan(teamOf("Ala"), plan), { stick: 2 });
@@ -716,6 +777,11 @@ test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solve
 // D-243, D-244: a character in an earning loop shows its line with „Zatrzymaj”, which acts, and
 // both sending buttons stand inactive; the line of a stopped loop does not stand here (D-245).
 test("a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
+  // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
+  // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   await withPage(async (page) => {
     const state = solved({
       ...teamOf("Ala", "Bob"),
@@ -760,6 +826,9 @@ test("a character in an earning loop shows its line and „Zatrzymaj”, its sen
 // D-287, D-55: while a manual map run waits or has ended, every „Wejdź” is inactive, „Puść w pętlę”
 // is inactive at the run's character alone, and each character says why.
 test("a manual map run going on, waiting and ended keeps „Wejdź” inactive and „Puść w pętlę” inactive at its character alone, with the sentence at each character", async () => {
+  // decision: D-287 "While the game state holds a manual map run that waits in a pause, or that has ended and waits for „Restart” or „Zakończ”, Siedziba, the screen Postać and the screen Mapy keep active what the simulation allows, while „Wejdź”, „Puść w pętlę” at that map run's character and „Kup” stand inactive"
+  // decision: D-287 "Under the inactive buttons of each character in the section „Kto idzie” of the card of a map stands „Przejście na mapie {mapa} jest niezakończone"
+  // decision: D-55 "The game holds one manual map run at a time: while one character is in a manual map run, the game sends no other on a manual map run"
   await withPage(async (page) => {
     const base = solved(teamOf("Ala", "Bob"));
     const running = send(base, { mapId: "forest", characterId: 1 }, 1).state;

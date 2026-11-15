@@ -79,6 +79,8 @@ function otherTile(run) {
 const kinds = (events) => events.map((event) => event.kind);
 
 test("a map run with a streak of 479 completes at the end of the next game minute without a loss, with the rest of that minute taken effect and no program rule picked", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const before = oneShort();
   const at = otherTile(before.run);
   const state = {
@@ -117,6 +119,7 @@ test("a map run with a streak of 479 completes at the end of the next game minut
 });
 
 test("a streak of 478 completes nothing in the next minute and the pick goes on", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const state = { ...oneShort(), run: { ...oneShort().run, streak: 478 } };
   const result = advanceMinutes(state, 1);
   assert.equal(result.state.run.streak, 479);
@@ -126,6 +129,7 @@ test("a streak of 478 completes nothing in the next minute and the pick goes on"
 });
 
 test("a minute of loss from a streak of 479 does not complete", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const state = withRun({
     body: { temperature: 34.99, satiety: 100, health: 100 },
     streak: 479,
@@ -142,6 +146,7 @@ test("a new game and a new map run hold no completion and no solved map", () => 
 });
 
 test("a map run that has completed passes no further game minute, by span or by real time", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run"
   const done = advanceMinutes(oneShort(), 1).state;
   const again = advanceMinutes(done, 10);
   assert.deepEqual(again.state, done);
@@ -152,6 +157,7 @@ test("a map run that has completed passes no further game minute, by span or by 
 });
 
 test("real time that ends in a completion stops there and drops the whole carry", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run"
   const state = { ...oneShort(), realMsCarry: 400 };
   const result = passRealTime(state, 5600);
   assert.equal(result.state.run.minute, 1);
@@ -162,6 +168,7 @@ test("real time that ends in a completion stops there and drops the whole carry"
 });
 
 test("the completion in the minute of a discovery leaves the state holding the discovery, not paused", () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery"
   const unknowing = {
     ...withEdgeSolved(newGame()),
     understanding: {
@@ -198,6 +205,7 @@ test("the completion in the minute of a discovery leaves the state holding the d
 });
 
 test("a map solved stays solved, once, through restart, end, send and a later death", () => {
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   const solved = advanceMinutes(oneShort(), 1).state;
   assert.deepEqual(restart(solved).state.solvedMaps, ["forestEdge", mapId]);
   const ended = end(solved).state;
@@ -239,6 +247,7 @@ test("a map solved stays solved, once, through restart, end, send and a later de
 });
 
 test("restart after a completion keeps the seed and starts with a streak of 0 and no completion", () => {
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death"
   const solved = advanceMinutes(oneShort(), 1).state;
   const restarted = restart(solved);
   assert.equal(restarted.state.run.seed, solved.run.seed);
@@ -250,6 +259,7 @@ test("restart after a completion keeps the seed and starts with a streak of 0 an
 });
 
 test("the counts of the rules stay after a completion, through end", () => {
+  // decision: D-93 "Before the game's first manual map run the rules show no counts; after a manual map run ends in death or in a completion its counts remain beside the copy's rules, and after „Zakończ” beside the rules of the program the copy belongs to"
   const state = oneShort();
   assert.deepEqual(state.ruleCounts, { 1: 1 });
   const solved = advanceMinutes(state, 1).state;
@@ -271,6 +281,9 @@ test("the program edited on a map run that has completed leaves its streak at 48
 });
 
 test("solving requirements present in data are all required and absent ones are ignored", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
   const deep = MAPS.forestDeep;
   const run = {
     ...sent().run,
@@ -303,6 +316,8 @@ test("solving requirements present in data are all required and absent ones are 
 });
 
 test("Las gives the one requirement it has, the streak, with the count of the map run, met only at the number required", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
   const run = sent().run;
   assert.deepEqual(solvingRequirements({ ...run, streak: 120 }, MAPS.forest), [
     { kind: "streak", count: 120, required: 480, met: false },
@@ -316,6 +331,9 @@ test("Las gives the one requirement it has, the streak, with the count of the ma
 });
 
 test("Las - deeper gives both requirements, the streak first and the beaten attacks second, each met on its own", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`"
   const run = { ...sent().run, mapId: "forestDeep" };
   const deep = MAPS.forestDeep;
   assert.deepEqual(
@@ -335,6 +353,9 @@ test("Las - deeper gives both requirements, the streak first and the beaten atta
 });
 
 test("a requirement the data of the map leaves out is not given, and the other one stands alone", () => {
+  // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
   const run = {
     ...sent().run,
     mapId: "forestDeep",
@@ -359,6 +380,7 @@ test("a requirement the data of the map leaves out is not given, and the other o
 });
 
 test("the requirements of a map run that ended stand on the stopped minute: the streak 0 after a death of cold, the streak 480 after a completion", () => {
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`, and the bar stands on the screen after the end of the map run too, on the state of its stopped game minute and with the streak as it stands then, such as „Passa 0/480” after a death of cold"
   const dying = withRun({
     body: { temperature: 34, satiety: 50, health: 0.7 },
     streak: 5,
@@ -399,6 +421,10 @@ test("solvingRequirements changes neither the map run nor the map", () => {
 });
 
 test("a map is sendable only after each map it opens after is solved", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-149 "The same availability determined from the game’s solved maps governs sending in the simulation, and a map that requires an unsolved opening map refuses a send"
   assert.deepEqual(canSendMap([], "forestEdge"), true);
   assert.deepEqual(canSendMap([], "forest"), false);
   assert.deepEqual(canSendMap([], "forestDeep"), false);
@@ -419,6 +445,10 @@ test("a map is sendable only after each map it opens after is solved", () => {
 });
 
 test("completing Skraj lasu solves it alone and opens Las, which a send then reaches", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-149 "The same availability determined from the game’s solved maps governs sending in the simulation, and a map that requires an unsolved opening map refuses a send"
   const ready = createCharacter(
     setProgram(newKnowingGame(), EXPLORING).state,
     "Ala",
@@ -446,6 +476,9 @@ test("completing Skraj lasu solves it alone and opens Las, which a send then rea
 });
 
 test("an actual program edit resets the streak and defeated attacks; cold loss keeps defeated attacks", () => {
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero"
+  // decision: D-131 "A map run starts with zero beaten attacks, and a game minute with health lost to cold or hunger leaves their count as it stands"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const prepared = {
     ...end(sent()).state,
     solvedMaps: ["forest"],
@@ -517,6 +550,7 @@ test("the first completion of a map makes a used-up resurrection of the team rea
 
 // D-190: a ready resurrection stays ready.
 test("the first completion of a map leaves a ready resurrection as it was, ready from the moment it was, and says so", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   for (const readyAtMs of [0, T0 - 1, T0, -3_000]) {
     const done = completedWith(readyAtMs);
     const settled = settleCompletion(done, T0).state;
@@ -548,6 +582,8 @@ test("the completion of a map the account had solved before renews nothing, what
 
 // D-190: the second solving of one map, by a restart of its completion, renews nothing either.
 test("a restart after a first completion starts a map run of a solved map, whose completion renews nothing", () => {
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const settled = settleCompletion(completedWith(T0 + RENEWAL_MS), T0).state;
   const restarted = restart(settled).state;
   assert.equal(restarted.run.solvedMapRun, true);
@@ -588,6 +624,7 @@ test("a completion settled is not settled again, even when the resurrection is u
 
 // D-386: where there is nothing to settle the moment is not looked at; one to settle is a safe integer.
 test("a completion to settle takes a safe integer moment, and nothing else to settle reads none", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const done = completedWith(T0 + RENEWAL_MS);
   for (const nowMs of [
     Number.NaN,
@@ -625,6 +662,7 @@ test("a completion to settle takes a safe integer moment, and nothing else to se
 
 // D-386: a device clock set before 1970 reads below zero, and the moment is stored as it is.
 test("a first completion at a moment below zero makes the used-up resurrection ready at that moment", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const settled = settleCompletion(completedWith(RENEWAL_MS), -5_000).state;
   assert.equal(settled.team.resurrectionReadyAtMs, -5_000);
   assert.equal(settled.run.completionSettlement.kind, "resurrectionRenewed");

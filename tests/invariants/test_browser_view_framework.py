@@ -206,6 +206,8 @@ class BrowserSourceIsTypeScript(unittest.TestCase):
 
     def test_browser_source_holds_typescript_and_no_other_code(self):
         # invariant: browser-view-framework
+        # decision: D-03 "The browser view is built in TypeScript"
+        # decision: D-04 "The game is written in TypeScript"
         files = support.files_under(BROWSER_SOURCE, support.ROOT)
         typescript = [p for p in files if p.endswith(TYPESCRIPT_EXTENSIONS)]
         self.assertTrue(typescript, f"{BROWSER_SOURCE} holds no TypeScript file")

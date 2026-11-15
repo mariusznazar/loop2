@@ -92,6 +92,8 @@ test("a map run starts at minute 0 on the entrance with the first activity chose
 });
 
 test("combat actions cannot be selected as ordinary map activities", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = start().run;
   for (const action of [
     { kind: "strikeWithStick" },
@@ -109,6 +111,7 @@ test("combat actions cannot be selected as ordinary map activities", () => {
 });
 
 test("explore takes 20 minutes, reveals the tile and brings nothing", () => {
+  // decision: D-25 "Exploring reveals the tile the character stands on, cannot be repeated on a revealed tile and brings no item"
   assert.equal(ACTIONS.explore.minutes, 20);
   const { run } = start();
   assert.deepEqual(run.current.activity.action, EXPLORE);
@@ -152,6 +155,8 @@ test("explore takes 20 minutes, reveals the tile and brings nothing", () => {
 });
 
 test("explore is not feasible on a revealed tile, so the next choice is a wait", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const at20 = steps(start().run, 20, EXPLORING).run;
   assert.equal(actionFeasible(at20, EXPLORE), false);
   assert.deepEqual(at20.current, {
@@ -163,6 +168,7 @@ test("explore is not feasible on a revealed tile, so the next choice is a wait",
 });
 
 test("the next activity is chosen in the finishing minute by the program current then", () => {
+  // decision: D-20 "The program chooses again at the next free game minute"
   const at19 = steps(start().run, 19, EXPLORING).run;
   const at20 = stepMinute(at19, map, WANDERING);
   assert.equal(at20.run.current.startMinute, 20);
@@ -180,6 +186,7 @@ test("a program change during an explore does not interrupt it", () => {
 });
 
 test("Wędruj prefers an unrevealed neighbour", () => {
+  // decision: D-375 "„Wędruj” takes the character onto a neighbouring tile of the map"
   // D-375: a neighbour not yet revealed takes precedence.
   // The six neighbours of axial (1, 1) are written independently of product helpers.
   const neighbours = [
@@ -220,6 +227,7 @@ test("Wędruj prefers an unrevealed neighbour", () => {
 });
 
 test("Wędruj goes to some neighbour when all are revealed", () => {
+  // decision: D-375 "„Wędruj” takes the character onto a neighbouring tile of the map"
   // D-375. Six allowed axial neighbours, independently enumerated; neither neighbours()
   // nor hexDistance() supplies the expected result of the product's selection.
   const neighbours = [
@@ -257,6 +265,7 @@ test("Wędruj goes to some neighbour when all are revealed", () => {
 });
 
 test("starting Wędruj consumes exactly one draw", () => {
+  // decision: D-375 "Choosing the tile takes one draw of the generator of wandering"
   // D-375: the choice of a step takes one draw of the generator of wandering.
   // Independent Mulberry32 fixture: state advances by 0x6d2b79f5 modulo 2^32, so
   // starting from 0 gives 0x6d2b79f5 after one draw. No product helper computes it.
@@ -268,6 +277,9 @@ test("starting Wędruj consumes exactly one draw", () => {
 });
 
 test("Wędruj is not feasible with no neighbour on the map", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-375 "„Wędruj” can be carried out while the character's tile has a neighbour on the map"
   // D-375.
   const run = start().run;
   assert.equal(actionFeasible(run, WANDER), true);
@@ -276,6 +288,7 @@ test("Wędruj is not feasible with no neighbour on the map", () => {
 });
 
 test("a step lasts the target tile stepMinutes and moves the character at its end", () => {
+  // decision: D-25 "A move onto a neighbouring tile is an ordinary action of the character, after which the program picks a program rule anew, as after any action of the character"
   const run = start().run;
   const target = neighbours(run.tiles, entrance)[2].at;
   const prepared = mapTiles(run, (tile) =>
@@ -321,6 +334,8 @@ test("a step lasts the target tile stepMinutes and moves the character at its en
 });
 
 test("Idź targets the nearest revealed tile with stock and gives the first step", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = start().run;
   const far = offsetToAxial(3, 3);
   const prepared = mapTiles(run, (tile) => ({
@@ -351,6 +366,8 @@ test("Idź targets the nearest revealed tile with stock and gives the first step
 });
 
 test("Idź is not feasible with no known tile in stock", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = start().run;
   const other = neighbours(run.tiles, entrance)[0].at;
   const withStock = (revealed, count) =>
@@ -373,6 +390,8 @@ test("Idź is not feasible with no known tile in stock", () => {
 });
 
 test("Idź is not feasible standing on the target", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
   const run = mapTiles(start().run, (tile) => ({
     ...tile,
     revealed: true,
@@ -382,6 +401,7 @@ test("Idź is not feasible standing on the target", () => {
 });
 
 test("walking by program reaches the stock step by step and stays there", () => {
+  // decision: D-25 "A move onto a neighbouring tile is an ordinary action of the character, after which the program picks a program rule anew, as after any action of the character"
   const run = start().run;
   const far = offsetToAxial(3, 3);
   const prepared = mapTiles(run, (tile) => ({

@@ -50,6 +50,7 @@ test("sameHex and tileAt compare axial coordinates", () => {
 });
 
 test("a tile inside the grid has six neighbours, the corner (0,0) has two, in tile-list order", () => {
+  // decision: D-24 "A map is a grid of hexagonal tiles"
   const tiles = grid(4, 4);
   const inner = neighbours(tiles, offsetToAxial(1, 1));
   assert.equal(inner.length, 6);

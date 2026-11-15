@@ -25,6 +25,8 @@ def code():
 class DeployWorkflow(unittest.TestCase):
 
     def test_triggers_on_push_to_main_only(self):
+        # decision: D-09 "A push to the deploy branch starts an automation"
+        # decision: D-11 "The deploy branch is `main`: a push to `main`, the merge of a pull request included, reaches the test server without anyone starting it by hand"
         text = code()
         match = re.search(r"^on:\s*\n((?:[ \t]+.*\n?|\n)+)", text, re.MULTILINE)
         self.assertIsNotNone(match, "no `on:` block")
@@ -36,6 +38,7 @@ class DeployWorkflow(unittest.TestCase):
         self.assertNotRegex(block, r"pull_request|workflow_dispatch|schedule")
 
     def test_concurrency_never_cancels_a_running_deployment(self):
+        # decision: D-11 "The deploy branch is `main`: a push to `main`, the merge of a pull request included, reaches the test server without anyone starting it by hand, deployed itself or within a later commit of `main` that contains it"
         text = code()
         self.assertRegex(text, r"(?m)^concurrency:\s*\n\s+group:\s*deploy-loop2\s*\n\s+cancel-in-progress:\s*false\s*$")
 
@@ -43,9 +46,12 @@ class DeployWorkflow(unittest.TestCase):
         self.assertRegex(code(), r"(?m)^permissions:\s*\{\s*\}\s*$")
 
     def test_no_checkout(self):
+        # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit; the server pulls the code from GitHub itself"
         self.assertNotIn("actions/checkout", code())
 
     def test_exactly_the_five_secrets(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets"
+        # decision: D-13 "Repository files and requests name credentials by secret name or private note rather than value"
         used = set(re.findall(r"secrets\.([A-Za-z0-9_]+)", code()))
         self.assertEqual(used, SECRETS)
 
@@ -61,6 +67,7 @@ class DeployWorkflow(unittest.TestCase):
         self.assertRegex(text, r"umask 077|chmod 600|install -m 600")
 
     def test_sha_reaches_the_script_only_through_env(self):
+        # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit"
         lines = code_lines()
         # github.sha appears only on an env mapping line, never inside a run script
         uses = [l for l in lines if "github.sha" in l]
@@ -100,6 +107,7 @@ class DeployWorkflow(unittest.TestCase):
             self.assertRegex(text, r"set -[a-z]*e")
 
     def test_ssh_forwards_nothing_and_takes_only_the_sha(self):
+        # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit"
         text = code()
         self.assertNotRegex(text, r"ForwardAgent|\s-A\s|\s-[a-zA-Z]*A[a-zA-Z]*\s")
         match = re.search(r"(?<![\w./-])ssh\s[^\n]*", text)
@@ -122,6 +130,7 @@ class DeployWorkflow(unittest.TestCase):
         self.assertEqual(len(calls), 1, calls)
 
     def test_public_address_declared_once_and_probed(self):
+        # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/`"
         text = code()
         declared = re.findall(r"(?m)^\s*(\w*LOOP2\w*):\s*https://loop2\.mariusznazar\.com/\s*$", text)
         self.assertEqual(len(declared), 1)
@@ -135,6 +144,7 @@ class DeployWorkflow(unittest.TestCase):
         self.assertRegex(text, r"(?i)(fail|error)[^\n]*\$\{?url\}?")
 
     def test_no_ipv6_and_no_other_host(self):
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository"
         text = code()
         self.assertNotRegex(text, r"\[[0-9a-fA-F:]*:[0-9a-fA-F:]+\]|(?<![\w.])(?:[0-9a-fA-F]{1,4}:){3,}[0-9a-fA-F]{0,4}")
         hosts = set(re.findall(r"https?://([A-Za-z0-9.-]+)", text))

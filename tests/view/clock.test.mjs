@@ -270,6 +270,8 @@ test("a send takes the one reading of its flush", () => {
 // invariant: resurrection-renewal
 // D-221: one result on each reading, so the store never holds a death unsettled.
 test("a flush in which the character dies hands the store one result: the events of the passing of time with the death settled at that reading", () => {
+  // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     const state = lastMinute();
     const store = holdingStore(state);
@@ -294,6 +296,7 @@ test("a flush in which the character dies hands the store one result: the events
 // The moment of the reading decides: a resurrection ready from it on is ready, one a millisecond
 // later is not, whatever moment the clock read when it started.
 test("a death is settled against the reading of its flush, not an earlier one", () => {
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     for (const [offset, kind] of [
       [0, "resurrectionUsed"],
@@ -314,6 +317,8 @@ test("a death is settled against the reading of its flush, not an earlier one", 
 // D-190, D-221: a death of a character with no practice is settled at the reading too, and leaves the
 // resurrection as it was.
 test("a flush in which a character with no practice dies settles the death as none to pay for: the resurrection stays as it was", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     for (const readyAtMs of [0, T0 + 10 * RENEWAL_MS]) {
       const state = lastMinute(readyAtMs, false);
@@ -384,6 +389,7 @@ test("a flush in which the map run solves its map for the first time settles the
 });
 
 test("a flush in which the map run solves its map finds a ready resurrection ready and says so", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   withBothClocks(({ pass }) => {
     const store = holdingStore(oneMinuteFromSolving(0));
     const clock = startClock(store);
@@ -399,6 +405,7 @@ test("a flush in which the map run solves its map finds a ready resurrection rea
 
 // D-221: a retained death goes through the same step of the clock, unsettled or settled.
 test("a death standing on the screen is settled once, at the first reading", () => {
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   withBothClocks(({ pass }) => {
     const dead = advanceMinutes(lastMinute(), 1).state;
     assert.equal(dead.run.deathSettlement, null, "precondition: unsettled");
@@ -528,6 +535,11 @@ function loopingOla(state = twoCharacters()) {
 // D-221, D-242. Catches loops passed before the manual run, and a reading that hands
 // the store the manual run's result and the loops' as two, so a moment of saving would come twice.
 test("a reading passes the manual run, then the loops, and hands the store one result with their events together", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
+  // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
+  // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   withBothClocks(({ pass, jump }) => {
     // Ola has no practice: her death in the loop takes nothing and her loop goes on.
     let state = send(loopingOla(practised(twoCharacters(), 1)), SENT, 1).state;
@@ -566,6 +578,11 @@ test("a reading passes the manual run, then the loops, and hands the store one r
 // D-190, D-242: of two deaths the earlier in real time takes the team's one resurrection. A loop's end
 // lies at its minute's moment, here a millisecond before the reading, and the manual run's death at the reading.
 test("in a reading that ends a loop's map run in a death and the manual run in another, the loop's death, earlier than the reading, takes the resurrection", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
+  // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
+  // decision: D-242 "In the open game a reading passes its game minutes one after another, within each game minute the characters in the team's order, however many game minutes it brings; the death and the first completion of the manual map run that the reading brings are settled after those game minutes, at the reading, so that of two deaths on the account's one resurrection in the open game the earlier in real time takes it"
   withBothClocks(({ pass, jump }) => {
     const both = practised(practised(twoCharacters(), 1), 2);
     let state = send(loopingOla(both), SENT, 1).state;
@@ -607,6 +624,8 @@ test("in a reading that ends a loop's map run in a death and the manual run in a
 // D-242: the k-th minute has the real moment fromMs plus k minutes, so a death in the loop is
 // settled at the minute's moment, never at the reading's.
 test("a loop's end is settled at the minute's own moment, not at the reading's", () => {
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
+  // decision: D-242 "Each game minute has its own real moment, the loop clock's value plus the real time up to and including that game minute, and a death in it is settled at that moment, in the open game as in the catch-up"
   withBothClocks(({ jump }) => {
     const store = holdingStore(loopingOla(practised(twoCharacters(), 2)));
     const clock = startClock(store);
@@ -625,6 +644,7 @@ test("a loop's end is settled at the minute's own moment, not at the reading's",
 // value taken after the hand-over: the saver's moment of saving reads the clock again inside
 // `apply`, and the same minute would be passed twice.
 test("minutes of a loop are never passed twice when apply reads the clock again", () => {
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   withBothClocks(({ jump }) => {
     const state = loopingOla();
     const store = holdingStore(state);
@@ -654,6 +674,7 @@ test("minutes of a loop are never passed twice when apply reads the clock again"
 
 // D-242: a clock set back takes nothing and the loop clock runs from now.
 test("a date turned back passes nothing and the loop clock then runs from the date read", () => {
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   withBothClocks(({ jump }) => {
     const state = loopingOla();
     const store = holdingStore(state);
@@ -674,6 +695,8 @@ test("a date turned back passes nothing and the loop clock then runs from the da
 
 // D-242: with no loop the clock is set to the reading, so a first loop gets a full minute.
 test("a loop started by the clock gets a full first minute, and its first run is seeded by the reading it took", () => {
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
+  // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   withBothClocks(({ jump }) => {
     const state = twoCharacters();
     const store = holdingStore(state);
@@ -718,6 +741,8 @@ function savedBefore(state, savedMs) {
 // D-247, D-242. Catches a catch-up that reads another moment than the one the clock keeps for the
 // view, and one that loses the rest shorter than a minute.
 test("the catch-up spans from the save time to the date it reads, which is the clock's moment, and the rest waits", () => {
+  // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
+  // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   withBothClocks(({ jump }) => {
     const state = savedBefore(loopingOla(), 150_000);
     const store = holdingStore(state);

@@ -47,6 +47,8 @@ test("compiled Argon2 APIs share bounded admission and recover both slots after 
 });
 
 test("compiled password operations create and verify the production Argon2id profile", () => {
+  // decision: D-106 "Its cost parameters are set explicitly"
+  // decision: D-113 "Hashing and verification share one bounded admission gate, preserve password content, and use one explicit Argon2id profile"
   const source = String.raw`
     import assert from "node:assert/strict";
     import { hashPassword, verifyPassword } from "./dist/server/passwords.js";

@@ -84,6 +84,12 @@ class DeploySwitchTestCase(unittest.TestCase):
 class Success(DeploySwitchTestCase):
 
     def test_switch_probe_prune_and_last_line(self):
+        # decision: D-08 "The existing loop container remains untouched"
+        # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
+        # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
+        # decision: D-14 "The loop2 container is a Docker container"
+        # decision: D-15 "No earlier image is kept"
+        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         result = self.deploy()
         self.assertEqual(result.code, 0, result)
         compose_file = support.shell_path(self.fixture.checkout) + "/compose.yaml"
@@ -137,6 +143,8 @@ class Success(DeploySwitchTestCase):
 class FailedStart(DeploySwitchTestCase):
 
     def test_failed_health_wait_exits_8_with_the_restore_line_and_container_logs(self):
+        # decision: D-08 "The existing loop container remains untouched"
+        # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
         for failure in ("container loop2 is unhealthy",
                         "container loop2-cloudflared is unhealthy", "secret file is missing"):
             with self.subTest(failure=failure):
@@ -177,6 +185,8 @@ class FailedStart(DeploySwitchTestCase):
                 self.assertNotIn("unhealthy", result.output)
 
     def test_failed_probe_exits_8_with_the_restore_line(self):
+        # decision: D-08 "The existing loop container remains untouched"
+        # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
         cases = {
             "root not 200": (0, "502 text/html\n404 application/json"),
             "api path not 404": (0, "200 text/html\n200 text/html"),
@@ -234,6 +244,8 @@ class NeverInTheOutputOrTheCommands(DeploySwitchTestCase):
                 self.assertNotIn(real_name, result.output)
 
     def test_no_down_no_other_project_no_unfiltered_prune(self):
+        # decision: D-08 "The existing loop container remains untouched"
+        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         compose_file = support.shell_path(self.fixture.checkout)
         for result in self.runs():
             for call in result.calls["docker"]:

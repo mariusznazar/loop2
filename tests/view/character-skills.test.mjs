@@ -18,6 +18,8 @@ const character = (practice = 0, ranks = {}) => ({
 });
 
 test("a skill shows cumulative progress and available points; the last level retains total practice without a next threshold", () => {
+  // decision: D-199 "The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is absent"
+  // decision: D-379 "The eight character skills give a level and a point at each of these amounts of practice"
   assert.equal(
     skillText(character(), "exploration"),
     "Eksploracja — poziom 1 · wprawa 0/15 · punkty 0",
@@ -33,6 +35,9 @@ test("a skill shows cumulative progress and available points; the last level ret
 });
 
 test("numeric branch shows its current and next effect and price, while maximum keeps only current effect", () => {
+  // decision: D-199 "Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values"
+  // decision: D-199 "A fully bought branch keeps its present value if numerical and omits the next value and price"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   assert.equal(
     branchText(character(200, { longStep: 2 }), "longStep"),
     "Długi krok 2/3 — Krótsze przejście między polami · teraz 1 min → po kupnie 1 min · cena 2",
@@ -52,6 +57,9 @@ test("numeric branch shows its current and next effect and price, while maximum 
 });
 
 test("the combat branches show their ranks from the data: Mocniejszy cios has four and Cięższy kop two, and a full branch ends at its last effect", () => {
+  // decision: D-199 "Below it each branch gives its name, rank and maximum rank, description from data and a „Kup” button disabled when points are insufficient or all ranks are bought; a numerical branch also gives „teraz {wartość} → po kupnie {wartość} · cena {cena}”, while „Obchód”, „Czysty płomień” and „Zwiad” give the price and omit numerical before-and-after values"
+  // decision: D-199 "A fully bought branch keeps its present value if numerical and omits the next value and price"
+  // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
   const skilled = (id, practice, ranks) => ({
     ...createCharacter(newGame(), "Ala").state.team.characters[0],
     skills: { [id]: { practice, ranks } },
@@ -81,6 +89,8 @@ test("the combat branches show their ranks from the data: Mocniejszy cios has fo
 });
 
 test("run practice omits zero values and disappears when nothing accrued", () => {
+  // decision: D-201 "Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run"
+  // decision: D-201 "Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”"
   assert.equal(practiceText({}), "");
   assert.equal(practiceText({ exploration: 0 }), "");
   assert.equal(

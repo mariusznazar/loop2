@@ -14,6 +14,10 @@ import {
 } from "../../dist/browser/view/email-status.js";
 
 test("each outcome of a confirmation message has its sentence and role", () => {
+  // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
+  // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-157 "Spróbuj ponownie później.” when the sending failed and the account client's sentence of its failure when the request for a message fails for another reason than an address already confirmed, the last three in `warning`, each beside „Wyślij ponownie”."
   const outcomes = {
     sent: [
       "Wysłaliśmy odnośnik potwierdzający na ala@example.com.",
@@ -34,6 +38,7 @@ test("each outcome of a confirmation message has its sentence and role", () => {
 });
 
 test("a sent message names the address of the account it went to", () => {
+  // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
   assert.equal(
     messageSentence("sent", "ola@example.org").text,
     "Wysłaliśmy odnośnik potwierdzający na ola@example.org.",
@@ -41,6 +46,7 @@ test("a sent message names the address of the account it went to", () => {
 });
 
 test("an unconfirmed address with no send made in the page is said in text-secondary", () => {
+  // decision: D-157 "A signed-in player whose email address is unconfirmed sees in the menu „Konto” „Adres e-mail niepotwierdzony.” in `text-secondary` and the shared button „Wyślij ponownie”, both gone once the address is confirmed."
   assert.deepEqual(UNCONFIRMED_SENTENCE, {
     text: "Adres e-mail niepotwierdzony.",
     role: "text-secondary",

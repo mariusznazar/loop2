@@ -130,6 +130,8 @@ function deepFreeze(value) {
 // Versions 1 and 2 have programs with no trip plan; versions 3 to 7 have the trip plan, and 7 is
 // the current version, so the bound of the readable versions is read in as well.
 test("a document of each version from 1 to 7, the current one included, gives its programs in order, a program without a trip plan skipped and named", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
+  // decision: D-206 "The game discards a saved game state of any other version, loading none of it as a game, and starts the player anew; the server keeps the document that a save of a higher version replaces as the previous save (D-399), and an account with the previous-save privilege (D-400) can append its programs one by one (D-401)"
   const documents = {
     1: {
       version: 1,
@@ -305,6 +307,7 @@ test("an item missing a key is skipped: named when its name is text, by its plac
 
 // invariant: previous-save-programs-reader
 test("an item whose name is spaces or is no text is skipped and named by its place on the list", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming"
   const document = {
     version: 5,
     game: {
@@ -331,6 +334,7 @@ test("an item whose name is spaces or is no text is skipped and named by its pla
 
 // invariant: previous-save-programs-reader
 test("the name read is trimmed of the white space at its start and end", () => {
+  // decision: D-401 "Each program appended takes the next program number (D-165) and its trimmed name"
   const document = {
     version: 5,
     game: {
@@ -351,6 +355,7 @@ test("the name read is trimmed of the white space at its start and end", () => {
 
 // invariant: previous-save-programs-reader
 test("a program naming an action, a resource or an item the data lacks is skipped; refusing one refuses no other", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one, the list of programs of its game and the items of that list, takes an item only when its keys are exactly `id`, `name` and `program` and its name is not empty after trimming, accepts the program of an item only through the check the program editor uses, skips every other item and goes on"
   const withAction = {
     ...EXPLORE,
     groups: [
@@ -407,6 +412,7 @@ test("a program naming an action, a resource or an item the data lacks is skippe
 
 // invariant: save-version
 test("a document of another version or with no whole version is unreadable", () => {
+  // decision: D-401 "The programs are read by a reader of their own, `src/browser/sim/previous-programs.ts`, apart from the load of D-206 and D-213, which reads from the document only its version, from 1 up to the game's current one"
   const programs = [{ id: 1, name: "Las", program: EXPLORE }];
   for (const version of [8, 0, 1.5, -1, "5", 2 ** 53, null, undefined]) {
     assert.deepEqual(

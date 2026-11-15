@@ -263,12 +263,15 @@ test("the extinguished campfire's data names the icon file wood-pile.svg and its
 });
 
 test("each icon the data names, the campfire's included, exists as a file", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
   const names = NAMED.map((named) => named.icon);
   assert.ok(names.includes(CAMPFIRE.icon));
   for (const icon of names) assert.ok(existsSync(`${ICONS}${icon}.svg`), icon);
 });
 
 test("each action of the data names an icon and its title, and the icon file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
   for (const [id, action] of Object.entries(ACTIONS)) {
     assert.ok(action.icon, `${id} names no icon`);
     assert.ok(action.iconTitle, `${id} names no icon title`);
@@ -280,6 +283,7 @@ test("each action of the data names an icon and its title, and the icon file exi
 });
 
 test("each icon file has a credit with an author and the source commit", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net"
   assert.match(ICON_SOURCE_COMMIT, /^[0-9a-f]{40}$/);
   for (const named of NAMED) {
     const credit = ICON_CREDITS[named.icon];
@@ -292,6 +296,7 @@ test("each icon file has a credit with an author and the source commit", () => {
 });
 
 test("the section is a folded details whose summary reads Autorzy grafiki, with no state", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click"
   assert.equal(globalThis.document, undefined);
   const markup = sectionMarkup();
   assert.match(
@@ -314,6 +319,7 @@ test("each line of the section holds the icon's title, author, game-icons.net, C
 });
 
 test("the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
   const items = itemsOf(sectionMarkup()).slice(NAMED.length);
   assert.equal(items.length, PACK_LINES.length);
   items.forEach((item, i) => {

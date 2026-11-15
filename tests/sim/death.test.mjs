@@ -105,6 +105,7 @@ test("a moment of readiness below zero is ready at every moment from zero on", (
 });
 
 test("a new game's resurrection is ready from the start, at the first moment there is, and a created character brings none of its own", () => {
+  // decision: D-220 "A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection ready"
   const { team } = createCharacter(newGame(), "Ala").state;
   assert.equal(team.resurrectionReadyAtMs, 0);
   assert.equal(resurrectionReady(team, 0), true);
@@ -117,6 +118,8 @@ test("a new game's resurrection is ready from the start, at the first moment the
 
 // D-190, D-220: a character created while the resurrection is used up does not bring a ready one.
 test("a character created while the team's resurrection is used up does not make it ready", () => {
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+  // decision: D-220 "A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection ready"
   const used = readyFrom(team(), T0 + 1);
   const added = createCharacter(used, "Ula").state;
   assert.equal(added.team.resurrectionReadyAtMs, T0 + 1);
@@ -124,6 +127,7 @@ test("a character created while the team's resurrection is used up does not make
 });
 
 test("a new character is of generation 1, and a created second one too", () => {
+  // decision: D-220 "A new character has generation number 1 and brings no resurrection of its own; a new game has the account's resurrection ready"
   const first = createCharacter(newGame(), "Ala").state;
   const both = createCharacter(first, "Ola").state;
   assert.deepEqual(
@@ -135,6 +139,8 @@ test("a new character is of generation 1, and a created second one too", () => {
 // invariant: resurrection-renewal
 // D-190: the skills and the generation stay, the moment moves.
 test("a death with a resurrection ready uses it up: ready again 8 hours after the death, and practice, ranks and generation stay", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const state = fallen();
   const before = ala(state);
   const settled = settleDeath(state, T0).state;
@@ -148,6 +154,7 @@ test("a death with a resurrection ready uses it up: ready again 8 hours after th
 // invariant: resurrection-renewal
 // D-190: the moment stays, the generation grows, the skills go.
 test("a death with no resurrection ready takes all practice and ranks, the generation grows by one and the moment stays", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const state = fallen(T0 + 1);
   const before = ala(state);
   const settled = settleDeath(state, T0).state;
@@ -170,6 +177,7 @@ test("a death with no resurrection ready takes all practice and ranks, the gener
 
 // D-190, D-216: the settlement holds the number this death gave, not always the second.
 test("the settlement of a later death with no resurrection ready holds the number that death gave", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const state = fallen(T0 + 1);
   const [first, ...others] = state.team.characters;
   const fourth = {
@@ -189,6 +197,7 @@ test("the settlement of a later death with no resurrection ready holds the numbe
 
 // D-190: the character stays the same character.
 test("a death that takes everything leaves the name, the archetype, the place in the team and the character behind it", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const state = fallen(T0 + 1);
   const before = state.team.characters;
   const after = settleDeath(state, T0).state.team.characters;
@@ -213,6 +222,7 @@ test("a death at the very moment of readiness uses the resurrection, and a death
 // invariant: resurrection-renewal
 // D-219: the moment follows the clock, so the pace plays no part.
 test("the renewal does not depend on the pace of the map run", () => {
+  // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   const fast = died(setPace(team(), 16).state);
   assert.equal(
     settleDeath(fast, T0).state.team.resurrectionReadyAtMs,
@@ -223,6 +233,8 @@ test("the renewal does not depend on the pace of the map run", () => {
 // invariant: resurrection-renewal
 // D-219: the renewal runs while the game is closed, as the state holds a moment, not a countdown.
 test("a resurrection used up is ready again at its moment after a save and a load, and the next death goes by it", () => {
+  // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   const settled = settleDeath(fallen(), T0).state;
   // D-248: a saved document carries the moment of its save, so the state is stamped first.
   const loaded = loadSavedGame(savedGame(withSaveTime(end(settled).state, T0)));
@@ -242,6 +254,7 @@ test("a resurrection used up is ready again at its moment after a save and a loa
 
 // D-07, D-219: a clock set back is the player's own; the moment is stored as the arithmetic gives it.
 test("a moment below zero settles as any other", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const state = fallen(-20_000);
   const settled = settleDeath(state, -5_000).state;
   assert.equal(settled.team.resurrectionReadyAtMs, RENEWAL_MS - 5_000);
@@ -256,6 +269,7 @@ const onSolvedMap = (state) => ({
 
 // D-61, D-190, D-194: a death pays nothing, and the map run stays ended in death.
 test("a death ends the map run, pays nothing and takes what it carried, a resurrection ready or not, on a solved map too", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   for (const [name, start, kind] of [
     ["ready", team(), "resurrectionUsed"],
     ["not ready", readyFrom(team(), T0 + 1), "progressLost"],
@@ -291,6 +305,8 @@ const PATROLLING = programFromRules(
 
 // D-190: the practice a map run gathered goes with it.
 test("the practice a dying character gathered reaches no skill, a resurrection ready or not", () => {
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const program = setProgram(team(), PATROLLING).state;
   const state = died(program);
   assert.ok(
@@ -307,6 +323,8 @@ test("the practice a dying character gathered reaches no skill, a resurrection r
 
 // D-190: the programs, the chest, the Understanding and the solved maps survive every death.
 test("the programs, the chest, the Understanding and the solved maps survive every death", () => {
+  // decision: D-119 "The Understanding belongs to the player"
+  // decision: D-190 "The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it"
   for (const readyAtMs of [0, T0 + 1]) {
     const state = died(onSolvedMap(readyFrom(team(), readyAtMs)));
     const settled = settleDeath(state, T0).state;
@@ -333,6 +351,7 @@ test("a death settled is not settled again, however late", () => {
 // invariant: death-settled-once
 // A load on the screen after a death settles nothing.
 test("a settled death saved and loaded on its screen is left as it stood by a later settling", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   for (const readyAtMs of [0, T0 + 1]) {
     const settled = settleDeath(fallen(readyAtMs), T0).state;
     // D-248: a saved document carries the moment of its save, so the state is stamped first.
@@ -348,6 +367,7 @@ test("a settled death saved and loaded on its screen is left as it stood by a la
 
 // D-386: where there is nothing to settle the moment is not even looked at.
 test("with nothing to settle the very state comes back, whatever the moment", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const going = send(team(), SENT, T0).state;
   const completed = {
     ...going,
@@ -369,6 +389,7 @@ test("with nothing to settle the very state comes back, whatever the moment", ()
 
 // D-386: a moment the load would refuse never enters the game state.
 test("a moment that is no safe integer is refused at a death to settle", () => {
+  // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
   const state = fallen();
   for (const nowMs of [
     Number.NaN,
@@ -394,6 +415,7 @@ test("settling a death changes nothing passed to it", () => {
 
 // D-221: the passing of game time leaves the settling to whoever knows real time.
 test("game time settles no death: a death stands unsettled after advanceMinutes and passRealTime", () => {
+  // decision: D-221 "A character's death is settled by a function of the simulation apart from the functions that pass game time, which leave the death unsettled and take no real moment"
   const sent = send(team(), SENT, T0).state;
   for (const state of [
     advanceMinutes(sent, LONGER_THAN_A_LIFE).state,
@@ -423,6 +445,8 @@ function actionsStarted(state) {
 
 // D-200: the run on the screen keeps what it started with, whatever the death took.
 test("a death that takes everything leaves the map run on the screen as it was", () => {
+  // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
+  // decision: D-190 "The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it"
   const state = fallen(T0 + 1);
   const settled = settleDeath(state, T0).state;
   assert.deepEqual(settled.run.character.skills, state.run.character.skills);
@@ -433,6 +457,8 @@ test("a death that takes everything leaves the map run on the screen as it was",
 // D-190: what a character can do follows it, and
 // what the player knows stays. Catches a „Restart” giving the run back the ranks the death took.
 test("„Restart” after a death that took everything starts from the team: a branch action drops out of the run and stays in the Understanding and the copy", () => {
+  // decision: D-119 "A character's repertoire is computed from the Understanding through its archetype's predispositions and the branches the character has bought, and is never saved"
+  // decision: D-190 "The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it"
   const program = setProgram(team(), PATROLLING).state;
   const start = send(program, SENT, T0).state;
   assert.ok(actionsStarted(start).includes("patrol"), "precondition");
@@ -478,6 +504,8 @@ test("„Restart” after a resurrection used, and of a map run going on, starts
 
 // D-190: the character the team holds, not any first one.
 test("„Restart” after a death that took everything reads the character that died", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The programs, the chest, the Understanding and the solved maps survive every death; the map run kept on the screen stays as it was, and a „Restart” after a death with no resurrection ready starts from the character as that death left it"
   const start = readyFrom(team(), T0 + 1);
   const [first, second] = start.team.characters;
   const secondSkilled = {
@@ -528,6 +556,7 @@ function withSkills(state, characterId, skills) {
 // D-190: Ola has nothing a resurrection would guard; Ala has.
 // invariant: resurrection-renewal
 test("the death of a character with no practice leaves the character, the generation and the team's resurrection as they were, ready or not", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   for (const readyAtMs of [0, T0 + 1]) {
     const state = characterDied(readyFrom(team(), readyAtMs), 2);
     const settled = settleDeath(state, T0).state;
@@ -548,6 +577,8 @@ test("the death of a character with no practice leaves the character, the genera
 
 // D-190: any one of the three things is a practice the resurrection guards.
 test("a character with practice in one skill, or one rank bought, has practice: its death goes by the resurrection", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const [, ola] = team().team.characters;
   const skill = Object.keys(ola.skills)[0];
   const rank = { patrol: 1 };
@@ -577,6 +608,8 @@ test("a character with practice in one skill, or one rank bought, has practice: 
 // D-190: the resurrection is the team's, one for all its characters.
 // invariant: resurrection-renewal
 test("the death of any character with practice uses up the one resurrection, and the next death of any other takes everything", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   for (const [first, second] of [
     [1, 2],
     [2, 1],
@@ -613,6 +646,7 @@ test("the death of any character with practice uses up the one resurrection, and
 
 // D-190: a death of a character with no practice does not wait for the resurrection, and does not stop the earning of the others.
 test("the death of a character with no practice, settled after one that used the resurrection, leaves the used-up resurrection as it stood", () => {
+  // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const used = settleDeath(characterDied(team(), 1), T0).state;
   const second = settleDeath(characterDied(end(used).state, 2), T0 + 1).state;
   assert.equal(second.run.deathSettlement.kind, "noPractice");

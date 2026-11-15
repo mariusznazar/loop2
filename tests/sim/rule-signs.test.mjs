@@ -91,6 +91,14 @@ const refusalOf = (run, action) => actionRefusal(run, action);
 
 // What refuses the action, and the words of the reason (D-380). Each case writes the state out.
 test("each refusal of an action gives the reason of its row in D-380", () => {
+  // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
+  // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
+  // decision: D-380 "A program rule whose condition holds and whose action the game's check refuses names the reason of its row"
+  // decision: D-380 "„Wytwórz — ognisko” and „Zapal — patyk” on a tile not revealed, „kafelek nieodkryty”"
+  // decision: D-380 "„Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack"
+  // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name"
+  // decision: D-309 "Outside those minutes a combat rule whose condition holds is amber with the reason „tylko w walce”"
   const here = revealedHere(freshRun(), { stick: 3 });
   const bare = revealedHere(freshRun());
   const alone = { ...freshRun(), tiles: [freshRun().tiles[0]] };
@@ -235,6 +243,8 @@ test("an action that can start gives no reason", () => {
 });
 
 test("a spell short of nature energy gives the energy the character has, rounded down, of what it costs", () => {
+  // decision: D-380 "„Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack"
+  // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name"
   const ready = carrying(revealedHere(freshRun()), { stick: 1 });
   const tired = { ...ready, natureEnergy: 9.5 };
   assert.equal(
@@ -248,6 +258,8 @@ test("a spell short of nature energy gives the energy the character has, rounded
 });
 
 test("of several reasons the world and the backpack come before the nature energy", () => {
+  // decision: D-310 "A program rule whose condition holds and whose action cannot be carried out names one reason"
+  // decision: D-380 "„Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack"
   const drained = { ...revealedHere(freshRun()), natureEnergy: 0 };
   assert.equal(
     refusalOf(drained, act("lightCampfire")),
@@ -261,6 +273,7 @@ test("of several reasons the world and the backpack come before the nature energ
 });
 
 test("the bar of every rule is judged, below the winning rule too", () => {
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
   const judged = judgeProgram(
     freshRun(),
     program(
@@ -310,6 +323,8 @@ test("no rule goes: no winner", () => {
 });
 
 test("every rule of a group whose condition does not hold shows dark with no reason, whatever the rule would say", () => {
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
+  // decision: D-308 "A rule outside the character's repertoire shows amber with that reason whether or not its condition holds, unless the condition of its rule group does not hold"
   const judged = judgeProgram(
     freshRun(),
     program(
@@ -325,6 +340,7 @@ test("every rule of a group whose condition does not hold shows dark with no rea
 });
 
 test("the bar of a group is green when one of its rules can start, amber when none can, and amber when it holds no rule", () => {
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
   const judged = judgeProgram(
     freshRun(),
     program(
@@ -349,6 +365,9 @@ test("the bar of a group is green when one of its rules can start, amber when no
 });
 
 test("a combat rule outside combat is amber with „tylko w walce” when its condition holds, dark when it does not", () => {
+  // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
+  // decision: D-309 "Outside those minutes a combat rule whose condition holds is amber with the reason „tylko w walce”"
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
   const judged = judgeProgram(
     freshRun(),
     program(
@@ -367,6 +386,11 @@ test("a combat rule outside combat is amber with „tylko w walce” when its co
 });
 
 test("in combat the rule the first turn would choose wins, an ordinary rule is amber with „trwa walka”, and a combat action short of its stick says what it lacks", () => {
+  // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
+  // decision: D-144 "The character uses „Uderz — patyk”, which requires a stick in the backpack and deals a base 6 damage increased by its bought branch ranks, „Kopnij”, which deals a base 3 damage increased by its bought branch ranks and needs neither an item nor a target, and „Odskocz”, which sets one pending reduction of a base 5 damage increased by its bought branch ranks for the next damaging enemy strike"
+  // decision: D-309 "In the minutes of an attack, from the minute of the attack to the resolving of its turns, the signs of the copy show what the first combat turn would choose now"
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
+  // decision: D-380 "„Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack"
   const judged = judgeProgram(
     freshRun(),
     program(
@@ -396,6 +420,8 @@ test("in combat the rule the first turn would choose wins, an ordinary rule is a
 });
 
 test("combat conditions read the health of the two sides given", () => {
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
+  // decision: D-309 "In the minutes of an attack, from the minute of the attack to the resolving of its turns, the signs of the copy show what the first combat turn would choose now"
   const rules = program(
     group(1, ALWAYS, [
       rule(11, { kind: "healthBelow", value: 50 }, act("kick")),
@@ -437,6 +463,8 @@ function sentWith(groups, understanding = fullUnderstanding()) {
 }
 
 test("a rule outside the repertoire is amber with its reason, whether or not its own condition holds", () => {
+  // decision: D-308 "A rule outside the character's repertoire shows amber with that reason whether or not its condition holds, unless the condition of its rule group does not hold"
+  // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name"
   // „Obchód” is of a branch the mage did not buy; fibre is a thing the Understanding lacks.
   const understanding = {
     ...fullUnderstanding(),
@@ -480,6 +508,7 @@ test("a rule outside the repertoire is amber with its reason, whether or not its
 });
 
 test("an undiscovered condition or action is named by its label", () => {
+  // decision: D-310 "The reason names the thing refused as the game writes it, in lower case and without a dot before the name"
   const known = fullUnderstanding();
   const state = sentWith(
     [
@@ -506,6 +535,7 @@ test("an undiscovered condition or action is named by its label", () => {
 });
 
 test("a group whose condition lies outside the repertoire shows dark with its rules, which give no reason though they lie outside it", () => {
+  // decision: D-308 "A rule outside the character's repertoire shows amber with that reason whether or not its condition holds, unless the condition of its rule group does not hold"
   const known = fullUnderstanding();
   const cold = { kind: "temperatureBelow", value: 36 };
   const sent = sentWith(
@@ -544,6 +574,7 @@ test("a group whose condition lies outside the repertoire shows dark with its ru
 });
 
 test("the repertoire is checked before the condition, so a rule outside it never wins", () => {
+  // decision: D-308 "A rule outside the character's repertoire shows amber with that reason whether or not its condition holds, unless the condition of its rule group does not hold"
   const known = fullUnderstanding();
   const rules = program(
     group(1, ALWAYS, [
@@ -592,6 +623,7 @@ test("the winner the signs show is the rule the pick takes, minute after minute,
 });
 
 test("the repertoire the signs read is the editor's, and the knowledge is what the Understanding holds of the archetype with every branch bought", () => {
+  // decision: D-196 "During a map run, a manual map run that waits in a pause and one that has ended and waits for „Restart” or „Zakończ” included, both the copy editor and the saved-program editor of Programy use the repertoire of the map run's character, including its bought branches"
   const state = sentWith([group(1, ALWAYS, [])]);
   assert.equal(editorRepertoire(state).actions.includes("patrol"), false);
   assert.equal(knownRepertoire(state).actions.includes("patrol"), true);
@@ -602,6 +634,7 @@ const EXPLORE_RULE = rule(7, ALWAYS, act("explore"));
 const WANDER_RULE = rule(8, ALWAYS, act("wander"));
 
 test("the rule whose action goes on stands as running when another rule wins now, and not when it is the winner", () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
   assert.equal(started.run.current.activity.ruleId, 7, "precondition");
   assert.equal(ruleSigns(started).running, null, "it is the winner");
@@ -615,6 +648,7 @@ test("the rule whose action goes on stands as running when another rule wins now
 });
 
 test("a fix of the copy shows at once: a rule that could not start turns green", () => {
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
   const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
   const before = setProgram(
     started,
@@ -654,6 +688,7 @@ function diedOfCold() {
 }
 
 test("after a death of cold the rule whose action was going on stands as running, on the stopped minute", () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   const fallen = diedOfCold();
   const edited = setProgram(
     fallen,
@@ -665,6 +700,7 @@ test("after a death of cold the rule whose action was going on stands as running
 });
 
 test("after a completion a finished action is no longer running, one still going is", () => {
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   const started = sentWith([group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])]);
   const completed = (endMinute) => ({
     ...started,
@@ -706,6 +742,10 @@ function fighting(groups) {
 }
 
 test("in the minutes of an attack the signs show the first turn's pick at the health of the mage and of the wolf, and no action is running", () => {
+  // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
+  // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
+  // decision: D-309 "In the minutes of an attack, from the minute of the attack to the resolving of its turns, the signs of the copy show what the first combat turn would choose now"
+  // decision: D-308 "A rule whose condition holds and whose action cannot be carried out names the reason, such as „tu nie leży mech”, and a bar at each program rule and rule group of the copy, below the winning rule too"
   const state = fighting([
     group(1, ALWAYS, [
       rule(11, ALWAYS, act("explore")),
@@ -738,6 +778,9 @@ test("in the minutes of an attack the signs show the first turn's pick at the he
 });
 
 test("after a death in combat no action is running", () => {
+  // decision: D-140 "Combat verbs can be carried out only in combat, and only they can be carried out in it"
+  // decision: D-309 "Outside those minutes a combat rule whose condition holds is amber with the reason „tylko w walce”"
+  // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
   const state = fighting([group(1, ALWAYS, [rule(11, ALWAYS, act("kick"))])]);
   const dying = {
     ...state,
@@ -806,6 +849,7 @@ test("no map run, nothing for Teraz and Potem to name", () => {
 });
 
 test("Teraz names the action under way with its rule, the minutes left and the minutes in all, as at the start of a map run", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
   assert.deepEqual(nowAndNext(started).now, {
     kind: "action",
@@ -826,6 +870,7 @@ test("Teraz names the action under way with its rule, the minutes left and the m
 });
 
 test("Teraz reads 3 of 5 minutes at game minute 12 of an action from 10 to 15, paused or not", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   const expected = {
     kind: "action",
     ruleId: 7,
@@ -838,6 +883,7 @@ test("Teraz reads 3 of 5 minutes at game minute 12 of an action from 10 to 15, p
 });
 
 test("an action picked in the minute the last one ended has all its minutes left, and one fewer a minute later", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   // Explore takes 20 game minutes and reveals the tile, which turns the rule below it, wander, on.
   const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE, WANDER_RULE])]);
   const picked = advanceMinutes(started, 20).state;
@@ -854,6 +900,8 @@ test("an action picked in the minute the last one ended has all its minutes left
 });
 
 test("Teraz names a wait without a rule or minutes, and Potem names no rule", () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   const waiting = sentWith([
     group(1, ALWAYS, [rule(7, NEVER, act("explore"))]),
   ]);
@@ -865,6 +913,8 @@ test("Teraz names a wait without a rule or minutes, and Potem names no rule", ()
 });
 
 test("Teraz names the creature fought in every minute of an attack, the minute of the attack and the minute of the resolution included, though an ordinary action starts in the latter", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
   let state = fighting(KICK_OR_WANDER);
   assert.equal(state.run.minute, 181, "precondition: the minute of the attack");
   for (let minute = 181; minute <= 185; minute += 1) {
@@ -890,6 +940,8 @@ test("Teraz names the creature fought in every minute of an attack, the minute o
 });
 
 test("Teraz names the cause of a death of cold, of hunger and in combat", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   assert.deepEqual(nowAndNext(diedOfCold()).now, {
     kind: "death",
     cause: "cold",
@@ -921,6 +973,8 @@ test("Teraz names the cause of a death of cold, of hunger and in combat", () => 
 });
 
 test("a death after an encounter names its cause, not the fight", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
   const state = fighting(KICK_OR_WANDER);
   const resolved = advanceMinutes(state, 5).state;
   const later = {
@@ -940,6 +994,9 @@ test("a death after an encounter names its cause, not the fight", () => {
 });
 
 test("Teraz names the completion with the text of the map, also while an action goes on and in a resolution minute", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
   const started = sentWith([group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])]);
   const completed = {
     ...started,
@@ -1000,6 +1057,8 @@ test("Teraz names the completion with the text of the map, also while an action 
 });
 
 test("Potem names the winner of the judgement the signs show: the rule that wins now, which is not the rule under way", () => {
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
+  // decision: D-335 "The row says the state of the current game minute"
   const started = sentWith([group(1, ALWAYS, [EXPLORE_RULE])]);
   assert.deepEqual(nowAndNext(started).next, {
     kind: "rule",
@@ -1021,6 +1080,8 @@ test("Potem names the winner of the judgement the signs show: the rule that wins
 });
 
 test("Potem names no rule where none wins, in the minutes of an attack too", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   const idle = sentWith([group(1, ALWAYS, [rule(7, NEVER, act("explore"))])]);
   assert.deepEqual(nowAndNext(idle).next, { kind: "none" });
   const fight = fighting([group(1, ALWAYS, [rule(7, ALWAYS, act("explore"))])]);
@@ -1030,6 +1091,8 @@ test("Potem names no rule where none wins, in the minutes of an attack too", () 
 });
 
 test("in the minutes of an attack Potem names the combat rule the turn would choose, not the rule an ordinary pick would take", () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   const state = fighting([
     group(1, ALWAYS, [
       rule(11, ALWAYS, act("explore")),
@@ -1057,6 +1120,7 @@ test("in the minutes of an attack Potem names the combat rule the turn would cho
 });
 
 test("after a death Potem names the rule that wins at the stopped minute", () => {
+  // decision: D-335 "The row says the state of the current game minute"
   const fallen = diedOfCold();
   const edited = setProgram(
     fallen,

@@ -66,6 +66,8 @@ class ComposeIsolation(unittest.TestCase):
 
     def test_compose_names_its_own_project_service_and_container(self):
         # invariant: loop2-container-isolation
+        # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec` and sends the file itself, so there is no third Compose service"
         top, services = support.compose_outline(support.read_required(COMPOSE_FILE))
         self.assertIn("name", top, f"{COMPOSE_FILE} names no Compose project")
         self.assertEqual(top["name"].value, EXPECTED_PROJECT,
@@ -82,6 +84,8 @@ class ComposeIsolation(unittest.TestCase):
 
     def test_compose_shares_nothing_with_another_deployment(self):
         # invariant: loop2-container-isolation
+        # decision: D-13 "Automation secrets and server access values"
+        # decision: D-231 "At 03:17 by the server's clock each night, a schedule on the game server's host starts the backup script, installed by hand outside the game container and outside the checkout, which runs a short command in the running `loop2` container, takes the finished backup from that command's standard output through `docker exec` and sends the file itself, so there is no third Compose service and no timer in the game server, and the key to Mikrus Strych never enters the game container"
         text = support.read_required(COMPOSE_FILE)
         top, services = support.compose_outline(text)
         problems = volume_problems(top, services)

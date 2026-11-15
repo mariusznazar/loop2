@@ -138,6 +138,7 @@ const registeredJson =
 
 // invariant: account-client-requests
 test("each call sends its documented method, relative path and JSON body", async () => {
+  // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   respond = (request, response) => {
     if (
       request.url === "/api/logout" ||
@@ -281,6 +282,7 @@ test("the success status of each call with an account body gives that account an
 
 // invariant: account-client-outcomes
 test("a success status other than the call's own is no success, whatever the body", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   const message = '{"confirmationMessage":"sent"}';
   for (const [name, status, body] of [
     ["register", 200, registeredJson],
@@ -318,6 +320,7 @@ test("a success status other than the call's own is no success, whatever the bod
 
 // invariant: account-client-outcomes
 test("a success status with a body that is not an account with string id and email is no success", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   const bodies = [
     "",
     "not json",
@@ -371,6 +374,7 @@ test("a success status with a body that is not an account with string id and ema
 
 // invariant: account-client-outcomes
 test("register gives the confirmation message outcome it is told and nothing else", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   for (const outcome of ["sent", "limited", "failed"]) {
     respond = (_request, response) =>
       reply(
@@ -416,6 +420,7 @@ test("register gives the confirmation message outcome it is told and nothing els
 
 // invariant: account-client-outcomes
 test("sendConfirmationMessage gives the outcome of a 200 answer and no other body is a success", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   for (const outcome of ["sent", "limited", "failed"]) {
     respond = (_request, response) =>
       reply(response, 200, `{"confirmationMessage":"${outcome}"}`);
@@ -444,6 +449,7 @@ test("sendConfirmationMessage gives the outcome of a 200 answer and no other bod
 
 // invariant: account-client-outcomes
 test("an error status is a refusal carrying the server's code and message, even beside an account body", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   // The texts are sample refusals of the server (src/server/account-routes.ts); the client must
   // hand on whatever code and message it is sent, so the wording is not what is tested.
   for (const [name, status, code, message] of [
@@ -560,6 +566,7 @@ test("an error status is a refusal carrying the server's code and message, even 
 
 // invariant: account-client-outcomes
 test("an error status without a known code is a refusal by status and shows none of the server's words", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   for (const [status, body] of [
     [400, '{"error":"Bad Request words"}'],
     [403, '{"error":"Forbidden words"}'],
@@ -584,6 +591,7 @@ test("an error status without a known code is a refusal by status and shows none
 
 // invariant: account-client-outcomes
 test("a server that never answers, or stalls inside the body, ends in a timeout failure", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   const quick = createAccountClient({ timeoutMs: 150 });
   respond = () => {};
   const silent = await within(quick.login("a@x.pl", "twelve chars!"), "silent");
@@ -610,6 +618,7 @@ test("a server that never answers, or stalls inside the body, ends in a timeout 
 
 // invariant: account-client-outcomes
 test("a connection that fails before or inside the answer is a network failure, not a success", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   respond = (request) => request.socket.destroy();
   const refused = await within(
     client().login("a@x.pl", "twelve chars!"),
@@ -654,6 +663,8 @@ function submissionOfBytes(bytes) {
 // invariant: saved-state-http-exchange
 // invariant: account-client-requests
 test("loadSavedGame sends a bodiless GET on the relative saved-game path and the save call a JSON PUT of exactly version, basedOn and game", async () => {
+  // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
+  // decision: D-07 "The browser computes the whole game — the map runs, the earning loops and the catch-up — and sends the saved game state to the server"
   respond = (request, response) =>
     request.method === "GET"
       ? reply(response, 200, saveJson)
@@ -700,6 +711,7 @@ test("a redirect of the saved-game routes is not followed, so nothing is sent to
 // invariant: saved-state-http-exchange
 // invariant: account-client-outcomes
 test("loadSavedGame gives the save exactly as received, or null for an account with none", async () => {
+  // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none"
   respond = (_request, response) => reply(response, 200, saveJson);
   assert.deepEqual(await within(client().loadSavedGame(), "save"), {
     ok: true,
@@ -718,6 +730,7 @@ test("loadSavedGame gives the save exactly as received, or null for an account w
 
 // invariant: account-client-outcomes
 test("loadSavedGame is no success for another status or for a body that is not exactly save, null or version, revision and game", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   const game = '{"a":1}';
   const bodies = [
     "",
@@ -764,6 +777,7 @@ test("loadSavedGame is no success for another status or for a body that is not e
 
 // invariant: account-client-outcomes
 test("loadSavedGame turns an error status into a refusal, a dead connection and a silent server into unreachable", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   respond = (_request, response) =>
     reply(
       response,
@@ -820,6 +834,7 @@ test("saveGame answers saved with the new revision for a 200 with exactly a revi
 
 // invariant: account-client-outcomes
 test("saveGame maps each documented refusal to its own outcome", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   for (const [status, code, kind] of [
     [409, "save-conflict", "conflict"],
     [409, "save-outdated", "outdated"],
@@ -838,6 +853,7 @@ test("saveGame maps each documented refusal to its own outcome", async () => {
 
 // invariant: account-client-outcomes
 test("saveGame reports every other answer as a failure, also a refusal status under another code", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   for (const [status, body] of [
     [400, '{"code":"invalid-request","error":"x"}'],
     [403, '{"error":"Forbidden words"}'],
@@ -880,6 +896,7 @@ test("saveGame reports every other answer as a failure, also a refusal status un
 
 // invariant: account-client-outcomes
 test("saveGame reports a dead connection as a network failure and silence or a stalled body as a timeout", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   respond = (request) => request.socket.destroy();
   const dead = await within(client().saveGame(submission), "reset");
   assert.equal(dead.kind, "failed");
@@ -910,6 +927,7 @@ test("saveGame reports a dead connection as a network failure and silence or a s
 
 // invariant: saved-state-http-exchange
 test("a save body of exactly 65 536 bytes is sent whole", async () => {
+  // decision: D-207 "A save whose body is larger than 64 KiB is not sent and counts as refused as too large (D-208)"
   respond = (_request, response) => reply(response, 200, '{"revision":2}');
   const exact = submissionOfBytes(saveLimit);
   const result = await within(client().saveGame(exact), "exact");
@@ -923,6 +941,7 @@ test("a save body of exactly 65 536 bytes is sent whole", async () => {
 
 // invariant: saved-state-http-exchange
 test("a save body over 65 536 bytes is never sent and comes back too large", async () => {
+  // decision: D-207 "A save whose body is larger than 64 KiB is not sent and counts as refused as too large (D-208)"
   respond = (_request, response) => reply(response, 200, '{"revision":2}');
   const over = submissionOfBytes(saveLimit + 1);
   // Precondition: the body is over the limit in bytes though not in characters.
@@ -938,6 +957,7 @@ test("a save body over 65 536 bytes is never sent and comes back too large", asy
 
 // invariant: account-client-requests
 test("loadPreviousSavedGame sends a bodiless GET to the relative previous-save path, and resetSavedGame a JSON POST of the empty object to the reset path", async () => {
+  // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`"
   respond = (request, response) =>
     request.url === "/api/saved-game-reset"
       ? response.writeHead(204).end()
@@ -997,6 +1017,7 @@ test("loadPreviousSavedGame gives the previous save as received, or null for an 
 
 // invariant: account-client-outcomes
 test("loadPreviousSavedGame is no success for another status or for a body that is not exactly previous, null or version and game", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   const game = '{"a":1}';
   const bodies = [
     "",
@@ -1040,6 +1061,7 @@ test("loadPreviousSavedGame is no success for another status or for a body that 
 
 // invariant: account-client-outcomes
 test("loadPreviousSavedGame turns the refusals, a dead connection and a silent server into failures", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   respond = (_request, response) =>
     reply(
       response,
@@ -1112,6 +1134,7 @@ test("resetSavedGame is a success only for 204, with no body", async () => {
 
 // invariant: account-client-outcomes
 test("resetSavedGame turns the refusals, a dead connection and a silent server into failures", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   respond = (_request, response) =>
     reply(
       response,
@@ -1185,6 +1208,7 @@ const reportedWords = {
 // invariant: browser-failure-report
 // invariant: account-client-requests
 test("reportBrowserFailure posts the three words as one JSON POST to the report path, with no keepalive, same-origin credentials and no redirect", async () => {
+  // decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the owner of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server"
   respond = (_request, response) => response.writeHead(204).end();
   await withRecordedFetch(async (options) => {
     const result = await within(
@@ -1211,6 +1235,7 @@ test("reportBrowserFailure posts the three words as one JSON POST to the report 
 // invariant: browser-failure-report
 // invariant: account-client-outcomes
 test("reportBrowserFailure gives a failure, never a throw, for a redirect, a dead connection, a refusal and an answer that is no 204", async () => {
+  // decision: D-117 "A browser API client sends its requests to relative `/api/` paths and follows no redirect, reports a success only for its request's own success status with a well-formed body, reports every other answer, a failed connection and an answer not complete within its time limit as a typed failure"
   const target = `http://127.0.0.1:${elsewhere.address().port}/api/browser-failure`;
   respond = (_request, response) =>
     response.writeHead(307, { location: target }).end();
@@ -1280,6 +1305,7 @@ test("reportBrowserFailure gives a failure, never a throw, for a redirect, a dea
 // delivers it. The wait is observed on the call the client hands the real fetch, which is passed
 // on unchanged, so the request still reaches the local server above.
 test("saveGame hands the real fetch a PUT with keepalive and the server gets that request", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`"
   respond = (_request, response) => reply(response, 200, '{"revision":8}');
   const realFetch = globalThis.fetch;
   const handed = [];

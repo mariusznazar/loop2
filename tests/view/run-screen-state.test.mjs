@@ -63,6 +63,9 @@ function screenOf(state, { reduced = false } = {}) {
 // Catches a window that stands over a screen the player is not on, or one that does not stand over
 // the screen of an ended map run that the player comes to.
 test("a game built on an ended map run opens the window, which stands once the player is on the screen, and it opens again at each entering after „✕”", () => {
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-368 "The window scrolls in itself while its buttons"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const { screen } = screenOf(ended(going()));
   assert.equal(screen.windowShown(), false, "the player is on another screen");
   screen.entered();
@@ -87,6 +90,9 @@ test("the window stands only over an ended map run", () => {
 // Catches a window that opens over the death or the completion before the player has seen the
 // scene's effect, and one that never opens (D-322).
 test("a death or a completion on the screen makes the window wait for the scene's effect, which ends the wait", () => {
+  // decision: D-311 "It opens of itself at the end of the map run once the scene's effect of the death or the completion has played"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   for (const events of [DIED, COMPLETED]) {
     const { screen, game, take } = screenOf(going());
     screen.entered();
@@ -99,6 +105,7 @@ test("a death or a completion on the screen makes the window wait for the scene'
 
 // Catches a wait where the scene shows no effect: the window would never open.
 test("the window opens at once where the system asks for less motion, where the events hold no end of the effect's kind and where the player is on another screen", () => {
+  // decision: D-311 "It opens of itself at the end of the map run once the scene's effect of the death or the completion has played"
   const reduced = screenOf(going(), { reduced: true });
   reduced.screen.entered();
   reduced.take(ended(reduced.game.state), DIED, true);
@@ -121,6 +128,8 @@ test("the window opens at once where the system asks for less motion, where the 
 
 // Catches a wait that outlives the screen: a player who leaves and comes back would see no window.
 test("leaving the screen ends the wait for the effect, and the window stands at the next entering", () => {
+  // decision: D-311 "It opens of itself at the end of the map run once the scene's effect of the death or the completion has played"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const { screen, game, take } = screenOf(going());
   screen.entered();
   take(ended(game.state), DIED, true);
@@ -132,6 +141,9 @@ test("leaving the screen ends the wait for the effect, and the window stands at 
 // Catches the window that opens again after „Wróć”, which D-173 forbids, and one that stands with
 // the question.
 test("the question closes the window, which stays closed after „Wróć”", () => {
+  // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const { screen } = screenOf(renamed(ended(going())));
   screen.entered();
   assert.equal(screen.windowShown(), true, "precondition: the window stands");
@@ -145,6 +157,7 @@ test("the question closes the window, which stays closed after „Wróć”", ()
 
 // Catches a „Wróć” that puts a paused map run going, or leaves a map run that went on paused (D-324).
 test("the question remembers whether the map run went on, and which button asked it", () => {
+  // decision: D-324 "While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map run is paused as „Pauza” pauses it"
   const goingOn = screenOf(renamed(going()));
   goingOn.screen.entered();
   assert.deepEqual(goingOn.screen.ask("forest"), {
@@ -164,6 +177,7 @@ test("the question remembers whether the map run went on, and which button asked
 
 // Catches a question that stands over a copy with no unsaved changes (D-324).
 test("the question goes when the copy no longer holds unsaved changes, and stays while it does", () => {
+  // decision: D-324 "The rest of the screen works as usual"
   const { screen, game, take } = screenOf(renamed(going()));
   screen.entered();
   screen.ask(null);
@@ -175,6 +189,7 @@ test("the question goes when the copy no longer holds unsaved changes, and stays
 
 // Catches „Koniec przejścia” that leaves the question standing beside the window (D-311, D-324).
 test("„Koniec przejścia” closes a standing question and opens the window, and does nothing over a map run that goes on", () => {
+  // decision: D-324 "The rest of the screen works as usual"
   const ending = screenOf(renamed(ended(going())));
   ending.screen.entered();
   ending.screen.ask(null);
@@ -245,6 +260,7 @@ test("after halt the question, the window and the wait change nothing, while ent
 
 // Catches a window opened before the page placed the game that takes no focus, or takes it twice.
 test("a window that stands when the game is built owes the focus once, after the game stands in the page", () => {
+  // decision: D-370 "The window takes the focus when it opens"
   const { screen } = screenOf(ended(going()));
   screen.entered();
   screen.built();

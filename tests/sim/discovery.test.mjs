@@ -126,6 +126,15 @@ function assertWritten(state, program) {
 }
 
 test("a new game sent with its one empty group waits until the minute of the first chill, which learns Wędruj and Temperatura poniżej, writes Zawsze → Eksploruj into the group Program and starts exploring in that minute", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-121 "The Understanding of a new game holds the action „Eksploruj”"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
+  // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
+  // decision: D-341 "A loss of the streak gives an entry of the chronicle only where a streak above zero falls to zero"
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   const before = advanceMinutes(sentNew(), 83);
   assert.equal(before.state.run.minute, 83);
   assert.equal(before.state.run.body.temperature, 35.008);
@@ -183,6 +192,7 @@ test("a new game sent with its one empty group waits until the minute of the fir
 });
 
 test("the same span of minutes, however split, reaches the same game state with the same events through the first chill", () => {
+  // decision: D-348 "The chronicle learns what happened in a game minute from the events the simulation returns"
   // One minute a call, up to and including the minute of the first finished exploration, 104.
   let state = sentNew();
   const reference = [];
@@ -206,6 +216,8 @@ test("the same span of minutes, however split, reaches the same game state with 
 });
 
 test("a program with no group gets the group Program with the condition Zawsze at the first chill, holding the rule", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to, while that program is on the player's list, and where either holds no rule group, the game adds the rule group „Program” with the condition „Zawsze” and writes the rule into it"
+  // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
   const empty = {
     tripPlan: { take: [], bring: [] },
     groups: [],
@@ -230,6 +242,8 @@ test("a program with no group gets the group Program with the condition Zawsze a
 });
 
 test("the rule is appended to the first group only, after its rules, with an identity no rule or group had", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to"
+  // decision: D-123 "The rule so written counts neither as an unsaved change of the copy nor as a change of the program that a save of the copy announces"
   // A rule that does not hold at the first chill, so that the new rule fires.
   const idle = {
     condition: { kind: "temperatureBelow", value: 30 },
@@ -269,6 +283,8 @@ test("the rule is appended to the first group only, after its rules, with an ide
 });
 
 test("a second chill and the minutes after reveal nothing and write no second rule", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   const first = advanceMinutes(sentNew(), 84).state;
   const later = advanceMinutes(first, 10);
   assert.deepEqual(discoveries(later.events), []);
@@ -279,6 +295,7 @@ test("a second chill and the minutes after reveal nothing and write no second ru
 });
 
 test("a chill that reveals nothing new writes no rule", () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill"
   const state = advanceMinutes(sentNew(), 83).state;
   const knowing = { ...state, understanding: CHILLED };
   const result = advanceMinutes(knowing, 1);
@@ -290,6 +307,7 @@ test("a chill that reveals nothing new writes no rule", () => {
 });
 
 test("a copy that holds a rule „Eksploruj” of the player's own gets none from the game at the first chill, and none after it", () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
   const given = programFromRules(EXPLORE_RULE);
   // The character explores from minute 0, so the first discovery is the exploration, in minute 20.
   const exploring = advanceMinutes(sentNew(given), 100);
@@ -306,6 +324,7 @@ test("a copy that holds a rule „Eksploruj” of the player's own gets none fro
 });
 
 test("a copy whose rule „Eksploruj” stands under a condition that does not hold, in any group, gets no second one at the first chill", () => {
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
   const blocked = {
     condition: { kind: "temperatureBelow", value: 30 },
     action: { kind: "explore" },
@@ -342,6 +361,9 @@ test("a character of a new game whose program holds Zawsze → Eksploruj from th
 });
 
 test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, Zapas poniżej, the items of the tile, read from the tile, and the tree Eksploracja beside the gathering tree", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals"
+  // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
   const explored = advanceMinutes(advanceMinutes(sentNew(), 84).state, 20);
   const run = explored.state.run;
   assert.equal(run.minute, 104);
@@ -379,6 +401,7 @@ test("the first finished exploration reveals Idź, Zbierz, Tu leży mniej niż, 
 });
 
 test("a later revealed tile adds its new items only, and a tile of known items reveals nothing", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”, and the first finished exploration brings „Idź”, „Zbierz”, the conditions „Tu leży mniej niż” and „Zapas poniżej” and the items lying on the tile it reveals, each tile revealed later adding the items lying on it, moss and fibre included"
   const understanding = {
     actions: ["explore", "wander", "walkTo", "gather", "patrol"],
     conditions: ["always", "temperatureBelow", "hereBelow", "itemBelow"],
@@ -489,6 +512,9 @@ const ROWS = [
 
 for (const row of ROWS) {
   test(`${row.name} reveals exactly its row of the table, between the finish and the pick`, () => {
+    // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+    // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
+    // decision: D-195 "A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill"
     const result = advanceMinutes(prepared(START, row.prepare), 1);
     assert.deepEqual(discoveries(result.events), [
       {
@@ -517,6 +543,8 @@ for (const row of ROWS) {
 }
 
 test("a gathering that misses reveals nothing", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   const state = prepared(START, (run) => ({
     tiles: onStandingTile(run, { revealed: true, stock: { stick: 5 } }),
     gatherRandom: gatherRandomOf(false),
@@ -529,6 +557,8 @@ test("a gathering that misses reveals nothing", () => {
 });
 
 test("a lighting that takes no hold, for want of sticks, reveals nothing", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   const state = prepared(START, (run) => ({
     current: ending(run, { kind: "lightItem" }),
   }));
@@ -538,6 +568,8 @@ test("a lighting that takes no hold, for want of sticks, reveals nothing", () =>
 });
 
 test("a crafting that puts no campfire on the tile, for want of sticks, reveals nothing", () => {
+  // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   const state = prepared(START, (run) => ({
     current: ending(run, { kind: "craftCampfire" }),
   }));
@@ -547,6 +579,7 @@ test("a crafting that puts no campfire on the tile, for want of sticks, reveals 
 });
 
 test("a known item and its actions, revealed again, reveal nothing", () => {
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   const known = {
     actions: ["craftCampfire", "lightCampfire", "lightItem"],
     conditions: ["always"],
@@ -566,6 +599,7 @@ test("a known item and its actions, revealed again, reveal nothing", () => {
 });
 
 test("a gathering ending in the minute of the character's death reveals nothing, and the same gathering without death does", () => {
+  // decision: D-71 "Outside combat a game minute takes effect in this order"
   const dying = (health) =>
     prepared(CHILLED, (run) => ({
       tiles: onStandingTile(run, { revealed: true, stock: { stick: 5 } }),
@@ -587,6 +621,7 @@ test("a gathering ending in the minute of the character's death reveals nothing,
 });
 
 test("the first chill in the minute of death still reveals what the body step reveals", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
   const state = prepared(START, () => ({
     body: { temperature: 34.9, satiety: 100, health: 0.2 },
   }));
@@ -597,6 +632,8 @@ test("the first chill in the minute of death still reveals what the body step re
 });
 
 test("the Understanding stands after death, Restart and Zakończ, and stands for the next character sent", () => {
+  // decision: D-119 "The Understanding belongs to the player and is one for all characters, and what any character discovers enters it for every character"
+  // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"
   let state = setProgram(
     withEdgeSolved(newGame()),
     programFromRules(EXPLORE_RULE),
@@ -653,6 +690,7 @@ test("advancing minutes through the first chill changes neither the game state g
 // D-121, first row: the first minute in which the body temperature is below 35,0 °C. The forest
 // cools a body by 0,024 °C a minute, so these bodies end the minute at 35,0 and at 34,999 °C.
 test("a body temperature of exactly 35,0 °C after the minute is not a chill, one thousandth below it is", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
   const cooling = (temperature) =>
     prepared(START, () => ({
       body: { temperature, satiety: 100, health: 100 },
@@ -666,6 +704,7 @@ test("a body temperature of exactly 35,0 °C after the minute is not a chill, on
 });
 
 test("what the chill reveals is exactly its row, and the condition Zawsze and the action Eksploruj, which nothing reveals, are not added to an Understanding that lacks them", () => {
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
   const state = prepared(
     { actions: [], conditions: [], items: [], trees: [], creatures: [] },
     () => ({
@@ -683,6 +722,7 @@ test("what the chill reveals is exactly its row, and the condition Zawsze and th
 });
 
 test("a revealing event reveals what of its row is still new, though its actions outnumber or equal the new items and conditions", () => {
+  // decision: D-121 "The first gathered stick brings „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and the campfire, the first crafted campfire brings „Idź — ognisko” and the conditions „Zostało mniej niż — ognisko” and „Z dala od — ognisko”, the first finished „Zapal”, of a campfire or of a stick, brings „Zasil — ognisko” and the condition „Energia natury poniżej”, and the first gathered berry brings „Zjedz — jagoda” and the condition „Sytość poniżej”"
   // Gathering a stick: only Zapal — patyk and the campfire are new, the rest of the row is known.
   const known = {
     actions: ["craftCampfire", "lightCampfire"],
@@ -711,6 +751,7 @@ test("a revealing event reveals what of its row is still new, though its actions
 });
 
 test("a map run ended in death passes no further minute at the level of the run", () => {
+  // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   const dead = toDeath(sentNew());
   assert.ok(dead.run.death, "the character died");
   // The map run carries out its copy.
@@ -732,6 +773,8 @@ const CHILL_REVEALED = {
 };
 
 test("a span of minutes of a new game sent, given 100, ends at the minute of the first chill, paused, holding what the chill revealed, and called again goes on", () => {
+  // decision: D-71 "Discoveries of a manual map run enter the Understanding where their cause occurs"
+  // decision: D-121 "The first game minute in which a character is chilled brings „Wędruj” and the condition „Temperatura poniżej”"
   const first = advanceMinutes(sentNew(), 100);
   assert.equal(first.state.run.minute, 84);
   assert.equal(first.state.paused, true);
@@ -765,6 +808,7 @@ test("a span that meets no discovery leaves the game unpaused and holding no dis
 });
 
 test("real time passed across the first chill ends at minute 84 paused with no carry, moves nothing more until the player goes on, and going on clears the discovery", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   for (const realMs of [84500, 100000]) {
     const stopped = passRealTime(sentNew(), realMs);
     assert.equal(stopped.state.run.minute, 84, `real time ${realMs}`);
@@ -783,6 +827,7 @@ test("real time passed across the first chill ends at minute 84 paused with no c
 });
 
 test("a pause the player sets keeps what the last minute revealed, and going on clears it", () => {
+  // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
   const stopped = advanceMinutes(sentNew(), 100).state;
   const pausing = setPaused(stopped, true);
   const held = pausing.state;
@@ -794,6 +839,7 @@ test("a pause the player sets keeps what the last minute revealed, and going on 
 });
 
 test("restart, end and send clear what the last minute revealed, and a new game holds none", () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”"
   assert.equal(newGame().discovery, null);
   const stopped = advanceMinutes(sentNew(), 100).state;
   assert.deepEqual(stopped.discovery, CHILL_REVEALED);
@@ -872,11 +918,14 @@ function deepFreeze(value) {
 }
 
 test("the first chill of a new game names the group Program, where the game wrote the rule", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = advanceMinutes(sentNew(), 100).state;
   assert.equal(chillRuleGroupName(state), "Program");
 });
 
 test("a copy whose first group the player renamed before the first chill names that name", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   assert.deepEqual(
     state.run.copy.program.groups.map((one) => one.rules.length),
@@ -887,11 +936,14 @@ test("a copy whose first group the player renamed before the first chill names t
 });
 
 test("a copy with no rule group gets the group Program at the first chill, and the name is Program", () => {
+  // decision: D-123 "A program rule the game writes at a discovery goes into the first rule group of the copy the map run carries out and into the first rule group of the program the copy belongs to, while that program is on the player's list, and where either holds no rule group, the game adds the rule group „Program” with the condition „Zawsze” and writes the rule into it"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn();
   assert.equal(chillRuleGroupName(state), "Program");
 });
 
 test("a group dragged above the one holding the rule while the band stands leaves the name where the rule stands", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => program.groups.reverse());
   assert.deepEqual(
@@ -903,6 +955,7 @@ test("a group dragged above the one holding the rule while the band stands leave
 });
 
 test("a group renamed while the band stands gives the new name", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const renamed = editedCopy(state, (program) => {
     program.groups[0].name = "Ciepło";
@@ -911,6 +964,7 @@ test("a group renamed while the band stands gives the new name", () => {
 });
 
 test("the rule moved into another group while the band stands gives that group", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const moved = editedCopy(state, (program) => {
     program.groups[1].rules = program.groups[0].rules;
@@ -920,6 +974,7 @@ test("the rule moved into another group while the band stands gives that group",
 });
 
 test("another group holding its own Zawsze → Eksploruj, dragged above the one the game wrote into, gives that group", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => {
     program.groups[1].rules.push(explorationRule(program.nextRuleId));
@@ -930,6 +985,8 @@ test("another group holding its own Zawsze → Eksploruj, dragged above the one 
 });
 
 test("the rule deleted while the band stands gives null, and the first other group holding such a rule once there is one", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const deleted = editedCopy(state, (program) => {
     program.groups[0].rules = [];
@@ -943,6 +1000,7 @@ test("the rule deleted while the band stands gives null, and the first other gro
 });
 
 test("the group of the rule deleted while the band stands gives null", () => {
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const deleted = editedCopy(state, (program) => {
     program.groups.splice(0, 1);
@@ -951,6 +1009,8 @@ test("the group of the rule deleted while the band stands gives null", () => {
 });
 
 test("a rule that is not Zawsze → Eksploruj does not name its group", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
+  // decision: D-312 "Where no rule group of the copy holds such a rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const changed = editedCopy(state, (program) => {
     program.groups[0].rules = [
@@ -971,6 +1031,7 @@ test("a rule that is not Zawsze → Eksploruj does not name its group", () => {
 });
 
 test("the first finished exploration, a discovery that wrote no rule, gives null though the copy holds the rule", () => {
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const chilled = advanceMinutes(sentNew(), 100).state;
   const explored = advanceMinutes(chilled, 100).state;
   assert.equal(explored.run.minute, 104, "precondition: the exploration");
@@ -999,6 +1060,8 @@ test("a state holding no map run gives null, whatever it holds", () => {
 });
 
 test("a saved document of the paused state, loaded again, gives the same name, with the shape unchanged", () => {
+  // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
+  // decision: D-312 "Where a band names the discovery at which the game wrote a program rule"
   const state = chilledIn(group(1, "Ogień"), group(2, "Głód"));
   const dragged = editedCopy(state, (program) => program.groups.reverse());
   const document = JSON.parse(

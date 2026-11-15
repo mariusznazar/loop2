@@ -200,6 +200,16 @@ const rowOf = (container, key) =>
 // part out of the order D-311 gives, or a line of the deposit or of a death's settlement standing in
 // the world area, which the window of the end holds (D-185, D-216, D-311).
 test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
+  // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana"
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
+  // decision: D-201 "Below the body row the map-run view shows a line in the role `text`, „Wprawa w tym przejściu: {umiejętność} +{n} · …”, listing the skills with positive practice gathered in that run"
+  // decision: D-201 "Zero-valued skills and the line at zero are absent, and the positive line remains after death and completion until „Restart” or „Zakończ”"
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
+  // decision: D-311 "The world holds, from the top, the scene, „Teraz” and „Potem”, the body row"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -312,6 +322,8 @@ const textsOf = (row) => ({
 // wrong file, minutes that do not follow the game minute, a label of Potem other than its word, or a
 // Teraz that grows a progress bar (D-334: none).
 test("Teraz and Potem name the action under way with its rule and minutes and the rule that wins, and follow the game minute", async () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     const rules = [
       { condition: ALWAYS, action: { kind: "explore" } },
@@ -352,6 +364,8 @@ test("Teraz and Potem name the action under way with its rule and minutes and th
 // Catches a wait that names a rule or minutes, or Potem that keeps the rule of a condition that does
 // not hold; and the line of no winner in a role other than `warning` (D-335).
 test("Teraz says the wait alone, and Potem with no winning rule says the character will stand in the role warning", async () => {
+  // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     const never = { kind: "hereBelow", resource: r[0], value: 0 };
     const { container } = await draw(
@@ -377,6 +391,11 @@ test("Teraz says the wait alone, and Potem with no winning rule says the charact
 // Catches the cause of a death in `danger` (D-334) or worded alike for two causes, a completion not in
 // `positive` (D-132), and rows that vanish after the end (D-335, D-334).
 test("after a death Teraz says its cause in the role text, after a completion the text of the map in positive, and Potem stays", async () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
+  // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
+  // decision: D-335 "The row says the state of the current game minute"
   await withPage(async ({ document }) => {
     const rules = [{ condition: ALWAYS, action: { kind: "explore" } }];
     const { container, show } = await draw(document, sentUnder(...rules));
@@ -409,6 +428,9 @@ test("after a death Teraz says its cause in the role text, after a completion th
 // Catches a fight with an icon, a rule or minutes beside it (D-334, D-147), and a Potem that names no
 // rule for the minutes of an attack when a combat rule would be chosen (D-335, D-309).
 test("in the minutes of an attack Teraz says the fight alone and Potem names the combat rule the turn would choose", async () => {
+  // decision: D-147 "„Teraz” reads „Walczy z wilkiem” throughout the combat minutes, including the resolution minute even if the next ordinary action starts there, while death or completion takes precedence and combat death reads „Mag zginął w walce”"
+  // decision: D-334 "In the minutes of an attack it holds „Walczy z wilkiem” alone"
+  // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   await withPage(async ({ document }) => {
     const state = withRun(
       sentUnder(
@@ -440,6 +462,7 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
 // Catches the settlement of a death drawn in the world area, the line that the window of the end holds
 // (D-216, its section about what the death cost), or a deposit drawn at death (D-185).
 test("a death that used a resurrection shows no line of its settlement and no deposit and no preview in the world area", async () => {
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   await withPage(async ({ document }) => {
     const used = died(sent(), 0);
     assert.equal(used.run.deathSettlement.kind, "resurrectionUsed");
@@ -458,6 +481,8 @@ test("a death that used a resurrection shows no line of its settlement and no de
 // the case reads the size and the source from the background and the absence of text from the whole
 // frame. The one size is twice the picture of 336 × 152 (D-349).
 test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
+  // decision: D-349 "The scene has one size, 672 × 304 px, twice the size of its picture"
+  // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, sent());
     // The one size holds in a narrow window and in a wide one, and for another state of the game.
@@ -514,6 +539,10 @@ test("the scene is the picture of the forest at the one size of D-349, with no t
 // Catches a value in `danger` that is not below its threshold, or one below it that is not. The
 // thresholds are 35 °C and 30 % (D-337); the nature energy is never in `danger` (D-178).
 test("only the value below its threshold stands in danger, and the backpack reads its pieces of the cap", async () => {
+  // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
+  // decision: D-337 "The body row holds each of its values in a cell of its own"
   await withPage(async ({ document }) => {
     const base = sent();
     const character = {
@@ -584,6 +613,11 @@ const notesOf = (container) =>
 // 37 − 83 × 0.024 = 35.008 °C and the 116th at 100 − 116 × 0.6 = 30.4 %, worked out by hand as in
 // tests/sim/body.test.mjs.
 test("the body row stands in cells with the minutes of the needs under temperature and satiety from game minute zero, none under health and nature energy", async () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered"
+  // decision: D-337 "The body row holds each of its values in a cell of its own"
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   await withPage(async ({ document }) => {
     const started = sent();
     assert.equal(started.run.minute, 0, "precondition: game minute zero");
@@ -615,6 +649,8 @@ test("the body row stands in cells with the minutes of the needs under temperatu
 // Catches „marznie” or „głoduje” not in danger, a note in danger above its threshold, and the minutes
 // kept past the threshold. At 35,0 °C and 30 % the character is not yet chilled or starving.
 test("a note under temperature and one under satiety read „marznie” and „głoduje” in danger below their thresholds and the minutes at them", async () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   await withPage(async ({ document }) => {
     const base = sent();
     const { container, show } = await draw(
@@ -643,6 +679,7 @@ test("a note under temperature and one under satiety read „marznie” and „g
 
 // Catches „bez ognia {n} min” beside a fire on the character's tile, and an unlit map shown as cooling.
 test("by a fire the note under temperature reads „przy ogniu”, and the notes follow the game minute", async () => {
+  // decision: D-337 "The note under temperature reads the first of these that holds"
   await withPage(async ({ document }) => {
     const base = sent();
     const at = base.run.character.at;
@@ -662,6 +699,7 @@ test("by a fire the note under temperature reads „przy ogniu”, and the notes
 // the stopped minute — „marznie” after a death of cold, „głoduje” after one of hunger — and after a
 // completion the minutes of the body at game minute 480.
 test("the notes stand after the end of a map run, on the state at the stopped minute", async () => {
+  // decision: D-337 "{n} is the whole game minutes, rounded down, left until the character starts to be chilled or to starve"
   await withPage(async ({ document }) => {
     const base = sent();
     const { container, show } = await draw(
@@ -711,6 +749,7 @@ test("the notes stand after the end of a map run, on the state at the stopped mi
 // and „Potem” or anywhere else, while the map run holds a record of one (D-311, D-147): it stands
 // in the chronicle in the area with the tabs alone.
 test("the world area draws no paragraph of the last encounter, with a record of one or without", async () => {
+  // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, sent());
     const paragraph = () => container.querySelector(".combat-line");
@@ -766,6 +805,9 @@ function computed(element, property) {
 // the `text` of the panel around the drawing — and a stock of 0 that does not dim it by `depleted`
 // (D-41). The values are those of the stylesheet's rules, read as the tokens they name.
 test("the icons of the drawing take the colour text-strong, the icon of a stock of 0 dimmed by depleted", async () => {
+  // decision: D-40 "The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it; so does the icon flying to the mage, on its plaque in `panel`, and so do the icons of the drawing of the map, on `tile-revealed`"
+  // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place, `depleted` that what was here is gone"
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const frames = [...container.querySelectorAll(".terrain-drawing .icon")];
@@ -788,6 +830,9 @@ test("the icons of the drawing take the colour text-strong, the icon of a stock 
 // Catches a drawing that hides a revealed tile's icons, dims one whose stock is not 0, or draws a
 // number. Dimmed icons are those of the stock 0 (D-41).
 test("the drawing has a tile per tile of the map run, the icons of the resources a revealed tile holds dimmed at a stock of 0, and no text", async () => {
+  // decision: D-41 "In the browser view `character` means that here is the character and here it is going, the target of its current move told from its place by shape, a thin dashed line in place of a thick solid one, never by colour; `tile-hidden` means a place not yet known, `tile-revealed` a place known, whose icons say what lies there"
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -832,6 +877,7 @@ test("the drawing has a tile per tile of the map run, the icons of the resources
 
 // Catches an outline missing, or the step's target drawn like the character's own (D-41).
 test("the character's tile and the step's target carry an outline each, the target apart by its class", async () => {
+  // decision: D-41 "In the browser view `character` means that here is the character and here it is going"
   await withPage(async ({ document }) => {
     const program = setProgram(
       withEdgeSolved(newKnowingGame()),
@@ -879,6 +925,7 @@ test("the character's tile and the step's target carry an outline each, the targ
 
 // Catches a drawing that answers a click (D-19), and one that is reached by the keyboard as a control.
 test("the drawing is a picture: a click on a tile changes nothing, and nothing in it is a control", async () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -900,6 +947,8 @@ test("the drawing is a picture: a click on a tile changes nothing, and nothing i
 // Catches a hovered tile that does not mark its row, a line that shows no numbers, a row that does
 // not mark its tile, and a line that does not come back to the character's tile (D-19).
 test("a hovered tile marks its row and the line under the drawing shows its numbers; a hovered row marks its tile; with none hovered the line is the character's tile", async () => {
+  // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   await withPage(async ({ window, document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -1046,6 +1095,7 @@ function fireRun(minute) {
 // the other state, one that writes the words or minutes of its state on the drawing, and one whose
 // state creeps into the line under the drawing.
 test("the campfire's icon stands in its tile and its state in the row of the same key, and nowhere else", async () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles"
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, fireRun(63));
     for (const [state, text, file] of [
@@ -1095,6 +1145,9 @@ test("the campfire's icon stands in its tile and its state in the row of the sam
 
 // Catches a table that loses a column, a heading or the campfire's cell.
 test("the table has a column per resource of the map, a row per revealed tile with the stock, and the fire cell", async () => {
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const table = container.querySelector("table.tile-list");

@@ -234,6 +234,9 @@ function startWriter({ path, writers }) {
 }
 
 test("a backup made beside a separate writer finishes, opens and holds everything committed before it started, a row only in the write-ahead log included", async (t) => {
+  // decision: D-228 "A completed, consistent backup of the account and save database"
+  // decision: D-236 "The backup command of D-231 makes a database backup"
+  // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400 and the backup command of D-231 each open one short-lived connection beside it"
   const box = await sandbox(t);
   const { path, temporary, directory } = box;
   seedDatabase(box);
@@ -290,6 +293,7 @@ test("a backup made beside a separate writer finishes, opens and holds everythin
 });
 
 test("a backup takes one step, where the default rate takes many on the same database", async (t) => {
+  // decision: D-236 "The backup command of D-231 makes a database backup through `backup()` of `node:sqlite`, on the connection it opens, whole in one step"
   const box = await sandbox(t);
   const { path, directory, servers } = box;
   const server = seedDatabase(box);
@@ -314,6 +318,7 @@ test("a backup takes one step, where the default rate takes many on the same dat
 });
 
 test("without the one fixed word, or with anything else, the command refuses before it opens the database and prints nothing to standard output", async (t) => {
+  // decision: D-231 "That command opens only an existing database file, needs its one fixed word `--to-standard-output`, without which it refuses before it opens the database and prints nothing to standard output"
   const box = await sandbox(t);
   const { path, temporary, directory } = box;
   seedDatabase(box).close();
@@ -360,6 +365,7 @@ test("without the one fixed word, or with anything else, the command refuses bef
 });
 
 test("a missing database file creates nothing and ends with its own code", async (t) => {
+  // decision: D-231 "That command opens only an existing database file"
   const { path, temporary, directory } = await sandbox(t);
   for (const target of [path, undefined, "", "   ", ":memory:", directory]) {
     const result = await runBackup([word], target, temporary);
@@ -400,6 +406,10 @@ test("a database that cannot be opened and a temporary directory that cannot be 
 // only that the night's copy failed; SQLite's message or the path in standard
 // error, which the backup script appends to its log.
 test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
+  // decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const box = await sandbox(t);
   const garbage = join(box.directory, "garbage-secret-name.sqlite");
   await writeFile(garbage, "this is not an SQLite database at all, padding");
@@ -449,6 +459,8 @@ function runBackupWithStandin(box, mode) {
 // failure written as backup-database, so the operator reads "No backup was
 // made" after a backup that went out whole.
 test("a whole backup whose temporary directory cannot be removed is one failure of its own, with its cause and one sentence, and exits 1", async (t) => {
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  // decision: D-354 "A failure of the command written as that line and followed by that sentence is one failure recorded once"
   const box = await sandbox(t);
   seedDatabase(box).close();
 
@@ -494,6 +506,7 @@ test("a whole backup whose temporary directory cannot be removed is one failure 
 // D-253. Faults: no handler, so the default print writes the
 // message and the stack; a line on standard output, which carries the backup.
 test("what no code of the command handled ends it with one line of its kind, code and place on standard error", async (t) => {
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const box = await sandbox(t);
   seedDatabase(box);
   const child = spawn(process.execPath, ["--import", standin, command, word], {
