@@ -793,6 +793,8 @@ const versionFiveAccounts = [
 // invariant: account-schema-lifecycle
 test("a version-5 database opens as version 6 with every row and value kept and every account a player", async (t) => {
   // decision: D-112 "Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state, the time their email address was confirmed, unset until it is, the previous-save privilege, off until the operator grants it, and the role, `player` or `owner`, which the step to version 6 adds to the accounts of the database with the value `player` for every account it holds"
+  // decision: D-410 "Every account has a role, `player` or `owner`, stored with the account in the account database; a new account has the role `player`, and an account of either role signs in on the same card, plays and keeps its own saved game state."
+  // decision: D-202 "A new account has the role `player` (D-410), and no registration and no request gives an account the owner role"
   const { path, raw, track } = await olderDatabaseFixture(
     t,
     versionFiveDatabase,

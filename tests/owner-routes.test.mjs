@@ -707,6 +707,7 @@ test(
     // invariant: unblock-restores-no-session
     // invariant: unblock-restores-no-link
     // decision: D-137 "An account with the owner role (D-410) also blocks and unblocks a player account, named by its email address in the body of `POST /api/owner/block` or `POST /api/owner/unblock` of the owner panel, which the server answers only to a valid session of such an account, with the same effects in the same one transaction and the answers `blocked`, `already-blocked`, `unblocked` or `not-blocked`, JSON 404 with the code `unknown-account` where no account has that address"
+    // decision: D-202 "A new account has the role `player` (D-410), and no registration and no request gives an account the owner role; an account with the owner role can also block an account from signing in and using the game, from the owner panel (D-137)."
     // decision: D-137 "The address in the body of the four routes of the panel is normalized as at login, and an address written as no address is the address of no account"
     // decision: D-252 "A change of the role of an account and each operation of the owner panel are such changes: each leaves one line with the number of the account changed, written after a change only, and no address and no number of the account of the owner who acted"
     // Faults: a block that leaves a session or a link of its target, or ends one
@@ -910,6 +911,7 @@ test(
   async (t) => {
     // invariant: account-mutation-request-guards
     // decision: D-109 "A valid server-side session of an account with the owner role (D-410) alone also authorizes reading the list of accounts, `GET /api/owner/accounts`, and blocking, unblocking, granting the previous-save privilege to and revoking it from another account, `POST /api/owner/block`, `POST /api/owner/unblock`, `POST /api/owner/grant-previous-save` and `POST /api/owner/revoke-previous-save`, the role being read from the database at each request and never from the session, and the address in the body of those four routes naming the target and granting no authority"
+    // decision: D-410 "The server reads the role of an account from the database at each request that depends on it and never from the session, so a role given or taken holds from the next request, and no registration, no request and no field of a request gives an account a role."
     // Faults: a route that reads an identifier from the body; one that ignores a
     // field beside the address; one that coerces a number or a list into an address.
     const f = await panelFixture(t);
@@ -955,6 +957,7 @@ test(
   async (t) => {
     // invariant: account-mutation-request-guards
     // decision: D-104 "Missing, null, duplicate, malformed or foreign Origin and wrong media type are refused before mutation or password work, and Host or forwarded host headers never choose the expected origin"
+    // decision: D-109 "Each of the five routes answers JSON 503 where accounts are not configured and otherwise first meets the transport check of D-110, and the four `POST` routes then meet the origin and body guards of D-104, so a request that fails one of them is refused as that decision gives, whatever its session."
     // Faults: a route outside the guards; a session read before the guards (a
     // request with none would be answered 401); a body limit of 64 KiB.
     const f = await panelFixture(t);
@@ -1065,6 +1068,7 @@ test(
   "where accounts are not configured the five routes answer 503 JSON, and a method the routes do not serve is no operation",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-109 "Each of the five routes answers JSON 503 where accounts are not configured and otherwise first meets the transport check of D-110, and the four `POST` routes then meet the origin and body guards of D-104, so a request that fails one of them is refused as that decision gives, whatever its session."
     // Faults: a route of the panel that answers before the prelude of the
     // account routes; an operation reachable by GET or by another method.
     const bare = await listening(createApp());
@@ -1129,6 +1133,9 @@ test(
   { timeout: 20000 },
   async (t) => {
     // decision: D-410 "The answers that carry the account — `GET /api/account`, the login and the registration — hold"
+    // decision: D-410 "Every account has a role, `player` or `owner`, stored with the account in the account database; a new account has the role `player`, and an account of either role signs in on the same card, plays and keeps its own saved game state."
+    // decision: D-410 "The server reads the role of an account from the database at each request that depends on it and never from the session, so a role given or taken holds from the next request, and no registration, no request and no field of a request gives an account a role."
+    // decision: D-202 "A new account has the role `player` (D-410), and no registration and no request gives an account the owner role"
     // Faults: a field `role` for a player; no `role` for an owner; the role of
     // the registration's session kept after the role was given.
     const f = await panelFixture(t);
@@ -1192,6 +1199,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-save-isolation
+    // decision: D-410 "Every account has a role, `player` or `owner`, stored with the account in the account database; a new account has the role `player`, and an account of either role signs in on the same card, plays and keeps its own saved game state."
     // Faults: routes of the panel that answer for the account routes' paths; an
     // owner whose own saved game is read or replaced through another account's
     // session.
