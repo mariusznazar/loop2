@@ -54,12 +54,15 @@ class DaemonGap(unittest.TestCase):
         self.addCleanup(patch.stop)
 
     def test_a_daemon_that_answers_is_used_and_nothing_is_started(self):
+        # decision: D-390 "The test is skipped only when no daemon has answered by then"
         docker = DockerStandIn(self, answers=True)
         self.use(docker)
         self.assertIsNone(docker_gate.daemon_gap())
         self.assertEqual(docker.starts(), [])
 
     def test_a_stopped_docker_desktop_is_started_once_awaited_and_left_running(self):
+        # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers"
+        # decision: D-391 "The Docker Desktop that the gate started stays running after the run"
         docker = DockerStandIn(self, rise_after_polls=2)
         self.use(docker)
         self.assertIsNone(docker_gate.daemon_gap())
@@ -69,6 +72,8 @@ class DaemonGap(unittest.TestCase):
         self.assertEqual(docker.stops(), [])
 
     def test_a_daemon_that_does_not_rise_in_the_limit_gives_a_gap_after_the_limit_only(self):
+        # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers"
+        # decision: D-390 "The test is skipped only when no daemon has answered by then"
         docker = DockerStandIn(self)
         self.use(docker, limit="2")
         began = time.monotonic()
@@ -80,6 +85,7 @@ class DaemonGap(unittest.TestCase):
         self.assertEqual(len(docker.starts()), 1)
 
     def test_a_daemon_that_hangs_instead_of_refusing_is_waited_for_within_the_limit_alone(self):
+        # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers"
         # A daemon that neither answers nor refuses holds every ask of `docker version` until
         # the ask's own time limit; the real `docker` is not hung for the test, the ask is
         # cut at the limit it was given, as the helper's own limit cuts it.
@@ -114,6 +120,7 @@ class DaemonGap(unittest.TestCase):
         self.assertEqual(len(docker.starts()), 1)
 
     def test_without_the_docker_desktop_plugin_nothing_is_started_and_nothing_is_awaited(self):
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once"
         docker = DockerStandIn(self, plugin=False)
         self.use(docker, limit="60")
         began = time.monotonic()
@@ -122,6 +129,7 @@ class DaemonGap(unittest.TestCase):
         self.assertEqual(docker.starts(), [])
 
     def test_without_a_docker_command_there_is_a_gap_at_once(self):
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped"
         empty = tempfile.TemporaryDirectory(prefix="loop2-no-docker-")
         self.addCleanup(empty.cleanup)
         state = Path(empty.name) / "state.json"
@@ -132,6 +140,8 @@ class DaemonGap(unittest.TestCase):
         self.assertIsNotNone(docker_gate.daemon_gap())
 
     def test_the_skip_names_what_stays_unchecked_and_tells_a_start_from_no_start(self):
+        # decision: D-390 "The test is skipped only when no daemon has answered by then, and its message says that the start was tried and did not finish and what stays unchecked"
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once, with a message that says what stays unchecked"
         unchecked = "whether the checked thing works stays unchecked"
         reasons = {}
         for name, docker, limit in (("no desktop", DockerStandIn(self, plugin=False), "20"),
@@ -222,6 +232,7 @@ class ProcessesAtOnce(unittest.TestCase):
 
     def test_a_process_that_asks_during_a_start_of_another_waits_for_that_start_alone(self):
         # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once"
+        # decision: D-391 "The Docker Desktop that the gate started stays running after the run"
         # Breaking it: let the second process start Docker Desktop for itself while the first
         # one's start is not finished, the stand-in seeing two starts.
         docker = DockerStandIn(self, rise_after_polls=8)
@@ -258,6 +269,7 @@ class ProcessesAtOnce(unittest.TestCase):
 
     def test_a_wait_for_a_start_that_never_lets_go_ends_in_the_limit_with_the_gap(self):
         # invariant: gate-docker-start-waits-once
+        # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once: a test that asks for a daemon while a start begun by another process of the run has not finished waits for that start, within its limit, and starts none of its own"
         # Breaking it: wait for the lock without the limit of the one that waits, so that a
         # holder that stays alive and does nothing holds the process on for as long as it lives.
         docker = DockerStandIn(self)
@@ -275,6 +287,7 @@ class ProcessesAtOnce(unittest.TestCase):
 
     def test_a_process_that_asks_during_a_start_that_does_not_finish_gets_its_gap_after_it(self):
         # invariant: gate-docker-start-waits-once
+        # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once: a test that asks for a daemon while a start begun by another process of the run has not finished waits for that start, within its limit, and starts none of its own"
         # Breaking it: let the second process wait for a start of its own after the first one
         # recorded the gap, the stand-in seeing two starts and the second answer coming later.
         docker = DockerStandIn(self)
@@ -324,6 +337,8 @@ class GateRuns(unittest.TestCase):
 
     def test_one_run_of_the_whole_gate_waits_for_a_docker_that_does_not_rise_once(self):
         # invariant: gate-docker-start-waits-once
+        # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers, for at most 3 minutes, in a run of the whole gate"
+        # decision: D-390 "The test is skipped only when no daemon has answered by then, and its message says that the start was tried and did not finish and what stays unchecked"
         # decision: D-406 "A run of the gate with the directories at the same time starts Docker Desktop at most once and waits for it at most once"
         # Breaking it: forget the failed start between the two directories' processes and the
         # second directory starts Docker Desktop and waits again, the stand-in seeing two starts.
@@ -339,7 +354,9 @@ class GateRuns(unittest.TestCase):
             self.assertIn("whether the checked thing works stays unchecked", line)
 
     def test_a_whole_run_that_finds_docker_stopped_starts_it_once_and_skips_nothing(self):
+        # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers, for at most 3 minutes, in a run of the whole gate"
         # decision: D-390 "In one run of the gate, whichever of its processes need a daemon, Docker Desktop is started at most once"
+        # decision: D-391 "The Docker Desktop that the gate started stays running after the run"
         # decision: D-406 "A run of the gate with the directories at the same time starts Docker Desktop at most once and waits for it at most once"
         # Breaking it: let the directories' processes, running at the same time, each find no
         # daemon and no record and start Docker Desktop, the stand-in seeing two starts.
@@ -352,6 +369,7 @@ class GateRuns(unittest.TestCase):
         self.assertEqual(skipped_lines(output), [], output)
 
     def test_a_whole_run_on_a_computer_without_docker_desktop_skips_at_once(self):
+        # decision: D-390 "On a computer with no Docker Desktop, such as one running Linux or a container in a cloud, the test is skipped at once"
         docker = DockerStandIn(self, plugin=False)
         began = time.monotonic()
         result = self.run_whole(docker, limit="120")
@@ -362,6 +380,7 @@ class GateRuns(unittest.TestCase):
         self.assertLess(time.monotonic() - began, 100)
 
     def test_one_selected_test_file_starts_a_stopped_docker_desktop_too(self):
+        # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers, for at most 3 minutes, in a run of the whole gate and in a run of one test file alike"
         docker = DockerStandIn(self, rise_after_polls=1)
         self.write_needing_docker("one")
         result = self.gate.run("tests/one/test_needs_docker.py",

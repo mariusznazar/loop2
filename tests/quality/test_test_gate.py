@@ -61,6 +61,7 @@ class TestGate(unittest.TestCase):
 
     def test_the_whole_gate_runs_its_stages(self):
         # decision: D-77 "`npm test` without arguments runs the full gate"
+        # decision: D-405 "The full gate runs its stages one after another: the build, the Node tests, the directories of Python tests and the foundation check"
         self.gate.write("tests/passing.test.mjs",
                         'import test from "node:test"; test("passes", () => {});\n')
         result = self.gate.run()

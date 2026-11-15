@@ -106,6 +106,7 @@ class SimulationTypeCheck(unittest.TestCase):
 
     def test_the_build_writes_nothing_beside_the_sources_of_the_simulation(self):
         # invariant: simulation-type-check
+        # decision: D-393 "Two checks keep the simulation's files from using the page, a timer, the console or any other name that the browser or Node.js adds to those of the JavaScript language, and both stay: the compiler, which type-checks the simulation's files under a configuration of their own that covers every file of the simulation, holds the library of the language alone and no ambient types, and emits nothing"
         copy = self.fresh_copy()
         code, output = copy.npm("run", "build")
         self.assertEqual(code, 0, f"`npm run build` fails on the unchanged tree:\n{output}")
