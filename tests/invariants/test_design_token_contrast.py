@@ -191,6 +191,7 @@ class DesignTokenContrast(unittest.TestCase):
 
     def test_token_file_keeps_every_pair(self):
         # invariant: design-token-contrast
+        # decision: D-48 "In the file of design tokens of the browser view, each role of its styleguide's table of roles is the custom property `--<role>`"
         path = os.path.join(support.ROOT, *TOKEN_FILE.split("/"))
         self.assertTrue(os.path.isfile(path), f"{TOKEN_FILE} does not exist")
         self.assertEqual(findings(support.read_text(path)), [])

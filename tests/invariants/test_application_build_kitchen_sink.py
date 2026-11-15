@@ -113,6 +113,7 @@ class BuildHoldsNoKitchenSinkPage(unittest.TestCase):
 
     def test_page_command_builds_the_page_with_its_marker(self):
         # invariant: application-build-kitchen-sink
+        # decision: D-45 "The kitchen-sink page of the browser view is built from `src/browser/kitchen-sink/` and opened on the developer's machine by its own command, `npm run kitchen-sink`"
         copy = self.fresh_copy()
         before = tree_state(copy)
         code, output = copy.npm("run", "kitchen-sink", "--", "--build-only", timeout=180)

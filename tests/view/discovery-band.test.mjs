@@ -288,6 +288,7 @@ test("each button calls its own callback and nothing else", async () => {
 });
 
 test("both buttons are the shared plain button (D-44)", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/`"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, chilled());
     for (const name of ["Dodaj regułę z tym", "Wznów"]) {

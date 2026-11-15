@@ -766,6 +766,9 @@ function computed(element, property) {
 // the `text` of the panel around the drawing — and a stock of 0 that does not dim it by `depleted`
 // (D-41). The values are those of the stylesheet's rules, read as the tokens they name.
 test("the icons of the drawing take the colour text-strong, the icon of a stock of 0 dimmed by depleted", async () => {
+  // decision: D-40 "The badge over the mage's head stands on `panel` and the track of its progress bar in `highlight`, and the icon in the badge stands in `text-strong`, though it is no text and no text stands beside it; so does the icon flying to the mage, on its plaque in `panel`, and so do the icons of the drawing of the map, on `tile-revealed`"
+  // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place, `depleted` that what was here is gone"
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const frames = [...container.querySelectorAll(".terrain-drawing .icon")];
@@ -788,6 +791,8 @@ test("the icons of the drawing take the colour text-strong, the icon of a stock 
 // Catches a drawing that hides a revealed tile's icons, dims one whose stock is not 0, or draws a
 // number. Dimmed icons are those of the stock 0 (D-41).
 test("the drawing has a tile per tile of the map run, the icons of the resources a revealed tile holds dimmed at a stock of 0, and no text", async () => {
+  // decision: D-41 "In the browser view `character` means that here is the character and here it is going, the target of its current move told from its place by shape, a thin dashed line in place of a thick solid one, never by colour; `tile-hidden` means a place not yet known, `tile-revealed` a place known, whose icons say what lies there"
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -832,6 +837,7 @@ test("the drawing has a tile per tile of the map run, the icons of the resources
 
 // Catches an outline missing, or the step's target drawn like the character's own (D-41).
 test("the character's tile and the step's target carry an outline each, the target apart by its class", async () => {
+  // decision: D-41 "In the browser view `character` means that here is the character and here it is going"
   await withPage(async ({ document }) => {
     const program = setProgram(
       withEdgeSolved(newKnowingGame()),
@@ -900,6 +906,7 @@ test("the drawing is a picture: a click on a tile changes nothing, and nothing i
 // Catches a hovered tile that does not mark its row, a line that shows no numbers, a row that does
 // not mark its tile, and a line that does not come back to the character's tile (D-19).
 test("a hovered tile marks its row and the line under the drawing shows its numbers; a hovered row marks its tile; with none hovered the line is the character's tile", async () => {
+  // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place"
   await withPage(async ({ window, document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -1095,6 +1102,7 @@ test("the campfire's icon stands in its tile and its state in the row of the sam
 
 // Catches a table that loses a column, a heading or the campfire's cell.
 test("the table has a column per resource of the map, a row per revealed tile with the stock, and the fire cell", async () => {
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const table = container.querySelector("table.tile-list");

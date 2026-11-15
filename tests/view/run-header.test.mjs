@@ -176,6 +176,7 @@ test("the buttons ask for what they say: the pause, the restart and the end", as
 });
 
 test("„Restart” and „Zakończ” are destructive buttons and the paces and „Pauza” are not (D-44)", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     for (const name of ["Restart", "Zakończ"]) {
@@ -408,6 +409,7 @@ function addStylesheet(document) {
 // custom property, so the case reads which token the rule of the clock lands on, through the real
 // stylesheet.
 test("the clock stands in the mono face of the stylesheet, with tabular figures", async () => {
+  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const { container } = await draw(document, sent());
@@ -530,6 +532,8 @@ test("the fill of each bar is as long as the share of its count, never more than
 // name and its numbers are in `positive`, and the requirement beside it, unmet, stays as it was.
 // Catches a fill always green, a met requirement that turns only its fill and a track in another role.
 test("a requirement not met has its fill in text on a track in highlight, a met one its fill, name and numbers in positive", async () => {
+  // decision: D-40 "The bar of a requirement of the solving condition in the header has its track in `highlight` and, while the requirement is not met, its fill in `text`, though it is no text"
+  // decision: D-39 "`positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const state = counted(sent(), "forestDeep", {
@@ -579,6 +583,7 @@ test("after a death of cold the bar stands and reads „Passa 0/480”", async (
 });
 
 test("after a completion the bar stands, met, at the minute of the completion", async () => {
+  // decision: D-39 "`positive` also stands as the fill of the bar of a met requirement of the solving condition in the header, on a track in `highlight`, with a contrast ratio of at least 3:1 against what it stands on"
   await withPage(async ({ document }) => {
     const done = completed(counted(sent(), "forest", { streak: 480 }), 480);
     const { container } = await draw(document, done);
@@ -592,6 +597,7 @@ test("after a completion the bar stands, met, at the minute of the completion", 
 // the solving condition do not; tabular figures keep them from jittering in Geist too. Catches the
 // mono face set on the bar's words.
 test("the words of the bar of the solving condition are not in the mono face of the clock, and keep tabular figures", async () => {
+  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono and every other text in Geist"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const { container } = await draw(document, sent());

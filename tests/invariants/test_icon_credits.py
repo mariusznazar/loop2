@@ -293,6 +293,7 @@ class IconCredits(unittest.TestCase):
 
     def test_credits_section_credits_each_icon_file(self):
         # invariant: icon-credits
+        # decision: D-27 "A section of credits, folded and opened with one click"
         files = icon_files()
         self.assertTrue(files, f"the working tree holds no SVG file in {ICON_DIRECTORY}")
         copy = support.built_copy()

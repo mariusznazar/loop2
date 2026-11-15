@@ -187,6 +187,7 @@ test("the picture holds no stock numbers", () => {
 });
 
 test("the character tile has the character outline", () => {
+  // decision: D-41 "In the browser view `character` means that here is the character"
   const state = advanceMinutes(sent(), 200).state;
   const picture = terrainPicture(state);
   const at = state.run.character.at;
@@ -199,6 +200,7 @@ test("the character tile has the character outline", () => {
 });
 
 test("the step target is outlined only while a move runs", () => {
+  // decision: D-41 "In the browser view `character` means that here is the character and here it is going"
   const walking = [{ condition: ALWAYS, action: { kind: "wander" } }];
   let state = sent(walking);
   let seenMove = false;

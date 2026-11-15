@@ -566,6 +566,8 @@ test("an answer that names no account and is not a refusal of the session shows 
 // D-381: one form stands, so the lock of the whole card holds its field, its button and the switch.
 test("a sent login waits with the whole card locked, and a refusal leaves one warning under it and focus where the player sent it from", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { "Zaloguj się": login } = await signedOutPage(held);
@@ -610,6 +612,8 @@ test("a sent login waits with the whole card locked, and a refusal leaves one wa
 
 test("a lost connection on registration leaves one warning under that form and focus on its button", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const register = await registerPage(held);
@@ -797,6 +801,7 @@ test("the button under „Zaloguj się” puts in its place one form with an emp
 
 test("a request waits with its field and every button of the screen locked, and sends nothing twice", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -867,6 +872,7 @@ test("a well-formed address gets the one sentence of the reset under the form in
   // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
   // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -899,6 +905,7 @@ test("a well-formed address gets the one sentence of the reset under the form in
 
 test("a refusal or a lost connection on a request stands as the form's warning, keeps the address and returns focus to where it was sent from", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -1212,6 +1219,7 @@ test("Wyślij ponownie sends one request for the signed-in account and shows its
   // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
   // decision: D-157 "Right after registration and after each sending asked for, the sentence in that place gives the outcome of the sending: „Wysłaliśmy odnośnik potwierdzający na <adres>.” in `text-secondary` when the message was sent, „Za dużo wiadomości."
   // decision: D-157 "Spróbuj ponownie za godzinę.” above a limit of D-105, „Nie udało się wysłać wiadomości."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -1540,6 +1548,7 @@ test("with a reset token in the address the page shows the form at once, asking 
 test("a sent form waits with its fields and „Anuluj” locked, sends the token and both passwords once and keeps the fragment", async () => {
   // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = fakeAddress(RESET_LINK);
@@ -2684,6 +2693,7 @@ function alaLoopingOlaFree() {
 // buttons disabled for the whole team (or by the one map run, as before) when only the character in
 // the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
 test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await onPage(async ({ root }) => {
     const address = fakeAddress("#/");
     const { view } = await viewOf(alaLoopingOlaFree(), address);
@@ -5122,6 +5132,7 @@ const waitingText = (root) =>
 test("the card stands alone in the page's body, and the screens before and after it keep the header and have no footer", async () => {
   // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -5459,6 +5470,7 @@ test("the card opens on „Zaloguj się” with the name, the sentence, the swit
   // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
   // decision: D-259 "The login card opens on „Zaloguj się”."
   // decision: D-259 "The switch stands only in „Zaloguj się” and „Załóż konto”, where the form has no heading; „Nie pamiętam hasła” and „Ustaw nowe hasło” have a heading and no switch, and the ways out of them are „Wróć do logowania” and „Anuluj”."
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5753,6 +5765,7 @@ test("the page's sentence stands in the card above the switch, or above the form
 test("the folded credits stand last in all four states, stay open across a change of state and stay usable while the card waits", async () => {
   // decision: D-96 "A signed-out visitor sees one card on a picture of the game: the game's name, one sentence about the game from the game's data, a switch between „Zaloguj się” and „Załóż konto”, the form of the state picked — email and password with the button „Nie pamiętam hasła”, or email, password and repeated password — and the folded credits, with neither headquarters nor program panel visible; that button puts in the card the form „Nie pamiętam hasła” with an empty field „Adres e-mail” and the buttons „Wyślij odnośnik” and „Wróć do logowania”, the last of which brings back „Zaloguj się”, and a page opened by a password-reset link shows the form „Ustaw nowe hasło” (D-225) in the card, for a signed-in player too, and builds no game while that form stands."
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5918,6 +5931,8 @@ test("signedIn and finished may dispose the card, from the answer and from the c
 // unlock: it may return only after the commit, since a disabled control cannot take it.
 test("a sent login locks the whole card, and a refusal leaves one warning under the form and focus where the player sent it from", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5985,6 +6000,7 @@ test("two sends and a switch before the lock is drawn send once and change nothi
 // of the answer passed on beyond the account, a value trimmed, and a password left in the field.
 test("a sign-in and a registration hand the account on with the outcome of the message, and keep no password", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { entered } = await waitingLogin(root, held);
@@ -6030,6 +6046,7 @@ test("a sign-in and a registration hand the account on with the outcome of the m
 // focus not returned to the button, which is the origin when the field holds no focus.
 test("a lost connection on a registration leaves one warning, removed by the next send, and focus on the button it was sent from", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6106,6 +6123,7 @@ test("a registration the server would refuse sends nothing, marks each field at 
 test("a request checks its address first and waits with its field and every button locked", async () => {
   // decision: D-222 "An address not so written gets „Podaj adres e-mail w postaci nazwa@domena.” under the field and nothing is sent: the form holds that condition"
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6139,6 +6157,7 @@ test("a well-formed address gets the one sentence under the form in a status, wi
   // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
   // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6170,6 +6189,7 @@ test("a well-formed address gets the one sentence under the form in a status, wi
 // not back on the control the player sent from, field or button.
 test("a refusal or a lost connection on a request stands as the warning, keeps the address and returns focus", async () => {
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A form's server refusal and loss of connection appear as one sentence"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -6223,6 +6243,7 @@ test("nothing typed and no sentence survives leaving „Nie pamiętam hasła” 
 test("a sent „Ustaw nowe hasło” waits with the whole card locked, sends the token and both passwords once and keeps the fragment", async () => {
   // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   // decision: D-381 "While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const { steps, address, reset } = resetLink();

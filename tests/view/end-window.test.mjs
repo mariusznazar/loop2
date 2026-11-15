@@ -546,6 +546,7 @@ test("the last minutes come from the entries the screen gives and stand only wit
 // missing „Otwarte: …” after a completion of Las and one after a death or a completion of the map
 // it opens (D-368, D-44, D-132, D-188).
 test("the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(
       document,

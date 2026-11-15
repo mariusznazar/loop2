@@ -448,6 +448,7 @@ test("a tab locked with its text, selected or not, is the same element in both f
 });
 
 test("a waiting submit button is the same element in both forms", async () => {
+  // decision: D-44 "A control awaiting a server response is disabled"
   await withPage(async ({ document }) => {
     const drawing = await drawn(
       document,

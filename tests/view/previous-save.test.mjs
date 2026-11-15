@@ -1023,6 +1023,7 @@ test("the confirmation names the replacement of an earlier previous save, and wi
 // with its sentence (D-402, D-44).
 test("a confirmed reset calls the page once, waits for its answer, and a failure returns the control to rest with its sentence", async () => {
   // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled"
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them"
   await onPage(async () => {
     const held = heldClient();
     const resets = [];

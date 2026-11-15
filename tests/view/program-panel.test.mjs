@@ -1340,6 +1340,7 @@ const SWITCH = "Przełącz postać na ten program";
 // D-174. Catches the button missing beside another program, shown
 // beside the copy's own program or the copy, and a click that does not switch and show the copy.
 test("„Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the copy", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async (page) => {
     const game = await wiredPanel(page, createProgram(gameWithRule()).state);
     await game.change(send(game.state, SENT, REAL_MS));

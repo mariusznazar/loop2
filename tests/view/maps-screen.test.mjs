@@ -256,6 +256,7 @@ test("the card of Skraj lasu holds its heading, what it asks, its terrain and it
 
 // D-327: the card of Las, an unsolved Las with neither „Czyha” nor „Odbiera”, which Skraj lasu opens.
 test("the card of Las holds its heading, what it asks, its terrain and what lies there, and no part Las lacks", async () => {
+  // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
     assert.equal(text(page.root, ".maps-card-name"), "Las");
@@ -716,6 +717,7 @@ test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solve
 // D-243, D-244: a character in an earning loop shows its line with „Zatrzymaj”, which acts, and
 // both sending buttons stand inactive; the line of a stopped loop does not stand here (D-245).
 test("a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async (page) => {
     const state = solved({
       ...teamOf("Ala", "Bob"),

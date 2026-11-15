@@ -256,6 +256,7 @@ async function drawn(state) {
 // button (D-44: it loses the copy's changes) or „Zapisz” and „Wróć” drawn as destructive, and an
 // answer wired to the act of another.
 test("the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapisz”, „Odrzuć” and „Wróć” in that order, only „Odrzuć” a destructive button, each asking its own act", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async () => {
     const view = await drawn(renamed(paused()));
     const sentence = byClass(view.host, "end-question-text")[0];

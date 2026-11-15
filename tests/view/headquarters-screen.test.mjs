@@ -142,6 +142,7 @@ test("the screen holds its heading Siedziba, then the sections „Drużyna” an
 // Catches the credits of the icons left off Siedziba, opened by default, standing above the last
 // part of the screen (D-27), or lost at a refresh of the game state.
 test("the folded section „Autorzy grafiki” stands last on the screen, whatever the team and the chest hold, and stays as the player left it", async () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part"
   await withPage(async (page) => {
     const state = teamOf(1);
     const { screen } = await mount(page, propsOf(state));
@@ -277,6 +278,7 @@ test("the resurrection line follows the clock's moment in the very same element,
 // reach the page's `stop` with the character's number, and the line of a stop missing after it (D-244,
 // D-245).
 test("a running loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped loop shows its line instead", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async (page) => {
     const state = teamOf(2);
     const looping = { ...state, loops: { 2: LOOP } };
@@ -433,6 +435,8 @@ const waiting = (practice, runPractice = {}) => ({
 // Catches the practice of the loop and the map run going on not both in the line, a button on a
 // line with nothing waiting and a button that does not carry the name of its character.
 test("practice waiting at a loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive`"
+  // decision: D-39 "`positive` also stands as the text of the button „Odbierz”, which pays the practice waiting at an earning loop, at rest and under the pointer"
   await withPage(async (page) => {
     await mount(
       page,

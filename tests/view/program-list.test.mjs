@@ -102,6 +102,7 @@ test("only the chosen program is marked with aria-current, and none is marked wi
 });
 
 test("Usuń is inactive while the list holds one program and active beside two (D-167)", async () => {
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async (page) => {
     await mount(page, propsOf(ONE, 1));
     const remove = buttonNamed(page.root, "Usuń");
@@ -173,6 +174,7 @@ test("at rest the pull is a plain enabled button, among the list's acts, and a p
 
 // Catches a waiting button that stays pressable, keeps its resting text or hands the page a second pull.
 test("while the pull waits the button reads „Wciąganie…”, is disabled and busy, and a press hands nothing", async () => {
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”, as the button „Wciągnij programy z poprzedniego zapisu” reads „Wciąganie…” while its pull waits"
   await withPage(async (page) => {
     const { calls } = await mount(
       page,
@@ -384,6 +386,7 @@ test("without a reset state the list has no reset control and no confirmation (D
 // asking for the confirmation.
 test("at rest the reset is an enabled destructive button beside the pull, and a press only asks for the confirmation", async () => {
   // decision: D-402 "An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing"
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   await withPage(async (page) => {
     const { calls } = await mount(page, {
       ...propsOf(TWO, 3),
