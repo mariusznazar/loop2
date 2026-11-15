@@ -8182,25 +8182,27 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-280 · derives from D-282
-- **Verification:** an agent compares a change with the decision:
-  - complies: on the screen of a map run of Las the character's name, „Las”, „Minuta 212”, the bar
-    „Passa 120/480”, „Pauza”, the five pace buttons, „Restart” and „Zakończ” in the header, and
-    under it the world and the program side by side, the area with the tabs „Kronika” and „Teren”
-    under the drawing of the map and the line of a tile in the left column, with the chronicle under
-    „Kronika”, picked when the character was sent; „Teraz” and „Potem” under the scene, and the
-    paragraph of the last encounter standing in the chronicle; a rule opened from its row standing
-    under that row in the program, the tabs and the tab picked staying where they were, and no third
-    column appearing; after a completion the window over the screen holding the line „Do skrzynki: …”,
-    the menu bar standing above it and the world area keeping „Teraz” and „Potem” under the scene;
-    „✕” uncovering the screen with „Koniec przejścia” in its header; a death of cold on the screen, the mage falling in the scene with no window over it until the effect has played and the window standing then, and after a reload on that screen the window standing at once over a scene in its last image
-  - violates: the character's action standing in the header; „Teraz” and „Potem” standing under the
-    body row; the rule panel opened over the program, beside the rows or in a column of its own; the
-    tabs standing in the column of the program; the table of revealed tiles standing in the world
-    area itself, with the drawing; the paragraph of the last encounter standing in the world area;
-    the chronicle and the table standing one under the other; the line „Do skrzynki: …” or the
-    sentence of a resurrection standing in the world area or in the area with the tabs; „Restart” and
-    „Zakończ” standing in the world area; the window covering the menu bar; the window standing while
-    the question „Zapisać, odrzucić, wrócić?” stands; the window covering the scene in the game minute of a death before the effect of the death has played; the window waiting for an effect the scene does not play
+- **Verification:** tests: the header above areas of their own for the world, the program and the
+  tabs, the tabs „Kronika” and „Teren” holding the chronicle or the table of revealed tiles one at a
+  time as the player picks, „Kronika” picked at every send, and the editing of a rule or a rule
+  group opening in the program right under its row; the world from the top: the scene, „Teraz” and
+  „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; the
+  header holding the character's name, the map's name, the clock, the bar of the solving condition,
+  „Pauza” or „Wznów”, the paces, „Restart”, the warning of a cut trip plan after it and „Zakończ”,
+  and after the end „Koniec przejścia”, which opens the window; the window over the screen after a
+  death and a completion, the header and the areas hidden under it, the lines of the end standing in
+  it and not in the world area, „✕” and Escape closing it and uncovering the screen, the window
+  opening again at every entry and closing when the question stands; the window opening once the
+  scene's effect of the end has played, the scene uncovered while it plays, and at once at an entry
+  on the screen, after a reload or a load and under reduced motion. For the two columns and the
+  place of the window under the menu bar, an agent compares a change with the part no invariant and
+  no test holds:
+  - complies: on the screen of a map run of Las in a window 1280 px wide, the world and under it the
+    area with the tabs in the left column and the program in the right column; after a completion
+    the window standing under the menu bar and the row of warnings, the menu bar in sight above it
+  - violates: the program standing under the world in a window 1280 px wide; the tabs standing in
+    the column of the program or in a third column of their own; the window covering the menu bar or
+    the row of warnings
 - **Origin:** none
 
 *Rationale:* fixed areas with fixed roles tell the player where to look in each state of the game.
@@ -8858,9 +8860,15 @@ While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-173 · derives from D-21 · derives from D-122 · derives from D-212 · derives from D-283 · derives from D-368
-- **Verification:** an agent compares a change with the decision:
-  - complies: a map run of Las going on at 8× when the player clicks „Zakończ” with unsaved changes in the copy, the clock in the header ending in „ (pauza)” and no game minute passing while the question stands, and „Wróć” bringing it back going on at 8×; a paused map run staying paused after „Wróć”; „Porzuć zmiany” taking the question away and leaving the map run paused, so that „Zakończ” then ends it at once; „Zapisz jako nowy program” used while the question stands, after which „Zakończ” ends the map run at once; a reload with the question standing opening the map run paused with no question; a map run ended by a death with the question standing and the player pressing „Koniec przejścia” in the header, the question gone and the window open
-  - violates: a map run passing its game minutes while the question stands; „Wróć” leaving a map run that went on paused, or setting going a map run that was paused before „Zakończ”; the question standing after „Wznów”, after „Restart” or over a copy with no unsaved changes; the question standing on the return to the screen of the map run; the question standing together with the window; the question written into the game state or the save
+- **Verification:** tests: while the question stands the map run paused as „Pauza” pauses it, its
+  clock ending in „ (pauza)” and no game minute passing, and „Wróć” putting it back going on or
+  paused, the stop at a discovery included; editing the copy, the paces, the list „Program:” and a
+  second „Zakończ” leaving the question standing, which goes, the map run left paused, after „Zapisz
+  w programie”, „Zapisz jako nowy program”, „Porzuć zmiany”, „Przełącz postać na ten program” and an
+  edit after which the copy equals its program; „Wznów” of the header and of the band, „Restart” and
+  „Koniec przejścia” closing the question and then doing their own act, „Koniec przejścia” opening
+  the window; leaving the screen closing the question, the map run paused on the return, and the
+  question held nowhere in the saved game state, gone after a reload with the map run paused.
 - **Origin:** none
 
 *Rationale:* a question over a map run that goes on would ask about a screen that keeps changing, since the character may die or solve the map while the player decides, so it holds the map run as „Pauza” does, and „Wróć” gives back what the player had instead of costing one more click to go on. The rest of the screen stays usable, so a player may save the copy under a name of their own with „Zapisz jako nowy program” and only then end the map run, and the question goes when it would ask about changes that are no longer there, since it would otherwise stand over a map run that goes on or ask about nothing. „Wznów” and „Restart” close it as „Wróć” does and then do their own work, as the band of a discovery goes at „Wznów” (D-122). The question is a memory of the page, so a reload or a leaving of the screen costs one click, „Zakończ”, to ask again, and the game state and the save hold nothing of it. Accepted with it: the page remembers whether the map run went on before the question; several cases to build and check.
@@ -9977,9 +9985,29 @@ When a manual map run ends in a character's death or a completion, the end-of-ru
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-62 · derives from D-132
-- **Verification:** an agent compares a change with the decision:
-  - complies: a completion of Las opening the window over the screen with „Koniec przejścia” above „Las rozwiązany” in `positive`, the line „Do skrzynki: …” in it and not in the world area, the menu bar standing above it, „Restart”, „Zakończ” and „Otwarte: Las — głębiej →” fixed at its bottom while the sections scroll, „✕” uncovering the screen with „Koniec przejścia” in its header, and a reload of that screen opening the window again; after a death in a fight, „Ostatnie minuty” holding the four entries of the chronicle before the paragraph of the last encounter, which stands in a section of its own
-  - violates: the window opening only after „Koniec przejścia” is pressed; the window covering the menu bar; the buttons scrolling away with the sections; a section standing with no content; „Ostatnie minuty” after a completion; the paragraph of the last encounter counted among the entries of „Ostatnie minuty” and in its own section as well; the lines of the end standing in the world area
+- **Verification:** tests: the window opening of itself after a death and after a completion and
+  covering the screen with its header; under the label „Koniec przejścia” the title — „Mag zamarzł”,
+  „Mag umarł z głodu” or „Mag zginął w walce” after a death, the map's completion text in
+  `positive` after a completion — then the longest streak as „najdłuższa passa 116/480” with its
+  bar, the discovery where there is one and the line of what the end gave or cost, in this order;
+  each section of why only where it has content: „Ostatnie minuty” only after a death, at most four
+  entries of the chronicle ending with the death's, each with its game minute, the paragraph of the
+  last encounter in a section of its own and never among them, „Nie zadziałały ani razu” with the
+  number and the sentence of each rule that never fired, „Na co poszedł czas” with its pieces of at
+  least 8 %, at most five, the rest in „reszta” and the kinds joined as „W drodze”, „Czeka” and
+  „Walka”, and „Wyprawa i teren” with its three lines and no other; the buttons after the scrolling
+  part, „Restart” with the warning of a cut trip plan, „Zakończ” and „Otwarte: {mapa} →” only after
+  a completion of a map that opens another, each asking for its own act; „✕” and Escape pressed in
+  the window closing it and uncovering the screen, whose header holds „Koniec przejścia”, which
+  opens it again; the window opening again at every entry, after a link of the menu bar and after a
+  reload. For the menu bar, the place of the sections and the scrolling, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: after a completion of Las the menu bar and the row of warnings standing above the
+    window; the sections of why under the line „Do skrzynki: …”; with many rules that never fired
+    the sections scrolling while „Restart”, „Zakończ” and „Otwarte: Las — głębiej →” stay fixed at
+    the bottom of the window
+  - violates: the window covering the menu bar; a section of why standing above the line of what
+    the end gave or cost; the buttons scrolling away with the sections
 - **Origin:** none
 
 *Rationale:* a lost map run teaches only when the game says why it was lost — without it the player guesses, in the stretch from the fifth to the thirtieth minute of play that a review of the game found the hardest — and a solved map reads as a win when its reward comes first. One line of the end, below „Teraz” and „Potem” in the world area, does not say how near the map run came to the map's condition, what happened in the last minutes, which rules did not fire or where the time went. The player's main complaint is that the player does not know why rules did not fire, and the window names the rules that never did. The sections, their rows and the buttons come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse: there the end was a window over the whole screen with the header, with a title of the cause, a bar of the longest streak, a sentence accounting for the map run, the sections „Ostatnie minuty”, „Nie zadziałały ani razu”, „Na co poszedł czas” and „Wyprawa i teren”, buttons fixed at the bottom, „Otwarte: {mapa} →” after a win, and „✕” that closed the window and uncovered the program with its final counters. The old Loop's „Ostatnie minuty” took the last four entries of its journal, ending with the death, and it had no section for a fight. „Czeka” stands for waiting because it is the word the game uses for waiting in „Teraz” and in the chronicle, and there is no line „odłożyła” because the line „Do skrzynki” says the same (D-185). The end holds much to read, and a window gives it room, at the cost of hiding the screen it covers. A window over the screen puts the end where nothing that stood there before has to move, and the menu bar with the row of warnings stays above it, so a failed save (D-208) and a broken game (D-323) are seen while it stands. Its buttons stand fixed because they are the way on: in the old Loop the end stood under an open rule editor, so after a death with a rule open it started more than half way down the window and its buttons fell under the lower edge. „Restart” and „Zakończ” stand in the window and in the header as before, and the window covers the header, so one set of them shows at a time. „✕” with the button of the header let the player read the scene and the program with its counters that the window explains; the window opens again at every entry, so the explanation is not lost by leaving or by a reload. After a load everything but „Ostatnie minuty” comes back from the game state (D-212). Accepted with it: the window hides the scene while it stands; it does not cover the whole page as the end of the old Loop does; the keyboard, Escape and the return to the window are to build; a few new fields of the state of the map run and a bump of the version of the save (D-369); in „Ostatnie minuty” an attack does not stand among the other entries, though its paragraph gives the game minute of the attack; and after a load that section does not stand at all, since the chronicle then holds only that paragraph (D-339).
@@ -9992,9 +10020,17 @@ A manual map run keeps, in the map run of the game state and so in the saved gam
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-135 · derives from D-206
-- **Verification:** an agent compares a change with the decision:
-  - complies: a manual map run at game minute 212 that entered with 4 sticks, holding a longest streak of 40 and counts by action that sum to 212, saved and loaded back with the same three things; a map run restarted holding a longest streak of 0, counts of 0 for every kind and the entries of its new send; a death in a game minute in which the streak falls to 0 leaving the longest streak as it was
-  - violates: the three things standing in the plain map run of an earning loop; a game minute counted to two kinds or to none; a count missing from the saved record that the load fills in with 0; a load accepting counts that sum to another number than the game minute, or a longest streak above it; the longest streak read from the chronicle
+- **Verification:** tests: the longest streak, the game minutes by action and the items entered
+  with kept in the manual map run through a death, its settlement, an edit of the program and a
+  load, and none of them in the map run of an earning loop, in the game state or the saved one; the
+  longest streak the greatest streak of a game minute, staying after a fall of the streak; each game
+  minute counted once, to what the character was doing at its start, a wait and a fight among the
+  kinds of the closed list, the counts summing to the game minute however the span is split; the
+  items in the order of the data's items, as the send gave them, an empty list for an empty
+  backpack; the record starting from 0 and the send's items at the start and at „Restart”; the load
+  refusing a longest streak below the streak going on or above the game minute, counts off the
+  closed list or not summing to the game minute, and items out of order or above the carrying
+  capacity, and admitting each edge.
 - **Origin:** none
 
 *Rationale:* the window tells how near the map run came, where its time went and what the character entered with, and all three must come back after a load (D-212), so they stand in the game state, and not in the chronicle, which lives in the memory of the page and is lost at a load (D-339). The game state holds the counters of how many times each rule fired (D-93), which the window reads for „Nie zadziałały ani razu”, so the record adds only the three. The sections of the window and their rows come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse. Everything the window shows comes back after a load but „Ostatnie minuty”, which come from the chronicle and so show what it holds. They stand in the manual map run alone, since every earning loop would otherwise carry and save them, and the saved game state would grow with the number of earning loops against the limits of D-207 and D-208 for nothing the earning loops use. The longest streak is read at the end of every game minute, the one in which the map run ends included, so a fall of the streak that ends the map run does not lose it. The kinds are those of the simulation and the grouping the window shows is the view's, so a new action needs no wording in the simulation. The load is strict, as D-213 asks, so a record whose counting disagrees with the game minute is refused and not shown. Accepted with it: a wrong counting reaches saved documents until a new version of the save drops them (D-206); a sound document refused where the counting has an exception nobody found, the player starting anew as D-206 gives; the saved game state growing by the record and its version rising once for it, as the version rises once in the change that alters the shape of the game state, which discards a saved game state of the older version, the player's programs in it included (D-206); the version rising again in every later change that adds an ordinary action to the data or removes one, since the kinds of the ordinary actions are the keys of the counts, so each such change alters the shape of the record and discards every saved game state of the older version in full (D-206).
@@ -10007,9 +10043,20 @@ While the end-of-run window (D-368) stands, the header and the three areas of th
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-368 · derives from D-311 · derives from D-280
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a death the header and the three areas of the screen of a map run not shown and the window standing under the menu bar with the page at its top; a window with many rules that never fired as tall as a part of the browser window, its middle part scrolling while „Restart” and „Zakończ” stay in sight; Escape pressed in the window closing it with the focus on „Koniec przejścia” in the header; Escape in the open menu „Konto” closing the menu and leaving the window as it was
-  - violates: the header or an area of the screen shown beside or under the window while it stands; a dimmed backdrop; a trap that keeps the focus in the window, or one that puts the menu bar out of the keyboard's reach; Escape read on the document; the buttons or the heading scrolling away with the sections; the window opening with the focus left on the covered screen or on the page; the page left scrolled so that the menu bar stands out of sight when the window opens
+- **Verification:** tests: while the window stands the header and the three areas hidden and kept
+  in the page with their state, the window drawn as its heading, its middle part and its buttons in
+  a column, and the page going to its top when the window appears; the window taking the focus when
+  it appears, also after a build, Escape read in the window and not on the document, the focus free
+  to leave the window, which marks itself as no modal dialog, and „✕” and Escape moving the focus to
+  „Koniec przejścia” in the header. For the place, the size and the look of the window, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: after a death the window standing under the menu bar and the row of warnings, as wide
+    as the content column of the screens; a window with many rules that never fired as tall as a
+    part of the browser window, its middle part scrolling while „✕”, „Restart” and „Zakończ” stay
+    in sight
+  - violates: the window wider or narrower than the content column of the screens; a dimmed
+    backdrop; the window taller than the browser window, its buttons below the lower edge; the
+    buttons or the heading scrolling away with the sections
 - **Origin:** none
 
 *Rationale:* the window covers the screen of a map run from its header down, and the menu bar with the row of warnings under it stays above the window and works, so the player with the window open sees a failed save (D-208) and a broken game (D-323); a click on the menu bar leaves the screen of the map run, and on the return the window opens again. The height of the menu bar and of the row of warnings under it is not known to the stylesheet, so a window as a block in their place keeps its buttons in sight where a layer positioned over the screen would put them below the lower edge of a tall screen, and a screen left out of the drawing cannot be reached by the keyboard under the window. The window takes the focus so that Escape works at once; nothing traps it, since the menu bar above the window stays reachable (D-311); and Escape is read in the window because on the document it would meet the menu „Konto” (D-285) and the rule panel. The window covers the whole screen, so there is nothing to dim, and the file of design tokens holds no value for a backdrop. Accepted with it: the window does not cover the whole page as the end of the old Loop does; the covered screen, the scene included, is not seen while the window stands, so an effect of the end on the scene is seen before the window opens or after „✕”; a player who had scrolled the screen is at its top when the window opens, and the scroll is not kept after the window closes; a player of the keyboard whose focus stands outside the window, after a click on the page, finds that Escape closes nothing.
@@ -10022,9 +10069,13 @@ Whether the end-of-run window (D-368) is open is a memory of the page, kept by t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-368 · derives from D-173 · derives from D-311
-- **Verification:** an agent compares a change with the decision:
-  - complies: a window closed by „✕”, the player leaving by the menu bar and coming back, and the window open again; a reload of the screen after a death with the saved game state holding nothing of whether the window was open, and the window open; „Zakończ” of the window with unsaved changes closing the window and the header holding „Koniec przejścia” before „Restart”; „Wróć” leaving the window closed
-  - violates: whether the window is open written into the game state or the save; the window closed after the player leaves the screen of an ended map run and comes back; the window open again of itself after „Wróć”; „Koniec przejścia” in the header while the window stands, or while the map run goes on
+- **Verification:** tests: whether the window is open kept by the page and nothing of it in the game
+  state or the saved game state; the window opening at the end of a map run and when the game is
+  built on an ended one, at a reload, after a sign-in and at an entering from another screen, and
+  again at every entering after „✕” or Escape; „✕”, Escape and the question closing it, the window
+  staying closed after „Wróć”; the window standing only on the screen of the map run and never with
+  the question; „Koniec przejścia” in the header before „Restart” only after the end and while the
+  window does not stand, opening the window at once also while it waits for the scene's effect.
 - **Origin:** none
 
 *Rationale:* the window is a thing of the screen and not of the game, so a save holds nothing of it, and a reload opens it again as D-212 gives; a state in the save would come back closed after a reload, against its opening at every entry, and would change the shape of the save for a thing of the screen. The question stands where D-173 puts it, in the band of the program panel at the copy it concerns, since D-173 rejected the question in a window, so the question closes the window and the window does not come back of itself after „Wróć”, as D-173 gives, and the window needs no memory of why it was closed. „Koniec przejścia” stands only while the window is closed because the header is not shown while it stands, and before „Restart” so that the way back to the window comes before the buttons that end the map run. Accepted with it: the end is out of the player's sight while the question stands and after it, until the button opens it; a player who corrects the copy after „Wróć” has the window closed already, and one who wants to read the end again opens it with the button.
