@@ -220,6 +220,8 @@ test("the mage's two sheets come from the data of its archetype, with the frame 
 });
 
 test("the background is the forest picture, a still frame of 336 × 152 pixels", () => {
+  // decision: D-314 "The background of the scene is a still picture of a forest"
+  // decision: D-349 "The scene has one size, 672 × 304 px, twice the size of its picture"
   assert.deepEqual(sceneDrawing(sent()).background, {
     href: "/sprites/forest-scene.png",
     width: 336,
@@ -768,6 +770,8 @@ const burningWith = (minutesLeft) =>
 // full flame.
 test("a burning fire draws the smaller flame with 20 minutes of burning left or fewer, and the full flame with more", () => {
   // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
+  // decision: D-373 "A burning campfire in the scene shows its full flame"
+  // decision: D-373 "An extinguished campfire stays as D-316 gives it"
   const FULL = "/sprites/fire.png";
   const SMALL = "/sprites/fire-small.png";
   assert.equal(burningWith(60).href, FULL);
@@ -867,6 +871,8 @@ function decodePng(file) {
 // with a chunk that carries text or a profile, a sheet of another size, a colour the pack's fire does
 // not have, and any change to a pixel that is not the flame's, a stone and a log included.
 test("the smaller flame's file holds pixels alone, is the full flame's sheet with only the flame's pixels cut down, and has no new colour", () => {
+  // decision: D-373 "A burning campfire in the scene shows its full flame"
+  // decision: D-271 "A sprite file holds pixels alone"
   // The five reds and browns the full flame is drawn in, as the pixels of fire.png hold them.
   const FLAME = ["124,9,12", "178,24,24", "222,83,37", "40,22,19", "76,44,28"];
   const BLACK = [0, 0, 0, 255];
@@ -953,6 +959,7 @@ const frostAt = (temperature) =>
 // (half, 8 pixels, at 36 °C), one that is not whole pixels, one that goes on below 35 °C, and one that
 // shrinks as the body cools.
 test("the frost is none at 37 °C, half of 16 pixels at 36 °C and the whole 16 at 35 °C and below", () => {
+  // decision: D-372 "The scene shows frost on the edges of its frame"
   assert.equal(frostAt(37), 0);
   assert.equal(frostAt(36.5), 4);
   assert.equal(frostAt(36), 8);
@@ -971,6 +978,7 @@ test("the frost is none at 37 °C, half of 16 pixels at 36 °C and the whole 16 
 });
 
 test("the frost follows the body's temperature and nothing else, the streak included", () => {
+  // decision: D-372 "The scene shows frost on the edges of its frame"
   assert.equal(sceneDrawing(run({ streak: 400 })).frost, 0);
   assert.equal(
     sceneDrawing(
@@ -1243,6 +1251,7 @@ test("a death or a completion in the game minute of a discovery shows the effect
 // stand out from.
 test("the specks of a completion rise over a part of the frame, on the scene's grid, over the open snow alone", () => {
   // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-271 "CSS may draw in the scene layers"
   const { specks } = momentOf(completing());
   assert.ok(specks.length >= 12, "enough of them to be a shower");
   const frame = decodePng(SCENE.background.file);
@@ -1292,6 +1301,7 @@ test("the places of the moments in the data lie inside the frame", () => {
 // the pack's death sheet of the mage moved into the frames of the scene, which only the source can show.
 test("the death sheet holds pixels alone, six frames of the mage's size, the first standing and the last lying on the ground line", () => {
   // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-271 "A sprite file holds pixels alone"
   const sheet = decodePng("mage-death.png");
   assert.deepEqual(sheet.types, ["IHDR", "IDAT", "IEND"], "pixels alone");
   assert.deepEqual([sheet.width, sheet.height], [384, 64]);
@@ -1545,6 +1555,7 @@ test("the wolf falls where it stood when defeated and runs off to the right edge
 // from is not tested: they are the pack's own pixels moved unchanged into frames of 64 × 32, which only
 // the source sheet can show.
 test("the wolf's files hold pixels alone, in frames of 64 × 32 with the feet on the bottom row", () => {
+  // decision: D-271 "A sprite file holds pixels alone"
   const frameOf = (image, frame) => {
     let [left, top, right, bottom] = [64, 32, -1, -1];
     for (let y = 0; y < 32; y++)
@@ -1586,6 +1597,8 @@ test("the wolf's files hold pixels alone, in frames of 64 × 32 with the feet on
 // Catches a file re-exported with a chunk that carries text or a colour profile, and a file of another size.
 // Where the pixels come from is not tested: they are the pack's own pixels, which only the source sheet shows.
 test("the camp's files hold pixels alone, in the size of the data", () => {
+  // decision: D-271 "A sprite file holds pixels alone"
+  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
   const clearing = decodePng(CAMP.background.file);
   const chest = decodePng(CAMP.chest.file);
   for (const [name, image] of [

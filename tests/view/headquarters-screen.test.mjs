@@ -650,6 +650,9 @@ const sentInto = (state, id) =>
 // the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the
 // text of the screen is the text of its panel, so the band adds none.
 test("the camp stands over the panel of the screen, the heading under it, and adds no text", async () => {
+  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
+  // decision: D-389 "The camp moves as the scene does"
+  // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(teamOf(2)));
     const camp = screen.element.firstElementChild;
@@ -671,6 +674,7 @@ test("the camp stands over the panel of the screen, the heading under it, and ad
 // for a reader, or a picture a reader would announce (D-272, D-321): the screen's names in „Drużyna” lead
 // to the character (D-280), the camp leads nowhere.
 test("the camp is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
+  // decision: D-389 "The camp moves as the scene does"
   await withPage(async (page) => {
     const { screen, calls } = await mount(page, propsOf(teamOf(3)));
     const camp = page.root.querySelector(".camp");
@@ -706,6 +710,7 @@ test("the camp is a picture: nothing in it takes the keyboard or a click, and it
 // picture would come out unequal and shake in motion (D-349): the band is 96 px high, its clearing 672 × 48
 // pixels of picture drawn at 1344 × 96, the fire of 32 × 32 at 64 × 64, a character's cell 32 wide at 64.
 test("the camp is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
+  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
     const camp = page.root.querySelector(".camp");
@@ -728,6 +733,7 @@ test("the camp is drawn at twice the pixels of its pictures, in a band 96 px hig
 // change only at a change of the team or of a loop, and not at „Wejdź” and „Zakończ”. Every change of the
 // four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the camp at once, and „Drużyna” still lists all.
 test("the camp follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
+  // decision: D-389 "The characters that stand in it are those"
   await withPage(async (page) => {
     const state = teamOf(3);
     const { screen } = await mount(page, propsOf(state));

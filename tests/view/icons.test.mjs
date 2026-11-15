@@ -318,6 +318,7 @@ test("each line of the section holds the icon's title, author, game-icons.net, C
 });
 
 test("the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
   const items = itemsOf(sectionMarkup()).slice(NAMED.length);
   assert.equal(items.length, PACK_LINES.length);
   items.forEach((item, i) => {

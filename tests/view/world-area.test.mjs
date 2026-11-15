@@ -481,6 +481,8 @@ test("a death that used a resurrection shows no line of its settlement and no de
 // the case reads the size and the source from the background and the absence of text from the whole
 // frame. The one size is twice the picture of 336 × 152 (D-349).
 test("the scene is the picture of the forest at the one size of D-349, with no text inside or over it", async () => {
+  // decision: D-349 "The scene has one size, 672 × 304 px, twice the size of its picture"
+  // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, sent());
     // The one size holds in a narrow window and in a wide one, and for another state of the game.

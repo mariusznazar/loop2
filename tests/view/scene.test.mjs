@@ -400,6 +400,7 @@ test("the greys: the whole scene at the player's pause, the mage after a death, 
 // Catches a scene read by assistive technology, with text on it or a stop for the keyboard.
 test("the scene is a picture: hidden from assistive technology, no text, nothing the keyboard reaches", async () => {
   // decision: D-321 "The scene is a picture, not a control"
+  // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async (page) => {
     const states = [
       doing(GATHER_STICK),
@@ -1440,6 +1441,9 @@ const layersOf = (scene) =>
 // flying icon with its plaque over the tint (D-315 puts under the tint everything the scene draws but
 // the badge and the frost), and a badge still inside the mage's element, which is under the tint.
 test("the layers: the tint over everything the scene draws, the flying icon and the dust included, the frost and the badge over it", async () => {
+  // decision: D-315 "The background picture of the scene is in full light"
+  // decision: D-315 "The layer lies over everything the scene draws"
+  // decision: D-372 "The frost lies over the layer of the tint"
   await withPage(async (page) => {
     const state = withFire(42, lit({ streak: 100, temperature: 36 }));
     const scene = await drawn(page, state);
@@ -1662,6 +1666,8 @@ test("the layer of the tint carries the number and no colour in its style", asyn
 // thickness at 36 °C and at 35 °C, and one that goes on below the chill or is built on another pixel
 // than the scene's: a pixel is 1/336 of the frame's width and 1/152 of its height.
 test("the frost is none at 37 °C, 8 pixels at 36 °C, the whole 16 at 35 °C and below, on the scene's pixel", async () => {
+  // decision: D-372 "The scene shows frost on the edges of its frame"
+  // decision: D-271 "CSS may draw in the scene layers"
   await withPage(async (page) => {
     const frostAt = async (temperature) => {
       const scene = await drawn(page, lit({ temperature }));
@@ -1692,6 +1698,7 @@ test("the frost is none at 37 °C, 8 pixels at 36 °C, the whole 16 at 35 °C an
 // D-372. Catches a frost that stays when the body is warmed at the fire, and one that is drawn at once
 // at its place with no change to run: its thickness is the state's, reading by reading.
 test("warming at the fire takes the frost back, reading by reading", async () => {
+  // decision: D-372 "The scene shows frost on the edges of its frame"
   await withPage(async (page) => {
     const { draw, scene } = await mounted(page, lit({ temperature: 35.5 }));
     const thickness = () =>
@@ -1708,6 +1715,8 @@ test("warming at the fire takes the frost back, reading by reading", async () =>
 // fire that takes it, and a smaller flame of another file or another frame count.
 test("a burning fire shows the smaller flame in its last 20 minutes, the full one before and the extinguished fire always the full one", async () => {
   // decision: D-316 "Sticks, the berry bush and moss always stand in the scene"
+  // decision: D-373 "A burning campfire in the scene shows its full flame"
+  // decision: D-373 "An extinguished campfire stays as D-316 gives it"
   await withPage(async (page) => {
     const flame = async (minutesLeft) =>
       sheetOf(one(await drawn(page, withFire(minutesLeft)), ".scene-fire"));
@@ -1727,6 +1736,7 @@ test("a burning fire shows the smaller flame in its last 20 minutes, the full on
 // D-373, the same beat. Catches a fire whose sheet is swapped on a new element, which would restart
 // its frames and show a jump at the minute the flame grows small.
 test("the fire's element stays the same when its flame turns small", async () => {
+  // decision: D-373 "A burning campfire in the scene shows its full flame"
   await withPage(async (page) => {
     const { draw, scene } = await mounted(page, withFire(25));
     const fire = one(scene(), ".scene-fire");
@@ -2095,6 +2105,7 @@ test("a dead mage falls toward the middle of the frame, whichever way it faced",
 // one before a death, one under the tint or over the frost, and one that carries a colour in its style.
 test("the cold layer stands after a death of cold alone, over the tint and under the frost, with no colour in its style", async () => {
   // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-315 "The layer lies over everything the scene draws"
   await withPage(async (page) => {
     for (const cause of ["hunger", "combat"])
       assert.equal(
@@ -2132,6 +2143,8 @@ test("the cold layer stands after a death of cold alone, over the tint and under
 // the tint, whose gold would take their colour.
 test("the specks of a completion stand only while the effect plays, over the tint, each a pixel of the scene on its grid", async () => {
   // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  // decision: D-315 "The layer lies over everything the scene draws"
+  // decision: D-271 "CSS may draw in the scene layers"
   await withPage(async (page) => {
     const read = await moment(page, going(), solved(), [SOLVED]);
     const scene = read.scene();
@@ -2595,6 +2608,7 @@ test("a defeated wolf falls and a departing one runs off to the right, each an e
 // and turned, and a wolf that is drawn over the tint of the light.
 test("the mage keeps the way it turned after the fight, and the wolf and its cloud lie under the tint, the mage between them", async () => {
   // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
+  // decision: D-315 "The layer lies over everything the scene draws"
   await withPage(async (page) => {
     const { draw, scene, mage } = await mounted(
       page,
