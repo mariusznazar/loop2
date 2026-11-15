@@ -4233,20 +4233,25 @@ as refused as too large (D-208).
 - **Scope:** browser-view
 - **Based on:** visibilitychange-hidden-last-event · fetch-keepalive-body-quota
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: an edit of a program rule followed at once by a save request; „Kup” of a branch rank
-    on the screen Postać followed at once by a save request; a map run passing at 16×
-    saved once every 30 real seconds; a tab hidden in the middle of a map run sending its latest
-    game state as a `keepalive` request; a tab that has just loaded a saved game state with its map
-    run paused and no earning loop passing sending nothing until the player acts in it; earning
-    loops passing with no manual map run sending nothing on the 30-second rhythm; a catch-up that
-    ended several map runs of earning loops followed by one save request; a catch-up that ended none
-    sending nothing until the page becomes hidden or the player acts
-  - violates: a button „Zapisz” for the game state; a rhythm of saving counted in game minutes; two
-    save requests of one tab in flight at once; a save body over 64 KiB sent with `keepalive`; a
-    save every 30 real seconds while earning loops alone pass; a save for each map run a catch-up
-    ended; a new save time counted as a change, so a loaded paused tab with nothing passing sends at
-    the hidden page
+- **Verification:** tests: the game state saved at once after each act of the player that changes
+  it — an edit of a program, of the copy and of a trip plan, the acts of the list of programs and
+  the pull of a previous save's programs, creating a character, sending one, „Puść w pętlę”,
+  „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a
+  pause, the one of leaving the screen of a map run included, and a pace — and an act that changes
+  nothing sending nothing; a manual map run that ends at a reading, in a death included, saved at
+  once, and a reading that changes the state without ending one sending nothing; one save for a
+  catch-up whose result ended map runs of earning loops; a save every 30 real seconds only while a
+  manual map run passes, and one at the hidden page; the 30-second rhythm and the hidden page
+  sending nothing where nothing changed since the save last sent, a loaded paused game and a new
+  save time included; one save request in flight, a moment of saving during it sent once after its
+  answer, except during the save before a logout that goes on; each save handed to `fetch` with
+  `keepalive`; a body of 65 536 bytes sent whole, and a larger one never sent and counted as
+  refused as too large. An agent compares a change with the part no test holds:
+  - complies: a reading of the clock whose result ended map runs of two earning loops followed by
+    one save request; a tab closed while its last save is on its way, nothing holding the page open
+    for the answer
+  - violates: a save request for each map run of an earning loop that one reading ended; the closing
+    of a tab held back, or a question raised, until its last save is answered
 - **Origin:** none
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
@@ -4285,14 +4290,22 @@ A save of the game state that succeeds shows nothing. When one fails, the header
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a save with no answer within its time limit showing „Nie udało się zapisać postępu.
-    Gra spróbuje ponownie.” on the line under the menu bar, and the retry five real seconds later
-    clearing it when it succeeds; a too-large refusal followed by no request until the next moment
-    of saving
-  - violates: a line „Zapisano o 12:31” after each save; a too-large refusal retried as a failed
-    save; a failed save shown nowhere, or only inside the closed menu „Konto”; a start of an earning
-    loop refused for the number of earning loops
+- **Verification:** tests: a successful save leaving the line under the menu bar empty, also after a
+  failure or a conflict; a failed save showing „Nie udało się zapisać postępu. Gra spróbuje
+  ponownie.” in `warning` on that line, under the bar and outside the menu „Konto”, and after a
+  failed save before a logout the sentence D-97 gives there; the retries after 5, 10 and 20 real
+  seconds and then every 30, each with the game state of its moment, a moment of saving sending at
+  once, until a save succeeds and the sentence goes; a save refused as too large not retried but
+  tried again at the next moment of saving, its sentence on that line until a save succeeds, also
+  before a logout and after a pull of a previous save's programs. An agent compares a change with
+  the part no test holds:
+  - complies: a successful save that changes nothing elsewhere on the screen; the sentence of a save
+    refused as too large in `warning`; any number of earning loops started, the limits of a save
+    staying 64 KiB in the browser and on the server
+  - violates: a line „Zapisano o 12:31” after each save shown outside the line under the menu bar,
+    in the menu „Konto” included; the sentence of a save refused as too large in `text`, `positive`
+    or `danger`; a start of an earning loop refused for the number of earning loops; a higher limit
+    of a save for a game state with many earning loops
 - **Origin:** none
 
 *Rationale:* the player is told only when the progress is not being saved, at the cost of not seeing when it was saved last. A retry that slows down to every 30 real seconds keeps a long outage from costing a request every few seconds per tab. A save refused as too large fails again until the game state shrinks, so the game waits for a change instead of retrying. Accepted with it: with several earning loops saving stops until the player stops one of them — measured as the bytes in UTF-8 that the game sends to the server, in a game that already knew everything, so that no discovery was made in it, the headquarters with one character came to 3 202 bytes and a map run of Las at game minute 300 to a median of 9 838 bytes, of „Las — głębiej” to a median of 12 402, each with the copy of the program and its basis, and counted directly, under 64 KiB (65 536 bytes) 12 earning loops fit on Las (13 come to 67 272 bytes) and 9 on „Las — głębiej” (10 come to 66 675 bytes), with one program shared by the earning loops, no manual map run and an empty report of absence; the progress since the last successful save is lost at a logout or at the closing of a tab; the player can shrink the game state only by stopping earning loops and by deleting programs („Usuń” of D-167, the last program staying), because the player can currently remove no character, no part of the Understanding and no solved map, so that a player whose game state grows beyond what those two ways reach stays without saving until the limit changes; and the header line has one state more.
@@ -4394,13 +4407,19 @@ saved game state.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-203
-- **Verification:** invariants: expired-session-unsaved-progress. An agent compares a change with the
-  decision:
-  - complies: a save answered with 401 removing the game and showing the forms with „Sesja wygasła.
-    Zaloguj się ponownie, aby zapisać postęp.”, and a sign-in to the same account sending the kept
-    state and showing its map run paused
-  - violates: the unsaved game state written to `localStorage`; the kept state saved after a sign-in
-    to another account; the game left running beside the forms
+- **Verification:** invariants: expired-session-unsaved-progress. tests: a save answered that there
+  is no session taking the game off the screen with its time stopped and bringing back the forms
+  with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”, also for the save before a logout
+  and for a save made while a logout waits whose outcome then stays uncertain; after a sign-in to
+  the same account the game shown again from the kept state, its map run paused; after a sign-in to
+  another account the kept state dropped and that account's saved game state loaded, also after an
+  error of the code in the load of the kept state. An agent compares a change with the part no
+  invariant and no test holds:
+  - complies: the sentence „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.” in `warning`;
+    the unsaved game state held in the page's memory alone, so a reload before the sign-in loads the
+    server's saved game state
+  - violates: the unsaved game state written to `localStorage`, `sessionStorage` or IndexedDB; that
+    sentence in `text`, `positive` or `danger`
 - **Origin:** none
 
 *Rationale:* the progress the browser holds waits in the open tab for the same account, and nothing
@@ -10050,9 +10069,9 @@ An account with the previous-save privilege has on the screen Programy, at any t
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-206 · derives from D-399 · derives from D-400
-- **Verification:** invariants: save-version · previous-save-programs-reader. An agent compares a change with the decision:
-  - complies: a document of version 2, whose programs lack a trip plan, giving the programs the check accepts and one sentence naming those it refuses; „Las” pulled onto a list that holds „Las” appended as „Las (2)”, with the other programs, the copies, the counts and the picks of the game state as they were; a pull pressed twice appending the programs twice
-  - violates: a pull that replaces the list; a pull that stops at the first program the check refuses; an appended program that the program editor would refuse; the reader reading a key of the document beyond its version, its list of programs and the items; the button shown on the strength of a flag the page holds, with no answer of the server that a previous save exists; the previous save loaded as a game by the load of D-206
+- **Verification:** invariants: save-version · previous-save-programs-reader. tests: the button on Programy for an account with the privilege only once the server has answered that a previous save exists, asked at each entering of the screen, standing on that screen alone and also while a manual map run goes on or has ended, and none for an account without the privilege or with no previous save; a press fetching the previous save again and appending its programs to the end of the list, a second press appending them again; a document of each version from 1 to the game's current one read and one of any other version unreadable; an item whose name is empty after trimming skipped, and an item whose program the check refuses skipped while the reading goes on; each program appended with the next number and its trimmed name, or with the name, a space and „(n)” where that name is taken, nothing else of the game state changed and the game saving at once; one sentence telling how many programs were appended and naming every program skipped, or that the previous save holds no program this version of the game can read, that there is none, or that it could not be fetched. An agent compares a change with the part no invariant and no test holds:
+  - complies: the reader kept in `src/browser/sim/previous-programs.ts`, the load of D-206 and D-213 calling nothing of it
+  - violates: the previous save loaded as a game by the load of D-206; the reading of the programs written into `src/browser/sim/saved-game.ts`
 - **Origin:** none
 
 *Rationale:* a program is the player's work, and a raising of the version should cost the player the shape of the game, not the programs; the pull brings them back when the player asks, after playing from zero and judging whether the game reads clearly, which only a button available at any time allows. The reader stands apart from the load so that the load stays whole or nothing (D-206, D-213) and the pull is a second act that reads less: it takes programs, one by one, because a program of an older version may lack what the game has since required, such as a trip plan, or may name an action or an item that the game's data no longer holds, and one refused program must not refuse the rest. A version above the game's current one is unreadable, since its shape is unknown to this code; one from 1 up to the current is read, the current one included, because the reset puts a document of the current version in the previous save. An item is read strictly, as every version wrote it, so a document that does not look like one the game wrote gives a skip and no guess; the `id` of an item is neither used nor checked, since the program takes a number of the present game. Each program passes the check of the editor, so none appended is one the editor would refuse or the load would discard. The names of the skipped programs come from the document and are shown as text only. The button fetches the previous save again when pressed, so the pull works on what the server holds then. Accepted with it: a second press appends the programs again, as copies; a program the check refuses stays in the previous save and is not appended; two raisings of the version or a reset before the pull replace the previous save and its programs.
