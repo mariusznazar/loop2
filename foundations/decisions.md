@@ -3926,9 +3926,10 @@ The trip plan is a field of the program, both its lists are bound at the start o
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-50 · derives from D-64 · derives from D-164
-- **Verification:** invariants: trip-transfer. An agent compares a change with the decision:
-  - complies: an item added to the trip plan during a map run that comes out only from the next map run; a trip plan over the map's cap entering cut, with a notice shown before the start; a character switched to another program in the middle of a map run bringing out at completion what the trip plan of the program it entered with names
-  - violates: a backpack filled beyond what the chest held on a map run that is not a manual map run of a map already solved; an item lower on the list taking room before one above it; entering refused for a trip plan over the map's cap
+- **Verification:** invariants: trip-transfer. tests: the trip plan held as a field of the program,
+  which an edit of the program, a save of the copy and the detection of a change over the program
+  include; a map's own cap down to zero, on entry and on exit; a trip plan over the map's entry cap
+  entering the map cut, the player told so beforehand on the card of the map and beside „Restart”.
 - **Origin:** none
 
 *Rationale:* As a field of the program the trip plan is carried out by the earning loop with no player at the keyboard, and switching the program between map runs switches program rules and equipment in one move. The frozen snapshot keeps an item added in the last minute from paying out at once, which would get round the streak, since the simulation lets the trip plan of the copy change without breaking the streak (D-131), and a switch to another program brings another trip plan, which the snapshot does not follow; the shield stands in the simulation and at the switch, because the screen of a map run gives no edit of the trip plan (D-180). The order of the lists decides when items compete; a mere shortage needs no order. A map's cap of zero asks for a program that stands on its own from the first minute — another program, not the same one with a smaller number. The backpack is the cap on carrying in so that carrying in costs at once and not only gives: the pieces carried in take room from the first minute, and a full backpack makes gathering not feasible (D-65), not only fruitless, so the program passes to a later rule. Accepted with it: a „Restart” takes from the chest as it stands, like any other start, and is not a pure repetition of the map run before it; only a manual map run of a map already solved takes nothing from the chest (D-189).
@@ -3941,9 +3942,17 @@ The screen Programy shows a section „Plan wyprawy” folded to a line of icons
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-166 · derives from D-173 · derives from D-179
-- **Verification:** an agent compares a change with the decision:
-  - complies: the card of Las showing, at a character whose chosen program takes patyk 6 and jagoda 4 in its take list, what of them enters
-  - violates: the card of a map showing the take list as the program asks it, with no account of what the map and the character let in
+- **Verification:** tests: the section „Plan wyprawy” on Programy between the program's name and
+  its rules, folded to a line of each position's item icon and count with „Zabierz” and „Wynieś”,
+  and unfolding to the two lists; each position's item select list, number field, buttons that move
+  it up and down and „Usuń”, and a button that adds an item to each list; the line „Wejdzie: …” at
+  each character on the card of a map, giving what of the plan enters. For the texts of the move
+  buttons and the text and place of the add button, an agent compares a change with the part no
+  test holds:
+  - complies: the move buttons of a position reading „↑” and „↓”, and „Dodaj przedmiot” standing
+    below the last position of each list
+  - violates: „Dodaj przedmiot” standing above its list, or the move buttons of a position reading
+    words in place of „↑” and „↓”
 - **Origin:** none
 
 *Rationale:* The plan stays with the program the player writes, and the screen of a map run is for watching it act. The card of a map shows at each character what of the plan enters, and shows it always, also when the whole plan enters, so that a player with a full chest sees what will enter. Accepted with it: the plan of the copy is not changed during a map run, and one more line „Wejdzie: …” at each character on the card.
@@ -3956,7 +3965,18 @@ The game accepts an item once on each trip list, and the same item can stand on 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-120 · derives from D-179
-- **Verification:** none
+- **Verification:** tests: an item accepted once on each trip list, the select lists of a list
+  offering, beside a position's own item, only the items the list does not hold, and the same item
+  standing on both lists; a count accepted as a whole number from 1 up to 9007199254740991, a large
+  count below that bound included, and a zero, a negative number, a fraction, a number beyond the
+  safe integers and text refused; an invalid entry committing nothing, the previous count kept,
+  the entry staying in the field and „Wpisz liczbę całkowitą od 1.” standing under it until a valid
+  count is entered. For the role of the field and its message, an agent compares a change with the
+  part no test holds:
+  - complies: the frame of the field and the message „Wpisz liczbę całkowitą od 1.” in the role
+    `warning` while the entry is invalid
+  - violates: the message of an invalid count in `text-secondary`, or the frame of the field in its
+    usual role while the message stands
 - **Origin:** none
 
 *Rationale:* The plan expresses desired quantities and the transfer finds what fits; an invalid draft stays visible beside a count the game still holds. A count beyond the safe integers would make the load of the saved game state refuse it whole, so the game never takes one. The item select list of a position offers the items of the Understanding, since the trip plan is a part of the program and what the program editor offers is tied to the Understanding (D-119); an item already on a list is not offered again by the select lists of that list, and stands on the other list as well. That an item stands at most once on a list and that a count is a whole number from 1 up are what the tests of the predecessor game held. Accepted with it: a plan cannot be arranged before the first item is discovered, when the chest is empty anyway, and the field shows an invalid entry beside the count the game goes on holding.
@@ -3969,7 +3989,10 @@ The program of a new game and a newly created program have both trip lists empty
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-91 · derives from D-167 · derives from D-179
-- **Verification:** none
+- **Verification:** tests: a newly created program with both trip lists empty. For the program of a
+  new game, an agent compares a change with the part no test holds:
+  - complies: the program of a new game showing „Plan wyprawy: pusty” on Programy
+  - violates: a new game whose program takes sticks or berries on its take list
 - **Origin:** none
 
 *Rationale:* The first plan belongs to the player, and before an item is discovered the chest is empty as well; the tests of the predecessor game held an empty plan for a fresh game. Accepted with it: before the first item is discovered the plan cannot be arranged at all.
@@ -3995,7 +4018,9 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-50
-- **Verification:** none
+- **Verification:** tests: the chest section heading as „Skrzynka {pieces}/{cap}”, the pieces of all
+  items together over the chest's cap, and for an empty chest „Skrzynka 0/60” above „Skrzynka jest
+  pusta.”.
 - **Origin:** none
 
 *Rationale:* The shared space is visible where the player prepares the next attempt; the heading changes with its contents. It reads like the heading of the backpack, „Plecak {pieces}/{cap}”, since the chest has a cap on the total count of pieces by the same rule of capacity as the backpack. Accepted with it: the heading changes with every change of the chest's contents.
@@ -4008,7 +4033,14 @@ After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzyn
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-179 · derives from D-368
-- **Verification:** none
+- **Verification:** tests: after a completion the line „Do skrzynki: {item} {count}, …”, or „Do
+  skrzynki nic nie trafiło.” for an empty transfer, in `text-secondary`, as the transfer stood at
+  the completion whatever later edits of the copy, in the section of the end-of-run window saying
+  what the end gave, after a reload of the screen too. For how long the line stands, an agent
+  compares a change with the part no test holds:
+  - complies: the line gone once „Restart” starts the next map run or „Zakończ” ends the map run
+  - violates: the line of the last completion still standing on the screen of the map run that
+    „Restart” started
 - **Origin:** none
 
 *Rationale:* The transfer remains readable with the final state, among what the map run gave rather than as the first word after a win.
@@ -4021,7 +4053,14 @@ During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `te
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-179
-- **Verification:** none
+- **Verification:** tests: during a map run the line „Wyniesie: {item} {count}, …” below the
+  backpack, giving what completion would put in the chest from the frozen bring list, clipped by
+  the backpack, the free room in the chest and the map's exit cap, whatever later change of the
+  copy's bring list; the line standing when the snapshot lists something or differs from the copy's
+  bring list, reading „Wyniesie: nic” when that transfer is empty, and gone after a death and after
+  a completion. For the role of the line, an agent compares a change with the part no test holds:
+  - complies: „Wyniesie: patyk 3” in `text-secondary` below the backpack
+  - violates: the line in `text`, the role of the practice record beside it
 - **Origin:** none
 
 *Rationale:* The player sees which plan applies to this attempt, at the cost of another line recomputed each game minute and a different text role beside the practice record. The line shows the snapshot, so a divergence from the plan in the program panel is visible; this gives a part of what a panel showing clearly which trip plan is in force in the map run going on would give. It clips by the map's exit cap as well, so it shows exactly what completion would deposit; the clipping by the backpack and the free room in the chest is not the whole list. Accepted with it: the line appears in the middle of a map run at the moment the character is switched to another program, whose bring list differs from the snapshot, and the view compares the bring list of the copy with the snapshot, one comparison more; one budget more in the same calculation; after a death the player does not see what the character would have carried out; and the line in `text-secondary` stands near the practice record in `text`, so two lines about what the running map run gives have two roles.
@@ -4034,7 +4073,9 @@ A map's data can set two independent whole-piece caps from zero up, one for entr
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-64 · derives from D-179
-- **Verification:** invariants: trip-transfer.
+- **Verification:** invariants: trip-transfer. tests: a map's two caps, one for entry and one for
+  exit, each from zero up, set one apart from the other or left unset; gathering during the run
+  bounded by the character's carrying capacity whatever the caps.
 - **Origin:** none
 
 *Rationale:* A map can ask for different equipment at entry and loot at exit, while carrying capacity describes the character during the attempt; this keeps two boundaries to check even where current maps leave them unset. Two fields, each of which may be unset, are the predecessor game's shape, and the map's cap acts at the boundaries of the map run, at entry and at completion, without stopping gathering, since the backpack's cap is the character's carrying capacity (D-64). Accepted with it: code, tests and a message that the player does not see while no current map sets a cap, the cost for which D-136 rejects a kind of solving condition no map asks for; and two cuts to check by tests instead of one.
@@ -4047,7 +4088,14 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-170 · derives from D-179 · derives from D-187
-- **Verification:** none
+- **Verification:** tests: the line „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n}
+  sztuk.” at a character on the card of a map and, for the current copy and map, on the screen of
+  a map run beside „Restart”, standing when the map's entry cap is below the smaller of the take
+  list's requested total and the character's carrying capacity, whatever the chest holds, and
+  absent when the carrying capacity alone clips the plan or the plan fits. For the role of the
+  line, an agent compares a change with the part no test holds:
+  - complies: the line in `warning` on the card of a map and beside „Restart”
+  - violates: the line in `text-secondary` or in `danger`
 - **Origin:** none
 
 *Rationale:* The player can see the cut before either kind of start, at the cost of keeping the same comparison at two places. A „Restart” is a map run, and a map run begins with entering the map, so the plan of the copy over the map's cap enters cut at a „Restart” and the player has to learn of it beforehand. The line compares the entry cap with the smaller of the take list's total and the carrying capacity, so it speaks of the map only when the map cuts the plan and not the backpack; when carrying capacity alone cuts it, the backpack already shows its cap as „Plecak {pieces}/{cap}”.
@@ -4060,9 +4108,16 @@ A manual map run that first solves its map pays practice and loot once per map f
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-179 · derives from D-239
-- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. An agent compares a change with the decision:
-  - complies: a manual run of a solved map starting with equipment the chest lacks and leaving the chest as it was; stopping an earning loop in the middle of a map run adds the practice of that map run, while its loot stays out
-  - violates: practice added at each completion of an earning loop; a second character's manual completion of a solved map paying practice; a run ending in death paying loot or practice
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. tests: a manual
+  map run that first solves its map paying practice to the character's skills and loot to the
+  chest; a death paying no practice, on a manual map run and on a map run of an earning loop;
+  practice an earning loop earns gathered at the loop, at a completion too, and added to the
+  character skills by „Odbierz”, all of it with the map run going on included, the map run, its
+  backpack, the earning loop and the chest left as they were, and by the stop of the earning loop,
+  the practice of the map run stopped before its completion included and that of a map run ended
+  in death left out; a manual map run of a solved map taking its equipment from nowhere, cut only
+  by the character's carrying capacity and the map's entry cap, and the mark under „Wejdź” at a
+  solved map where that cut equipment is more than the chest holds.
 - **Origin:** none
 
 *Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
@@ -7815,9 +7870,8 @@ pusty”.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-180
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new program showing „Plan wyprawy: pusty” between its name and its rules
-  - violates: the heading „Plan wyprawy” alone above an empty plan
+- **Verification:** tests: the folded line „Plan wyprawy: pusty” on Programy for a program whose
+  two lists are empty.
 - **Origin:** none
 
 *Rationale:* an empty plan shown as its heading alone looks as though it has not loaded.
