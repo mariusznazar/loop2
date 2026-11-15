@@ -4,9 +4,9 @@ name: tests
 # before the merge. The job's name, `tests`, stays as it is: the rule of the repository that
 # requires this check names it.
 #
-# It runs on Linux, not on Windows: the Docker daemon of a Linux machine answers, so the tests that
-# start containers run here instead of being skipped. The Windows paths are checked by the gate the
-# task cycle runs on the computer where the work is made, before a pull request opens.
+# It runs on Linux. The reason stands in D-413 of `foundations/decisions.md`, "How does CI check a
+# pull request into `main`?". A test of containers that finds no Docker daemon is skipped, with a
+# message in the log (D-390), so the log of a run shows whether those tests ran.
 #
 # The trigger is `pull_request`, never `pull_request_target`: the code of a request runs with a
 # read-only token and no secret, and no step uses the text of the request (its title, its branch

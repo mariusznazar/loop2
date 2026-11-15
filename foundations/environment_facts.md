@@ -837,6 +837,12 @@ GitHub's documentation says that secret scanning scans the entire Git history on
 
 - **Source:** https://raw.githubusercontent.com/github/docs/d59b2631959db46d71ca5f7748ec04311c6d0870/content/code-security/concepts/secret-security/secret-scanning.md § How secret scanning protects your code — "scans your entire Git history on all branches of your repository for hardcoded credentials, including API keys, passwords, tokens, and other known secret types."; read 2026-11-15
 
+## github-secret-scanning-public-repository
+
+GitHub's documentation says that secret scanning runs automatically and for free for a public repository.
+
+- **Source:** https://raw.githubusercontent.com/github/docs/d59b2631959db46d71ca5f7748ec04311c6d0870/data/reusables/gated-features/secret-scanning.md § the list of repository types, which the page content/code-security/concepts/secret-security/secret-scanning.md includes under the heading How can I access this feature? — "Public repositories" · "runs automatically for free."; read 2026-11-16
+
 ## github-push-protection-blocks-push
 
 GitHub's documentation says that push protection blocks a push in which it detects a potential secret, of the types of secret it can block.
