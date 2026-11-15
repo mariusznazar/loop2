@@ -235,10 +235,13 @@ and sends the saved game state to the server.
 - **Scope:** account-server, browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares the change with the decision:
-  - complies: a server endpoint that stores the saved game state the browser sends and returns it
-    unchanged on login; a save route that compares the version number of the saved game state's
-    shape the browser sends beside the game with the stored one, reading nothing inside the game
+- **Verification:** tests: the server keeping each account's own saved game state and returning
+  the game it was sent unchanged, whatever that game holds; the browser sending the saved game
+  state to the server, and computing the catch-up of a loaded game itself before it sends the
+  result. For the server computing nothing of the game and the browser computing all of it, an
+  agent compares a change with the part no test holds:
+  - complies: a rule of how a map run, an earning loop or the catch-up passes written in the
+    simulation the browser runs, with nothing of it on the server
   - violates: a server endpoint that advances a map run, or computes the catch-up; a server module
     that computes the outcome of a character's actions or of the time the game was closed
 - **Origin:** none
@@ -1308,11 +1311,13 @@ sends no other on a manual map run.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: `send` refusing a second character while a manual map run goes on; „Wejdź” of the
-    other characters in the section „Kto idzie” of the card of a map inactive on the screen Mapy
-    during a manual map run and after its end, until „Restart” or „Zakończ”
-  - violates: a second character sent on a manual map run while the first one's goes on
+- **Verification:** tests: a send refused while a map run exists, for the character already in
+  it; „Wejdź” of every character in „Kto idzie” of the card of a map inactive on the screen Mapy
+  while a manual map run goes on, waits in a pause or has ended, until „Zakończ”. For the
+  simulation refusing to send another character, an agent compares a change with the part no test
+  holds:
+  - complies: `send` refusing a second character while a manual map run of another goes on
+  - violates: `send` starting a manual map run of a second character while the first one's goes on
 - **Origin:** none
 
 *Rationale:* the game state keeps one manual map run as the team grows, and the player follows one
@@ -4483,13 +4488,14 @@ whose character names an archetype missing from the data is also discarded whole
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: save-version. For the version written and the missing archetype, an
-  agent compares the change with the decision:
-  - complies: every saved game state written with the game's current version number; a saved game
-    state of another version discarded whole as a game, even when its programs remain compatible,
-    and its programs reaching the game only by the pull of an account with the privilege (D-401)
-  - violates: a saved game state of another version loading its programs when the game loads; a
-    saved game state with a missing archetype loaded with that archetype replaced by another
+- **Verification:** invariants: save-version. tests: the saved document the game writes carrying
+  the current version, and a document of the current version, also as the server hands it back,
+  loading whole into the state it describes; a refused save of another version, also one loaded
+  after a conflict, starting a new game that is saved at once; the server moving into the previous
+  slot the save that a save of a higher version replaces; the programs of a previous save of each
+  version read one by one, a program the check refuses skipped, and the pull appending the others;
+  a document whose character names an archetype missing from the data refused whole, and starting
+  a new game.
 - **Origin:** none
 
 *Rationale:* loading a saved game state whose shape the game no longer describes gives faults that
@@ -4749,16 +4755,21 @@ computing of time away included.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: death-settled-once. An agent compares a change with the decision:
-  - complies: a map run of Las saved at game minute 212 at 8× loading an hour later at game minute
-    212, paused, at 8×; a map run saved on the screen after a death loading on that screen with
-    „Restart” and „Zakończ”; a reload at `#/programy` with a map run saved after a death opening
-    Programy, the map run waiting with its screen after its end for „Restart” or „Zakończ”; a
-    reload of the screen after a death opening the window again with its title, the longest streak
-    and the line of what the death took, and with no „Ostatnie minuty”
-  - violates: a loaded map run going on at once; a loaded map run moved on by the time away; loading
-    that closes an ended map run as „Zakończ” does; an ended map run loaded without the window, or
-    with a window that lacks its longest streak or the line of what the end took or gave
+- **Verification:** invariants: death-settled-once. tests: a loaded map run that went on coming
+  back at its game minute, paused, at its pace and with its carried real time, standing with
+  „Wznów” on its screen, also after a conflict and after a sign-in with the kept state; an ended
+  one coming back as it ended, with its record whole, on its screen with „Restart” and „Zakończ”
+  and with the end-of-run window open again, its longest streak and its lines of what the end gave
+  or cost read from the loaded state, and with no „Ostatnie minuty”; the screen opened after a
+  sign-in or a reload with a manual map run in the save being the one D-96 gives; the catch-up
+  leaving a manual map run and its pause as they stand. For the copy of an ended map run open to
+  editing after a load, and for real time between the save and the load outside the catch-up, an
+  agent compares a change with the part no test holds:
+  - complies: a map run saved on the screen after a death loading with its copy open to editing,
+    its unsaved changes kept; a map run of Las saved at game minute 212 at 8× loading an hour later
+    at game minute 212
+  - violates: a loaded ended map run whose copy cannot be edited; a loaded map run moved on by the
+    real time between its save and its load
 - **Origin:** none
 
 *Rationale:* a player who signs in on another device does not miss a discovery, an attack or the
@@ -4807,15 +4818,20 @@ unsaved game state in the page's memory stay as they stand, while the player get
 - **Scope:** simulation, browser-view, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-04 · derives from D-206
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: a game state turned into the saved document of the current version
+  beside a copy of the state, changing nothing of it; a document of the current version, also as
+  the server hands it back, loading into the state it describes; a document refused as of another
+  version, as naming an archetype missing from the data or as of a shape the game does not admit,
+  a crafted document of the current version refused whole; no value a document can hold, at any
+  place of it, throwing out of the load; the load changing nothing passed to it; an error of the
+  code in the load leaving it as that error, and on the page leaving the save on the server and
+  the kept state as they stand, building no game, writing one line to the console without the
+  error's text and showing the sentence of D-96. For the exemplar, its kind guidelines and the load
+  standing inside the simulation, an agent compares a change with the part no test holds:
   - complies: saved-game guidelines identify the first implementation as exemplar and draw the
-    kind's boundary with simulation modules as the content-data guidelines draw theirs; a crafted
-    document of the current version answered with a refusal; a fault of the code in the load
-    reaching the view as a thrown error, the save on the server and the state kept in the page
-    left as they stand
-  - violates: a load that throws on a crafted document; a load that catches every error and answers
-    a fault of the code with a refusal; a saved-game file that imports from the browser view; a
-    second exemplar for the kind
+    kind's boundary with simulation modules as the content-data guidelines draw theirs
+  - violates: the load of a saved game state written in the browser view; a second exemplar for the
+    kind
 - **Origin:** none
 
 *Rationale:* the first file that reads data from outside the simulation into the game state gives
@@ -10239,9 +10255,9 @@ The load of a saved game state admits every game state the game's own functions 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-213 · derives from D-221 · derives from D-248
-- **Verification:** an agent compares a change with the decision:
-  - complies: a game stamped by a device clock set before 1970, its save time below zero, saved and loaded back as the same game state; a save time of NaN, 1.5 or 2 to the power 53 refused by the function that stamps it with a RangeError; the function that settles a death given a game with no map run and an undefined moment returning that very game state; the function that settles the first completion of a map given a game with no completion to settle and an undefined moment returning that very game state, and given one with a completion to settle and a moment of NaN refusing it with a RangeError; a game state holding a first completion that no reading of the clock has settled yet loaded back as the same game state
-  - violates: a load that refuses a save time below zero; a load that compares a moment with the clock; a load that refuses a first completion not yet settled; a function that stamps a save time or settles a death or a first completion and stores a moment of 1.5 in the game state; a game state made by the game's own functions in a play that the load refuses
+- **Verification:** tests: game states the game's own functions make — of manual map runs going on and ended, earning loops through a death, a stop and the next map run, the report of the catch-up, a settled death, an append of programs, a discovery and the largest trip count — loading back from their saved documents as they were; a save time and the team's moment of readiness at zero or below zero loading, and stored as given when a death or a first completion is settled; the function that stamps a save time, the one that settles a death, the one that settles a first completion and the end of a map run of an earning loop refusing a moment that is no safe integer with a RangeError, and the settling of a death or of a first completion returning the very game state, whatever the moment, where there is nothing to settle. For the load comparing no moment with a clock and for the game states no test plays, an agent compares a change with the part no test holds:
+  - complies: a save time far beyond the present loaded as it stands; a new kind of game state a function of the game makes loading back from its saved document
+  - violates: a load that compares a moment with the clock; a game state made by the game's own functions in a play that the load refuses
 - **Origin:** none
 
 *Rationale:* a saved game state that the load refuses is discarded whole (D-206), so a game that writes one replaces the player's progress with a new game. The browser's clock dates a save (D-248) and a device clock set before 1970 reads below zero, so a load that refused a moment below zero would discard a save the game itself wrote; a moment far in the future costs its own player alone (D-07), so the load compares no moment with a clock. The moment a function stores is checked where it enters the game state, because a number the load would refuse must never reach a document. The clock passes its reading to the function that settles a death and to the one that settles a first completion at every step, a step with no death or completion included, so a reading there is not looked at.
