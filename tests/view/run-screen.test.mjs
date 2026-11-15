@@ -492,6 +492,7 @@ test("„Wznów” of the band goes on as the header's „Wznów” does, and th
 // D-19, D-346. Catches the hovered tile kept by the drawing
 // alone, so that the table in another area marks no row, its line shows no numbers, and a hovered row marks no tile.
 test("a hovered tile of the drawing marks its row in the table of the area under the drawing and the line gives its numbers; a hovered row marks its tile", async () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   await withPage(async (page) => {
     const { screen } = await wiredScreen(page, withTiles());
     const [world, , area] = areasOf(screen.element);

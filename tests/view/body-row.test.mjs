@@ -41,6 +41,7 @@ function character(backpack, carryingCapacity = 15) {
 // The values stand in cells of their own, each with its own note (D-337), so no line that joins the
 // four values by „ · ” is checked.
 test("the body row reads temperature, satiety, health and nature energy in cells, with the minutes under the first two, as D-178 gives for Las", () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
   // D-178: „Temperatura 36,9 °C” with „bez ognia 79 min”, „Sytość 82 %” with „bez jedzenia 86 min”,
   // „Zdrowie 100” and „Energia natury 90”; the minutes are worked out by hand in tests/sim/body.test.mjs.
   const cells = bodyCells(
@@ -64,6 +65,7 @@ test("the body row reads temperature, satiety, health and nature energy in cells
 });
 
 test("nature energy is cut down to a whole number and never stands in danger, at zero too", () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
   const body = { temperature: 36.5, satiety: 50, health: 50 };
   assert.deepEqual(bodyValues(body, 89.5)[3], {
     text: "Energia natury 89",
@@ -241,6 +243,7 @@ test("health and nature energy stand with no note, at their lowest too", () => {
 });
 
 test("the cells keep the danger of their values: a value below its threshold in danger, the others not", () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
   const cells = bodyCells(
     runOf({ temperature: 34.99, satiety: 82, health: 40 }, 90),
     LAS,

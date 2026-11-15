@@ -93,6 +93,7 @@ test("rows stand only for revealed tiles, in tile-list order, labelled (col, row
 });
 
 test("each row gives the stock of every resource of the map, „—” where the tile lacks it, 0 when used up", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
   const state = withTiles([
     tile(1, 0, true, { [r[0]]: 12, [r[2]]: 6 }),
     tile(0, 1, true, {}),
@@ -109,6 +110,7 @@ test("each row gives the stock of every resource of the map, „—” where the
 });
 
 test("a fresh map run lists nothing; exploring the entrance lists that tile with its stock", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
   const start = sent();
   assert.deepEqual(tileList(start).rows, []);
   const explored = advanceMinutes(start, 20).state;
@@ -164,6 +166,7 @@ function fireRun(...minutes) {
 test("a tile's row gives its campfire's state: burning with the minutes left, or extinguished", () => {
   // decision: D-72 "A character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick"
   // decision: D-68 "A campfire that burns out stays on its tile, extinguished"
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles"
   const [before, burning, extinguished] = fireRun(30, 63, 110);
   const fire = (state) =>
     tileList(state).rows.map((row) => [row.label, row.fire]);
@@ -176,6 +179,8 @@ test("a tile's row gives its campfire's state: burning with the minutes left, or
 
 test("a burning stick stands in its tile's row after the campfire, and only while it burns", () => {
   // decision: D-72 "A character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick"
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles"
+  // decision: D-385 "An item burning on a revealed tile, such as a lit stick, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns"
   const states = fireRun(50, 52, 53);
   assert.deepEqual(
     states.map((state) => tileList(state).rows.map((row) => row.fire)),
@@ -211,6 +216,7 @@ const LINE_TILES = [
 
 // Catches a line that gives the stock of another tile, or leaves out a resource of the map.
 test("the line of a hovered revealed tile gives its label and the stock of every resource of the map, „—” where it lacks one", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   const state = withTiles(LINE_TILES);
   assert.equal(
     tileLine(state, "1,0"),
@@ -228,6 +234,7 @@ test("the line of a hovered revealed tile gives its label and the stock of every
 
 // Catches a line that shows nothing, or a hovered tile's line, when no tile is hovered.
 test("with no tile hovered the line is the character's tile", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   assert.equal(
     tileLine(withTiles(LINE_TILES), null),
     "(1, 1): patyk — · jagoda 0 · mech — · włókno 6",
@@ -240,11 +247,13 @@ test("a hovered tile not revealed gives its label alone, with nothing of its sto
 });
 
 test("the character's tile not yet revealed gives its label alone", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   assert.equal(tileLine(sent(), null), "(1, 1)");
 });
 
 // Catches a line that keeps the stock of the last tile when the key names none, as after a restart.
 test("a key that names no tile of the map run gives the line of the character's tile", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   assert.equal(
     tileLine(withTiles(LINE_TILES), "9,9"),
     "(1, 1): patyk — · jagoda 0 · mech — · włókno 6",
@@ -258,6 +267,7 @@ test("without a map run there is no line", () => {
 
 // D-70: the campfire's state stands in the table alone.
 test("the line of a tile with a burning campfire gives its stock and nothing of the fire", () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   const [burning] = fireRun(63);
   const state = {
     ...burning,

@@ -267,6 +267,7 @@ const atEntrance = (picture) =>
   picture.tiles.find((t) => t.col === ENTRANCE.col && t.row === ENTRANCE.row);
 
 test("the campfire's icon stands on its tile, burning and extinguished, and on no other tile", () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile"
   const [before, burning, extinguished] = fireRun(30, 63, 110);
   assert.equal(before.run.campfires.length, 0);
   assert.deepEqual(
@@ -290,6 +291,7 @@ test("the campfire's icon stands on its tile, burning and extinguished, and on n
 
 // D-70: one icon for a burning campfire and one for an extinguished one, the same place and size.
 test("a burning campfire is drawn with campfire.svg and an extinguished one with wood-pile.svg, in the same place", () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one"
   const [burning, extinguished] = fireRun(63, 110);
   const lit = atEntrance(terrainPicture(burning)).campfire;
   const out = atEntrance(terrainPicture(extinguished)).campfire;
@@ -300,6 +302,7 @@ test("a burning campfire is drawn with campfire.svg and an extinguished one with
 });
 
 test("a campfire crafted and never lit is drawn with the extinguished campfire's icon", () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one"
   // Crafted at minute 40 with no minutes of burning; lighting ends at minute 45.
   const [crafted] = fireRun(42);
   assert.deepEqual(
@@ -313,6 +316,7 @@ test("a campfire crafted and never lit is drawn with the extinguished campfire's
 });
 
 test("the icon follows the minutes left: one minute is a burning campfire, none an extinguished one", () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one"
   const [burning] = fireRun(63);
   const withMinutes = (minutesLeft) => ({
     ...burning,
@@ -332,6 +336,8 @@ test("the icon follows the minutes left: one minute is a burning campfire, none 
 });
 
 test("the drawing shows no number of the campfire or of a burning stick", () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile"
+  // decision: D-385 "An item burning on a revealed tile, such as a lit stick, stands in that tile's row of the list of revealed tiles after the text of the tile's campfire, as „patyk — płonie, zostało 3 min” with its minutes of burning left, for as long as it burns; it has no icon on the drawing of the game map"
   // Minute 51: campfire 54 minutes left, a stick 2; minute 52: 53 and 1; minute 53: 52, no stick.
   const states = fireRun(51, 52, 53);
   assert.deepEqual(
@@ -351,6 +357,7 @@ test("the drawing shows no number of the campfire or of a burning stick", () => 
 });
 
 test("the campfire's icon stands beside the resources' icons, none overlapping, within the tile", () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile"
   const [burning] = fireRun(63);
   // The campfire's tile given every resource of the map, so the most icons a tile can hold.
   const all = Object.fromEntries(

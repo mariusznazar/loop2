@@ -515,6 +515,8 @@ test("the scene is the picture of the forest at the one size of D-349, with no t
 // thresholds are 35 °C and 30 % (D-337); the nature energy is never in `danger` (D-178).
 test("only the value below its threshold stands in danger, and the backpack reads its pieces of the cap", async () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero, in the role `text` at every value of the energy, zero included"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
   await withPage(async ({ document }) => {
     const base = sent();
     const character = {
@@ -585,6 +587,8 @@ const notesOf = (container) =>
 // 37 − 83 × 0.024 = 35.008 °C and the 116th at 100 − 116 × 0.6 = 30.4 %, worked out by hand as in
 // tests/sim/body.test.mjs.
 test("the body row stands in cells with the minutes of the needs under temperature and satiety from game minute zero, none under health and nature energy", async () => {
+  // decision: D-178 "The body row ends with „Energia natury {n}”, the mage's nature energy cut down to a whole number, from game minute zero"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered"
   await withPage(async ({ document }) => {
     const started = sent();
     assert.equal(started.run.minute, 0, "precondition: game minute zero");
@@ -794,6 +798,7 @@ test("the icons of the drawing take the colour text-strong, the icon of a stock 
 test("the drawing has a tile per tile of the map run, the icons of the resources a revealed tile holds dimmed at a stock of 0, and no text", async () => {
   // decision: D-41 "In the browser view `character` means that here is the character and here it is going, the target of its current move told from its place by shape, a thin dashed line in place of a thick solid one, never by colour; `tile-hidden` means a place not yet known, `tile-revealed` a place known, whose icons say what lies there"
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -886,6 +891,7 @@ test("the character's tile and the step's target carry an outline each, the targ
 
 // Catches a drawing that answers a click (D-19), and one that is reached by the keyboard as a control.
 test("the drawing is a picture: a click on a tile changes nothing, and nothing in it is a control", async () => {
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -908,6 +914,7 @@ test("the drawing is a picture: a click on a tile changes nothing, and nothing i
 // not mark its tile, and a line that does not come back to the character's tile (D-19).
 test("a hovered tile marks its row and the line under the drawing shows its numbers; a hovered row marks its tile; with none hovered the line is the character's tile", async () => {
   // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   await withPage(async ({ window, document }) => {
     const { container } = await draw(document, withTiles());
     const drawing = container.querySelector(".terrain-drawing");
@@ -1054,6 +1061,7 @@ function fireRun(minute) {
 // the other state, one that writes the words or minutes of its state on the drawing, and one whose
 // state creeps into the line under the drawing.
 test("the campfire's icon stands in its tile and its state in the row of the same key, and nowhere else", async () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles"
   await withPage(async ({ window, document }) => {
     const { container, show } = await draw(document, fireRun(63));
     for (const [state, text, file] of [
@@ -1104,6 +1112,8 @@ test("the campfire's icon stands in its tile and its state in the row of the sam
 // Catches a table that loses a column, a heading or the campfire's cell.
 test("the table has a column per resource of the map, a row per revealed tile with the stock, and the fire cell", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list"
+  // decision: D-125 "The body row, the backpack, the list of revealed tiles and the drawing of the game map show what the game state holds, whatever the Understanding holds: the body row shows satiety before the condition „Sytość poniżej” is discovered, and the backpack, the list of revealed tiles and the drawing of the game map show every item they hold"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, withTiles());
     const table = container.querySelector("table.tile-list");
