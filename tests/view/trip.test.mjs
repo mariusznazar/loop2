@@ -263,6 +263,7 @@ test("the mark shows at a solved map when a take entry cut by capacity and the e
 // Catches a line that writes the take list as asked, not as cut; a solved map that reads the chest
 // where the run takes from nowhere; and an empty take that stands without „nic”.
 test("the enter line gives what a send takes, cut by the chest, the capacity and the entry cap", () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   const take = (...entries) => ({ take: entries, bring: [] });
   const stocked = { pieces: { stick: 10, berry: 10 } };
   assert.equal(
@@ -313,6 +314,7 @@ test("the enter line gives what a send takes, cut by the chest, the capacity and
 // stands; a list with an item in it does not. Catches the mark on a non-empty list, and no mark on
 // an empty one.
 test("the loop mark stands when the bring list is empty, and only then", () => {
+  // decision: D-326 "Where the bring list of the program picked is empty"
   assert.equal(
     emptyLoopMark({ take: [entry("stick", 5)], bring: [] }),
     "Pętla nic nie zarobi do skrzynki",

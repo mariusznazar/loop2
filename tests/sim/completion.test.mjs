@@ -271,6 +271,7 @@ test("the program edited on a map run that has completed leaves its streak at 48
 });
 
 test("solving requirements present in data are all required and absent ones are ignored", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   const deep = MAPS.forestDeep;
   const run = {
     ...sent().run,
@@ -303,6 +304,7 @@ test("solving requirements present in data are all required and absent ones are 
 });
 
 test("Las gives the one requirement it has, the streak, with the count of the map run, met only at the number required", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   const run = sent().run;
   assert.deepEqual(solvingRequirements({ ...run, streak: 120 }, MAPS.forest), [
     { kind: "streak", count: 120, required: 480, met: false },
@@ -316,6 +318,7 @@ test("Las gives the one requirement it has, the streak, with the count of the ma
 });
 
 test("Las - deeper gives both requirements, the streak first and the beaten attacks second, each met on its own", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   const run = { ...sent().run, mapId: "forestDeep" };
   const deep = MAPS.forestDeep;
   assert.deepEqual(
@@ -399,6 +402,8 @@ test("solvingRequirements changes neither the map run nor the map", () => {
 });
 
 test("a map is sendable only after each map it opens after is solved", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   assert.deepEqual(canSendMap([], "forestEdge"), true);
   assert.deepEqual(canSendMap([], "forest"), false);
   assert.deepEqual(canSendMap([], "forestDeep"), false);
@@ -419,6 +424,8 @@ test("a map is sendable only after each map it opens after is solved", () => {
 });
 
 test("completing Skraj lasu solves it alone and opens Las, which a send then reaches", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
   const ready = createCharacter(
     setProgram(newKnowingGame(), EXPLORING).state,
     "Ala",

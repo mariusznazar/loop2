@@ -757,6 +757,7 @@ test("the camp follows the manual map run and the earning loops, and „Drużyna
 // Catches a control of sending left on Siedziba (D-330): the list „Program:”, „Wejdź”,
 // „Puść w pętlę”, a button that leads to the screen Mapy or a link other than a character's name.
 test("nothing on the screen sends a character or leads to the screen Mapy", async () => {
+  // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   await withPage(async (page) => {
     const state = { ...reported(), loops: { 2: LOOP } };
     await mount(page, propsOf(state));

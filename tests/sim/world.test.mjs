@@ -50,6 +50,8 @@ function after(run, minutes) {
 const neighbour = () => neighbours(handMade().tiles, entrance)[0].at;
 
 test("Las and its campfire and stick are the ones these numbers are worked out for", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
   assert.equal(forest.ambientTemperature, 25);
   assert.equal(CAMPFIRE.warmth, 0.5);
   assert.equal(CAMPFIRE.burnMinutes, 60);

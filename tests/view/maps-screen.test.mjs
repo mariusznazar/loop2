@@ -143,6 +143,10 @@ function endedRun(state) {
 // D-331, D-149: nothing is picked under #/mapy, and a map whose opener is unsolved is not listed:
 // a new game lists Skraj lasu alone.
 test("with no map named the list holds the open maps alone and the right area says to pick from it", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(newTeamOf("Ala")));
     assert.deepEqual(texts(page.root, ".maps-list-item"), ["Skraj lasu"]);
@@ -180,6 +184,8 @@ test("with no map named the list holds the open maps alone and the right area sa
 // after the name, and the row of the map named is the one marked.
 test("a row is a link to the map's address, a solved map says so after its name and the map named is the marked row", async () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map"
+  // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
   await withPage(async (page) => {
     const { screen } = await mount(
       page,
@@ -214,6 +220,8 @@ test("a row is a link to the map's address, a solved map says so after its name 
 
 // A map off the list is no map the screen draws a card for, since sending to it is refused (D-149).
 test("a map named whose opener is unsolved draws no card", async () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(teamOf("Ala"), "forestDeep"));
     assert.equal(page.root.querySelector(".maps-card"), null);
@@ -229,6 +237,10 @@ test("a map named whose opener is unsolved draws no card", async () => {
 // D-327: the card of Skraj lasu, the map a new game opens on, with sticks and berries alone: no
 // opener, no „Czyha”, no „Odbiera”.
 test("the card of Skraj lasu holds its heading, what it asks, its terrain and its sticks and berries alone", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   await withPage(async (page) => {
     await mount(page, propsOf(newTeamOf("Ala"), "forestEdge"));
     assert.equal(text(page.root, ".maps-card-name"), "Skraj lasu");
@@ -258,6 +270,10 @@ test("the card of Skraj lasu holds its heading, what it asks, its terrain and it
 // D-327: the card of Las, an unsolved Las with neither „Czyha” nor „Odbiera”, which Skraj lasu opens.
 test("the card of Las holds its heading, what it asks, its terrain and what lies there, and no part Las lacks", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
     assert.equal(text(page.root, ".maps-card-name"), "Las");
@@ -307,6 +323,10 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
 // D-327, D-328: a solved Las shows the mark, and Las — głębiej shows its opener, the wolf and the
 // one total number, to a player whose Understanding holds no wolf.
 test("the card of Las — głębiej names its opener, shows the wolf and the mean gap, and the Understanding stays as it was", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   await withPage(async (page) => {
     const state = solved(teamOf("Ala"));
     const understanding = JSON.stringify(state.understanding);
@@ -366,6 +386,9 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
 // D-327: the parts that no map of the data reaches today still stand in their roles when a map
 // reaches them. The case changes the data of the two maps for its length and restores them.
 test("a step other than the usual one, a resource that does not renew and the entry and exit caps stand in their roles", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-327 "The card of a map follows the card of the predecessor game"
+  // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
   const copies = Object.entries(MAPS).map(([id, map]) => [
     id,
     structuredClone(map),
@@ -428,6 +451,7 @@ test("a step other than the usual one, a resource that does not renew and the en
 
 // D-329: the sentence of an empty team stands under the heading.
 test("a team with no character reads the sentence under the heading of „Kto idzie”", async () => {
+  // decision: D-329 "A team with no character has in the section the sentence"
   await withPage(async (page) => {
     await mount(page, propsOf(withEdgeSolved(newGame()), "forest"));
     assert.equal(text(page.root, ".maps-who-heading"), "Kto idzie");
@@ -442,6 +466,8 @@ test("a team with no character reads the sentence under the heading of „Kto id
 // D-54, D-329, D-217, D-170: the characters stand in the order of their creation, and each one's
 // lines stand from the top in the order D-329 gives.
 test("the characters stand in the order of their creation, each with its lines from the top", async () => {
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -488,6 +514,7 @@ test("the characters stand in the order of their creation, each with its lines f
 
 // D-217, D-190: the team's one resurrection, not ready, reads the time left in danger at every character.
 test("a resurrection not ready reads the time left in danger at each character and turns ready with the clock", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const readyAt = NOW + 8 * HOUR;
     const state = withResurrection(teamOf("Ala", "Bob"), readyAt);
@@ -511,6 +538,7 @@ test("a resurrection not ready reads the time left in danger at each character a
 // D-170: the list shows the program of the row, in the list's order, and a change hands the page
 // the character and the program picked.
 test("the list „Program:” shows the program of the row in the order of the player's list and a change hands the page the pick", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const state = createProgram(teamOf("Ala", "Bob")).state;
     const [first, second] = state.programs;
@@ -539,6 +567,7 @@ test("the list „Program:” shows the program of the row in the order of the p
 // D-180, D-329: „Wejdzie: …” stands always; it is what the send takes, cut by the chest at a map not
 // yet solved and from nowhere at a solved one.
 test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map, from nowhere at a solved one, and „nic” where it takes none", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const plan = {
       take: [
@@ -579,6 +608,7 @@ test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map
 
 // D-188: no map of the data cuts a plan today, so the case gives Las an entry cap for its length.
 test("a map that cuts the plan shows the clipped-plan line and what enters cut", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   const copy = structuredClone(MAPS.forest);
   try {
     MAPS.forest.carryIn = 5;
@@ -656,6 +686,8 @@ test("„Wejdź” is the main button at each map, „Puść w pętlę” the pl
 
 // D-326: an empty list „Wynieś” says so beside „Puść w pętlę” in warning, and the button acts.
 test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” beside „Puść w pętlę”, which still acts", async () => {
+  // decision: D-326 "Where the bring list of the program picked is empty"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const empty = solved(teamOf("Ala"));
     const { screen, calls } = await mount(page, propsOf(empty, "forest"));
@@ -687,6 +719,7 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
 
 // D-251: the rehearsal mark stands under „Wejdź” at a solved map when the clipped take exceeds the chest.
 test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const plan = { take: [{ item: "stick", count: 3 }], bring: [] };
     const state = withChest(withPlan(teamOf("Ala"), plan), { stick: 2 });
@@ -720,6 +753,7 @@ test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solve
 // both sending buttons stand inactive; the line of a stopped loop does not stand here (D-245).
 test("a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   await withPage(async (page) => {
     const state = solved({
       ...teamOf("Ala", "Bob"),

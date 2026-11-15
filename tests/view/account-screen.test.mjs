@@ -2695,6 +2695,8 @@ function alaLoopingOlaFree() {
 // the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
 test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   await onPage(async ({ root }) => {
     const address = fakeAddress("#/");
     const { view } = await viewOf(alaLoopingOlaFree(), address);
@@ -2858,6 +2860,7 @@ test("the name in a character's row is a link to its screen Postać, which then 
 // buttons of the character shut.
 test("„Puść w pętlę” puts the character into a loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
+  // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   await onPage(async ({ root }) => {
     const address = fakeAddress("#/mapy/forest");
     const { view, held } = await viewOf(solvedAla(), address);
@@ -3009,6 +3012,7 @@ test("a change of the chest redraws the chest alone: the rows of Siedziba and th
 // D-251, D-329. Catches a mark in the wrong place or role, a mark at a map not yet solved,
 // and a mark that ignores the chest.
 test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   const MARK =
     "Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.";
   /** Ala with the forest solved, a take list of three sticks and `held` sticks in the chest. */
@@ -4017,6 +4021,10 @@ test("a reload at each of the seven addresses opens its screen and leaves the ad
 test("a reload at #/mapy/forest stays on Mapy with Las picked, #/mapy picks none, and the name of a character is a link to its screen Postać", async () => {
   // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
+  // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/mapy/forest", fullGame());
@@ -4211,6 +4219,7 @@ test("an address that leads to no existing screen opens the nearest one and has 
 test("a send leads to the screen of the map run and „Zakończ” to the screen Postać of that character, each with a new entry, and back after „Zakończ” lands on Postać", async () => {
   // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
+  // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/mapy/forest", twoPrograms());
@@ -4270,6 +4279,11 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
 // `follow` on the address the link itself holds.
 test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu and „Wejdź” to the screen of the map run in three clicks", async () => {
   // decision: D-280 "A player reaches a first map run from Siedziba in at most three clicks: the choice of a map, the map's row and „Wejdź”"
+  // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
+  // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
+  // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
+  // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const address = await reloadedAt(held, "#/", newWithCharacter());

@@ -38,6 +38,8 @@ test("only the map resources appear, each with its full stock", () => {
 
 // invariant: first-map-stock
 test("every tile of Skraj lasu holds its full stock of sticks and berries, whatever the seed", () => {
+  // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
+  // decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
   const seeds = [0, ...Array.from({ length: 200 }, (_, index) => index + 1)];
   seeds.push(4294967295);
   for (const seed of seeds) {
@@ -54,6 +56,7 @@ test("every tile of Skraj lasu holds its full stock of sticks and berries, whate
 });
 
 test("the entrance is the fixed one and lies on the map", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   for (const seed of [1, 2, 3]) {
     const { tiles, entrance } = drawLayout(map, seed);
     assert.deepEqual(
@@ -65,6 +68,7 @@ test("the entrance is the fixed one and lies on the map", () => {
 });
 
 test("Las — głębiej draws its entrance from every row-major tile after resources", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
   const deep = MAPS.forestDeep;
   const seedOne = drawLayout(deep, 1);
   assert.ok(

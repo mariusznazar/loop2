@@ -15,6 +15,9 @@ import { programFromRules, programWithRules } from "./program-fixture.mjs";
 import { withEdgeSolved } from "./understanding-fixture.mjs";
 
 test("the map Las has the size, entrance, step and resources of D-388", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   const forest = MAPS.forest;
   assert.equal(forest.name, "Las");
   assert.equal(forest.width, 4);
@@ -30,6 +33,10 @@ test("the map Las has the size, entrance, step and resources of D-388", () => {
 });
 
 test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () => {
+  // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
+  // decision: D-398 "Skraj lasu is a grid of 4 × 4 tiles with its entrance fixed at column 1, row 1"
+  // decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
+  // decision: D-398 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   assert.deepEqual(MAPS.forestEdge, {
     name: "Skraj lasu",
     width: 4,
@@ -50,6 +57,9 @@ test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () =
 });
 
 test("Las — głębiej has the map data, attacker, solving requirements and opening map of D-388", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,
@@ -258,6 +268,8 @@ test("health conditions use the approved thresholds and are revealed by an attac
 });
 
 test("Las has an ambient temperature of 25 degrees in its map data", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   assert.equal(MAPS.forest.ambientTemperature, 25);
   for (const [id, map] of Object.entries(MAPS)) {
     assert.equal(typeof map.ambientTemperature, "number", id);
@@ -732,6 +744,8 @@ test("an activity of 0 minutes from faulty data still finishes in the next minut
 });
 
 test("each map's solving condition holds a requirement, each a whole number above zero, and Las's is a streak of 480", () => {
+  // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   for (const [id, map] of Object.entries(MAPS)) {
     const requirements = Object.entries(map.solving);
     assert.ok(requirements.length >= 1, `map ${id} solving`);

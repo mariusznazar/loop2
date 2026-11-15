@@ -229,6 +229,7 @@ class ContentIdentifiers(unittest.TestCase):
 
     def test_browser_files_outside_the_data_name_no_content(self):
         # invariant: content-identifiers
+        # decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
         entries = ENTRIES
         files = [p for p in support.listed_files() if scanned(p)]
         self.assertTrue(files, "no TypeScript file under src/browser/ outside the data")

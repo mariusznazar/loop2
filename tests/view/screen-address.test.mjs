@@ -98,6 +98,7 @@ for (const [name, fragment] of NO_SCREEN_FRAGMENTS) {
   test(`a fragment with ${name} reads as no screen`, () => {
     // decision: D-281 "An address names a screen in the fragment after `#`"
     // decision: D-281 "The fragments of emailed links (D-156, D-224) stand apart from these, and after them the page opens Siedziba"
+    // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
     assert.equal(readScreenAddress(fragment), null);
   });
 }
@@ -143,6 +144,7 @@ test("the address of the maps reads as the maps screen", () => {
 
 test("the address of a map reads as its screen, by the identifier of the map in the data", () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
   assert.deepEqual(readScreenAddress("#/mapy/forest"), {
     kind: "map",
     mapId: "forest",
@@ -155,6 +157,7 @@ test("the address of a map reads as its screen, by the identifier of the map in 
 
 test("every screen writes the address that reads back to it", () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
   for (const [screen, address] of [
     [HEADQUARTERS, "#/"],
     [{ kind: "character", characterId: 7 }, "#/postac/7"],
