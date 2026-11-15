@@ -2819,11 +2819,11 @@ discovery included, „Restart”, „Zakończ” and the next send of a charact
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-21
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Restart” after a death at 16× going on at 16×; a character sent after „Zakończ” of a
-    map run at 4× moving at 4×; the first map run of a new game passing at 1×
-  - violates: „Restart”, „Zakończ” or a new send bringing the pace back to 1×; a stop at a
-    discovery changing the pace
+- **Verification:** tests: the pace the player picked staying through a pause, a resume,
+  „Restart”, „Zakończ” and the next send of a character, and a new game starting at 1×. For the
+  pause at a discovery, an agent compares a change with the part no test holds:
+  - complies: a stop at a discovery in a map run at 4×, after „Wznów”, going on at 4×
+  - violates: a stop at a discovery bringing the pace back to 1× or changing it otherwise
 - **Origin:** none
 
 *Rationale:* the pace is the player's setting of how fast a map run passes, kept from one attempt to
@@ -2844,13 +2844,14 @@ group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-21 · derives from D-44
-- **Verification:** an agent compares a change with the decision:
-  - complies: „4×” shown selected among the five buttons beside „Pauza” in the header of the screen
-    of a map run while the map run passes at 4×, each button made with the shared button selected in
-    its group
-  - violates: a select list of paces; the pace buttons standing in an area of the screen under the
-    header; a pace button that creates and styles a `<button>` of its own; the pace in force marked
-    in a way no shared control holds
+- **Verification:** tests: the five buttons „1×”, „2×”, „4×”, „8×” and „16×” standing in that
+  order right after „Pauza” in the header of the screen of a map run, a click on one asking for its
+  pace, and the button of the pace in force pressed and in the look of the button selected in its
+  group. For the shared control the buttons are made with, an agent compares a change with the part
+  no test holds:
+  - complies: each pace button made with the shared button selected in its group
+  - violates: a pace button that creates and styles a `<button>` of its own, though it looks the
+    same
 - **Origin:** none
 
 *Rationale:* the pace stands where the player watches the map run, beside „Pauza”, the other
@@ -2873,16 +2874,21 @@ stands, together with the number of beaten attacks. Every switch of the characte
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-164
-- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save · trip-plan-progress. An agent compares a change with the decision:
-  - complies: „↑” on the first program rule leaving a streak of 120 at 120; a program rule's action
-    changed in a pause setting the streak to 0 while the character's action in progress goes on; a
-    rule group renamed setting the streak to 0; „Porzuć zmiany” after a rule was added to the copy
-    setting the streak to 0; „Zapisz w programie” leaving a streak of 120 at 120; „Program 2” edited
-    during a map run on the copy of „Program” leaving the streak; a switch to a program of the same
-    rules setting the streak and the beaten attacks to 0
-  - violates: „↑” on the first program rule setting the streak to 0; a program rule deleted in a
-    pause leaving the streak as it stood; „Zapisz jako nowy program” setting the streak to 0; a
-    switch leaving the beaten attacks as they stood
+- **Verification:** invariants: streak-program-change · saved-program-edit · copy-save · trip-plan-progress. tests: an edit
+  that changes the copy's rules setting the beaten attacks of the map run to zero together with the
+  streak; „Porzuć zmiany” setting the streak to zero in a map run in progress and leaving it after a
+  death; an edit that hands back the same rules and rule groups leaving the streak; an edit of a
+  saved program leaving the beaten attacks; the map run of a restart starting with zero beaten
+  attacks; a game minute of loss to cold leaving the beaten attacks as they stood. For the beaten
+  attacks at the other acts and at hunger, an agent compares a change with the part no test and no
+  invariant holds:
+  - complies: „Porzuć zmiany” and a switch, at one beaten attack, setting the beaten attacks to 0;
+    „Zapisz w programie”, „Zapisz jako nowy program” and „↑” on the first program rule leaving one
+    beaten attack at 1; a game minute of loss to hunger leaving the beaten attacks as they stood
+  - violates: a switch or „Porzuć zmiany” leaving the beaten attacks as they stood; a save of the
+    copy or „↑” on the first program rule setting the beaten attacks to 0; a game minute of loss to
+    hunger setting the beaten attacks to 0; a restart carrying over the beaten attacks of the map
+    run it replaces
 - **Origin:** none
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps
@@ -2912,16 +2918,19 @@ opens another, „Otwarte: {mapa} →” in the window, the way to the map it op
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: after a completion in game minute 480 of Las „Teraz” reads „Las rozwiązany” in
-    `positive` and the clock „Minuta 480”, the window titled „Las rozwiązany” in `positive` standing
-    over the screen under the menu bar, „Pauza” and the pace buttons are gone, the game minute stays at
-    480, „Restart” starts game minute zero on the same seed, and „Zakończ” returns to the screen Postać
-    of that character, the scene under the window in full gold and still so when „✕” uncovers it
-  - violates: the game going back to the headquarters with a message the moment the map run
-    completes; „Pauza” or a pace button standing after a completion; the text of the completion
-    written in a role other than `positive`; a completion of a map that opens another whose window has
-    no „Otwarte: {mapa} →”; the scene after a completion left in the tint of the required streak
+- **Verification:** tests: no game minute passing after a completion for that map run, by span or
+  by real time; „Teraz” reading the map's completion text in `positive`; the clock in the header
+  standing at the game minute of the completion with no „ (pauza)”; the end-of-run window opening by
+  itself at a completion over the header and the areas of the screen, titled by the map's
+  completion text in `positive`; the scene's tint standing at full gold; „Pauza” and the pace
+  buttons gone and „Restart” and „Zakończ” standing, a restart starting game minute zero on the
+  same seed; „Otwarte: {mapa} →” in the window after a completion of a map that opens another, and
+  only then, leading to the card of the map it opened. For the menu bar and the scene after „✕”, an
+  agent compares a change with the part no test holds:
+  - complies: the menu bar standing above the window after a completion; „✕” uncovering the scene
+    still in full gold
+  - violates: the window covering the menu bar; the scene after „✕” left in the tint of the
+    required streak
 - **Origin:** none
 
 *Rationale:* both ends of a map run behave alike: the player sees the state of the game minute in
@@ -2964,18 +2973,13 @@ During a map run the header shows a bar with numbers for the requirements presen
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a paused map run of Las with the clock „Minuta 312 (pauza)” and the bar „Passa
-    120/480” in the header of the screen of the map run; on Las — głębiej „Passa 120/540” before
-    „Pokonane napaści 1/2”, each with its bar; „Pokonane napaści 2/2” with its name, its numbers and
-    its fill in `positive` while „Passa 120/540” beside it stays unmet; after a death of cold the bar
-    „Passa 0/480” in the header; the sentence of Las standing on the card of Las, in its part
-    „Żąda”, and that of Las — głębiej, „Las — głębiej — 540 minut bez utraty zdrowia od zimna i
-    głodu i bez zmiany programu oraz dwie pokonane napaści wilka”, on its card
-  - violates: a bar with no numbers beside it; „Passa 120/480” standing in the world area under the
-    header; a streak target shown for a map that asks for beaten attacks alone; the bar gone from the
-    header after the end of a map run; a met requirement whose fill turns green while its name and
-    numbers do not; the sentence of the condition written in the code of the screen Mapy
+- **Verification:** tests: the bar right after the clock in the header of the screen of a map run,
+  with „Passa {streak}/{required}” and „Pokonane napaści {count}/{required}” for the requirements
+  the map's data holds alone, in that order, each with its bar; a met requirement's fill, name and
+  numbers in `positive` while an unmet one beside it stays as it was; the bar standing after a death
+  and after a completion, at the stopped game minute with the streak as it stands, „Passa 0/480”
+  after a death of cold; the sentence of each map's solving condition standing in its data and on
+  its card under „Żąda”.
 - **Origin:** none
 
 *Rationale:* the player sees during a map run how far the program has come towards the map's
@@ -3005,11 +3009,12 @@ From the first completion of a map by any of the player's characters, the list a
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: after the first completion of Las, the row of Las on the list and the card of Las
-    reading „rozwiązana” in `positive`, also after a later map run on Las ends in death
-  - violates: the mark shown on the screen after the completion and missing from the list and the
-    card; the mark gone once a later map run on Las ends in death
+- **Verification:** tests: the mark „rozwiązana” after the name of each solved map on the list
+  and on its card, and none at an unsolved map; a map staying solved, once, through a restart,
+  „Zakończ”, a send, a later completion and a later death. For the role of the mark, an agent
+  compares a change with the part no test holds:
+  - complies: „rozwiązana” on the row and on the card of Las in `positive`
+  - violates: „rozwiązana” in `text` or in `text-secondary`
 - **Origin:** none
 
 *Rationale:* a solved map stays solved, so the player sees where maps stand which of them a program
@@ -3026,9 +3031,11 @@ the bar of the solving condition in the header (D-133).
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the window after a death of cold reading „najdłuższa passa 116/480” with its bar, while the bar in the header reads „Passa 0/480”; the same longest streak in the window after a reload of the page
-  - violates: the window after a death or a completion with no longest streak; a longest streak that a load of the saved game state loses
+- **Verification:** tests: a manual map run starting with a longest streak of 0, keeping the
+  longest streak it reached through a fall of the streak to 0, a change of the program, a fight and
+  a completion, binding it anew at a restart and keeping it through a load; the end-of-run window
+  showing it as „najdłuższa passa {longest}/{required}” against the map's streak, with a bar of the
+  form of the header's, in `positive` where met, also after a reload.
 - **Origin:** none
 
 *Rationale:* at a death of cold or hunger the streak stands at zero, so only the longest streak tells how near the map run came, and it gives a measure of progress between attempts. The streak a map's solving condition counts is the one the bar of the solving condition in the header shows, and the longest streak stands in the same form, as the end of loop shows a bar of its longest streak. The field stands in the game state, so the longest streak comes back after a load and the window shows it after a reload as well (D-212, D-369). Accepted with it: one more field in the game state and a bump of the version of the save, which a change of the shape of the game state brings once, in its own change, and which discards a saved game state of the older version (D-206).
@@ -3047,13 +3054,12 @@ of the trip plan alone leaves it.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: streak-program-change · trip-plan-progress. For the condition in the map's data and the
-  rest of the streak, an agent compares a change with the decision:
-  - complies: Las — głębiej asking for a streak and two beaten attacks, written in its data
-  - violates: a solving condition coded in the engine for one map; a game minute in which the
-    character is chilled growing the streak; a game minute in which the character is starving
-    leaving the streak as it stood; a streak broken by a wolf's bite; a switch of the character to
-    another program leaving the streak as it stood
+- **Verification:** invariants: streak-program-change · trip-plan-progress. tests: the solving
+  condition of each map, a streak, beaten attacks or both, standing in its data, and a map run
+  meeting it only where it meets every requirement present; the map each map opens after named in
+  its data, and a map sendable only once that map is solved; the streak growing by one in each game
+  minute with no health lost to cold or hunger, whatever the health, in a minute of combat and
+  through the wounds of combat, and set to zero by a game minute of loss to cold or to hunger.
 - **Origin:** none
 
 *Rationale:* a map checks whether a program survives on its own, not whether the player keeps fixing
@@ -3275,9 +3281,10 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-136 · derives from D-53
-- **Verification:** an agent compares a change with the decision:
-  - complies: solving Las opening Las — głębiej, which then stands on the list of the screen Mapy with its card for every character
-  - violates: the simulation sending to Las — głębiej before Las is solved; Las — głębiej standing on the list before Las is solved
+- **Verification:** tests: a map whose opener is unsolved absent from the list of the screen Mapy
+  and drawing no card where its address names it, and standing on the list with its card once its
+  opener is solved; the availability of the simulation read from the game's solved maps alone,
+  refusing a send to a map whose opener is unsolved and reaching it once that map is solved.
 - **Origin:** none
 
 *Rationale:* A shared availability check makes the visible offer and the simulation’s permission agree; the end of the map run that opens a map names the way to it.
@@ -4604,7 +4611,11 @@ nothing.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-189
-- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end.
+- **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end. tests: the
+  mark of a manual run of a solved map coming back with a load, a load refusing a map run ended in
+  death whose mark disagrees with its map's being solved, and the screen of such a run giving its
+  line after its end and after a load; a restart after the completion that solved the map marked as
+  such a run, taking its equipment from nowhere and leaving the chest as it was.
 - **Origin:** none
 
 *Rationale:* a map run restart is a map run the player starts, and once a completion has solved the
@@ -4621,7 +4632,13 @@ już rozwiązana: to przejście nic nie płaci i nic nie bierze ze skrzynki.” 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-189 · derives from D-214
-- **Verification:** none
+- **Verification:** tests: on a manual run of a solved map, from its start, after a completion and
+  after a death, the line „Mapa jest już rozwiązana: to przejście nic nie płaci i nic nie bierze ze
+  skrzynki.” in the world area, right under the body row and above „Wprawa w tym przejściu”, and no
+  such line on a map run that pays. For the role of the line, an agent compares a change with the
+  part no test holds:
+  - complies: the line in `text-secondary`
+  - violates: the line in `text` or in `warning`
 - **Origin:** none
 
 *Rationale:* the player tuning a program on a solved map reads from the start of the map run that
