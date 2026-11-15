@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { DatabaseSync } from "node:sqlite";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
 import { AccountDatabase } from "../dist/server/database.js";
 
@@ -366,4 +368,352 @@ test("a role change leaves the block, the previous-save privilege, the sessions,
   assert.deepEqual(sessionsOf(raw, privileged.id), ["kept"]);
   assert.equal(linkSpent(raw, "kept-link"), 0);
   assert.deepEqual(database.readSavedGame(privileged.id), savedGame);
+});
+
+const roleCommand = fileURLToPath(
+  new URL("../dist/server/account-role.js", import.meta.url),
+);
+const blockCommand = fileURLToPath(
+  new URL("../dist/server/account-block.js", import.meta.url),
+);
+const previousSaveCommand = fileURLToPath(
+  new URL("../dist/server/account-previous-save.js", import.meta.url),
+);
+const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
+  .href;
+
+// Runs a command as the container runs it: its own process, with the database
+// path as its only setting, under the stand-in for `node:sqlite` when `mode`
+// names one.
+function runCommand(script, args, databasePath, mode) {
+  const env = { ...process.env };
+  for (const name of Object.keys(env))
+    if (name.startsWith("LOOP2_")) delete env[name];
+  if (databasePath !== undefined) env.LOOP2_DATABASE_PATH = databasePath;
+  const command = [script, ...args];
+  if (mode !== undefined) {
+    env.LOOP2_CHECK_STANDIN = mode;
+    command.unshift("--import", standin);
+  }
+  const child = spawn(process.execPath, command, {
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let stdout = "";
+  let stderr = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk) => {
+    stdout += chunk;
+  });
+  child.stderr.setEncoding("utf8").on("data", (chunk) => {
+    stderr += chunk;
+  });
+  return new Promise((resolve, reject) => {
+    const deadline = setTimeout(() => {
+      child.kill();
+      reject(new Error("command deadline"));
+    }, 10_000);
+    child.once("error", (error) => {
+      clearTimeout(deadline);
+      reject(error);
+    });
+    child.once("close", (code) => {
+      clearTimeout(deadline);
+      resolve({ code, stdout, stderr, output: stdout + stderr });
+    });
+  });
+}
+
+// A session that the command's own pruning by the real clock keeps.
+function liveSession(database, id, accountId) {
+  database.saveSession(id, {
+    accountId,
+    data: "{}",
+    expiresAt: Date.now() + DAY,
+  });
+}
+
+test("the role command gives and takes the owner role by address beside an open connection and says which outcome it reached", async (t) => {
+  // decision: D-410 "The role `owner` is given and taken by the command `account-role`, run in the `loop2` container and naming the account by its email address normalized as at login, which reports that the account was made an owner or made a player, that it already was so, or that no account has that address, which changes nothing when it refuses and ends no session and stops no link, and which only a human runs on the server (D-12)."
+  // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
+  const { path, database } = await fixture(t, { now: () => Date.now() });
+  database.createAccount("player@example.test", "encoded-hash");
+  const runRole = (args) => runCommand(roleCommand, args, path);
+  const roleOf = () => database.findAccountByEmail("player@example.test").role;
+
+  // D-99: the address is normalized as login normalizes it.
+  const made = await runRole(["owner", " Player@EXAMPLE.test "]);
+  assert.equal(made.code, 0, made.output);
+  assert.equal(roleOf(), "owner");
+
+  const already = await runRole(["owner", "player@example.test"]);
+  assert.equal(already.code, 0, already.output);
+  assert.equal(roleOf(), "owner");
+
+  const taken = await runRole(["player", "player@example.test"]);
+  assert.equal(taken.code, 0, taken.output);
+  assert.equal(roleOf(), "player");
+
+  const again = await runRole(["player", "player@example.test"]);
+  assert.equal(again.code, 0, again.output);
+  assert.equal(roleOf(), "player");
+
+  const unknown = await runRole(["owner", "nobody@example.test"]);
+  assert.equal(unknown.code, 4, unknown.output);
+  assert.match(
+    unknown.stderr,
+    /No account has the address nobody@example\.test\. Nothing changed\./,
+  );
+
+  const outcomes = [made, already, taken, again].map((run) =>
+    run.stdout.trim(),
+  );
+  for (const outcome of outcomes) {
+    assert.match(outcome, /player@example\.test/, "it names the account");
+  }
+  assert.equal(new Set(outcomes).size, 4, "each outcome reads differently");
+  assert.match(outcomes[1], /nothing changed/i, "a repeated owner says so");
+  assert.match(outcomes[3], /nothing changed/i, "a repeated player says so");
+});
+
+test("the role command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
+  // decision: D-410 "The role `owner` is given and taken by the command `account-role`, run in the `loop2` container and naming the account by its email address normalized as at login, which reports that the account was made an owner or made a player, that it already was so, or that no account has that address, which changes nothing when it refuses and ends no session and stops no link, and which only a human runs on the server (D-12)."
+  const { path, database, raw } = await fixture(t, { now: () => Date.now() });
+  const account = database.createAccount("player@example.test", "encoded-hash");
+  liveSession(database, "one", account.id);
+  const unchanged = (label) => {
+    assert.equal(database.findAccountById(account.id).role, "player", label);
+    assert.equal(database.findAccountById(account.id).blocked, false, label);
+    assert.ok(
+      raw.prepare("SELECT id FROM sessions WHERE id = 'one'").get(),
+      `${label}: the session stays`,
+    );
+  };
+  const refusals = [];
+  for (const [label, args, exitCode] of [
+    ["no arguments", [], 2],
+    ["no address", ["owner"], 2],
+    ["an extra argument", ["owner", "player@example.test", "now"], 2],
+    ["an unknown role", ["block", "player@example.test"], 2],
+    ["an address without a valid form", ["owner", "player-example.test"], 2],
+    ["an unknown address", ["owner", "nobody@example.test"], 4],
+  ]) {
+    const run = await runCommand(roleCommand, args, path);
+    assert.equal(run.code, exitCode, label);
+    assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
+    unchanged(label);
+    refusals.push(run);
+  }
+
+  const absent = join(path, "..", "absent.sqlite");
+  for (const [label, databasePath] of [
+    ["an unset database path", undefined],
+    ["an empty database path", ""],
+    ["an in-memory database", ":memory:"],
+    ["a database file that does not exist", absent],
+  ]) {
+    const run = await runCommand(
+      roleCommand,
+      ["owner", "player@example.test"],
+      databasePath,
+    );
+    assert.equal(run.code, 3, label);
+    assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
+    refusals.push(run);
+  }
+  await assert.rejects(access(absent), "the command creates no database");
+  unchanged("a refused database");
+
+  // Another connection holds the write lock past the command's busy timeout.
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runCommand(
+      roleCommand,
+      ["owner", "player@example.test"],
+      path,
+    );
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.equal(busy.code, 1, busy.output);
+  assert.ok(busy.output.trim() !== "", "the database failure is reported");
+  unchanged("a busy database");
+  refusals.push(busy);
+
+  for (const run of refusals)
+    assert.doesNotMatch(
+      run.output,
+      /encoded-hash|\bone\b|database is locked/i,
+      "no hash, session identifier or database error detail",
+    );
+});
+
+test("a database file that is no database fails with the JSON line of the failure first, and changes nothing", async (t) => {
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
+  // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
+  const { path } = await fixture(t, { now: () => Date.now() });
+  const garbage = join(path, "..", "garbage-secret-name.sqlite");
+  await writeFile(garbage, "this is not an SQLite database at all, padding");
+
+  const run = await runCommand(
+    roleCommand,
+    ["owner", "player@example.test"],
+    garbage,
+  );
+
+  assert.equal(run.code, 1, run.output);
+  assert.match(run.stderr, /Nothing changed; run the command again\./);
+  const lines = run.stderr.split(/\r?\n/);
+  assert.equal(lines[0][0], "{", "the JSON line comes first");
+  const { failure, kind, code, errcode, place } = JSON.parse(lines[0]);
+  assert.deepEqual(
+    { failure, kind, code, errcode, place },
+    {
+      failure: "account-role",
+      kind: "Error",
+      code: "ERR_SQLITE_ERROR",
+      errcode: 26,
+      place: "account-role.change",
+    },
+    "SQLite's number 26 says the file is no database",
+  );
+  assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
+});
+
+test("what no code of the role command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
+  // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save`, `account-role` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
+  const { path, database } = await fixture(t, { now: () => Date.now() });
+  database.createAccount("player@example.test", "encoded-hash");
+  const run = await runCommand(
+    roleCommand,
+    ["owner", "player@example.test"],
+    path,
+    "uncaught",
+  );
+  assert.equal(run.code, 1, run.output);
+  assert.deepEqual(JSON.parse(run.stderr.trim()), {
+    failure: "uncaught",
+    kind: "RangeError",
+    code: "ERR_STANDIN_FAULT",
+    place: "account-role",
+  });
+});
+
+test("the role command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
+  // decision: D-252 "A change of the role of an account and each operation of the owner panel are such changes: each leaves one line with the number of the account changed, written after a change only, and no address and no number of the account of the owner who acted."
+  const { path, database } = await fixture(t, { now: () => Date.now() });
+  const account = database.createAccount("player@example.test", "encoded-hash");
+  database.createAccount("other@example.test", "encoded-hash");
+  const eventsOf = (run) =>
+    run.stdout
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith("{"))
+      .map((line) => {
+        assert.doesNotMatch(line, /example\.test/);
+        return JSON.parse(line);
+      });
+  const run = (args) => runCommand(roleCommand, args, path);
+  const address = "player@example.test";
+
+  assert.deepEqual(eventsOf(await run(["owner", address])), [
+    { event: "account-owner-granted", accountId: account.id },
+  ]);
+  assert.deepEqual(eventsOf(await run(["owner", address])), []);
+  assert.deepEqual(eventsOf(await run(["player", address])), [
+    { event: "account-owner-revoked", accountId: account.id },
+  ]);
+  assert.deepEqual(eventsOf(await run(["player", address])), []);
+  assert.deepEqual(eventsOf(await run(["owner", "nobody@example.test"])), []);
+});
+
+test("the block and the previous-save commands act on an account with the owner role as on a player's, and a refused or failed command changes nothing", async (t) => {
+  // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
+  // decision: D-137 "The panel never blocks an account that has the owner role, the caller's own included: the transaction of the block reads the role and the server answers JSON 409 with the code `owner-not-blockable`, also where a second connection gave the role just before the block, and the command stays beside the panel as the emergency way, for a panel that does not work and for an account with the owner role that is to be blocked."
+  const { path, database, raw } = await fixture(t, { now: () => Date.now() });
+  const owner = database.createAccount("owner@example.test", "encoded-hash");
+  assert.equal(
+    database.setAccountRole("owner@example.test", "owner").outcome,
+    "made-owner",
+  );
+  liveSession(database, "one", owner.id);
+  database.issueLink(
+    {
+      accountId: owner.id,
+      purpose: "email-confirmation",
+      tokenDigest: digest("confirm"),
+      lifetimeMs: DAY,
+    },
+    limits,
+  );
+  const address = "owner@example.test";
+  const stored = () => database.findAccountById(owner.id);
+
+  const blocked = await runCommand(blockCommand, ["block", address], path);
+  assert.equal(blocked.code, 0, blocked.output);
+  assert.match(blocked.stdout, /Blocked owner@example\.test/);
+  assert.equal(stored().blocked, true);
+  assert.equal(stored().role, "owner", "a block leaves the role");
+  assert.deepEqual(sessionsOf(raw, owner.id), [], "a block ends the sessions");
+  assert.equal(linkSpent(raw, "confirm"), 1, "a block stops the links");
+
+  const blockedAgain = await runCommand(blockCommand, ["block", address], path);
+  assert.equal(blockedAgain.code, 0, blockedAgain.output);
+  assert.match(blockedAgain.stdout, /was already blocked/);
+
+  const unblocked = await runCommand(blockCommand, ["unblock", address], path);
+  assert.equal(unblocked.code, 0, unblocked.output);
+  assert.match(unblocked.stdout, /Unblocked owner@example\.test/);
+  assert.equal(stored().blocked, false);
+  assert.equal(stored().role, "owner");
+  assert.deepEqual(sessionsOf(raw, owner.id), [], "an unblock restores none");
+
+  const granted = await runCommand(
+    previousSaveCommand,
+    ["grant", address],
+    path,
+  );
+  assert.equal(granted.code, 0, granted.output);
+  assert.match(
+    granted.stdout,
+    /Granted the previous-save privilege to owner@example\.test/,
+  );
+  assert.equal(stored().previousSaveAllowed, true);
+  assert.equal(stored().role, "owner");
+
+  const revoked = await runCommand(
+    previousSaveCommand,
+    ["revoke", address],
+    path,
+  );
+  assert.equal(revoked.code, 0, revoked.output);
+  assert.match(
+    revoked.stdout,
+    /Revoked the previous-save privilege of owner@example\.test/,
+  );
+  assert.equal(stored().previousSaveAllowed, false);
+  assert.equal(stored().role, "owner");
+
+  const unknownBlock = await runCommand(
+    blockCommand,
+    ["block", "nobody@example.test"],
+    path,
+  );
+  assert.equal(unknownBlock.code, 4, unknownBlock.output);
+  const unknownGrant = await runCommand(
+    previousSaveCommand,
+    ["grant", "nobody@example.test"],
+    path,
+  );
+  assert.equal(unknownGrant.code, 4, unknownGrant.output);
+
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runCommand(blockCommand, ["block", address], path);
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.equal(busy.code, 1, busy.output);
+  assert.equal(stored().blocked, false, "a failed block changes nothing");
+  assert.equal(stored().role, "owner");
 });
