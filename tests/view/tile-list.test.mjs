@@ -162,6 +162,8 @@ function fireRun(...minutes) {
 }
 
 test("a tile's row gives its campfire's state: burning with the minutes left, or extinguished", () => {
+  // decision: D-72 "A character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick"
+  // decision: D-68 "A campfire that burns out stays on its tile, extinguished"
   const [before, burning, extinguished] = fireRun(30, 63, 110);
   const fire = (state) =>
     tileList(state).rows.map((row) => [row.label, row.fire]);
@@ -173,6 +175,7 @@ test("a tile's row gives its campfire's state: burning with the minutes left, or
 });
 
 test("a burning stick stands in its tile's row after the campfire, and only while it burns", () => {
+  // decision: D-72 "A character crafts a campfire and lights a stick on a revealed tile, as it gathers; on a tile not yet revealed, the program passes over a program rule that crafts a campfire or lights a stick"
   const states = fireRun(50, 52, 53);
   assert.deepEqual(
     states.map((state) => tileList(state).rows.map((row) => row.fire)),

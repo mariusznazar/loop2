@@ -220,6 +220,7 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
 
 test("nature energy stands through the five combat minutes and comes back after them", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
+  // decision: D-377 "In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5"
   // D-71, D-377: in the minutes of combat nature energy stands, as the needs and recovery do; the
   // next ordinary minute, satiety 100 falling to 99.4, gives back 0.5.
   let state = fighting(KICK, 235);
@@ -238,6 +239,7 @@ test("nature energy stands through the five combat minutes and comes back after 
 
 test("a lighting interrupted by an attack takes neither its sticks nor its nature energy", () => {
   // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
+  // decision: D-63 "The sticks and the nature energy leave together when the lighting finishes, and a lighting an attack interrupts takes neither"
   // D-63. Satiety 50 falls below 60, so no energy comes back meanwhile and the energy shows only
   // a payment.
   const state = prepared();

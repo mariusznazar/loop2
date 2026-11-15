@@ -413,6 +413,9 @@ test("Obchód is guaranteed, lasts 40 minutes, takes at most 12, available stock
 test("clean flame needs no stick but still costs ten energy; item lighting still needs its piece", () => {
   // decision: D-394 "The simulation keeps `actionFeasible`, the function that tells whether an action can start now"
   // decision: D-394 "A clean-up does not remove it because the game has no caller of it"
+  // decision: D-63 "With the bought branch „Czysty płomień”, „Zapal — ognisko” requires and consumes no sticks and costs the nature energy of ordinary lighting"
+  // decision: D-177 "A mage carries out Płomyk while its nature energy reaches the spell's price"
+  // decision: D-175 "Each spell costs the mage nature energy"
   const action = { kind: "lightCampfire" };
   const run = ready(action, ranks("flameSpell", { cleanFlame: 1 }));
   const fixture = {

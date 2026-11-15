@@ -403,6 +403,7 @@ test("the archetype and the pace are in data", () => {
 // The expectations below come from D-118, D-120, D-121 and D-195.
 
 test("the character skills grow the listed pairs of verb and target, and the walks stand in none", () => {
+  // decision: D-63 "A mage lights a campfire and a stick with the spell Płomyk: the actions „Zapal — ognisko” and „Zapal — patyk”"
   // D-120: the character skills and the action pairs each one grows.
   assert.deepEqual(
     Object.values(SKILLS).map((skill) => [skill.name, skill.actions]),

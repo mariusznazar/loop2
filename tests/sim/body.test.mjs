@@ -354,6 +354,7 @@ function sentWith(fields, program = EXPLORING) {
 }
 
 test("every map run starts with full nature energy, 100: a send, a restart and a send after „Zakończ”", () => {
+  // decision: D-176 "A mage starts every map run, a new one and one started by „Restart”, with its nature energy at the cap"
   const first = sent();
   assert.equal(first.run.natureEnergy, 100);
   const spent = advanceMinutes(sentWith({ natureEnergy: 12 }), 3).state;
@@ -364,6 +365,8 @@ test("every map run starts with full nature energy, 100: a send, a restart and a
 
 test("nature energy comes back by 0.5 in a game minute whose satiety after its fall is 60 or above", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-377 "In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5, up to its cap; in a game minute in which satiety after the fall is below 60 it comes back by nothing"
+  // decision: D-175 "Each spell costs the mage nature energy, which comes back by itself only while the mage is well fed"
   const cases = [
     [60.6, 40.5, "60.6 − 0.6 = 60, well fed"],
     [60.5, 40, "60.5 − 0.6 = 59.9, not well fed"],
@@ -380,6 +383,7 @@ test("nature energy comes back by 0.5 in a game minute whose satiety after its f
 });
 
 test("nature energy does not come back above its cap of 100", () => {
+  // decision: D-377 "In a game minute outside combat in which the mage's satiety, taken after its fall in that minute, is at least 60, the mage's nature energy comes back by 0.5, up to its cap"
   for (const [from, to] of [
     [99.75, 100],
     [100, 100],
