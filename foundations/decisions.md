@@ -4145,9 +4145,15 @@ A character skill grows by practice, which counts only its actions that ended in
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: gathering that adds practice only when an item is gained; a level computed from saved practice
-  - violates: a shop selling a level of a character skill; a missed gathering that adds practice; a second counter inside one character skill
+- **Verification:** tests: practice counting only the actions that ended in effect; a character
+  skill held as one practice counter, on one curve of thresholds, and the ranks of its branches
+  bought, a saved character skill holding any other key refused, and its level, its free points and
+  the effects of its ranks computed from these two; each level giving one point, the next level
+  needing more practice than the one before, and the points of a tree buying ranks of its own
+  branches at prices that differ between branches. For a character skill never being bought, an
+  agent compares a change with the part no test holds:
+  - complies: a level of a character skill reached only through the practice of its actions
+  - violates: a shop selling a level of a character skill, or practice in it
 - **Origin:** none
 
 *Rationale:* buying is shallow — one easy map run nearly pays for a character skill, which makes learning a coupon. Practice ties growth to what the program actually does, so choosing a program is choosing what grows, and the program is not only the solution of a map but an investment in a character. Prices differ between branches, or an extra piece gathered would always beat a percentage of chance. Two counters inside one character skill would quietly speed up the whole economy, so a finer split makes a new character skill. Accepted with it: practice grows only what the program uses, and a program uses what is already best, so the weaker character skills tend to stay at the first level, and the finer character skills are split, the more of them stand so; only places where the stronger option is absent, or does not count toward the goal, can answer that, and where there are none, a finer split makes empty trees.
@@ -4160,9 +4166,13 @@ A character is described by traits, character skills and the predispositions of 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: carrying capacity as a trait; accuracy with a one-handed weapon as a branch of that weapon's tree
-  - violates: a "strength" trait that raises the damage of one weapon
+- **Verification:** tests: a created character holding its archetype, its traits and its character
+  skills, its traits holding carrying capacity alone. For a number that acts in one action belonging
+  to the tree of that action's character skill, an agent compares a change with the part no test
+  holds:
+  - complies: accuracy with a one-handed weapon added as a branch of that weapon's tree
+  - violates: a number that acts only in eating held at the archetype or at the action „Zjedz”
+    rather than as a branch of the tree of „Jedzenie”
 - **Origin:** none
 
 *Rationale:* numbers and what a character can say in a program are not alternatives: they are three roles. A trait acts always, so it may be a number without becoming a slider, provided it grows only where the challenge grows with it. A predisposition sets characters apart by access rather than size, so two characters with the same numbers and other predispositions need two different programs, neither better; that is the mechanism a second archetype, and a branching of archetypes, would require.
@@ -4175,9 +4185,15 @@ An action ending in effect adds one practice to the character skill its pair of 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a patrol bringing several pieces and adding one practice; eating a berry at full satiety adding one practice
-  - violates: a dodge with no strike adding practice; practice for each tile a scout reveals
+- **Verification:** tests: one practice added in the game minute of the effect of an exploration,
+  also of a scout revealing seven tiles, of a gathering, also of two pieces, of „Obchód”, of a
+  crafting, a feeding, a lighting of a campfire and of a stick, of eating, also at full satiety,
+  and of each blow with a stick, the blows of a combat added in the game minute it resolves, and of
+  each dodge that removes damage from a strike; none for a gathering that misses, an action with no
+  effect, or a dodge that no strike follows. For the practice of a kick, an agent compares a change
+  with the part no test holds:
+  - complies: a kick that deals damage adding one practice to „Kopanie” in the turn it lands
+  - violates: a kick adding one practice for each point of damage it deals
 - **Origin:** none
 
 *Rationale:* The counter measures successful actions, not their quantity, so an action bringing several pieces or tiles, as „Obchód” and „Zwiad” do, adds one practice, and a gathering whose piece did not get into the backpack adds none. The effect is counted case by case in the game minute in which the action gives it; the cases follow the tests of the predecessor game. Accepted with it: eating at full satiety can grow eating, at the cost of berries, so a program can grind eating by paying with berries.
@@ -4190,9 +4206,13 @@ A manual map run holds the practice it gathers separately by character skill and
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-189 · derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first manual completion of a map paying its practice in the completion minute; a second manual completion leaving its practice with the run; restart before completion paying nothing
-  - violates: practice reaching the character during an unfinished run; a second character's manual completion of a solved map paying practice; „Zakończ” paying a completed run a second time
+- **Verification:** tests: the practice of a manual map run held at the run by character skill and
+  paid whole to the character that made it, and to no other, in the game minute of the completion,
+  and not again after it or at „Zakończ”; a manual run of a solved map keeping its practice with the
+  run; „Restart” and „Zakończ” before completion leaving the character's practice as it was. For the
+  ranks bought after a map run cut short, an agent compares a change with the part no test holds:
+  - complies: „Restart” before completion leaving the ranks the character bought as they were
+  - violates: „Zakończ” before completion taking from the character a rank it bought
 - **Origin:** none
 
 *Rationale:* Payment at the completion that solves a map makes the successful run the unit of growth, and a repeat that paid would leave the earning loop no reason to exist (D-189).
@@ -4205,9 +4225,12 @@ A character skill tree with all its branches enters the Understanding in the gam
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-122
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first discovery of gathering also revealing its tree and „Obchód”
-  - violates: a tree becoming known only on its first purchase; an unnamed tree in the band of a discovery
+- **Verification:** tests: the tree of a character skill entering the Understanding in the game
+  minute that discovers the first action it grows, the gathering tree together with „Obchód”, and
+  the tree of Eksploracja, whose first action the Understanding holds from the start, with the first
+  finished exploration, in the simulation and in the data of the trees and actions; the band of a
+  discovery naming each tree beside the actions and items, followed by the sentence of the
+  conditions.
 - **Origin:** none
 
 *Rationale:* Discovery tells the player what the action can grow before the first point is earned. The trees come up by the gate the skills panel of the predecessor game used: the branches show once the player knows an action the skill grows. A tree whose first action the Understanding holds from the start comes up instead with the first finished action of that skill, since the Understanding holds from the start only the condition „Zawsze” and the action „Eksploruj”, and every branch enters it only when discovered in play (D-118). Accepted with it: longer bands of a discovery at the first discoveries, and known actions that no character can yet carry out.
@@ -4220,9 +4243,18 @@ Outside a map run the program editor offers the repertoire computed from the Und
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-164
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Obchód” offered in both editors during the run of its buyer and, outside a run, standing greyed and not to be picked with „wybierzesz w przejściu postaci, która ją kupiła”; „Obchód” still offered in the editor of Programy after its buyer's death, until „Restart” or „Zakończ”
-  - violates: a branch bought by any teammate opening that action in the editor of Programy outside a map run; the editor of Programy turning to the archetype's offer when the player leaves the screen of a manual map run or when that map run ends
+- **Verification:** tests: outside a map run, the editor's offer computed from the Understanding, a
+  branch its buyer bought opening no action in it, and „Obchód” standing in the editor of Programy
+  as not to be picked; during a map run, the pick of the program editor offering the actions of the
+  branches bought by the map run's character alone, and the editor of Programy doing so also while
+  the map run waits in a pause and after its character's death, until „Zakończ”. For the copy
+  editor of a map run that waits in a pause or has ended, a map run ended by its completion, and the
+  archetype's predispositions narrowing the offer outside a map run, an agent compares a change with
+  the part no test holds:
+  - complies: „Obchód” offered in the copy editor of a paused map run of its buyer, and in the editor
+    of Programy after that map run's completion until „Restart” or „Zakończ”
+  - violates: the copy editor of an ended map run turning to the archetype's offer; an action whose
+    character skill the archetype does not predispose offered outside a map run
 - **Origin:** none
 
 *Rationale:* A program is shared, while a branch belongs to its buyer. A manual map run that waits or has ended still stands until „Restart” or „Zakończ”, as it does for „Kup” (D-200), so the offer does not change while it stands; the code already took the repertoire of the character in the map run for as long as the map run stood in the game state. A character without the branch passes over a rule with „Obchód” and the rule stays in the program (D-126). Accepted with it: the editor of Programy outside a map run cannot add a branch action; editing the copy's rules or rule groups resets progress (D-131), whereas editing a saved program prepares the next send, and a rule with „Obchód” can be written without losing the streak at game minute zero or in a saved program edited during a map run, which acts from the next entry onto a map other than a „Restart”; a fix made in the editor of Programy does not reach a waiting map run unless the player switches the character to that program, which sets the streak to zero; and the player sees in the Understanding an action that no character yet can carry out.
@@ -4235,9 +4267,10 @@ The gathering tree has the branch „Obchód”, which opens „Obchód — {zas
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-119 · derives from D-64
-- **Verification:** an agent compares a change with the decision:
-  - complies: a patrol taking the six pieces left on its tile when the batch is twelve; a full-hand gather taking the last single piece
-  - violates: requiring a full batch before patrol can start; taking missing pieces from neighbouring tiles
+- **Verification:** tests: „Obchód” of the gathering tree bringing, with no draw, a batch of the
+  chosen resource from the current tile up to the batch of the data, the tile's stock and the room
+  left in the backpack; „Pełna garść” taking no more pieces than the tile holds or the backpack
+  takes.
 - **Origin:** none
 
 *Rationale:* A guaranteed batch changes how the program gathers, and the branch is one of the branches with a new mechanic that the trees take, a mechanic more in the code and the tests. Like „Zbierz”, „Obchód” is feasible when the tile has at least one piece of the resource and the backpack is not full. Accepted with it: the full action time can bring a smaller batch from a depleted tile, and the last gathering on a tile gives less than the description of „Pełna garść” says; on berries, moss and fibre „Obchód” brings at most 8 or 6 pieces for 40 minutes, since that is what a tile holds, and a tile emptied by gathering is full again only after five to six game hours.
@@ -4250,9 +4283,10 @@ With the bought branch „Zwiad”, exploration reveals the current tile and its
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a scout revealing a new neighbour’s item in the same discovery pause
-  - violates: scouting from an already revealed current tile; one practice for every neighbour
+- **Verification:** tests: with „Zwiad”, an exploration revealing the current tile and its six
+  neighbours in one game minute, and no exploration feasible once the current tile is revealed; the
+  items of a neighbour so revealed entering the Understanding in the pause of that minute's
+  discovery.
 - **Origin:** none
 
 *Rationale:* Scouting changes the exploration program’s reach, and it is one of the branches with a new mechanic that the trees take, a mechanic more in the code and the tests. Accepted with it: it can reveal much of the small map quickly, Las of 4 × 4 tiles several times faster.
@@ -4265,9 +4299,16 @@ The screen Postać shows „Umiejętności” after a tree is known, with a row 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a fully bought numerical branch showing its current value with a disabled „Kup”; the whole section absent before any tree is known
-  - violates: „false → true” beside a non-numerical branch; a price for a fully bought branch; „Umiejętności” drawn on Siedziba
+- **Verification:** tests: the section absent before a tree is known, then holding a row for each
+  known tree, in the words of a row before and after its last threshold; each branch's name, rank
+  and maximum rank and description, „teraz → po kupnie · cena” for a numerical branch, the price
+  alone for „Zwiad”, and „Kup” disabled for too few points and for a full branch; a full branch
+  keeping its present value alone. For the heading of the section, and the price alone of „Obchód”
+  and „Czysty płomień”, an agent compares a change with the part no test holds:
+  - complies: the section headed „Umiejętności”; „Obchód” at rank 0 reading its description and
+    „cena 3” with no before-and-after values
+  - violates: the section standing with no heading „Umiejętności”; „false → true” beside „Czysty
+    płomień”
 - **Origin:** none
 
 *Rationale:* The player sees the current effect and the cost and effect of the next purchase where points are spent. Accepted with it: no preview of unknown trees, so a new character in a new game does not announce that it will develop skills; the preview „teraz → po kupnie” needs the value of every kind of effect written in the data; for a branch without a number the player reads what it gives from its description alone; and the row of a fully bought branch is shorter than the others.
@@ -4280,9 +4321,16 @@ The player buys a branch rank with „Kup” on the screen Postać outside a man
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: a purchase reducing only its tree’s free points and affecting the buyer’s next send; „Kup” at a character in an earning loop acting from that earning loop's next map run; „Kup” inactive on the screen Postać after a character's death until „Restart” or „Zakończ”
-  - violates: a purchase changing the skills of a retained run, including one ended in death or completion; a purchase changing the skills of the earning loop's map run going on; „Kup” active while the screen after a completion waits for „Restart” or „Zakończ”
+- **Verification:** tests: a rank bought with „Kup” on the screen Postać, and saved; „Kup” and the
+  purchase refused while a manual map run goes on, waits in a pause or has ended in death or
+  completion; „Kup” active at a character in an earning loop; the rank acting from that character's
+  next map run, the next map run of its earning loop included, while the map run going on, and one
+  ended in a death that took the character's skills, keeps the skills of its start. For no purchase
+  in the map-run view and no undo of a purchase, an agent compares a change with the part no test
+  holds:
+  - complies: the screen of a map run holding no „Kup”; a rank bought staying bought
+  - violates: a „Kup” beside the program of a map run; a button on the screen Postać that takes a
+    bought rank back and returns its points
 - **Origin:** none
 
 *Rationale:* Purchases belong beside the character's skills, and a run keeps the skills with which it starts; in the predecessor game's test a purchase touched neither the map run nor the program. Accepted with it: a small change of the rule of buying, so that points can be spent while a character earns.
@@ -4295,9 +4343,14 @@ Below the body row the map-run view shows a line in the role `text`, „Wprawa w
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-194
-- **Verification:** an agent compares a change with the decision:
-  - complies: the same positive practice line retained after death, although the run pays nothing
-  - violates: zero-valued skills in the line; hiding the line immediately on completion
+- **Verification:** tests: the words of the line, listing the skills with positive practice of the
+  run, below the body row of the map-run view, also after a death; no line for a run with no
+  positive practice, and no zero-valued skill in it. For the role `text` of the line and the line
+  staying after a completion until „Restart” or „Zakończ”, an agent compares a change with the part
+  no test holds:
+  - complies: the same positive practice line, in the role `text`, standing after a completion
+    until „Zakończ”
+  - violates: hiding the line immediately on completion; the line drawn in `text-secondary`
 - **Origin:** none
 
 *Rationale:* The player can see what the run grows and what it gathered before its end. The screens after a death and after a completion stand on the state of the minute of the end (D-62, D-132) and show the state that explains it (D-173), so the line stays in the wording of the last minute. Accepted with it: another line on the screen of a map run; the line does not itself distinguish paid practice from practice lost on death, and shows after a death practice the character will not get, and after a completion does not say outright that the practice entered the character, or that a „Zakończ” before completion loses it.
@@ -10022,9 +10075,21 @@ The eight character skills give a level and a point at each of these amounts of 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-18 · derives from D-191
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zbieranie małych przedmiotów” at 449 practice on level 5 and at 450 on level 6; „Zgrabna konstrukcja” bought to its second rank for 1 and then 2 points, making a campfire take 10 minutes in place of 20; „Mocniejszy cios” at its fourth rank making a blow with a stick do 14 damage in place of 6
-  - violates: a level reached below its threshold; a rank bought for a price other than the one listed; a branch whose rank gives another effect than the one listed
+- **Verification:** tests: the thresholds of the eight character skills, each giving a level and a
+  point; the effects of „Pełna garść”, „Obchód”, „Oszczędne dorzucanie”, „Zgrabna konstrukcja”,
+  „Szybka ręka”, „Wprawny krok”, „Długi krok”, „Mocniejszy cios”, „Cięższy kop”, „Zwinny odskok”
+  and „Szybki posiłek”, and „Wprawne oko” turning a draw just above the chance of a gathering into
+  a hit; the prices of „Mocniejszy cios”, „Cięższy kop” and „Zwiad”, the first two of „Zgrabna
+  konstrukcja” together and the third above 1, the first two of „Wprawny krok” within 3 points, the
+  first of „Oszczędne dorzucanie” and „Szybki posiłek”, the third of „Długi krok”, and the one rank
+  of „Czysty płomień”. For the size of the gain of „Wprawne oko”, the other prices, and these
+  numbers standing in the data of the character skills, an agent compares a change with the part no
+  test holds:
+  - complies: „Obchód” bought for 3 points; „Zwinny odskok” bought to its second rank for 1 and then
+    1 point; the thresholds read by the simulation from the data of the character skills
+  - violates: a rank of „Wprawne oko”, „Pełna garść”, „Szybka ręka” or „Zwinny odskok” bought for a
+    price other than the one listed; „Wprawne oko” adding 4 percentage points; a threshold written
+    into the code of the simulation rather than into the data
 - **Origin:** none
 
 *Rationale:* the curves, the effects and the prices of the other skills are those of the old loop game's data, taken as requirements, so tests of the simulation may expect them and the character skills grow at the rate that game balanced (D-191). The numbers of the three combat trees and their two branches are not the old loop game's: they are set lower so that the points of combat can be earned on the first maps with combat, and are to be corrected either way when more maps are balanced. Accepted with it: the balance of the old numbers was measured in another game, so loop2 may come out easier or harder than that game, and with two ranks of „Zwinny odskok” a dodge takes away the whole blow of the wolf; once progress carries over between versions of the game, lowering this generosity takes points from players. This decision forbids other numbers until it is changed, so tuning the numbers later is a change of this decision as well as of data and tests (D-18). The floor of one minute under an action shortened by branches is D-374's.
