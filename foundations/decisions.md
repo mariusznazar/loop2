@@ -822,8 +822,8 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares the change with the decision:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, and use full-compliance source invariants without a transitional per-file no-regression invariant
+- **Verification:** tests: that ESLint, Ruff and ShellCheck fail the gate on any report in any file they check, with no allowance for a file that broke a rule before; that ESLint and Prettier reach the test files of the parts in their scope as they reach the other files. An agent compares a change with the part no test holds:
+  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, with no transitional per-file no-regression invariant beside the full-compliance source invariants
   - violates: a stylesheet exemplar or guidelines of their own for stylesheets, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
 - **Origin:** none
 
@@ -837,9 +837,9 @@ Every application, script and test TypeScript and JavaScript file of browser-vie
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment
 - **Based on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Relations:** derives from D-06
-- **Verification:** invariants: eslint-source-rules. An agent compares a change with the decision:
-  - complies: a change to `eslint.config.mjs` that adds the file pattern of a new directory of code in that scope;
-  - violates: a rule set to `off` in `eslint.config.mjs` or an ignore of a source directory, without a human-accepted change of this decision.
+- **Verification:** invariants: eslint-source-rules. An agent compares a change with the part no invariant holds:
+  - complies: a version of ESLint, @eslint/js, typescript-eslint or globals changed in the root `package.json` and `package-lock.json` together with a human-accepted change of this decision;
+  - violates: a rule from outside the sets of @eslint/js and typescript-eslint added to `eslint.config.mjs`, or a newer typescript-eslint or globals installed, without a human-accepted change of this decision; the parser moved off the TypeScript API 6.0.2, or ESLint installed in an npm package of its own.
 - **Origin:** none
 
 *Rationale:* The selected recommendations find defects in typed and untyped code with one tool; a separate supported parser API preserves the chosen application compiler at the cost of an extra development dependency. With inline configuration turned off, a suppressing comment is itself a failure, with the check's own empty suppressions file a bulk-suppressions file silences nothing, and a change that turns a rule off stands in the configuration, where review sees it. Review alone does not keep a list of file patterns complete: a file in a directory no pattern names passes the gate with no report, so a test asks the tool which files receive the sets, and the sets it compares them with are the tool's own, never a list kept in the product.
@@ -880,8 +880,8 @@ All application, script and test TypeScript and JavaScript in browser-view, simu
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: prettier-source-format. An agent compares a change with the decision:
-  - complies: a new browser module formatted by Prettier with no option set;
+- **Verification:** invariants: prettier-source-format. tests: the HTML and CSS of the browser view standing as Prettier leaves them with its default options. An agent compares a change with the part no invariant and no test holds:
+  - complies: a new browser module with no `prettier-ignore` comment, with `prettier.config.mjs` still setting no option;
   - violates: a `// prettier-ignore` comment, or an option added to `prettier.config.mjs`.
 - **Origin:** none
 
@@ -895,7 +895,7 @@ The dependency audit passes without a network request where `package-lock.json` 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal
+- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal. tests: the audit passing with no request to the registry where the lockfile equals its version at the fork point, and auditing the lockfile once it differs.
 - **Origin:** none
 
 *Rationale:* A low threshold starts conservatively while comparison with the start of the change keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same lockfile. The registry matches each advisory's range to the locked versions itself, so comparing the advisories reported before and after the change needs no parsing of ranges, at the price of letting a further copy of an already reported vulnerable package through.
@@ -1633,9 +1633,9 @@ Permanent refusal tests for font files and the local interface preview server ar
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73
-- **Verification:** invariants: focused-test-execution. An agent compares a change with the decision:
-  - complies: one selected Node file after a build; one Python file without a build; the full gate before a request
-  - violates: a focused run starting another test or the foundation check; accepting several files; treating a focused pass as the full gate
+- **Verification:** invariants: focused-test-execution. tests: `npm test` without arguments running the build, the Node tests, the Python tests and the foundation check; with one test file, refusing a second file and running only the one, after a build for a Node file and with none for a Python file, with no other test and no foundation check, a failure of that file failing the run. An agent compares a change with the part no invariant and no test holds:
+  - complies: the full gate run before a request; a new test that waits for a process or a server within a time limit of its own
+  - violates: treating a focused pass as the full gate before a request; a configuration file that limits the whole run; a new test that waits for a process with no limit of its own
 - **Origin:** none
 
 *Rationale:* One entry point preserves the complete check while a file selection shortens diagnosis and avoids building unused JavaScript for Python tests. Keeping no whole-run limit accepts that an operation without a local limit may hang.
@@ -1661,7 +1661,7 @@ The npm registry has no separate contract test: the real dependency audit in the
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73 · derives from D-33
-- **Verification:** none
+- **Verification:** tests: an unreadable response of the npm audit, forced by a controlled response or by a run with no npm, failing the audit.
 - **Origin:** none
 
 *Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response. When this was decided, the npm registry in the dependency audit was the only service of another party that the tested code of loop2 talked to, so the template's row on code talking to such a service was met only there: the tests of the audit substitute its result, while the gate runs the real audit, where an unreadable response of the registry ends in failure, and that run is taken as the check of the format.

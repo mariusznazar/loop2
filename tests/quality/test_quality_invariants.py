@@ -40,6 +40,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_eslint_source_rules(self):
         # invariant: eslint-source-rules
+        # decision: D-28 "For the adopted linters, full-compliance source invariants apply"
         # data: eslint.config.mjs
         # An empty suppressions file of its own keeps any eslint-suppressions.json of the
         # repository from hiding a report (D-29); a path to no file makes ESLint exit with 2.
@@ -51,17 +52,20 @@ class QualityInvariants(unittest.TestCase):
 
     def test_ruff_source_rules(self):
         # invariant: ruff-source-rules
+        # decision: D-28 "For the adopted linters, full-compliance source invariants apply"
         # data: ruff.toml
         self.assert_passes(venv_tool("ruff"), "check", "--config", "ruff.toml", "--ignore-noqa",
                            "--no-fix", "--no-cache", ".")
 
     def test_shellcheck_source_rules(self):
         # invariant: shellcheck-source-rules
+        # decision: D-28 "For the adopted linters, full-compliance source invariants apply"
         self.assert_passes(venv_tool("shellcheck"), "--norc", "--shell=bash",
                            "--extended-analysis=true", *BASH_SCRIPTS)
 
     def test_prettier_source_format(self):
         # invariant: prettier-source-format
+        # decision: D-32 "All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server, build-tools and deployment and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`"
         self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", *PRETTIER_FLAGS,
                            *PRETTIER_PATTERNS)
 

@@ -76,6 +76,7 @@ class SourceToolScope(unittest.TestCase):
 
     def test_eslint_gives_every_scope_file_the_rule_sets(self):
         # invariant: eslint-source-rules
+        # decision: D-28 "The general coding quality checks cover all code, tests included"
         # data: eslint.config.mjs
         paths = scope_files()
         self.assertTrue(paths, "no TypeScript or JavaScript file found in the scope")
@@ -112,6 +113,7 @@ class SourceToolScope(unittest.TestCase):
 
     def test_prettier_patterns_check_every_scope_file(self):
         # invariant: prettier-source-format
+        # decision: D-28 "The general coding quality checks cover all code, tests included"
         # data: tests/quality/test_quality_invariants.py
         # Prettier checks the patterns on a tree that holds each file of the scope with unformatted
         # content, so that it reports exactly the files the patterns reach.
