@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { DatabaseSync } from "node:sqlite";
+import { Worker } from "node:worker_threads";
 import { AccountDatabase } from "../dist/server/database.js";
 
 const HOUR = 3_600_000;
@@ -12,11 +13,11 @@ const DAY = 86_400_000;
 // D-105: at most 30 account messages per hour in total, three per address.
 const limits = { windowMs: HOUR, total: 30, perAccount: 3 };
 
-async function fixture(t) {
+async function fixture(t, options = {}) {
   const directory = await mkdtemp(join(tmpdir(), "loop2-owner-"));
   const path = join(directory, "accounts.sqlite");
   let now = 1000;
-  const database = new AccountDatabase(path, { now: () => now });
+  const database = new AccountDatabase(path, { now: () => now, ...options });
   const raw = new DatabaseSync(path);
   const connections = [database];
   t.after(async () => {
@@ -27,6 +28,7 @@ async function fixture(t) {
   return {
     database,
     raw,
+    path,
     // A second connection on the same file, standing in for the owner's
     // command beside the server.
     operator() {
@@ -229,6 +231,66 @@ test("a role given or taken by a second connection just before the block is read
   });
   assert.deepEqual(sessionsOf(raw, account.id), []);
   assert.equal(database.findAccountById(account.id).blocked, true);
+});
+
+// Another connection that takes the write lock, sets the account's role to
+// `owner` and holds the lock for `holdMs` before it commits. It reports
+// `locked` once the change is written and `committed` after the commit.
+function holdWriteLock(t, path, email, holdMs) {
+  const worker = new Worker(
+    `
+    const { parentPort, workerData } = require("node:worker_threads");
+    const { DatabaseSync } = require("node:sqlite");
+    const connection = new DatabaseSync(workerData.path, { timeout: 3000 });
+    connection.exec("BEGIN IMMEDIATE");
+    connection.prepare("UPDATE accounts SET role = 'owner' WHERE email = ?")
+      .run(workerData.email);
+    parentPort.postMessage("locked");
+    setTimeout(() => {
+      connection.exec("COMMIT");
+      connection.close();
+      parentPort.postMessage("committed");
+    }, workerData.holdMs);
+    `,
+    { eval: true, workerData: { path, email, holdMs } },
+  );
+  t.after(() => worker.terminate());
+  const reportOf = (word) =>
+    new Promise((resolve, reject) => {
+      worker.on("message", (message) => {
+        if (message === word) resolve();
+      });
+      worker.once("error", reject);
+      worker.once("exit", () => reject(new Error("lock holder exited")));
+    });
+  return { locked: reportOf("locked"), committed: reportOf("committed") };
+}
+
+test("a block reads the role after it takes the write lock, so a role another connection holds uncommitted makes it refuse an owner", async (t) => {
+  // This test protects against a block that reads the role before its write
+  // transaction: such a read sees `player` while the other connection still
+  // holds the lock, and the block would then mark an account that is an owner
+  // when it got the lock. A block that reads inside the transaction waits for
+  // the lock, sees `owner` and refuses.
+  // decision: D-137 "The panel never blocks an account that has the owner role, the caller's own included"
+  const { path, database, raw } = await fixture(t, { busyTimeoutMs: 3000 });
+  const account = database.createAccount("player@example.test", "hash");
+  openSession(database, "one", account.id);
+  const holder = holdWriteLock(t, path, "player@example.test", 300);
+  await holder.locked;
+
+  // Precondition: outside the lock the role still reads as a player.
+  assert.equal(
+    database.findAccountByEmail("player@example.test").role,
+    "player",
+  );
+  assert.deepEqual(database.blockForPanel("player@example.test"), {
+    outcome: "owner",
+  });
+  await holder.committed;
+  assert.equal(database.findAccountById(account.id).role, "owner");
+  assert.equal(database.findAccountById(account.id).blocked, false);
+  assert.deepEqual(sessionsOf(raw, account.id), ["one"]);
 });
 
 test("the role change answers made owner, already owner, made player, already player and unknown, each with the account's identifier, and changes nothing else", async (t) => {
