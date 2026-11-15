@@ -1,0 +1,49 @@
+........F
+======================================================================
+FAIL: test_the_whole_gate_runs_the_directories_of_python_tests_at_the_same_time (test_test_gate.TestGate.test_the_whole_gate_runs_the_directories_of_python_tests_at_the_same_time)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tests\quality\test_test_gate.py", line 80, in test_the_whole_gate_runs_the_directories_of_python_tests_at_the_same_time
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : \u2714 passes (0.6043ms)
+\u2139 tests 1
+\u2139 suites 0
+\u2139 pass 1
+\u2139 fail 0
+\u2139 cancelled 0
+\u2139 skipped 0
+\u2139 todo 0
+\u2139 duration_ms 75.9463
+== tests/one
+F
+======================================================================
+FAIL: test_the_other_directory_runs_at_the_same_time (test_meets.Meets.test_the_other_directory_runs_at_the_same_time)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "a temporary folder of the test, tests\one\test_meets.py", line 12, in test_the_other_directory_runs_at_the_same_time
+    self.assertLess(time.monotonic(), deadline, "the other directory did not begin")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 38778.5224702 not less than 38778.4920865 : the other directory did not begin
+
+----------------------------------------------------------------------
+Ran 1 test in 20.032s
+
+FAILED (failures=1)
+== tests/two
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+OK
+2 tests in 2 directories; failed: tests/one (exit code 1)
+npm notice run test
+npm notice run python -B scripts/test.py
+npm notice run build
+npm notice run node scripts/build.mjs
+
+
+----------------------------------------------------------------------
+Ran 9 tests in 30.641s
+
+FAILED (failures=1)
