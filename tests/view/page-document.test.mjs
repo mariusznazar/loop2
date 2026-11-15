@@ -106,6 +106,7 @@ function runChildCase(name) {
 
 test("a file that imports the harness is killed above 2 GiB, by the limit the harness started, and says why", () => {
   // invariant: document-test-memory-limit
+  // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error, never `node:assert`, and runs under the limit the harness starts first: 2 GiB of its process's memory, read every 100 ms by a worker thread that above it writes one sentence to standard error and kills the process"
   const result = runChildCase(GROWING_MEMORY);
 
   // Windows ends a killed process with 1, Linux reports the signal.
@@ -137,6 +138,7 @@ for (const [name, comparison] of [
   ["fail", (words) => assert.fail(words)],
 ]) {
   test(`${name} throws a plain short error with the case's words and no value on it`, async () => {
+    // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error"
     const error = await failureOf(() => comparison("the case's words"));
 
     assertShortAndPlain(error);
@@ -180,6 +182,7 @@ test("an Error given as the message is what a failing comparison throws, as Node
 });
 
 test("a failing equal on two rendered elements ends in a short error that names each by its tag and class", async () => {
+  // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error"
   await withPage(async ({ document }) => {
     const { container } = await drawn(document, form);
     const field = container.querySelector("input");
@@ -199,6 +202,7 @@ test("a failing equal on two rendered elements ends in a short error that names 
 
 test("a failing comparison on rendered elements names its case to the runner, in a short report", () => {
   // invariant: document-test-memory-limit
+  // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error"
   const result = runChildCase(FAILING_COMPARISON);
   const output = result.stdout + result.stderr;
 
@@ -219,6 +223,7 @@ for (const [name, values] of [
 ]) {
   test(`deepEqual refuses a rendered element ${name}`, async () => {
     // invariant: document-test-memory-limit
+    // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error"
     await withPage(async ({ document }) => {
       const { container } = await drawn(document, form);
       const [actual, expected] = values(container.querySelector("input"));
@@ -237,6 +242,7 @@ for (const [name, value] of [
   ["an object of a class", new (class Fiber {})()],
 ]) {
   test(`deepEqual refuses ${name}, which its walk does not enter and the comparison behind it would`, async () => {
+    // decision: D-268 "A test file under `tests/` loads a document imitation only through the harness `tests/view/page-document.mjs`, takes from it an `assert` that builds no message of Node's and puts no value on its error"
     const error = await failureOf(() => assert.deepEqual([value], [value]));
 
     assertShortAndPlain(error);
@@ -247,6 +253,7 @@ for (const [name, value] of [
 // --- the window --------------------------------------------------------------
 
 test("no case's page reaches another's: its listeners, its content and its window stay behind", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window"
   let heard = 0;
   let earlier;
   await withPage(({ window, document, root }) => {
@@ -267,6 +274,7 @@ test("no case's page reaches another's: its listeners, its content and its windo
 });
 
 test("the globals the product reads are the case's page, a shown one, until the case ends", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window"
   const between = globalThis.document;
 
   await withPage(({ window, document, root }) => {
@@ -309,6 +317,7 @@ for (const [name, disable] of [
   ["by its fieldset", (control) => (control.parentElement.disabled = true)],
 ]) {
   test(`a focused control disabled ${name} leaves the focus on the body`, async () => {
+    // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled"
     await withPage(async ({ document, root }) => {
       const fieldset = document.createElement("fieldset");
       const control = document.createElement("button");
@@ -327,6 +336,7 @@ for (const [name, disable] of [
 }
 
 test("a focused field React disables leaves the focus on the body, and takes it back once enabled", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled"
   await withPage(async ({ document, root }) => {
     const shape = (disabled) => createElement("input", { disabled });
     const { container, root: reactRoot } = await drawn(document, shape(false));
@@ -343,6 +353,7 @@ test("a focused field React disables leaves the focus on the body, and takes it 
 });
 
 test("focus stays where it is when another control becomes disabled, and when a control is disabled and enabled in one step", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled"
   await withPage(async ({ document, root }) => {
     const [focused, other] = ["input", "button"].map((tag) =>
       document.createElement(tag),
@@ -375,6 +386,7 @@ function NameField() {
 }
 
 test("typing reaches a controlled field's change, so it stands in the field and in what the field drives", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through `act`, types through the input's native value setter and a bubbling `input` event"
   await withPage(async ({ document }) => {
     const { container } = await drawn(document, createElement(NameField));
     const field = container.querySelector("input");
@@ -387,6 +399,7 @@ test("typing reaches a controlled field's change, so it stands in the field and 
 });
 
 test("typing reaches a listener of a field outside React, by a bubbling input event", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through `act`, types through the input's native value setter and a bubbling `input` event"
   await withPage(async ({ document, root }) => {
     const field = document.createElement("input");
     root.append(field);
@@ -409,6 +422,7 @@ function Counter() {
 }
 
 test("a press clicks the control inside act, so what its handler changed stands when the press returns", async () => {
+  // decision: D-264 "A test file of such a screen clicks a control through the harness's `press`, which clicks inside `act`"
   await withPage(async ({ document }) => {
     const { container } = await drawn(document, createElement(Counter));
     const button = container.querySelector("button");
@@ -431,6 +445,7 @@ test("a press of something that does not stand fails the case in the harness's o
 });
 
 test("fire sends a bubbling event of the window of its target, a pointerout as a mouse event with the fields given", async () => {
+  // decision: D-264 "A test file of such a screen clicks a control through the harness's `press`, which clicks inside `act`, and sends an event through its `fire`, which sends the event as a browser does"
   await withPage(async ({ document, root, window }) => {
     const field = document.createElement("input");
     root.append(field);
@@ -467,6 +482,7 @@ function AnsweredLater({ answer }) {
 }
 
 test("an answer that comes before settle draws on the page, and React has no update outside act to report", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through `act`"
   await withPage(async ({ document }) => {
     const { promise, resolve } = Promise.withResolvers();
     const { container } = await drawn(
@@ -483,6 +499,7 @@ test("an answer that comes before settle draws on the page, and React has no upd
 });
 
 test("a mount outside act fails its case in a short error, the one report the trial met", async () => {
+  // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through `act`, types through the input's native value setter and a bubbling `input` event, and fails a case on a report of React's development build through `console.error`"
   const error = await failureOf(() =>
     withPage(async ({ document, root }) => {
       const container = document.createElement("div");
@@ -542,6 +559,7 @@ for (const [name, renders, report] of [
   ],
 ]) {
   test(`${name}, reported by React's development build, fails its case in a short error`, async () => {
+    // decision: D-264 "One harness, `tests/view/page-document.mjs`, carries those files: it is imported before React loads, gives each case a fresh window, moves focus away from a control that becomes disabled, awaits React's work through `act`, types through the input's native value setter and a bubbling `input` event, and fails a case on a report of React's development build through `console.error`"
     const [first, ...later] = renders;
 
     const error = await failureOf(() =>
