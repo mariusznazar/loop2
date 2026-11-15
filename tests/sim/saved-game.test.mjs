@@ -917,6 +917,7 @@ test("a map run that ended comes back as it ended", () => {
 
 // invariant: solved-map-manual-run
 test("a map run of a solved map comes back marked, and its completion with the empty deposit", () => {
+  // decision: D-214 "A manual map run is a manual run of a solved map by the state of its map when that map run starts, and it stays one to its end, on the screen after its end and after a load"
   const marked = changed((document) => {
     solvingItsMap(document);
     document.game.run.solvedMapRun = true;
@@ -2207,6 +2208,7 @@ test("a crafted document of the current version is refused whole as shape", () =
 // invariant: save-version
 // D-368, D-212: the record comes back whole after a load, whichever way the map run stands.
 test("the record loads back whole from a map run that goes on, one that died and one that completed", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   const going = changed((document) => {
     document.game.paused = false;
     document.game.discovery = null;
@@ -2341,6 +2343,7 @@ test("a program whose number is not below the next program number is refused as 
 // A map run ended in death keeps its mark: the map was solved when the run started, and the run
 // stays so to its end and after a load (D-214; one manual map run at a time, D-55).
 test("a map run ended in death whose mark disagrees with its map's being solved is refused as shape", () => {
+  // decision: D-214 "A manual map run is a manual run of a solved map by the state of its map when that map run starts, and it stays one to its end, on the screen after its end and after a load"
   assertRefused(
     "a mark set on a death on an unsolved map",
     changed((document) => {

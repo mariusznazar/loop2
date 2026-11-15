@@ -69,6 +69,7 @@ function minutes(counts) {
 // Catches a title that is the death's words in another role, or a completion that shows the cause or
 // is missing from a map run that ended in a completion of another map (D-334, D-132).
 test("the title after a death is the words of its cause in text-strong, after a completion the map's completion text in positive", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
   assert.equal(endTitle(RUNNING), null, "a running map run has no title");
   for (const [cause, text] of [
     ["cold", "Mag zamarzł"],
@@ -102,6 +103,7 @@ test("the title after a death is the words of its cause in text-strong, after a 
 // a line on a map that asks no streak, or a share that counts the longest streak against the wrong number
 // (D-135, D-133). 116/480 is the example of D-135; 116 / 480 is hand-derived.
 test("the longest streak line gives the longest streak against the map's streak, positive where met, and none where the map asks no streak", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   assert.deepEqual(
     longestStreakLine(runOf({ longestStreak: 116 }), MAPS.forest),
     { text: "najdłuższa passa 116/480", share: 116 / 480, role: "text" },
@@ -384,6 +386,7 @@ test("the trip rows give what the character entered with, the revealed terrain a
 // Catches a button after a death, a button for a map that the completed map does not open, or a missing
 // button after the completion of Las (D-132, D-53, D-149).
 test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of the map it opens", () => {
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   assert.deepEqual(wayOnButtons(runOf({ completion: { minute: 480 } })), [
     { mapId: "forestDeep", text: "Otwarte: Las — głębiej →" },
   ]);

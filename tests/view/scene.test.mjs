@@ -2089,6 +2089,7 @@ test("the specks of a completion stand only while the effect plays, over the tin
 
 // D-322, D-316. Catches a completion that changes the mage's colour or the full gold the tint stands at.
 test("a completion's last image is the mage in colour in the full gold, with no speck", async () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`, and the light of the scene stands in full gold (D-315)"
   await withPage(async (page) => {
     const scene = await drawn(page, solved());
     assert.equal(filterOf(one(scene, ".scene-mage-sprite")), "");

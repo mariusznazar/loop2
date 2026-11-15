@@ -79,6 +79,7 @@ const counted = (minutes) =>
   Object.fromEntries(Object.entries(minutes).filter(([, count]) => count > 0));
 
 test("a map run starts with a longest streak of 0 and a count of 0 game minutes for every kind of the closed list, and no more than that list", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   const { run } = sentWith(EXPLORING);
   assert.equal(run.longestStreak, 0);
   const ordinary = Object.entries(ACTIONS)
@@ -124,6 +125,7 @@ test("the game minute of a death counts like any other, and the counts sum to th
 });
 
 test("the game minute of a completion counts like any other, on counts the map run already holds", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   // A map run of Las at game minute 479 of an unbroken streak, after 479 minutes of exploring (a
   // state made by hand: Las cannot be survived that long by a program of one rule), whose
   // exploration ends in the next game minute.
@@ -153,6 +155,7 @@ test("the game minute of a completion counts like any other, on counts the map r
 });
 
 test("the longest streak stays after the streak falls to 0 in the cold, and the same whichever way the span is split", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   // No loss through game minute 83, so the streak is 83 there; game minute 84 is chilled.
   const whole = advanceMinutes(sentWith(EXPLORING), 90).state;
   assert.equal(whole.run.streak, 0);
@@ -174,6 +177,7 @@ test("the longest streak stays after the streak falls to 0 in the cold, and the 
 });
 
 test("the longest streak stays after a change of the program, and grows again once the streak passes it", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   const ten = advanceMinutes(sentWith(EXPLORING), 10).state;
   assert.equal(ten.run.longestStreak, 10);
   const changed = setProgram(
@@ -214,6 +218,7 @@ function fought() {
 test("the minutes of a fight count to the fight, the minute of the attack to what the character was doing, and the last minute of a death in the fight too", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   const { state, seen } = fought();
   const { run } = state;
   // Attacked at the end of game minute A; the five game minutes of the fight are A + 1 to A + 5,
@@ -336,6 +341,7 @@ test("what the character entered with stays to the end, though the backpack empt
 });
 
 test("a restart binds the record anew: the entry list from the copy and the chest as they stand, the longest streak and the counts from 0", () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached"
   const state = sentWithChest(
     taking([{ item: "stick", count: 4 }], {
       condition: ALWAYS,

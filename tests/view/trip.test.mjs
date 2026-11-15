@@ -376,6 +376,8 @@ function died(state, readyAtMs) {
 // window of the end holds (D-185, D-216, D-311), or that shows the solved-map line (D-215) on a run
 // that does pay; the lines the world area reads for the six screens of a map run.
 test("the six screens of a map run give the world area the solved-map line and the preview, and no deposit and no settlement", () => {
+  // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana"
+  // decision: D-214 "A manual map run is a manual run of a solved map by the state of its map when that map run starts, and it stays one to its end, on the screen after its end and after a load"
   const lines = (state) => ({
     solved: solvedRunText(state),
     preview: tripTexts(state).preview,
@@ -415,6 +417,7 @@ test("the six screens of a map run give the world area the solved-map line and t
 // not yet settled has no settlement, and a loaded game holds the same record, which the window of the
 // end reads after a load too (D-216).
 test("a death not yet settled has no settlement record, and a loaded game holds the same record and the same lines", () => {
+  // decision: D-214 "A manual map run is a manual run of a solved map by the state of its map when that map run starts, and it stays one to its end, on the screen after its end and after a load"
   const unsettled = sent();
   const dying = { ...unsettled, run: { ...unsettled.run, death: "cold" } };
   assert.equal(dying.run.deathSettlement, null);

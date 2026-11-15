@@ -298,6 +298,7 @@ test("an edit reconciles the counts only where they stand beside the program edi
 });
 
 test("an edit of a saved program leaves the map run, its copy, its streak, its beaten attacks and its counts", () => {
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule, changing its condition or action, and changing a rule group — also while the map run is paused; an act of the program editor after which the copy is the same as before it, an edit or discard changing the trip plan alone, a save of the copy and an edit of a saved program leave the streak as it stands, together with the number of beaten attacks"
   const running = advanceMinutes(sentWithThird(), 12).state;
   const counted = {
     ...running,

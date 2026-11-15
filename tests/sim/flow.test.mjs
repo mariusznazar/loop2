@@ -47,6 +47,7 @@ function sent(program = EXPLORING, realMs = REAL_MS) {
 // new game holds one, „Program”, with no program rule.
 test("a new game has one empty program, a team with no character and an empty chest, no map run, the initial seed and no pause", () => {
   // decision: D-91 "A new game starts with one empty rule group named „Program”, whose condition is „Zawsze”"
+  // decision: D-129 "The pace the player picks stays until the player picks another, through a pause, the pause at a discovery included, „Restart”, „Zakończ” and the next send of a character, and a new game starts at 1×"
   const state = newGame();
   assert.equal(state.programs.length, 1);
   assert.deepEqual(programRules(state.programs[0].program), []);
@@ -216,6 +217,7 @@ test("setPace throws on a pace outside the list of paces and leaves the game as 
 });
 
 test("the pace survives a pause, a resume, Restart, Zakończ and the next send", () => {
+  // decision: D-129 "The pace the player picks stays until the player picks another, through a pause"
   let state = setPace(sent().state, 8).state;
   state = setPaused(state, true).state;
   assert.equal(state.pace, 8);

@@ -38,6 +38,8 @@ test("Skraj lasu has the map data of D-398, no opening map, and opens Las", () =
   // decision: D-398 "Its resources are sticks, with density 1, a stock of 12 per tile"
   // decision: D-398 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   assert.deepEqual(MAPS.forestEdge, {
     name: "Skraj lasu",
     width: 4,
@@ -62,6 +64,8 @@ test("Las — głębiej has the map data, attacker, solving requirements and ope
   // decision: D-388 "The resources of both maps, each with its density, its stock per tile and the game minutes to renew one piece"
   // decision: D-388 "These numbers are requirements of the game, held in its data (D-18), that tests of the simulation may expect"
   // decision: D-58 "A character's body cools in each game minute outside combat by more, the further the game map's ambient temperature lies below the body's starting temperature, and the ambient temperature stands in the game map's data"
+  // decision: D-136 "The condition that solves a map stands in the map's data — a streak, a number of attacks beaten, alone or together — and a map opens when the map its data names as its opener is solved"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   assert.deepEqual(MAPS.forestDeep, {
     name: "Las — głębiej",
     width: 5,

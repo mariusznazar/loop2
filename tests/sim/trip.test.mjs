@@ -68,6 +68,7 @@ function sent(state = equipped()) {
 
 // Catches a merge losing the skill snapshot, equipment, or either completion payment.
 test("a bought branch acts on entry equipment and completion pays practice and loot once", () => {
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
   let state = equipped();
   state = {
     ...state,
@@ -629,6 +630,7 @@ test("clippedTake lists the take entries cut by capacity and the entry cap in li
 
 test("a run records at its start whether its map was solved, and a restart after the solving completion records it anew", () => {
   // invariant: solved-map-manual-run
+  // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
   const unsolved = sent();
   assert.equal(unsolved.run.solvedMapRun, false);
   assert.equal(sent(solvedForest()).run.solvedMapRun, true);

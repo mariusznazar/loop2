@@ -440,6 +440,8 @@ test("the window opens once the scene's effect of the death has ended, while the
 // D-132, D-368. Catches a window that opens after a death alone, and one
 // that stands with no way to the map the completion opened.
 test("the window opens at a completion too, titled by the completion text, with the way to the map it opened", async () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   await onPage(async (page) => {
     const { root } = page;
     const { view } = await completeOnTheScreen(page);
@@ -887,6 +889,7 @@ const MAP_ADDRESS = "#/mapy/forestDeep";
 // D-53, D-173. Catches an „Otwarte” that leads to Postać, one that leaves the map run
 // standing, and one that opens the screen Mapy without the card of the map it opened.
 test("„Otwarte: Las — głębiej →” with no unsaved changes ends the map run and opens the screen Mapy at the card of the opened map in place of Postać", async () => {
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(completed(going()));
     await press(windowButton(root, "Otwarte: Las — głębiej →"));
@@ -1020,6 +1023,7 @@ test("the window stands in no game state and no saved document: closing and open
 // above the streak the state holds when it ended; the lines are the sentences of D-368 and of D-185
 // for a bring plan that takes nothing.
 test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   /** The window's streak line and cost line after a reload of `document`. */
   async function lines(document, root) {
     const loaded = loadSavedGame(JSON.parse(JSON.stringify(document)));

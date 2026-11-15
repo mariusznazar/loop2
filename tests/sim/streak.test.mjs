@@ -48,6 +48,7 @@ function withRun(fields) {
 }
 
 test("a map run starts with a streak of 0, by send and by restart", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const state = sent();
   assert.equal(state.run.streak, 0);
   const later = advanceMinutes(state, 10).state;
@@ -56,12 +57,14 @@ test("a map run starts with a streak of 0, by send and by restart", () => {
 });
 
 test("ten game minutes with no loss to cold or hunger give a streak of 10", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const { state } = advanceMinutes(sent(), 10);
   assert.equal(state.run.minute, 10);
   assert.equal(state.run.streak, 10);
 });
 
 test("a game minute of loss to cold sets the streak to 0, and it stays 0 while the loss goes on", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const at83 = advanceMinutes(sent(), 83).state;
   assert.equal(at83.run.streak, 83);
   const at84 = advanceMinutes(at83, 1).state;
@@ -71,6 +74,7 @@ test("a game minute of loss to cold sets the streak to 0, and it stays 0 while t
 
 test("a game minute of loss to hunger sets the streak to 0", () => {
   // decision: D-71 "Outside combat a game minute takes effect in this order"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   // Satiety 30.4 falls to 29.8 below 30: starving; the temperature 36.9 stays above 35.
   const state = withRun({ body: body(36.9, 30.4, 100), streak: 7 });
   const { state: after } = advanceMinutes(state, 1);
@@ -79,6 +83,7 @@ test("a game minute of loss to hunger sets the streak to 0", () => {
 });
 
 test("the streak grows again after a minute of loss once the body no longer loses", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const chilled = withRun({ body: body(34.99, 100, 100), streak: 7 });
   const lost = advanceMinutes(chilled, 1).state;
   assert.equal(lost.run.streak, 0);
@@ -87,6 +92,7 @@ test("the streak grows again after a minute of loss once the body no longer lose
 });
 
 test("a minute that leaves the character neither chilled nor starving grows the streak by one, health below the start included", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const state = withRun({ body: body(37, 100, 20), streak: 41 });
   const { state: after } = advanceMinutes(state, 1);
   assert.equal(after.run.body.health, 20.05, "health regains 0.05");
@@ -94,6 +100,8 @@ test("a minute that leaves the character neither chilled nor starving grows the 
 });
 
 test("a streak of 479 grows to 480 in the next minute, where the map run completes and passes no minute after it", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run"
   // D-132, D-133: a streak at the solving number of Las (480) ends the map run in a completion,
   // so it does not grow past 480.
   const state = withRun({ body: body(37, 100, 100), streak: 479 });
@@ -104,6 +112,7 @@ test("a streak of 479 grows to 480 in the next minute, where the map run complet
 });
 
 test("a map run ended in death holds a streak of 0", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   // Explore runs to minute 20; the body dies in minute 2, after a streak of 5 at minute 0.
   const state = withRun({ body: body(34, 50, 0.7), streak: 5 });
   const died = advanceMinutes(state, 30).state;
@@ -113,6 +122,7 @@ test("a map run ended in death holds a streak of 0", () => {
 });
 
 test("a map run split into calls of one minute holds the same streak as one call", () => {
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   let split = sent();
   for (let i = 0; i < 100; i += 1) split = advanceMinutes(split, 1).state;
   const whole = advanceMinutes(sent(), 100).state;
@@ -179,6 +189,7 @@ test("a streak of zero gives no event of a loss, and the game minutes after a lo
 
 test("a game minute of an encounter reports no loss, the streak growing in it", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero"
   const fighting = withRun({
     body: body(34.99, 100, 100),
     streak: 7,

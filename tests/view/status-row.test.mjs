@@ -176,6 +176,7 @@ test("after a death the clock stands at the minute of the death, with no cause a
 // D-132: the completion text is „Teraz”'s, the clock only stands at the game minute of the
 // completion.
 test("after a completion the clock stands at the minute of the completion, with no completion text and no „ (pauza)”, paused or not", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”"
   const state = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   const done = completed(state, 480);
   assert.equal(clockText(done.run, false), "Minuta 480");
@@ -290,6 +291,7 @@ test("a condition that takes no number is named without a unit, and a discovery 
 });
 
 test("no pause button after a completion, as after death", () => {
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death"
   const running = sent([{ condition: ALWAYS, action: { kind: "explore" } }]);
   assert.equal(pauseLabel(completed(running, 480)), null);
   assert.equal(
@@ -307,6 +309,7 @@ function requirementsOf(mapId, counts) {
 
 // D-133. Catches words in the wrong form, a requirement left out and the two out of their order.
 test("the words of Las read „Passa {streak}/{required}” and those of Las — głębiej read the passa before the beaten attacks", () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
   assert.deepEqual(
     requirementsOf("forest", { streak: 120 }).map(requirementText),
     ["Passa 120/480"],
@@ -321,6 +324,8 @@ test("the words of Las read „Passa {streak}/{required}” and those of Las —
 
 // D-133: one met requirement does not make the other met. The words carry the numbers, not the role.
 test("on Las — głębiej a requirement that is met reads its own numbers while the other stays unmet", () => {
+  // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
+  // decision: D-133 "A requirement that is met shows its name, its numbers and the fill of its bar in the role `positive`"
   const requirements = requirementsOf("forestDeep", {
     streak: 120,
     defeatedAttacks: 2,

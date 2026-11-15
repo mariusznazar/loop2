@@ -942,6 +942,7 @@ test("a death after an encounter names its cause, not the fight", () => {
 });
 
 test("Teraz names the completion with the text of the map, also while an action goes on and in a resolution minute", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
   const started = sentWith([group(1, ALWAYS, [WANDER_RULE, EXPLORE_RULE])]);
   const completed = {
     ...started,

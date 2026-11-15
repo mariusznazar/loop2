@@ -250,6 +250,7 @@ test("„Zapisz jako nowy program” is refused without a map run, without unsav
 });
 
 test("„Porzuć zmiany” returns the copy to its base, reconciles the counts and zeroes the streak and the beaten attacks", () => {
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero"
   const before = editedAndRunning();
   assert.equal(before.run.streak, 10, "precondition: a streak of 10");
   const { state } = discardCopyChanges(before);
@@ -273,6 +274,7 @@ test("„Porzuć zmiany” starts again the count of a rule whose content the di
 });
 
 test("„Porzuć zmiany” after death leaves the streak of the ended map run", () => {
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero"
   const { state } = discardCopyChanges(died(editedAndRunning()));
   assert.deepEqual(state.run.copy.program, EXPLORING);
   assert.equal(state.run.streak, 7);
@@ -434,6 +436,7 @@ test("an edit of the copy at a streak of zero returns no loss", () => {
 });
 
 test("an edit of the copy that leaves its rules and rule groups, or changes only the trip plan, returns no loss", () => {
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero — adding, deleting or reordering a program rule, changing its condition or action, and changing a rule group — also while the map run is paused; an act of the program editor after which the copy is the same as before it, an edit or discard changing the trip plan alone, a save of the copy and an edit of a saved program leave the streak as it stands, together with the number of beaten attacks"
   const running = advanceMinutes(sentWith(EXPLORING), 10).state;
   const same = setProgram(running, EXPLORING);
   assert.equal(same.state.run.streak, 10);

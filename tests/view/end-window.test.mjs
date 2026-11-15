@@ -166,6 +166,7 @@ const sectionHeads = (container) =>
 // Catches a title in the wrong words or role, a dialog that no title names, and a top that lacks the
 // label „Koniec przejścia” or the „✕” named „Zamknij okno” (D-368, D-132, D-334).
 test("the window is a dialog named by its title, with the label „Koniec przejścia” above it and „✕” after it; the title is the cause after a death and the map's sentence in positive after a completion", async () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, DIED);
     const root = windowOf(container);
@@ -227,6 +228,7 @@ test("nothing is drawn for a state without an ended map run", async () => {
 // the wrong role (D-135, D-185, D-216, D-122, D-39).
 test("the scrolling part opens with the longest streak as the bar of the header's requirement, then the discovery with „Dodaj regułę z tym” and no „Wznów”, then the cost line", async () => {
   // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band in the role `discovery` and with „Dodaj regułę z tym”, until „Restart” or „Zakończ”, and the band does not stand"
+  // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   await withPage(async ({ document }) => {
     const state = { ...DIED, discovery: DISCOVERED };
     const { container } = await draw(document, state);
@@ -272,6 +274,7 @@ test("the scrolling part opens with the longest streak as the bar of the header'
 });
 
 test("a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery whose rule cannot be built has its button disabled", async () => {
+  // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, SOLVED);
     assert.equal(
@@ -548,6 +551,7 @@ test("the last minutes come from the entries the screen gives and stand only wit
 // it opens (D-368, D-44, D-132, D-188).
 test("the buttons stand after the scrolling part, outside it: „Restart” and „Zakończ” as shared destructive buttons, and „Otwarte: …” plain, only after a completion that opens a map", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(
       document,
@@ -626,6 +630,7 @@ test("the warning of a cut trip plan stands between „Restart” and „Zakońc
 // Catches a button that asks for the wrong act, for two, or for none, and „Otwarte: …” that does
 // not name its map (D-368, D-313).
 test("„✕”, „Restart”, „Zakończ”, „Otwarte: …” and „Dodaj regułę z tym” ask for their own control and nothing else", async () => {
+  // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   await withPage(async ({ document }) => {
     const { container, asked, show } = await draw(document, SOLVED);
     for (const [name, expected] of [

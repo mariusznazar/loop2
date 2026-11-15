@@ -881,6 +881,7 @@ const tintAt = (patch) => sceneDrawing(run(patch)).tint;
 // streak than the map asks for (Las 480, Las — głębiej 540), one that goes past 0.8 without a
 // completion, and one that is 1 before it. The required streaks are the maps' own data.
 test("the tint is the streak's share of the required streak times 0.8, and 1 at a completion alone", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`, and the light of the scene stands in full gold (D-315)"
   assert.equal(tintAt({ streak: 0 }), 0);
   assert.equal(tintAt({ streak: 120 }), 0.2);
   assert.equal(tintAt({ streak: 480 }), 0.8);

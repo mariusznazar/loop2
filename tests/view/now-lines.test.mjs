@@ -127,6 +127,7 @@ test("Teraz after a death says its cause in the role text, for each of the three
 
 // Catches a completion text of the code and not of the map, or a completion not in `positive`.
 test("Teraz after a completion says the text of the map in the role positive", () => {
+  // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`"
   assert.deepEqual(
     nowOf({ kind: "completion", text: "Las — głębiej rozwiązany" }),
     {

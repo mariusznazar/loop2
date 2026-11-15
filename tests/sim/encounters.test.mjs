@@ -186,6 +186,7 @@ test("five combat minutes freeze needs and recovery while fire, renewal and stre
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still, the streak grows, burning loses a minute and tiles renew"
   // decision: D-60 "During the game minutes of combat the character's needs and health stand still until the combat actions change its health"
   // decision: D-67 "A tile holding fewer pieces of a resource than its starting stock gains one piece of it in each game minute of the map run that is a whole multiple of the resource's time to renew one piece"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   let state = fighting(KICK, 235);
   state.run.body = { temperature: 30, satiety: 0, health: 100 };
   state.run.streak = 12;
@@ -288,6 +289,7 @@ test("each waiting minute M+1 through M+4 can complete without turns or an inven
 test("combat death in M+5 wins over completion and keeps the streak", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   const state = fighting();
   state.run.minute = 185;
   state.run.streak = 539;
@@ -333,6 +335,8 @@ test("M+5 starts ordinary work immediately, counts every combat action once and 
 
 test("editing during the wait preserves encounter state and resolves with the newly written program", () => {
   // decision: D-20 "The program chooses again at the next free game minute, and before the character's action in each combat turn"
+  // decision: D-131 "Of the edits of the copy a map run carries out, an edit after which the copy's rules or rule groups differ from those before it, the discard of the copy's unsaved changes included, sets the streak and the number of beaten attacks of the map run in progress to zero"
+  // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   const state = fighting();
   state.run.character.backpack.stick = 1;
   state.run.streak = 100;
@@ -563,6 +567,7 @@ test("a departed creature starts cooldown but adds no defeated attack", () => {
 
 test("known attacks do not pause and restart clears combat while reproducing its attack stream", () => {
   // decision: D-119 "The Understanding belongs to the player"
+  // decision: D-131 "A map run starts with zero beaten attacks"
   const attacked = advanceMinutes(prepared(), 1).state;
   assert.equal(attacked.paused, false);
   const restarted = restart(attacked).state;

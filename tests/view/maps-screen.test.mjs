@@ -147,6 +147,8 @@ test("with no map named the list holds the open maps alone and the right area sa
   // decision: D-331 "Under `#/mapy`, before the player picks a map, „Wybierz mapę z listy.” stands on the right"
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(newTeamOf("Ala")));
     assert.deepEqual(texts(page.root, ".maps-list-item"), ["Skraj lasu"]);
@@ -186,6 +188,7 @@ test("a row is a link to the map's address, a solved map says so after its name 
   // decision: D-281 "An address names a screen in the fragment after `#`"
   // decision: D-331 "A row of the list is a link to `#/mapy/{map}` with the name of the map"
   // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
   await withPage(async (page) => {
     const { screen } = await mount(
       page,
@@ -222,6 +225,7 @@ test("a row is a link to the map's address, a solved map says so after its name 
 test("a map named whose opener is unsolved draws no card", async () => {
   // decision: D-397 "A new game opens the map Skraj lasu, and solving it opens Las"
   // decision: D-388 "Las is a grid of 4 × 4 tiles"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(teamOf("Ala"), "forestDeep"));
     assert.equal(page.root.querySelector(".maps-card"), null);
@@ -241,6 +245,7 @@ test("the card of Skraj lasu holds its heading, what it asks, its terrain and it
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
     await mount(page, propsOf(newTeamOf("Ala"), "forestEdge"));
     assert.equal(text(page.root, ".maps-card-name"), "Skraj lasu");
@@ -274,6 +279,7 @@ test("the card of Las holds its heading, what it asks, its terrain and what lies
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
+  // decision: D-133 "The card of each open map shows the sentence of its solving condition from the map's data"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf("Ala"), "forest"));
     assert.equal(text(page.root, ".maps-card-name"), "Las");
@@ -327,6 +333,8 @@ test("the card of Las — głębiej names its opener, shows the wolf and the mea
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   // decision: D-327 "It departs from the card of the predecessor game in five things only"
   // decision: D-328 "The card of a map shows all that the map's data holds, whatever the player has discovered, and the Understanding does not change by it"
+  // decision: D-134 "From the first completion of a map by any of the player's characters, the list and the card on the screen Mapy show that map as „rozwiązana”"
+  // decision: D-149 "A map whose opening map is still unsolved is absent from the screen Mapy, and from the opening map’s first completion it stands there with its card for every character"
   await withPage(async (page) => {
     const state = solved(teamOf("Ala"));
     const understanding = JSON.stringify(state.understanding);
