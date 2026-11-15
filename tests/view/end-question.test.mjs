@@ -343,6 +343,9 @@ test("the line of D-172 stands under the sentence only while the copy's program 
 // and a navigation to Postać before the answer.
 test("„Zakończ” with unsaved changes asks at every moment of the map run, leaves the map run where it is and stops the one that goes on", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-324 "While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map run is paused as „Pauza” pauses it"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const moments = [
     ["going on", () => renamed(going()), true, false],
     ["paused", () => renamed(paused()), true, false],
@@ -557,6 +560,7 @@ test("„Odrzuć” ends the map run with no save, the program as it was, and le
 // changes or the map run's minute.
 test("„Wróć” closes the question and puts the map run back as it was: one that went on goes on, one that was paused stays paused", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
+  // decision: D-324 "While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map run is paused as „Pauza” pauses it"
   await onPage(async ({ root, pass, reading }) => {
     const { view } = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));
@@ -608,6 +612,7 @@ test("„Wróć” closes the question and puts the map run back as it was: one 
 test("leaving the screen closes the question and the map run stays paused on the return, “Zakończ” asking again", async () => {
   // decision: D-283 "Leaving the screen of a manual map run pauses it as „Pauza” does"
   // decision: D-284 "A return to the screen of a manual map run that waits in a pause leaves it in that pause until the player presses „Wznów”, whether or not it went on before the player left"
+  // decision: D-324 "Leaving the screen of the map run closes the question as „Wróć” does"
   await onPage(async ({ root, pass, reading }) => {
     const { view, address } = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));
@@ -632,6 +637,7 @@ test("leaving the screen closes the question and the map run stays paused on the
 test("the question lives in the page alone: a game built from the kept document stands with no question and the map run paused", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”"
+  // decision: D-324 "Leaving the screen of the map run closes the question as „Wróć” does"
   await onPage(async ({ root }) => {
     const first = await viewOf(renamed(going()));
     await press(headerButton(root, "Zakończ"));
@@ -654,6 +660,7 @@ test("the question lives in the page alone: a game built from the kept document 
 // buttons and a second „Zakończ” that close it or stack a second one.
 test("„Wznów” of the header and of the band and „Restart” close the question and do their own act; the pace buttons and a second „Zakończ” leave it", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on"
+  // decision: D-324 "The rest of the screen works as usual"
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(paused()));
     await press(headerButton(root, "Zakończ"));
@@ -707,6 +714,7 @@ const panelOf = (root) => byClass(runScreenOf(root), "program-panel")[0];
 // map run that goes on when the question goes, and a „Zakończ” that still asks afterwards.
 test("the buttons of the panel work while the question stands, and it goes when the copy holds no unsaved changes, leaving the map run paused", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-324 "The rest of the screen works as usual"
   const closers = [
     [
       "„Zapisz w programie”",
@@ -781,6 +789,7 @@ async function renameGroupTo(root, text) {
 // D-324. Catches the question dropped by an edit after which
 // the copy still differs from its program, and one kept by an edit after which it does not.
 test("an edit of the copy leaves the question unless the copy then equals its program, when the question goes like after a save", async () => {
+  // decision: D-324 "The rest of the screen works as usual"
   await onPage(async ({ root }) => {
     const { view } = await viewOf(renamed(paused()));
     await press(headerButton(root, "Zakończ"));
@@ -874,6 +883,7 @@ test("the question stands under the band of a discovery and directly above the h
 // answer), standing in the same place, and it must not move into the panel of Programy.
 test("the question stays in its place while the panel shows another program, and never stands on Programy", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
+  // decision: D-324 "The rest of the screen works as usual"
   await onPage(async ({ root }) => {
     const { view, address } = await viewOf(renamed(paused()));
     await press(headerButton(root, "Zakończ"));

@@ -70,6 +70,7 @@ function minutes(counts) {
 // is missing from a map run that ended in a completion of another map (D-334, D-132).
 test("the title after a death is the words of its cause in text-strong, after a completion the map's completion text in positive", () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   assert.equal(endTitle(RUNNING), null, "a running map run has no title");
   for (const [cause, text] of [
     ["cold", "Mag zamarzł"],
@@ -104,6 +105,7 @@ test("the title after a death is the words of its cause in text-strong, after a 
 // (D-135, D-133). 116/480 is the example of D-135; 116 / 480 is hand-derived.
 test("the longest streak line gives the longest streak against the map's streak, positive where met, and none where the map asks no streak", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   assert.deepEqual(
     longestStreakLine(runOf({ longestStreak: 116 }), MAPS.forest),
     { text: "najdłuższa passa 116/480", share: 116 / 480, role: "text" },
@@ -231,6 +233,7 @@ test("the renewal line stands only after a first completion that made a used-up 
 // a discovery line standing with no discovery (D-122, D-312, D-313).
 test("the discovery line gives the band text of the discovery, and says whether its rule can be added", () => {
   // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened, with the text of the band"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   const discovered = {
     ...RUNNING,
     discovery: {
@@ -265,6 +268,7 @@ test("the discovery line gives the band text of the discovery, and says whether 
 // Catches a rule with a count shown as never fired, a rule with a count of 0 left out, or a number that
 // follows the saved program instead of the copy (D-93). The rule ids of the copy are 1, 2 and 3.
 test("the rules that never fired are the rules of the copy whose count is absent or 0, each with its number and its sentence", () => {
+  // decision: D-368 "Each section of why stands only where it has content"
   const state = {
     ...sent([
       rule({ kind: "explore" }),
@@ -287,6 +291,7 @@ test("the rules that never fired are the rules of the copy whose count is absent
 // into „W drodze”, „Czeka” or „Walka”, and a bar drawn where no minute was counted (D-93 gives the
 // percentages whole). Hand-derived: 30/85 is 35 %, 20/85 is 24 %, 8/85 is 9 %, 2/85 is 2 %.
 test("the shares of time join the walk kinds, wait and fight, keep at most five pieces of at least 8 %, and the rest in reszta", () => {
+  // decision: D-368 "Each section of why stands only where it has content"
   assert.deepEqual(
     timeShares(
       runOf({
@@ -358,6 +363,7 @@ test("the shares of time join the walk kinds, wait and fight, keep at most five 
 // Catches an item list in another form than the trip lines write it, the empty backpack given with items,
 // a count of tiles off the map's size (4 × 4 is 16), or minutes on the way that miss one of its kinds.
 test("the trip rows give what the character entered with, the revealed terrain and the minutes on the way", () => {
+  // decision: D-368 "Each section of why stands only where it has content"
   const tiles = RUNNING.run.tiles.map((tile, index) => ({
     ...tile,
     revealed: index < 5,
@@ -392,6 +398,7 @@ test("the trip rows give what the character entered with, the revealed terrain a
 test("the way-on buttons after a completion of Las name the map it opens, and none after a death or a completion of the map it opens", () => {
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
   // decision: D-53 "„Otwarte: {mapa} →” of the end-of-run window (D-368), which stands after a completion of a map that opens another, leads to the screen Mapy with the card of the map it opened"
+  // decision: D-368 "The window scrolls in itself while its buttons"
   assert.deepEqual(wayOnButtons(runOf({ completion: { minute: 480 } })), [
     { mapId: "forestDeep", text: "Otwarte: Las — głębiej →" },
   ]);

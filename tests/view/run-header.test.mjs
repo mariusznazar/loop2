@@ -111,6 +111,7 @@ test("the header reads the character's name, the map's name, the clock, the bar 
   // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
   // decision: D-130 "The player picks the pace with five buttons „1×”, „2×”, „4×”, „8×” and „16×” beside „Pauza” in the header of the screen of a map run"
   // decision: D-133 "During a map run the header shows a bar with numbers for the requirements present in the map's solving condition: „Passa {streak}/{required}” for a streak and „Pokonane napaści {count}/{required}” for beaten attacks, in that order when both are present"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const { container } = await draw(document, sent());
     const header = container.querySelector(".run-header");
@@ -158,6 +159,7 @@ test("the name is the one of the team member whose map run it is", async () => {
 // keeps the action of the character.
 test("the clock reads the game minute, „ (pauza)” after it while paused, and „Wznów” takes the place of „Pauza”", async () => {
   // decision: D-21 "A map run the player starts passes at one game minute per real second times the pace the player picks of 1×, 2×, 4×, 8× and 16×, and the player can pause and resume it"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const running = advanceMinutes(sent(), 3).state;
     const { container, show } = await draw(document, running);
@@ -249,6 +251,7 @@ test("after a death the clock stands at the minute of the death with no cause an
   // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
   // decision: D-62 "After a character's death the pace buttons are gone together with „Pauza”"
   // decision: D-334 "After a character's death it reads the cause of the death in the role `text`"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -270,6 +273,7 @@ test("after a death the clock stands at the minute of the death with no cause an
 test("after a completion the clock stands at the minute of the completion with no completion text and no „ (pauza)”; the paces and „Pauza” go, „Koniec przejścia”, „Restart” and „Zakończ” stand", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”"
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -292,6 +296,8 @@ test("after a completion the clock stands at the minute of the completion with n
 // the window closed, one after „Restart” and one asking for anything but the window.
 test("„Koniec przejścia” stands before „Restart” only in an ended map run with the window closed, and asks to open the window", async () => {
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
+  // decision: D-371 "„Koniec przejścia” stands in the header before „Restart”"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, asked, show } = await draw(document, running);
@@ -328,6 +334,9 @@ test("„Koniec przejścia” stands before „Restart” only in an ended map r
 // hidden while the window is closed or while the map run goes on.
 test("the header is hidden while the window stands over an ended map run, and shown otherwise", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
+  // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async ({ document }) => {
     const running = sent();
     const { container, show } = await draw(document, running);
@@ -354,6 +363,7 @@ test("the warning of a cut trip plan follows the current copy's take list", asyn
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
   // decision: D-188 "The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent"
+  // decision: D-311 "The header holds the character's name, the map's name, the clock"
   await withPage(async ({ document }) => {
     const map = MAPS.forest;
     MAPS.forest = { ...map, carryIn: 2 };

@@ -2223,6 +2223,8 @@ test("a crafted document of the current version is refused whole as shape", () =
   // decision: D-241 "The game state holds its earning loops beside the one manual map run, by character number, so a character has at most one, each with the content of the program taken at its start, its map run going on, the number of that map run, the count of its completions and the practice gathered from those completions since the player last took the practice waiting with „Odbierz”"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
   // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
+  // decision: D-369 "The record begins at the start of the map run and again at „Restart”"
   for (const [name, change] of Object.entries(CRAFTED))
     assertRefused(name, changed(change), "shape");
 });
@@ -2232,6 +2234,7 @@ test("a crafted document of the current version is refused whole as shape", () =
 test("the record loads back whole from a map run that goes on, one that died and one that completed", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const going = changed((document) => {
     document.game.paused = false;
     document.game.discovery = null;
@@ -2257,6 +2260,7 @@ test("the record loads back whole from a map run that goes on, one that died and
 // invariant: save-version
 // Catches a condition set one step too strict, each edge being a value the game writes.
 test("a record at the edges of what it admits loads", () => {
+  // decision: D-369 "The record begins at the start of the map run and again at „Restart”"
   const onlyWaiting = Object.fromEntries(
     Object.keys(RUN_RECORD.minutesByAction).map((kind) => [kind, 0]),
   );

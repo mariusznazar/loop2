@@ -80,6 +80,8 @@ const counted = (minutes) =>
 
 test("a map run starts with a longest streak of 0 and a count of 0 game minutes for every kind of the closed list, and no more than that list", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
+  // decision: D-369 "The record begins at the start of the map run and again at „Restart”"
   const { run } = sentWith(EXPLORING);
   assert.equal(run.longestStreak, 0);
   const ordinary = Object.entries(ACTIONS)
@@ -98,6 +100,7 @@ test("a map run starts with a longest streak of 0 and a count of 0 game minutes 
 });
 
 test("a game minute passed counts once, to the action under way at its start, a wait to the wait", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // Explore takes 20 game minutes; the tile is revealed by then, the program has no other rule,
   // so the character waits one game minute at a time.
   const { state } = advanceMinutes(sentWith(EXPLORING), 30);
@@ -109,6 +112,7 @@ test("a game minute passed counts once, to the action under way at its start, a 
 });
 
 test("the game minute of a death counts like any other, and the counts sum to the map run's game minute", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // As in streak.test.mjs: the body dies in game minute 2 of an exploration that would run to 20.
   const state = sentWith(EXPLORING);
   const dying = {
@@ -126,6 +130,7 @@ test("the game minute of a death counts like any other, and the counts sum to th
 
 test("the game minute of a completion counts like any other, on counts the map run already holds", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // A map run of Las at game minute 479 of an unbroken streak, after 479 minutes of exploring (a
   // state made by hand: Las cannot be survived that long by a program of one rule), whose
   // exploration ends in the next game minute.
@@ -156,6 +161,7 @@ test("the game minute of a completion counts like any other, on counts the map r
 
 test("the longest streak stays after the streak falls to 0 in the cold, and the same whichever way the span is split", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // No loss through game minute 83, so the streak is 83 there; game minute 84 is chilled.
   const whole = advanceMinutes(sentWith(EXPLORING), 90).state;
   assert.equal(whole.run.streak, 0);
@@ -178,6 +184,7 @@ test("the longest streak stays after the streak falls to 0 in the cold, and the 
 
 test("the longest streak stays after a change of the program, and grows again once the streak passes it", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const ten = advanceMinutes(sentWith(EXPLORING), 10).state;
   assert.equal(ten.run.longestStreak, 10);
   const changed = setProgram(
@@ -219,6 +226,7 @@ test("the minutes of a fight count to the fight, the minute of the attack to wha
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
   // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const { state, seen } = fought();
   const { run } = state;
   // Attacked at the end of game minute A; the five game minutes of the fight are A + 1 to A + 5,
@@ -251,6 +259,7 @@ test("the minutes of a fight count to the fight, the minute of the attack to wha
 });
 
 test("a span split into any calls of the simulation gives the same record, a fight included", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const { state: reference } = fought();
   assert.equal(
     reference.run.minutesByAction.combat,
@@ -272,6 +281,7 @@ test("a span split into any calls of the simulation gives the same record, a fig
 });
 
 test("settling the death leaves the record as it is, and so does editing the program", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const { state } = fought();
   const settled = settleDeath(state, FIGHT_MS).state;
   assert.notEqual(settled.run.deathSettlement, null);
@@ -281,6 +291,7 @@ test("settling the death leaves the record as it is, and so does editing the pro
 });
 
 test("a map run entered with what the send took from the chest keeps it, in the order of the data's items, none at 0, whatever the take list's order", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   // The take list names berries first; the chest holds 12 sticks and 12 berries, the backpack takes
   // 15 pieces, so 10 berries and 5 sticks. Moss is not asked for.
   const state = sentWithChest(
@@ -301,6 +312,7 @@ test("a map run entered with what the send took from the chest keeps it, in the 
 });
 
 test("a map run entered with an empty backpack keeps an empty list", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   assert.deepEqual(sentWith(EXPLORING).run.enteredWith, []);
   // A take list the chest cannot serve takes nothing.
   const state = sentWithChest(
@@ -315,6 +327,7 @@ test("a map run entered with an empty backpack keeps an empty list", () => {
 
 test("a map run of a solved map keeps what it took from nowhere, and the chest stays as it was", () => {
   // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const state = sentWithChest(
     taking([{ item: "stick", count: 4 }], {
       condition: ALWAYS,
@@ -329,6 +342,7 @@ test("a map run of a solved map keeps what it took from nowhere, and the chest s
 });
 
 test("what the character entered with stays to the end, though the backpack empties", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const state = sentWithChest(
     taking([{ item: "berry", count: 3 }], {
       condition: ALWAYS,
@@ -343,6 +357,7 @@ test("what the character entered with stays to the end, though the backpack empt
 
 test("a restart binds the record anew: the entry list from the copy and the chest as they stand, the longest streak and the counts from 0", () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached"
+  // decision: D-369 "The record begins at the start of the map run and again at „Restart”"
   const state = sentWithChest(
     taking([{ item: "stick", count: 4 }], {
       condition: ALWAYS,
@@ -370,6 +385,7 @@ test("a restart binds the record anew: the entry list from the copy and the ches
 });
 
 test("a map run of an earning loop keeps none of the record", () => {
+  // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const game = { ...newKnowingGame(), solvedMaps: ["forest"] };
   const ready = createCharacter(setProgram(game, EXPLORING).state, "Ala").state;
   const looping = startLoop(

@@ -226,6 +226,7 @@ test("„Restart” starts the chronicle anew and keeps the tab and the filter p
 // D-343, D-346, D-383. Catches the entries of an ended map run carried over to the next one, and
 // the tab and the filter of the ended one kept after a send.
 test("„Zakończ” clears the chronicle and a new send starts with Kronika and Wszystko picked", async () => {
+  // decision: D-311 "The screen of a map run has two columns under one header"
   await onPage(async (page) => {
     const { root } = page;
     const { view, address } = await viewOf(exploring());

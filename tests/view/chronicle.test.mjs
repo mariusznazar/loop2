@@ -714,6 +714,7 @@ test("a listener is called once for a result that changed the chronicle and once
 // the minutes, and an act after the end stands after it.
 test("the entries up to the death end with its entry, oldest first, leave out the paragraph of the last encounter and stay as they were after an edit", () => {
   // decision: D-147 "At the end of the map run the same paragraph stands in the end-of-run window (D-368), in a section of its own outside „Ostatnie minuty”, and after a load of the saved game state too"
+  // decision: D-368 "Each section of why stands only where it has content"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   recordEvents(chronicle, state, [attacked(5)]);
@@ -742,6 +743,7 @@ test("the entries up to the death end with its entry, oldest first, leave out th
 // Catches the last minutes shown with no death recorded, or with the entries of a chronicle that began
 // at a load, which holds only the paragraph of the last encounter (D-339).
 test("the entries up to the death are empty while no death is recorded and after a load", () => {
+  // decision: D-368 "Each section of why stands only where it has content"
   const { chronicle, state } = sentChronicle();
   recordEvents(chronicle, state, [started(3, { kind: "explore" })]);
   assert.deepEqual(chronicle.entriesToDeath(4), []);

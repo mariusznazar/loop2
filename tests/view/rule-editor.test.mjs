@@ -1671,6 +1671,7 @@ const probeIn = (root) => root.querySelector(".probe-panel");
 
 // Catches the panel standing beside the list or at its end, and the panel inside the row's own item.
 test("a list given a panel draws it right after the open row and never inside the row's item", async () => {
+  // decision: D-311 "The screen of a map run has two columns under one header"
   await withPage(async (page) => {
     await mount(page, twoGroups(), {
       open: { groupId: 1, ruleId: 1 },
@@ -1693,6 +1694,7 @@ test("a list given a panel draws it right after the open row and never inside th
 
 // Catches a header whose panel stands under its rules and a header of a group other than the open one.
 test("a list given a panel draws it right after the open header, above the rules of that group", async () => {
+  // decision: D-311 "The screen of a map run has two columns under one header"
   await withPage(async (page) => {
     await mount(page, twoGroups(), {
       open: { groupId: 2, ruleId: null },

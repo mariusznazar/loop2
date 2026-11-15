@@ -143,6 +143,7 @@ const pressedIn = (container) =>
 // bring the other content.
 test("the area under the drawing holds the tabs Kronika and Teren with Kronika picked first, and a click on a tab tells the chronicle and shows its content alone", async () => {
   // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"
+  // decision: D-311 "The screen of a map run has two columns under one header"
   await withPage(async ({ document }) => {
     const { chronicle, state } = sentChronicle();
     const { container } = await draw(document, chronicle, state);
