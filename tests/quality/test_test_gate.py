@@ -1,9 +1,28 @@
 """The file selection of D-77 runs one real test file and refuses an empty run; the whole run
-gives the Python runner one job at a time (D-406)."""
+runs the directories of Python tests at the same time (D-406)."""
 
+import json
 import unittest
 
 from gate_fixture import GateFixture
+
+# A test of one directory that passes only once the test of the other has begun: the two
+# directories run at the same time or the first one fails after its wait.
+MEETS = """\
+import time
+import unittest
+from pathlib import Path
+
+
+class Meets(unittest.TestCase):
+
+    def test_the_other_directory_runs_at_the_same_time(self):
+        Path({mine}).write_text("here")
+        deadline = time.monotonic() + 20
+        while not Path({theirs}).exists():
+            self.assertLess(time.monotonic(), deadline, "the other directory did not begin")
+            time.sleep(0.05)
+"""
 
 
 class TestGate(unittest.TestCase):
@@ -38,17 +57,27 @@ class TestGate(unittest.TestCase):
         self.assertTrue((self.gate.root / "tests/selected.test.mjs.ran").exists())
         self.assert_focused()
 
-    def test_the_whole_gate_runs_its_stages_and_gives_the_python_runner_one_job(self):
-        # decision: D-406 "The full gate runs the directories of Python tests one after another"
-        # Breaking it: drop `--jobs 1` from the stage that runs the Python tests and the runner
-        # is given no argument, so its directories run at the same time.
+    def test_the_whole_gate_runs_its_stages(self):
         self.gate.write("tests/passing.test.mjs",
                         'import test from "node:test"; test("passes", () => {});\n')
         result = self.gate.run()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual((self.gate.root / "built").read_text(encoding="utf-8"), "yes")
-        self.assertEqual((self.gate.root / "python-stage").read_text(encoding="utf-8"), "--jobs 1")
+        self.assertTrue((self.gate.root / "python-stage").exists())
         self.assertTrue((self.gate.root / "foundation-stage").exists())
+
+    def test_the_whole_gate_runs_the_directories_of_python_tests_at_the_same_time(self):
+        # decision: D-406 "The full gate runs the directories of Python tests at the same time"
+        # Breaking it: give the Python stage `--jobs 1` and the first directory waits for a
+        # directory that does not begin until it ends, so it fails after its wait.
+        self.gate.use_real_python_runner()
+        for mine, theirs in (("one", "two"), ("two", "one")):
+            self.gate.write(f"tests/{mine}/test_meets.py", MEETS.format(
+                mine=json.dumps(str(self.gate.root / f"{mine}.here")),
+                theirs=json.dumps(str(self.gate.root / f"{theirs}.here"))))
+        self.gate.track_files()
+        result = self.gate.run(timeout=120)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_empty_or_skipped_only_files_fail(self):
         # invariant: focused-test-execution

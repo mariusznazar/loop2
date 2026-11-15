@@ -1,7 +1,8 @@
 """Run the complete gate, or exactly one Node or Python test file (D-77).
 
 A run gives the Python tests one state file of `docker_gate`, so that a test that needs Docker
-starts Docker Desktop when no daemon answers, and a start that did not finish is awaited once.
+starts Docker Desktop when no daemon answers, and the directories that run at the same time
+start it and await it once.
 """
 
 import importlib.util
@@ -48,10 +49,8 @@ def main(arguments):
     if not arguments:
         stages = [build,
                   lambda: command("node", "--test", *NODE_TESTS),
-                  # One directory at a time: a start of Docker Desktop that has not finished is
-                  # not yet known to a directory running beside it (D-406).
-                  lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py",
-                                  "--jobs", "1"),
+                  # The directories of tests run at the same time (D-406).
+                  lambda: command(sys.executable, "-B", ".the-way/gate/run_tests.py"),
                   lambda: command(sys.executable, "-B",
                                   ".the-way/elements/common/foundation_check.py")]
         for stage in stages:

@@ -825,6 +825,12 @@ On 2026-11-14, the game's dump file `/var/log/loop2-app.log` on the test server'
 
 - **Source:** reading: `grep -F -m 50 -- 'link-issued' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:05.952126792Z {"event":"link-issued","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- 'message-sent' /var/log/loop2-app.log` — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:06.406314841Z {"event":"message-sent","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- '"failure":"mail"' /var/log/loop2-app.log` — grep printed no line; run 2026-11-14
 
+## windows-file-lock-release-at-process-end
+
+On Windows, when a process terminates with a portion of a file locked, the operating system unlocks the locks, and the time it takes depends upon available system resources.
+
+- **Source:** https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfile (archived: https://web.archive.org/web/20261024175828/https://learn.microsoft.com/en-us/windows/win32/api/FileAPI/nf-fileapi-lockfile, 2026-10-24) § Remarks — "If a process terminates with a portion of a file locked or closes a file that has outstanding locks, the locks are unlocked by the operating system. However, the time it takes for the operating system to unlock these locks depends upon available system resources."; read 2026-11-15
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

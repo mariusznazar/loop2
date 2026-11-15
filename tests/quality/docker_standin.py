@@ -15,41 +15,70 @@ import tempfile
 PROGRAM = '''\
 import json
 import sys
+import time
 from pathlib import Path
 
 folder = Path(__file__).resolve().parent
-arguments = sys.argv[1:]
-with (folder / "calls.log").open("a", encoding="utf-8") as log:
-    log.write(json.dumps(arguments) + "\\n")
-state_file = folder / "state.json"
-state = json.loads(state_file.read_text(encoding="utf-8"))
+LOCK_STALE_AFTER = 5  # seconds after which a lock left by a killed call is taken over
 
-if arguments[:2] == ["desktop", "--help"]:
-    if not state["plugin"]:
-        sys.stderr.write("docker: unknown command: docker desktop\\n")
-        sys.exit(1)
-elif arguments[:2] == ["desktop", "start"]:
-    if not state["plugin"]:
-        sys.exit(1)
-    state["started"] = True
-elif arguments[:1] == ["version"]:
-    if state["started"]:
-        state["polls"] += 1
-    rise = state["rise_after_polls"]
-    if state["answers"] or (state["started"] and rise is not None and state["polls"] > rise):
-        state["answers"] = True
-        code = 0
-    else:
-        code = 1
+
+def answer(arguments, state):
+    \"\"\"The exit code, standard output and standard error of one call; may change `state`.\"\"\"
+    if arguments[:2] == ["desktop", "--help"]:
+        if not state["plugin"]:
+            return 1, "", "docker: unknown command: docker desktop\\n"
+        return 0, "", ""
+    if arguments[:2] == ["desktop", "start"]:
+        if not state["plugin"]:
+            return 1, "", ""
+        state["started"] = True
+        return 0, "", ""
+    if arguments[:1] == ["version"]:
+        if state["started"]:
+            state["polls"] += 1
+        rise = state["rise_after_polls"]
+        if state["answers"] or (state["started"] and rise is not None
+                                and state["polls"] > rise):
+            state["answers"] = True
+            return 0, "99.0.0\\n", ""
+        return 1, "", "error during connect: the daemon is not running\\n"
+    return 2, "", ""
+
+
+def take_lock():
+    # Calls that overlap, as those of the processes of one gate do, take turns: each reads the
+    # state, answers and writes it whole while it holds the one lock directory.
+    waited_from = time.monotonic()
+    while True:
+        try:
+            (folder / "lock").mkdir()
+            return
+        except FileExistsError:
+            if time.monotonic() - waited_from > LOCK_STALE_AFTER:
+                try:
+                    (folder / "lock").rmdir()
+                except FileNotFoundError:
+                    pass
+            time.sleep(0.01)
+
+
+take_lock()
+try:
+    arguments = sys.argv[1:]
+    with (folder / "calls.log").open("a", encoding="utf-8") as log:
+        log.write(json.dumps(arguments) + "\\n")
+    state_file = folder / "state.json"
+    state = json.loads(state_file.read_text(encoding="utf-8"))
+    code, output, error = answer(arguments, state)
     state_file.write_text(json.dumps(state), encoding="utf-8")
-    if code:
-        sys.stderr.write("error during connect: the daemon is not running\\n")
-    else:
-        sys.stdout.write("99.0.0\\n")
-    sys.exit(code)
-else:
-    sys.exit(2)
-state_file.write_text(json.dumps(state), encoding="utf-8")
+finally:
+    try:
+        (folder / "lock").rmdir()
+    except FileNotFoundError:  # taken over as stale by a call that waited too long
+        pass
+sys.stdout.write(output)
+sys.stderr.write(error)
+sys.exit(code)
 '''
 
 

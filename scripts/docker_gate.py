@@ -13,6 +13,16 @@ and the processes the run starts, one for each directory of Python tests, inheri
 every later test of the run is skipped at once and the run waits at most once. A process that finds
 no variable makes a file of its own for itself and the processes it starts.
 
+A start in progress is known to the other processes of the run by a lock the process that starts
+holds beside the state file, from before it asks Docker Desktop to start until it has the answer.
+A process that finds no daemon and the lock held waits for the lock instead of starting, and then
+goes by what the start left: a gap recorded, a daemon answering, or, where the process that
+started died, neither, and then it starts itself. The operating system releases the lock of a
+process that died, on Windows after a time that depends on available system resources, so a dead
+start holds the others for that time at most. The wait for the lock ends at the limit of the
+process that waits, counted from its first ask: the process then gives, and records for the run,
+the gap of a start that did not finish, and starts none of its own.
+
 `LOOP2_DOCKER_START_LIMIT` (seconds) replaces the limit; the tests of this module use it to wait
 seconds, not minutes.
 """
@@ -23,6 +33,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -30,6 +41,27 @@ START_LIMIT = 180        # seconds the first test that needs Docker waits for a 
 ANSWER_LIMIT = 30        # seconds for one `docker version` to answer
 START_COMMAND_LIMIT = 60  # seconds for `docker desktop start` itself to return
 POLL_INTERVAL = 1        # seconds between two asks of the daemon while waiting
+
+if sys.platform == "win32":
+    import msvcrt
+
+    def try_lock(descriptor):
+        """True when this process now holds the lock of the open file `descriptor`."""
+        try:
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+        except OSError:
+            return False
+        return True
+else:
+    import fcntl
+
+    def try_lock(descriptor):
+        """True when this process now holds the lock of the open file `descriptor`."""
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return False
+        return True
 
 STATE_VARIABLE = "LOOP2_DOCKER_RUN_STATE"
 LIMIT_VARIABLE = "LOOP2_DOCKER_START_LIMIT"
@@ -108,6 +140,30 @@ def shared_state():
                 os.environ[STATE_VARIABLE] = previous
 
 
+class StartWaitExpired(Exception):
+    """The start lock was not let go of before the limit of the process that waited for it."""
+
+
+@contextlib.contextmanager
+def start_lock(deadline):
+    """Held by the one process of a run that is starting Docker Desktop. Yields whether the
+    process had to wait for another to let go, and raises `StartWaitExpired` where the lock is
+    not let go of by `deadline`. The lock is the operating system's, on a file beside the state
+    file, and is let go of by the operating system when its holder ends, however it ends, on
+    Windows after a time that depends on available system resources."""
+    descriptor = os.open(state_file() + ".lock", os.O_RDWR | os.O_CREAT)
+    try:
+        waited = False
+        while not try_lock(descriptor):
+            if time.monotonic() >= deadline:
+                raise StartWaitExpired
+            waited = True
+            time.sleep(min(POLL_INTERVAL, max(0, deadline - time.monotonic())))
+        yield waited
+    finally:
+        os.close(descriptor)
+
+
 def start_desktop(timeout=START_COMMAND_LIMIT):
     """Asks Docker Desktop to start, without waiting for it and without keeping its output."""
     with contextlib.suppress(OSError, subprocess.TimeoutExpired):
@@ -125,7 +181,9 @@ def within(deadline, cap):
 def daemon_gap():
     """None when a Docker daemon answers, after starting Docker Desktop if that was needed and
     possible; otherwise the sentence that says why no daemon answers. The limit is counted from
-    the first ask, and every call of `docker` here is held to what remains of it."""
+    the first ask, or from the end of the wait for another process's start where this process,
+    after that wait, must start Docker Desktop itself; every call of `docker` here, and the wait
+    for another process's start, is held to what remains of it."""
     gap = recorded_gap()
     if gap:
         return gap
@@ -137,6 +195,23 @@ def daemon_gap():
         return "no Docker daemon answers: `docker` is not on PATH"
     if not desktop_present(timeout=within(deadline, ANSWER_LIMIT)):
         return "no Docker daemon answers, and this computer has no Docker Desktop to start"
+    try:
+        with start_lock(deadline) as waited:
+            gap = recorded_gap()
+            if gap:
+                return gap
+            if waited:
+                deadline = time.monotonic() + limit
+            if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
+                return None
+            return started_gap(limit, deadline)
+    except StartWaitExpired:
+        return unfinished_gap(limit)
+
+
+def started_gap(limit, deadline):
+    """Starts Docker Desktop and waits for a daemon until `deadline`: None when one answers,
+    otherwise the gap, which is recorded for the run. Called with the start lock held."""
     start_desktop(timeout=within(deadline, START_COMMAND_LIMIT))
     while True:
         if daemon_answers(timeout=within(deadline, ANSWER_LIMIT)):
@@ -144,6 +219,11 @@ def daemon_gap():
         if time.monotonic() >= deadline:
             break
         time.sleep(min(POLL_INTERVAL, max(0, deadline - time.monotonic())))
+    return unfinished_gap(limit)
+
+
+def unfinished_gap(limit):
+    """The gap of a start that did not finish in the limit, recorded for the run."""
     gap = (f"no Docker daemon answers: the gate tried to start Docker Desktop and no daemon "
            f"answered within {limit:g} seconds")
     record_gap(gap)
