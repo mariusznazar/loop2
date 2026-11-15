@@ -1460,12 +1460,16 @@ With the bought branch „Czysty płomień”, „Zapal — ognisko” requires 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-175
-- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
-  - complies: „Zapal — ognisko” taking two sticks from the backpack and the nature energy of its
-    price in the game minute it finishes; a lighting interrupted by an attack in its third game
-    minute leaving the sticks and the nature energy as they were;
-  - violates: „Zapal” using no nature energy, or using no sticks without „Czysty płomień”; the nature energy taken when the
-    lighting starts; „Zapal — patyk” carried out as a combat action.
+- **Verification:** invariants: nature-energy-range. tests: „Zapal — ognisko” and „Zapal — patyk”
+  as the actions of the spell Płomyk, each priced at its sticks and 10 nature energy; the sticks and
+  the nature energy leaving together when the lighting finishes, neither while it goes on, nor
+  where the lighting takes no hold or an attack interrupts it; with „Czysty płomień”,
+  „Zapal — ognisko” feasible with no sticks, consuming none and costing the nature energy of
+  ordinary lighting. For the lightings being ordinary actions carried out outside combat, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: „Zapal — ognisko” and „Zapal — patyk” started by a program rule outside combat, as
+    any ordinary action of the character, and never as the action of a combat turn;
+  - violates: „Zapal — patyk” carried out as a combat action.
 - **Origin:** none
 
 *Rationale:* Płomyk keeps the sticks lighting has used and adds nature energy, so a spell that lights
@@ -1559,9 +1563,9 @@ A campfire that burns out stays on its tile, extinguished, and can be lit again.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zapal — ognisko” carried out at an extinguished campfire; „Idź — ognisko” leading to an extinguished campfire as to a known one;
-  - violates: a campfire that disappears once its minutes of burning run out.
+- **Verification:** tests: a campfire whose minutes of burning run out staying on its tile with no
+  minutes left, which the list of revealed tiles reads as extinguished; „Zapal — ognisko” feasible
+  at a campfire with no minutes left.
 - **Origin:** none
 
 *Rationale:* A campfire built from sticks stays a place the character can return to and light again for less than building anew, and a program can lead the character back to it as to a known campfire.
@@ -1574,9 +1578,9 @@ Each feeding of a campfire burning at the feeding's start adds, at the feeding's
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a campfire with 150 minutes left at a feeding's end burning 170 after a feeding that adds 20; a campfire with 3 minutes left at the start of a feeding of 5 game minutes burning 20 minutes after it;
-  - violates: a feeding that stops at a ceiling of minutes of burning; a feeding that adds nothing to a campfire that burnt out during it.
+- **Verification:** tests: a feeding feasible only at a burning campfire, adding at its end its 20
+  minutes to those the campfire of the character's tile has left then, with no ceiling, 1000
+  minutes included; a campfire that burnt out during the feeding burning 20 minutes again.
 - **Origin:** none
 
 *Rationale:* Feeding is paid with fuel piece by piece, so a program that gathers enough can keep its fire burning for hours ahead. A feeding takes effect at its end, as every action of the character does, and lands on the campfire it was started at, so a program rule that feeds a campfire with fewer minutes left than a feeding lasts feeds it. Accepted with it: a campfire that burns out during a feeding burns again for one piece of fuel, fewer sticks than „Zapal — ognisko” uses.
@@ -1617,9 +1621,10 @@ A character crafts a campfire and lights a stick on a revealed tile, as it gathe
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-25
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Wytwórz — ognisko” passed over after „Wędruj” onto a tile not yet revealed, and carried out once „Eksploruj” has revealed it;
-  - violates: a campfire or a burning stick standing on a tile not yet revealed.
+- **Verification:** tests: „Wytwórz — ognisko” and „Zapal — patyk” feasible on a revealed tile and
+  not on one not yet revealed; a program whose first rules craft a campfire and light a stick
+  passing over them on the entrance not yet revealed to explore it, and carrying them out once
+  „Eksploruj” has revealed it.
 - **Origin:** none
 
 *Rationale:* Every campfire and every burning stick then stands on a revealed tile, so the drawing shows the campfire's icon and the list of revealed tiles shows its state and the burning stick's, as for the stock a gathering takes from; the list of revealed tiles and the drawing keep the meanings they have. Accepted with it: a program that crafts a campfire or lights a stick after wandering onto a tile not yet revealed passes on to its next program rule.
@@ -3671,9 +3676,14 @@ spells and pays nothing for them.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a hungry mage whose nature energy stops coming back, spells closing before health falls
-  - violates: a spell that lowers satiety; nature energy at zero taking health
+- **Verification:** tests: each lighting costing the mage 10 nature energy, with „Czysty płomień”
+  too; the energy coming back only in a game minute whose satiety after its fall reaches 60; empty
+  nature energy leaving no lighting feasible and taking no health. For a character without nature
+  energy, an agent compares a change with the part no test holds:
+  - complies: an archetype added to the data with no nature energy, whose characters carry out no
+    „Zapal — ognisko” and no „Zapal — patyk” and pay nothing for them
+  - violates: a character without nature energy carrying out „Zapal — patyk”; a lighting of such a
+    character paid with satiety or health in place of the energy
 - **Origin:** none
 
 *Rationale:* a need hurts when it runs out; nature energy only closes the spells, so it is no third
@@ -3690,11 +3700,13 @@ cap.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-175
-- **Verification:** an agent compares a change with the decision:
-  - complies: a mage whose map run ended in death with 20 nature energy starting with 100 both the
-    map run „Restart” starts and the next map run it is sent on
-  - violates: nature energy carried from one map run into the next; „Restart” keeping the nature
-    energy of the game minute of death
+- **Verification:** tests: a map run sent, one started by „Restart” after nature energy was spent,
+  and one sent after „Zakończ”, each starting with nature energy at the cap of 100. For the map
+  runs of an earning loop, an agent compares a change with the part no test holds:
+  - complies: each map run of an earning loop starting with nature energy 100, whatever the map run
+    before it ended with
+  - violates: a map run of an earning loop starting with the nature energy the loop's previous map
+    run ended with
 - **Origin:** none
 
 *Rationale:* nature energy belongs to the map run, as the body does, so every map run starts from
@@ -3714,12 +3726,17 @@ any action of the character not feasible then, and the rule stays in the program
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-175
-- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
-  - complies: a program rule „Zapal — patyk” passed over with 5 nature energy at a price of 10, and
-    the next program rule carried out; „Zapal — ognisko” carried out with 10 nature energy at a
-    price of 10
-  - violates: Płomyk carried out with less nature energy than its price; a program rule of Płomyk
-    taken out of the program for want of nature energy
+- **Verification:** invariants: nature-energy-range. tests: „Zapal — ognisko”, „Zapal — patyk” and
+  „Zapal — ognisko” with „Czysty płomień” feasible with nature energy equal to the price of 10 and
+  not with less; a program passing over its rule „Zapal — patyk” with 5 nature energy to pick the
+  next rule, and picking it with 10. For a program rule of „Zapal — ognisko” passed over and for
+  the rule staying in the program, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: a program rule „Zapal — ognisko” passed over with 5 nature energy and the next
+    program rule carried out, the rule still standing in the program and carried out once the
+    energy has come back to 10
+  - violates: a program rule of Płomyk taken out of the program, or switched off, for want of
+    nature energy
 - **Origin:** none
 
 *Rationale:* a spell the mage cannot pay for is no action of the character to carry out then, so the
@@ -9767,9 +9784,10 @@ In a game minute outside combat in which the mage's satiety, taken after its fal
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-175 · derives from D-176
-- **Verification:** invariants: nature-energy-range. An agent compares a change with the decision:
-  - complies: satiety 60.6 falling to 60 in a game minute giving back 0.5, so that 40 nature energy becomes 40.5; satiety 60.5 falling to 59.9 giving back nothing; 99.75 nature energy becoming 100 and 100 staying 100
-  - violates: nature energy coming back in a game minute whose satiety is 60 or above before the fall and below 60 after it; nature energy rising above its cap
+- **Verification:** invariants: nature-energy-range. tests: nature energy coming back by 0.5 in a
+  game minute outside combat whose satiety after its fall is 60 or above, by nothing where it is
+  below 60, and not above the cap of 100, also in the game minute a lighting finishes and in the
+  first game minute after combat.
 - **Origin:** none
 
 *Rationale:* the rate of 0.5 a game minute and the satiety of 60 are those of the old loop game's data, and its tests compare the satiety with the threshold after the fall of the same game minute, as this decision does. The place of the game minute in which the energy comes back is D-71's, and the cap and the full start of a map run are D-176's.
@@ -9782,9 +9800,9 @@ On Las a program built of the closed lists of conditions and actions keeps the m
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-63
-- **Verification:** an agent compares a change with the decision:
-  - complies: a test of the simulation that runs a program which eats, keeps a campfire and keeps berries and sticks at hand through 480 game minutes alive on a seed it names, each lighting taking its price in nature energy, and the empty program on that seed dying
-  - violates: a price of lighting, a rate of coming back or a number of the body left in the data under which no program built of the closed lists passes Las; a program made to pass by a rule outside the closed lists
+- **Verification:** tests: on Las, on the seed a test names, a program of the kinds of the closed
+  lists of conditions and actions living through 480 game minutes, lighting, feeding and eating,
+  with nature energy spent on its lightings, and the empty program dying there.
 - **Origin:** none
 
 *Rationale:* Las is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
