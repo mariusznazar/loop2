@@ -47,6 +47,24 @@ export type PreviousSavePrivilegeOutcome =
       accountId: string;
     }
   | { outcome: "unknown" };
+// One account as the owner panel lists it (D-411): its address, role, blocked
+// state and previous-save privilege, and nothing else of the account.
+export interface AccountSummary {
+  email: string;
+  role: AccountRole;
+  blocked: boolean;
+  previousSaveAllowed: boolean;
+}
+export type RoleOutcome =
+  | {
+      outcome:
+        "made-owner" | "already-owner" | "made-player" | "already-player";
+      accountId: string;
+    }
+  | { outcome: "unknown" };
+// The block of the owner panel: the block's own answers, or a refusal for an
+// account with the owner role (D-137).
+export type PanelBlockOutcome = BlockOutcome | { outcome: "owner" };
 export type ResetSavedGameOutcome = {
   outcome: "moved" | "nothing-to-move" | "blocked" | "unprivileged";
 };
@@ -347,7 +365,11 @@ export class AccountDatabase {
 
   private readAccount(sql: string, value: string): Account | null {
     const row = this.connection.prepare(sql).get(value);
-    if (!row) return null;
+    return row ? this.accountFromRow(row) : null;
+  }
+
+  // Checks one stored account row and reads it, the same way for every reader.
+  private accountFromRow(row: Record<string, unknown>): Account {
     if (
       typeof row.id !== "string" ||
       typeof row.email !== "string" ||
@@ -465,20 +487,26 @@ export class AccountDatabase {
     return this.transaction((): BlockOutcome => {
       const account = this.findAccountByEmail(email);
       if (!account) return { outcome: "unknown" };
-      this.connection
-        .prepare("UPDATE accounts SET blocked = 1 WHERE id = ?")
-        .run(account.id);
-      this.connection
-        .prepare("DELETE FROM sessions WHERE account_id = ?")
-        .run(account.id);
-      this.connection
-        .prepare("UPDATE emailed_links SET spent = 1 WHERE account_id = ?")
-        .run(account.id);
-      return {
-        outcome: account.blocked ? "already-blocked" : "blocked",
-        accountId: account.id,
-      };
+      return this.markBlocked(account);
     });
+  }
+
+  // The marking, deletion and stopping of a block; callers run it inside
+  // their own transaction.
+  private markBlocked(account: Account): BlockOutcome {
+    this.connection
+      .prepare("UPDATE accounts SET blocked = 1 WHERE id = ?")
+      .run(account.id);
+    this.connection
+      .prepare("DELETE FROM sessions WHERE account_id = ?")
+      .run(account.id);
+    this.connection
+      .prepare("UPDATE emailed_links SET spent = 1 WHERE account_id = ?")
+      .run(account.id);
+    return {
+      outcome: account.blocked ? "already-blocked" : "blocked",
+      accountId: account.id,
+    };
   }
 
   // Clears the blocked state only; the sessions deleted and the links stopped
@@ -803,6 +831,57 @@ export class AccountDatabase {
         outcome: granted ? "granted" : "revoked",
         accountId: account.id,
       };
+    });
+  }
+
+  // Every account, sorted by address, with the four fields the owner panel
+  // shows (D-411, D-112) and nothing else of it.
+  listAccounts(): AccountSummary[] {
+    return this.connection
+      .prepare("SELECT * FROM accounts ORDER BY email")
+      .all()
+      .map((row) => {
+        const account = this.accountFromRow(row);
+        return {
+          email: account.email,
+          role: account.role,
+          blocked: account.blocked,
+          previousSaveAllowed: account.previousSaveAllowed,
+        };
+      });
+  }
+
+  // Gives or takes the owner role of the account of a normalized address, in
+  // one transaction, reporting what it found (D-410). Neither ends a session
+  // nor stops a link, and neither touches the block or the privilege.
+  setAccountRole(email: string, role: AccountRole): RoleOutcome {
+    return this.transaction((): RoleOutcome => {
+      const account = this.findAccountByEmail(email);
+      if (!account) return { outcome: "unknown" };
+      if (account.role === role)
+        return {
+          outcome: role === "owner" ? "already-owner" : "already-player",
+          accountId: account.id,
+        };
+      this.connection
+        .prepare("UPDATE accounts SET role = ? WHERE id = ?")
+        .run(role, account.id);
+      return {
+        outcome: role === "owner" ? "made-owner" : "made-player",
+        accountId: account.id,
+      };
+    });
+  }
+
+  // The block of the owner panel (D-137): the block of `blockAccount` in the
+  // same transaction, except that the role is read there first, and an account
+  // with the owner role is left as it is, its own included.
+  blockForPanel(email: string): PanelBlockOutcome {
+    return this.transaction((): PanelBlockOutcome => {
+      const account = this.findAccountByEmail(email);
+      if (!account) return { outcome: "unknown" };
+      if (account.role === "owner") return { outcome: "owner" };
+      return this.markBlocked(account);
     });
   }
 
