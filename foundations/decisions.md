@@ -5736,15 +5736,16 @@ the last two touch those data and write no kind or code.
 - **Scope:** browser-view · account-server · build-tools · deployment
 - **Based on:** node-uncaught-default-print · python-uncaught-default-print · html-exception-reporting
 - **Relations:** derives from D-252
-- **Verification:** an agent compares a change with the decision:
-  - complies: a new command that opens the account database installing the handler before its work;
-    a script of the test gate that ends on an uncaught error with its runtime's default print; an
-    error thrown in a timer of the page leaving in the console one line `uncaught kind=TypeError
-    code=none place=…` and nothing else of the browser
-  - violates: the message or the stack of an uncaught error printed by a process that touches the
-    data of accounts; a handler of its own added to a script that touches none; the event of an
-    error nothing handled left uncancelled, so that the browser prints its text and stack; the text
-    of an error in a line of the page
+- **Verification:** tests: the server, `account-block`, `account-previous-save` and
+  `account-backup` each ending on an exception or a rejection no code handled with one line of its
+  kind, code and place and none of its text; the page cancelling an error and a rejection no code
+  handled and writing in the console one plain line of the kind, the code and the place of its
+  handler, never the error's text or stack, the same line once until the page is reloaded, also
+  when its report fails; the command that stops the local start, which touches no account data,
+  ending on what nothing handled with Node's default print. An agent compares a change with the
+  part no test holds:
+  - complies: a script of the test gate that touches no account data ending on an uncaught error with the default print of Node.js or Python; `account-database-check`, `measure-passwords`, `deploy/loop2-backup` and `scripts/restore-trial.mjs` keeping the last-resort handling they have
+  - violates: a handler of its own added to a script that touches no account data; a script that touches no account data catching what nothing handled and ending with nothing of it written
 - **Origin:** none
 
 *Rationale:* a process that reads accounts can fail on an error that quotes an address or a stored
@@ -5779,7 +5780,10 @@ touches neither the test server nor a player's save.
 - **Scope:** agent-workflow · build-tools
 - **Based on:** none
 - **Relations:** derives from D-12 · derives from D-110
-- **Verification:** invariants: local-start-access. An agent compares a change with the decision:
+- **Verification:** invariants: local-start-access. tests: `npm run local`, one command, starting
+  the game over HTTPS at an address where a browser registers and signs in and which presents a
+  certificate that holds for it. An agent compares a change with the part no invariant and no test
+  holds:
   - complies: a check on an account made through the form of a game started by the command; a game
     state holding the verbs of combat and a bought branch, built with functions of the simulation
     and sent by the save request of that account
@@ -5844,11 +5848,15 @@ counts as running. A person plays on the test server.
 - **Scope:** build-tools · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-255
-- **Verification:** an agent compares a change with the decision:
-  - complies: an account gone after the next start; a start still running keeping its database
-    beside a later one
-  - violates: a setting that keeps the database between starts; a start that removes the database
-    of a start still running
+- **Verification:** tests: each start making a database of its own, which neither an environment
+  value nor an argument leads elsewhere; an account of a start that ended or was killed gone at the
+  next start, which removes the databases of the starts it does not find running and keeps that of
+  a start still running beside it; a start whose process number is in use and whose port takes a
+  connection and stays silent counted as running, and one whose number another program holds and
+  whose port takes no connection counted as ended. An agent compares a change with the part no
+  test holds:
+  - complies: a person who asks where to play sent to the test server by the description of the local start
+  - violates: a description of the local start, or a skill, that offers it to a person as a place to play
 - **Origin:** none
 
 *Rationale:* a database made for one check starts from what the check assumes, and a person has the
@@ -5865,11 +5873,11 @@ as it is. A person goes through the whole way with mail on the test server.
 - **Scope:** build-tools · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-111 · derives from D-255
-- **Verification:** an agent compares a change with the decision:
-  - complies: a registration at the local start that ends at once with the message failed and the
-    address unconfirmed; confirming an address left to a person on the test server
-  - violates: a branch of the server that switches mail off for the local start; a check at the
-    local start that claims a message arrived
+- **Verification:** tests: a registration at the local start answered before the mail sender's
+  deadline, with the message failed and the address unconfirmed, so that the mail settings point
+  where nothing answers. An agent compares a change with the part no test holds:
+  - complies: the server of the local start running the same mail code as on the test server, only its settings pointing where nothing answers; confirming an address and setting a new password left to a person on the test server
+  - violates: a branch of the server that switches mail off for the local start; a check at the local start that claims a message arrived
 - **Origin:** none
 
 *Rationale:* a server that holds accounts always has its mail settings, so the local start gives
@@ -5889,10 +5897,11 @@ The local start makes its own certificate, and a person clicks through the brows
 - **Scope:** build-tools · agent-workflow
 - **Based on:** git-for-windows-openssl
 - **Relations:** derives from D-255
-- **Verification:** an agent compares a change with the decision:
-  - complies: a certificate made by the command, and a warning a person passes in the browser
-  - violates: a step that adds a certificate authority to the trusted ones of the system; an
-    instruction to install another program for the certificate
+- **Verification:** tests: the local start presenting at its address a certificate of its own,
+  which holds for that address when it alone is trusted. An agent compares a change with the part
+  no test holds:
+  - complies: a warning of the browser that a person clicks through at the local start's address
+  - violates: a step that adds a certificate authority to the trusted ones of the system; an instruction to install another program for the certificate
 - **Origin:** none
 
 *Rationale:* the command needs no new program and changes no trust on the computer, at the price of
@@ -8206,9 +8215,9 @@ After an error that no code of the game handled, an exception or a rejected prom
 - **Scope:** browser-view
 - **Based on:** react-uncaught-render-error · react-default-uncaught-report
 - **Relations:** derives from D-252 · narrows D-247 · narrows D-211 · narrows D-96 · narrows D-203 · narrows D-209
-- **Verification:** invariants: uncaught-failure-game-state. An agent compares a change with the decision:
-  - complies: an error thrown in the clock's reading at a tick, then the sentence once under the menu bar beside „Nie udało się zapisać postępu. Gra spróbuje ponownie.” when a save has failed, buttons that change nothing, and „Wyloguj” sending the state from before the tick; the login card showing the sentence in the card under its form
-  - violates: the sentence standing instead of the sentence of a failed save; the sentence standing above the card or above the game; a save after the error that reads the clock again; the sentence standing twice for two errors; the game going on changing its state after the error; a game built after the error that catches up the earning loops of a loaded save and sends the result
+- **Verification:** invariants: uncaught-failure-game-state. tests: a save asked for after the error still sent, with the state from before it and no new reading of the clock; no game built after the error, so that a sign-in, or a session found at the start, whose load would catch up an earning loop stays at the waiting screen with the sentence and saves nothing; the sentence once, in `warning`, in the row under the menu bar of a game screen beside the sentence of a failed save, under the bar of a waiting screen, in the card under its form, and alone in the place of a card React took down; the line of the error as D-253 gives it. An agent compares a change with the part no invariant and no test holds:
+  - complies: a state kept by D-211 before the error left unsent at a sign-in after it; a save that failed before the error tried again as D-208 gives it, with the state from before the error
+  - violates: a sign-in after the error that sends the state kept by D-211; saving stopped at the error, so that a change made before it and not yet saved, or a save that failed, is never sent
 - **Origin:** none
 
 *Rationale:* when this was decided, an error that nothing in the browser caught left an empty page, a frozen game or a button that hung, with no sentence for the player and no line in the console, so a person and an agent alike were left without a word on what went wrong; the game is computed in the browser, and an agent is to learn what went wrong as a person playing does. A game that goes on after an error nobody handled can lose a character unseen behind a screen that no longer redraws, and an error in the clock's reading would come back at every tick and every save. Stopping the changes and saving the last whole state is a degraded mode, which the coding guidelines allow only where a task sets it as a decision of the product, and it leaves a line in the console. At most the time from the error to the reload is lost, and, when a save did not arrive, what happened since the last save that did. A game built after the error would pass time and save a change that the error came before, so none is built. The sentence tells the player what to do, reload, and stands once whatever the number of errors. It stands on every screen the game draws: on a screen with the header beside the sentence of a failed save and not in its place, because D-208 has that sentence stand until a save succeeds; on the screen of the login card in the card, under the form, where the sentence of a refusal stands; and, where React takes the card down, alone in the card's place and outside React, since React takes the sentence down with the card. Its role is `warning`, as D-39 gives it for something that is not carried out and as the sentences of D-96 and D-208 have it, because saving goes on after the error. Accepted with it: the sentence may show with no fault or blink (a hypothesis).
@@ -8829,10 +8838,10 @@ and goes to the console.
 - **Scope:** browser-view, agent-workflow
 - **Based on:** playwright-cli-console-messages
 - **Relations:** derives from D-323 · derives from D-253
-- **Verification:** an agent compares a change with the decision:
-  - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the
-    chronicle why the streak fell, and reading in the console the line of an error no code handled
-    (D-253) beside the sentence of D-323 on the screen
+- **Verification:** tests: an exception in the game, an error or a rejection no code handled,
+  showing on the screen as the sentence of D-323 and leaving its line in the console. An agent
+  compares a change with the part no test holds:
+  - complies: an agent checking a change at 16× through Playwright CLI reading under „Passa” in the chronicle why the streak fell, and reading in the console the line of an error no code handled (D-253)
   - violates: Sentry or GlitchTip added to the game
 - **Origin:** none
 
@@ -9118,12 +9127,13 @@ by that sentence is one failure recorded once.
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-137 · derives from D-252 · derives from D-400
-- **Verification:** an agent compares a change with the decision:
-  - complies: a failed run of `account-backup` writing one JSON line of the failure and after it one
-    sentence for the operator; a refusal of `account-block` or of `account-previous-save` leaving its sentence in the terminal
-  - violates: the sentence removed, so that after a block or its refusal the operator sees only
-    JSON; the JSON line removed, so that a failure of the command reaches no log; the sentence
-    counted as a second record of the failure
+- **Verification:** tests: a database failure of `account-block`, of `account-previous-save` and
+  of `account-backup` written as its JSON line with its kind and code and followed by its
+  sentence for the operator; a failure of `account-backup` after its backup went out whole written
+  as one JSON line, its only one, and one sentence. An agent compares a change with the part no
+  test holds:
+  - complies: a refusal of `account-block` or of `account-previous-save` leaving its sentence in the terminal; a failure of `account-block` or of `account-previous-save` written as one JSON line and one sentence
+  - violates: a second JSON line written for the sentence of a failure of `account-block` or of `account-previous-save`; the sentence of such a failure removed as a second record of it
 - **Origin:** none
 
 *Rationale:* the operator at a terminal reads the sentence, and whatever searches the logs reads the
@@ -9141,9 +9151,9 @@ Just before a deployment replaces the containers of the game, it appends the who
 - **Scope:** deployment, agent-workflow, account-server
 - **Based on:** docker-container-log-removal · docker-compose-recreate-removal · docker-local-log-driver-bound · logrotate-rotation-triggers · logrotate-rotation-count · mikrus-host-docker-compose-version · mikrus-host-logrotate-schedule · loop2-app-log-file-names · loop2-host-installed-copies-agree · https://docs.docker.com/engine/logging/configure/ — "Docker keeps the json-file logging driver (without log-rotation) as a default" · "Existing containers don't use the new logging configuration automatically"; read 2026-11-08 · https://docs.docker.com/engine/logging/drivers/json-file/ § max-size — "Defaults to -1 (unlimited)"; read 2026-11-08 · https://manpages.ubuntu.com/manpages/jammy/man5/journald.conf.5.html — "By default, only forwarding to syslog and wall is enabled"; read 2026-11-08 · https://grafana.com/pricing/ § Free — "14 day retention" · "Limited to 50 GB ingested per month"; read 2026-11-08 · https://grafana.com/docs/loki/latest/send-data/docker-driver/ § known issues — "the Docker daemon might wait forever if the container is stuck"; read 2026-11-08 · https://betterstack.com/pricing § Free Tier — "3 GB logs retained for 3 days"; read 2026-11-08 · https://grafana.com/docs/loki/latest/operations/storage/retention/ — "By default the `compactor.retention-enabled` flag is not set, so the logs sent to Loki live forever"; read 2026-11-08 · https://grafana.com/docs/loki/latest/setup/size/ — "This is only documented for microservices/distributed mode"; read 2026-11-08
 - **Relations:** derives from D-252 · derives from D-17 · derives from D-12
-- **Verification:** invariants: loop2-deploy-log-dump. An agent compares a change with the decision:
-  - complies: a deployment whose append fails on a full disk, which writes a `warning:` line to the deploy log and still starts the new containers; an agent looking for a failure from before the last deployment with a `grep` of the file that limits its matches; both services of the Compose file on the `local` driver and no other logging option
-  - violates: an append placed after the containers are recreated; a deployment that stops because the append failed; the whole output of `account-block` or of `account-previous-save`, addresses included, appended to the file; a rotation configuration that names the deployment account; an agent that appends to, edits or rotates the file
+- **Verification:** invariants: loop2-deploy-log-dump. tests: the append made after the build and before the new containers start, and by no deployment that stops before them, holding the whole log of the application and of the tunnel connector, with no `--tail`; both services of the Compose file on the `local` driver with no other logging option; one `logrotate` stanza for `/var/log/loop2-app.log`, weekly or sooner past 100 MiB, keeping four rotated files and naming no user. An agent compares a change with the part no invariant and no test holds:
+  - complies: an agent looking for a failure from before the last deployment with a `grep` of the file that limits its matches, through the `mikrus` MCP server; a human's run of `account-block` or of `account-previous-save` that appends only its JSON lines to the file
+  - violates: the whole output of `account-block` or of `account-previous-save`, addresses included, appended to the file; an agent that appends to, edits or rotates the file, or reads it whole with no bound
 - **Origin:** none
 
 *Rationale:* the log of a container goes with the container, and every deployment recreates both services, so without a copy a failure from before the last deployment leaves no trace for the agent that investigates it. Appending the log to a file on the host just before the replacement keeps it, costs nothing and depends on nothing about the server that this repository does not carry, except two things read once on the server on 2026-11-14, that `logrotate` has a daily schedule there (its timer is enabled with `OnCalendar=daily` and a daily cron entry exists; that is a schedule, not an observed run) and that its Compose is version v2.35.1, and the `local` driver and the rotation give both the running container's log and every copy an upper bound. The lines of `account-block` and of `account-previous-save` go to the file because each command runs by `docker exec` and its lines reach only the terminal of whoever typed it; only their JSON lines go, since their other sentences may carry the email address of an account, which an agent reading a file that lives for weeks must not meet. The numbers of the rotation are chosen bounds, not measured needs; on 2026-11-14 the server holds the file and one rotated copy of it and no older generation. A failed append does not stop the deployment, since a full disk or a broken file would otherwise block the very deployment that repairs the game. Lacks of the option chosen: the copy covers only containers that a deployment through the installed deploy script replaces, and a container removed another way loses its log as before; the lines of the few seconds between the copy and the stop of the old container are lost; the record lies in two places, the running container in Docker's log and earlier generations in the file; a human installs the rotation configuration, creates the file with the owner of the deployment account and reinstalls the deploy script at every change of it; the lines of failures and events, with account identifiers, and the lines of `account-block` and of `account-previous-save` live for weeks in a file that an agent reads, where they lived until the next deployment before; there is no search by query and no view in a browser, which Loki with Grafana would give. Risks taken, each a hypothesis: after a rotation the file may get root as its owner, or `logrotate` may refuse to rotate without a user to rotate as, and the copies then vanish silently; the compressed older generations are invisible to `tail` and `grep`; a human may append the whole output of `account-block` or of `account-previous-save` once, addresses included; a container that crashes in a loop may swell the file to gigabytes before a rotation, stop deployments and take the disk of the old game and of foundryvtt; without a reinstalled deploy script there is no copy, and a rollback to an older commit lifts the bound of the `local` driver; the `accountId` and Node's default print with a stack at an error before the last-resort handler may live for weeks in the file an agent reads.
@@ -9156,9 +9166,9 @@ A watcher script on the server, outside the game container, run by cron every fe
 - **Scope:** deployment, agent-workflow, account-server, browser-view
 - **Based on:** mikrus-pusher-mail · github-scheduled-workflow-disabling · loop2-repository-visibility · github-schedule-shortest-interval · github-actions-public-runs-free · loop2-watch-log-flock-status · check-address-schedule-run-times · https://docs.docker.com/reference/cli/docker/system/events/ — "Only the last 256 log events are returned"; read 2026-11-08 · https://healthchecks.io/docs/ § introduction — "raises an alert as soon as a ping does not arrive on time"; read 2026-11-08 · https://uptimerobot.com/pricing/ § Free — "5 min. monitoring interval"; read 2026-11-08 · https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows § schedule — "The `schedule` event can be delayed during periods of high loads of GitHub Actions workflow runs." · "Notifications for scheduled workflows are sent to the user who last modified the cron syntax in the workflow file."; read 2026-11-08 · https://developers.cloudflare.com/tunnel/monitoring/ § tunnel status — "does not indicate whether `cloudflared` can reach your internal services"; read 2026-11-08 · https://developers.cloudflare.com/notifications/notification-available/ § Health Checks status notification — "Professional plans or higher"; read 2026-11-08 · https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon — "intended for analytics and diagnostics code to send data to a server"; read 2026-11-08 · https://sentry.io/pricing/ § Developer — "5k errors" · "30-day lookback" · "1 uptime monitor" · § Team — "$29/mo monthly, $26/mo annual"; read 2026-11-08 · https://docs.sentry.io/platforms/javascript/migration/v10-to-v11/ — "In v11, an unset `dataCollection` collects everything by default"; read 2026-11-08 · https://glitchtip.com/documentation/install § requirements — "256 MB RAM when using all-in-one setup"; read 2026-11-08
 - **Relations:** derives from D-233 · derives from D-12 · derives from D-13 · derives from D-253
-- **Verification:** invariants: failure-watcher-message · browser-failure-report. An agent compares a change with the decision:
-  - complies: a watcher that finds a container of the game restarted and calls `pusher` once with the fixed sentence of that kind; a flood of browser reports from many addresses that raises the browser kind of message once in six hours at most, so that it takes at most four of the day's six messages and leaves at least two for the server kinds; a route that writes the one `LIMITED` failure line at the first refusal of an hour and nothing at the refusals after it; a scheduled workflow that fails once its attempts end without status 200 and holds no secret
-  - violates: a message of the watcher that holds a container's output, a count, a commit name or an account identifier; a watcher that takes the deployment lock for writing or runs a Docker command that changes a container; a route for browser reports that takes `accountId` or any text but the kind, the code and the place from the body, or that answers without the origin guards of D-104; a removal of the `LIMITED` line in the name of D-353; Sentry or GlitchTip added to the server; a scheduled workflow that deploys, checks out the code or holds a secret
+- **Verification:** invariants: failure-watcher-message · browser-failure-report. tests: the watcher started by cron every five minutes as root from its installed path; its readings of the state and the health of both containers of the game, of a restart of either, of the new lines of failures in the game container's log since its last run and, in the log of the backup, of the lack of a successful send; a run that meets the deployment's lock skipped or its readings dropped; one call of `pusher` for each message, a kind sent at most once in six hours, the backup's once in 24, and six messages at most in a rolling day; a `flock` that does not work ending a run with success, one line in the watcher's log and nothing sent; the scheduled workflow asking for a run every five minutes, opening the public address and failing unless it answers with status 200; the page sending the kind, the code and the place of an error no code handled to the server's route after its line in the console; the route writing each report as a failure line, accepting 30 in a rolling hour and writing one `LIMITED` line at the first refusal of an hour; the watcher counting those lines as a kind of their own. An agent compares a change with the part no invariant and no test holds:
+  - complies: the watcher and its schedule installed on the server by a human, and the owner's notifications of GitHub set so that a failed run of the scheduled check sends a mail
+  - violates: a deployment or a workflow that installs or changes the watcher or its schedule on the server; the step of the scheduled check given `continue-on-error`, so that a probe that fails leaves no failed run for GitHub to notify
 - **Origin:** none
 
 *Rationale:* each of the three ways leaves a hole that another covers. The watcher sees a process that fell and rose, a failure the server handled and, from the log of the backup, a night without a successful send, none of which a check of the address sees, and it costs nothing, with a script that a human installs. The scheduled check of the address also sees a server that is off, a fallen tunnel and a Cloudflare fault, with no new account, no secret and no change on the server, but it speaks at the pace at which GitHub starts its scheduled runs, which in the reading of 2026-11-14 is hours, not the five minutes the schedule asks for; the shortest interval GitHub allows is one thing, the interval it gives is another. The report from the browser covers a failure in the player's browser without a foreign service, at the price of code in two parts and a new public route. Failures of the server and of the player's browser are both to be covered, the server weighing more only where covering the browser would strongly narrow the choice; the report from the browser narrows nothing on the side of the server and costs no money. The one `LIMITED` line is kept although D-353 leaves the expected refusals without a line: it records no refused request of a player but that reports were dropped, and without it a flood past the limit would look like a quiet hour. Lacks of the option chosen: when the server and GitHub lie down together, or the schedule is disabled after 60 days without a commit, the owner gets nothing and the silence looks like „działa”; when `flock` does not work on the server, each run of the watcher ends with success and a line in its own log, and the owner gets nothing (on the test server `flock` works: in the watcher's log read on 2026-11-14 the lines for a held deployment lock name `flock exit 1` and no other status); the page does not say whether GitHub sends an email for a failed run by default, so the owner checks it in their own settings (the owner gave this result on 2026-11-14: a manual run of the check with `force_failure` of 2026-11-09 09:45 UTC, run 42595890225, with „Forced failure requested” in its log, brought the mail „[mariusznazar/loop2] Run failed: Check the public address - main (2fe922c)” to his inbox on 2026-11-09 at 10:46 Polish time; the line `cron` of the workflow file was last changed by his own commit `fc493baa` of 2026-11-09, so the notices of scheduled runs go to the right account; the result is about a run started by hand); the limits of `push.mikr.us` are unknown, so the watcher throttles itself and may stay silent about a second failure of the same kind; the new public route accepts reports from anyone, so false reports reach the log and the watcher; an error in the browser while the server or the network is down does not reach the server; there is code in two parts and a script on the server that a human installs. Risks taken, each a hypothesis: a watcher that read Docker's events would raise a false alarm after every merge or lose a fall during the backup; a watcher run as root would create a lock file and block deployments from the account that is not root, or, hung, would stop deployments and the backup; the buffer of 256 events would fill with health checks and a fall would vanish before it is read; failure lines from the moment before a deployment would reach only the copy of the log in the file and not be reported; a watcher running as root on a server shared with other projects is covered by no invariant test; the loss of the file with the time of the last run would flood the owner with messages, and the throttling of `push.mikr.us` would swallow the notice of the backup of D-233 too; the test gate would refuse a new workflow file, since it counts every file in the folder of workflows as a route of deployment; the notifications of GitHub set to „Don't notify”, or sent to another account, would give a silence taken for „działa”; during a longer outage a mail at every scheduled run would teach the owner to ignore them, which at the gaps GitHub gives is a few a day and not the hundreds a schedule of five minutes would make; a check that hits a deployment or Cloudflare's block of bots would raise a false alarm, and a real failure would bring two messages by two channels; a report sent with `keepalive` or `sendBeacon` would eat the browser's quota and the player would lose the save at „Wyloguj”; false reports from many addresses would use the watcher's budget of messages, cover a real failure of the server and swell the file of the copied log; arbitrary text from a report, such as an email address or someone else's `accountId`, would land in a log that lives for weeks; an error repeated at every tick would send several reports a second and break „the same line once” of D-253; the route would either fall out on the guards of state-changing requests or be the only one without a check of the origin.
