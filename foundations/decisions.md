@@ -8028,17 +8028,28 @@ outside the repertoire counts as one whose condition does not hold.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-126 · derives from D-127
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: the rule that wins now on `rule-winning` with a green bar, and the same rule under the
-    pointer still on `rule-winning`; the same rule open to editing on `highlight` with its green
-    bar; a rule whose condition holds and which cannot start with an amber bar and „tu nie leży mech”
-    beside its action; the rules of a rule group whose condition does not hold with a dark bar and no
-    reason; a rule outside the repertoire amber with its reason though its own condition does not
-    hold; the same signs on the screen after a death, counted on the stopped minute
-  - violates: `highlight` under the pointer on the rule that wins; the background of its state kept on
-    an open row; a green bar at a rule that does not start now; a reason beside the dark bar of a rule
-    in a rule group that does not hold; signs beside a saved program opened during a map run, on
-    Programy or in an earning loop
+- **Verification:** invariants: rule-state-from-pick. tests: during a manual map run and on its
+  screen after a death until „Zakończ”, the rule of the copy that wins now marked as winning and the
+  rule whose action goes on, where another rule wins, marked as running, on the stopped game minute
+  after a death of cold and after a completion while the action still goes on, and no rule running
+  after a death in combat; a row open to editing keeping its bar and its marks, and the stylesheet
+  putting the background under the pointer before the backgrounds of the state and the open row
+  after them; the signs standing at the copy alone, not at a saved program picked during a map run
+  nor on Programy; the reason of a rule whose condition holds and which cannot start, and the bar of
+  every rule and rule group, below the winning rule too, a rule group's from its rules, judged as
+  able to start, unable to start or with its condition not holding, a fix of the copy showing at
+  once; a rule outside the repertoire unable to start with its reason whether or not its condition
+  holds, and every rule of a rule group whose condition does not hold or lies outside the repertoire
+  with its condition not holding and no reason. For the colours the marks take, and for the signs
+  after a completion on the screen, an agent compares a change with the part no invariant and no test
+  holds:
+  - complies: the row that wins now on `rule-winning`, the running row on `rule-running` and an open
+    row on `highlight`; the bar of a rule that can start in `positive`, of one that cannot in
+    `warning` and of one whose condition does not hold in `condition-unmet`; the same signs on the
+    screen after a completion until „Restart”
+  - violates: the row that wins now on `highlight` or on `rule-running`; the bar of a rule that can
+    start in `warning`; the bar of a condition that does not hold in the colour of the text beside
+    it; the signs gone after a completion
 - **Origin:** none
 
 *Rationale:* the player does not know why rules the player expected to run do not run. Loop showed the
@@ -8090,12 +8101,17 @@ walce”.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-140 · derives from D-141
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: in the minutes of an attack the combat rule „Kopnij” under „Zawsze” on `rule-winning`
-    and „Eksploruj” under „Zawsze” amber with „trwa walka”; outside them „Kopnij” under „Zawsze” amber
-    with „tylko w walce”
-  - violates: „Eksploruj” carrying a green bar in the minutes of an attack; no rule on `rule-winning`
-    in those minutes; a combat rule green outside combat
+- **Verification:** invariants: rule-state-from-pick. tests: in the minutes of an attack the combat
+  rule the first turn would choose, at the creature's health as it stands, marked as winning, no rule
+  marked as running, and an ordinary rule whose condition holds unable to start with „trwa walka”,
+  the combat conditions reading the health of the two sides given; outside those minutes, after a
+  death in combat too, a combat rule whose condition holds unable to start with „tylko w walce”. For
+  the mage's health the signs read and the backgrounds of those minutes, an agent compares a change
+  with the part no invariant and no test holds:
+  - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50” winning while the mage
+    has 40 health, its row on `rule-winning`
+  - violates: the signs of an attack counted at the mage's full health; the row of the combat rule
+    the turn would choose on `rule-running` or on `highlight`
 - **Origin:** none
 
 *Rationale:* in the minutes of an attack the simulation chooses no ordinary action, and it resolves the
@@ -8122,12 +8138,19 @@ cell of the rule panel, or „jeszcze nieodkryte: {name}”.
 - **Scope:** simulation, browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-289
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Zbierz — Mech” on a tile with no moss reading „tu nie leży mech”; „Wytwórz — ognisko”
-    with two sticks in the backpack reading „brakuje 4 × patyk”; „Zapal — patyk” on a tile with
-    no revealed ground and with too little nature energy reading „kafelek nieodkryty”
-  - violates: two reasons beside one rule; „Tu nie leży · Mech”; „brak energii natury” given while the
-    tile is not revealed
+- **Verification:** invariants: rule-state-from-pick. tests: one reason for a rule that cannot
+  start, the world coming before the nature energy; the reason naming the thing refused in the words
+  of the game, in lower case and with no dot before the name, „tu nie leży mech”, „brakuje 4 × patyk”,
+  „brak opału: patyk” and „brak energii natury: {ma} z {trzeba}” among them, and „gałąź niewykupiona”
+  and „jeszcze nieodkryte: {name}” for a rule outside the repertoire. For the place of combat and of
+  the backpack in the order of the reasons, an agent compares a change with the part no invariant and
+  no test holds:
+  - complies: „Uderz — patyk” outside combat with no stick reading „tylko w walce”; „Zbierz — Mech”
+    on a tile with no moss in the minutes of an attack reading „trwa walka”; „Zapal — patyk” on a
+    revealed tile with no stick and too little nature energy reading „brakuje 1 × patyk”
+  - violates: „brakuje 1 × patyk” beside „Uderz — patyk” outside combat; „tu nie leży mech” beside
+    „Zbierz — Mech” in the minutes of an attack; „brak energii natury: 7 z 10” beside „Zapal — patyk”
+    with no stick in the backpack
 - **Origin:** none
 
 *Rationale:* a rule that cannot start says why in the words of the game, one reason at a time, and the
@@ -9047,15 +9070,21 @@ the death, such as „Minuta 312”.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-291 · derives from D-292
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: the mage gathering a stick under rule 2.1 with the icon of „Zbierz”, „Zbierz — Patyk”
-    and „reguła 2.1 · zostało 3 z 5 min” in „Teraz”; the mage waiting with „Czeka — żadna reguła nie
-    pasuje” alone; „Walczy z wilkiem” alone in the minute an attack is resolved, though the next
-    action starts in it; after a death of cold „Mag zamarzł” in `text` and the clock „Minuta 312”;
-    what stands under „Teraz” keeping its place as the text of „Teraz” changes
-  - violates: a progress bar under „Teraz”; „Zbiera: patyk” in „Teraz”; the number of the combat
-    rule beside „Walczy z wilkiem”; „Mag zamarzł” in `danger`; „Teraz” still naming the last action
-    after a death; the word „Teraz” written in the row before the icon, as „Potem” is in its row
+- **Verification:** invariants: rule-state-from-pick. tests: the row „Teraz” right under the scene;
+  while the character carries out an action, its icon, its words as the row of its program rule
+  writes them and at the right the number of that rule as the editor numbers it with the minutes left
+  of the minutes in all, such as „reguła 2.1 · zostało 3 z 5 min”, following the game minute, paused
+  or not, with no progress bar; while the character waits „Czeka — żadna reguła nie pasuje” with no
+  rule and no minutes; in every minute of an attack, the minute of its resolution included,
+  „Walczy z wilkiem” alone; after a completion the map's completion text; after a death its cause in
+  `text`, „Mag zamarzł”, „Mag umarł z głodu” or „Mag zginął w walce”, while the clock in the header
+  reads the game minute of the death. For the height of the row and the words it leaves out, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: „Teraz” keeping the height of one line whether it reads „Czeka — żadna reguła nie
+    pasuje”, „Zbierz — Patyk” with its rule and minutes or „Mag zamarzł”, so what stands under it
+    keeps its place; no word „Teraz” written in the row before the icon
+  - violates: „Teraz” growing by a line as its text changes, moving „Potem” and the body row down;
+    the word „Teraz” written in the row before the icon, as „Potem” is in its row
 - **Origin:** none
 
 *Rationale:* the player reads what the character does in the words of the rule that makes it do
@@ -9094,14 +9123,13 @@ the end of a map run it names the rule that wins at the stopped game minute, as 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-308 · derives from D-309 · derives from D-291 · derives from D-292
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Potem” with the icon of „Zasil”, „Zasil — Ognisko” and „reguła 4.1” while rule 4.1
-    stands on `rule-winning`; in the minutes of an attack „Potem” naming the combat rule on
-    `rule-winning`; after a death „Potem” naming the rule that wins at the stopped game minute; with
-    no rule that wins, „żadna reguła nie pasuje — postać stanie” in `warning`
-  - violates: „Potem” gone after the end of a map run; „Potem” gone while it names the same rule as
-    „Teraz”; „Potem” naming a rule other than the one on `rule-winning`; the line of no rule that
-    wins written in `danger`
+- **Verification:** invariants: rule-state-from-pick. tests: under „Teraz” the row „Potem” with its
+  word, the icon and the words of the program rule that wins now and at the right its number as the
+  editor numbers it, such as „reguła 2.1”; in the minutes of an attack the combat rule the turn would
+  choose; while no rule wins „żadna reguła nie pasuje — postać stanie” in `warning`; the rule that
+  wins at the current game minute, which may be another than the rule whose action goes on, and the
+  same rule the signs show as winning; after a death the rule that wins at the stopped game minute,
+  the row standing after a death and after a completion.
 - **Origin:** none
 
 *Rationale:* beside what the character does, the player reads what it would start now, and the row
@@ -9127,16 +9155,18 @@ the click scrolls nothing and the saved program stays shown.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-334 · derives from D-335
-- **Verification:** an agent compares a change with the decision:
-  - complies: a click on „Teraz” reading „reguła 2.1” bringing rule 2.1 to the middle of the
-    program, which then stays where the player scrolls it; Enter on „Potem” reached with Tab doing
-    the same for its rule; the header of a folded rule group brought to the middle for a rule inside
-    it; a click on „Teraz” while the panel shows a saved program leaving that program shown where it
-    stood
-  - violates: the program following the rule by itself after the click; a row the keyboard cannot
-    reach; a click on „Walczy z wilkiem” or on „Czeka — żadna reguła nie pasuje” scrolling the
-    program; a click on „Potem” while the panel shows a saved program putting the copy back in its
-    place
+- **Verification:** tests: a click on „Teraz” or „Potem”, and Enter and Space on them, which the
+  keyboard reaches, scrolling the program once so that the row of the rule the row names stands in
+  its middle, or the header of its folded rule group, the program then not following the rule as the
+  game goes on; a row that names no rule — a wait, a fight, a death, an action whose rule the copy no
+  longer holds — reached by no key and scrolling nothing; while the program panel shows a saved
+  program picked on its list, a click and Enter scrolling nothing. For a saved program made with
+  „Nowy program” and for what the panel shows after the click, an agent compares a change with the
+  part no test holds:
+  - complies: a click on „Teraz” while the panel shows a program just made with „Nowy program”
+    scrolling nothing; the saved program staying shown where it stood after a click on „Potem”
+  - violates: a click on „Potem” while the panel shows a saved program putting the copy back in its
+    place; a click on „Teraz” scrolling a program just made with „Nowy program”
 - **Origin:** none
 
 *Rationale:* as in loop, the player goes from what the character does, or will do, to the rule
@@ -9164,15 +9194,18 @@ a map run, on the state of its stopped game minute.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-311 · derives from D-125
-- **Verification:** an agent compares a change with the decision:
-  - complies: the body row in Las with the cells „Temperatura 36,9 °C” with the note „bez ognia 79
-    min”, „Sytość 82 %” with the note „bez jedzenia 86 min”, „Zdrowie 100” and „Energia natury 90”;
-    „przy ogniu” while a campfire burns on the mage's tile; „marznie” in red at 34,9 °C; „głoduje”
-    in red under satiety on the screen after a death of hunger; the notes standing from game minute
-    zero, before anything is discovered
-  - violates: „(bez ognia 79 min)” after the value in the same line; a note under health;
-    „bez ognia {n} min” while a campfire burns on the mage's tile; the notes gone after the end of a
-    map run; „bez ognia 80 min” where the body is chilled after 79.6 game minutes
+- **Verification:** tests: each value of the body row in a cell of its own, a note under temperature
+  and under satiety, none under health and nature energy and none in the line of its value; under
+  temperature the first that holds of „marznie” in `danger` below 35 °C, „przy ogniu” while a stick
+  or a campfire burns on the character's tile, „nie stygnie” on a map that does not cool the body and
+  „bez ognia {n} min”; under satiety „głoduje” in `danger` below 30 and „bez jedzenia {n} min”
+  otherwise; {n} the whole game minutes, rounded down, left until the body is chilled or starves, 0
+  at the threshold; the notes standing from game minute zero and after a death and a completion, on
+  the state of the stopped game minute. For the look of the notes, an agent compares a change with
+  the part no test holds:
+  - complies: the notes under temperature and satiety in `text-secondary`, smaller than the values
+    above them
+  - violates: a note in the size of its value; „bez ognia 79 min” in `text`
 - **Origin:** none
 
 *Rationale:* the minutes stand under the value they concern and read at a fast pace, and a value
@@ -10090,9 +10123,7 @@ An action shortened by bought branches lasts at least one game minute.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-22 · derives from D-25
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Wędruj” from a tile with one neighbour not yet revealed going onto that neighbour whatever the draw gives; „Wędruj” from a tile whose neighbours are all revealed going onto one of them; starting „Wędruj” moving the generator of wandering by one draw; „Wędruj” passed over on a tile with no neighbour on the map, the generator left where it stood
-  - violates: „Wędruj” going onto a revealed neighbour while a neighbour not yet revealed stands beside it; a choice of the tile that takes two draws; a check that „Wędruj” can be carried out that moves the generator
+- **Verification:** tests: „Wędruj” going onto the one neighbour not yet revealed whatever the draw gives and onto one of the neighbours where all are revealed, every move ending on a neighbour; starting „Wędruj” moving the generator of wandering by one draw, each start one draw on; „Wędruj” possible with a neighbour on the map and not without, and the check and the pick leaving the generator where it stood.
 - **Origin:** none
 
 *Rationale:* „Wędruj” is the move with no target, and the design of the game has it go in a random direction, onto a tile not yet revealed where it can. The old loop game's tests hold the same preference, the choice of any neighbour when all are revealed, „Wędruj” being possible while the tile has a neighbour, and a check of that which leaves the generator alone; the one draw for a choice of step is of the design of the game as well. Accepted with it: which neighbour a draw picks, by what formula, and the order in which the candidates are taken are left to the code, so a change of the picking that keeps the rules above is no change of this decision.
@@ -10182,9 +10213,9 @@ A program rule whose condition holds and whose action the game's check refuses n
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-308 · derives from D-310
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Idź — patyk” on a tile that holds a stick reading „patyk leży już tutaj”; „Zapal — ognisko” beside a campfire that burns reading „ognisko już płonie”; „Zasil — ognisko” with no stick in the backpack reading „brak opału: patyk”
-  - violates: „Idź — ognisko” beside a campfire reading „nie ma ogniska”; „Zbierz — mech” with a full backpack reading „tu nie leży mech”; a refusal of a row above reading in other words than the row's
+- **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
+  - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
+  - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
 
 *Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
