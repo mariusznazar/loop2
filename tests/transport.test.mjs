@@ -516,6 +516,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-mutation-request-guards
+    // decision: D-226 "`POST /api/password-reset` checks the fields of its request"
     // Faults: a guard missing from one state-changing route, a guard run after
     // its route, and field checks that coerce or ignore unexpected fields.
     const f = await fixture(t);

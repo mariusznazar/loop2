@@ -420,6 +420,8 @@ test("a crafted recipient fails without connecting, and a plain one is sent", as
 // once did, so that the owner cannot tell a refused address from a server that
 // went silent. The fields of the case come through unread (D-252).
 test("each failure with no error of the library names its reason, and the line carries the fields of its case", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   const logged = t.mock.method(console, "error", () => {});
   const fields = { accountId: "account-7", linkPurpose: "password-reset" };
   const lastCode = () => {

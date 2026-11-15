@@ -2110,6 +2110,8 @@ test("a session write whose expected password hash no longer holds stores nothin
 // session write it causes is told from a refusal for any other cause (D-353):
 // by the error's type, from the state the writing statement saw.
 test("a session write refused because the account is blocked says so; one refused for another cause does not", async (t) => {
+  // decision: D-353 "A browser that breaks off sending the body of a request is an expected refusal, like a body that is too large or broken, and the session write that the library makes as a response ends, refused because the account was blocked while the request was in progress"
+  // decision: D-353 "A session write that fails for any other reason stays a failure"
   const { store, database, raw, account } = await fixture(t);
   const other = database.createAccount("other@example.test", "other-hash");
   const refusal = async (id, value) => {
@@ -2784,6 +2786,9 @@ test("the owner's command blocks and unblocks by address beside an open connecti
 // change, a line for a command that changed nothing, the wrong account's
 // number, the address in the line.
 test("the owner's command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
+  // decision: D-252 "The product logs changes of a player's account and of access to it"
   const { path, database, account } = await fixture(t);
   database.createAccount("other@example.test", "hash");
   const eventsOf = (run) =>
@@ -2815,6 +2820,8 @@ test("the owner's command writes one event with the account's number for a chang
 // hears to try again; SQLite's message or the file's path in the output; a
 // sentence dropped, so the owner no longer reads what happened.
 test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");
@@ -2862,6 +2869,8 @@ test("what no code of the owner's command handled ends it with one line of its k
 // D-112's cleanup runs in a timer, so no caller could ever see its failure. The
 // fault: the failure's reason dropped from the line (D-252).
 test("a cleanup that fails in the background writes one line of its kind and code, and nothing of its text", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   const { path, raw, account } = await fixture(t);
   const logged = t.mock.method(console, "error", () => {});
   // Opened first: the opening prunes too, and its failure is the caller's.
@@ -3055,6 +3064,9 @@ test("the previous-save command grants and revokes by address beside an open con
 // that changed nothing, no line for a change, the wrong account's number, the
 // address in the line.
 test("the previous-save command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
+  // decision: D-252 "The product logs changes of a player's account and of access to it"
   const { path, database, account } = await fixture(t);
   database.createAccount("other@example.test", "hash");
   const eventsOf = (run) =>
@@ -3083,6 +3095,8 @@ test("the previous-save command writes one event with the account's number for a
 // to try again; SQLite's message or the file's path in the output; a sentence
 // dropped, so the owner no longer reads what happened.
 test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const { path } = await fixture(t);
   const garbage = join(path, "..", "garbage-secret-name.sqlite");

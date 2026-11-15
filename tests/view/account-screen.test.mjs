@@ -827,6 +827,7 @@ test("while a login waits, the button „Nie pamiętam hasła” is locked with 
 });
 
 test("an address not written as name@domain gets its sentence under the field, nothing is sent and the field takes focus", async () => {
+  // decision: D-222 "An address not so written gets „Podaj adres e-mail w postaci nazwa@domena.” under the field and nothing is sent: the form holds that condition"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -850,6 +851,8 @@ test("an address not written as name@domain gets its sentence under the field, n
 });
 
 test("a well-formed address gets the one sentence of the reset under the form in a status, with the field empty and the form and „Wróć do logowania” staying", async () => {
+  // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
+  // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const request = await requestPage(held);
@@ -5948,6 +5951,7 @@ test("a registration the server would refuse sends nothing, marks each field at 
 // D-222. Catches a badly written address sent, its sentence missing, and the lock of the
 // state: the field, „Wyślij odnośnik” and „Wróć do logowania” alike.
 test("a request checks its address first and waits with its field and every button locked", async () => {
+  // decision: D-222 "An address not so written gets „Podaj adres e-mail w postaci nazwa@domena.” under the field and nothing is sent: the form holds that condition"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);
@@ -5978,6 +5982,8 @@ test("a request checks its address first and waits with its field and every butt
 // D-222. Catches the sentence in the role of a refusal, an address left in the field, the
 // form closed after the answer, and a sentence kept through the next send.
 test("a well-formed address gets the one sentence under the form in a status, with the field empty and focus back, and the form stays", async () => {
+  // decision: D-222 "Every request for a password-reset link whose address is well formed under D-99 gets one and the same answer, which leaves before any work on an account and without waiting for the mail server, so neither its content nor its time tells what became of the request; the page then shows „Jeśli to konto ma potwierdzony adres, wysłaliśmy na niego odnośnik."
+  // decision: D-222 "Gdy wiadomość nie przyjdzie, spróbuj ponownie później.” under the form „Nie pamiętam hasła”, in the look D-44 gives that answer, and the form stays with its address field empty and with „Wróć do logowania”."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await openCard(root, held.client);

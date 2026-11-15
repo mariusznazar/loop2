@@ -183,6 +183,8 @@ test("listens on the address given by LOOP2_LISTEN_HOST and LOOP2_LISTEN_PORT", 
 
 for (const value of ["0", "65536", "abc", "3000x", ""]) {
   test(`rejects LOOP2_LISTEN_PORT=${JSON.stringify(value)} without a readiness line`, () => {
+    // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+    // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
     const result = spawnSync(process.execPath, [entryPoint], {
       encoding: "utf8",
       timeout: 5000,
@@ -565,6 +567,8 @@ test(
   "a start that fails names the setting and the original error's kind and code, so that two causes of one setting read apart",
   { timeout: 20000 },
   async (t) => {
+    // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+    // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
     // D-111, D-252. Faults: every failure of the database reading as one
     // bad path, which sends the owner to look for a wrong setting; a value of
     // the setting or of a secret file in the line.

@@ -405,6 +405,8 @@ test("a database that cannot be opened and a temporary directory that cannot be 
 // only that the night's copy failed; SQLite's message or the path in standard
 // error, which the backup script appends to its log.
 test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {
+  // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
+  // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const box = await sandbox(t);
