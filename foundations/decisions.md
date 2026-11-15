@@ -852,7 +852,9 @@ Every `.py` and `.pyi` file Ruff finds in browser-view, simulation, account-serv
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** ruff-default-rules
 - **Relations:** none
-- **Verification:** invariants: ruff-source-rules
+- **Verification:** invariants: ruff-source-rules. An agent compares a change with the part no invariant holds:
+  - complies: a rule moved between the blocking set and the fourteen examples of `ruff.toml`, or another version of Ruff required there, together with a human-accepted change of this decision
+  - violates: a rule removed from `select` in `ruff.toml`, preview turned on or `required-version` dropped, with no change of this decision; a directory of code added to the excludes of `ruff.toml`
 - **Origin:** none
 
 *Rationale:* The selected subset retains useful defect reports while leaving reports that offer no worthwhile code change as examples; one explicit configuration keeps other configuration from quietly changing that boundary, and a suppression comment the tool ignores does no harm.
@@ -895,7 +897,9 @@ The dependency audit passes without a network request where `package-lock.json` 
 - **Scope:** build-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal. tests: the audit passing with no request to the registry where the lockfile equals its version at the fork point, and auditing the lockfile once it differs.
+- **Verification:** invariants: introduced-npm-vulnerabilities · dependency-audit-refusal. tests: the audit passing with no request to the registry where the lockfile equals its version at the fork point, and auditing the lockfile once it differs. An agent compares a change with the part no invariant and no test holds:
+  - complies: the audit run by the local pinned npm with the flags of this decision, `--include=dev`, `--include=optional` and `--include=peer` among them, against the public npm registry
+  - violates: an audit that leaves out development, optional or peer dependencies, asks another registry or runs an npm fetched when the check runs; a scheduled job that raises the threshold above low; an audit that sends the application's code
 - **Origin:** none
 
 *Rationale:* A low threshold starts conservatively while comparison with the start of the change keeps old vulnerabilities from blocking unrelated work; newly published advisories can change the result for the same lockfile. The registry matches each advisory's range to the locked versions itself, so comparing the advisories reported before and after the change needs no parsing of ranges, at the price of letting a further copy of an already reported vulnerable package through.
@@ -1661,7 +1665,9 @@ The npm registry has no separate contract test: the real dependency audit in the
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** narrows D-73 · derives from D-33
-- **Verification:** tests: an unreadable response of the npm audit, forced by a controlled response or by a run with no npm, failing the audit.
+- **Verification:** tests: an unreadable response of the npm audit, forced by a controlled response or by a run with no npm, failing the audit. An agent compares a change with the part no test holds:
+  - complies: a change to the audit's reading of the npm report, checked by the real audit of the gate and by a test with a controlled response
+  - violates: a separate contract test of the registry's response added beside the audit, or the real audit taken out of the gate
 - **Origin:** none
 
 *Rationale:* The real operation checks the format without a second check of the same agreement; a controlled response proves only the reaction to that response. When this was decided, the npm registry in the dependency audit was the only service of another party that the tested code of loop2 talked to, so the template's row on code talking to such a service was met only there: the tests of the audit substitute its result, while the gate runs the real audit, where an unreadable response of the registry ends in failure, and that run is taken as the check of the format.
@@ -1702,7 +1708,9 @@ Tests keep Node and Python, their existing directories, and the names `*.test.mj
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-73
-- **Verification:** invariants: node-test-selection
+- **Verification:** invariants: node-test-selection. An agent compares a change with the part no invariant holds:
+  - complies: a new Node test named `*.test.mjs` in an existing directory of tests; a new `test_*.py` file counted as covered once a run of the gate shows it executed
+  - violates: a new test named `*.spec.mjs` or written for another test runner; a new `test_*.py` file in a new directory counted as covered by its name alone, with no run of the gate showing it executed
 - **Origin:** none
 
 *Rationale:* Keeping the conventions avoids moving tests without changing their protection, while explicit inclusion checks prevent a new file being silently omitted. The command that runs the Node tests selects only some of the test directories, so a file placed elsewhere would silently not run. Cost: the current rules of finding files have to be watched, and one small test guards the inclusion; a migration would unify the layout, but it would need moves and coverage checks with no change in the behaviour of the game.
