@@ -2310,7 +2310,9 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 - **Scope:** account-server
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** derives from D-98 · derives from D-103 · derives from D-106
-- **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check.
+- **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check. tests: a password hashed and verified with its exact content, the trimmed password failing, under the explicit Argon2id profile of 64 MiB, three passes and one lane; the measurement made with that profile and the gate of two operations at once. An agent compares a change with the part no invariant and no test holds:
+  - complies: the kind guidelines of password hashing naming `src/server/passwords.ts` as the exemplar, and the table of kinds in `guidelines/coding.md` sending a password-hashing file to them
+  - violates: the kind guidelines of password hashing naming another file as the exemplar; the table of kinds in `guidelines/coding.md` no longer sending a password-hashing file to them
 - **Origin:** none
 
 *Rationale:* A first file makes password work's admission and package boundary visible for later account routes. The measurement of the deployed image shows that two slots of this profile fit within 80% of its memory limit; a different profile or gate carries no such evidence. The owner's measurement of 2026-11-14 on the test server, as he gave it, ended with verdict `PASS` and exit code 0 for the profile argon2id 64 MiB, t=3, p=1 and the gate of 2 at once, with a limit of 428867584 B (80% of 512 MiB), 0 hits of the limit, 0 out-of-memory kills and the largest process RSS 187133952 B; the full result stands in D-106.
@@ -2338,7 +2340,7 @@ The exemplar for kind `database-access` is `src/server/database.ts`, and its kin
 - **Scope:** account-server
 - **Based on:** node-sqlite-database
 - **Relations:** derives from D-28 · derives from D-112
-- **Verification:** an agent compares a change with the decision:
+- **Verification:** tests: database access keeping the SQL characters of a value as data, taking back a failed schema initialization of a new database whole, and stopping its cleanup timer when its connection is closed, each with no HTTP server and no password hashing. An agent compares a change with the part no test holds:
   - complies: database-access guidelines identify the first implementation as exemplar and keep SQL and connection ownership together
   - violates: a different exemplar or database access that spans asynchronous password work
 - **Origin:** none
@@ -2353,9 +2355,9 @@ The exemplar for kind `session-store` is `src/server/session-store.ts`, and its 
 - **Scope:** account-server
 - **Based on:** express-session-store-contract · express-session-cookie-lifecycle · cookie-serialization-validation
 - **Relations:** derives from D-28 · derives from D-107 · derives from D-112
-- **Verification:** invariants: account-session-storage. An agent compares a change with the decision:
-  - complies: session-store guidelines identify the first implementation as exemplar and preserve callback failures
-  - violates: treating parsed JSON as a valid library session without checking its shape
+- **Verification:** invariants: account-session-storage. tests: the Store delivering each failure of a library callback once, as that callback's error, and letting an exception the callback throws reach its caller. An agent compares a change with the part no invariant and no test holds:
+  - complies: session-store guidelines naming `src/server/session-store.ts` as the exemplar; the cookie's name, flags and lifetime set where the application is assembled, the Store keeping and checking what the library hands it
+  - violates: session-store guidelines naming another file as the exemplar; the Store setting the cookie's flags or lifetime, or reading the HTTP request
 - **Origin:** none
 
 *Rationale:* The adapter makes malformed persisted data and storage failures explicit before the library restores a session; a deliberately narrow payload requires conscious changes when session data grows.
@@ -2368,9 +2370,9 @@ The exemplar for kind `account-policy` is `src/server/account-policy.ts`, and it
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-98 · derives from D-99 · derives from D-102 · derives from D-103
-- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. An agent compares a change with the decision:
-  - complies: account-policy guidelines identify the first implementation as exemplar, and a route settles its admission after the awaited password operation without reading the connection's state
-  - violates: limiter state kept in an HTTP handler, or a settlement made when the client disconnects
+- **Verification:** invariants: account-attempt-limits · account-attempt-tracking. tests: the policy's own checks normalizing an address and refusing a password outside its rules or unlike its repetition; attempts admitted, refused and freed against the clock the policy is given, which the tests move, run on the policy alone with no HTTP server, password hashing or database and through the routes; an admitted login settled twice counting once. An agent compares a change with the part no invariant and no test holds:
+  - complies: account-policy guidelines naming `src/server/account-policy.ts` as the exemplar; a new kind of attempt limited by a method of the policy that its route calls
+  - violates: account-policy guidelines naming another file as the exemplar; counters of attempts kept in a route handler beside the policy
 - **Origin:** none
 
 *Rationale:* One HTTP-independent unit makes the credential rules, the attempt accounting and their clock visible together for later account operations such as password recovery, while a settlement tied to completed work keeps a disconnected client from freeing or erasing an attempt. Its weak point is that the policy cannot observe password work itself: the route decides when that work has completed, so the rule rests on the route's sequencing.
@@ -2383,9 +2385,9 @@ The exemplar for kind `browser-api-client` is `src/browser/account-api.ts`, and 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-108
-- **Verification:** invariants: account-client-requests · account-client-outcomes. An agent compares a change with the decision:
-  - complies: browser API client guidelines identify the first implementation as exemplar, and a screen reads the client's typed result instead of a status code or a response body
-  - violates: a client that treats any 2xx status as a success, or a screen that calls `fetch` for an account route itself
+- **Verification:** invariants: account-client-requests · account-client-outcomes. tests: every failure of a call of the account, saved-game, previous-save and report routes carrying its kind — a refusal with the server's status and known code, an answer not expected, a network failure or a timeout — and each documented refusal of a save coming back as an outcome of its own. An agent compares a change with the part no invariant and no test holds:
+  - complies: browser API client guidelines naming `src/browser/account-api.ts` as the exemplar; a client whose only setting is its time limit, each call reading nothing an earlier call left
+  - violates: browser API client guidelines naming another file as the exemplar; a client that keeps the signed-in account, writes `document.cookie` or `localStorage`, or changes the page
 - **Origin:** none
 
 *Rationale:* One module that owns the request details lets the screens read outcomes instead of status codes, and keeps a response that merely looks like a success from signing a player in or leaving them signed out by mistake. Its weak point is that the client copies the server's contract by hand, so a change of a route's status or body must change the server and the client together.
@@ -3442,9 +3444,9 @@ The exemplar for kind `mail-sending` is `src/server/account-mail.ts`, and its ki
 - **Scope:** account-server
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-154
-- **Verification:** an agent compares a change with the decision:
-  - complies: mail-sending guidelines identify the first implementation as exemplar, and a route reads the mailer's result instead of catching its errors
-  - violates: a message composed in a route handler; a mailer that logs the mail service's reply or the message
+- **Verification:** tests: the mailer composing both kinds of account message and handing each to an SMTP server on the loopback address, with no HTTP server and no database; every failure — no STARTTLS, an untrusted certificate, a crafted recipient, a silent server cut at its deadline — returned as `failed`, never thrown; nothing it writes to the console holding the password, the login, a token or a link. An agent compares a change with the part no test holds:
+  - complies: mail-sending guidelines naming `src/server/account-mail.ts` as the exemplar; a new kind of account message composed by a function of that file and handed to the mailer by its route
+  - violates: mail-sending guidelines naming another file as the exemplar; the subject or text of a message composed in a route handler; the mailer reading the database or the request
 - **Origin:** none
 
 *Rationale:* one file that owns composing and submitting keeps the safety of message headers, TLS and the handling of secrets in one place, and the routes read a result instead of SMTP errors.
