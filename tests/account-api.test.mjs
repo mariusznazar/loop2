@@ -912,6 +912,7 @@ test("saveGame reports a dead connection as a network failure and silence or a s
 
 // invariant: saved-state-http-exchange
 test("a save body of exactly 65 536 bytes is sent whole", async () => {
+  // decision: D-207 "A save whose body is larger than 64 KiB is not sent and counts as refused as too large (D-208)"
   respond = (_request, response) => reply(response, 200, '{"revision":2}');
   const exact = submissionOfBytes(saveLimit);
   const result = await within(client().saveGame(exact), "exact");
@@ -925,6 +926,7 @@ test("a save body of exactly 65 536 bytes is sent whole", async () => {
 
 // invariant: saved-state-http-exchange
 test("a save body over 65 536 bytes is never sent and comes back too large", async () => {
+  // decision: D-207 "A save whose body is larger than 64 KiB is not sent and counts as refused as too large (D-208)"
   respond = (_request, response) => reply(response, 200, '{"revision":2}');
   const over = submissionOfBytes(saveLimit + 1);
   // Precondition: the body is over the limit in bytes though not in characters.
@@ -1284,6 +1286,7 @@ test("reportBrowserFailure gives a failure, never a throw, for a redirect, a dea
 // delivers it. The wait is observed on the call the client hands the real fetch, which is passed
 // on unchanged, so the request still reaches the local server above.
 test("saveGame hands the real fetch a PUT with keepalive and the server gets that request", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`"
   respond = (_request, response) => reply(response, 200, '{"revision":8}');
   const realFetch = globalThis.fetch;
   const handed = [];

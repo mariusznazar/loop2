@@ -1817,6 +1817,8 @@ async function expiredPage(held) {
 // asked for again instead of the kept state sent, and the kept state sent on another basis than the
 // revision last seen. D-259: the card shows one form.
 test("a 401 on a save keeps the state, and a sign-in to the same account sends it and returns to the game from it", async () => {
+  // decision: D-211 "When the server answers a save of the game state that there is no session, whatever ended it — an expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”"
+  // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const kept = await expiredPage(held);
@@ -1845,6 +1847,7 @@ test("a 401 on a save keeps the state, and a sign-in to the same account sends i
 // D-203, D-211. Catches the kept state saved under another account, and a kept state that waits on
 // for a later sign-in after another account's.
 test("a sign-in to another account after a 401 on a save drops the kept state and loads that account's save", async () => {
+  // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give; after a sign-in to another account the state is dropped and the game loads that account's saved game state"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await expiredPage(held);
@@ -1944,6 +1947,7 @@ test("an error of the code in the load of a downloaded save keeps the save, buil
 // D-211, D-213. Catches the kept state dropped before the load, so that the
 // retry finds no state and the next load brings the older save; the state left for another account.
 test("an error of the code in the load of the kept state keeps it for the retry, and only then is it sent", async () => {
+  // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give; after a sign-in to another account the state is dropped and the game loads that account's saved game state"
   await onPage(async ({ root }) => {
     const held = heldClient();
     const kept = await expiredPage(held);
@@ -2023,6 +2027,7 @@ const pageNotices = (root) =>
 // D-96. Catches a game built before the saved game state answers, and a new game
 // saved by itself over nothing.
 test("after the session check the page keeps „Sprawdzanie logowania…” until the saved game state answers, and none gives a new game that saves nothing by itself", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -2048,6 +2053,7 @@ test("after the session check the page keeps „Sprawdzanie logowania…” unti
 // D-212. Catches a loaded map run left running, at another pace, or moved to the
 // headquarters, an ended one closed, and a loaded game saved again by itself.
 test("a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on its screen after the end", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
   const passingAt8 = { ...passing(), pace: 8 };
   for (const [name, game, expected] of [
     ["going on", passingAt8, { pause: "Wznów", pace: "8×" }],
@@ -2107,6 +2113,7 @@ function hidePage() {
 // D-207, D-212. The save loaded was made a minute before the clock's date. Catches a game that does not catch up after the load, and a
 // catch-up that ended a run and is not saved at once, or saved once per run end.
 test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -2126,6 +2133,7 @@ test("a loaded game catches its loop up once, and a catch-up that ended a map ru
 // D-207: saving after any caught-up minute would make each reload send, and two open tabs refuse
 // each other (D-209).
 test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up once", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
   await onPage(async () => {
     const held = heldClient();
     await startPage(held);
@@ -2504,6 +2512,7 @@ test("the document kept for the same account holds the moment of its reading and
 // D-207's list of acts. Catches an act of the player whose change is left to the next
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
   // The clock reads no real time, so an act that starts the map run again leaves no carried time.
   Object.defineProperty(globalThis, "performance", {
@@ -2782,6 +2791,7 @@ test("the name in a character's row is a link to its screen Postać, which then 
 // the „Zatrzymaj” that now stands in the button's place; the loop line must stand at once with the
 // buttons of the character shut.
 test("„Puść w pętlę” puts the character into a loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   await onPage(async ({ root }) => {
     const address = fakeAddress("#/mapy/forest");
     const { view, held } = await viewOf(solvedAla(), address);
@@ -3003,6 +3013,7 @@ function lastMinute() {
 // D-207, D-221. Catches a death left unsaved until the next 30-second check, and a death
 // saved unsettled, which the next load would refuse.
 test("a game minute that ends the map run in a death is saved at once, settled", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death"
   await onPage(async ({ root }) => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
     let now = 0;
@@ -3184,6 +3195,7 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
 // left on the server to come back at the next sign-in.
 test("a refused save starts a new game with its one-time sentence above it, after a confirmation notice, and saves the new game at once on the server's revision", async () => {
   // decision: D-156 "The game page the link opens sends the token to the account server in a request meeting D-104, also without a session, and shows „Potwierdzanie adresu…” in `text-secondary`, then „Adres e-mail potwierdzony.” in `positive`, „Odnośnik jest nieważny albo wygasł.” in `warning`, or, when the request gets neither answer, the account client's sentence of its failure in `warning` with the token kept in the page's address for a reload, above the account forms for a signed-out player and above the game for a signed-in one"
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
   const foreign = plain(withCharacter());
   foreign.team.characters[0].archetypeId = "nieznany";
   for (const [name, save, sentence] of [
@@ -3237,6 +3249,8 @@ test("a refused save starts a new game with its one-time sentence above it, afte
 // D-208: the line stands under the menu bar and not in the menu „Konto”. Catches the failure shown nowhere or only in the closed menu, no
 // retry, and the sentence left after a save succeeds.
 test("a failed save shows its line under the menu bar, outside the menu „Konto”, and a retry that succeeds clears it", async () => {
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -3286,6 +3300,7 @@ test("a failed save shows its line under the menu bar, outside the menu „Konto
 // path read as a conflict.
 test("a conflict drops the game, asks for the server's save and builds from it with its sentence in the header until a save succeeds; a refused one there starts anew", async () => {
   // decision: D-209 "The browser whose save it refuses so drops its unsaved game state, loads the server's saved game state — a manual map run that went on coming back paused (D-212) — shows „Gra została zapisana w innej przeglądarce. Wczytano ten zapis.” in `warning` on the header line of D-208 until its first successful save, and plays on from the loaded state, saving as D-207 gives"
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     await startPage(held);
@@ -3359,6 +3374,8 @@ async function loggingOutPage(held) {
 test("„Wyloguj” saves first and goes on, stays or ends each way its save's outcome gives", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server while it reads „Wylogowywanie…”, and then ends only this browser's server-side session"
   // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`; when the server refuses the save as based on an earlier save than another browser's (D-209) or as too large (D-208), logout goes on; when it refuses it as of a lower version (D-210), and when the tab had already stopped saving after that refusal, logout goes on and the account forms show „Gra została zaktualizowana. Odśwież stronę.” in `warning` above them; and when it answers that there is no session, the game ends as D-211 gives"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure"
+  // decision: D-211 "When the server answers a save of the game state that there is no session, whatever ended it — an expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”"
   const outcomes = [
     ["saved", { kind: "saved", revision: 5 }, null],
     ["a conflict", { kind: "conflict" }, null],
@@ -3450,6 +3467,7 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
 // logout that does not happen leaving the save's 401 unanswered. D-261: the sentence stands in the
 // card.
 test("a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path", async () => {
+  // decision: D-211 "When the server answers a save of the game state that there is no session, whatever ended it — an expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”"
   for (const [name, answer] of [
     ["a confirmed logout", { ok: true, value: null }],
     ["an uncertain logout", NO_CONNECTION],
@@ -3619,6 +3637,7 @@ test("a state with an empty report shows no section", async () => {
 // Catches a „Zamknij” that closes one line, one that is not saved, and one that leaves focus on the
 // page body once the button is gone (D-42).
 test("„Zamknij” closes the whole section at once, saves, and focus stays on the screen", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report"
   await onPage(async ({ root }) => {
     const { view, held } = await viewOf(reported());
     const close = buttonNamed(reportSection(root), "Zamknij");
@@ -3645,6 +3664,7 @@ test("„Zamknij” closes the whole section at once, saves, and focus stays on 
 // and its map run going on stay, and the line stays with its minutes while the part about practice
 // and the button are gone.
 test("„Odbierz” pays the practice waiting, saves at once, leaves the loop and the line, and the button goes", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”"
   await onPage(async ({ root }) => {
     const base = alaLoopingOlaFree();
     const state = {
@@ -4213,6 +4233,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
 // without saving, a leave of a paused or ended map run that saves although nothing changed, and a
 // return that resumes the map run by itself.
 test("leaving the screen of a map run that goes on pauses it as „Pauza” does and saves at once; a return resumes nothing, and leaving a paused or an ended map run saves nothing", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   await withStillClock(async () => {
     await onPage(async ({ root }) => {
       const held = heldClient();
@@ -5164,6 +5185,7 @@ test("an error of the code in the load of the kept state closes the card, so its
 // D-211, D-381. Catches a sign-in with a kept state, the one that shows the game with no
 // waiting screen before it, leaving the card over the game.
 test("a sign-in that goes straight back to the kept game closes the card", async () => {
+  // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await expiredPage(held);

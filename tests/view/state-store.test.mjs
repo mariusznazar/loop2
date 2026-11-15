@@ -192,6 +192,7 @@ test("an act without catch-up reads no clock and passes no time", async () => {
 // Catches a moment of saving missing after an act, a second one for an act that changed nothing,
 // and a save request counted twice for one act.
 test("an act that changes the state sends one save, and one that changes nothing sends none", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character"
   await onStore(newGame(), async ({ store, sent }) => {
     store.act((take) => take(createCharacter(store.get(), "Ala")));
     await turns();
@@ -241,6 +242,7 @@ test("a result that holds the very state the store holds is ignored, and an act'
 
 // Catches a map run that ends at a reading and is not saved at once (D-207).
 test("a reading that ends a manual map run is one moment of saving, and a reading that changes the state without ending it is none", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death"
   await onStore(
     oneMinuteBeforeTheEnd(passing()),
     async ({ store, sent, taken, pass }) => {
@@ -265,6 +267,7 @@ test("a reading that ends a manual map run is one moment of saving, and a readin
 
 // Catches one save for each loop's map run that a result ended, where D-207 gives one for the result.
 test("a catch-up whose result ended the map runs of two earning loops is one moment of saving", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   const state = withSaveTime(loopingPair(), CLOCK_MS - 60_000);
   await onStore(state, async ({ store, sent, taken }) => {
     store.catchUp();
@@ -283,6 +286,7 @@ test("a catch-up whose result ended the map runs of two earning loops is one mom
 // Catches a send or a loop start that is not a moment of saving. The clock's own flush before each is
 // pinned by tests/view/clock.test.mjs.
 test("a send and a start of a loop are each one moment of saving", async () => {
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   await onStore(idle(), async ({ store, sent }) => {
     store.send({ mapId: "forest", characterId: 1 });
     await turns();
