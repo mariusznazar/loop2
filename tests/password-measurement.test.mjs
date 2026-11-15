@@ -60,6 +60,7 @@ function runEntryPoint(args, env = {}) {
 
 test("the entrypoint measures the production profile and gate with synthetic passwords only", async (t) => {
   // decision: D-106 "Its cost parameters are set explicitly"
+  // decision: D-113 "Hashing and verification share one bounded admission gate, preserve password content, and use one explicit Argon2id profile, measured with that gate"
   const directory = await cgroupDirectory(t, containerCgroup);
   // Account settings in the environment must not lead it to open the database or the secret.
   const databasePath = join(directory, "accounts.sqlite");

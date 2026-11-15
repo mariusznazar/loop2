@@ -281,6 +281,7 @@ function parse(raw) {
 
 test("a message is submitted only after STARTTLS and login with the configured login and password", async (t) => {
   // decision: D-153 "The account server sends email confirmation and password-reset messages from an address under `mariusznazar.com` through the authenticated SMTP service of Mikrus Outsider"
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -302,6 +303,7 @@ test("a message is submitted only after STARTTLS and login with the configured l
 
 test("a server that offers no STARTTLS receives no login and no message", async (t) => {
   // invariant: account-email-nodemailer-starttls
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const smtp = await smtpServer(t, { offerStartTls: false });
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -320,6 +322,7 @@ test("a server that offers no STARTTLS receives no login and no message", async 
 });
 
 test("a STARTTLS upgrade to a certificate not trusted for the host completes nothing", async (t) => {
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const cases = [
     ["a certificate the mailer does not trust", localCertificate, undefined],
     [
@@ -349,6 +352,7 @@ test("a STARTTLS upgrade to a certificate not trusted for the host completes not
 });
 
 test("a server that stops answering yields failed within the shortened deadline and loses the connection", async (t) => {
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const smtp = await smtpServer(t, { holdData: true });
   // Each phase of the library may wait 5 s; the deadline cuts the send at 300 ms.
   const mailer = new SmtpMailer(
@@ -381,6 +385,7 @@ test("a server that stops answering yields failed within the shortened deadline 
 });
 
 test("a crafted recipient fails without connecting, and a plain one is sent", async (t) => {
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
   const crafted = [
@@ -423,6 +428,7 @@ test("a crafted recipient fails without connecting, and a plain one is sent", as
 test("each failure with no error of the library names its reason, and the line carries the fields of its case", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const logged = t.mock.method(console, "error", () => {});
   const fields = { accountId: "account-7", linkPurpose: "password-reset" };
   const lastCode = () => {
@@ -465,6 +471,7 @@ test("each failure with no error of the library names its reason, and the line c
 
 test("the submitted message has one recipient, the fixed sender and subject and a text body with the link on its own line", async (t) => {
   // decision: D-158 "The email confirmation message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Potwierdź adres e-mail w loop2” and a body of four paragraphs separated by an empty line"
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -503,6 +510,7 @@ test("the submitted message has one recipient, the fixed sender and subject and 
 
 test("the submitted reset message has one recipient, the fixed sender and subject and a text body with the link on its own line", async (t) => {
   // decision: D-227 "The password-reset message comes from `loop2@mariusznazar.com` with the display name „loop2”, as plain text without HTML, with the subject „Ustaw nowe hasło w loop2” and a body of three paragraphs separated by an empty line"
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -538,6 +546,7 @@ test("the submitted reset message has one recipient, the fixed sender and subjec
 });
 
 test("a crafted recipient of a reset message fails without connecting", async (t) => {
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const smtp = await smtpServer(t);
   const mailer = new SmtpMailer(settings(smtp.port), trusting());
 
@@ -556,6 +565,7 @@ test("a crafted recipient of a reset message fails without connecting", async (t
 });
 
 test("nothing the mailer writes to the console holds the password, the login, the token or the link of either message", async (t) => {
+  // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller, writing no credential, token, link or message to a log"
   const smtp = await smtpServer(t);
   const wrongPassword = "another-synthetic-password-3Zr";
   const source = String.raw`

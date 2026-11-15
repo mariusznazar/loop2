@@ -859,6 +859,7 @@ test(
     // decision: D-109 "A visitor may create an account or attempt credential login subject to the transport, origin, input and admission guards"
     // decision: D-202 "Anyone can create a player account and start playing without approval"
     // decision: D-400 "The answers that carry the account — `GET /api/account`, the login and the registration — hold the flag as the boolean `previousSaveAllowed` and nothing of the previous save"
+    // decision: D-113 "Hashing and verification share one bounded admission gate, preserve password content, and use one explicit Argon2id profile"
     // Faults: hashing a trimmed or otherwise changed password; a hash outside
     // the package's Argon2id profile; registration without a signed-in session.
     const f = await accountFixture(t);
@@ -1235,6 +1236,7 @@ test(
   async (t) => {
     // invariant: account-attempt-limits
     // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots, and a capacity refusal is not a credential failure"
+    // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock"
     // Faults: success not clearing earlier failures; a lock skipped for correct
     // credentials or timed from the first failure; a capacity refusal counted
     // as a failure; a lock or window still counted at its end instant.
@@ -1286,6 +1288,7 @@ test(
   async (t) => {
     // invariant: account-attempt-limits
     // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”"
+    // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock"
     // Faults: a success clearing address failures; in-flight attempts not
     // counted; another client sharing the restriction.
     const f = await accountFixture(t);
@@ -1356,6 +1359,7 @@ test(
     // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”; invalid or duplicate registrations do not consume successful-account slots"
     // decision: D-110 "In the private Cloudflare Tunnel topology of D-10, account requests require exactly one X-Forwarded-Proto value of https and one syntactically valid CF-Connecting-IP, normalized for equivalent IP representations and used directly for admission limits"
     // decision: D-110 "Duplicate, list or malformed values are refused, and X-Forwarded-For, X-Real-IP, Forwarded and forwarded host values never select account authority, limiter identity or expected origin"
+    // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock"
     // Faults: duplicates or invalid requests consuming slots; parallel
     // registrations overshooting the limit; the window counted at its end.
     const f = await accountFixture(t);
@@ -1430,6 +1434,7 @@ test(
   async (t) => {
     // invariant: account-attempt-limits
     // decision: D-102 "A limited player sees „Za dużo prób. Spróbuj ponownie za kilka minut.”"
+    // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock"
     // Faults: releasing the reservation when the client disconnects, and
     // dropping the outcome of work whose client has gone.
     const f = await accountFixture(t);
@@ -1506,6 +1511,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-attempt-tracking
+    // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock"
     // Faults: evicting the oldest key, or admitting an untracked newcomer.
     const f = await accountFixture(t, { keyCapacity: 2 });
     const address = "198.51.100.80";
@@ -1571,6 +1577,7 @@ function failLogin(policy, email, address) {
 test("the password rules of a new password are those of registration, with the same problems", () => {
   // decision: D-98 "Registration's repeated password and the repeated new password of a password reset equal the password exactly, a new password keeps to these rules with registration's sentences"
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely, and accepts its form when exactly one `@` has nonempty text on both sides"
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database"
   const long = "p".repeat(12);
   assert.deepEqual(
     checkNewPassword({ password: long, passwordConfirmation: long }),
@@ -1618,6 +1625,7 @@ test("the password rules of a new password are those of registration, with the s
 
 test("a locked address admits a login after its attempts are cleared, and failures before the lock are forgotten", () => {
   // invariant: account-attempt-limits
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database"
   // Faults: a clear that leaves the lock or the failures; a lock lifted for
   // every address.
   const { clock, policy } = clockedPolicy();
@@ -1646,6 +1654,7 @@ test("a locked address admits a login after its attempts are cleared, and failur
 
 test("clearing an address's attempts leaves its client address's failures counting", () => {
   // invariant: account-attempt-limits
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database"
   // Faults: a clear that empties the client-address entries too.
   const { policy } = clockedPolicy();
   const address = "198.51.100.20";
@@ -1671,6 +1680,7 @@ test("clearing an address's attempts leaves its client address's failures counti
 
 test("a login in progress at a clear keeps its reservation and settles once on the same entry", () => {
   // invariant: account-attempt-limits
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database, and each admitted attempt is settled once"
   // Faults: a clear that drops the entry, resets the reservation or lets a
   // settlement count twice.
   const { policy } = clockedPolicy();
@@ -1714,6 +1724,7 @@ function failsUntilRefused(policy, email, address) {
 
 test("a login in progress at a clear that is released leaves the failures made after the clear counting", () => {
   // invariant: account-attempt-limits
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database, and each admitted attempt is settled once"
   // Faults: a clear that installs a new entry and copies the reservation, so
   // that the old ticket's release lands on an entry nobody reads.
   const { policy } = clockedPolicy();
@@ -1734,6 +1745,7 @@ test("a login in progress at a clear that is released leaves the failures made a
 
 test("a login in progress at a clear leaves no reservation behind once it has failed", () => {
   // invariant: account-attempt-limits
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database"
   // Faults: a clear that installs a new entry and copies the reservation, so
   // that the reservation is never settled and counts for ever.
   const { clock, policy } = clockedPolicy();
@@ -1755,6 +1767,7 @@ test("a login in progress at a clear leaves no reservation behind once it has fa
 
 test("clearing an unknown address changes nothing and a clear frees a locked place without touching others", () => {
   // invariant: account-attempt-tracking
+  // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock, independently of HTTP, password hashing and the database"
   // Faults: a clear that fills a place for an address with no entry, or that
   // disturbs another live entry of a full table.
   const { policy } = clockedPolicy({ keyCapacity: 2 });
@@ -1880,6 +1893,7 @@ test(
     // decision: D-100 "A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two"
     // decision: D-139 "A login of a blocked account with the correct password is refused with „To konto jest zablokowane.”, status 403 and the code `account-blocked`, and no session, while a wrong password of a blocked account gets the login message of D-100"
     // decision: D-139 "That refusal is neither a failed nor a successful login for the attempt limits of D-102: it adds no failure and clears none, and an address locked by failures refuses it as it refuses every login"
+    // decision: D-116 "Account policy normalizes and checks credentials and reserves, settles and bounds attempt admission against a supplied clock"
     // Faults: a blocked login signed in, or answered with the common message;
     // the block revealed before the password is checked; a blocked login
     // counted as a failure (it would lock the address) or as a success (it
@@ -3394,6 +3408,7 @@ test(
     // decision: D-106 "Its cost parameters are set explicitly"
     // decision: D-138 "The account server keeps the session record in SQLite, checks it on authenticated requests and can invalidate it on logout, on account blocking or at a password reset, which deletes every session of the account in the same operation as the change of password and signs nobody in"
     // decision: D-152 "A player resets a forgotten password by a single-use link sent to the previously confirmed email address, without operator assistance"
+    // decision: D-113 "Hashing and verification share one bounded admission gate, preserve password content, and use one explicit Argon2id profile"
     // Faults: the password trimmed before it is hashed; an answer of 200 with
     // a body where 204 with none is given.
     const f = await accountFixture(t);

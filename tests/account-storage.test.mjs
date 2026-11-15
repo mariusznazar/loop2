@@ -160,6 +160,7 @@ test("an account insertion returns an opaque identity and persists across reopen
 test("two connections cannot insert the same normalized email and SQL characters remain data", async (t) => {
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely"
   // decision: D-112 "Accounts have an opaque random primary identifier"
+  // decision: D-114 "Database access owns the SQLite connection, transactional schema initialization, bound SQL values and connection disposal"
   const { database, path, account } = await fixture(t);
   const outcomes = await simultaneousInserts(path);
   assert.equal(outcomes.filter(Boolean).length, 1);
@@ -203,6 +204,7 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
 
 // invariant: account-database-schema
 test("a schema initialization failure rolls back every new table and version", async (t) => {
+  // decision: D-114 "Database access owns the SQLite connection, transactional schema initialization, bound SQL values and connection disposal"
   const directory = await mkdtemp(join(tmpdir(), "loop2-schema-"));
   const path = join(directory, "accounts.sqlite");
   const raw = new DatabaseSync(path);
@@ -2497,6 +2499,7 @@ test("set and touch refuse unusable cookie input without changing stored session
 });
 
 test("Store callback failures are delivered once and callback exceptions are not swallowed", async (t) => {
+  // decision: D-115 "The Store adapts the library's callbacks to database operations"
   const { store, account } = await fixture(t);
   const sentinel = new Error("caller exception");
   assert.throws(
@@ -2553,6 +2556,7 @@ test("busy writes fail within a bound and keep the valid account for a later ret
 
 test("startup and bounded periodic cleanup remove expired rows and disposal stops its timer", async (t) => {
   // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
+  // decision: D-114 "Database access owns the SQLite connection, transactional schema initialization, bound SQL values and connection disposal"
   const { path, database, raw, account, track } = await fixture(t);
   database.saveSession("expired", {
     accountId: account.id,
