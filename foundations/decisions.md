@@ -8482,30 +8482,35 @@ after „Restart” and after a load the tint stands at once where the streak, o
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-18 · derives from D-271
-- **Verification:** invariants: loop2-container-sprites. For what the scene draws and from what, an
-  agent compares a change with the decision:
-  - complies: the mage and the campfire drawn from the game state of a map run, with the file and the
-    place of the sticks, the bush and the moss read from the files of the game's data; the sticks,
-    the bush and the moss standing in the scene while the character's tile holds none of them; an
-    extinguished campfire on the character's tile drawn still and grey; the frames of the mage's
-    sprite changing by a CSS animation at the same beat at 1× and at 16×; the tint at streak 240 of
-    Las standing at 0.4 of the way to the gold, at streak 480 at 0.8, and at streak 700 still there;
-    a loss of the streak taking the tint back over 2 s, and the same loss in the player's pause
-    or at a discovery showing nothing until the scene goes on; an attack of the wolf at the clearing
-    showing it run in from the right edge and stand on the mage's right, the mage turned to it, a
-    cloud of dust between them for the five minutes of the combat, and then the wolf lying down and
-    gone where the mage won, running off to the right where it departed, and standing still beside the
-    dead mage where the mage lost; an attack at the right edge showing the wolf on the mage's left
+- **Verification:** invariants: loop2-container-sprites. tests: the scene drawing from its previous
+  reading and from the events of the simulation call — the place the mage keeps, a map run started,
+  the attack and the moment; the sticks, the berry bush and the moss always in the scene, also on a
+  tile holding none of them, and the campfire only on the character's tile, burning, or extinguished
+  in the same picture in `grayscale(1) brightness(0.55)`; the wolf through the minutes of the
+  combat, running in from the right edge at the reading of its attack, standing on the mage's right
+  facing it, or on its left at the right edge, the mage turned toward it, and left standing beside
+  the mage by a death or a completion within its run; the wolf in the frames of its bite with a
+  small cloud of dust between it and the mage; a defeated wolf falling where it stood and gone, a
+  departing one running off to the right edge, and the wolf standing still beside the mage after a
+  death in the combat and after a completion in it; the tint going evenly from 0 at streak 0 to 0.8
+  at the streak the map's condition asks for, staying there as the streak grows on and 1 at a
+  completion alone; a loss of the streak while the scene goes on taking the tint back on a return of
+  its own, which in the player's pause and at a discovery begins only where the scene goes on, and
+  the tint standing at once at a death, a completion, a map run started and a first draw. For what
+  the scene holds, the source of its pictures, its motion and the colours of its tint, an agent
+  compares a change with the part no invariant and no test holds:
+  - complies: the place where the mage stands kept by the scene and not in the game state; the file
+    and the place of the sticks, the bush, the moss and the wolf read from the files of the game's
+    data; a burning campfire moving and an extinguished one standing still; the frames of the mage's
+    sprite changing by a CSS animation at the same beat at 1× and at 16×; the mage in the frames of
+    its idle sheet while it scuffles; the tint never blue, never greying the scene, leaving its
+    brightness as it is and changing nothing in the game; a loss of the streak taking the tint back
+    over 2 s
   - violates: the picture of a resource named in the code of the browser view; the picture or the file
-    of the wolf named in the code of the browser view; a wolf standing in the scene through the combat
-    without a mage that turns to it; a blow shown by a flash or a mark of its own; a dead wolf left
-    lying in the scene until the next attack; a wolf held part of the way across the frame by a death
-    of the mage within the 300 ms of its run; a canvas or a timer
-    redrawing the scene on every tick; the beat of the frames following the pace; a campfire standing
-    in the scene while the character's tile holds none; the place where the mage stands kept in the
-    game state; a tint in full gold at the required streak of Las; a tint that darkens or greys the
-    scene or turns it blue; a return of the tint in one frame, or one that runs while the pause holds
-    the map run; a tint that runs back from where it stood at a death or at „Restart”
+    of the wolf named in the code of the browser view; a blow shown by a flash or a mark of its own; a
+    canvas or a timer redrawing the scene on every tick; the beat of the frames following the pace; an
+    extinguished campfire whose flame still moves; the place where the mage stands kept in the game
+    state; a tint that darkens or greys the scene or turns it blue; a return of the tint in one frame
 - **Origin:** none
 
 *Rationale:* a few objects do not call for an engine, and a beat apart from the pace keeps the
@@ -8592,22 +8597,27 @@ a moment shows its last image at once. The scene shows no flash of its whole are
 - **Scope:** browser-view
 - **Based on:** wcag-three-flashes · https://www.w3.org/TR/2024/REC-WCAG22-20241212/ § general flash and red flash thresholds — "the combined area of flashes occurring concurrently occupies no more than a total of .006 steradians within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing distance" · same glossary entry, Note 1 of the WCAG text — "For general software or web content, using a 341 x 256 pixel rectangle anywhere on the displayed screen area when the content is viewed at 1024 x 768 pixels will provide a good estimate of a 10 degree visual field"; read 2026-11-12
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: the scene under the system's setting for reduced motion keeping its frames still; an
-    effect of the scene that changes a part of its area; the icon of a gathered resource flying to
-    the mage in 300 ms and the cloud of dust of a miss gone in 300 ms, with no text on either; an
-    effect of a reading that carries several ends of a gathering, as after a tab left in the
-    background, left out; the wolf running in from the right edge in 300 ms at 1× and at 16×, and
-    standing at once beside the mage after a load in the minutes of a combat and under the system's
-    setting for reduced motion; a reading that carries the end of a gathering and an attack together showing the flight or the dust
-    and the wolf's run in; the scuffle lasting the five game minutes of the combat; a defeated
-    wolf falling in 300 ms and gone, and under the setting for reduced motion lying still for 300 ms
-    and gone
-  - violates: an effect that lights or darkens the whole area of the scene for a moment; a scene
-    that moves under the system's setting for reduced motion as it does without it; an effect of
-    an ordinary event that lasts 500 ms; a flying icon with a number beside it; a wolf that runs in
-    for 640 ms; a scuffle cut off at 300 ms; a run in that plays at the stop at a discovery or after a
-    load; an outcome of a combat that plays after its turn has passed
+- **Verification:** tests: the flight of an icon and the fall of a defeated wolf lasting 300 ms with
+  no text and gone when their animation ends; an effect overdue when its turn comes dropped — in a
+  reading that carries several ends of a gathering, at a stop, after a load and at a reading that
+  carries no attack; the bending through a gathering and the scuffle through a combat lasting as the
+  action does; the effect of a discovery, a death and a completion playing once, the scene then
+  standing on its last image until the moment ends, and a scene drawn again on the same moment
+  showing that image at once; the cold layer blending by colour, so that it leaves the brightness of
+  the whole scene as it is. For the length of the other effects, the state of the whole scene, the
+  system's setting for reduced motion and a flash of the whole area, an agent compares a change with
+  the part no invariant and no test holds:
+  - complies: the cloud of dust of a miss gone in 300 ms; the wolf running in from the right edge,
+    and running off to it, in 300 ms at 1× and at 16×; the tint, the cold layer and the frost changing
+    at the rate set for each and never dropped as an effect; the fall of the mage after a death
+    lasting longer than 300 ms; the scene under the system's setting for reduced motion keeping its
+    frames still, standing the mage and the wolf at their places at once, showing the flight or the
+    dust still at its place for 300 ms and the last image of a moment at once; an effect of the scene
+    that changes a part of its area
+  - violates: a cloud of dust, a run in or a run off of a wolf that lasts 500 ms; a wolf that runs in
+    for 640 ms; the effect of a moment cut off at 300 ms; a scene that moves under the system's
+    setting for reduced motion as it does without it; an effect that lights or darkens the whole area
+    of the scene for a moment
 - **Origin:** none
 
 *Rationale:* pictures scaled up can pass the area below which flashing is allowed — the criterion
@@ -8665,14 +8675,12 @@ fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight �
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage carrying out „Zbierz — Patyk” standing at the sticks; the mage carrying out
-    „Zasil — ognisko” at the place of the campfire; „Eksploruj” and „Idź — ognisko” leading to the
-    same place at the right edge; the mage with no rule fitting in the middle of the clearing;
-    „Zapal — patyk” leaving the mage where it stands
-  - violates: the mage walking to the campfire for „Zapal — patyk”; the place at the right edge
-    differing between „Eksploruj” and „Idź”; the mage walking to the middle of the clearing for
-    „Zjedz — jagoda”
+- **Verification:** tests: the mage going, with „Zbierz” and „Obchód”, to the sticks, the berry bush
+  or the moss as the target says, with „Wytwórz — ognisko”, „Zapal — ognisko” and „Zasil — ognisko”
+  to the place of the campfire, with „Eksploruj”, „Wędruj”, „Idź” and „Idź — ognisko” to the one
+  place at the right edge, and while it waits to the middle of the clearing, walking there from
+  where it stands; „Zbierz” and „Obchód” with fibre as the target, „Zapal — patyk”, „Zjedz” and a
+  fight leaving it where it stands.
 - **Origin:** none
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
@@ -8694,13 +8702,18 @@ place at once, and under that setting the frames stand still.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317
-- **Verification:** an agent compares a change with the decision:
-  - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×; a target
-    changed half way turning the mage from where it stands; the mage standing at the place of its
-    action at once after „Restart” and after a load
+- **Verification:** tests: the mage standing at its place at once, with no walk, at the scene's first
+  draw, a load included, at the start of a map run and after „Restart”, the screen handing the
+  scene the events that tell it so. For the walk itself, a target changed on the way and the
+  system's setting for reduced motion, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×, the frames of
+    its sprite changing every 160 ms; a target changed half way turning the mage from where it
+    stands; the mage standing at its place at once, its frames still, under the system's setting for
+    reduced motion
   - violates: a walk shortened to 300 ms or to the time of the action; a walk whose length follows
-    the pace or the distance; a mage that starts its walk from the edge of the scene after a load; a
-    mage that walks under the system's setting for reduced motion
+    the pace or the distance; a mage that, its target changed on the way, starts its new walk from
+    the place it walked from; a mage that walks under the system's setting for reduced motion
 - **Origin:** none
 
 *Rationale:* the walk is a movement of the character, so the beat of the scene, apart from the
@@ -8725,13 +8738,18 @@ readings of the clock instead of filling smoothly between them.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-291 · derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage gathering a stick with the badge over its head, the icon of „Zbierz” in it in
-    `text-strong` and under it the bar in `positive` on `highlight`; the mage waiting with nothing
-    over its head
-  - violates: the icon over the head standing straight on the trees; the fill of the bar in
-    `text-strong` or `warning`; a sign of waiting over the head; the icon of a stick over the head of
-    the mage who gathers it
+- **Verification:** tests: the badge over the mage's head, walking with it, holding the icon of the
+  current action, the one of its rule's row, as a mask, and under it the progress bar of that
+  action, its fill as long as the progress and a new action's bar starting empty; the badge standing
+  at a pause and at a discovery; no badge while the character waits and in combat. For the colours
+  of the badge and the system's setting for reduced motion, an agent compares a change with the part
+  no invariant and no test holds:
+  - complies: the mage gathering a stick with the badge on `panel` over its head, the icon of
+    „Zbierz” in it in `text-strong` and under it the bar in `positive` on `highlight`; the bar
+    jumping at each reading of the clock under the system's setting for reduced motion
+  - violates: the badge with no background of its own, its icon standing straight on the trees; the
+    fill of the bar in `text-strong` or `warning`; a bar that fills smoothly under the system's
+    setting for reduced motion
 - **Origin:** none
 
 *Rationale:* the badge sets the sign apart from the forest, where a light tree could hide an icon
@@ -8762,11 +8780,11 @@ The scene is a picture, not a control: a click on it does nothing and no pause s
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44
-- **Verification:** an agent compares a change with the decision:
-  - complies: a click on the scene leaving the map run as it was; „Pauza” the only way in the view
-    to pause a map run by hand
-  - violates: a click on the scene pausing the map run, as in loop; a pause sign standing on the
-    scene
+- **Verification:** tests: a click on any part of the scene calling no control of the screen and
+  changing nothing the page shows; the scene holding no control, no text and nothing the keyboard
+  reaches. For a pause sign, an agent compares a change with the part no invariant and no test holds:
+  - complies: the scene of a paused map run telling the pause by its grey alone
+  - violates: a pause sign standing on the scene
 - **Origin:** none
 
 *Rationale:* a scene that takes a click is a new kind of control, and the controls of the screens
@@ -8783,24 +8801,28 @@ While the player's pause holds a map run, the scene is greyed with `grayscale(1)
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-62 · derives from D-122 · derives from D-132 · derives from D-316 · derives from D-317 · derives from D-271
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Pauza” pressed, the scene grey and the fire and the mage still; the stop at the
-    first discovery, the scene in colour, the fire and the mage still and the icons of what was
-    discovered coming out of the forest on plaques framed in `discovery` and standing over the
-    clearing until „Wznów”, which takes them away; a death of cold, the mage falling in six frames and
-    lying grey, no badge, the blue layer over the whole scene until „Restart” or „Zakończ”, a mage that died in the right half of the frame falling to the left, and the
-    same scene drawn after a reload with the mage already lying and the layer already there; a death
-    of hunger or in a fight, the mage falling and no layer; a completion of Las, the mage in colour in
-    the full gold, specks of light rising over the clearing once and going out, and a scene drawn
-    again showing no specks; a death in the game minute of a discovery, the fall alone and no plaque;
-    a scene under the system's setting for reduced motion showing the mage lying at once; the stop at the first attack, the wolf standing beside the mage and still, and the scuffle going on after „Wznów”
-  - violates: the fire moving at a stop at a discovery; the fire moving while the effect of a
-    moment plays; the scene greyed at a stop at a discovery; the whole scene greyed as at a pause
-    after a death; the badge standing over a mage who is dead; „Pauza” leaving the scene in colour;
-    an effect that plays again at each redraw of the scene, after a return to the screen or after a
-    reload; an effect that loops until the moment ends; a layer over the whole scene after a death
-    of hunger; the plaques of a discovery over the fall of the mage; an effect that lights or darkens
-    the whole scene for a moment (D-317)
+- **Verification:** tests: the player's pause greying the scene with `grayscale(1) brightness(0.5)`,
+  the tint and the frost with it, and holding all its motion — the mage, the fire, the badge, the
+  tint, an effect that runs, the wolf and its cloud; the effect of a discovery, a death and a
+  completion playing once, at the reading whose events carry the moment, and the scene then standing
+  on its last image, nothing but the effect moving at its stop; at a discovery the scene in colour
+  and the icon of each thing discovered that the data gives an icon, each icon once, coming out of
+  the forest and standing over the clearing until „Wznów” takes it away; after a death no badge, the
+  mage falling toward the middle of the frame in the six frames of its death sheet and lying grey in
+  `grayscale(1) brightness(0.55)`, and the cold layer over the tint and under the frost after a death
+  of cold alone; after a completion no badge, the mage in colour in the full gold, and specks rising
+  over a part of the clearing and gone at the last image; at the stop at a discovery that the first
+  attack makes, the wolf beside the mage with no run in and its scuffle held until the scene goes on;
+  a death or a completion in the game minute of a discovery showing the effect of the end alone, and
+  a scene drawn again on a moment showing its last image at once. For the colours of the plaques and
+  of the cold layer and the system's setting for reduced motion, an agent compares a change with the
+  part no invariant and no test holds:
+  - complies: the plaques of a discovery on `panel` framed in `discovery`; the layer over the scene
+    after a death of cold blue; a scene under the system's setting for reduced motion showing the mage
+    lying at once
+  - violates: plaques of a discovery with no frame, or framed in another role than `discovery`; a
+    layer after a death of cold in the cool grey-green of the tint; a scene under the system's setting
+    for reduced motion that plays the fall of the mage
 - **Origin:** none
 
 *Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
@@ -9925,9 +9947,9 @@ While the mage gathers, with „Zbierz” or „Obchód”, fibre included, it b
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-319
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage at the sticks bending from the end of its walk to the end of „Zbierz — Patyk”, at the same beat at 1× and at 4×; the mage gathering fibre, which has no prop, bending where it stood; the mage of „Obchód” bending through its forty minutes; the mage at the moss, which lies to its left, bending facing left
-  - violates: one bend of 300 ms at the end of each gathering; a mage that bends at „Zbierz” and stands at „Obchód”; a mage that stands in the frames of standing while it gathers fibre; a beat of the bend that follows the pace; a mage that bends with its back to the prop
+- **Verification:** tests: the mage bending, as a state of the action and no effect, through „Zbierz” and „Obchód”, fibre included, in the bend sheet of the data in place of the idle one, and at no other action, in combat or after an end; the bending mage facing its prop as the side of the data gives it, the sticks and the bush to its right and the moss to its left, whatever way it walked, and the mage at fibre bending as it faces. For the loop of the bend, its beat and the moment it begins, an agent compares a change with the part no invariant and no test holds:
+  - complies: the mage at the sticks bending in a loop from the end of its walk to the end of „Zbierz — Patyk”, at the same beat at 1× and at 4×
+  - violates: a beat of the bend that follows the pace; a mage that bends while it still walks to the sticks; a bend that plays its frames once and stands
 - **Origin:** none
 
 *Rationale:* the gathering is most of the time of a run, and a mage that stands through it leaves the scene with nothing to show for the longest action. The mage usually reaches the sticks and the moss walking left, so a facing that follows its walk would turn its back to a prop it reaches, and the prop's side in the data is what the player sees. Accepted with it: with „Obchód” the mage bends for forty game minutes though a patrol is a walk about the tile, and at 16× a gathering lasts 625 ms and the walk 640 ms, so the loop shows mostly from 1× to 4×.
@@ -9940,9 +9962,9 @@ When a gathering ends with a piece more in the backpack, the icon of the gathere
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-316 · derives from D-317 · derives from D-320
-- **Verification:** an agent compares a change with the decision:
-  - complies: the icon of a stick on a plaque in `panel` flying from the sticks to the mage after a „Zbierz — Patyk” that put a stick into the backpack; one icon after an „Obchód” that brought seven pieces; the icon of fibre starting under the mage's feet
-  - violates: the icon straight on the picture of the forest with no plaque; an icon for a gathering that put no piece into the backpack; seven icons after one „Obchód”; a picture of the resource cut from a pack in place of the icon
+- **Verification:** tests: the end of a gathering with a piece more in the backpack sending the icon of the resource that the data gives, as a mask on a plaque, from the middle of its prop to the body of the mage that gathered, with no text, gone when its flight ends, and none where no piece came; the icon of fibre starting under the mage's feet; „Obchód” sending one icon for its whole result. For the arc and the background of the plaque, an agent compares a change with the part no invariant and no test holds:
+  - complies: the icon of a stick on a plaque in `panel` flying in an arc from the sticks to the mage
+  - violates: the icon on a plaque with no background of its own, straight on the picture of the forest; an icon that flies in a straight line
 - **Origin:** none
 
 *Rationale:* the icon is the picture of the resource that the player knows from the map, and the plaque keeps it legible on the forest, as the badge over the head keeps the icon of an action. Nothing new enters the game's files for it.
@@ -9955,9 +9977,7 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-66 · derives from D-271 · derives from D-316 · derives from D-317
-- **Verification:** an agent compares a change with the decision:
-  - complies: a missed „Zbierz — Patyk” leaving a cloud of dust at the sticks; a missed „Zbierz — Włókno” leaving one under the mage's feet
-  - violates: dust at a „Zbierz” that put a piece into the backpack; dust over the mage's head, where the badge stands; no sign of a miss in the scene
+- **Verification:** tests: a „Zbierz” that ends with no piece more in the backpack putting a cloud of dust at the prop of the resource, whatever the mage does next, and for fibre, which has no prop, under the mage's feet.
 - **Origin:** none
 
 *Rationale:* a miss leaves the stock of the tile and the backpack as they were, and the dust shows it where the hand reached for the prop, so that the player sees the gathering fail and not only the numbers stand still. Under the feet the dust stands for the fibre, which has no prop.
@@ -9970,9 +9990,7 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** an agent compares a change with the decision:
-  - complies: a reading in which one „Zbierz — Patyk” ended with a piece more in the backpack showing the icon at the mage that gathered, though the action that starts in that reading leads the mage elsewhere; a reading that carries two ends of a gathering starting nothing; the end of „Zjedz” in the reading of a gathering's end leaving its result unread and starting nothing; the end at the discovery that stops the scene starting nothing; an effect running when the pause comes standing still and finishing when the game goes on
-  - violates: an effect shown for a gathering that ended in the first reading the scene draws; an icon that lands where the next action leads the mage; a field of the game state that holds the result of a gathering for the scene
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it.
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.
