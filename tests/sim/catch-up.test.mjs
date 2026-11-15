@@ -561,6 +561,7 @@ test("with room in the chest for one, the open game gives it to whoever complete
 // D-246: each character's own
 // change of the chest; the practice its loop gathered stands at the loop and in no line (D-189).
 test("each character's line holds its own change of the chest with no zero kept, and the practice stays at the loop", () => {
+  // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   let state = looping({ moss: 57 });
   state = shortBy(state, 1, 1, { stick: 5 }, { smallItemGathering: 9 });
   state = shortBy(state, 2, 1, {}, {});

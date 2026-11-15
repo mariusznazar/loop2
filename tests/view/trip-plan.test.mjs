@@ -68,6 +68,8 @@ const click = (element) =>
   });
 
 test("an empty trip plan folds to the line „Plan wyprawy: pusty” with no icon and no list", async () => {
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
+  // decision: D-307 "Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy: pusty”"
   await withPage(async ({ document }) => {
     const { root } = await draw(document, withTrip([], []));
     const button = lineButton(root);
@@ -85,6 +87,7 @@ test("an empty trip plan folds to the line „Plan wyprawy: pusty” with no ico
 
 test("a folded line shows each position's item icon and count, with Zabierz and Wynieś, and no list", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
   await withPage(async ({ document }) => {
     const { root } = await draw(
       document,
@@ -132,6 +135,8 @@ test("a folded line shows each position's item icon and count, with Zabierz and 
 });
 
 test("a click on the line unfolds the lists, and a second click folds them again", async () => {
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
   await withPage(async ({ document }) => {
     const { root } = await draw(
       document,
@@ -157,6 +162,8 @@ test("a click on the line unfolds the lists, and a second click folds them again
 });
 
 test("each list offers the items it does not hold, and its add button stays off when it holds all", async () => {
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
+  // decision: D-181 "The game accepts an item once on each trip list, and the same item can stand on both lists"
   await withPage(async ({ document }) => {
     const { root } = await draw(
       document,
@@ -214,6 +221,8 @@ test("each list offers the items it does not hold, and its add button stays off 
 });
 
 test("Dodaj przedmiot commits the list with the first item it does not hold, at count 1", async () => {
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
+  // decision: D-181 "The game accepts an item once on each trip list, and the same item can stand on both lists"
   await withPage(async ({ document }) => {
     const { root, commits } = await draw(
       document,
@@ -235,6 +244,8 @@ test("Dodaj przedmiot commits the list with the first item it does not hold, at 
 });
 
 test("a count typed and left commits it; a count that is no whole number from 1 keeps the previous one and shows the message", async () => {
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
+  // decision: D-181 "A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count"
   await withPage(async ({ document, window }) => {
     const { root, commits } = await draw(
       document,
@@ -279,6 +290,7 @@ test("a count typed and left commits it; a count that is no whole number from 1 
 });
 
 test("the item select commits the position with the item picked", async () => {
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
   await withPage(async ({ document }) => {
     const { root, commits } = await draw(
       document,
@@ -305,6 +317,7 @@ test("the item select commits the position with the item picked", async () => {
 });
 
 test("↑ and ↓ move a position, and the first one's ↑ and the last one's ↓ are off", async () => {
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
   await withPage(async ({ document }) => {
     const plan = withTrip([
       { item: "stick", count: 5 },
@@ -391,6 +404,7 @@ test("a count typed as the number shown commits nothing", async () => {
 
 test("Usuń is the destructive button of its position and commits the list without it", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-180 "Each position holds an item select list, a number field, „↑”, „↓” and „Usuń”, and „Dodaj przedmiot” stands below each list"
   await withPage(async ({ document }) => {
     const { root, commits } = await draw(
       document,

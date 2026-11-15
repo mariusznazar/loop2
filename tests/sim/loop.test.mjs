@@ -664,6 +664,7 @@ test("minutes that are no whole number from 0 up are a RangeError", () => {
 // next map run takes from the chest as it then stands, on the same copy and at game minute 0.
 test("a completion deposits the bring list's clipped loot, counts the map run, adds its practice to the loop and starts the next map run in the same step", () => {
   // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed, and each map run of an earning loop takes its seed from a draw of the map run before it"
+  // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   const program = withTrip(
     EMPTY,
     [entry("stick", 3)],
@@ -732,6 +733,7 @@ test("the seeds of the successive map runs of a loop follow the draw of the fift
 // run pays nothing, what the loop gathered stays and the next map run starts at once.
 test("a death with a resurrection ready is settled at the moment given: used up, nothing paid, the carried items gone, the loop going on at its next map run", () => {
   // decision: D-22 "A restart of a map run keeps its seed, any other map run outside an earning loop takes a new seed, and each map run of an earning loop takes its seed from a draw of the map run before it"
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   const ready = holding(
     changingRun(
       dyingNext(
@@ -852,6 +854,7 @@ test("taking an end reads the moment only when there is an end to settle, and th
 // D-245, D-183: the practice of the loop and of the map
 // run going on are paid, the loot of that map run stays out.
 test("stopping a loop pays the loop's practice and the map run's into the skills, records the sum, drops the loop and deposits nothing", () => {
+  // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   const program = withTrip(EMPTY, [], [entry("stick", 3)]);
   let state = holding(looping(program, { berry: 1 }), {
     smallItemGathering: 40,
@@ -897,6 +900,8 @@ test("stopping a loop that gathered nothing writes an empty sum, and stopping a 
 });
 
 test("stopping a loop whose map run ended in death pays only the loop's own practice, and a character with no loop leaves the very state", () => {
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
+  // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   const state = holding(
     changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
     { smallItemGathering: 40 },
@@ -916,6 +921,7 @@ test("stopping a loop whose map run ended in death pays only the loop's own prac
 // D-189, D-246: „Odbierz” pays all the practice waiting, the map run going on included, and leaves
 // the map run, its backpack, the loop and the chest as they were.
 test("taking the practice pays what the loop and its map run going on gathered, empties both and changes nothing else", () => {
+  // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   const program = withTrip(EMPTY, [], [entry("stick", 3)]);
   let state = holding(looping(program, { berry: 1 }), {
     smallItemGathering: 40,
@@ -962,6 +968,7 @@ test("taking the practice pays what the loop and its map run going on gathered, 
 // D-246: „Odbierz” never pays the same practice twice, not at the completion of the map run it was
 // taken in the middle of, nor at the stop after it.
 test("practice taken is paid once: the completion of the map run it was taken in adds only what came after, and so does the stop", () => {
+  // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   let state = holding(oneShort(looping(), {}, { smallItemGathering: 9 }), {
     smallItemGathering: 40,
   });
@@ -1007,6 +1014,7 @@ test("taking the practice twice in a row pays it once, and a loop with nothing w
 });
 
 test("taking the practice while the map run has ended in death pays only the loop's own practice and leaves that map run as it ended", () => {
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   const state = holding(
     changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
     { smallItemGathering: 40 },
@@ -1062,6 +1070,7 @@ test("practice taken stays through a death a resurrection covers and goes with a
 });
 
 test("after a death a resurrection covers the loop waits for none of the practice the dead map run gathered", () => {
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   let state = holding(
     changingRun(dyingNext(looping()), 1, { practice: { eating: 7 } }),
     { smallItemGathering: 40 },
@@ -1321,6 +1330,7 @@ test("a character with no practice in its skills has practice when its loop gath
 // D-190: a death of a character with no practice leaves the team and the character as they were, and
 // the loop goes on at its next map run, the run that died paying nothing.
 test("a death of a character with no practice takes the carried items only: the resurrection, the generation and the loop stay, ready or not", () => {
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   for (const readyAt of [0, T0 + 1]) {
     const state = readyFrom(
       changingRun(

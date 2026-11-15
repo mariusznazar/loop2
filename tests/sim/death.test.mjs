@@ -291,6 +291,7 @@ const PATROLLING = programFromRules(
 
 // D-190: the practice a map run gathered goes with it.
 test("the practice a dying character gathered reaches no skill, a resurrection ready or not", () => {
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
   const program = setProgram(team(), PATROLLING).state;
   const state = died(program);
   assert.ok(

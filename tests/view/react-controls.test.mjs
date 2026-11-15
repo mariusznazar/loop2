@@ -1282,6 +1282,7 @@ test("a number field commits the clamped number when left after typing, and noth
 // draft check; a field that reports a count equal to the number shown as a rejection fails too.
 test("a number field under the trip count rule commits nothing on text that is no whole count from 1, keeps its draft and reports it", async () => {
   // decision: D-395 "A shared control in `src/browser/view/controls/` imports no module of a screen that uses it, and a rule that belongs to one screen, such as the rule of the numbers a field takes, the control receives from that screen"
+  // decision: D-181 "A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan; an invalid entry keeps the previous count in the position and stays visible in the field, whose frame and message „Wpisz liczbę całkowitą od 1.” below it take the role `warning` until the player enters a valid count"
   await withPage(async ({ document, window }) => {
     const commits = [];
     let rejects = 0;

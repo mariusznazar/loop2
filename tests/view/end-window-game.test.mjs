@@ -1035,6 +1035,7 @@ test("the window stands in no game state and no saved document: closing and open
 // for a bring plan that takes nothing.
 test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   /** The window's streak line and cost line after a reload of `document`. */
   async function lines(document, root) {
     const loaded = loadSavedGame(JSON.parse(JSON.stringify(document)));
@@ -1107,6 +1108,7 @@ async function costLinesAfterReload(document, root) {
 // a first completion, that is missing after a load, stands where the resurrection was found ready, or
 // stands with the line of a resurrection used.
 test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready", async () => {
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   await onPage(async (page) => {
     const { root } = page;
     const bare = await dieOnTheScreen(page, freezing(true));

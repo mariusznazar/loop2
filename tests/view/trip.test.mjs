@@ -60,6 +60,8 @@ function sent(tripPlan = plan) {
 
 // Catches accepting an invalid draft, or excluding the current row's own item.
 test("trip input rejects invalid counts and offers each list's unused items in supplied order", () => {
+  // decision: D-181 "The game accepts an item once on each trip list, and the same item can stand on both lists"
+  // decision: D-181 "A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan"
   // Integers beyond the safe integers, which a saved game cannot hold (D-181).
   for (const text of [
     "",
@@ -93,6 +95,8 @@ test("trip input rejects invalid counts and offers each list's unused items in s
 });
 
 test("preview follows frozen inventory and available chest room, even after the copy changes", () => {
+  // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   let state = sent();
   assert.deepEqual(tripTexts(state), {
     deposited: null,
@@ -126,6 +130,8 @@ test("preview follows frozen inventory and available chest room, even after the 
 });
 
 test("completion keeps actual deposit text while later editing cannot change it", () => {
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   let state = sent();
   state = advanceMinutes(
     { ...state, run: { ...state.run, streak: 479 } },
@@ -148,6 +154,8 @@ test("completion keeps actual deposit text while later editing cannot change it"
 
 test("map warning appears below desired load and backpack capacity, including a zero map cap", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-188 "On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity"
+  // decision: D-188 "The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent"
   assert.equal(tripWarning(plan, 15, MAPS.forest), null);
   assert.equal(tripWarning(plan, 3, { ...MAPS.forest, carryIn: 3 }), null);
   assert.equal(tripWarning(plan, 15, { ...MAPS.forest, carryIn: 5 }), null);
@@ -164,6 +172,7 @@ const MARK =
 // not yet solved, and one that stays where the chest holds exactly what the run takes.
 test("the mark shows at a solved map when a take entry cut by capacity and the entry cap exceeds the chest, and only then", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   const take = (...entries) => ({ take: entries, bring: [] });
   const chest = (pieces) => ({ pieces });
   // Three pieces asked, two in the chest: the mark; the same at a map not yet solved: none.
@@ -267,6 +276,7 @@ test("the mark shows at a solved map when a take entry cut by capacity and the e
 test("the enter line gives what a send takes, cut by the chest, the capacity and the entry cap", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-180 "The card of a map shows what of the plan enters"
   const take = (...entries) => ({ take: entries, bring: [] });
   const stocked = { pieces: { stick: 10, berry: 10 } };
   assert.equal(
@@ -378,6 +388,7 @@ function died(state, readyAtMs) {
 test("the six screens of a map run give the world area the solved-map line and the preview, and no deposit and no settlement", () => {
   // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana"
   // decision: D-214 "A manual map run is a manual run of a solved map by the state of its map when that map run starts, and it stays one to its end, on the screen after its end and after a load"
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   const lines = (state) => ({
     solved: solvedRunText(state),
     preview: tripTexts(state).preview,

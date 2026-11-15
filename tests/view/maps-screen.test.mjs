@@ -477,6 +477,7 @@ test("the characters stand in the order of their creation, each with its lines f
   // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
+  // decision: D-180 "The card of a map shows what of the plan enters"
   await withPage(async (page) => {
     const state = solved(
       withChest(
@@ -579,6 +580,7 @@ test("the list „Program:” shows the program of the row in the order of the p
 // yet solved and from nowhere at a solved one.
 test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map, from nowhere at a solved one, and „nic” where it takes none", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-180 "The card of a map shows what of the plan enters"
   await withPage(async (page) => {
     const plan = {
       take: [
@@ -620,6 +622,9 @@ test("„Wejdzie: …” is what a send takes: from the chest at an unsolved map
 // D-188: no map of the data cuts a plan today, so the case gives Las an entry cap for its length.
 test("a map that cuts the plan shows the clipped-plan line and what enters cut", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-180 "The card of a map shows what of the plan enters"
+  // decision: D-188 "On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity"
   const copy = structuredClone(MAPS.forest);
   try {
     MAPS.forest.carryIn = 5;
@@ -731,6 +736,7 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
 // D-251: the rehearsal mark stands under „Wejdź” at a solved map when the clipped take exceeds the chest.
 test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   await withPage(async (page) => {
     const plan = { take: [{ item: "stick", count: 3 }], bring: [] };
     const state = withChest(withPlan(teamOf("Ala"), plan), { stick: 2 });

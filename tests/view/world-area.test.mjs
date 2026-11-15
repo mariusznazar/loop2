@@ -202,6 +202,8 @@ const rowOf = (container, key) =>
 test("the world area stands from the top: the scene, Teraz, Potem, the body row, the lines between the backpack and the drawing, the drawing, the line of a tile, and no line of the end and no paragraph of the last encounter", async () => {
   // decision: D-215 "On the screen of a manual run of a solved map, from game minute zero until „Restart” or „Zakończ”, below the body row and the backpack and above the line „Wprawa w tym przejściu”, the line „Mapa jest już rozwiązana"
   // decision: D-147 "From an attack the map run keeps its last encounter's facts and shows a wrapping paragraph in `text` as an entry of the chronicle in the game minute of the attack, which adds the turns while the encounter lasts: before the turns it gives the creature's starting health and program formatted from its action pairs, and after them it gives each action and its outcome in order, followed by the encounter's result"
+  // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {
@@ -445,6 +447,7 @@ test("in the minutes of an attack Teraz says the fight alone and Potem names the
 // Catches the settlement of a death drawn in the world area, the line that the window of the end holds
 // (D-216, its section about what the death cost), or a deposit drawn at death (D-185).
 test("a death that used a resurrection shows no line of its settlement and no deposit and no preview in the world area", async () => {
+  // decision: D-186 "The line stands when the snapshot lists something or differs from the copy's bring list, reads „Wyniesie: nic” when that transfer is empty, and disappears after death and completion"
   await withPage(async ({ document }) => {
     const used = died(sent(), 0);
     assert.equal(used.run.deathSettlement.kind, "resurrectionUsed");

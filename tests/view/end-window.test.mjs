@@ -275,6 +275,7 @@ test("the scrolling part opens with the longest streak as the bar of the header'
 
 test("a streak that meets the map's condition is drawn in positive, a cost that is a loss in danger, and a discovery whose rule cannot be built has its button disabled", async () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   await withPage(async ({ document }) => {
     const { container, show } = await draw(document, SOLVED);
     assert.equal(
@@ -324,6 +325,7 @@ test("a streak that meets the map's condition is drawn in positive, a cost that 
 // renewal line of a first completion missing, in the wrong role, before the deposit line, or standing
 // where the resurrection was found ready (D-216, D-185, D-190, D-39).
 test("the window shows the line of a death with no practice, and the renewal line after the deposit line of a first completion that renewed", async () => {
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   await withPage(async ({ document }) => {
     const bare = withRun(DIED, { deathSettlement: { kind: "noPractice" } });
     const { container, show } = await draw(document, bare);
@@ -597,6 +599,8 @@ test("the buttons stand after the scrolling part, outside it: „Restart” and 
 // following the saved program instead of the copy's take list (D-188).
 test("the warning of a cut trip plan stands between „Restart” and „Zakończ”, from the copy's take list", async () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-188 "The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent"
   await withPage(async ({ document }) => {
     const map = MAPS.forest;
     MAPS.forest = { ...map, carryIn: 2 };

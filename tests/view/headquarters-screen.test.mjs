@@ -128,6 +128,7 @@ const sectionOf = (root, heading) =>
 // sections in an order other than the report, the team, the chest.
 test("the screen holds its heading Siedziba, then the sections „Drużyna” and „Skrzynka {n}/{cap}” under it", async () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading"
+  // decision: D-184 "The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}”, such as „Skrzynka 12/60”, and for an empty chest as „Skrzynka 0/60” above „Skrzynka jest pusta.”"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
     assert.equal(text(page.root, "h2"), "Siedziba");
@@ -224,6 +225,7 @@ test("an empty team says „Drużyna nie ma jeszcze postaci.” and still offers
 // Catches the chest heading without the capacity (D-184), a list for an empty chest and a line that
 // does not follow the data's order of items.
 test("the chest heading reads the pieces and the capacity, its lines follow the items, and an empty chest says so under „Skrzynka 0/60”", async () => {
+  // decision: D-184 "The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}”, such as „Skrzynka 12/60”, and for an empty chest as „Skrzynka 0/60” above „Skrzynka jest pusta.”"
   await withPage(async (page) => {
     const state = teamOf(1);
     const { screen } = await mount(

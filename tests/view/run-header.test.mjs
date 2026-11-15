@@ -349,6 +349,8 @@ test("the header is hidden while the window stands over an ended map run, and sh
 
 test("the warning of a cut trip plan follows the current copy's take list", async () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-188 "The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent"
   await withPage(async ({ document }) => {
     const map = MAPS.forest;
     MAPS.forest = { ...map, carryIn: 2 };

@@ -128,6 +128,7 @@ test("the longest streak line gives the longest streak against the map's streak,
 // Catches a deposit line that follows the copy after the completion, or one that stands with a death
 // (D-185, D-216). The deposit line keeps the text the trip lines already give, with its full stop.
 test("the cost line after a completion is the deposit frozen at the completion, unchanged by later edits of the copy", () => {
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   const done = withRun(RUNNING, {
     minute: 480,
     streak: 480,

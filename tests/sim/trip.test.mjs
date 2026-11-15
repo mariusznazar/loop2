@@ -69,6 +69,8 @@ function sent(state = equipped()) {
 // Catches a merge losing the skill snapshot, equipment, or either completion payment.
 test("a bought branch acts on entry equipment and completion pays practice and loot once", () => {
   // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
+  // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   let state = equipped();
   state = {
     ...state,
@@ -145,6 +147,7 @@ test("entry spends one budget in order, shortages leave room and partial rows fi
 });
 test("editing or discarding only a trip plan preserves solving progress and rule counts", () => {
   // invariant: trip-plan-progress
+  // decision: D-179 "The trip plan is a field of the program"
   let state = sent();
   state = setProgram(state, {
     ...programFromRules({
@@ -206,6 +209,8 @@ test("completion deposits the frozen list once, and end never deposits again", (
 // Catches skipping a map cap, charging a shortage against the shared budget, or mutating stock.
 test("entry caps, including zero, affect equipment independently of exit caps", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-187 "A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const chest = { pieces: { berry: 20 } };
   const before = structuredClone(chest);
@@ -226,6 +231,9 @@ test("entry caps, including zero, affect equipment independently of exit caps", 
 
 test("exit spends chest room and map capacity in snapshot order, with partial rows", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-186 "During a map run, below the backpack, „Wyniesie: {item} {count}, …” in `text-secondary` gives what completion in that game minute would put in the chest from the frozen bring list, clipped by the backpack, free chest room and the map's exit cap"
+  // decision: D-187 "A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset"
   const run = sent().run;
   assert.deepEqual(tripLoot(run, { pieces: { moss: 55 } }, MAPS.forest), [
     entry("berry", 5),
@@ -261,6 +269,8 @@ test("exit spends chest room and map capacity in snapshot order, with partial ro
 
 test("warnings compare desired pieces and carrying capacity to the map, ignoring stock", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-188 "On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa wpuszcza najwyżej {n} sztuk.” in `warning` stands when its entry cap is below the smaller of the take list's requested total in that character's chosen program and the character's carrying capacity"
+  // decision: D-188 "The same line stands on the screen of a map run beside „Restart” for the current copy and map; when carrying capacity itself clips the plan and the map does not, this line is absent"
   const plan = equipped().programs[0].program.tripPlan;
   assert.equal(tripEntryCut(plan, 15, MAPS.forest), false);
   assert.equal(tripEntryCut(plan, 15, { ...MAPS.forest, carryIn: 15 }), false);
@@ -318,6 +328,7 @@ test("saved plan edits stay out of the copy; saves and overwrite detection inclu
   // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   // decision: D-171 "While the copy's program is on the player's list and the copy differs from it as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive"
   // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
+  // decision: D-179 "The trip plan is a field of the program"
   let state = sent();
   const original = structuredClone(state.run.copy.program);
   state = editProgram(state, 1, {
@@ -346,6 +357,7 @@ test("saved plan edits stay out of the copy; saves and overwrite detection inclu
 
 test("switching programs retains the entry snapshot, including on solved-map runs", () => {
   // invariant: trip-transfer
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   let state = equipped();
   state = { ...state, solvedMaps: ["forestEdge", "forest"] };
   state = createProgram(state).state;
@@ -409,6 +421,9 @@ test("unlisted and clipped contents of a completed backpack cannot fund a subseq
 test("zero map entry cap still allows gathering, and completion clips that minute's gathered loot", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // invariant: trip-transfer
+  // decision: D-179 "The backpack is the cap on both sides, a map may add a stricter cap of its own down to zero, and a trip plan over the map's cap does not keep the character from entering the map: it goes in cut, and the player is told so beforehand"
+  // decision: D-187 "A map's data can set two independent whole-piece caps from zero up, one for entry and one for exit, each optionally unset"
+  // decision: D-187 "The entry cap clips the trip plan when the character enters and the exit cap at completion; gathering during the run is bounded by the character's carrying capacity, which the map cap leaves unchanged"
   const original = MAPS.forest;
   MAPS.forest = { ...original, carryIn: 0, carryOut: 1 };
   try {
@@ -461,6 +476,8 @@ test("zero map entry cap still allows gathering, and completion clips that minut
 
 // Catches rejecting the initial count supplied by the editor's Add item operation.
 test("editing a program accepts one piece on each trip list", () => {
+  // decision: D-181 "The game accepts an item once on each trip list, and the same item can stand on both lists"
+  // decision: D-181 "A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan"
   const state = newGame();
   const program = {
     ...state.programs[0].program,
@@ -476,6 +493,9 @@ test("editing a program accepts one piece on each trip list", () => {
 });
 
 test("program validation rejects duplicate items and bad counts, permits independent lists and large counts", () => {
+  // decision: D-181 "The game accepts an item once on each trip list, and the same item can stand on both lists"
+  // decision: D-181 "A position's count is a safe integer from 1 up — at most 9007199254740991, the largest integer a saved game state holds exactly — and below that bound its upper range is left to reality's clipping of the plan"
+  // decision: D-182 "The program of a new game and a newly created program have both trip lists empty"
   const program = emptyProgram();
   assert.deepEqual(program.tripPlan, { take: [], bring: [] });
   assert.deepEqual(
@@ -560,6 +580,7 @@ function aboutToComplete(state) {
 test("a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   // invariant: solved-map-manual-run
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   const capacity = equipped().team.characters[0].traits.carryingCapacity;
   const started = sent(solvedForest());
   assert.deepEqual(started.run.character.backpack, {
@@ -593,6 +614,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // invariant: solved-map-manual-run
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
   assert.deepEqual(
@@ -616,6 +638,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
 // out of list order, drops a partial row, or ignores the entry cap of the map.
 test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
   // Capacity 12 is spent on moss first, the rest, 3, goes to berry.
@@ -767,6 +790,7 @@ test("sendTake at an unsolved map is cut by the map's entry cap of 4 before the 
 });
 
 test("sendTake at a solved map takes the take list from nowhere, clipped by capacity 12 only", () => {
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   // Null chest: the list's own counts stand in for the stock. Stick: min(8, 8, 12) = 8, room 4.
   // Berry: min(9, 9, 4) = 4.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
@@ -777,6 +801,7 @@ test("sendTake at a solved map takes the take list from nowhere, clipped by capa
 });
 
 test("sendTake at a solved map is not cut by any chest's stock, as no chest is an argument there", () => {
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   // Capacity 15: stick min(8, 8, 15) = 8, room 7. Berry: min(9, 9, 7) = 7. The chest is not an
   // argument, so its stock cannot cut the list.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
@@ -788,6 +813,7 @@ test("sendTake at a solved map is not cut by any chest's stock, as no chest is a
 
 test("the backpack of a solved map's run is the entries sendTake gives from nowhere", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
   // Capacity 12 with a list of stick 8 and berry 9: stick 8 and berry 4 come into the backpack.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
   const backpack = takeFromNowhere(plan, 12, MAPS.forest);

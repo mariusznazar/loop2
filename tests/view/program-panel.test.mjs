@@ -213,6 +213,8 @@ const groupCount = (program) => program.groups.length;
 // D-180. Catches the section missing
 // from Programy, standing under the rules or above the name, and standing on the screen of a map run.
 test("Programy holds the trip plan between the program's name and its rules; the screen of a map run holds none", async () => {
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
+  // decision: D-307 "Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy: pusty”"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");
     const order = inOrder(game.root);
@@ -259,6 +261,10 @@ test("Programy holds the trip plan between the program's name and its rules; the
 // is an edit of that program. Catches an edit of the plan reaching the copy or another program, and a
 // section carried from one program to the next with its folding.
 test("an edit of the trip plan on Programy goes to the program shown, and another program's section stands folded", async () => {
+  // decision: D-179 "The trip plan is a field of the program"
+  // decision: D-180 "The screen Programy shows a section „Plan wyprawy” folded to a line of icons between the program's name and its rules, with the lists „Zabierz” and „Wynieś”"
+  // decision: D-182 "The program of a new game and a newly created program have both trip lists empty"
+  // decision: D-307 "Where both lists of the trip plan are empty, its folded line on Programy reads „Plan wyprawy: pusty”"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
