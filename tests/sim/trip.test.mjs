@@ -280,6 +280,7 @@ test("warnings compare desired pieces and carrying capacity to the map, ignoring
 
 test("restart uses the unsaved copy and current stock; unfinished end and death return nothing", () => {
   // invariant: trip-run-end
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start, except that a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included"
   let state = sent();
   const chestAfterEntry = structuredClone(state.team.chest);
   assert.deepEqual(end(state).state.team.chest, chestAfterEntry);
@@ -314,6 +315,9 @@ test("restart uses the unsaved copy and current stock; unfinished end and death 
 });
 
 test("saved plan edits stay out of the copy; saves and overwrite detection include both lists", () => {
+  // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
+  // decision: D-171 "While the copy's program is on the player's list and the copy differs from it as the copy was taken from it or last saved into it, the line „Niezapisane zmiany w kopii.” stands under the heading in the role `warning` and „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć zmiany” are active, and while it is the same, the line is gone and the three buttons are inactive"
+  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
   let state = sent();
   const original = structuredClone(state.run.copy.program);
   state = editProgram(state, 1, {
