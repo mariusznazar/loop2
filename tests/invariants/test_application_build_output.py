@@ -272,6 +272,7 @@ class BuildCompilesBothConfigurations(unittest.TestCase):
 
     def test_the_page_loads_one_file_that_joins_the_browsers_code(self):
         # invariant: application-build-output
+        # decision: D-06 "Building the application type-checks the simulation's files under a third configuration of their own that emits nothing, compiles the browser and server configurations and bundles the browser's code, React included, into the files the server hands out"
         copy = self.fresh_copy()
         write_probe(copy, "src/browser", BUNDLE_PROBE)
         with open(copy.file("src/browser/main.ts"), "a", encoding="utf-8", newline="\n") as handle:

@@ -124,6 +124,7 @@ class ServerResources(unittest.TestCase):
         self.assert_released()
 
     def test_start_gives_the_server_a_free_port_on_127_0_0_1(self):
+        # decision: D-49 "Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port"
         start_child, environments = self.start_children(READY_CHILD)
         with patch.object(support, "popen", start_child), \
                 patch.object(support, "free_port", return_value=50123):
@@ -134,6 +135,7 @@ class ServerResources(unittest.TestCase):
                           for e in environments], [("127.0.0.1", "50123")])
 
     def test_start_whose_port_was_taken_runs_once_more_on_another_port(self):
+        # decision: D-49 "Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port"
         start_child, environments = self.start_children(TAKEN_CHILD, READY_CHILD)
         with patch.object(support, "popen", start_child), \
                 patch.object(support, "free_port", side_effect=[50001, 50002]):
