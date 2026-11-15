@@ -290,7 +290,6 @@ function runningState() {
   ).state;
 }
 
-// decision: D-408 "No function the game view shares between its screens names the new screen"
 // decision: D-281 "An address names a screen in the fragment after `#`"
 // Catches an address written for a show that asks for none, and one that goes by the wrong word.
 test("the address gets the fragment with a new entry, in place of the current one or not at all", async () => {
