@@ -2687,11 +2687,10 @@ disabled.
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-118
-- **Verification:** an agent compares a change with the decision:
-  - complies: „+ reguła” of a new game's rule group „Program” enabled from the first game second,
-    adding „Zawsze → Eksploruj” at the end of the group, with its rule panel open on the condition
-  - violates: „+ reguła” adding a program rule whose action the Understanding does not hold; the
-    rule added with no rule panel open, or with the panel open on the action
+- **Verification:** tests: „+ reguła” adding „Zawsze → Eksploruj” at the end of its rule group,
+  in a new game and in a game whose Understanding holds no action, and never disabled; the opening
+  of the new rule's panel asked for with no field named, and the panel then standing on the new
+  rule, on the condition, as every opening that names no field does.
 - **Origin:** none
 
 *Rationale:* with „Eksploruj” in the Understanding from the start, a rule always has an action to
@@ -7555,17 +7554,20 @@ rule group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-44
-- **Verification:** an agent compares a change with the decision:
-  - complies: one editor component drawing the program on Programy and the copy on the screen of a
-    map run; a click on the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” opening the rule panel
-    under that row, on Programy and on the screen of a map run, and a click on the header of a rule
-    group opening it under that header, Programy keeping its two columns, the list of programs and
-    the editor; a program rule dragged by its handle into another rule group, a line showing where
-    it lands; a rule group dragged by its handle above another
-  - violates: a native select list in a rule's row; the rule panel opened over the rows, beside
-    them or in a column of its own on either screen; „↑” and „↓” in the header of a rule group; a
-    discovered action the player may not pick left out of the pick rather than greyed with its
-    reason
+- **Verification:** tests: one program panel with its rule list and rule panel on Programy and on
+  the screen of a map run; a rule's row reading „Zapas poniżej 8 · Patyk” and „Zbierz — Patyk”
+  with the arrow between them; the rule panel standing in the list right under the row or the
+  header it changes, on both screens, in no column or area of its own, and moving there when
+  another rule opens; each pick moving on to the next field; the conditions as cells in two
+  columns, in sections parted by a line, which the arrow keys reach; a cell that may not be picked
+  greyed with its reason; rules moved by „↑” and „↓”, across the border of a group too, and by a
+  handle, with the line „tu wyląduje” where they land and no line over their own place, over the
+  panel or after the drag ends; rule groups moved by a handle with such a line, and no arrows in
+  the header of a rule group. For the cells of actions and targets reached by the keyboard, an
+  agent compares a change with the part no invariant and no test holds:
+  - complies: the arrow keys moving among the cells of the action and of its target as they do
+    among the conditions
+  - violates: the cells of the actions reached by the mouse alone
 - **Origin:** none
 
 *Rationale:* the player writes while seeing the world and the rows around the rule, so the pick
@@ -7629,16 +7631,14 @@ above fits and with none otherwise, and the player can change it.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-196 · derives from D-288 · narrows D-119
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Obchód”, discovered and not bought by the character of a manual map run, greyed with
-    „gałąź niewykupiona”; with no map run in the game, „Zbierz” offering every discovered item;
-    „Kopnij” to be picked while no creature attacks; a rule whose target is absent from the map of
-    the map run showing that target picked and greyed with „nie ma go na tej mapie”, and a click on
-    another target changing it; a rule holding a value that none of the listed reasons fits showing
-    it picked and greyed with no reason, and a click on another value changing it
-  - violates: „Kopnij” in the pick before the first attack revealed it; a greyed cell with no
-    reason where one of the listed reasons fits; „Zbierz” left out of the pick while no target is
-    known; a rule's value outside the pick shown as if nothing were picked
+- **Verification:** tests: the pick of conditions, actions and targets holding only what the
+  Understanding holds; „gałąź niewykupiona” at a branch action the character of the map run has
+  not bought, and none once it has; „wybierzesz w przejściu postaci, która ją kupiła” at such an
+  action with no map run; „nie znasz jeszcze celu” at „Idź”, „Zbierz”, „Obchód”, „Tu leży mniej
+  niż” and „Zapas poniżej” with no known target; „nie ma go na tej mapie” at a known resource the
+  map of the map run lacks; with no map run every known target open; the actions of combat open
+  outside combat; a value the rule holds outside the pick shown chosen and greyed, with the reason
+  that fits or with none, and another pick changing it.
 - **Origin:** none
 
 *Rationale:* the pick holds as many choices as the player has found, so it never starts
@@ -7669,11 +7669,9 @@ niż — ognisko, Z dala od — ognisko; Przeciwnik ma poniżej.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: „Zbierz” and „Obchód” under the name Zbieranie; „Zawsze” alone in the first section of
-    the conditions, a line below it
-  - violates: the conditions in one column; „Kopnij” in a group of its own; a name above a section
-    of conditions
+- **Verification:** tests: the actions of the pick in the four named groups and their order, in
+  the data and in the rule panel; the conditions in two columns, in the four sections and their
+  order, with no names, parted by a line.
 - **Origin:** none
 
 *Rationale:* cells give a condition one click and keep one control for every pick (D-288).
@@ -7691,12 +7689,16 @@ shows the icon of the action, never one of its target.
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-27 · derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk”, in the
-    cell „Zbierz”, over the head of the mage gathering and before „Zbierz — Patyk” in „Teraz”; „Idź”
-    and „Idź — ognisko” sharing one icon
-  - violates: the icon of a stick in the row of „Zbierz — Patyk”; a greyed cell drawn with no icon
-    while a cell that may be picked has one; cells drawn as text alone while the rows show icons
+- **Verification:** tests: every action of the data naming one icon; the icon of the action in a
+  rule's row for „Eksploruj”, over the mage's head and in the rows „Teraz” and „Potem”, there the
+  icon of „Zbierz” and never one of its target for „Zbierz — Patyk”; an icon in the cell of an
+  action in the pick. For the icon of a rule's row whose action has a target and the icon in a cell
+  of the pick being its action's own, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” and in
+    the cell „Zbierz”, a greyed cell keeping its icon
+  - violates: the icon of a stick in the row of „Zbierz — Patyk”; a cell drawing an icon other than
+    its action's; a greyed cell drawn with no icon while a cell that may be picked has one
 - **Origin:** none
 
 *Rationale:* the sign of the action tells „Idź — patyk” from „Zbierz — patyk”, which a sign of the
@@ -7907,11 +7909,9 @@ it says nothing of the firing counts.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-131
-- **Verification:** an agent compares a change with the decision:
-  - complies: the sentence in the rule panel of the copy on the screen of a map run, and none in the
-    rule panel of a saved program on Programy
-  - violates: the sentence speaking of the counts too; the sentence in the rule panel of a saved
-    program
+- **Verification:** tests: „Zmiana zeruje passę tego przejścia.” in the rule panel of the copy,
+  with no word of the counts, and none in the panel of a saved program, on the screen of a map run
+  and on Programy.
 - **Origin:** none
 
 *Rationale:* a change of the copy's rules sets the streak to zero (D-131), so the panel says so
@@ -7983,13 +7983,19 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
-- **Verification:** an agent compares a change with the decision:
-  - complies: the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk” written from a click on its row
-    in six acts — the row, „Zapas poniżej”, 8 with Enter, „Patyk”, „Zbierz”, „Patyk” — and the
-    panel still open after the last of them; Escape closing it
-  - violates: the panel closing by itself after the target of the action; a pick waiting for a
-    button that confirms it; Enter on a greyed cell changing the rule; a number field standing for
-    „Zawsze”
+- **Verification:** tests: a click on a rule's row opening the panel on the condition, and
+  opening another rule showing that one on its condition; the fields in the order condition,
+  number, target of the condition, action, target of the action, each only where the rule has it;
+  each pick changing the rule at once and moving on, a pick of the value held too; Enter
+  committing the number and moving on; the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk”
+  written from a click on its row in six acts, the panel still open after them; the arrow keys
+  moving among the cells of a grid, a greyed one reached, Enter picking and doing nothing on a
+  greyed cell; „✕”, Escape and the opening of another rule closing the panel. For the number
+  confirmed by leaving its field, an agent compares a change with the part no invariant and no
+  test holds:
+  - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
+    with the mouse, the rule then holding 8
+  - violates: a number typed and left with no Enter dropped, the rule keeping the number it held
 - **Origin:** none
 
 *Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 ·
@@ -9708,13 +9714,10 @@ group unfolds.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-295
-- **Verification:** an agent compares a change with the decision:
-  - complies: the rule panel open on rule 2.1 at its field „Czynność”, then „Zwiń grupę” on group
-    2: the panel under the header of group 2 with the field „Czynność” still shown, and „Rozwiń
-    grupę” bringing it under the row of rule 2.1; „zwiń wszystkie” with a panel open leaving it
-    under the header of its group
-  - violates: the panel closing when its group folds; the group unfolding to show the panel; the
-    panel standing under no header and no row, such as at the end of the list
+- **Verification:** tests: the panel of a rule in a folded group right under that group's header,
+  its row not drawn; folding and unfolding that group, and „zwiń wszystkie” and „rozwiń
+  wszystkie”, leaving the same panel open on its field „Czynność”, and the panel under the row
+  again once the group unfolds.
 - **Origin:** none
 
 *Rationale:* folding arranges the player's view of a program and changes nothing the player is
@@ -9931,9 +9934,7 @@ The rule panel shows beside an action what it costs, read from the game's data, 
 - **Scope:** browser-view, simulation
 - **Based on:** none
 - **Relations:** derives from D-288 · derives from D-63 · derives from D-293 · derives from D-310
-- **Verification:** an agent compares a change with the decision:
-  - complies: the cell „Wytwórz — ognisko (6 patyków)” in the pick of the rule panel, greyed with its price when it may not be picked; „Zasil — ognisko (1 patyk)”; „Uderz — patyk” with no price, since the stick stays in the backpack after a strike (D-145); the row „Zapas poniżej 8 · Patyk → Wytwórz — ognisko” with no price;
-  - violates: a price in the row of a program rule; „(6 × patyk)” in the panel; a price with a name in the singular after a count of 6; „Zapal — ognisko (2 patyki, 10 energii natury)” shown to the character with „Czysty płomień” during a map run
+- **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's.
 - **Origin:** none
 
 *Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. In a trial of 2026-10-31 an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule does not grow, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, while the game departs from the old loop's solutions only where the result is better, never worse (D-311); the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
