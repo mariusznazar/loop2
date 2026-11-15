@@ -1,0 +1,8 @@
+.runs/task-cycles/ci-przy-pr/reports/correction-1-report.md: A source for what GitHub's Windows machine would do with the tests of containers: not found (so D-413 claims nothing; the reason is the project's own setup).
+.runs/task-cycles/ci-przy-pr/reports/correction-1-report.md: A source that a Docker daemon answers on `ubuntu-24.04`: not found; what is held is that Docker is installed. The runs of the request are the evidence, not recorded.
+.runs/task-cycles/ci-przy-pr/reports/correction-1-report.md: Whether the Dockerfile's `node:24-slim` is a Linux image has no source in the foundation beyond D-263's own sentence "the image built on Linux": taken as the project's own setup, as the handoff allows.
+.runs/task-cycles/ci-przy-pr/reports/correction-1-report.md: Another place that names the scan "Secret Protection" outside the task's own text: none found.
+.runs/task-cycles/ci-przy-pr/reports/review-correction-1-report.md: `git grep -i "secret protection"` outside `.the-way`: no match (positive control found "secret scanning").
+.runs/task-cycles/ci-przy-pr/reports/review-correction-1-report.md: A source that GitHub's Windows runner cannot run Linux containers: not looked for again. The earlier review and the author found none, and D-413 claims none.
+.runs/task-cycles/ci-przy-pr/reports/review-correction-1-report.md: A first attempt to combine several searches in one PowerShell line failed to parse because of quoting (exit 1). It was redone with the Grep and Read tools, which found what is reported above.
+checked: 9 reports, 26 items other than none, 7 not in the process remarks

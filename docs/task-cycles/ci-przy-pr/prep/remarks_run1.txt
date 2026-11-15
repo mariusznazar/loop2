@@ -1,0 +1,20 @@
+.runs/task-cycles/ci-przy-pr/reports/author-report.md: A glossary entry for "foundation check" or "check of the instruction files": not found (I used "the check of the instruction files" in D-405, D-77 and D-412 in plain words; no glossary term was written, since the rows do not ask for one).
+.runs/task-cycles/ci-przy-pr/reports/author-report.md: A source with an address for GitHub's secret scan with push protection: not found in the foundation or the task (the *Based on* `TODO` above).
+.runs/task-cycles/ci-przy-pr/reports/author-report.md: A rule of size in `guidelines/coding.md`: none found, so no move-out commit.
+.runs/task-cycles/ci-przy-pr/reports/author-report.md: A statement in the pinned the-way for where a CI file belongs in a product's part map beyond the template's "configuration of agents' tools and of CI" line: unclear (see part-map choice above).
+.runs/task-cycles/ci-przy-pr/reports/author-report.md: The refinement's count of 130 warnings: not reproduced (140).
+.runs/task-cycles/ci-przy-pr/reports/fix-whole-report.md: A source with an address, a passage and a date for GitHub's scan of secrets: still not found (the `TODO` of D-412's *Based on*; the return step's task).
+.runs/task-cycles/ci-przy-pr/reports/fix-whole-report.md: Whether `guidelines/testing.md`'s "Trust boundaries" decision list wants D-413 in it: no rule says so; I added it because the row cites it. Unclear, harmless.
+.runs/task-cycles/ci-przy-pr/reports/fix-whole-report.md: No test or document that names the part of the workflow was found beyond the part map and the files named above.
+.runs/task-cycles/ci-przy-pr/reports/return-step-report.md: A page of GitHub's documentation that says GitHub does not run Linux containers on a Windows machine, or that a Docker daemon answers on `ubuntu-24.04`: not found (see above). The first CI run settles the second for this repository.
+.runs/task-cycles/ci-przy-pr/reports/return-step-report.md: A GitHub page that says that the scan covers every push: not found; the documentation read says push protection blocks a push at its attempt.
+.runs/task-cycles/ci-przy-pr/reports/return-step-report.md: A rule in the-way that says whether a setting of a repository read through a call goes to the fact file when a decision declares the setting: found in the template ("The current state of a setting that people of the product change outside its repository … is a fact", WAY-84), applied.
+.runs/task-cycles/ci-przy-pr/reports/review-fix-report.md: A test, a document or an invariant that names `build-tools` as the part of the workflow after the move: not found.
+.runs/task-cycles/ci-przy-pr/reports/review-fix-report.md: A source in the repository for the GitHub facts D-413's *Rationale* and *Rejected* rest on: not found (n1).
+.runs/task-cycles/ci-przy-pr/reports/review-return-report.md: A GitHub source saying that a Docker daemon answers on `ubuntu-24.04`, or that the Windows runner runs no Linux containers: not found. The nearest is `docker-container-os-support.md`, which concerns features of Actions (r1).
+.runs/task-cycles/ci-przy-pr/reports/review-return-report.md: `content/actions/tutorials/use-containerized-services/run-jobs-in-a-container.md` at `d59b2631…`: 404 at that path. Not needed.
+.runs/task-cycles/ci-przy-pr/reports/review-whole-report.md: An entry of loop2's foundation that states the trust-relevant properties of the CI workflow or its fixed job name: not found (m2).
+.runs/task-cycles/ci-przy-pr/reports/review-whole-report.md: A source in the repository for GitHub's secret scan and push protection: not found (D-412 `TODO`).
+.runs/task-cycles/ci-przy-pr/reports/review-whole-report.md: A rule `### Size of a function and a file` in `guidelines/coding.md`: none.
+.runs/task-cycles/ci-przy-pr/reports/review-whole-report.md: Whether `ubuntu-24.04` ships `lsof`: not checked from here (O2).
+checked: 6 reports, 19 items other than none, 19 not in the process remarks
