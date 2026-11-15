@@ -3133,9 +3133,17 @@ and an attack interrupts the action under way, which is lost.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-23
-- **Verification:** invariants: action-in-progress. An agent compares a change with the decision:
-  - complies: a new creature added to data together with its pairs of condition and action
-  - violates: a wolf's behaviour written as a branch of the engine; a turn of combat costing game minutes of its own; eating during combat
+- **Verification:** invariants: action-in-progress. tests: combat going in turns of one action of
+  each side, the attacker striking first; the needs standing still through the five game minutes of
+  an encounter, whose turns resolve in its last; combat verbs refused outside combat and every other
+  action refused in it; the wolf's pairs of condition and action kept in its data, of the form of
+  program rules, and the wolf acting by them; an attack interrupting the action under way, which is
+  lost. For where a creature's behaviour comes from, an agent compares a change with the part no test
+  and no invariant holds:
+  - complies: a new creature added to data together with its pairs of condition and action, which
+    the engine reads as it reads the wolf's
+  - violates: a wolf's behaviour written as a branch of the engine, though it gives the same turns as
+    its data pairs
 - **Origin:** none
 
 *Rationale:* a fixed cost keeps a long fight from eating half a day and mixing into hunger and cold.
@@ -3161,9 +3169,13 @@ An encounter is scheduled for five game minutes after its attack minute M, with 
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-140 · derives from D-131
-- **Verification:** an agent compares a change with the decision:
-  - complies: an attack in minute 200 resolving its turns in minute 205 with the program edited during the pause
-  - violates: an attack resolving before its discovery pause or automatic recovery raising health during its waiting minutes; a well-fed mage's nature energy rising during those minutes
+- **Verification:** tests: an encounter resolving its turns together five game minutes after its
+  attack minute with the program as it stands then, a completion in the minutes before ending it
+  with no turns, and its record growing by the turns once they are resolved; the needs, automatic
+  health recovery and nature energy standing still in those minutes while burning and resource
+  renewal go on and the streak grows, and health changing in the minute of the turns; an edit of the
+  program in those minutes leaving the resolution minute, the attack generator and the cooldown as
+  they were and setting the streak and the beaten attacks to zero.
 - **Origin:** none
 
 *Rationale:* The player has time to write combat rules after the first attack reveals them, while the game minute remains the unit of time; the cost is reading the actions afterwards instead of watching them unfold. Nature energy stands with the needs, so the encounter's minutes leave the body and the energy as they were, and a minute of combat stays a minute in which the body stands still, with no exception; the game has no spell of combat today, so energy in combat would serve nothing.
@@ -3176,9 +3188,13 @@ An attack uses the per-game-minute chance and cooldown in its map's data, with t
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-22 · derives from D-24 · derives from D-140
-- **Verification:** an agent compares a change with the decision:
-  - complies: a trial in minute 181 and E+181, after a gathering finishing in that minute gives its item
-  - violates: a trial in minute 180, during combat or in a minute ending in completion
+- **Verification:** tests: the chance 0.01 and the cooldown of 180 minutes of Las — głębiej in its
+  data; the first eligible minute 181 after the start of the map run and E+181 after an encounter
+  ending in E; an eligible minute trying its attack inside a longer action and after the effect of
+  an action ending in it, a minute of death or completion trying none; an action still running lost
+  on an attack and a finished one keeping its effect; the attack generator seeded by the map run,
+  advanced by the eligible trials alone and left as it stands by the cooldown, combat, death and
+  completion, so that two programs on one seed meet their first attack in the same minute.
 - **Origin:** none
 
 *Rationale:* Independent trials make a difference of programs a difference of behaviour rather than luck; the full cooldown makes its boundary explicit, at the cost of delaying the next chance until the following minute.
@@ -3191,9 +3207,15 @@ The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „O
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-118 · derives from D-128 · derives from D-141
-- **Verification:** an agent compares a change with the decision:
-  - complies: the first wolf opening the combat actions and health conditions while the player can edit in the pause
-  - violates: the attack writing „Zawsze → Uderz — patyk” into the program
+- **Verification:** tests: the first wolf attack bringing the wolf, „Uderz — patyk”, „Kopnij”,
+  „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding and pausing the
+  game after the attack minute and before the first turn; the game adding no rule at that attack; a
+  later attack of the known wolf leaving time running. For a later attack in a minute that discovers
+  something else, an agent compares a change with the part no test holds:
+  - complies: an attack of the known wolf in the game minute a finished exploration reveals a new
+    item, the game stopping for that discovery
+  - violates: such a minute running on without the stop because the attacking creature is already
+    known
 - **Origin:** none
 
 *Rationale:* The encounter teaches the player what its counter can use; keeping the program theirs accepts that resuming with no combat rule can kill the character.
@@ -3206,9 +3228,17 @@ The character uses „Uderz — patyk”, which requires a stick in the backpack
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-140
-- **Verification:** an agent compares a change with the decision:
-  - complies: repeated dodges leaving one reduction, and a wolf below 8 health choosing its dodge
-  - violates: a wolf dodge consuming the character’s protection or protecting the wolf from the next strike
+- **Verification:** tests: „Uderz — patyk” needing a stick and dealing 6, „Kopnij” dealing 3 with
+  no item and „Odskocz” setting a reduction of 5 for the next strike, each raised by the bought ranks
+  of its branch; repeated dodges keeping one refreshed reduction, and a strike taking it with its
+  damage floored at zero; the wolf's 24 health, its strike of 7, its rules „Zdrowie poniżej 8 →
+  Odskocz; Zawsze → Uderz” and its dodge giving up its action with no protection. For a creature's
+  dodge and the end of an encounter, an agent compares a change with the part no test holds:
+  - complies: a dodge of the character answered by a dodge of the wolf, the reduction then taking 5
+    off the wolf's next bite; a reduction set in the last turn of an encounter gone at the first bite
+    of the next
+  - violates: a wolf dodge consuming the character’s reduction; a reduction left from one encounter
+    lowering the first bite of the next
 - **Origin:** none
 
 *Rationale:* A held weapon, a fallback kick and a dodge give a program different responses; a single pending reduction describes the next strike rather than a store of protection. The numbers of the actions and of the ranks of their branches are those of the predecessor game, loop, taken as the requirement, except the ranks of the two combat branches „Mocniejszy cios” and „Cięższy kop”, which D-379 sets. Accepted with it: the balance of loop was measured in a different game, so this one can come out easier or harder; with two ranks of the dodge branch the dodge takes the whole strike of the wolf; later tuning is a change of data and tests.
@@ -3221,9 +3251,12 @@ A stick stays in the backpack after a strike, with its condition unchanged, and 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-144
-- **Verification:** an agent compares a change with the decision:
-  - complies: successive strikes keeping the same stick available
-  - violates: a strike consuming or breaking its stick while this decision stands
+- **Verification:** tests: one stick serving every strike of an encounter. For the stick after the
+  encounter and the dressing of wounds, an agent compares a change with the part no test holds:
+  - complies: the stick in the backpack after an encounter fought with it, as it was before, with
+    nothing of it changed
+  - violates: the end of an encounter taking or breaking the stick its strikes used; an action for
+    dressing wounds added to the data while this decision stands
 - **Origin:** none
 
 *Rationale:* The current combat uses the accepted damage values with a reusable stick and natural recovery outside combat; this costs a different balance from one with breakage and healing.
@@ -3236,9 +3269,12 @@ The encounter ends immediately when either side reaches zero health: a creature 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-140 · derives from D-61 · derives from D-136
-- **Verification:** an agent compares a change with the decision:
-  - complies: a lethal first strike stopping the exchange before the character acts, or two surviving sides parting after 40 exchanges
-  - violates: a departed creature counted as a beaten attack or a dead character answering its killer
+- **Verification:** tests: an encounter ending as either side reaches zero health, a creature at
+  zero counting a beaten attack and a character at zero dying of combat in the minute of the turns
+  without answering the lethal strike; 40 turns of at most one action of each side, after which the
+  creature leaves and the attack stays unbeaten; a character with no feasible combat rule giving up
+  its action of the turn; every resolved encounter starting the cooldown again; combat wounds
+  leaving the streak as it stands.
 - **Origin:** none
 
 *Rationale:* Immediate death makes the recorded result reflect the actions actually survived, and a limit ends a duel in which neither side can finish the other; the limit does not save a helpless character from lethal strikes.
@@ -3251,9 +3287,24 @@ From an attack the map run keeps its last encounter's facts and shows a wrapping
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-40 · derives from D-122 · derives from D-141 · derives from D-338
-- **Verification:** invariants: rule-state-from-pick. An agent compares a change with the decision:
-  - complies: „Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.” before turns, and „Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · … · Wilk pokonany.” after them, as one entry of the chronicle at the game minute of the attack; after a reload at a later game minute, that paragraph standing in the chronicle at the game minute of the attack; after a death in that fight the window holding the paragraph in a section of its own and „Ostatnie minuty” the entries of the chronicle other than the paragraph
-  - violates: a completion before the turns displaying an invented victory, defeat or departure; the paragraph standing under the scene in the world area; an entry of the chronicle for each exchange of blows; the paragraph of an earlier attack still standing after the next attack; the paragraph standing in the window inside „Ostatnie minuty”, or in the window only where it is not among the last entries
+- **Verification:** invariants: rule-state-from-pick. tests: the last encounter's facts kept in the
+  map run and its paragraph in `text` standing as one entry of the chronicle at the game minute of
+  the attack, with no entry for an exchange or the end of the encounter and nowhere in the world
+  area, giving the creature's starting health and program before the turns and each action and its
+  outcome in order with the result after them; the paragraph standing through „Wznów”, an edit and a
+  load until the next attack moves it or „Restart” or „Zakończ” removes it, and a completion before
+  the turns keeping the attack description with no outcome; the paragraph in a section of its own in
+  the end-of-run window, outside „Ostatnie minuty”; „Teraz” reading „Walczy z wilkiem” in every
+  minute of an attack, the resolution minute included, death and completion taking precedence, and
+  „Mag zginął w walce” after a death in combat. For the wrapping of the paragraph, the frozen screen
+  and the window after a load, an agent compares a change with the part no test and no invariant
+  holds:
+  - complies: a paragraph longer than the width of the chronicle going on onto further lines; after a
+    death in the fight the paragraph still standing in the chronicle of the frozen screen; after a
+    reload of a game whose map run ended in a death, the window holding the paragraph of the last
+    encounter in its own section
+  - violates: the paragraph cut off on one line; the paragraph gone from the chronicle at a death or a
+    completion; the window after a load leaving out the paragraph the facts of the saved state give
 - **Origin:** none
 
 *Rationale:* The player can read the opponent and the reason for the result, even after death; keeping facts lets the view show what happened under the program then in force, at the cost of space for a long paragraph. Facts the game state keeps stand after a load, so the paragraph does too: the chronicle lives in the memory of the page and not in the saved game, so after a load it begins with the paragraph of the last encounter, composed from the facts the saved state already holds — the creature, the attack minute and the result — and the entries from before the load are lost. The size of a chronicle is measured, with the chronicle's own code fed with readings every 200 ms at pace 16, on 30 seeds for each variant, one character, in a game that already knew everything, so that no discovery was made in it: a map run of Las with a program of 17 rules went on to game minute 1670 as a median (341 to 1816) and gave a median of 227.5 entries and 16 990 bytes of raw JSON, at most 255 entries and 18 892 bytes, about 75 bytes an entry, and a map run of „Las — głębiej” with a fighting program and supplies from the chest a median of 118 entries and 8 822 bytes, at most 186 entries and 13 853 bytes; the measurement leaves out the player's changes to the copy of the program, discoveries and the paragraph of the last encounter, which the screen composes from the game state, and every map run in it ended in a death, none in a completion. The choice rests on one unmeasured assumption, the rarity of a refresh in the middle of a map run. The window gives the paragraph a section of its own and keeps it out of „Ostatnie minuty”, so the same paragraph does not stand twice in it. Accepted with it: on Las — głębiej, whose condition counts two beaten attacks, the chronicle does not show the first encounter; one more path in the code, with its test; after a load the chronicle holds the entry of the fight without the entries that preceded it; in „Ostatnie minuty” an attack does not stand among the other entries, though the paragraph gives the game minute of the attack. In the minutes of an attack „Teraz” is the inscription alone, with no icon, no number of a rule and no minutes: „Potem” right below it already says by which rule the mage fights, so a second same number would give the player nothing, and the predecessor game's round and number of the combat rule are lost without loss, since this game counts no rounds. The inscription comes from the state of the combat in progress and not from the function that picks the rule a character carries out, so the invariant on what the rows show from that function names it as an exception.
@@ -3266,8 +3317,10 @@ An attacking creature appears in the encounter's text and in the scene, and the 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-147 · derives from D-316
-- **Verification:** an agent compares a change with the decision:
-  - complies: the wolf named in the encounter line and standing in the scene beside the mage through the minutes of the combat, while the terrain keeps its current tiles and character
+- **Verification:** tests: the attacking wolf named in the encounter's text and standing in the
+  scene through the minutes of the combat. For the terrain drawing, an agent compares a change with
+  the part no test holds:
+  - complies: the terrain keeping its current tiles and character through the minutes of the combat
   - violates: a wolf icon added to the character’s tile while this decision stands
 - **Origin:** none
 
@@ -3297,9 +3350,9 @@ A map whose opening map is still unsolved is absent from the screen Mapy, and fr
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-120 · derives from D-144
-- **Verification:** an agent compares a change with the decision:
-  - complies: the mage’s repertoire admitting the discovered combat actions through its three combat skills
-  - violates: „Kopnij” treated as an action that grows no skill
+- **Verification:** tests: „Uderz — patyk” growing „Walka bronią jednoręczną”, „Kopnij” growing
+  „Kopanie” and „Odskocz” growing „Unik przed ciosem”, each of these skills among the elemental
+  mage's predispositions.
 - **Origin:** none
 
 *Rationale:* Combat actions belong to skills like other learned actions, so predispositions govern their availability.
@@ -3312,9 +3365,16 @@ The condition „Zdrowie poniżej” compares the acting side’s current health
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-119 · derives from D-140
-- **Verification:** an agent compares a change with the decision:
-  - complies: a wolf at 6/24 satisfying its own threshold 8, with the character choosing after the wolf’s action
-  - violates: the wolf’s own-health condition reading the character’s health or 25 percent
+- **Verification:** tests: „Zdrowie poniżej” comparing the acting side's health points and
+  „Przeciwnik ma poniżej” its opponent's, strictly below, both from 0 to 100 in steps of 1 with
+  defaults 50 and 10; each side choosing right before its action, the wolf by its ordered data pairs
+  at its own health and the character by the ordered groups, rules and repertoire of its program;
+  outside combat the own-health condition reading the character's health and the opponent-health
+  condition false. For the world conditions in combat, an agent compares a change with the part no
+  test holds:
+  - complies: a rule of „Zapas poniżej” 1 stick and „Kopnij” chosen in a turn while the backpack holds
+    no stick
+  - violates: a world condition read as false in combat, or read of the opponent
 - **Origin:** none
 
 *Rationale:* One meaning for a shared condition lets each side read its own situation; health points keep the wolf’s threshold tied to its wounds, and the explicit actor context costs careful handling.
