@@ -774,6 +774,21 @@ The simulation keeps `actionFeasible`, the function that tells whether an action
 *Rationale:* the tests that call it need no other public function of the simulation to tell whether an action is allowed, and `actionFeasible` is their simplest point of observation of that.
 *Rejected:* removing it — the tests that call it are rewritten onto another public function of the simulation, the work grows, and the tests lose the simplest point of observing whether an action is allowed.
 
+### D-412 — What looks for secrets in loop2's repository?
+
+The built-in secret scanning of GitHub, with push protection, is what looks for secrets in the repository. The CI of the repository and the one command of tests add no scanner of secrets.
+
+- **Scope:** agent-workflow, build-tools
+- **Based on:** github-secret-scanning-public-repository · github-secret-scanning-history · github-push-protection-blocks-push · loop2-secret-scanning-enabled
+- **Relations:** derives from D-13 · derives from D-413
+- **Verification:** tests: the workflow that runs on a pull request holding one command of checking, the one command of tests, and no scanner of secrets. An agent compares a change with the part no test holds:
+  - complies: a pull request that changes the code of the game and adds no scanner of secrets to the workflow or to the one command of tests
+  - violates: a second workflow file that runs a scanner of secrets on each pull request; a stage of the one command of tests that runs a scanner of secrets
+- **Origin:** none
+
+*Rationale:* GitHub's secret scanning runs automatically and for free for a public repository, scans the whole Git history of the repository for secrets of the kinds it knows, and its push protection blocks a push in which it detects one, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no test of the repository checks that it is on.
+*Rejected:* a separate workflow with a scanner, such as gitleaks — a second CI file and a foreign tool fetched at every run, and a departure from the rule of the process the repository pins that no other checking command stands in CI beside the one command of tests; the scanner as a test of the one command of tests — a tool added to the local installation, repeating what GitHub already does over the whole history of the repository.
+
 ## Testing discipline
 
 The testing discipline loop2 adopts: the levels, shape and exemplars of tests, the mechanisms they exercise and the deliberate exclusions.
@@ -1391,21 +1406,6 @@ The full gate runs the directories of Python tests at the same time, giving the 
 *Rationale:* the directories at the same time shorten the gate: three full runs with them so, on one computer of 32 GB as it was, with other work on it that no file of the repository records, took 18.3 to 19.6 minutes, while the gate with the directories one after another was measured earlier at 23 to 24 minutes on a slow computer and at 24.0 to 28.0 minutes with another cycle working beside it; that measurement is a note made on 2026-11-12 outside the repository, and the conditions of the two sets of runs are not alike. These measurements are the product's own, and their records are not open to a reader of the repository. What stood in the way of the directories at the same time was the start of Docker Desktop, which two of them began each for itself; it is begun once for the run now, as D-390 gives, and the tests that use Docker give the containers, images and volumes they make names with a random part, so that they do not meet by name. Accepted with it: the directories share the memory and the processor of the computer at the same time.
 *Rejected:* the directories one after another, giving the runner of the Python tests `--jobs 1` — a run of the whole gate takes 23 to 31 minutes against 18 to 20 minutes with the directories at the same time.
 
-### D-412 — What looks for secrets in loop2's repository?
-
-The built-in secret scanning of GitHub, with push protection, is what looks for secrets in the repository. The CI of the repository and the one command of tests add no scanner of secrets.
-
-- **Scope:** agent-workflow, build-tools
-- **Based on:** github-secret-scanning-public-repository · github-secret-scanning-history · github-push-protection-blocks-push · loop2-secret-scanning-enabled
-- **Relations:** derives from D-13 · derives from D-413
-- **Verification:** tests: the workflow that runs on a pull request holding one command of checking, the one command of tests, and no scanner of secrets. An agent compares a change with the part no test holds:
-  - complies: a pull request that changes the code of the game and adds no scanner of secrets to the workflow or to the one command of tests
-  - violates: a second workflow file that runs a scanner of secrets on each pull request; a stage of the one command of tests that runs a scanner of secrets
-- **Origin:** none
-
-*Rationale:* GitHub's secret scanning runs automatically and for free for a public repository, scans the whole Git history of the repository for secrets of the kinds it knows, and its push protection blocks a push in which it detects one, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no test of the repository checks that it is on.
-*Rejected:* a separate workflow with a scanner, such as gitleaks — a second CI file and a foreign tool fetched at every run, and a departure from the rule of the process the repository pins that no other checking command stands in CI beside the one command of tests; the scanner as a test of the one command of tests — a tool added to the local installation, repeating what GitHub already does over the whole history of the repository.
-
 ### D-413 — How does CI check a pull request into `main`?
 
 On every pull request into `main`, GitHub Actions runs the one command of tests on a Linux machine, in a job named `tests`, a name that stays as it is, and no other checking command stands beside it. The workflow starts on the event `pull_request`, never on `pull_request_target`, and its token only reads and it holds no secret. No text of the request stands in a command, and no step or job lets a failing run pass.
@@ -1511,6 +1511,7 @@ Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted re
 *Rationale:* The tunnel encrypts traffic across the public network without adding certificate handling to the application, and keeping its connector in the product's deployment makes its version and resource boundary reviewable. The application depends on a working connector and its credential; replacing it during deployment adds a short interruption. HTTP/2 uses the observed TCP route; container connectivity still needs observation on the host. The memory bounds were looked at once, on 2026-11-14, three hours after a deployment: the application used 77.07MiB of its limit of 512MiB and the connector 23.2MiB of 256MiB, one sample and no peak. That nothing in Cloudflare bypasses the tunnel is a remark of the operator's check of the Cloudflare panel on 2026-11-14, as the operator gave it: in the DNS of the zone `mariusznazar.com`, `loop2` has one record, a proxied CNAME to `<tunnel UUID>.cfargotunnel.com`, and no AAAA or A record; the zone has no Origin Rule and no Configuration Rule; the route published in the tunnel sends `loop2.mariusznazar.com` to `http://app:3000`. The hostname remains independent of the hosting provider.
 *Rejected:* A manually installed host connector — its version and updates would sit outside the product's deployment, although it would avoid restarting the tunnel with the application; Origin CA and Full (strict) in the game server — adds TLS handling or another server process and still needs a separate, unverified restriction on direct port access; a new Mikrus subdomain — ties the address to the provider; replacing the old game's public address — breaks the separate public address D-08 gives loop2; automatic QUIC selection — adds an unverified UDP route and fallback delay.
 
+
 ### D-11 — Which branch deploys loop2 to the test server?
 
 The deploy branch is `main`: a push to `main`, the merge of a pull request included, reaches the
@@ -1570,6 +1571,7 @@ Automation secrets and server access values — its name, SSH port, SSH user and
 *Rationale:* Access values reveal where and how to enter the server, whereas deployment paths and container ports do not. A runtime credential must survive starts outside automation, and the private copy supports recovery independently of the provider dashboard. A file-backed secret avoids printing the token in configuration and environment inspection, at the price of maintaining host permissions and another copy during rotation. The backup script on the host reads the encryption key each night, so the key has no container to recreate, and a backup made before a rotation still needs the old key. The private copies of the encryption key and of the key to Strych let a backup be reached and read once the server is gone, independently of the provider's panel; both stand in one note, so a leak of the note reveals the way to the backups and their contents together. No source says whether the key to Strych can be replaced, so this decision sets no rotation for it.
 *Rejected:* Session secrets supplied through container environment or a root-starting application that changes user — broaden exposure or startup privilege; keeping only secret values outside the repository — access values would still reveal how to enter the server; keeping the runtime token only in GitHub secrets — the runtime cannot retrieve it on an ordinary restart; a server token without a private copy — recovery depends on issuing another token; environment delivery — exposes the credential through environment inspection; no private copy of the key to Strych, a new key taken from the panel after the server is lost — nobody has checked that the panel can do that, and if it cannot, every backup is out of reach; backups sent unencrypted, so with no key to keep — the addresses and password hashes of all players would lie in plain form on a shared server whose protection nobody knows.
 
+
 ### D-14 — What kind of container does loop2 run in?
 
 loop2's containers, the application's and the connector's, are Docker containers.
@@ -1607,6 +1609,7 @@ kept, so a rollback restores the earlier commit's code, never the data of that t
 
 *Rationale:* Rebuilding an earlier commit keeps the repository and the deployed code in agreement without keeping product images as a recovery store. Application and connector images are prepared before either running container is replaced; shared base images and build cache remain outside product cleanup. A human can try a request before its merge or recover at once. Crossing a deployment-route change also requires the matching installed command and external route settings, so code rollback alone is not public-route recovery. Rebuilding restores code, not historical data or necessarily identical upstream layers.
 *Rejected:* Keeping earlier product images and switching by index — speeds recovery but requires independent retention rules and does not restore the installed deployment command or external routing.
+
 
 ### D-16 — What does the automation's key run on the server?
 
@@ -3405,6 +3408,7 @@ go to.
 *Rejected:* a short message after every change — a third kind of message, while the limits count
 messages by the rows of their links (D-161), which it does not have, so the way of counting, D-161
 and probably the schema change, and every change takes one message from Outsider's limit.
+
 
 ### D-352 — What does a page whose game is open do when the fragment of an emailed link appears in its address?
 
