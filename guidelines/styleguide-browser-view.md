@@ -307,9 +307,10 @@ Kontrolki odstępujące od tej listy stanów:
   `control-border`, tekst w `text`; hover — tło `highlight`; visible focus —
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
   w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
-  wyszarzona (stan disabled) ma ramkę przerywaną — słowo kluczowe `dashed`,
-  bez nowej wartości — nazwę w `text-disabled` i powód w `text-secondary`
-  (D-289); klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
+  wyszarzona (stan disabled) ma ramkę przerywaną w `text-disabled` — słowo
+  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled`, więc
+  ramka ma kolor swojego tekstu (D-279), i z powodem w `text-secondary` (D-289);
+  pod kursorem nie dostaje tła `highlight`; klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
   powód, a wybór jej niczego nie robi. Error nie dotyczy, bo komórka nie ma
   wpisu, który mógłby być błędny; empty nie dotyczy, bo komórka jest jedną
   pozycją, nie listą; loading nie dotyczy, bo żaden formularz czekający na
@@ -525,6 +526,31 @@ programu i grupy reguł (reguła Program editor) nie jest taką ramką ani belk�
 mówi o stanie reguły i nie bierze koloru tekstu obok (D-39). Przegląd zmiany
 czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
+### A name typed by the player breaks in its row
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Imię postaci z samych liter, dłuższe od wiersza drużyny w Siedzibie, łamie się w tym wierszu i nie wychodzi poza niego.
+- **Bad:** Długie imię bez spacji wypycha wiersz poza obszar ekranu albo jest ucięte, albo przewijane tylko dlatego, że nie ma w nim spacji.
+
+Tekst, który wpisał gracz, taki jak imię postaci albo nazwa, może nie mieć
+spacji, więc wiersz, który go pokazuje, łamie go w swoim obrębie, a nie
+przepuszcza poza siebie, nie ucina i nie przewija. Reguła dotyczy każdego
+wiersza z takim tekstem, także nowego. Powód: wpis bez spacji nie ma gdzie się
+złamać sam, więc bez tej reguły długie imię wypycha wiersz poza ekran.
+
+### Focus does not fall to the page
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Po „Zatrzymaj” przy postaci w pętli fokus zostaje w wierszu tej postaci; „✕” panelu reguły, który stoi pod nagłówkiem zwiniętej grupy, oddaje fokus nagłówkowi tej grupy.
+- **Bad:** Element z fokusem znika, a fokus ląduje na stronie, więc gracz z klawiaturą zaczyna ekran od góry.
+
+Gdy element, który trzyma fokus, znika z ekranu — zamknięta karta, zamknięty
+panel, wiersz albo przycisk, który po kliknięciu znika — ekran oddaje fokus
+elementowi, który stoi w jego miejscu albo najbliżej niego, nigdy stronie. Powód:
+fokus na stronie każe graczowi klawiatury przechodzić ekran od początku.
+
 ### Menu bar, the menu „Konto” and the list of programs
 
 - **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47 · D-410 · D-411
@@ -584,10 +610,12 @@ Menu „Konto”:
 - „Wyloguj” i „Wyślij ponownie” czekają na serwer jak każdy wspólny przycisk
   (reguła States of shared controls);
 - menu otwiera się kliknięciem „Konto” i klawiaturą — Enter na „Konto” — a
-  zamyka klawiszem Escape, kliknięciem obok i drugim kliknięciem „Konto”,
-  fokus wraca wtedy na „Konto”; menu zostaje otwarte, gdy „Wyloguj” albo
-  „Wyślij ponownie” czeka na serwer, i po odpowiedzi stoi otwarte, aż gracz je
-  zamknie (D-285).
+  zamyka klawiszem Escape, kliknięciem obok i drugim kliknięciem „Konto”;
+  po Escape i po drugim kliknięciu „Konto” fokus wraca na „Konto”, po kliknięciu
+  obok zostaje tam, gdzie gracz kliknął, a gdy to miejsce fokusu nie przyjmuje,
+  wraca na „Konto”, nie zostaje na zamkniętym, ukrytym elemencie menu; menu
+  zostaje otwarte, gdy „Wyloguj” albo „Wyślij ponownie” czeka na serwer,
+  i po odpowiedzi stoi otwarte, aż gracz je zamknie (D-285).
 
 Lista programów na ekranie Programy: pozycja jest odnośnikiem do programu
 (D-281); wybrana ma tekst w `text-strong` i belkę w `selected` o grubości
@@ -1000,8 +1028,11 @@ nowej roli ani wartości:
   (D-135, D-133, D-40).
 - Pasek czasu „Na co poszedł czas” ma tor w `highlight` i kawałki wypełnione w
   `text`, rozdzielone odstępem o szerokości `--frame-width`; długość kawałka
-  jest jego udziałem w minutach, a obok stoi legenda z nazwą i procentem, procent
-  w `text-label`. Jego wysokość to stopień skali odstępów, `--space-s`, nie `--bar-width`.
+  jest jego udziałem w minutach, a pod paskiem stoi legenda z nazwą i procentem,
+  procent w `text-label`. Jego wysokość to stopień skali odstępów, `--space-s`,
+  nie `--bar-width`. Kawałki mają jeden kolor, `text`, i odróżnia je kolejność,
+  szczelina, długość i legenda pod paskiem w tej samej kolejności co kawałki;
+  serii wypełnień ani koloru przy pozycji legendy nie ma.
 - Wszystkie przyciski okna — „✕”, „Restart”, „Zakończ”, „Otwarte: …” i „Dodaj
   regułę z tym” — to wspólne przyciski `ReactButton` (D-44): okno nie tworzy
   własnego elementu `<button>`, nie ustawia ich czcionki i nie zmienia ich
@@ -1029,9 +1060,6 @@ stanach (D-45).
 
 Otwarte dla człowieka:
 
-- kawałki paska czasu odróżnia tylko ich kolejność, odstęp i długość, bo plik
-  tokenów nie ma serii wypełnień; nowa wartość wchodzi ze źródłem ustalonym
-  z człowiekiem (reguła Every value with its source);
 - czy D-40 ma nazwać wypełnienie paska czasu w `text`, jak nazywa wypełnienie
   paska wymagania w nagłówku, i czy pasek ma mieć nazwaną grubość zamiast
   stopnia skali odstępów;
