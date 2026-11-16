@@ -11106,6 +11106,21 @@ of cold; a full thickness of 8 pixels of the scene — a half is then 4 pixels, 
 opacity at the full thickness for a half — a half-transparent frost on white snow stands out still
 less.
 
+### D-415 — Who judges the colour of an effect against the prop it stands at, and whether another element of the scene covers it?
+
+The human judges, at the request that brings an effect of the scene, whether its colour stands out from the prop it stands at and whether another element of the scene covers it, from the numbers and the picture the change shows, and no threshold decides either. A threshold binds only where a decision gives it, as D-271 gives the outline or the fill of the frost 3:1 against the snow.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-271
+- **Verification:** an agent compares a change with the decision:
+  - complies: a change of an effect whose request shows the contrast of the effect's colours against samples of the ground and of the prop it stands at, and a picture of the scene with the effect laid over the elements that may cover it, and leaves the judging of both to the human
+  - violates: a test of the scene or a rule of style that sets a least contrast of an effect against a prop, or a rule that no element covers an effect; a check that fails a change for the ratio of an effect against a prop; a least contrast or such a rule written into a decision by the change that brings the effect, with nothing the human settled before it
+- **Origin:** none
+
+*Rationale:* D-271 measures the colour of an effect against the ground it stands on, and a colour that stands out from the ground may still be lost at the prop beside which the effect stands, or behind an element that lies over it. Whether the player sees the effect there depends on which pixels of the prop lie under it and which element lies over it, so a single number cannot settle it, and the numbers and the picture tell the human what to look at. A threshold written with no decision to give it makes an effect other than the one chosen: a ratio that only a dark colour passes turns a light speck into a dark one. Accepted with it: an effect that stands out little from its prop, or is covered by another element, reaches the main branch where the human accepts it at the request; the cloud of dust in a brown taken from the sticks, which is lost on the sticks, and the cloud of dust at the fibre, which hides behind the mage, stay in the game as they are.
+*Rejected:* a new rule in D-271 that an effect stands out also from the prop it stands at and is not covered by another element of the scene — the scene breaks it in two places, so the change would grow by a correction of the dust in the code of the scene or become a task of its own, and a threshold for a prop would still have to be found.
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
