@@ -43,7 +43,7 @@ pass this project's documentation filter.
 
 ### D-03 — How is the browser view built?
 
-The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, except the waiting screens of D-262, which `src/browser/view/app.ts` builds, and no other UI framework stands in its code or its runtime dependencies.
+The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, and no other UI framework stands in its code or its runtime dependencies.
 
 - **Scope:** browser-view, build-tools
 - **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
@@ -1249,7 +1249,8 @@ jsdom and happy-dom, and failed on that screen's hand-made model. A ready-made i
 calls left as they are, which the tests need, because when the choice was made the hand-made model
 took the first part of the account screen's tests, and most of the cases there read the inside of
 the model directly, fired events through its own `.fire` or walked the whole page; the cases that walk the page also
-build the screens still in DOM, so what stands in for the model has to carry those too. Other tests
+walk what is built by hand outside React, the header, the main block, the hosts of the roots and the
+panel of a card taken down, so what stands in for the model has to carry those too. Other tests
 had stand-ins of their own for the document, among them those that draw the section of credits, and
 only the files of screens built with React leave theirs. Each rule of the harness answers what
 such an imitation leaves out: with the window installed after React loads a controlled field's
@@ -2893,6 +2894,10 @@ signed-in player too. When React takes the card down after an exception no code 
 handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” stands alone in the card's place
 (D-323).
 
+At each entry into the warning with „Spróbuj ponownie”, the first and one after a retry, focus moves
+to that button. The button is one element through the refusal, the retry, in which it reads
+„Sprawdzanie…” and is disabled, and the next refusal.
+
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · narrows D-156
@@ -2900,7 +2905,9 @@ handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” sta
   page's body, the header and the place of the screen hidden; „Sprawdzanie logowania…” at a reload,
   after a sign-in and after a way out of the reset form, and the warning with „Spróbuj ponownie”,
   each with the header shown and no card; a card that React takes down, alone and on the page,
-  leaving „Coś w grze się zepsuło — odśwież stronę.” alone in its place. An agent compares a change
+  leaving „Coś w grze się zepsuło — odśwież stronę.” alone in its place; „Spróbuj ponownie” one
+  button through a refusal, a retry and the next refusal, reading „Sprawdzanie…” and disabled while
+  it retries, and taking the focus at the first refusal and at the refusal after the retry. An agent compares a change
   with the part no test holds:
   - complies: a page opened by a confirmation link showing „Potwierdzanie adresu…” with the header
     and no card, for a signed-in and a signed-out player alike
@@ -2913,9 +2920,12 @@ written here, where the rule is read, because a screen the card has left is no l
 the card, yet this rule read to the letter would look contradictory to D-323, which places the
 sentence there; a reader of this decision meets the exception where the rule stands, and a search of
 the foundation finds no apparent collision. The sentence stands alone, outside React, since React
-takes down the root of the card with whatever stood in it. Accepted with it: at each entry a
-signed-out visitor sees the header for a moment before the card comes, and the waiting screen shows
-no credits, which stand one click away on the login card and on Siedziba (D-27).
+takes down the root of the card with whatever stood in it. The button waits disabled while it
+retries and a disabled control cannot hold focus, so each refusal moves focus back to it, the one
+after a retry too, and a player at the keyboard keeps the place; the button stays one element
+through the retry, so what moves focus to it never meets a button that is gone. Accepted with it: at each
+entry a signed-out visitor sees the header for a moment before the card comes, and the waiting
+screen shows no credits, which stand one click away on the login card and on Siedziba (D-27).
 *Rejected:* the waiting in the card — a signed-in player sees the login card at every reload, as if
 logged out; the header and a footer beside the card too — the visitor sees one card (D-96), and
 D-27 refuses credits in a footer of every screen, dozens of rows standing below the game; a folded
@@ -2961,7 +2971,7 @@ The page opens the login card as an object it creates, focuses and closes: an el
 - **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after a session check or an expired save, focus in the first field after a confirmed logout, a logout answered with no session and a set password; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts.
 - **Origin:** none
 
-*Rationale:* the page around the card is built another way than the card, so the two meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
+*Rationale:* the card is a root of its own beside the roots of the page's other places, so the page and the card meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
 *Rejected:* the card kept in the page and hidden — a typed password would stay in the page behind the game; one card kept for the life of the page and emptied at each closing — a reset of state to keep right, for nothing gained; drawing the card later than its creation — every caller then has to wait for the card, and an empty moment is possible.
 
 ## Account email and password reset
@@ -3926,15 +3936,17 @@ An account with the previous-save privilege has on the screen Programy, at any t
 
 An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control. After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable, and the server, in one transaction that reads the account's blocked state, its privilege and its saved game state, moves the saved game state to the previous save (D-399) and leaves the account with none, answering 204 also where there was nothing to move. On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save; D-209 is unchanged, so a save of the old game that reaches the server later, based on a revision other than 0, is refused.
 
+Where an error that no code of the game handled came first (D-323), a reset that succeeds closes the game that stood, with its saving, and builds none, so the page shows the waiting screen with the sentence of the failure alone. An outcome of the saver of the game a reset built is not held for the logout of the old game, which may still wait for its answer.
+
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-399 · derives from D-400
-- **Verification:** invariants: previous-save-slot. tests: the control „Zacznij od zera” only for an account with the privilege, the click that opens the confirmation sending and changing nothing, and the confirmation naming the previous save, its replacement and the start from zero; the confirmed reset sent as the next request with no save before it, the control disabled and „Wyloguj” not pressable while it waits, and the old saver's outcomes held then and acted on only if the reset fails; the server reading the block, the privilege and the saved game state in the transaction of the move, leaving the account with no saved game state and answering 204 also when nothing moved; on 204 a new game on revision 0 with its sentence above it and no save sent at once, and a later save on another revision refused. An agent compares a change with the part no invariant and no test holds:
+- **Relations:** derives from D-399 · derives from D-400 · derives from D-323
+- **Verification:** invariants: previous-save-slot. tests: the control „Zacznij od zera” only for an account with the privilege, the click that opens the confirmation sending and changing nothing, and the confirmation naming the previous save, its replacement and the start from zero; the confirmed reset sent as the next request with no save before it, the control disabled and „Wyloguj” not pressable while it waits, and the old saver's outcomes held then and acted on only if the reset fails; the server reading the block, the privilege and the saved game state in the transaction of the move, leaving the account with no saved game state and answering 204 also when nothing moved; on 204 a new game on revision 0 with its sentence above it and no save sent at once, and a later save on another revision refused; a reset that succeeds after an error nothing handled leaving the waiting screen with the sentence of the failure alone, with no game, no saving and nothing sent; a conflict and a missing session answered to the saver of the game a reset built, while the logout of the old game still waits, acting at once, the conflict reloading the game and the missing session showing the forms. An agent compares a change with the part no invariant and no test holds:
   - complies: the confirmation saying that the programs of a previous save already there can no longer be pulled
   - violates: a confirmation that names the replacement of the previous save but not the loss of its programs
 - **Origin:** none
 
-*Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
+*Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. After an error nothing handled the page builds no game (D-323), so a reset that succeeds leaves none: the game that stood would keep its clock and its saving over a waiting screen, and a save of it on the basis 0 would be accepted over the start from zero the player asked for. The saver of the game a reset built is that game's own, so its outcomes are held neither with those of the old game nor until the old game's logout answers; held, a conflict of the new game would never reload it and a missing session would never show the forms. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
 *Rejected:* the reset as a command of the operator, like the block — every reset is an SSH session and a `docker exec`; the reset put off to the work on carrying saves between versions — a reset comes today with every raising of the version, and a new account has nothing to pull; the revision continuing from that of the previous save after a reset — it closes the case of a card whose basis equals a revision the new game has reached, with one more read in the save write, but it changes D-209, which this decision keeps, couples two tables and calls for a sentence of its own.
 
 ### D-403 — What does the load do with a saved game state whose Understanding lacks „Eksploruj”?
@@ -3982,56 +3994,53 @@ game broken for the same saved game states as in the refusal, without a word of 
 
 Which screens the game has, how the player moves between them, and how the screens are built in React.
 
-### D-265 — How does a shared control stand in a screen built with React while other screens stay in DOM?
+### D-265 — What form does a shared control of the browser view have?
 
-Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen
-uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing
-one tree of DOM elements with the same classes and attributes, and a screen no task has moved to
-React yet stays in those APIs on the DOM form, where a new section of such a screen may be built
-too, moving to React with that screen. A new screen is never written after the pattern of a module
-that builds its DOM elements through the DOM APIs, though it may import that module's pure
-functions. A test draws both forms for each kind and state the React screens use and compares their
-tag, attributes and text, the input's `value` attribute apart, and `src/browser/styles.css` stays
-the one place of the look of both.
+Each shared control in `src/browser/view/controls/` has one form, a React component, and
+`src/browser/styles.css` stays the one place of the look of the controls. A new screen is never
+written after the pattern of a module that builds its DOM elements through the DOM APIs, though it
+may import that module's pure functions.
+
+The panel that stands in place of a card React took down is built outside React (D-323), and it
+takes the tag, the classes and the role of its warning sentence from one constant that the React
+component of that sentence reads too.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-44 · narrows D-03
-- **Verification:** tests: the React form and the DOM form of the button, the text field, the
+- **Relations:** derives from D-44 · derives from D-03
+- **Verification:** tests: the React forms of the button in each of its kinds, the text field, the
   password field, the sentence under a form, the pick cell, the select list and the number field
-  drawing one element tree, with the same tag, classes, attributes and text, the input's `value`
-  attribute apart, in each kind and state the tests compare. An agent compares a change with the
-  part no test holds:
-  - complies: a DOM screen left on the DOM form by a change that moves another screen; a new section
-    of the waiting screen of the sign-in check built in DOM; a new screen in React that imports a
-    pure function of a DOM module; a new state of a control that a React screen uses, given its
-    case in the test that compares the two forms in the same change
-  - violates: a React component that wraps the DOM function; a React form, or a state of it that a
-    React screen uses, with no case in the test that compares the two; a new screen that builds its
-    DOM elements with `document.createElement` after the pattern of a DOM module; the look of a
-    control written outside `src/browser/styles.css`, as a `style` attribute both forms set
+  drawing the tag, classes, attributes and text the screens rely on, and answering a click, a typed
+  value and a choice as their handlers expect. An agent compares a change with the part no test
+  holds:
+  - complies: a panel built outside React that reads the tag, classes and role of its warning
+    sentence from the constant the React component reads; a new screen in React that imports a pure
+    function of a module that builds DOM elements; a new state of a shared control, given its case
+    in the test of the React forms in the same change
+  - violates: a shared control given a second form built through the DOM APIs; a panel that writes
+    the tag, the class or the role of its warning sentence as a literal of its own; a new screen
+    that builds its DOM elements with `document.createElement` after the pattern of a DOM module;
+    the look of a control written outside `src/browser/styles.css`, as a `style` attribute the
+    component sets
 - **Origin:** none
 
-*Rationale:* the screens move to React one at a time, so for a while both kinds stand on one
-page and have to look alike. The shared controls were functions that return finished elements and
-change them in place, a waiting button for one, and a library makes such controls its components or
-leaves them as wrapped elements. Components written as React writes them give the next screens an
-exemplar with controlled fields and state in the component, and a module that builds its DOM
-elements stands beside that exemplar as if it were one, the more so as the coding guidelines had
-marked those modules as ones to copy from, so a new screen could follow it; its pure functions draw
-nothing and serve both kinds. A new section of a screen in DOM may stay in DOM, since
-React on part of a screen takes a mounting place of its own in DOM and makes small additions dear.
-Accepted with it: the two forms live until the last DOM screen moves, and a new attribute is written
-twice, with the test failing until both agree; the screens in DOM may still grow, so moving them to
-React later grows too.
-*Rejected:* wrapping the DOM functions in a React component — one implementation, but fields become
-uncontrolled, the card's state lives in DOM elements and the waiting state runs in effects, which
-D-36 would then hold up to every later screen; moving the controls to React and mounting them in DOM
-screens — a React root for each control, a render that is not synchronous when a control waits, and
-it moves screens that stay in DOM; a shared function of class names under both forms — it changes
-the DOM controls for what the comparison already catches; the rule on a new screen covering a new
-section of a screen in DOM too — both kinds stand on one screen, and React takes a mounting place of
-its own in DOM, so small additions grow dear.
+*Rationale:* a control written once, as a component, gives every screen the exemplar of controlled
+fields and state in the component, and a new attribute or state is written once, with no second
+form to keep alike and no test comparing two. A module that builds its DOM elements by hand stands
+beside that exemplar as if it were one, so a new screen could follow it; its pure functions draw
+nothing and serve any screen. The panel in place of a card React took down stands outside React
+because React takes the sentence down with the card, and it reads the tag, classes and role of the
+warning from the one constant the component reads, so the two draw one sentence and a change of
+that sentence reaches both. Accepted with it: the panel is the one place that builds the warning
+sentence by hand, and only that constant keeps it like the component, with no test comparing the
+two element trees.
+*Rejected:* a small DOM function of the warning sentence kept for the panel, with a test comparing it
+with the component — one control keeps two forms, and the decision narrows where it could end the
+arrangement; the panel drawn by a React root of its own — it turns "outside React" of D-323 into
+"outside the root that fell", and where React itself fails the panel may not stand either (a
+hypothesis); the DOM forms kept for the kitchen-sink page alone, with the test comparing them — it
+costs nothing at once, but each new control and each new attribute is written twice, and the page
+shows a form that the player never gets.
 
 ### D-267 — What keeps the rules of hooks and of effects in the browser view's code?
 
@@ -4064,32 +4073,36 @@ written by the product — D-29 rejects such checks for the same reason.
 
 ### D-269 — Does the kitchen-sink page hold React?
 
-The kitchen-sink page holds no React: it shows each shared control in its DOM form, and no module it
-imports, directly or through other modules, reaches a `.tsx` file while `scripts/kitchen-sink.mjs`
-bundles nothing. A task that needs React on the page makes that script bundle, by a change of its
-build step and never of its lines that serve files.
+The kitchen-sink page holds React: it shows each shared control in its React form, and
+`scripts/kitchen-sink.mjs` bundles it in its build step as the game's browser code is bundled, the
+compiler emitting the page's modules and esbuild joining them into the one file the page loads
+(D-263, D-266). A change of how the page is built is made in that build step and never in the
+script's lines that serve files.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** browser-bare-import-resolution
-- **Relations:** derives from D-45 · derives from D-76 · derives from D-265
+- **Based on:** browser-bare-import-resolution · react-entry-build
+- **Relations:** derives from D-45 · derives from D-76 · derives from D-265 · derives from D-263 ·
+  derives from D-266
 - **Verification:** an agent compares a change with the decision:
-  - complies: a constant the page needs moved into a module with no React, the page's samples left
-    on the DOM form of each control
-  - violates: a module the page imports that imports a `.tsx` file; a sample of the page drawn with
-    a React form while the page's command bundles nothing
+  - complies: a shared control added to the page as a sample of its React form, the page built by
+    the build step of its script with the lines that serve files left as they stood
+  - violates: a sample of the page drawn from a copy of a control's element tree built by hand; the
+    page bundled by a change of the script's lines that serve files or that open the browser; the
+    bundle or the compiler's output written outside `dist/kitchen-sink/`
 - **Origin:** none
 
-*Rationale:* the page's own command compiles its modules one by one and the browser resolves no bare
-import, so a module that reaches React leaves a blank page while its build passes. The page took a
-single constant, the sentence of the answer to a request for a password-reset link, from the module
-of the account screen, which draws with React; moving that constant to a module with no React lets
-the page stand as it is. The page needs no
-React: a test keeps the two forms of a control alike and the look stands in one stylesheet, so the
-DOM form shows what the React form looks like. Accepted with it: the page shows the React forms only
-through that likeness, and nothing fails when a module lets React in, so review keeps this decision.
-*Rejected:* bundling the kitchen-sink page and drawing the React forms on it — a changed script at a
-trust boundary, a second bundle and a second set of samples for nothing the comparison of the two
-forms leaves open.
+*Rationale:* the browser resolves no bare import, so the page's modules, which reach React, load
+only once a bundler joins them, as the game's do; the page's command therefore bundles with the tool
+the game's build uses, from the compiler's output, so there is one way of building the browser's code
+and not two. The page shows what the player gets: a shared control has one form, and a page that
+drew another would show a form no player sees. Accepted with it: the page's command stands at a
+trust boundary and its build step changes, so review checks that the lines that serve files and the
+directory served stand as before (D-76); the bundle holds React's development build, which the entry of
+React's package loads wherever the bundle does not mark production and which reports a misused
+control in the console, and the page, a tool of the developer, takes its larger size.
+*Rejected:* the page kept on DOM forms that live only for it, with D-265 giving the reason they live —
+it costs nothing at once, but each new control and each new attribute is written twice, a test
+keeping the forms alike stays, and the page shows a form the player never gets.
 
 ### D-270 — Which libraries built on React may the browser view take?
 
@@ -4319,17 +4332,17 @@ entry hangs above Programy and Postać.
 
 ### D-323 — What does the game do, and what does the player read, after an error that no code of the game handled?
 
-After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock; the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence, and the catch-up of D-247 and the send of the state kept by D-211 do not run. Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262). The page writes the line of the error as D-253 gives it.
+After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock; the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence, and the catch-up of D-247 and the send of the state kept by D-211 do not run. Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262), and at the waiting screen where a sign-in after the error stays it stands alone, with no „Sprawdzanie logowania…” beside it. The page writes the line of the error as D-253 gives it.
 
 - **Scope:** browser-view
 - **Based on:** react-uncaught-render-error · react-default-uncaught-report
 - **Relations:** derives from D-252 · narrows D-247 · narrows D-211 · narrows D-96 · narrows D-203 · narrows D-209
-- **Verification:** invariants: uncaught-failure-game-state. tests: a save asked for after the error still sent, with the state from before it and no new reading of the clock; no game built after the error, so that a sign-in, or a session found at the start, whose load would catch up an earning loop stays at the waiting screen with the sentence and saves nothing; the sentence once, in `warning`, in the row under the menu bar of a game screen beside the sentence of a failed save, under the bar of a waiting screen, in the card under its form, and alone in the place of a card React took down; the line of the error as D-253 gives it. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** invariants: uncaught-failure-game-state. tests: a save asked for after the error still sent, with the state from before it and no new reading of the clock; no game built after the error, so that a sign-in, or a session found at the start, whose load would catch up an earning loop stays at the waiting screen with the sentence and saves nothing; the sentence once, in `warning`, in the row under the menu bar of a game screen beside the sentence of a failed save, under the bar of a waiting screen, in the card under its form, and alone in the place of a card React took down; the waiting screen at which a sign-in after the error stays showing no „Sprawdzanie logowania…” beside the sentence; the line of the error as D-253 gives it. An agent compares a change with the part no invariant and no test holds:
   - complies: a state kept by D-211 before the error left unsent at a sign-in after it; a save that failed before the error tried again as D-208 gives it, with the state from before the error
   - violates: a sign-in after the error that sends the state kept by D-211; saving stopped at the error, so that a change made before it and not yet saved, or a save that failed, is never sent
 - **Origin:** none
 
-*Rationale:* when this was decided, an error that nothing in the browser caught left an empty page, a frozen game or a button that hung, with no sentence for the player and no line in the console, so a person and an agent alike were left without a word on what went wrong; the game is computed in the browser, and an agent is to learn what went wrong as a person playing does. A game that goes on after an error nobody handled can lose a character unseen behind a screen that no longer redraws, and an error in the clock's reading would come back at every tick and every save. Stopping the changes and saving the last whole state is a degraded mode, which the coding guidelines allow only where a task sets it as a decision of the product, and it leaves a line in the console. At most the time from the error to the reload is lost, and, when a save did not arrive, what happened since the last save that did. A game built after the error would pass time and save a change that the error came before, so none is built. The sentence tells the player what to do, reload, and stands once whatever the number of errors. It stands on every screen the game draws: on a screen with the header beside the sentence of a failed save and not in its place, because D-208 has that sentence stand until a save succeeds; on the screen of the login card in the card, under the form, where the sentence of a refusal stands; and, where React takes the card down, alone in the card's place and outside React, since React takes the sentence down with the card. Its role is `warning`, as D-39 gives it for something that is not carried out and as the sentences of D-96 and D-208 have it, because saving goes on after the error. Accepted with it: the sentence may show with no fault or blink (a hypothesis).
+*Rationale:* when this was decided, an error that nothing in the browser caught left an empty page, a frozen game or a button that hung, with no sentence for the player and no line in the console, so a person and an agent alike were left without a word on what went wrong; the game is computed in the browser, and an agent is to learn what went wrong as a person playing does. A game that goes on after an error nobody handled can lose a character unseen behind a screen that no longer redraws, and an error in the clock's reading would come back at every tick and every save. Stopping the changes and saving the last whole state is a degraded mode, which the coding guidelines allow only where a task sets it as a decision of the product, and it leaves a line in the console. At most the time from the error to the reload is lost, and, when a save did not arrive, what happened since the last save that did. A game built after the error would pass time and save a change that the error came before, so none is built. The sentence tells the player what to do, reload, and stands once whatever the number of errors. It stands on every screen the game draws: on a screen with the header beside the sentence of a failed save and not in its place, because D-208 has that sentence stand until a save succeeds; on the screen of the login card in the card, under the form, where the sentence of a refusal stands; and, where React takes the card down, alone in the card's place and outside React, since React takes the sentence down with the card. At the waiting screen where a sign-in stays it stands alone, since „Sprawdzanie logowania…” beside it would tell the player that the page is still working towards the game, when after the error it builds none. Its role is `warning`, as D-39 gives it for something that is not carried out and as the sentences of D-96 and D-208 have it, because saving goes on after the error. Accepted with it: the sentence may show with no fault or blink (a hypothesis).
 *Rejected:* the game going on, clock, saving and buttons as before, with the sentence asking for a reload — least code, but an error in the clock's reading comes back every 200 ms and game time stands, and an error in the drawing lets a manual map run go on behind a screen that does not redraw, so that a character may die unseen; and going on is a degraded mode that would need its own decision; the game stopping whole, clock, changes and every save, the save at „Wyloguj” included — more code, a minor error and a false alarm would stop the whole game and lose what happened since the last save, and D-207 would get an exception; „W grze wystąpił błąd. Odśwież stronę.” — it has the shape of the sentence of D-96 for a load that failed, but it is two sentences, where the game says it in one; „Coś w grze się zepsuło.” — no advice, so the player does not know whether to wait or to reload; the sentence only in the row under the menu bar, with the screen of the card leaving the error in the console alone — a dead button on the card tells the player nothing; the sentence in the row under the menu bar and in the card under the form, with nothing for a card React takes down — React takes the sentence down with the card and the player sees an empty screen; the sentence always at the very top of the page, above the card or the bar and outside every root of React — it breaks D-262, since something that is no card stands above the card, and D-286, since a sentence above the game stays after a change of screen.
 
 ### D-395 — What does a shared control of the browser view know of the screens that use it?
@@ -4349,18 +4362,20 @@ A shared control in `src/browser/view/controls/` imports no module of a screen t
 
 ### D-407 — Does the browser view keep a React root for each screen, and where does its state live?
 
-The browser view keeps React roots of its own for each screen and for the menu bar, none shared between screens, and no single root over the whole view. The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`, and the state of one screen lives in the component of that screen.
+The browser view keeps React roots of its own for each screen, for the menu bar and for each place of the page that shows something besides the game — the waiting screen and the rows of sentences — none shared, and no single root over the whole view. The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React; memory several screens share is a memory of the page, given to the factories of the screens and read through `useSyncExternalStore`, and the state of one screen lives in the component of that screen.
+
+The rows of sentences are three roots, the row of the failure, the row of saving and the sentences above the game, and the row of the failure holds nothing else, is drawn when the page starts and is shown by the page at the error without a render, so that an error in the drawing of another root cannot take down the sentence of D-323.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-03
-- **Verification:** tests: the question „Zapisać, odrzucić, wrócić?” and the end-of-run window held outside the screen Przejście, which draws each only while the game view tells it to and asks the game view to close the window, and outside the game state and the document it saves; the folding of the rule groups as one memory of the page given to the program panels of Programy and Przejście, a fold on one shown on the other at once, with no update of its own. An agent compares a change with the part no test holds:
+- **Relations:** derives from D-03 · derives from D-323
+- **Verification:** tests: the question „Zapisać, odrzucić, wrócić?” and the end-of-run window held outside the screen Przejście, which draws each only while the game view tells it to and asks the game view to close the window, and outside the game state and the document it saves; the folding of the rule groups as one memory of the page given to the program panels of Programy and Przejście, a fold on one shown on the other at once, with no update of its own; an error in the drawing of the waiting screen's root or of the root of the sentences above the game, each taken down by React, leaving the sentence of the failure shown once in its row and one line written. An agent compares a change with the part no test holds:
   - complies: a new screen built as a root of its own, whose factory receives the game state from the store and the memory of its unfolded trees, shared with another screen, as a memory of the page read through `useSyncExternalStore`; a setting only that screen reads kept in its component
-  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a new memory two screens share held in the component of one of them; the state of the screen Przejście moved from `run-screen-state.ts` into the game view's controller, `game-view.ts`
+  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a new memory two screens share held in the component of one of them; the state of the screen Przejście moved from `run-screen-state.ts` into the game view's controller, `game-view.ts`; the waiting screen, a row of sentences or the card drawn inside one root of the page's skeleton
 - **Origin:** none
 
-*Rationale:* the store and the state of the screen Przejście stay as they are under any later choice of one root for the view, so a change of mind costs only the table of screens. Separate roots change nothing the player sees just before the next screen is added, and the question of one root stays open until the view is wholly in React. Accepted with it: the menu bar and the account card stay roots of their own beside the screens, a panel that the page moves by hand between two places stays moved by hand, outside what React knows, and a context of React reaches only the inside of one root.
-*Rejected:* one root with portals into the places of today's page — it gives a context of React shared by the screens, but it does not remove the moving of a rule's panel by hand, since React builds the content anew when a portal changes its place and the field loses its focus, and the page is still built by hand, so in practice it is a stop on the way to one root as a component; one root with the game view written as a component — the tutorial hints get a context for nothing and the two rules of the life of screens go, but it is a rewrite of the game view's controller, many tests call the factories of the screens directly, a change the player sees is a greater risk just before a new screen, and the menu bar and the account card stay roots of their own anyway; a trial of one tree on the screen Programy first — a medium task for an agent and a conversation about its result, so the next screen waits longer
+*Rationale:* the store and the state of the screen Przejście stay as they are under any later choice of one root for the view, so a change of mind costs only the table of screens. Separate roots change nothing the player sees, and an error in the drawing of one root takes down that root alone, which one root over the page's places would not give: the sentence of D-323 stays up when any other root falls. The row of the failure is drawn once, when the page starts, and only shown at the error, since a render at the error would wait until React next works, and a synchronous render from inside React's own commit is refused by React, so the sentence would depend on React still working after the error. The waiting screen and the sentences above the game are roots apart, so that an error in the drawing of a sentence that comes from the server's answer does not take down the waiting screen's place. Accepted with it: the menu bar, the waiting screen, the rows of sentences and the account card stay roots of their own beside the screens, a panel that the page moves by hand between two places stays moved by hand, outside what React knows, and a context of React reaches only the inside of one root.
+*Rejected:* one root with portals into the places of today's page — it gives a context of React shared by the screens, but it does not remove the moving of a rule's panel by hand, since React builds the content anew when a portal changes its place and the field loses its focus, and the page is still built by hand, so in practice it is a stop on the way to one root as a component; one root with the game view written as a component — the tutorial hints get a context for nothing and the two rules of the life of screens go, but it is a rewrite of the game view's controller, many tests call the factories of the screens directly, a change the player sees is a greater risk just before a new screen, and the menu bar and the account card stay roots of their own anyway; one root for the skeleton of the page, the header, the waiting screen and the card, with the screens of the game apart — a context of React shared by the skeleton, but an error in drawing takes down the whole skeleton with the row of the failure, so the sentence of D-323 would have to stand outside it, and the view would hold two shapes; a trial of one tree on the screen Programy first — a medium task for an agent and a conversation about its result, so the next screen waits longer
 
 ### D-408 — What does a new screen of the game add, and where?
 
@@ -4544,7 +4559,7 @@ The screens of the browser view build every button, select list, number field, t
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-38
-- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits in both its forms; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
+- **Verification:** tests: „Zakończ”, „Restart”, „Usuń” of a program, of a rule and of a position of the trip plan, „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” and „Odrzuć” of the question drawn as the shared destructive button, and the two buttons of a discovery's band as the shared plain button; „Odbierz” drawn as the button of the kind `positive`; the button that sends each of the four forms reading its waiting text, with the form's fields and the card locked, „Wyślij ponownie” reading „Wysyłanie…”, the pull reading „Wciąganie…” disabled, and „Zacznij od zera” disabled while its reset waits, the shared button that sends a form disabled while it waits, in its React form; a refusal or a lost connection of a form shown as one sentence in that form, and the answer to a request for a password-reset link shown in the form as a status, not as that sentence. An agent compares a change with the part no test holds:
   - complies: the button „Wyślij” of a new screen made with the shared button; „Wróć do logowania” made with the shared secondary action; a condition of the rule panel made with the shared pick cell; „Zakończ”, „Restart” and „Zacznij od zera” neutral at rest and in `danger` under the pointer and at focus; a waiting control's text in `text-disabled`; the refusal of a form standing under the form in `warning`, and the answer to a request for a password-reset link standing there in `text` with a bar on its left in the same colour; the kitchen-sink page showing every form waiting and refused, and the form „Nie pamiętam hasła” with that answer;
   - violates: a module that creates and styles a `<button>` of its own; „Porzuć zmiany” made as a plain button; a destructive button in `danger` at rest; a cell of a pick drawn as a button of its own; the answer to a request for a password-reset link written in `warning`, as if it refused something, or in `positive`, as if the message had left; the text of „Odbierz” changing its colour under the pointer.
 - **Origin:** none
@@ -4832,7 +4847,7 @@ and has no address. Every other action of the browser view keeps the button D-44
 - **Based on:** none
 - **Relations:** derives from D-44
 - **Verification:** tests: the secondary action of the shared button a button of the type `button`
-  with the class `secondary`, in both forms; „Nie pamiętam hasła” a button standing under the login
+  with the class `secondary`, in its React form; „Nie pamiętam hasła” a button standing under the login
   form, outside it. For the look of the secondary action, the actions of the login card drawn as
   secondary actions and the plain button of every other action, an agent compares a change with the
   part no test holds:
@@ -4865,7 +4880,7 @@ buttons of D-130 keep the look of the button selected in its group.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-44 · derives from D-96
-- **Verification:** tests: a tab, in both forms of the shared button and as „Kronika” and „Teren”
+- **Verification:** tests: a tab, in the React form of the shared button and as „Kronika” and „Teren”
   of the screen of a map run, a button with `aria-pressed`, `true` on the chosen one alone, which a
   click switches. For the look of a tab, its keyboard, the absence of arrow keys and of the roles
   of tabs, the switch of the login card drawn as tabs and the look of the pace buttons, an agent
@@ -4894,7 +4909,7 @@ the tab not chosen; no tabs, with „Załóż konto” as text under the form �
 D-259, a heading and a way back for the state „Załóż konto”, no tabs in
 the styleguide, and the visitor no longer sees the two ways side by side at once; leaving it — two
 „Zaloguj się” one above the other in one look; real tabs with arrow keys and activation by Enter —
-keyboard handling written by hand in both forms of the control (D-265) and its tests, which D-42
+keyboard handling written by hand in the control's React component and its tests, which D-42
 does not ask for, while W3C and Carbon advise switching at once on an arrow for a quick panel,
 which here would empty what was typed; the nouns „Logowanie” and „Nowe konto” as the tabs' labels
 — changes of D-96 and D-259, and „Logowanie” collides with the

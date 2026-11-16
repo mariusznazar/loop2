@@ -44,6 +44,7 @@ import {
 } from "./account-rules.js";
 import { ReactButton } from "./controls/react-button.js";
 import {
+  FORM_WARNING,
   ReactFormNote,
   ReactFormWarning,
   ReactPasswordField,
@@ -52,6 +53,7 @@ import {
 import { CreditsSection } from "./credits-section.js";
 import type { ConfirmationNotice, PageAddress } from "./email-confirmation.js";
 import { FAILURE_SENTENCE } from "./last-resort.js";
+import { PageSentence } from "./page-sentences.js";
 import { resetOutcome } from "./password-reset.js";
 import type { ResetEnding } from "./password-reset.js";
 
@@ -583,18 +585,6 @@ function ResetForm({
   );
 }
 
-/** The one sentence of the page, in its role, as `createConfirmationNotice` gives it. */
-function PageSentence({ notice }: { notice: ConfirmationNotice }) {
-  return (
-    <p
-      className={`confirmation-notice ${notice.role}`}
-      role={notice.role === "warning" ? "alert" : "status"}
-    >
-      {notice.text}
-    </p>
-  );
-}
-
 type CardProps = Pick<
   AccountCardOptions,
   "client" | "sentence" | "signedIn" | "reset"
@@ -684,9 +674,9 @@ function Card({
 function createFailureCard(): HTMLElement {
   const element = document.createElement("div");
   element.className = "account-card-failure";
-  const sentence = document.createElement("p");
-  sentence.className = "form-warning";
-  sentence.setAttribute("role", "alert");
+  const sentence = document.createElement(FORM_WARNING.tag);
+  sentence.className = FORM_WARNING.className;
+  sentence.setAttribute("role", FORM_WARNING.role);
   sentence.textContent = FAILURE_SENTENCE;
   element.append(sentence);
   return element;

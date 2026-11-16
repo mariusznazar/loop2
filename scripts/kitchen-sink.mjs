@@ -1,17 +1,22 @@
 import { spawn, spawnSync } from "node:child_process";
 import { copyFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
 import express from "express";
 import { copyStaticFiles } from "./static-files.mjs";
 
 // Builds the kitchen-sink page into dist/kitchen-sink/ and, without --build-only, serves it on
 // 127.0.0.1 at a port the system picks and opens it in the default browser (D-45). It writes
-// nothing outside dist/kitchen-sink/ and serves nothing else.
+// nothing outside dist/kitchen-sink/ and serves nothing else. The build is the game's in small: the
+// compiler emits the page's modules into a staging directory, and esbuild joins them into the one
+// file the page loads (D-269, D-263, D-266).
 const root = new URL("../", import.meta.url);
 const compiler = fileURLToPath(
   new URL("node_modules/typescript-compiler/bin/tsc", root),
 );
 const out = new URL("dist/kitchen-sink/", root);
+// Where tsconfig.kitchen-sink.json emits (its outDir); it goes before the page is served.
+const staging = new URL("staging/", out);
 const host = "127.0.0.1";
 const buildOnly = process.argv.includes("--build-only");
 
@@ -21,8 +26,33 @@ const result = spawnSync(
   [compiler, "-p", "tsconfig.kitchen-sink.json"],
   { cwd: fileURLToPath(root), stdio: "inherit" },
 );
-if (result.error) throw result.error;
-if (result.status !== 0) process.exit(result.status ?? 1);
+if (result.error) {
+  await rm(staging, { recursive: true, force: true });
+  throw result.error;
+}
+if (result.status !== 0) {
+  await rm(staging, { recursive: true, force: true });
+  process.exit(result.status ?? 1);
+}
+
+try {
+  await build({
+    absWorkingDir: fileURLToPath(root),
+    entryPoints: [
+      fileURLToPath(new URL("kitchen-sink/kitchen-sink.js", staging)),
+    ],
+    outfile: fileURLToPath(new URL("kitchen-sink/kitchen-sink.js", out)),
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: "es2022",
+    minify: false,
+    // A browser has no `process`; React's development build reports a misused control in the console.
+    define: { "process.env.NODE_ENV": '"development"' },
+  });
+} finally {
+  await rm(staging, { recursive: true, force: true });
+}
 
 for (const name of ["index.html", "kitchen-sink.css"])
   await copyFile(

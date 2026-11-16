@@ -6,19 +6,26 @@
  */
 
 /*
+ * The samples of hover and focus stand in a wrapper that carries the sample's class, and the rules
+ * below point at the control inside it: the page cannot hold either state, and the controls carry
+ * nothing for it.
+ */
+
+/*
  * The one rule of the game drawing keyboard focus (styles.css, D-47), repeated with the selector
- * of the page's sample of the focused state, its only other selector.
+ * of the page's sample of the focused state, its only other selector: whatever inside the wrapper
+ * is none of the spans, the divisions and the options a control holds, which is the control.
  */
 :focus-visible,
-.sample-focus {
+.sample-focus :not(span):not(div):not(option) {
   outline: var(--focus-width) solid var(--focus);
   outline-offset: var(--focus-offset);
 }
 
 /* The sample of the state under the pointer: the background `highlight`, as styles.css draws it. */
-.button.sample-hover,
-.select-list.sample-hover,
-.input-field input.sample-hover {
+.sample-hover .button,
+.sample-hover .select-list,
+.sample-hover .input-field input {
   background: var(--highlight);
 }
 
@@ -26,7 +33,7 @@
  * The sample of the secondary action under the pointer: its text in `text` and its background
  * unchanged, as styles.css draws `.button.secondary:hover`, not the `highlight` of the rule above.
  */
-.button.secondary.sample-hover {
+.sample-hover .button.secondary {
   color: var(--text);
   background: transparent;
 }
@@ -35,8 +42,8 @@
  * The samples of the destructive button under the pointer and at the focus: its text in `danger`, as
  * styles.css draws `.button.destructive:hover` and `:focus-visible`, which a class does not reach.
  */
-.button.destructive.sample-hover,
-.button.destructive.sample-focus {
+.sample-hover .button.destructive,
+.sample-focus .button.destructive {
   color: var(--danger);
 }
 

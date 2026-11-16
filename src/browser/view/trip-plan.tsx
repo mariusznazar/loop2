@@ -19,8 +19,10 @@ import type { ConditionNumber } from "../sim/program.js";
 import type { ItemId, Program, TripEntry, TripPlan } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
 import { ReactNumberField } from "./controls/react-number-field.js";
-import { ReactSelectList } from "./controls/react-select-list.js";
-import type { SelectOption } from "./controls/select-list.js";
+import {
+  ReactSelectList,
+  type SelectOption,
+} from "./controls/react-select-list.js";
 import { readTripCount, tripChoices } from "./trip-editor.js";
 
 type Side = keyof TripPlan;

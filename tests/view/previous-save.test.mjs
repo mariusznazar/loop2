@@ -1486,3 +1486,47 @@ test("a logout that the server ended after the reset built the new game brings t
     assert.ok(pageButton("Zaloguj się"), "the login card");
   });
 });
+
+// Catches the outcome of the saver of the game a reset built, which comes while the old game's
+// logout still waits, held until that logout answers and then lost with it: the new game's conflict
+// would never reload it, and its missing session never show the forms. D-402 holds only the old
+// game's outcomes, so the new game's act at once (D-209, D-211).
+for (const held of HELD_OUTCOMES) {
+  test(`${held.name} of the game a reset built acts at once, while the logout of the old game still waits`, async () => {
+    // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
+    // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once"
+    // decision: D-402 "An outcome of the saver of the game a reset built is not held for the logout of the old game, which may still wait for its answer."
+    await onPage(async () => {
+      const page = await startedPage();
+      await pressLogout();
+      await confirmReset();
+      await page.answer("saveGame", { kind: "saved", revision: 4 });
+      assert.equal(
+        page.named("logout").length,
+        1,
+        "precondition: the logout of the old game waits",
+      );
+      await page.answer("resetSavedGame", RESET_OK);
+      assert.deepEqual(
+        programNames(),
+        ["Program"],
+        "precondition: the new game stands",
+      );
+      await press(pageButton("Nowy program"));
+      assert.equal(
+        page.named("saveGame").length,
+        1,
+        "precondition: the new game saves",
+      );
+
+      await page.answer("saveGame", held.outcome);
+
+      held.acted(page);
+      assert.equal(
+        page.named("logout").length,
+        1,
+        "the logout of the old game still waits",
+      );
+    });
+  });
+}

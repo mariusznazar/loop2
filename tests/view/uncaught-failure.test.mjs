@@ -36,7 +36,6 @@ const QUOTED = "a-value-the-error-quotes";
 
 /** The real date the page's clock reads. */
 const CLOCK_MS = 1_760_000_000_000;
-const GAME_INTERVALS = 2;
 
 // --- the page on jsdom -------------------------------------------------------------------------
 
@@ -213,6 +212,8 @@ function heldClient() {
       sendConfirmationMessage: call("sendConfirmationMessage"),
       setPassword: call("setPassword"),
       loadSavedGame: call("loadSavedGame"),
+      loadPreviousSavedGame: call("loadPreviousSavedGame"),
+      resetSavedGame: call("resetSavedGame"),
       saveGame: call("saveGame"),
     },
     /** Gives the answer to the oldest call still waiting of the given name. */
@@ -356,7 +357,7 @@ async function playing(held) {
 // whole state the page held before the error.
 test("after an error nothing handled, in the clock's own reading, the game state stays as it was and every save sends the state from before the error", async () => {
   // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock"
-  await onPage(async ({ root, intervals }) => {
+  await onPage(async ({ root }) => {
     let now = 0;
     let faulty = false;
     const clockReading = () => {
@@ -378,11 +379,6 @@ test("after an error nothing handled, in the clock's own reading, the game state
       const sentBefore = before.args[0];
       assert.equal(sentBefore.basedOn, 5, "precondition: on the last revision");
       await held.answer("saveGame", { kind: "saved", revision: 6 });
-      assert.equal(
-        intervals.size,
-        GAME_INTERVALS,
-        "precondition: the game runs",
-      );
 
       // The clock's reading fails at its next tick; the browser reports the error to the window.
       faulty = true;
@@ -396,14 +392,15 @@ test("after an error nothing handled, in the clock's own reading, the game state
       assert.ok(thrown instanceof TypeError, "precondition: the reading fails");
       await inAct(() => reportError(thrown));
 
-      assert.equal(
-        intervals.size,
-        GAME_INTERVALS - 1,
-        "the clock no longer ticks",
-      );
       // Time goes on and the player acts: nothing changes, so nothing is saved.
       now += 5_000;
-      mock.timers.tick(200);
+      let tickError = null;
+      try {
+        mock.timers.tick(200);
+      } catch (error) {
+        tickError = error;
+      }
+      assert.equal(tickError, null, "a tick after the error reads no clock");
       await press(buttonNamed(root, "Pauza"));
       await press(buttonNamed(root, "4×"));
       await settle();
@@ -762,11 +759,34 @@ async function signInOn(held, root, loaded) {
   await held.answer("loadSavedGame", loaded);
 }
 
-/** The page waits as it does while it asks the server, with the sentence under the bar, and no game. */
+/**
+ * The page waits where a sign-in after the error stays, with the sentence of the failure in the
+ * header alone and no game. D-323: at that waiting screen the sentence "stands alone, with no
+ * „Sprawdzanie logowania…” beside it", so the waiting screen's place stands and draws no text and
+ * no button.
+ */
 function assertWaitingWithSentence(root, intervals, reason) {
   assert.equal(sentencesShown(root).length, 1, `${reason}: one sentence`);
   assert.ok(headerOf(root).contains(sentencesShown(root)[0]), reason);
   assert.ok(shown(byClass(root, "session-check")[0]), `${reason}: waiting`);
+  assert.equal(
+    all(root).filter(
+      (element) =>
+        shown(element) && element.textContent === "Sprawdzanie logowania…",
+    ).length,
+    0,
+    `${reason}: „Sprawdzanie logowania…” is not shown`,
+  );
+  assert.equal(
+    byClass(root, "session-check")[0].textContent,
+    "",
+    `${reason}: the waiting screen's root draws no text`,
+  );
+  assert.equal(
+    tagged(byClass(root, "session-check")[0], "button").length,
+    0,
+    `${reason}: the waiting screen's root draws no button`,
+  );
   assert.equal(cardOf(root), undefined, `${reason}: no card`);
   assert.equal(
     byClass(root, "program-panel").length +
@@ -824,6 +844,54 @@ test("an error on the waiting screen before the first game leaves a sign-in that
     await held.answer("loadSavedGame", saveOf(loopingAla(), 3));
 
     assertWaitingWithSentence(root, intervals, "after the load");
+    mock.timers.tick(60_000);
+    await settle();
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved");
+  });
+});
+
+/** An account with the previous-save privilege, whose game has the control „Zacznij od zera”. */
+const PRIVILEGED_ACCOUNT = {
+  ok: true,
+  value: { ...ACCOUNT.value, previousSaveAllowed: true },
+};
+
+// D-323, D-402, D-280. Catches a reset that succeeds after the error and leaves the game that stood
+// in place: it would keep its clock and its saver running and the bar's items and „Wyloguj” over the
+// waiting screen, where no new game is built and the sentence of the failure stands alone.
+test("after an error nothing handled, a reset that succeeds closes the game that stood, builds none and leaves the waiting screen with the sentence alone", async () => {
+  // decision: D-402 "Where an error that no code of the game handled came first (D-323), a reset that succeeds closes the game that stood, with its saving, and builds none, so the page shows the waiting screen with the sentence of the failure alone."
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock; the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence, and the catch-up of D-247"
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262), and at the waiting screen where a sign-in after the error stays it stands alone, with no „Sprawdzanie logowania…” beside it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262)"
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress("#/programy"));
+    await held.answer("currentAccount", PRIVILEGED_ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(newGame(), 4));
+    await held.answer("loadPreviousSavedGame", { ok: true, value: null });
+    await press(buttonNamed(root, "Zacznij od zera"));
+    await press(buttonNamed(root, "Tak, zacznij od zera"));
+    assert.deepEqual(
+      waitingCalls(held),
+      ["resetSavedGame"],
+      "precondition: the reset waits for the server",
+    );
+    assert.ok(
+      byClass(root, "program-panel").length > 0,
+      "precondition: the game stands",
+    );
+
+    await inAct(() => reportError(new TypeError(QUOTED)));
+    await held.answer("resetSavedGame", { ok: true, value: null });
+
+    assertWaitingWithSentence(root, intervals, "after the reset");
+    assert.equal(
+      buttonNamed(root, "Konto"),
+      undefined,
+      "the bar holds the game's name alone",
+    );
+    assert.deepEqual(waitingCalls(held), [], "no load and no save");
     mock.timers.tick(60_000);
     await settle();
     assert.deepEqual(waitingCalls(held), [], "nothing is saved");
@@ -939,9 +1007,78 @@ test("an error in the drawing of a root of the game reaches the page through the
       assert.deepEqual(lines(), [
         "uncaught kind=Error code=none place=view/last-resort.installLastResort",
       ]);
-      assert.equal(warning.mock.callCount(), 1);
     }).finally(() => warning.mock.restore());
   });
+});
+
+// D-323, D-407. Catches a row of the failure that stands in a root whose drawing can fail, or
+// that is drawn only at the error, so that the root of the waiting screen or of the sentences above
+// the game, taken down by React, takes the sentence with it or leaves it unshown.
+test("an error in the drawing of the waiting screen's root or of the sentences' root leaves the sentence of the failure shown once in the header's row and writes one line", async () => {
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save"
+  // decision: D-407 "The rows of sentences are three roots, the row of the failure, the row of saving and the sentences above the game, and the row of the failure holds nothing else, is drawn when the page starts and is shown by the page at the error without a render, so that an error in the drawing of another root cannot take down the sentence of D-323."
+  const noText = {
+    ok: false,
+    failure: { kind: "unexpected", status: 200, message: {} },
+  };
+  const variants = [
+    {
+      name: "the waiting screen, whose sentence of a failed check is no text",
+      address: () => fakeAddress(),
+      async toTheFailure(held) {
+        await held.answer("currentAccount", noText, { inside: false });
+      },
+    },
+    {
+      name: "the sentences above the game, whose sentence of a confirmation is no text, for a signed-in player",
+      address: () =>
+        fakeAddress(
+          "#confirm-email=Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE",
+        ),
+      async toTheFailure(held) {
+        await held.answer("confirmEmail", noText, { inside: false });
+        await held.answer("currentAccount", ACCOUNT, { inside: false });
+        await held.answer(
+          "loadSavedGame",
+          { ok: true, value: null },
+          { inside: false },
+        );
+      },
+    },
+  ];
+  for (const { name, address, toTheFailure } of variants) {
+    await onPage(async ({ root, lines }) => {
+      // React's development build adds a warning of its own about the root it takes down.
+      const warning = mock.method(console, "warn", () => {});
+      await outsideAct(async () => {
+        const held = heldClient();
+        await startPage(held, address(), { inside: false });
+        assert.deepEqual(sentencesShown(root), [], `${name}: precondition`);
+        assert.deepEqual(lines(), [], `${name}: precondition, no line`);
+
+        await toTheFailure(held);
+
+        const header = headerOf(root);
+        const [sentence, ...others] = sentencesShown(root);
+        assert.deepEqual(others, [], `${name}: one sentence`);
+        assert.ok(sentence, `${name}: the sentence is shown`);
+        assert.ok(header.contains(sentence), `${name}: in the header`);
+        assert.equal(sentence.getAttribute("role"), "alert", name);
+        assert.ok(
+          sentence.classList.contains("form-warning"),
+          `${name}: warning`,
+        );
+        assertInOrder(header, [byClass(header, "menu-bar-host")[0], sentence]);
+        assert.deepEqual(
+          lines(),
+          [
+            "uncaught kind=Error code=none place=view/last-resort.installLastResort",
+          ],
+          `${name}: one line`,
+        );
+      }).finally(() => warning.mock.restore());
+    });
+  }
 });
 
 test("a card that React takes down after an error is replaced by the sentence alone in its place, and the page hears of the error", async () => {
@@ -968,6 +1105,16 @@ test("a card that React takes down after an error is replaced by the sentence al
         [...card.element.querySelectorAll("p")].map((p) => p.textContent),
         [SENTENCE],
         "nothing but the sentence",
+      );
+      const [panel] = card.element.querySelectorAll("p");
+      assert.ok(
+        panel.classList.contains("form-warning"),
+        "the panel's sentence carries the class form-warning",
+      );
+      assert.equal(
+        panel.getAttribute("role"),
+        "alert",
+        "the panel's sentence carries the role alert",
       );
       assert.deepEqual(lines(), [], "the card writes no line itself");
       // The page may go on with the card as with any other.

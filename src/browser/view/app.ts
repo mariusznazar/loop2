@@ -13,12 +13,9 @@ import {
   type AccountCard,
   type AccountCardReset,
 } from "./account-card.js";
-import { createButton, setButtonWaiting } from "./controls/button.js";
-import { createFormWarning } from "./controls/text-field.js";
 import {
   browserAddress,
   confirmFromAddress,
-  createConfirmationNotice,
   readConfirmationToken,
   type ConfirmationNotice,
   type PageAddress,
@@ -30,12 +27,13 @@ import {
   type KeptGame,
   type ScreenPlace,
 } from "./game-view.js";
-import {
-  errorWords,
-  FAILURE_SENTENCE,
-  installLastResort,
-} from "./last-resort.js";
+import { createFailureRow } from "./header-rows.js";
+import { errorWords, installLastResort } from "./last-resort.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
+import {
+  createPageSentences,
+  type PageSentenceValue,
+} from "./page-sentences.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
 import {
   GAME_STARTS_ANEW,
@@ -43,6 +41,7 @@ import {
   RESET_NOT_ALLOWED,
 } from "./previous-save-lines.js";
 import { screenAddress } from "./screen-address.js";
+import { createWaitingScreen, type Waiting } from "./waiting-screen.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
 const PASSWORD_CHANGED = "Hasło zmienione. Zaloguj się nowym hasłem.";
@@ -58,6 +57,10 @@ const REFUSED_LOAD: Readonly<Record<SavedGameRefusal, string>> = {
 };
 /** The sentence of a load that met an error of the code: it refused nothing, so nothing is replaced. */
 const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
+/** What the waiting screen says while the page asks the server whom this browser is signed in as. */
+const CHECKING_SESSION = "Sprawdzanie logowania…";
+/** What the waiting screen says while the page sends the confirmation token of its address. */
+const CONFIRMING_ADDRESS = "Potwierdzanie adresu…";
 /** The server's answer that this browser has no valid session: the player is signed out. */
 function signedOut(failure: AccountFailure): boolean {
   return failure.kind === "refused" && failure.status === 401;
@@ -108,13 +111,85 @@ const NAME_ALONE: MenuBarProps = {
   logout: { waiting: false, sentence: null, unavailable: false },
 };
 
-/** A sentence of the page in `warning`, standing once above the screen it opens. */
-function createPageNotice(sentence: string): HTMLElement {
-  const element = document.createElement("p");
-  element.className = "page-notice";
-  element.setAttribute("role", "alert");
-  element.textContent = sentence;
-  return element;
+/** The page's sentences above the game while no game stands, or none is to be shown. */
+const NO_SENTENCES: readonly PageSentenceValue[] = [];
+
+/**
+ * The logout of the game: `idle`, with the sentence of an uncertain end or none; `saving`, while the
+ * save before the logout waits; `ending`, while the request that ends the session waits, with the
+ * outcome of the saver that came meanwhile, which acts after the answer, or none.
+ */
+type Logout =
+  | { readonly kind: "idle"; readonly sentence: string | null }
+  | { readonly kind: "saving" }
+  | { readonly kind: "ending"; readonly held: (() => void) | null };
+
+/**
+ * The reset of the game (D-402): `idle`, or `waiting` for the server, with the outcome of the old
+ * game's saver that came meanwhile, which acts only if the reset fails, or none.
+ */
+type Reset =
+  | { readonly kind: "idle" }
+  | { readonly kind: "waiting"; readonly held: (() => void) | null };
+
+/** The game that stands, with everything of the page that belongs to it and goes with it. */
+type GamePage = {
+  readonly kind: "game";
+  readonly view: GameView;
+  /** The account the game belongs to. */
+  readonly account: Account;
+  /** Where the player is in the game, as the game last told; none before it tells. */
+  readonly place: ScreenPlace | null;
+  /** The page's sentences above the game's first screen; they leave at its first change of screen. */
+  readonly notices: readonly PageSentenceValue[];
+  /** The outcome of a registration's first message, which the bar starts its menu with. */
+  readonly message: ConfirmationMessage | null;
+  readonly logout: Logout;
+  readonly reset: Reset;
+};
+
+/**
+ * The state of the start page, one value of three kinds: the waiting screen with the header, the
+ * card alone on the screen (D-262), or the game. The page holds one and changes it only through
+ * `change`, which closes the card or the game the next value no longer holds and draws the places of
+ * the page from it. Values that outlive a change of kind stand apart in `startApp`.
+ */
+type PageState =
+  | { readonly kind: "checking"; readonly waiting: Waiting }
+  | { readonly kind: "card"; readonly card: AccountCard }
+  | GamePage;
+
+/**
+ * What the bar is given in a state: the game's name alone in every kind but a game that has told its
+ * place, else the account, the place, the registration's outcome and the logout — waiting while the
+ * logout is not idle, unavailable while the reset waits (D-97, D-280, D-402).
+ */
+function barPropsOf(state: PageState): MenuBarProps {
+  if (state.kind !== "game" || state.place === null) return NAME_ALONE;
+  return {
+    account: state.account,
+    screen: state.place.screen,
+    returnEntry: state.place.returnEntry,
+    registrationMessage: state.message,
+    logout: {
+      waiting: state.logout.kind !== "idle",
+      sentence: state.logout.kind === "idle" ? state.logout.sentence : null,
+      unavailable: state.reset.kind === "waiting",
+    },
+  };
+}
+
+/** Whether two props of the bar say the same, so that the bar need not be drawn again. */
+function sameBarProps(a: MenuBarProps, b: MenuBarProps): boolean {
+  return (
+    a.account === b.account &&
+    a.screen === b.screen &&
+    a.returnEntry === b.returnEntry &&
+    a.registrationMessage === b.registrationMessage &&
+    a.logout.waiting === b.logout.waiting &&
+    a.logout.sentence === b.logout.sentence &&
+    a.logout.unavailable === b.logout.unavailable
+  );
 }
 
 /**
@@ -133,6 +208,11 @@ function createPageNotice(sentence: string): HTMLElement {
  * its waiting and its sentence; the bar sends „Wyślij ponownie” itself, starting with the outcome
  * of the registration's message where the sign-in followed one (D-157).
  * One transition runs at a time, and an answer that comes after the page moved on is ignored.
+ *
+ * What the page shows is one value of three kinds — the waiting screen, the card, the game with its
+ * account, its place, its sentences, its logout and its reset — which the page changes only through
+ * one function; that function closes the card or the game the next value no longer holds and draws
+ * the header, the place of the screen, the page's sentences above the game and the bar from the value.
  *
  * The game shows one screen at a time, the one its address names (D-280, D-281); the page tells it
  * which entry built it — the sign-in form, an emailed link or the address itself — which picks the
@@ -159,7 +239,8 @@ function createPageNotice(sentence: string): HTMLElement {
  * An error that no code of the game handled — an exception, a rejected promise — reaches the
  * window; the page cancels it, writes one line of it in the console (`last-resort.ts`) and says
  * „Coś w grze się zepsuło — odśwież stronę.” until the page is reloaded: on the line under the bar,
- * beside the line of saving, on every screen with the header; in the card, under the form; and,
+ * beside the line of saving, on every screen with the header — a row drawn when the page starts, in
+ * a root of its own, hidden, which the error only shows; in the card, under the form; and,
  * where React has taken the card down, alone in its place. The game then takes no change but goes
  * on saving the state it held, and no game is built after the error: a sign-in stays at the waiting
  * screen with the sentence (D-323, D-262).
@@ -175,76 +256,62 @@ export function startApp(
     onLogout: () => logOut(),
     props: NAME_ALONE,
   });
-  header.append(bar.element);
+  // The row of the failure: drawn now, hidden, and only shown at an error (D-323, D-407). It stands
+  // right after the bar and before the line of saving, which the game's header appends later.
+  const failureRow = createFailureRow();
+  header.append(bar.element, failureRow.element);
 
   const main = document.createElement("main");
   main.className = "app-main";
 
-  // The session check: what the page says while it asks, and the warning with its retry.
-  const check = document.createElement("section");
-  check.className = "session-check";
-  const checking = document.createElement("p");
-  checking.className = "session-check-text";
-  checking.textContent = "Sprawdzanie logowania…";
-  const checkWarning = createFormWarning();
-  const retryButton = createButton("Spróbuj ponownie");
-  retryButton.hidden = true;
-  check.append(checking, checkWarning.element, retryButton);
+  // The page's sentences above the game, in a root of their own that stands in `main` before the
+  // game's element; they stand only in a game, where the state holds them.
+  const sentences = createPageSentences({ sentences: NO_SENTENCES });
 
-  let card: AccountCard | null = null;
-  let game: GameView | null = null;
-  /** The account whose game the page shows. */
-  let account: Account | null = null;
+  // The waiting screen: what the page says while it asks, and the warning with its retry.
+  const waitingScreen = createWaitingScreen({
+    onRetry: () => {
+      void checkSession();
+    },
+    waiting: { kind: "asking", text: CHECKING_SESSION },
+  });
+
+  // What the page shows; changed only by `change`.
+  let state: PageState = {
+    kind: "checking",
+    waiting: { kind: "asking", text: CHECKING_SESSION },
+  };
+  // What the bar was last given.
+  let drawnBar: MenuBarProps = NAME_ALONE;
+  // What the row of sentences was last given.
+  let drawnSentences: readonly PageSentenceValue[] = NO_SENTENCES;
   // The result of a confirmation from the address, until the first screen shows it.
   let pendingNotice: ConfirmationNotice | null = null;
   // The outcome of a registration's first message, until the game it leads to is built.
   let pendingMessage: ConfirmationMessage | null = null;
-  // What the bar of the game now standing started its menu with, from that message.
-  let barMessage: ConfirmationMessage | null = null;
-  // The logout under way and the sentence of one whose outcome is uncertain, both shown in the menu.
-  let logoutWaiting = false;
-  let logoutSentence: string | null = null;
   // The game about to be built replaces one that lost a conflict to another browser (D-209).
   let afterConflict = false;
   // How the page comes to build the next game, which picks its first screen; the page opens at its
   // address, and a retry of the session check keeps the entry it had.
   let entry: GameEntry = "address";
-  // Where the player is in the game that stands, as the game last told; the bar marks it.
-  let place: ScreenPlace | null = null;
-  // The page's sentences above the game's first screen; they leave at its first change of screen.
-  let notices: HTMLElement[] = [];
   // The game state a save answered with no session left, kept in this page only (D-211).
   let kept: (KeptGame & { readonly accountId: string }) | null = null;
-  // While „Wyloguj” waits for the server to end the session, the logout's answer decides what the
-  // page does, so an outcome the saver reports meanwhile waits for it.
-  let loggingOut = false;
-  let deferred: (() => void) | null = null;
-  // While the reset of the game waits for the server, the old game's saver may still report a
-  // conflict or a missing session; the page holds that outcome and acts on it only if the reset fails
-  // (D-402), and „Wyloguj” is not pressable.
-  let resetting = false;
-  let heldByReset: (() => void) | null = null;
   // Each request of the page takes the next number; an answer counts only while it is the last.
   let latest = 0;
   // An error nothing handled came: the game takes no change and the sentence stands, until the page
   // is reloaded (D-323).
   let failed = false;
-  // The sentence of that error in the row under the bar, above the line of saving (D-323, D-208);
-  // it comes with the error and stays on every screen with the header.
-  let failureLine: HTMLElement | null = null;
 
-  /** An error nothing handled: the page stops the game and says so, its line already written. */
+  /**
+   * An error nothing handled: the page shows the sentence of the failure, stops the game and tells
+   * the card, its line already written. It may be called from inside React's work, so it renders
+   * nothing: showing the row is one attribute of an element the page owns (D-323, D-407).
+   */
   function onUncaught(): void {
     failed = true;
-    if (failureLine === null) {
-      const warning = createFormWarning();
-      warning.set(FAILURE_SENTENCE);
-      failureLine = warning.element;
-      failureLine.classList.add("failure-line");
-      bar.element.after(failureLine);
-    }
-    game?.halt();
-    card?.fail();
+    failureRow.show();
+    if (state.kind === "game") state.view.halt();
+    if (state.kind === "card") state.card.fail();
   }
   /**
    * Sends a line the page wrote to the server (D-356). The result is ignored, and a failing client,
@@ -270,22 +337,108 @@ export function startApp(
     return notice;
   }
 
-  /** The one way to a screen that is no card: any card closes and the page shows `screen`. */
-  function showPage(...screen: HTMLElement[]): void {
-    card?.dispose();
-    card = null;
-    header.hidden = false;
-    main.hidden = false;
-    main.replaceChildren(...screen);
+  /** The game the page holds now, where it is `view`; else none. */
+  function gameOf(view: GameView): GamePage | null {
+    return state.kind === "game" && state.view === view ? state : null;
   }
 
-  /** Puts a new card in place of the page, any card before it closed by `showPage` (D-262). */
+  /** Closes the card or the game the next value no longer holds. */
+  function release(next: PageState): void {
+    const previous = state;
+    if (
+      previous.kind === "card" &&
+      !(next.kind === "card" && next.card === previous.card)
+    )
+      previous.card.dispose();
+    if (
+      previous.kind === "game" &&
+      !(next.kind === "game" && next.view === previous.view)
+    )
+      previous.view.dispose();
+  }
+
+  /** What `main` holds in a state, in the order of the document. */
+  function mainContent(next: PageState): readonly HTMLElement[] {
+    switch (next.kind) {
+      case "checking":
+        return [sentences.element, waitingScreen.element];
+      case "card":
+        return [sentences.element];
+      case "game":
+        return [sentences.element, next.view.element];
+    }
+  }
+
+  /** Takes out of `main` what the state no longer shows, and puts in what it shows and is not there. */
+  function drawMain(content: readonly HTMLElement[]): void {
+    for (const child of Array.from(main.children))
+      if (!content.includes(child as HTMLElement)) child.remove();
+    const there = Array.from(main.children);
+    if (
+      there.length !== content.length ||
+      content.some((element, index) => there[index] !== element)
+    )
+      main.replaceChildren(...content);
+  }
+
+  /** Draws every place of the start page from `next`, after `previous` was left. */
+  function draw(previous: PageState, next: PageState): void {
+    header.hidden = next.kind === "card";
+    main.hidden = next.kind === "card";
+    drawMain(mainContent(next));
+    if (
+      next.kind === "game" &&
+      !(previous.kind === "game" && previous.view === next.view)
+    )
+      header.append(next.view.saveLine);
+    if (
+      next.kind === "card" &&
+      !(previous.kind === "card" && previous.card === next.card)
+    )
+      root.append(next.card.element);
+    if (next.kind === "checking") waitingScreen.update(next.waiting);
+    const standing = next.kind === "game" ? next.notices : NO_SENTENCES;
+    if (standing !== drawnSentences) {
+      drawnSentences = standing;
+      sentences.update(standing);
+    }
+    const props = barPropsOf(next);
+    if (!sameBarProps(props, drawnBar)) {
+      drawnBar = props;
+      bar.update(props);
+    }
+    // The button waited disabled, which took the focus, so each refusal moves it back.
+    if (next.kind === "checking" && next.waiting.kind === "refused")
+      waitingScreen.focusRetry();
+  }
+
+  /**
+   * The one way to change what the page shows: the card or the game the next value no longer holds
+   * is closed, and the header, the place of the screen, the sentences and the bar are drawn from it
+   * (D-262, D-381).
+   */
+  function change(next: PageState): void {
+    const previous = state;
+    release(next);
+    state = next;
+    draw(previous, next);
+  }
+
+  /** The game leaves before the next is built, so that a new game finds no old one on the address. */
+  function leaveGame(): void {
+    if (state.kind !== "game") return;
+    change({
+      kind: "checking",
+      waiting: { kind: "asking", text: CHECKING_SESSION },
+    });
+  }
+
+  /** Puts a new card in place of the page, any card before it closed by `change` (D-262). */
   function placeCard(
     sentence: ConfirmationNotice | null,
     reset: AccountCardReset | null,
   ): void {
-    showPage();
-    card = createAccountCard({
+    const card = createAccountCard({
       client,
       sentence,
       reset,
@@ -299,91 +452,53 @@ export function startApp(
         lastResort.report(error, "view/account-card.createAccountCard");
       },
     });
-    header.hidden = true;
-    main.hidden = true;
-    root.append(card.element);
+    change({ kind: "card", card });
   }
 
-  /** The waiting screen while the page asks the server, the warning of a retry cleared. */
-  function waitForServer(): void {
-    checkWarning.set(null);
-    if (retryButton.hidden) {
-      checking.hidden = false;
-    } else {
-      setButtonWaiting(retryButton, "Sprawdzanie…");
-    }
-    showPage(check);
+  /** Gives the card the focus, where a card stands. */
+  function focusCard(): void {
+    if (state.kind === "card") state.card.focus();
+  }
+
+  /**
+   * The waiting screen while the page asks the server, the warning of a retry cleared: once a
+   * refusal was shown, „Spróbuj ponownie” waits until the waiting screen is left.
+   */
+  function waitForServer(text: string = CHECKING_SESSION): void {
+    const retrying =
+      state.kind === "checking" &&
+      (state.waiting.kind === "refused" || state.waiting.kind === "retrying");
+    change({
+      kind: "checking",
+      waiting: retrying ? { kind: "retrying" } : { kind: "asking", text },
+    });
   }
 
   function askingFailed(message: string): void {
-    checking.hidden = true;
-    checkWarning.set(message);
-    retryButton.hidden = false;
-    retryButton.focus();
+    change({
+      kind: "checking",
+      waiting: { kind: "refused", sentence: message },
+    });
   }
 
   /** A load that met an error of the code: the waiting screen with its warning and its retry. */
   function loadFailed(): void {
-    showPage(check);
     askingFailed(LOAD_FAILED);
   }
 
-  /** The waiting screen starts afresh the next time it is shown. */
-  function leaveWaiting(): void {
-    checking.hidden = false;
-    checkWarning.set(null);
-    retryButton.hidden = true;
-  }
-
-  /** Gives the bar what the page now holds: the name alone where no game stands. */
-  function drawBar(): void {
-    bar.update(
-      account === null || place === null
-        ? NAME_ALONE
-        : {
-            account,
-            screen: place.screen,
-            returnEntry: place.returnEntry,
-            registrationMessage: barMessage,
-            logout: {
-              waiting: logoutWaiting,
-              sentence: logoutSentence,
-              unavailable: resetting,
-            },
-          },
-    );
-  }
-
-  /**
-   * The game's place: at its first screen, while the game is being built, the page only keeps it;
-   * at a change of screen the sentences above the first screen leave (D-286), and the bar redraws.
-   */
-  function onScreen(next: ScreenPlace): void {
+  /** The game's place: at its first screen, while the game is being built, the page only keeps it. */
+  function onPlace(view: GameView, next: ScreenPlace): void {
+    const current = gameOf(view);
+    if (current === null) return;
+    // At a change of screen the sentences above the first screen leave (D-286).
     const changed =
-      place !== null &&
-      screenAddress(place.screen) !== screenAddress(next.screen);
-    place = next;
-    if (game === null) return;
-    if (changed) {
-      for (const notice of notices) notice.remove();
-      notices = [];
-    }
-    drawBar();
-  }
-
-  /** The game leaves with the menu of its player, its logout and its sentences (D-97). */
-  function dropGame(): void {
-    game?.dispose();
-    game = null;
-    account = null;
-    place = null;
-    notices = [];
-    barMessage = null;
-    logoutWaiting = false;
-    logoutSentence = null;
-    resetting = false;
-    heldByReset = null;
-    drawBar();
+      current.place !== null &&
+      screenAddress(current.place.screen) !== screenAddress(next.screen);
+    change({
+      ...current,
+      place: next,
+      notices: changed ? [] : current.notices,
+    });
   }
 
   /**
@@ -391,12 +506,19 @@ export function startApp(
    * waits, only if the reset fails (D-402): the held outcome then goes through here again.
    */
   function whenNotBusy(view: GameView, action: () => void): void {
-    const guarded = (): void => {
-      if (game === view) action();
-    };
-    if (resetting) heldByReset = () => whenNotBusy(view, action);
-    else if (loggingOut) deferred = guarded;
-    else guarded();
+    const current = gameOf(view);
+    if (current === null) return;
+    if (current.reset.kind === "waiting")
+      change({
+        ...current,
+        reset: { kind: "waiting", held: () => whenNotBusy(view, action) },
+      });
+    else if (current.logout.kind === "ending")
+      change({
+        ...current,
+        logout: { kind: "ending", held: () => whenNotBusy(view, action) },
+      });
+    else action();
   }
 
   function showGame(
@@ -407,15 +529,17 @@ export function startApp(
     if (failed) {
       // After an error nothing handled no game is built, so no catch-up passes time and nothing is
       // saved: the page stays at the waiting screen with the sentence of the failure (D-323).
-      leaveWaiting();
-      showPage(check);
+      change({ kind: "checking", waiting: { kind: "stopped" } });
       return;
     }
-    dropGame();
+    leaveGame();
     const conflict = afterConflict && start.refused === null;
     afterConflict = false;
     const message = pendingMessage;
     pendingMessage = null;
+    // The game tells its first place while it is built, before the page holds it.
+    let building = true;
+    let first: ScreenPlace | null = null;
     const view: GameView = createGameView({
       client,
       previousSaveAllowed: owner.previousSaveAllowed,
@@ -425,24 +549,33 @@ export function startApp(
       afterConflict: conflict,
       address,
       entry,
-      onScreen,
+      onScreen(next) {
+        if (building) first = next;
+        else onPlace(view, next);
+      },
       ...(owner.previousSaveAllowed ? { onReset: () => resetGame() } : {}),
       onConflict: () => whenNotBusy(view, () => reloadAfterConflict()),
       onOutdated: () => {},
       onSignedOut: () => whenNotBusy(view, () => expire()),
     });
-    game = view;
-    account = owner;
-    barMessage = message;
-    view.saveLine.classList.add("save-line");
-    header.append(view.saveLine);
-    leaveWaiting();
+    building = false;
     const notice = takeNotice();
-    notices = notice === null ? [] : [createConfirmationNotice(notice)];
+    const notices: PageSentenceValue[] = notice === null ? [] : [notice];
     if (start.refused !== null)
-      notices.push(createPageNotice(REFUSED_LOAD[start.refused]));
-    showPage(...notices, view.element);
-    drawBar();
+      notices.push({
+        text: REFUSED_LOAD[start.refused],
+        role: "refused-load",
+      });
+    change({
+      kind: "game",
+      view,
+      account: owner,
+      place: first,
+      notices,
+      message,
+      logout: { kind: "idle", sentence: null },
+      reset: { kind: "idle" },
+    });
     // A refused save is replaced at once, so its sentence does not come back (D-96).
     if (saveAtOnce || start.refused !== null) view.saveNow();
   }
@@ -452,10 +585,8 @@ export function startApp(
    * that waits. Both never stand: a sentence comes only from a running game, which took the notice.
    */
   function showForms(sentence: string | null): void {
-    dropGame();
     afterConflict = false;
     pendingMessage = null;
-    leaveWaiting();
     const notice = takeNotice();
     placeCard(
       sentence === null ? notice : { text: sentence, role: "warning" },
@@ -465,8 +596,8 @@ export function startApp(
 
   /** No session for a save: the current state stays in this page for the same account (D-211). */
   function expire(): void {
-    if (game === null || account === null) return;
-    kept = { ...game.keep(), accountId: account.id };
+    if (state.kind !== "game") return;
+    kept = { ...state.view.keep(), accountId: state.account.id };
     showForms(EXPIRED);
   }
 
@@ -475,9 +606,8 @@ export function startApp(
    * built from it stays on the screen the address names.
    */
   function reloadAfterConflict(): void {
-    const owner = account;
-    if (owner === null) return;
-    dropGame();
+    if (state.kind !== "game") return;
+    const owner = state.account;
     afterConflict = true;
     entry = "address";
     void loadGame(owner);
@@ -509,7 +639,6 @@ export function startApp(
     waitForServer();
     const result = await client.loadSavedGame();
     if (mine !== latest) return;
-    setButtonWaiting(retryButton, null);
     if (result.ok) {
       const save = result.value;
       const start =
@@ -530,7 +659,6 @@ export function startApp(
     waitForServer();
     const result = await client.currentAccount();
     if (mine !== latest) return;
-    setButtonWaiting(retryButton, null);
     if (result.ok) {
       enter(result.value);
     } else if (signedOut(result.failure)) {
@@ -540,10 +668,11 @@ export function startApp(
     }
   }
 
-  retryButton.addEventListener("click", () => {
-    if (retryButton.disabled) return;
-    void checkSession();
-  });
+  /** Sets the logout of the game `view`, where the page still holds it. */
+  function setLogout(view: GameView, logout: Logout): void {
+    const current = gameOf(view);
+    if (current !== null) change({ ...current, logout });
+  }
 
   /**
    * „Wyloguj” of the menu: the page saves first, then ends the session. The bar shows the waiting
@@ -551,44 +680,43 @@ export function startApp(
    * saving under the bar (D-97, D-208).
    */
   function logOut(): void {
-    const view = game;
-    if (view === null || logoutWaiting || resetting) return;
+    const current = state;
+    if (
+      current.kind !== "game" ||
+      current.logout.kind !== "idle" ||
+      current.reset.kind !== "idle"
+    )
+      return;
+    const { view } = current;
     void (async () => {
       const mine = ++latest;
-      logoutSentence = null;
-      logoutWaiting = true;
-      drawBar();
+      change({ ...current, logout: { kind: "saving" } });
       const save = await view.saveBeforeLogout();
-      if (mine !== latest || game !== view) return;
+      if (mine !== latest || gameOf(view) === null) return;
       if (save.kind === "failed") {
         // The saver's line asks the player to log out again; its retries go on.
-        logoutWaiting = false;
-        drawBar();
+        setLogout(view, { kind: "idle", sentence: null });
         return;
       }
       if (save.kind === "signed-out") {
-        logoutWaiting = false;
         expire();
         return;
       }
-      loggingOut = true;
+      setLogout(view, { kind: "ending", held: null });
       const result = await client.logout();
-      loggingOut = false;
-      const later = deferred;
-      deferred = null;
+      const ending = gameOf(view)?.logout;
+      const later = ending?.kind === "ending" ? ending.held : null;
       if (mine !== latest) return;
-      logoutWaiting = false;
       if (result.ok || signedOut(result.failure)) {
         showForms(save.kind === "outdated" ? OUTDATED : null);
-        card?.focus();
+        focusCard();
         return;
       }
       // A reset that succeeded meanwhile built a new game: this uncertain end concerns the old one,
       // so the new game gets neither its sentence nor a reload for the old game's lost save.
-      if (game !== view) return;
+      if (gameOf(view) === null) return;
       // The server may or may not have ended the session: the game stays, and so does „Wyloguj”.
-      logoutSentence = result.failure.message;
-      drawBar();
+      setLogout(view, { kind: "idle", sentence: result.failure.message });
       // A save that lost to another browser leaves this game behind the server's save (D-209).
       if (save.kind === "conflict") reloadAfterConflict();
       else later?.();
@@ -605,18 +733,16 @@ export function startApp(
    * and a held outcome is acted on (D-402).
    */
   function resetGame(): void {
-    const view = game;
-    const owner = account;
-    if (view === null || owner === null || resetting) return;
-    resetting = true;
-    drawBar();
+    const current = state;
+    if (current.kind !== "game" || current.reset.kind !== "idle") return;
+    const { view, account: owner } = current;
+    change({ ...current, reset: { kind: "waiting", held: null } });
     void (async () => {
       const result = await client.resetSavedGame();
       // The game left the page meanwhile (a logout, a sign-in elsewhere): nothing here concerns it.
-      if (game !== view) return;
-      resetting = false;
+      const now = gameOf(view);
+      if (now === null) return;
       if (result.ok) {
-        heldByReset = null;
         pendingNotice = { text: GAME_STARTS_ANEW, role: "positive" };
         entry = "address";
         showGame(
@@ -627,7 +753,6 @@ export function startApp(
         return;
       }
       if (signedOut(result.failure)) {
-        heldByReset = null;
         expire();
         return;
       }
@@ -640,9 +765,8 @@ export function startApp(
         waiting: false,
         sentence: forbidden ? RESET_NOT_ALLOWED : RESET_FAILED,
       });
-      drawBar();
-      const held = heldByReset;
-      heldByReset = null;
+      const held = now.reset.kind === "waiting" ? now.reset.held : null;
+      change({ ...now, reset: { kind: "idle" } });
       held?.();
     })();
   }
@@ -661,7 +785,7 @@ export function startApp(
         if (ending === "changed") {
           pendingNotice = { text: PASSWORD_CHANGED, role: "positive" };
           showForms(null);
-          card?.focus();
+          focusCard();
           return;
         }
         if (ending === "refused")
@@ -680,10 +804,11 @@ export function startApp(
       return;
     }
     if (readConfirmationToken(address.hash()) !== null) {
-      checking.textContent = "Potwierdzanie adresu…";
-      showPage(check);
+      change({
+        kind: "checking",
+        waiting: { kind: "asking", text: CONFIRMING_ADDRESS },
+      });
       const notice = await confirmFromAddress(client, address);
-      checking.textContent = "Sprawdzanie logowania…";
       pendingNotice = notice;
       entry = "link";
     }

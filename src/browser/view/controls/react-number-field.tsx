@@ -1,12 +1,12 @@
 /**
- * The shared number field in its React form (D-44, D-265): the field that `number-field.ts` builds,
- * with the same classes and attributes, so `styles.css` stays the one place of the look;
- * `tests/view/react-controls.test.mjs` keeps the two forms alike. It holds the text typed into it
- * while it has the focus, and takes a new value from its props only without the focus, so a screen
- * that redraws often leaves the typed text and the cursor in place. A number is committed on Enter
- * and on leaving the field, through the rule the screen that uses the field gives it (`rule`): the
- * field knows no rule of any screen, so a screen with a rule of its own adds none here (D-395).
- * Nothing here runs when the module is imported.
+ * The shared number field, a React component (D-44, D-265). The classes and attributes it draws are
+ * what `styles.css` reads, so the stylesheet stays the one place of the look;
+ * `tests/view/shared-controls.test.mjs` holds its attributes and its behaviour. It holds the text
+ * typed into it while it has the focus, and takes a new value from its props only without the
+ * focus, so a screen that redraws often leaves the typed text and the cursor in place. A number is
+ * committed on Enter and on leaving the field, through the rule the screen that uses the field
+ * gives it (`rule`): the field knows no rule of any screen, so a screen with a rule of its own adds
+ * none here (D-395). Nothing here runs when the module is imported.
  */
 import { useId, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent, Ref } from "react";
@@ -66,7 +66,7 @@ export function ReactNumberField({
   // otherwise.
   const [draft, setDraft] = useState<string | null>(null);
   // Whether the text was typed in this focus: leaving the field without typing commits nothing,
-  // as the change event of the DOM form does.
+  // whatever the rule would read of the text shown.
   const typed = useRef(false);
   const failed = error !== undefined && error !== null;
 

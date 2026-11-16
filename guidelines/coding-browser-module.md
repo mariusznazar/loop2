@@ -26,16 +26,11 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/chronicle.ts`                    | copy        | —        |
 | `src/browser/view/clock.ts`                        | copy        | —        |
 | `src/browser/view/combat-line.ts`                  | do not copy | —        |
-| `src/browser/view/controls/button.ts`              | copy        | —        |
-| `src/browser/view/controls/number-field.ts`        | copy        | —        |
-| `src/browser/view/controls/pick-cell.ts`           | copy        | —        |
 | `src/browser/view/controls/react-button.tsx`       | copy        | —        |
 | `src/browser/view/controls/react-number-field.tsx` | copy        | —        |
 | `src/browser/view/controls/react-pick-cell.tsx`    | copy        | —        |
 | `src/browser/view/controls/react-select-list.tsx`  | copy        | —        |
 | `src/browser/view/controls/react-text-field.tsx`   | copy        | —        |
-| `src/browser/view/controls/select-list.ts`         | copy        | —        |
-| `src/browser/view/controls/text-field.ts`          | copy        | —        |
 | `src/browser/view/credit-lines.ts`                 | copy        | —        |
 | `src/browser/view/credits-section.tsx`             | copy        | —        |
 | `src/browser/view/credits.ts`                      | copy        | —        |
@@ -97,8 +92,9 @@ Czytaj również ogólne wytyczne kodowania.
 
 Buduj widok w TypeScript z Reactem: ekran to komponent funkcyjny w pliku `.tsx`,
 który rysuje ze stanu gry, a jedynym frameworkiem UI w kodzie i w zależnościach
-uruchomieniowych jest React. Ekran, którego żadne zadanie nie przeniosło jeszcze
-do Reacta, zostaje przy API DOM przeglądarki (D-265).
+uruchomieniowych jest React. Żaden ekran nie powstaje przez API DOM
+przeglądarki; co strona buduje ręcznie, mówi reguła _Nowy ekran i moduły w DOM_
+(D-265).
 
 ```good browser-view-framework src/browser/view/guideline-element.tsx
 export function Label() {
@@ -165,69 +161,80 @@ użytkownika: to robi obsługa zdarzenia albo wartość liczona podczas rysowani
 Niepełnej listy zależności nie wykrywa żaden test, tylko przegląd; błąd tych
 reguł, który przeszedł testy i przegląd, otwiera D-29 dla człowieka.
 
-### Wspólna kontrolka w dwóch postaciach
+### Wspólna kontrolka w jednej postaci
 
 - **Decision:** D-265
 - **Invariant:** none
-- **Good:** Nowy atrybut przycisku zapisany w obu postaciach w jednej zmianie; ekran w DOM, którego zmiana innego ekranu nie ruszyła, zostaje przy postaci DOM.
-- **Bad:** Komponent Reacta opakowujący funkcję DOM; klasa ustawiana tylko przez postać Reacta; postać Reacta bez przypadku w teście porównującym obie.
+- **Good:** Nowy atrybut przycisku zapisany raz, w komponencie Reacta, z przypadkiem w `tests/view/shared-controls.test.mjs`; panel w miejscu zdjętej karty bierze znacznik, klasę i rolę zdania ostrzeżenia ze stałej, którą czyta też komponent tego zdania.
+- **Bad:** Wspólna kontrolka z drugą postacią zbudowaną przez API DOM; panel, który wpisuje znacznik, klasę albo rolę zdania ostrzeżenia własnym literałem; wygląd kontrolki ustawiany atrybutem `style` komponentu zamiast w `src/browser/styles.css`.
 
-Dopóki ostatni ekran w API DOM nie przejdzie do Reacta, wspólna kontrolka, której
-używa ekran w Reactcie, ma w `src/browser/view/controls/` dwie postaci: komponent
-Reacta w pliku z przedrostkiem `react-` (plik `.tsx` nie może dzielić nazwy
-z plikiem `.ts` obok) i funkcję DOM. Obie rysują to samo drzewo elementów z tymi
-samymi klasami i atrybutami; wygląd stoi tylko w `src/browser/styles.css`.
-Komponent jest napisany po reactowemu, z polami kontrolowanymi i stanem
-w komponencie, nie owija funkcji DOM. Ekran, którego żadne zadanie nie przeniosło
-do Reacta, zostaje przy postaci DOM, a jego nową sekcję wolno zbudować w DOM
-(reguła _Nowy ekran i moduły w DOM_). Test `tests/view/react-controls.test.mjs`
-rysuje obie postaci dla każdego rodzaju i stanu, których używa ekran w Reactcie,
-i porównuje znacznik, atrybuty i tekst, z atrybutem `value` pola poza
-porównaniem; nowa postać dostaje w nim przypadek.
+Wspólna kontrolka w `src/browser/view/controls/` ma jedną postać: komponent
+Reacta w pliku z przedrostkiem `react-`. Wygląd stoi tylko w
+`src/browser/styles.css`. Komponent jest napisany po reactowemu, z polami
+kontrolowanymi i stanem w komponencie. Status `copy` przy pliku w tym katalogu
+oznacza, że nowa kontrolka powstaje po jego wzorze, jako jeden komponent Reacta.
+
+Panel, który staje w miejscu karty zdjętej przez React, jest zbudowany poza
+Reactem (D-323), więc nie może użyć komponentu. Znacznik, klasę i rolę swojego
+zdania ostrzeżenia czyta ze stałej `FORM_WARNING` z
+`src/browser/view/controls/react-text-field.tsx`, tej samej, którą czyta
+`ReactFormWarning`; żadnego z tych trzech nie wpisuje własnym literałem. Żaden
+test nie porównuje drzewa elementów panelu z komponentem, więc przegląd zmiany
+zdania ostrzeżenia czyta panel i komponent razem.
+
+Test `tests/view/shared-controls.test.mjs` rysuje postać Reacta każdego
+rodzaju i stanu kontrolki, których używa ekran, i sprawdza znacznik, klasy,
+atrybuty i tekst oraz odpowiedź na kliknięcie, wpisaną wartość i wybór; nowy
+stan kontrolki dostaje w nim przypadek w tej samej zmianie.
 
 ### Nowy ekran i moduły w DOM
 
-- **Decision:** D-265
+- **Decision:** D-265 · D-407
 - **Invariant:** none
-- **Good:** Nowy ekran w Reactcie importuje czystą funkcję modułu ze statusem `do not copy`; nowa sekcja ekranu, który jeszcze jest w DOM, powstaje w DOM.
+- **Good:** Nowy ekran jest korzeniem Reacta i importuje czystą funkcję modułu ze statusem `do not copy`; strona i fabryki jej korzeni budują przez API DOM tylko miejsca, w których montują się korzenie, a panel w miejscu zdjętej karty buduje `createFailureCard`.
 - **Bad:** Nowy ekran buduje elementy przez `document.createElement` na wzór modułu ze statusem `do not copy`.
 
-Nowy ekran nie powstaje na wzór pliku ze statusem `do not copy` w tabeli
-_Files of this kind_: te pliki budują elementy przez API DOM i stoją w tabeli,
-bo ekran, którego żadne zadanie nie przeniosło do Reacta, zostaje przy API DOM.
-Nowy ekran powstaje po wzorze pliku ze statusem `exemplar`. Plik budujący
-elementy przez API DOM, dodany po ostatnim audycie tabeli, nie ma w niej wiersza
-i też nie jest wzorem. Status nie zakazuje importowania czystych funkcji tych
-plików, bo takie funkcje niczego nie rysują. Reguła dotyczy tylko nowych
-ekranów: nowa sekcja ekranu, który jeszcze jest w DOM, może powstać w DOM,
-a w Reactcie przepisze ją zadanie tego ekranu. Status `copy` przy pliku
-w `src/browser/view/controls/` oznacza, że nową kontrolkę pisze się w obu
-postaciach według reguły wyżej.
+Żaden ekran nie powstaje przez API DOM. Strona (`src/browser/view/app.ts`)
+i fabryki jej korzeni budują przez nie tylko miejsca, w których montują się
+korzenie Reacta — nagłówek i blok główny stawia strona, a host każdego korzenia
+jego fabryka — oraz panel, który staje w miejscu karty zdjętej przez React
+(reguła _Wspólna kontrolka w jednej postaci_) i który buduje `createFailureCard`
+z `src/browser/view/account-card.tsx`; wszystko, co ma pokazać, rysuje korzeń
+Reacta, osobny dla każdego miejsca (D-407).
 
-### Strona wszystkich stanów bez Reacta
+Nowy ekran nie powstaje na wzór pliku ze statusem `do not copy` w tabeli
+_Files of this kind_. Nowy ekran powstaje po wzorze pliku ze statusem
+`exemplar`. Plik dodany po ostatnim audycie tabeli nie ma w niej wiersza i też
+nie jest wzorem. Status nie zakazuje importowania czystych funkcji tych plików,
+bo takie funkcje niczego nie rysują.
+
+### Strona wszystkich stanów z Reactem
 
 - **Decision:** D-269
 - **Invariant:** none
-- **Good:** Moduł importowany przez stronę wszystkich stanów sięga tylko do plików `.ts` bez Reacta.
-- **Bad:** Moduł importowany przez stronę wszystkich stanów importuje plik `.tsx`.
+- **Good:** Kontrolka dodana do strony wszystkich stanów jako próbka swojej postaci Reacta, a strona zbudowana krokiem budowania skryptu, z liniami, które podają pliki, bez zmian.
+- **Bad:** Próbka narysowana z drzewa elementów kontrolki zbudowanego ręcznie; strona składana zmianą linii skryptu, które podają pliki albo otwierają przeglądarkę; paczka albo wyjście kompilatora poza `dist/kitchen-sink/`.
 
-Skrypt `scripts/kitchen-sink.mjs` nie składa paczki, więc moduł importowany przez
-stronę wszystkich stanów, bezpośrednio albo przez inne moduły, nie sięga do pliku
-`.tsx`. Formularze strony zostają w postaci DOM. Pierwsze zadanie, które potrzebuje
-Reacta na tej stronie, zmienia krok budowania skryptu, a nie jego linie
-podające pliki.
+Skrypt `scripts/kitchen-sink.mjs` składa stronę wszystkich stanów w swoim
+kroku budowania, tak jak składa się kod przeglądarki gry: kompilator wypisuje
+moduły strony, a esbuild łączy je w jeden plik, który strona ładuje. Moduł
+importowany przez stronę, bezpośrednio albo przez inne moduły, może więc sięgać
+do plików `.tsx` i do Reacta. Strona rysuje każdą wspólną kontrolkę w jej
+postaci Reacta. Zmianę sposobu budowania strony robisz w kroku budowania
+skryptu, a nie w jego liniach, które podają pliki.
 
 ## Examples
 
 ### Ekran w Reactcie: karta logowania
 
 `src/browser/view/account-card.tsx` jest ekranem w Reactcie. Granicą między stroną
-w DOM a ekranem jest `createAccountCard`: tworzy korzeń, rysuje synchronicznie
+a ekranem jest `createAccountCard`: tworzy korzeń, rysuje synchronicznie
 przez `flushSync` i zwraca element, `focus()` i `dispose()`. Strona wywołuje
 ją z obsługi zdarzenia albo z kontynuacji odpowiedzi, nigdy z rysowania ani
 z Efektu. Korzeń karty ma własną obsługę błędu, którego nic nie obsłużyło
 (`onUncaughtError`): gdy React zdejmie kartę, na jej miejscu staje samo zdanie
-o awarii poza Reactem, a strona dostaje błąd przez `onUncaught`; `fail()` stawia to
+o awarii poza Reactem, zbudowane przez `createFailureCard` ze stałej
+`FORM_WARNING`, a strona dostaje błąd przez `onUncaught`; `fail()` stawia to
 zdanie w działającej karcie, pod formularzem (D-323, D-262). Każdy formularz jest
 komponentem, który trzyma wpisane wartości jako własny stan (`useField`), więc
 zmiana stanu karty odmontowuje formularz razem z wpisanym tekstem i komunikatami.
@@ -280,42 +287,43 @@ czekanie i zdanie, które strona mu daje. Zdarzenia dokumentu menu otwartego (Es
 kliknięcie poza menu) są w Efekcie z listą zależności `[open]` i funkcją sprzątającą, jak
 wymaga D-267. „Wyślij ponownie” pasek wysyła sam przez `client`.
 
-### Kontrolki w DOM i ich aktualizacja
+### Kontrolki i ich aktualizacja
 
-Ten akapit o `app.ts` dotyczy utrzymania ekranu, który zostaje w DOM, nie budowy
-nowego ekranu (D-265).
-
-`src/browser/view/app.ts` tworzy w `startApp` elementy sprawdzania logowania raz:
-tekst „Sprawdzanie logowania…”, ostrzeżenie i przycisk „Spróbuj ponownie”. Przy
-zmianie stanu zmienia istniejące elementy, a nie buduje ich od nowa: `waitForServer`
-przełącza `hidden` tekstu albo zmienia napis przycisku przez `setButtonWaiting`,
-a `askingFailed` ustawia ostrzeżenie, pokazuje przycisk i przenosi na niego fokus.
-Elementy zostają te same, więc fokus przenosi się na przycisk, który już stoi na
-stronie. Taki podział jest przykładem dla edytowalnych kontrolek ekranu, który
-zostaje w DOM. Każdy moduł nie musi mieć `update()`, a elementy statyczne mogą być
+`src/browser/view/waiting-screen.tsx` jest ekranem oczekiwania w korzeniu Reacta,
+który rysuje tylko on. `createWaitingScreen` zwraca element `session-check`
+do umieszczenia na stronie, `update(waiting)`, `focusRetry()` i `dispose()`;
+pierwsze rysowanie jest synchroniczne. `app.ts` tworzy ekran w `startApp` raz,
+a przy zmianie stanu strony woła `update` ze stanem `asking`, `refused`,
+`retrying` albo `stopped`, zamiast budować ekran od nowa: tekst „Sprawdzanie
+logowania…”, ostrzeżenie i przycisk „Spróbuj ponownie” stoją w komponencie na
+stałych miejscach, więc przycisk w stanach `refused` i `retrying` jest tym
+samym elementem. Przycisk czekający na serwer traci fokus, więc po każdej
+odmowie strona woła `focusRetry()`, który przenosi fokus na przycisk, który już
+stoi na stronie. Taki podział jest przykładem dla edytowalnych kontrolek
+ekranu. Każdy moduł nie musi mieć `update()`, a elementy statyczne mogą być
 przebudowywane.
 
 Wspólne kontrolki w `src/browser/view/controls/` budują ekrany; kontrolka, która
-czeka na serwer, zmienia się w miejscu. W postaci DOM `setButtonWaiting`
-z `button.ts` wyłącza istniejący przycisk i podmienia jego tekst na napis
-oczekiwania, a wywołana z `null` przywraca tekst; pola formularza blokuje się
-przez `input.disabled`, a zdanie odmowy albo braku połączenia pokazuje
-`createFormWarning` z `text-field.ts`, a zdanie spokojne, które nie jest odmową,
-`createFormNote` z tego samego pliku. Pole hasła to `createPasswordField`,
-a przycisk, który wysyła formularz, dostaje `submit: true`. Rodzaj przycisku
-ustawia `kind` w obu postaciach, a akcja poboczna, zakładka i główny wygląd poza
-formularzem („Wejdź” w „Kto idzie”) to rodzaje `secondary`, `tab` i `main`, a zwykły
-przycisk z tekstem w `positive` („Odbierz” w raporcie Siedziby) to rodzaj `positive`
-(D-44).
-Postacie Reacta to `ReactButton` (`kind`, `waitingText`, `selected`,
-`submit`) oraz `ReactTextField`, `ReactPasswordField`, `ReactFormWarning`,
-`ReactFormNote`, `ReactSelectList`, `ReactNumberField` i `ReactPickCell`.
-Wyłączony przycisk traci fokus, więc ekran po odpowiedzi ustawia go na
-kontrolce, od której gracz zaczął.
+czeka na serwer, zmienia się w miejscu. `ReactButton` z `waitingText` wyłącza
+przycisk, podmienia jego tekst na napis oczekiwania i oznacza go jako zajęty,
+a z `waitingText` równym `null` pokazuje swój tekst; z `disabled` zostaje
+wyłączony z tekstem, który ma. Pola formularza blokuje `disabled` pola, zdanie
+odmowy albo braku połączenia pokazuje `ReactFormWarning`, a zdanie spokojne,
+które nie jest odmową, `ReactFormNote`, oba z `react-text-field.tsx`. Pole hasła
+to `ReactPasswordField`, a przycisk, który wysyła formularz, dostaje `submit`.
+Rodzaj przycisku ustawia `kind`: akcja poboczna, zakładka i główny wygląd poza
+formularzem („Wejdź” w „Kto idzie”) to rodzaje `secondary`, `tab` i `main`,
+a zwykły przycisk z tekstem w `positive` („Odbierz” w raporcie Siedziby) to
+rodzaj `positive` (D-44). Przycisk wybrany w grupie ma `selected`. Wspólne
+kontrolki w `src/browser/view/controls/` to `ReactButton`, `ReactTextField`,
+`ReactPasswordField`, `ReactFormWarning`, `ReactFormNote`, `ReactSelectList`,
+`ReactNumberField` i `ReactPickCell`. Wyłączony przycisk traci fokus, więc
+ekran po odpowiedzi ustawia go na kontrolce, od której gracz zaczął.
 
 ### Gra na stronie i odpowiedzi serwera
 
-Ten przykład dotyczy ekranu gry, który zostaje w DOM, nie nowego ekranu (D-265).
+Ten przykład dotyczy strony startowej, która ustawia miejsca i korzenie Reacta,
+nie nowego ekranu (D-265, D-407).
 
 `src/browser/view/app.ts` buduje grę dopiero wtedy, gdy serwer potwierdzi
 konto, a potem odpowie o zapisanym stanie gry tego konta (D-96). Stan gry daje
@@ -330,6 +338,25 @@ wylogowanie (D-97), gdy zapis dostanie 401 i gdy zapis przegra z zapisem z innej
 przeglądarki; po 401 stan gry zostaje w pamięci strony dla tego samego konta
 (D-211), a po konflikcie strona buduje grę od nowa z zapisu wczytanego z serwera
 (D-209).
+
+To, co strona pokazuje, jest jedną wartością `PageState` z danymi właściwymi dla
+jej rodzaju: `checking` (ekran oczekiwania i jego stan `Waiting`), `card` (karta
+logowania) albo `game` (gra z kontem, miejscem, zdaniami nad grą, stanem
+wylogowania i stanem resetu). Wartość zmienia tylko funkcja `change`: zamyka
+kartę albo grę, których następna wartość nie trzyma, i rysuje z niej miejsca
+strony — nagłówek, blok główny, zdania nad grą i pasek menu. Wartości, które
+mają przeżyć przejście między rodzajami — oczekujące zdanie potwierdzenia,
+wiadomość rejestracji, sposób wejścia do gry, stan zachowany po 401, numer
+ostatniego żądania i znacznik awarii — stoją w `startApp` osobno. Strona buduje
+przez API DOM tylko nagłówek i blok główny, host każdego korzenia stawia fabryka
+tego korzenia, a panel w miejscu zdjętej karty buduje `createFailureCard`
+z `account-card.tsx`; każde miejsce, które pokazuje coś poza ekranami gry, ma
+korzeń Reacta: pasek menu,
+ekran oczekiwania (`waiting-screen.tsx`), zdania nad grą (`page-sentences.tsx`),
+wiersz zapisu i wiersz awarii (`header-rows.tsx`) oraz karta logowania. Zdanie
+potwierdzenia adresu i zdanie o zapisie, który się nie wczytał, rysuje
+`PageSentence` z `page-sentences.tsx`, w korzeniu zdań nad grą albo w karcie
+(D-407, D-286, D-96).
 
 `createGameView` z `game-view.ts` składa magazyn stanu gry (`state-store.ts`), stan ekranu
 Przejście (`run-screen-state.ts`) i rejestr ekranów (`screen-registry.ts`) i zwraca element gry,
@@ -353,8 +380,12 @@ jej wynik jest pomijany, a jej błąd nie staje się błędem obsługi, D-356), 
 gry sprawia, że magazyn stanu odrzuca każdy kolejny wynik symulacji i zegar staje,
 więc zapis dalej wysyła ostatni cały stan, czytany bez odczytu zegara; po błędzie strona
 nie buduje już gry, a logowanie kończy się na ekranie oczekiwania ze zdaniem (D-323, D-253).
-Zdanie o awarii stoi w wierszu pod paskiem menu obok wiersza zapisu; korzenie Reacta
-bez własnej obsługi przekazują błąd oknu przez `reportError`.
+Zdanie o awarii stoi w wierszu pod paskiem menu obok wiersza zapisu. Wiersz awarii
+jest korzeniem Reacta, który nie rysuje nic innego: `createFailureRow` rysuje go
+raz, przy starcie strony, w hoście ukrytym od początku, a `onUncaught` tylko
+odkrywa host, bez renderu, więc błąd rysowania w innym korzeniu nie zdejmuje
+zdania (D-323, D-407). Korzenie Reacta bez własnej obsługi przekazują błąd oknu
+przez `reportError`.
 
 Każde żądanie ekranu dostaje kolejny numer, a odpowiedź działa tylko wtedy, gdy
 jej numer jest ostatni, więc spóźniona odpowiedź nie buduje gry ani nie
@@ -374,4 +405,4 @@ o ponowieniu.
 - `src/browser/view/controls/`
 - `src/browser/view/headquarters.tsx`
 - `src/browser/kitchen-sink/`
-- `tests/view/react-controls.test.mjs`
+- `tests/view/shared-controls.test.mjs`

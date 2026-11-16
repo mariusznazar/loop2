@@ -1,8 +1,8 @@
 /**
- * The pick cell in its React form (D-265). It draws the element its DOM form in `pick-cell.ts`
- * draws, with the same classes and attributes, so `styles.css` stays the one place of the look;
- * `tests/view/react-controls.test.mjs` keeps the two forms alike. Nothing here runs when the module
- * is imported.
+ * The pick cell, a React component (D-265). The classes and attributes it draws are what
+ * `styles.css` reads, so the stylesheet stays the one place of the look;
+ * `tests/view/shared-controls.test.mjs` holds its states and its click. Nothing here runs when the
+ * module is imported.
  */
 import type { CSSProperties, MouseEventHandler } from "react";
 

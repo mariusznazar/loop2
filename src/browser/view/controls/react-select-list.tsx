@@ -1,11 +1,13 @@
 /**
- * The shared select list in its React form (D-44, D-265): the `<select>` that `select-list.ts`
- * builds, with the same class, attribute and positions, so `styles.css` stays the one place of the
- * look; `tests/view/react-controls.test.mjs` keeps the two forms alike. The list is controlled by
- * the screen that holds its value. Nothing here runs when the module is imported.
+ * The shared select list, a React component (D-44, D-265): a `<select>` with its class, its
+ * accessible name and its positions, which `styles.css` reads, so the stylesheet stays the one
+ * place of the look; `tests/view/shared-controls.test.mjs` holds it. The list is controlled by the
+ * screen that holds its value. Nothing here runs when the module is imported.
  */
 import type { ChangeEventHandler, Ref } from "react";
-import type { SelectOption } from "./select-list.js";
+
+/** A position of a select list: the value the screen reads and the text the player sees. */
+export type SelectOption = readonly [value: string, text: string];
 
 export type ReactSelectListProps = {
   /** The list's name for assistive technology. */

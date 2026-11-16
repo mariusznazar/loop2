@@ -1,10 +1,9 @@
 /**
- * The shared text field and password field, and the two sentences under a form, in their React
- * form (D-44): the element tree
- * `createInputField` in `text-field.ts` builds, with the same classes and attributes, so
- * `styles.css` stays the one place of the look; `tests/view/react-controls.test.mjs` keeps the
- * two forms alike. The field is controlled by the screen that holds its value. Nothing here runs
- * when the module is imported.
+ * The shared text field and password field, and the two sentences under a form, as React
+ * components (D-44, D-265). The classes and attributes they draw are what `styles.css` reads, so
+ * the stylesheet stays the one place of the look; `tests/view/shared-controls.test.mjs` holds
+ * them. The field is controlled by the screen that holds its value. Nothing here runs when the
+ * module is imported.
  */
 import { useId } from "react";
 import type { ChangeEventHandler, Ref } from "react";
@@ -95,14 +94,30 @@ export type ReactFormSentenceProps = {
 };
 
 /**
+ * The tag, class and role of the sentence under a form that tells of a server refusal or a lost
+ * connection. `ReactFormWarning` draws it, and the panel built outside React that stands in place
+ * of a card React took down reads the same three values, so the two draw one sentence (D-265).
+ */
+export const FORM_WARNING = {
+  tag: "p",
+  className: "form-warning",
+  role: "alert",
+} as const;
+
+/**
  * The one sentence under a form that tells of a server refusal or a lost connection, announced to
  * assistive technology when it appears.
  */
 export function ReactFormWarning({ sentence }: ReactFormSentenceProps) {
+  const Tag = FORM_WARNING.tag;
   return (
-    <p className="form-warning" role="alert" hidden={sentence === null}>
+    <Tag
+      className={FORM_WARNING.className}
+      role={FORM_WARNING.role}
+      hidden={sentence === null}
+    >
       {sentence ?? ""}
-    </p>
+    </Tag>
   );
 }
 
