@@ -36,8 +36,10 @@ import type {
 } from "../sim/types.js";
 import type { MoveHint } from "./chronicle-entries.js";
 import { ReactButton } from "./controls/react-button.js";
-import { ReactSelectList } from "./controls/react-select-list.js";
-import type { SelectOption } from "./controls/select-list.js";
+import {
+  ReactSelectList,
+  type SelectOption,
+} from "./controls/react-select-list.js";
 import { ReactTextField } from "./controls/react-text-field.js";
 import { discoveryRule } from "./discovery-rule.js";
 import {

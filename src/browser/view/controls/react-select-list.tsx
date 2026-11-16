@@ -5,7 +5,9 @@
  * screen that holds its value. Nothing here runs when the module is imported.
  */
 import type { ChangeEventHandler, Ref } from "react";
-import type { SelectOption } from "./select-list.js";
+
+/** A position of a select list: the value the screen reads and the text the player sees. */
+export type SelectOption = readonly [value: string, text: string];
 
 export type ReactSelectListProps = {
   /** The list's name for assistive technology. */
