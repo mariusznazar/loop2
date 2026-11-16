@@ -1793,7 +1793,7 @@ test("clearing an unknown address changes nothing and a clear frees a locked pla
   );
 });
 
-// Blocking by the owner (D-137). The message is the one D-139 gives.
+// Blocking by the operator (D-137). The message is the one D-139 gives.
 const blockedMessage = "To konto jest zablokowane.";
 
 test(
@@ -2232,7 +2232,7 @@ function assertInvalidRequest(response, label) {
   assert.equal(JSON.parse(response.body).code, "invalid-request", label);
 }
 
-// Another connection to the same file, as the owner's block command opens.
+// Another connection to the same file, as the operator's block command opens.
 function asOwner(f, action) {
   const owner = new AccountDatabase(f.path);
   try {

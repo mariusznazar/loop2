@@ -723,7 +723,7 @@ test("M+5 counts the second defeated attack before checking both map requirement
 // an ending minute. No state field is normalized. Real-time chunks are whole
 // seconds, so their carry is also directly comparable. advanceMinutes ignores
 // pause by contract; stop its driver at discovery instead of silently resuming.
-// Source: foundations/invariants.md:528.
+// Source: the invariant minute-span-split.
 function traceChunks(initial, chunks, advance = advanceMinutes) {
   let state = initial;
   const events = [];
@@ -833,7 +833,6 @@ for (const scenario of COMBAT_SPLITS) {
       (event) => event.kind === "combatExchange",
     );
     // D-144: 24 / 3 = 8 kicks; without a reply, ceil(100 / 7) = 15 bites.
-    // Source: foundations/decisions.md:2590.
     assert.equal(
       exchanges.length,
       scenario.outcome === null
@@ -868,7 +867,7 @@ for (const scenario of COMBAT_SPLITS) {
 // Invariants map-run-repeatability and restart-seed: start with an ordinary
 // public send, then replay the same real-time inputs after restart. No patched
 // random state, clock, counters or body: even the initial whole states agree.
-// Sources: foundations/invariants.md:165, :309; decisions.md:450 (D-22).
+// Sources: the invariants map-run-repeatability and restart-seed; D-22.
 test("restart replays the actual attack stream and combat minute by minute", () => {
   // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
   // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"

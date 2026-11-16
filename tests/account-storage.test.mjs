@@ -1216,7 +1216,7 @@ test("a block committed through another connection before a save makes it store 
     database.writeSavedGame(account.id, { version, basedOn, game });
   assert.deepEqual(save(1, 0, '{"kept":1}'), { outcome: "saved", revision: 1 });
 
-  // The second connection stands in for the owner's command beside the server.
+  // The second connection stands in for the operator's command beside the server.
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
   assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
   assert.deepEqual(save(1, 1, '{"after":1}'), { outcome: "blocked" });
@@ -1986,7 +1986,7 @@ test("a block committed through another connection stops every link issued befor
   database.issueLink(confirmationLink(account.id, "before"), limits);
   database.issueLink(resetLink(account.id, "reset"), limits);
   database.issueLink(confirmationLink(other.id, "theirs"), limits);
-  // The second connection stands in for the owner's command beside the server.
+  // The second connection stands in for the operator's command beside the server.
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
   assert.equal(operator.blockAccount("player@example.test").outcome, "blocked");
   assert.equal(storedLink(raw, "before").spent, 1);
@@ -2173,7 +2173,7 @@ test("a reset link works until the millisecond before its expiry and not at it, 
 test("a block committed through another connection between the check and the reset leaves the password, and an unblock brings the link back to no one", async (t) => {
   const { path, database, store, raw, account, track } = await fixture(t);
   database.issueLink(resetLink(account.id, "link"), limits);
-  // The second connection stands in for the owner's command beside the server.
+  // The second connection stands in for the operator's command beside the server.
   const operator = track(new AccountDatabase(path, { now: () => 1000 }));
 
   assert.equal(database.resetLinkWorks(digest("link")), true);
@@ -3017,7 +3017,7 @@ const previousSaveCommand = fileURLToPath(
   new URL("../dist/server/account-previous-save.js", import.meta.url),
 );
 
-// Runs the owner's command as `docker exec loop2 node dist/server/account-block.js`
+// Runs the operator's command as `docker exec loop2 node dist/server/account-block.js`
 // does: its own process, with the database path its only setting. `mode` runs
 // it under the stand-in for `node:sqlite`, which acts as the mode says.
 function runBlockCommand(args, databasePath, mode) {
@@ -3161,9 +3161,9 @@ test("the operator's command writes one event with the account's number for a ch
   );
 });
 
-// D-252, D-354. Faults: the failure's reason left out, so the owner only
+// D-252, D-354. Faults: the failure's reason left out, so the operator only
 // hears to try again; SQLite's message or the file's path in the output; a
-// sentence dropped, so the owner no longer reads what happened.
+// sentence dropped, so the operator no longer reads what happened.
 test("a database failure of the operator's command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
@@ -3439,9 +3439,9 @@ test("the previous-save command writes one event with the account's number for a
   assert.deepEqual(eventsOf(await run("grant", "nobody@example.test")), []);
 });
 
-// D-252, D-354. Faults: the failure's reason left out, so the owner only hears
+// D-252, D-354. Faults: the failure's reason left out, so the operator only hears
 // to try again; SQLite's message or the file's path in the output; a sentence
-// dropped, so the owner no longer reads what happened.
+// dropped, so the operator no longer reads what happened.
 test("a database failure of the previous-save command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"

@@ -1,6 +1,6 @@
 """The launcher of the restore trial, `scripts/restore-trial.mjs` (D-234).
 
-The owner runs the launcher once on his computer, on a decrypted backup of the database and an
+The operator runs the launcher once on his computer, on a decrypted backup of the database and an
 image built from the same commit. It starts one container from the image on fresh volumes holding
 that file, logs in as the test account through the server's own HTTP port, reads the saved game
 state, prints a verdict and removes what it made.
@@ -15,7 +15,7 @@ taken by the backup command), and runs the launcher on that file for a right pas
 one, an absent marker and an interruption. Where no daemon answers, the run is skipped and says
 what stays unchecked.
 
-Does NOT cover: a backup fetched from Strych or decrypted with `age` (the owner does both before
+Does NOT cover: a backup fetched from Strych or decrypted with `age` (the operator does both before
 the launcher); a database of an older or later schema than the image's; a database of the size of
 a real one; building a new server or restoring over a live volume.
 """

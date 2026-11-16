@@ -214,7 +214,7 @@ test("combat checks group conditions in order against post-strike health", () =>
 
 // Invariant program-rule-pick: a false group must be skipped, while a true
 // earlier group wins. The first bite leaves 100 - 7 = 93 health.
-// Sources: foundations/decisions.md:476 (D-23), :2590 (D-144).
+// Sources: D-23, D-144.
 test("combat skips a false first group and selects it when its condition holds", () => {
   // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   // decision: D-151 "A side chooses its rule immediately before its action, with the creature using its ordered data pairs and the character using the ordered groups and repertoire of its program"
@@ -254,7 +254,7 @@ test("combat skips a false first group and selects it when its condition holds",
 
 // Invariant program-rule-pick: a false rule passes to the next rule within the
 // same group. The wolf still has 24 health before the character's first action.
-// Sources: foundations/decisions.md:476 (D-23), :2590 (D-144).
+// Sources: D-23, D-144.
 test("combat skips a false first rule and selects it when its condition holds", () => {
   // decision: D-151 "The condition „Zdrowie poniżej” compares the acting side’s current health points, and „Przeciwnik ma poniżej” compares its opponent’s current health points, with strict less-than comparison; both offer 0–100 in steps of 1, with defaults 50 and 10 respectively"
   // decision: D-151 "A side chooses its rule immediately before its action, with the creature using its ordered data pairs and the character using the ordered groups and repertoire of its program"

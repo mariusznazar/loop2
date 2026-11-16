@@ -423,7 +423,7 @@ test("a crafted recipient fails without connecting, and a plain one is sent", as
 });
 
 // Fault: two of these failures reading alike, as all of them
-// once did, so that the owner cannot tell a refused address from a server that
+// once did, so that the operator cannot tell a refused address from a server that
 // went silent. The fields of the case come through unread (D-252).
 test("each failure with no error of the library names its reason, and the line carries the fields of its case", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"

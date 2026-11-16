@@ -137,7 +137,7 @@ class TheKinds(WithFixture):
 
     def test_the_six_notices_differ_and_none_is_the_backup_scripts(self):
         # decision: D-233 "The failure watcher of D-356 reads `/var/log/loop2-backup.log` and, when the log holds no successful send of a backup from the last 26 hours, calls `pusher` with a message of its own kind"
-        # The break: the backup kind worded as the backup script's own notice, so the owner could
+        # The break: the backup kind worded as the backup script's own notice, so the operator could
         # not tell a failed night from the night that is missing.
         subjects = [subject for subject, _text in support.NOTICES.values()]
         texts = [text for _subject, text in support.NOTICES.values()]

@@ -14,7 +14,7 @@ import unittest
 import backup_script_support as support
 
 SENTINEL_LOGIN = "sentinel-login-3f9a"
-# The notice as the owner settled it, on 2026-10-31 through the cycle's orchestrator.
+# The notice as the operator settled it, on 2026-10-31 through the cycle's orchestrator.
 NOTICE_BYTES = b"Kopia bazy loop2 nie uda\xc5\x82a si\xc4\x99.\n"
 # Options of rsync that delete on the receiving side, or leave a broken file in place of the older
 # backup (rsync manual, options summary, the commit D-230 cites).
@@ -116,7 +116,7 @@ class WhatEachToolIsHanded(WithFixture):
     def test_pusher_gets_the_polish_notice_as_these_bytes(self):
         # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed"
         # The break: the script saved in another encoding, or a locale that rewrites the text. The
-        # expected bytes are the owner's text in UTF-8, by hand: l with stroke is C5 82, e with
+        # expected bytes are the operator's text in UTF-8, by hand: l with stroke is C5 82, e with
         # ogonek is C4 99. The subject goes into a URL path, so it is ASCII.
         fixture = self.fixture()
         fixture.answer("rsync", exit_code=12)

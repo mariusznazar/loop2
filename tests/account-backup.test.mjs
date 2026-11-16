@@ -402,7 +402,7 @@ test("a database that cannot be opened and a temporary directory that cannot be 
   assert.doesNotMatch(result.stderr, /no[\\/]such|accounts\.sqlite/);
 });
 
-// D-233, D-252. Faults: the failure's reason left out, so the owner reads
+// D-233, D-252. Faults: the failure's reason left out, so the operator reads
 // only that the night's copy failed; SQLite's message or the path in standard
 // error, which the backup script appends to its log.
 test("a failed backup adds the error's kind and code to standard error, and nothing of its text", async (t) => {

@@ -636,7 +636,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
   assert.deepEqual(plan, before);
 });
 
-// D-251: the mark of the list of maps and the run read one cut. Catches a cut that spends the budget
+// D-251: the mark on the card of the map and the run read one cut. Catches a cut that spends the budget
 // out of list order, drops a partial row, or ignores the entry cap of the map.
 test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
