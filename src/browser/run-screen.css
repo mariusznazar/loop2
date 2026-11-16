@@ -495,7 +495,7 @@
 /*
  * A row that names a rule of the copy has a tab stop and is a control (D-336): under the pointer it
  * stands on `highlight` with its text in `text`, as a control under the pointer does (D-40), and its
- * focus is the one :focus-visible rule above (D-47). The padding gives the background room round the
+ * focus is the one :focus-visible rule of styles.css (D-47). The padding gives the background room round the
  * text, and the equal negative margin keeps the text where the rows without a rule have it.
  */
 .now-row,
@@ -742,7 +742,7 @@
 
 /*
  * A dead mage and an extinguished fire share one grey, `grayscale(1) brightness(0.55)` (D-322,
- * D-316).
+ * D-316). The source of the value: accepted by Mariusz on 2026-11-16, as on the screenshot of the game.
  */
 .scene[data-standing="dead"] .scene-mage-sprite,
 .scene-fire[data-burning="false"] {

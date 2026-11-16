@@ -387,7 +387,7 @@
  * `text-label`; the sentence of the copy, an explanation, in `text-secondary`. One field at a time
  * shows its pick: the cells of the pick cell control in a grid of four to a line, the conditions in
  * two (`two-columns`, the number `columnsOf` in `rule-panel.tsx` moves by), the sections of the
- * conditions parted by a line in `divider`. Focus is the one :focus-visible rule above.
+ * conditions parted by a line in `divider`. Focus is the one :focus-visible rule of styles.css.
  */
 .rule-panel {
   display: flex;

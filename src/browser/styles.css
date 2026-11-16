@@ -11,8 +11,9 @@
  * the camp of Siedziba, with the keyframes `scene-frames`. The rules of the credits that name the
  * login card and Siedziba belong to the part credits.css.
  * The rules of each other screen and part stand in the stylesheet of that screen or part, which the
- * page links after this one. It reads each value of appearance from the design tokens of tokens.css by
- * var(--…) (guidelines/styleguide-browser-view.md).
+ * page links after this one; Programy, Mapy and Wiedza have a stylesheet of their own too, and the
+ * rules they share that stand here are named above. It reads each value of appearance from the design
+ * tokens of tokens.css by var(--…) (guidelines/styleguide-browser-view.md).
  * Layout values D-43 leaves out stand here: line-height, the @media threshold, widths and heights, and
  * the sizes of the columns of the layout grid.
  */
