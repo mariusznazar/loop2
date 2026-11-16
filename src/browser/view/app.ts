@@ -818,8 +818,10 @@ export function startApp(
         kind: "checking",
         waiting: { kind: "asking", text: CONFIRMING_ADDRESS },
       });
-      const notice = await confirmFromAddress(client, address);
-      pendingNotice = notice;
+      const answer = await confirmFromAddress(client, address);
+      pendingNotice = answer?.notice ?? null;
+      // A refused link leaves the player at the card, which takes the focus (D-381).
+      focusCardOnForms = answer?.refused ?? false;
       entry = "link";
     }
     await checkSession();

@@ -282,3 +282,47 @@ test("a refused reset link of a signed-in player opens the game and no card take
     );
   });
 });
+
+const CONFIRM_TOKEN = "Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE";
+const CONFIRM_LINK = `#confirm-email=${CONFIRM_TOKEN}`;
+const CONFIRMED = { ok: true, value: null };
+const CONFIRM_REFUSED = {
+  ok: false,
+  failure: {
+    kind: "refused",
+    status: 400,
+    code: "invalid-link",
+    message: "Odnośnik jest nieważny albo wygasł.",
+  },
+};
+
+// D-381: a refused confirmation link, which the page opens with the token in its fragment, leaves
+// the player at the card, so the focus goes to the card's first field. Catches a refused
+// confirmation that shows the card with the focus left on the page.
+test("a refused confirmation link moves focus to the first field of the card the session check shows", async () => {
+  // decision: D-381 "…after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(CONFIRM_LINK));
+    await held.answer("confirmEmail", CONFIRM_REFUSED);
+    await held.answer("currentAccount", NO_SESSION);
+
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
+    assert.equal(pageDocument().activeElement, cardField(root));
+  });
+});
+
+// D-381 lists the endings that move focus to the card, and a confirmation that succeeds is not one
+// of them. Catches a focus given to the card after every confirmation.
+test("a confirmation that succeeds moves no focus into the card", async () => {
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło”."
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress(CONFIRM_LINK));
+    await held.answer("confirmEmail", CONFIRMED);
+    await held.answer("currentAccount", NO_SESSION);
+
+    assert.deepEqual(Object.keys(forms(root)), ["Zaloguj się"]);
+    assert.notEqual(pageDocument().activeElement, cardField(root));
+  });
+});
