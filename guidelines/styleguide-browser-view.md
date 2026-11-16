@@ -192,7 +192,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411
+- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -239,20 +239,18 @@ i ma te same stany co ono. Pole z widoczną etykietą stawia jej tekst nad polem
 w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning` (formularz „Nie pamiętam hasła” po prośbie — zdanie w `text` z belką), a przycisk,
 który go wysyła, jest przyciskiem zatwierdzającym i ma główny wygląd (D-274).
 
-Każda wspólna kontrolka ma postać DOM i postać React, która rysuje ten sam
-element z tymi samymi klasami, więc odstępstwo od listy stanów dotyczy obu
-postaci. Pole tekstowe i pole hasła, w React
-`src/browser/view/controls/react-text-field.tsx`, od listy nie odstępują.
+Każda wspólna kontrolka ma jedną postać, komponent Reacta (D-265). Pole
+tekstowe i pole hasła, w `src/browser/view/controls/react-text-field.tsx`, od
+listy nie odstępują.
 
-Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
+Kontrolki odstępujące od tej listy stanów:
 
-- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+- `src/browser/view/controls/react-button.tsx`
   — przycisk, przycisk niszczący
   i przycisk wybrany w grupie: error nie dotyczy, bo przycisk nie ma
   niepoprawnej wartości; empty nie dotyczy, bo przycisk nie ma pozycji ani
   wpisu. Przycisk niszczący w spoczynku jest neutralny, z tekstem w `text`,
-  a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39), w obu
-  postaciach przycisku; są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
+  a pod kursorem i przy fokusie ma tekst w `danger` (D-44, D-39); są nim „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”,
   „Przełącz postać na ten program”, „Zatrzymaj”, „Zacznij od zera” (D-44, D-402) i „Zablokuj” na liście kont (D-411), oraz „Odrzuć” pytania
   „Zapisać, odrzucić, wrócić?” (D-173, D-44). Przycisk wybrany w grupie ma ramkę w `selected` i tekst
   w `text-strong` (D-40); ten wygląd zachowują przyciski tempa (D-276).
@@ -269,14 +267,14 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   (także „Wejdź” przy przejściu ręcznym, które czeka albo się skończyło, D-287)
   wygląda jak każdy wyłączony przycisk — tekst w `text-disabled` o wadze
   `--font-weight-body`, ramka w `control-border`.
-- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+- `src/browser/view/controls/react-button.tsx`
   — przycisk w `positive` (D-44, D-39), czyli zwykły przycisk z tekstem w `positive`,
   dziś „Odbierz” przy wierszu raportu z nieobecności (D-246): error i empty nie dotyczą, jak
   przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk, który wysyła formularz.
   Spoczynek: tekst w `positive`, ramka w `control-border`, bez wypełnienia; pod kursorem tło
   `highlight`, a ramka i tekst bez zmiany; wyłączony — tekst w `text-disabled`, jak każdy
   wyłączony przycisk. Fokus rysuje reguła Visible focus.
-- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+- `src/browser/view/controls/react-button.tsx`
   — akcja poboczna (D-275): error
   i empty nie dotyczą, jak przycisku; loading nie dotyczy, bo na serwer czeka
   tylko przycisk, który wysyła formularz, a akcja poboczna jest wtedy
@@ -284,7 +282,7 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   odstępów po bokach, więc zaczyna się równo z polami; pod kursorem tekst
   w `text`, a tło zostaje bez zmiany, bez `highlight`; wyłączona — tekst
   w `text-disabled`.
-- `src/browser/view/controls/button.ts` i `src/browser/view/controls/react-button.tsx`
+- `src/browser/view/controls/react-button.tsx`
   — zakładka, czyli przycisk wybrany
   w grupie narysowany jako zakładka (D-276): error i empty nie dotyczą, jak
   przycisku; loading nie dotyczy, bo na serwer czeka tylko przycisk, który
@@ -295,14 +293,14 @@ Kontrolki odstępujące od tej listy stanów, każda w obu postaciach:
   pod kursorem tło `highlight`; wyłączona, gdy formularz czeka na serwer —
   tekst w `text-disabled`, a linia wyboru zostaje. Pod całą grupą stoi cienka
   linia w `divider`, którą rysuje klasa `tabs` kontenera zakładek.
-- `src/browser/view/controls/select-list.ts` i `src/browser/view/controls/react-select-list.tsx`
+- `src/browser/view/controls/react-select-list.tsx`
   — lista wyboru: error nie
   dotyczy, bo lista podaje tylko poprawne pozycje; loading nie dotyczy, bo
   żaden formularz czekający na serwer jej nie ma.
-- `src/browser/view/controls/number-field.ts` i `src/browser/view/controls/react-number-field.tsx`
+- `src/browser/view/controls/react-number-field.tsx`
   — pole liczby: loading nie
   dotyczy, bo żaden formularz czekający na serwer go nie ma.
-- `src/browser/view/controls/pick-cell.ts` i `src/browser/view/controls/react-pick-cell.tsx`
+- `src/browser/view/controls/react-pick-cell.tsx`
   — komórka wyboru, czyli jedna
   pozycja wyboru w panelu reguły (D-288, D-44): default — ramka w
   `control-border`, tekst w `text`; hover — tło `highlight`; visible focus —
@@ -397,7 +395,7 @@ Strona wszystkich stanów to `src/browser/kitchen-sink/index.html` — kod
 produktu, nie część tekstu styleguide'u. Buduje ją i otwiera lokalnie osobna
 komenda `npm run kitchen-sink`; nic, co pisze `npm run build`, a to trafia na
 serwer testowy, jej nie zawiera (D-45). Strona pokazuje każdą wspólną kontrolkę
-w jej postaci DOM (D-269), w każdym stanie albo z powodem, dla którego stan
+w jej postaci React (D-269), w każdym stanie albo z powodem, dla którego stan
 nie dotyczy — przycisk także w głównym wyglądzie (D-274), jako zakładkę
 wybraną i niewybraną (D-276), w `positive` (D-44, D-39), przycisk niszczący
 w spoczynku, pod kursorem, przy fokusie i wyłączony, gdy czeka na serwer
@@ -407,7 +405,7 @@ czekające na serwer i ze zdaniem odmowy pod nimi oraz formularz „Nie pamięta
 hasła” ze zdaniem odpowiedzi na prośbę w `text` z belką (D-44),
 część menu „Konto” dla niepotwierdzonego adresu (D-157) z przyciskiem „Wyślij
 ponownie” czekającym na serwer („Wysyłanie…”) i ze zdaniem odmowy obok
-przycisku, zbudowaną na stronie z postaci DOM wspólnych kontrolek (D-269)
+przycisku, zbudowaną na stronie z postaci React wspólnych kontrolek (D-269)
 (wszystko z wartościami zmyślonymi, bez stanu gry), każdą rolę
 z tabeli Roles i próbki wyglądu kafelków w każdym stanie, narysowane rolami —
 nigdy rysunek gry ze stanu gry (D-04, D-45). Nowa wspólna kontrolka, nowy stan
@@ -431,12 +429,11 @@ States of shared controls.
 
 - Główny wygląd ma przycisk, który wysyła formularz, jeden na
   formularz (D-274). Wygląd bierze się z samego wysyłania formularza
-  (`createButton(text, { submit: true })`, w React `<ReactButton submit>`),
+  (`<ReactButton submit>`),
   więc ekran nie daje mu rodzaju ani klasy. „Wejdź” przy każdej postaci
   w sekcji „Kto idzie” karty mapy ma ten sam główny wygląd, choć formularza
   nie wysyła (D-274): ekran daje mu rodzaj `main` wspólnego przycisku
-  (`createButton(text, { kind: "main" })`, w React `<ReactButton kind="main">`,
-  klasa `main`). Wyłączony „Wejdź” (D-287) traci główny wygląd i wygląda jak
+  (`<ReactButton kind="main">`, klasa `main`). Wyłączony „Wejdź” (D-287) traci główny wygląd i wygląda jak
   każdy wyłączony przycisk (reguła States of shared controls), a „Puść w
   pętlę” obok zostaje zwykłym przyciskiem. Działanie poza formularzem i poza
   „Wejdź” zostaje przy przycisku, który daje mu D-44.
@@ -459,7 +456,7 @@ States of shared controls.
   `aria-pressed` i klawiatura zostają jak przy przycisku wybranym w grupie —
   Tab przechodzi przez każdą, Enter albo Spacja przełącza — bez strzałek
   i bez ról zakładek (`role="tab"`). Grupa zaznacza wybraną zakładkę jak
-  wybrany przycisk (`setButtonSelected`, w React `selected`), a kontener
+  wybrany przycisk (`selected` przycisku `ReactButton`), a kontener
   zakładek dostaje klasę `tabs`. Przyciski tempa (D-130) zostają przy
   wyglądzie przycisku wybranego w grupie.
 - Pasek menu znaczy pozycję, na której jest gracz, tak jak wybraną zakładkę:
