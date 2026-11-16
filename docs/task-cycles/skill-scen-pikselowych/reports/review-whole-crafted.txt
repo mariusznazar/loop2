@@ -1,0 +1,39 @@
+png huge header
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: PNG of 100000 x 100000 pixels is larger than this reader takes'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: PNG of 100000 x 100000 pixels is larger than this reader takes'] wrote=False
+png no idat
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: damaged PNG (its pixel data does not inflate, or is longer than its header asks)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: damaged PNG (its pixel data does not inflate, or is longer than its header asks)'] wrote=False
+png two ihdr
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png is 1 x 1 px where .runs\\review-whole\\crafted\\good.jpeg is 64 x 48'] out=[]
+  cut exit=0 err=[] wrote=True
+png bad filter byte
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: damaged PNG (filter type 7 in row 0)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: damaged PNG (filter type 7 in row 0)'] wrote=False
+png palette index past table
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: damaged PNG (the palette has no entry 5)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: damaged PNG (the palette has no entry 5)'] wrote=False
+png zero-length
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: not a PNG file (its first eight bytes are not the PNG signature)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.png: not a PNG file (its first eight bytes are not the PNG signature)'] wrote=False
+jpeg progressive
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: progressive JPEG is not held; the frames of loop2-play are baseline'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: progressive JPEG is not held; the frames of loop2-play are baseline'] wrote=False
+jpeg cut after scan header
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: truncated JPEG (its image data ends early)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: truncated JPEG (its image data ends early)'] wrote=False
+jpeg without EOI
+  flashes exit=0 err=[] out=['frames: 2 of 64 x 48 px; region 64 x 48 at 0,0 (3072 px)']
+  cut exit=0 err=[] wrote=True
+jpeg entropy bytes damaged
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: damaged or truncated JPEG (a marker inside its image data)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: damaged or truncated JPEG (a marker inside its image data)'] wrote=False
+jpeg cmyk
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: JPEG of 4 components is not held (grey or YCbCr only)'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: JPEG of 4 components is not held (grey or YCbCr only)'] wrote=False
+jpeg grey
+  flashes exit=0 err=[] out=['frames: 2 of 64 x 48 px; region 64 x 48 at 0,0 (3072 px)']
+  cut exit=0 err=[] wrote=True
+jpeg huge header
+  flashes exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: JPEG of 65535 x 65535 pixels is larger than this reader takes'] out=[]
+  cut exit=1 err=['error: .runs\\review-whole\\crafted\\bad.jpeg: JPEG of 65535 x 65535 pixels is larger than this reader takes'] wrote=False
