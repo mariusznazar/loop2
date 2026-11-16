@@ -283,14 +283,19 @@ the earlier version, and the players of those saves start a new game at the firs
 ### Trying a backup on the operator's computer
 
 This proves a backup restores in the built image without touching the server. The operator repeats
-it every month and after each change of the database's schema version or of the saved game's
-version; a trial made before such a change does not cover it. Run on the
+it every month and after each change of the database's schema version; a trial made before such a
+change does not cover it. Run on the
 operator's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
 the operator's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
 server's opened the backup. The zip only unpacks `age.exe` into a folder, which is not on the
 path: in each PowerShell window of the trial, run `$env:PATH += ';<folder holding age.exe>'`
 once, and `age` then runs by name in step 3 (without it PowerShell says that the term `age` is
 not recognized).
+
+A change of `SAVED_GAME_VERSION` erases the marker from the test account's saved game state: the
+game discards a saved game state of another version and starts a new game (D-96). Before the next
+trial, give a new marker as in step 8 of "Installing and reinstalling", let the game save it, write
+it down, and take the backup for the trial from a night after that.
 
 1. Make a private folder and enter it, and work in it to the end:
 
@@ -345,7 +350,7 @@ not recognized).
 
    ```powershell
    $credential = New-Object System.Net.NetworkCredential('', $secure)
-   $credential.Password | node <path to the checkout>\scripts\restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down in the install step 8>' --email <test account address>
+   $credential.Password | node <path to the checkout>\scripts\restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down last, as in the install step 8>' --email <test account address>
    ```
 6. Read the result. Exit 0 is PASS; 1 the trial ran and judged the backup (FAIL), for example the
    test account could not log in; 2 refused,
@@ -487,7 +492,7 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    fails with exit 8.
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
    and its marker is there. The marker is the name given to a character or a program in the test
-   account in step 8 of "Installing and reinstalling" and written down then. If it was not
+   account in step 8 of "Installing and reinstalling" and written down last. If it was not
    written down, log in and check that the test account holds a saved game state the operator
    recognises from before the backup's time. Only when the check passes, remove the whole
    directory: `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go

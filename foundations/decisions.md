@@ -2194,7 +2194,7 @@ of `pusher` are unknown; keeping the text of `rsync` in the log — breaks D-13.
 ### D-234 — What does a checked restore of the database mean?
 
 A checked restore is a trial on the operator's computer, which the operator repeats every month and after
-each change of the database's schema version or of the saved game's version: a backup fetched from
+each change of the database's schema version: a backup fetched from
 its destination and decrypted, the same commit run on it, a login with a test account, the saved game
 state seen back, and the backup removed from the computer. It does not cover building a new server,
 and restoring over the server's database stays a human's documented procedure, whose paths that
@@ -2208,20 +2208,28 @@ nobody has run, `umask 077` among them, stay untried.
   game state before the backup seen back, a wrong password or an absent name failing the trial; the
   trial's container and volumes, which hold the plain database, removed at every end, and no pass
   claimed until Docker shows them gone. An agent compares a change with the part no test holds:
-  - complies: the operator repeats the trial the month after and after the next change of the database's schema version or of the saved game's version, on a backup fetched from Strych and decrypted on the operator's computer, and removes the decrypted file at its end
-  - violates: an agent that fetches, decrypts or opens a backup; a change of the database's schema version or of the saved game's version taken as covered by a trial made before it; a decrypted backup left on the operator's computer after the trial; a restore over the server's database, or the building of a new server, taken as checked by the trial
+  - complies: the operator repeats the trial the month after and after the next change of the database's schema version, on a backup fetched from Strych and decrypted on the operator's computer, and removes the decrypted file at its end
+  - violates: an agent that fetches, decrypts or opens a backup; a change of the database's schema version taken as covered by a trial made before it; a decrypted backup left on the operator's computer after the trial; a restore over the server's database, or the building of a new server, taken as checked by the trial
 - **Origin:** none
 
 *Rationale:* a login that brings the saved game state back shows that a backup gives the player's
 game back, not merely that a file opens, and it takes no second server. A backup that cannot be
 restored would otherwise show only on the day of the failure, so the trial is repeated by hand, every
 month and at the moments when what the backups hold changes its shape: a change of the database's
-schema version or of the saved game's version. The trial does not show that a new server can be
+schema version. A change of the saved game's version is no such moment: the game discards a saved
+game state of another version when it loads it (D-96), so what a restore loses to that change is
+already lost at the first load after its deployment, and a trial repeated for it would show nothing the last one did not.
+The trial does not show that a new server can be
 built, with its secrets and tunnel; Docker has to run on the operator's computer. The paths of the
 restore procedure that nobody has run, `umask 077` among them, are an accepted cost: rehearsing them
 needs a session on the running server.
 *Rejected:* one trial, as it was — a backup that cannot be restored comes to light on the day of the
-failure; an automatic run on the operator's computer by the scheduler of Windows — the key to Strych, the
+failure; the trial repeated after each change of the saved game's version too, as it was — either trials
+that check nothing new, an hour's session at every change of a version that changes often, or a rule
+that nobody keeps and that in the end is reported as broken; the trial's launcher taught to check the
+saved game's version in the backup, so that the condition would make sense — after each change of the
+version it would state only what is known anyway, that the saved game states of a backup made before
+the change are lost at the first load; an automatic run on the operator's computer by the scheduler of Windows — the key to Strych, the
 key that encrypts the backups and the password of the test account would lie on the disk all the time, which
 changes D-13, and Docker would have to be running at that hour, and it is a medium-large piece of an
 agent's work; a session of a human on the server that rehearses the way back and a second attempt — an
