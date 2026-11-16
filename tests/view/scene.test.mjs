@@ -4,7 +4,7 @@
 // a click moves, and of its motion what jsdom can show — where the mage stands at once and where it
 // walks, the place kept where it stays, the stops that hold every animation, the bar of a new action,
 // and the elements a redraw keeps. jsdom runs no animation: the motion itself, the beat and reduced
-// motion are read from a stream of frames in the browser (D-88). Every comparison is of plain
+// motion are read from a stream of frames in the browser (D-417, D-88). Every comparison is of plain
 // data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
 import { readFileSync } from "node:fs";

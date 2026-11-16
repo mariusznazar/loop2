@@ -543,6 +543,36 @@ Python 3.14, for an uncaught exception other than `SystemExit`, by default print
 
 - **Source:** https://raw.githubusercontent.com/python/cpython/v3.14.3/Doc/library/sys.rst § sys.excepthook — "This function prints out a given traceback and exception to ``sys.stderr``." · "When an exception other than :exc:`SystemExit` is raised and uncaught, the interpreter calls ``sys.excepthook``" · "in a Python program this happens just before the program exits."; read 2026-11-02
 
+## playwright-cli-token-efficiency
+
+The maker of Playwright CLI says that CLI invocations are more token-efficient for coding agents than MCP.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Playwright CLI vs Playwright MCP — "Modern coding agents increasingly favor CLI–based workflows exposed as SKILLs over MCP because CLI invocations are more token-efficient: they avoid loading large tool schemas and verbose accessibility trees into the model context, allowing agents to act through concise, purpose-built commands."; read 2026-11-02
+
+## playwright-cli-default-config-file
+
+Playwright CLI reads its configuration from `.playwright/cli.config.json` by default.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file — "Playwright CLI will load config from `.playwright/cli.config.json` by default so that you did not need to specify it every time."; read 2026-11-02
+
+## playwright-cli-config-browser-context
+
+The configuration file of Playwright CLI takes options of the browser context under `browser.contextOptions`.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-cli/b85c7a736bb473bf55b584e54a09ffa698d6d871/README.md § Configuration file, Configuration file schema — "browser?: {" · "Context options for the browser context." · "contextOptions?: playwright.BrowserContextOptions;"; read 2026-11-02
+
+## playwright-screencast-frame-delivery
+
+Playwright's screencast of a page delivers JPEG-encoded frames to a callback.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright/cfe490d941f992655948eee8fd4fd94e1c4234bf/docs/src/api/class-screencast.md § Screencast.start — "delivers JPEG-encoded frames to the callback."; read 2026-11-02
+
+## devtools-protocol-certificate-error-switch
+
+The Chrome DevTools Protocol's command `Security.setIgnoreCertificateErrors` turns the ignoring of all certificate errors on or off.
+
+- **Source:** https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/92be9c279a8ff3af17009705bb357241932128e4/json/browser_protocol.json § domain Security, command setIgnoreCertificateErrors — "Enable/disable whether all certificate errors should be ignored."; read 2026-11-02
+
 ## git-for-windows-openssl
 
 Git for Windows comes with OpenSSL.
@@ -735,6 +765,30 @@ The HTML Standard has the resolution of a module specifier give a URL or throw a
 
 - **Source:** https://html.spec.whatwg.org/commit-snapshots/a0442320781555c99544448e30134662bfc39190/ § 8.1.5.1 The resolution algorithm — "The resolve a module specifier algorithm is the primary entry point for converting module specifier strings into URLs. When no import maps are involved, it is relatively straightforward, and reduces to resolving a URL-like module specifier." · "In the end, if no successful resolution is found via any of the candidate module specifier maps, resolve a module specifier will throw an exception. Thus the result is always either a URL or a thrown exception." · "Throw a TypeError indicating that specifier was a bare specifier, but was not remapped to anything by importMap."; read 2026-11-10
 
+## playwright-mcp-default-profile-sharing
+
+By default Playwright MCP keeps a persistent browser profile for the workspace root of its client, a profile that only one browser instance can use at a time, so concurrent clients sharing a workspace conflict.
+
+- **Source:** https://raw.githubusercontent.com/microsoft/playwright-mcp/e436f64eb7e1904b6c302da0997a2243496d191e/README.md § User profile — "You can run Playwright MCP with persistent profile like a regular browser (default), in isolated contexts for testing sessions, or connect to your existing browser using the browser extension." § User profile, Persistent profile — "{workspace-hash} is derived from the MCP client's workspace root, so different projects get separate profiles automatically." · "A persistent profile can only be used by one browser instance at a time, so concurrent MCP clients sharing the same workspace will conflict. To run several clients in parallel, start each additional client with --isolated or point it at a distinct --user-data-dir."; read 2026-11-11
+
+## playwright-cli-workspace-lookup
+
+Playwright CLI 0.1.22 takes as the workspace of a call the first directory that holds a `.playwright` directory among the directory the call is made in and the nine above it, and the root of its own package where none does.
+
+- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "const workspaceDir = findWorkspaceDir(process.cwd());" · "hash.update(workspaceDir || import_package.packageRoot);" § findWorkspaceDir — "for (let i = 0; i < 10; i++) {" · "if (import_fs.default.existsSync(import_path.default.join(dir, ".playwright")))" · "return dir;" · "const parentDir = import_path.default.dirname(dir);"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
+
+## playwright-cli-session-separation
+
+Playwright CLI 0.1.22 keeps the sessions of each workspace apart from those of every other workspace.
+
+- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "hash.update(workspaceDir || import_package.packageRoot);" · "const workspaceDirHash = hash.digest("hex").substring(0, 16);" · "daemonProfilesDir: daemonProfilesDir(workspaceDirHash),"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
+
+## screenshots-repository-readers
+
+The GitHub repository `mariusznazar/screenshots` is public.
+
+- **Source:** https://api.github.com/repos/mariusznazar/screenshots (no archived copy exists in the Internet Archive's CDX index, checked 2026-11-16) § the repository object, field `visibility` — `"visibility": "public"`; read 2026-11-16
+
 ## smoke-fire-particle-licence
 
 The page of the pack Smoke & Fire Animated Particle [16x16] on OpenGameArt gives KnoblePersona as its author and CC-BY 3.0 as its licence, the name of the licence linking to the Creative Commons Attribution 3.0 licence at http://creativecommons.org/licenses/by/3.0/.
@@ -892,12 +946,12 @@ Git matches a path pattern of an attributes file by the rules of `.gitignore` pa
 | cloudflare-origin-rules | withdrawn: no decision is based on it and no invariant rests on it | none |
 | cloudflare-configuration-rules | withdrawn: no decision is based on it and no invariant rests on it | none |
 | cloudflare-test-origin-ipv6 | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-cli-token-use | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-cli-config-path | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-cli-context-options | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-screencast-frames | withdrawn: no decision is based on it and no invariant rests on it | none |
-| chrome-devtools-ignore-certificate-errors | withdrawn: no decision is based on it and no invariant rests on it | none |
-| screenshots-repository-visibility | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-mcp-persistent-profile | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-cli-workspace-directory | withdrawn: no decision is based on it and no invariant rests on it | none |
-| playwright-cli-sessions-per-workspace | withdrawn: no decision is based on it and no invariant rests on it | none |
+| playwright-cli-token-use | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-token-efficiency |
+| playwright-cli-config-path | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-default-config-file |
+| playwright-cli-context-options | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-config-browser-context |
+| playwright-screencast-frames | withdrawn: no decision is based on it and no invariant rests on it | playwright-screencast-frame-delivery |
+| chrome-devtools-ignore-certificate-errors | withdrawn: no decision is based on it and no invariant rests on it | devtools-protocol-certificate-error-switch |
+| screenshots-repository-visibility | withdrawn: no decision is based on it and no invariant rests on it | screenshots-repository-readers |
+| playwright-mcp-persistent-profile | withdrawn: no decision is based on it and no invariant rests on it | playwright-mcp-default-profile-sharing |
+| playwright-cli-workspace-directory | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-workspace-lookup |
+| playwright-cli-sessions-per-workspace | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-session-separation |
