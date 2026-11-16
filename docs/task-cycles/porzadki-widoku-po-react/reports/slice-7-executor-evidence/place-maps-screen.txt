@@ -1,0 +1,33 @@
+L9-13 .rehearsal-mark :: rehearsal-mark[maps-screen]  // /* * The stylesheet of the screen Mapy (D-421): the list of maps, the card of a map, the section „Kto * idzie”
+L22-26 .maps-list-items :: maps-list-items[maps-screen]  // /* * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the * colum
+L28-36 .maps-list-item :: maps-list-item[maps-screen]
+L38-41 .maps-list-item[aria-current="page"] :: maps-list-item[maps-screen]
+L43-45 .maps-list-item:hover :: maps-list-item[maps-screen]
+L47-49 .maps-list-solved :: maps-list-solved[maps-screen]
+L52-55 .maps-card-empty :: maps-card-empty[maps-screen]  // /* The sentence on the right before a map is picked: a description, so `text-secondary` (D-331). */ 
+L63-69 .maps-card-heading :: maps-card-heading[maps-screen]  // /* * The card of a map: the name in `text-strong`, „rozwiązana” in `positive` and „odsłania ją {mapa}” * in `t
+L71-76 .maps-card-name :: maps-card-name[maps-screen]
+L78-80 .maps-card-solved :: maps-card-solved[maps-screen]
+L82-85 .maps-card-sep,.maps-card-opened-by :: maps-card-sep[maps-screen] maps-card-opened-by[maps-screen]
+L87-89 .maps-card-part :: maps-card-part[maps-screen]
+L91-93 .maps-card-part p :: maps-card-part[maps-screen]
+L95-100 .maps-card-part-name :: maps-card-part-name[maps-screen]
+L102-106 .maps-card-lines :: maps-card-lines[maps-screen]
+L108-110 .maps-card-note :: maps-card-note[maps-screen]
+L112-114 .maps-card-warning :: maps-card-warning[maps-screen]
+L117-121 .maps-card-icon :: maps-card-icon[maps-screen]  // /* A resource's icon, in the colour of the text it stands in and as tall as the line, as the trip plan's icons
+L132-136 .maps-who :: maps-who[maps-screen]  // /* * The section „Kto idzie” under the card (D-329): its name in `text-label` and, at each character, * the li
+L138-143 .maps-who-heading :: maps-who-heading[maps-screen]
+L145-148 .maps-who-empty :: maps-who-empty[maps-screen]
+L150-154 .maps-who-list :: maps-who-list[maps-screen]
+L156-163 .maps-who-member :: maps-who-member[maps-screen]
+L165-168 .maps-who-member:first-child :: maps-who-member[maps-screen]
+L170-173 .maps-who-name :: maps-who-name[maps-screen]
+L175-180 .maps-who-resurrection,.maps-who-enters,.maps-who-run-note :: maps-who-resurrection[-] maps-who-enters[maps-screen] maps-who-run-note[maps-screen]
+L182-184 .maps-who-resurrection.danger :: maps-who-resurrection[-] danger[world-area]
+L186-194 .maps-who-loop,.maps-who-program,.maps-who-actions,.maps-who-loop-start :: maps-who-loop[maps-screen] maps-who-program[maps-screen] maps-who-actions[maps-screen] maps-who-loop-start[maps-screen]
+L196-198 .maps-who-actions :: maps-who-actions[maps-screen]
+L200-203 .maps-who-loop-line :: maps-who-loop-line[maps-screen]
+L205-207 .maps-who-program-label :: maps-who-program-label[maps-screen]
+L210-215 .maps-who-enter :: maps-who-enter[maps-screen]  // /* „Wejdź” with the rehearsal mark under it. */ 
+L218-220 .maps-who-empty-loop :: maps-who-empty-loop[maps-screen]  // /* The sentence beside „Puść w pętlę” when the list „Wynieś” is empty, in `warning` (D-326). */ 

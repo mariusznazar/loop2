@@ -1,0 +1,15 @@
+build exit 0
+run-screen-state exit 0
+scene exit 0
+world-area exit 0
+run-header exit 0
+rule-signs exit 0
+headquarters-screen exit 0
+camp-picture exit 0
+run-screen exit 0
+prettier exit 0
+test_browser_view_focus_outline exit 0
+test_browser_view_token_values exit 0
+test_application_build_kitchen_sink exit 0
+test_application_build_output exit 0
+DONE

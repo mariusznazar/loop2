@@ -1,0 +1,35 @@
+states recorded: 12
+programs-reset.json ONLY IN B: html:1>head:1>link:6
+programs-reset.json ONLY IN B: html:1>head:1>link:7
+programs-reset.json ONLY IN B: html:1>head:1>link:8
+programs-rulepanel.json ONLY IN B: html:1>head:1>link:6
+programs-rulepanel.json ONLY IN B: html:1>head:1>link:7
+programs-rulepanel.json ONLY IN B: html:1>head:1>link:8
+programs-trip.json ONLY IN B: html:1>head:1>link:6
+programs-trip.json ONLY IN B: html:1>head:1>link:7
+programs-trip.json ONLY IN B: html:1>head:1>link:8
+programs.json ONLY IN B: html:1>head:1>link:6
+programs.json ONLY IN B: html:1>head:1>link:7
+programs.json ONLY IN B: html:1>head:1>link:8
+run-completion.json ONLY IN B: html:1>head:1>link:6
+run-completion.json ONLY IN B: html:1>head:1>link:7
+run-completion.json ONLY IN B: html:1>head:1>link:8
+run-death.json ONLY IN B: html:1>head:1>link:6
+run-death.json ONLY IN B: html:1>head:1>link:7
+run-death.json ONLY IN B: html:1>head:1>link:8
+run-discovery.json ONLY IN B: html:1>head:1>link:6
+run-discovery.json ONLY IN B: html:1>head:1>link:7
+run-discovery.json ONLY IN B: html:1>head:1>link:8
+run-kronika.json ONLY IN B: html:1>head:1>link:6
+run-kronika.json ONLY IN B: html:1>head:1>link:7
+run-kronika.json ONLY IN B: html:1>head:1>link:8
+run-question.json ONLY IN B: html:1>head:1>link:6
+run-question.json ONLY IN B: html:1>head:1>link:7
+run-question.json ONLY IN B: html:1>head:1>link:8
+run-rulepanel.json ONLY IN B: html:1>head:1>link:6
+run-rulepanel.json ONLY IN B: html:1>head:1>link:7
+run-rulepanel.json ONLY IN B: html:1>head:1>link:8
+run-teren.json ONLY IN B: html:1>head:1>link:6
+run-teren.json ONLY IN B: html:1>head:1>link:7
+run-teren.json ONLY IN B: html:1>head:1>link:8
+kitchen-sink: 873 lines, all of the form: --tint: "0" -> undefined
