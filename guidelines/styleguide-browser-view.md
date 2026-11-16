@@ -307,9 +307,9 @@ Kontrolki odstępujące od tej listy stanów:
   `control-border`, tekst w `text`; hover — tło `highlight`; visible focus —
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
   w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
-  wyszarzona (stan disabled) ma ramkę przerywaną — słowo kluczowe `dashed`,
-  bez nowej wartości — nazwę w `text-disabled` i powód w `text-secondary`
-  (D-289); klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
+  wyszarzona (stan disabled) ma ramkę przerywaną w `text-disabled` — słowo
+  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled` i z powodem w `text-secondary` (D-289);
+  pod kursorem nie dostaje tła `highlight`; klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
   powód, a wybór jej niczego nie robi. Error nie dotyczy, bo komórka nie ma
   wpisu, który mógłby być błędny; empty nie dotyczy, bo komórka jest jedną
   pozycją, nie listą; loading nie dotyczy, bo żaden formularz czekający na
@@ -525,6 +525,44 @@ programu i grupy reguł (reguła Program editor) nie jest taką ramką ani belk�
 mówi o stanie reguły i nie bierze koloru tekstu obok (D-39). Przegląd zmiany
 czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
+### A name typed by the player breaks in its row
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Imię postaci z samych liter, dłuższe od wiersza drużyny w Siedzibie, łamie się w tym wierszu i nie wychodzi poza niego; tak samo nazwa programu na liście Programy i adres konta w menu „Konto”.
+- **Bad:** Długie imię bez spacji wypycha wiersz poza obszar ekranu albo jest ucięte, albo przewijane tylko dlatego, że nie ma w nim spacji.
+
+Tekst, który wpisał gracz, taki jak imię postaci albo nazwa, może nie mieć
+spacji, więc wiersz, który go pokazuje, łamie go w swoim obrębie, a nie
+przepuszcza poza siebie, nie ucina i nie przewija. Reguła dotyczy każdego
+wiersza z takim tekstem, także nowego. Powód: wpis bez spacji nie ma gdzie się
+złamać sam, więc bez tej reguły długie imię wypycha wiersz poza ekran.
+
+Takim tekstem są imię postaci, nazwa programu, nazwa grupy reguł i adres
+konta, wszędzie tam, gdzie widok je pokazuje: w wierszu drużyny w Siedzibie, w
+„Kto idzie” na Mapach, w nagłówku ekranu przejścia i nagłówku ekranu Postać,
+na liście Programy, w nagłówku programu i grupy reguł, w menu „Konto” i na
+liście kont, a także w zdaniu, które taką nazwę albo taki adres wymienia
+(pas odkrycia, wiersz o kopii programu, pytanie „Zakończ”, raport z
+nieobecności, ostrzeżenie przy wciąganiu programów). Wyjątek: lista programów
+jako natywne pole wyboru (`select`, „Program:” przy postaci na Mapach i na
+ekranie przejścia oraz lista w panelu programów) ma szerokość swojej najdłuższej
+opcji, więc długa nazwa je poszerza, a reguła jej nie obejmuje; jak taka lista
+ma się zachować (ucięcie wielokropkiem albo ograniczenie szerokości), nie jest
+tu rozstrzygnięte.
+
+### Focus does not fall to the page
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Po „Zatrzymaj” przy postaci w pętli fokus zostaje w wierszu tej postaci; „✕” panelu reguły, który stoi pod nagłówkiem zwiniętej grupy, oddaje fokus nagłówkowi tej grupy.
+- **Bad:** Element z fokusem znika, a fokus ląduje na stronie, więc gracz z klawiaturą zaczyna ekran od góry.
+
+Gdy element, który trzyma fokus, znika z ekranu — zamknięta karta, zamknięty
+panel, wiersz albo przycisk, który po kliknięciu znika — ekran oddaje fokus
+elementowi, który stoi w jego miejscu albo najbliżej niego, nigdy stronie. Powód:
+fokus na stronie każe graczowi klawiatury przechodzić ekran od początku.
+
 ### Menu bar, the menu „Konto” and the list of programs
 
 - **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47 · D-410 · D-411
@@ -584,10 +622,12 @@ Menu „Konto”:
 - „Wyloguj” i „Wyślij ponownie” czekają na serwer jak każdy wspólny przycisk
   (reguła States of shared controls);
 - menu otwiera się kliknięciem „Konto” i klawiaturą — Enter na „Konto” — a
-  zamyka klawiszem Escape, kliknięciem obok i drugim kliknięciem „Konto”,
-  fokus wraca wtedy na „Konto”; menu zostaje otwarte, gdy „Wyloguj” albo
-  „Wyślij ponownie” czeka na serwer, i po odpowiedzi stoi otwarte, aż gracz je
-  zamknie (D-285).
+  zamyka klawiszem Escape, kliknięciem obok i drugim kliknięciem „Konto”;
+  po Escape i po drugim kliknięciu „Konto” fokus wraca na „Konto”, po kliknięciu
+  obok zostaje tam, gdzie gracz kliknął, a gdy to miejsce fokusu nie przyjmuje,
+  wraca na „Konto”, nie zostaje na zamkniętym, ukrytym elemencie menu; menu
+  zostaje otwarte, gdy „Wyloguj” albo „Wyślij ponownie” czeka na serwer,
+  i po odpowiedzi stoi otwarte, aż gracz je zamknie (D-285).
 
 Lista programów na ekranie Programy: pozycja jest odnośnikiem do programu
 (D-281); wybrana ma tekst w `text-strong` i belkę w `selected` o grubości
@@ -668,7 +708,7 @@ Mapy, a w oknie węższym niż 720 px jeden pod drugim.
 
 ### Program editor
 
-- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310
+- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310
 - **Invariant:** none
 - **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
 - **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym.
@@ -683,7 +723,9 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   `text-label`; ikona czynności stoi przy czynności i jest rysowana maską w
   kolorze tekstu obok (D-291, D-43). Wiersz otwarty stoi na tle `highlight`,
   a wiersz pod kursorem też, o ile nie ma tła stanu, z tekstem w ich własnych
-  rolach (reguła Every background with its text).
+  rolach (reguła Every background with its text). Liczba z ułamkiem w zdaniu
+  reguły stoi z przecinkiem dziesiętnym, jak temperatura w wierszu ciała
+  (D-57): „Temperatura poniżej 36,5 °C”.
 - Znaki stanu (D-308, D-309, D-310) stoją tylko przy kopii przejścia, w
   przejściu ręcznym i na ekranie po jego końcu, nigdy przy programie
   zapisanym, na ekranie Programy ani w pętli zarobkowej. Wiersz reguły, która
@@ -747,7 +789,10 @@ w stylu warstwy: żaden kolor nie jest składany z liczb w kodzie (D-43). Jak `t
 stoi w pełnym złocie i jak wraca po utracie passy, mówi D-316; długość powrotu stoi w regule powrotu
 w `src/browser/run-screen.css`. Utrata passy w toku przejścia daje warstwie nowy element, który startuje od
 odcienia, jaki stał, a animacja CSS prowadzi `--tint` do nowej wartości; pod ustawieniem ograniczenia
-ruchu odcień pokazuje od razu swój koniec. W pauzie gracza i przy odkryciu odcień stoi, a powrót po
+ruchu odcień pokazuje od razu swój koniec. Powrót, który gracz przerwał wyjściem z ekranu przejścia
+(przeglądarka anuluje wtedy animacje ukrytego ekranu), kończy się tak, jak kończy go koniec animacji:
+warstwa stoi na odcieniu, do którego szła, i po powrocie na ekran nie gra od początku (D-316, D-317).
+W pauzie gracza i przy odkryciu odcień stoi, a powrót po
 utracie passy w tym czasie zaczyna się dopiero, gdy scena rusza dalej. Przy śmierci, rozwiązaniu, na
 starcie przejścia, po „Restart” i po wczytaniu odcień stoi od razu tam, gdzie stawia go passa albo
 rozwiązanie. Odcień i szron leżą w scenie, więc filtr pauzy szarzy je razem z nią, a po rozwiązaniu
@@ -799,7 +844,9 @@ raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zd
 kolej przychodzi przy zatrzymaniu, tego z odczytu, który niesie kilka końców zbierania, i tego z odczytu,
 w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zaczęty stawia przy miejscu, w którym
 mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
-a nowy zajmuje jego miejsce (D-367).
+a nowy zajmuje jego miejsce (D-367). Efekt, którego animację przeglądarka anuluje, bo scena zniknęła —
+gracz wyszedł z ekranu przejścia albo stanęło okno końca przejścia (D-370) — kończy się jak przy końcu
+animacji i gdy scena wraca, nie gra od początku, bo zaległy efekt przepada (D-367, D-317).
 
 Wilk (D-316, D-148, D-271) stoi w scenie przez minuty starcia, obok maga, tuż za jego sylwetką,
 z odstępem z danych sceny: po prawej, a gdy mag stoi przy prawym brzegu i prawa strona wyszłaby poza
@@ -820,7 +867,9 @@ Szamotanina trwa tyle co starcie i efektem nie jest. Wynik starcia to efekt zwyk
 który niesie koniec starcia: pokonany wilk pada w czterech klatkach śmierci i leży, aż efekt się skończy,
 a potem go nie ma; wilk, który odchodzi, odbiega w pięciu klatkach biegu za prawy brzeg kadru; po śmierci
 maga w walce wilk stoi nieruchomo obok niego w klatce stania, a po rozwiązaniu mapy w trakcie starcia stoi
-nieruchomo tam, gdzie stał. Zaległy efekt przepada i wilka po prostu nie ma. Bieg wilka, szamotanina i jej
+nieruchomo tam, gdzie stał. Zaległy efekt przepada i wilka po prostu nie ma; tak samo bieg wilka i wynik
+starcia, których animację przeglądarka anuluje, bo scena zniknęła (wyjście z ekranu przejścia albo okno
+końca przejścia, D-370), kończą się z anulowaną animacją i gdy scena wraca, nie grają od początku. Bieg wilka, szamotanina i jej
 wynik nie rozjaśniają ani nie przyciemniają całego obszaru sceny (D-317, D-42): zmienia się najwyżej klatka
 wilka i kłąb kurzu, część kadru dużo mniejsza od progu błysku.
 
@@ -844,7 +893,8 @@ na ekran, po odświeżeniu strony, po wczytaniu zapisu — i scena pod systemowy
 ruchu pokazują od razu ostatni obraz, bez ruchu. Odczyt tego, że chwila właśnie nastała, bierze się ze
 zdarzeń wywołania symulacji (D-04), nie ze stanu gry; ostatnia animacja efektu mówi scenie, że efekt
 się skończył, a scena schowana w czasie efektu, której przeglądarka animacje anuluje, stoi na ostatnim
-obrazie. Okno końca przejścia czeka na koniec efektu śmierci albo rozwiązania i otwiera się od razu
+obrazie; anulowanie mówi scenie o końcu tak samo jak ostatnia animacja, jak przy efekcie zwykłego
+zdarzenia i powrocie odcienia wyżej. Okno końca przejścia czeka na koniec efektu śmierci albo rozwiązania i otwiera się od razu
 tam, gdzie scena pokazuje ostatni obraz od razu (D-311). Żaden efekt nie rozjaśnia ani nie przyciemnia
 na chwilę całego obszaru sceny (D-317, D-42): efekty są małe albo, jak chłodna warstwa, mieszają się
 trybem `color`, który zostawia jasność obrazu.
@@ -932,7 +982,7 @@ w pliku tokenów, a kod kroniki w `src/browser/view/tabs-area.tsx`.
 
 ### The end-of-run window
 
-- **Decision:** D-368 · D-311 · D-322 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
+- **Decision:** D-368 · D-311 · D-322 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-370 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
 - **Invariant:** none
 - **Good:** Okno po śmierci z tytułem „Mag zamarzł” w `text-strong` na `panel`, nad nim pasek menu i wiersz ostrzeżeń, pod nim przyciski „Restart”, „Zakończ” i „Otwarte: …” stojące w polu widzenia, gdy sekcje się przewijają; Escape zamyka okno, a nagłówek ekranu ma wtedy „Koniec przejścia”.
 - **Bad:** Okno przykrywające pasek menu; okno z zasłoną za sobą; przycisk zrobiony w oknie osobnym `<button>` albo z czcionką Geist Mono; pasek czasu w roli, której nie ma w tabeli Roles; Escape czytany na dokumencie.
@@ -968,7 +1018,7 @@ Jak się zamyka i otwiera:
 
 - „✕” i Escape zamykają okno i odsłaniają ekran; fokus idzie wtedy na
   „Koniec przejścia” w nagłówku ekranu. Escape czyta korzeń okna, nigdy
-  dokument (D-285).
+  dokument (D-370).
 - „Koniec przejścia” w nagłówku ekranu otwiera okno znowu. Stoi przed „Restart”,
   póki okno jest zamknięte po końcu przejścia; gdy okno stoi, nagłówek jest
   ukryty razem z ekranem (D-311, D-368).
@@ -1000,8 +1050,11 @@ nowej roli ani wartości:
   (D-135, D-133, D-40).
 - Pasek czasu „Na co poszedł czas” ma tor w `highlight` i kawałki wypełnione w
   `text`, rozdzielone odstępem o szerokości `--frame-width`; długość kawałka
-  jest jego udziałem w minutach, a obok stoi legenda z nazwą i procentem, procent
-  w `text-label`. Jego wysokość to stopień skali odstępów, `--space-s`, nie `--bar-width`.
+  jest jego udziałem w minutach, a pod paskiem stoi legenda z nazwą i procentem,
+  procent w `text-label`. Jego wysokość to stopień skali odstępów, `--space-s`,
+  nie `--bar-width`. Kawałki mają jeden kolor, `text`, i odróżnia je kolejność,
+  szczelina, długość i legenda pod paskiem w tej samej kolejności co kawałki;
+  serii wypełnień ani koloru przy pozycji legendy nie ma.
 - Wszystkie przyciski okna — „✕”, „Restart”, „Zakończ”, „Otwarte: …” i „Dodaj
   regułę z tym” — to wspólne przyciski `ReactButton` (D-44): okno nie tworzy
   własnego elementu `<button>`, nie ustawia ich czcionki i nie zmienia ich
@@ -1029,9 +1082,6 @@ stanach (D-45).
 
 Otwarte dla człowieka:
 
-- kawałki paska czasu odróżnia tylko ich kolejność, odstęp i długość, bo plik
-  tokenów nie ma serii wypełnień; nowa wartość wchodzi ze źródłem ustalonym
-  z człowiekiem (reguła Every value with its source);
 - czy D-40 ma nazwać wypełnienie paska czasu w `text`, jak nazywa wypełnienie
   paska wymagania w nagłówku, i czy pasek ma mieć nazwaną grubość zamiast
   stopnia skali odstępów;

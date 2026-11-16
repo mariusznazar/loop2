@@ -301,6 +301,9 @@ export function startApp(
   // An error nothing handled came: the game takes no change and the sentence stands, until the page
   // is reloaded (D-323).
   let failed = false;
+  // The card that the session check shows after a refused link or „Anuluj” takes the focus, until a
+  // card or a game is shown (D-381); a retry of the check keeps it.
+  let focusCardOnForms = false;
 
   /**
    * An error nothing handled: the page shows the sentence of the failure, stops the game and tells
@@ -535,6 +538,7 @@ export function startApp(
     leaveGame();
     const conflict = afterConflict && start.refused === null;
     afterConflict = false;
+    focusCardOnForms = false;
     const message = pendingMessage;
     pendingMessage = null;
     // The game tells its first place while it is built, before the page holds it.
@@ -592,6 +596,10 @@ export function startApp(
       sentence === null ? notice : { text: sentence, role: "warning" },
       null,
     );
+    if (focusCardOnForms) {
+      focusCardOnForms = false;
+      focusCard();
+    }
   }
 
   /** No session for a save: the current state stays in this page for the same account (D-211). */
@@ -776,6 +784,7 @@ export function startApp(
    * a new card with the sentence of success, without a session check; after a refused link the
    * usual session check with the sentence of refusal; after „Anuluj” the usual session check alone.
    * Both of the last open Siedziba for a signed-in player, as an emailed link does (D-225, D-96).
+   * Where the check shows the card, that card takes the focus, since the player stays at it (D-381).
    */
   function showReset(token: string): void {
     placeCard(null, {
@@ -791,6 +800,7 @@ export function startApp(
         if (ending === "refused")
           pendingNotice = { text: LINK_INVALID, role: "warning" };
         entry = "link";
+        focusCardOnForms = true;
         void checkSession();
       },
     });
@@ -808,8 +818,10 @@ export function startApp(
         kind: "checking",
         waiting: { kind: "asking", text: CONFIRMING_ADDRESS },
       });
-      const notice = await confirmFromAddress(client, address);
-      pendingNotice = notice;
+      const answer = await confirmFromAddress(client, address);
+      pendingNotice = answer?.notice ?? null;
+      // A refused link leaves the player at the card, which takes the focus (D-381).
+      focusCardOnForms = answer?.refused ?? false;
       entry = "link";
     }
     await checkSession();

@@ -8,6 +8,7 @@
  * the screen, a purchase and a stop, go to the page through `onBuy` and `onStop`. Nothing runs when
  * the module is imported.
  */
+import { useRef } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { ARCHETYPES } from "../sim/data/archetypes.js";
@@ -65,6 +66,8 @@ type CharacterViewProps = Omit<CharacterScreenOptions, "props"> & {
 /** The screen: one character, its loop or its stop, and its skills once a tree is known. */
 function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
   const { state, nowMs, characterId } = props;
+  const name = useRef<HTMLHeadingElement>(null);
+  const stop = useRef<HTMLButtonElement>(null);
   const character = state.team.characters.find(
     (entry) => entry.id === characterId,
   );
@@ -88,7 +91,9 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
   const run = state.run;
   return (
     <section className="character-screen">
-      <h2 className="character-screen-name">{character.name}</h2>
+      <h2 ref={name} tabIndex={-1} className="character-screen-name">
+        {character.name}
+      </h2>
       <p className="character-screen-facts">
         {generation === null ? null : (
           <span className="character-screen-generation">{generation}</span>
@@ -113,7 +118,13 @@ function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
             text="Zatrzymaj"
             kind="destructive"
             label={`Zatrzymaj: ${character.name}`}
-            onClick={() => onStop()}
+            buttonRef={stop}
+            onClick={() => {
+              onStop();
+              // The stop removes the button, which then has no element to keep: the focus moves on to
+              // the character's name, while a refused stop leaves the button, and its focus, where they stand.
+              if (stop.current === null) name.current?.focus();
+            }}
           />
         </div>
       )}

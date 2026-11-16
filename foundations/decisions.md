@@ -63,8 +63,17 @@ functions, of which those that pass game time take a game state and a span of ga
 return the next game state together with the events it produced, and real time enters the
 simulation only as an argument. The browser view draws the game only from the game state, the
 game's content data, the moment of the browser's clock, which it reads and passes to the
-simulation, and, for the scene and the chronicle, its previous reading of the game state and the
-events the simulation returned, and changes the game state only through functions of the simulation, to which it passes
+simulation, the address of the page for the screen it shows (D-281), the system's setting for
+reduced motion for the scene (D-317), the saver's sentence for the row of saving (D-207, D-407),
+and, for the scene and the chronicle, its previous reading of the game state and the events the
+simulation returned, for the chronicle also the player's acts on the copy with the copy before each
+act and after it (D-348), and for the scene the place the browser gives for the mage while it walks,
+and from the memories of the page, none of them in the game state or the save: the folding of rule
+groups (D-294), the chronicle with the tab and the filter the player picks over it (D-339, D-346,
+D-383), the question „Zapisać, odrzucić, wrócić?” (D-324), whether the end-of-run window is open
+(D-371), the pull of the previous save and the reset control of Programy (D-401, D-402) and, for
+what one screen alone shows, the state of that screen's own component (D-407); it changes
+the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
 the server or the unsaved game state it kept in the page's memory after a save found no session (D-211).
 
@@ -88,7 +97,9 @@ the server or the unsaved game state it kept in the page's memory after a save f
     scene comparing the game state it is given with its previous reading to find the place where the
     mage stands, or to find the start of a map run; the chronicle writing the entry of a change of
     the copy from the copy before the player's act and the copy after it, and the entry of a loss of
-    the streak from an event the simulation returned
+    the streak from an event the simulation returned; the scene starting the turn of a mage that is
+    walking from the place the browser gives for it; the game view keeping whether the end-of-run
+    window is open as a memory of the page
   - violates: a screen of the game written as a Godot scene; a screen of the browser view that
     replaces the game state with a value no function of the simulation returned; a screen of the
     browser view that writes a program rule straight into the game state; the clock's current
@@ -123,10 +134,13 @@ state holds. The moment of the browser's clock stands apart from it too: the gam
 moment of an event, written once at the event, and the view compares it with its latest reading, so
 real time passing at the headquarters makes no new game state to save. The scene's motion needs
 what one reading of the game state does not say, such as the place where the mage stood, and its
-previous reading and the events give it, so no state of a drawing enters the save. The chronicle
+previous reading and the events give it, so no state of a drawing enters the save; the place the
+mage has reached on a walk the browser gives, since the browser draws the walk (D-319), and whether
+the end-of-run window is open stays a memory of the page (D-371). The chronicle
 records what happened between two readings, such as a loss of the streak in a game minute the
 reading passed over or a change the player made to the copy, which one reading does not say either,
-and its previous reading and the events give it, so the chronicle does not enter the save (D-339).
+and its previous reading and the events give it, the player's acts on the copy with the copy before
+and after them giving the changes (D-348), so the chronicle does not enter the save (D-339).
 Putting the whole chronicle into the save would raise the version of the save, so a save in use
 would be lost with the programs in it (D-206), and would add the size of the chronicle to a save
 that is not sent above 64 KiB (D-207). That size was measured with the chronicle's own code fed with
@@ -167,7 +181,10 @@ capped at a number of entries, the oldest dropped — the sentence of D-338 that
 true; raising the server's limit of 64 KiB for it — changes D-104 and D-207 and is work in the
 account server; the server's clock for the renewal of a resurrection — a new version of the
 account database with a step by a human on the server, a change of two decisions, and the open page
-goes by the browser's clock anyway, so the game would hold two clocks.
+goes by the browser's clock anyway, so the game would hold two clocks; D-348 and D-371 as narrowing
+this decision, with the scene counting the place of the mage from the moment its walk starts and the
+clock itself — a change of the scene's code and tests, and a risk that the counted place and the
+drawn place part, so that the mage turns from a place where it is not seen.
 
 ### D-05 — What serves the built game and account requests in the container?
 
@@ -3074,16 +3091,16 @@ the jumps of the switch and of the form stay.
 
 ### D-381 — How does the page open, focus and close the login card, and what does the card do while a form waits?
 
-The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing. The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn. While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form.
+The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing. The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn. While a form waits for the server's answer the whole card is locked, every field and button, the switch and „Nie pamiętam hasła” included, with the folded credits alone staying usable; a second send before the lock is drawn changes nothing, a press of the switch at the state already shown clears nothing and moves no focus, and when the lock lifts focus returns to the control the player sent from, or to the button of the form.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-260
-- **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after a session check or an expired save, focus in the first field after a confirmed logout, a logout answered with no session and a set password; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts.
+- **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after an expired save or after a session check that no refused emailed link and no „Anuluj” led to, focus in the first field after a confirmed logout, a logout answered with no session, a set password, a refused emailed link and „Anuluj” of the form „Ustaw nowe hasło”; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts.
 - **Origin:** none
 
-*Rationale:* the card is a root of its own beside the roots of the page's other places, so the page and the card meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it.
-*Rejected:* the card kept in the page and hidden — a typed password would stay in the page behind the game; one card kept for the life of the page and emptied at each closing — a reset of state to keep right, for nothing gained; drawing the card later than its creation — every caller then has to wait for the card, and an empty moment is possible.
+*Rationale:* the card is a root of its own beside the roots of the page's other places, so the page and the card meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it. A refused emailed link and „Anuluj” leave the player at the card, so focus goes to it as after the other ways in and never to the page.
+*Rejected:* the card kept in the page and hidden — a typed password would stay in the page behind the game; one card kept for the life of the page and emptied at each closing — a reset of state to keep right, for nothing gained; drawing the card later than its creation — every caller then has to wait for the card, and an empty moment is possible; focus left on the page after a refused emailed link and after „Anuluj” — no work, but a player of the keyboard goes on losing the focus.
 
 ## Account email and password reset
 
@@ -3708,10 +3725,10 @@ character's death, right after a reading of the clock or a catch-up whose result
 earning loops, with one save for that result, every 30 real seconds while a manual map run passes,
 and once more when the page becomes hidden, closing included, with no guarantee that this last save
 arrives. The 30-second rhythm and the hidden page send the game state only where it changed since
-the save last sent, the save time of a document being no change of it; the
-browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving
-during one is sent after its answer, unless that request is the save before a logout that goes on
-(D-97). A save whose body is larger than 64 KiB is not sent and counts
+the save last sent, or where the save last sent failed, the save time of a document being no change
+of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment
+of saving during one is sent after its answer, unless that request is the save before a logout that
+goes on (D-97). A save whose body is larger than 64 KiB is not sent and counts
 as refused as too large (D-208).
 
 - **Scope:** browser-view
@@ -3726,11 +3743,14 @@ as refused as too large (D-208).
   once, and a reading that changes the state without ending one sending nothing; one save for a
   catch-up whose result ended map runs of earning loops; a save every 30 real seconds only while a
   manual map run passes, and one at the hidden page; the 30-second rhythm and the hidden page
-  sending nothing where nothing changed since the save last sent, a loaded paused game and a new
-  save time included; one save request in flight, a moment of saving during it sent once after its
-  answer, except during the save before a logout that goes on; each save handed to `fetch` with
-  `keepalive`; a body of 65 536 bytes sent whole, and a larger one never sent and counted as
-  refused as too large. An agent compares a change with the part no test holds:
+  sending nothing where nothing changed since the save last sent and that save did not fail, a
+  loaded paused game and a new save time included; one save request in flight, a moment of saving
+  during it sent once after its answer, except during the save before a logout that goes on; each
+  save handed to `fetch` with `keepalive`; a body of 65 536 bytes sent whole, and a larger one never
+  sent and counted as refused as too large; the game state sent once more at the hidden page and at
+  a tick of the 30-second rhythm after a failed save with nothing changed since, the rhythm sending
+  at once and taking the place of the planned retry. An agent compares a change with the part no
+  test holds:
   - complies: a reading of the clock whose result ended map runs of two earning loops followed by
     one save request; a tab closed while its last save is on its way, nothing holding the page open
     for the answer
@@ -3752,8 +3772,14 @@ becoming hidden is the last moment a page reliably observes, and a `keepalive`
 request outlives the closing page, but the browser refuses one whose body brings the page's
 `keepalive` bodies in flight over 64 KiB, so one save request at a time keeps each within that
 quota, and a body over it is never sent; one request at a time also lets each save name the
-revision the one before was given (D-209).
-*Rejected:* saving only at the player's acts, a completion and a death, with no save while a manual
+revision the one before was given (D-209). A save that failed leaves the game state unsent though
+the player changed it, so the hidden page and the rhythm send it again, and a change whose save
+failed has one more chance when the tab closes; the send goes at once as D-208 gives it and takes
+the place of the planned retry.
+*Rejected:* leaving the rule as it was, with the cost of a change lost at the closing of the tab
+before a retry succeeds written into this decision — one sentence and no change of the code, but a
+player at a short fault of the server loses the last change; saving only at the player's acts, a
+completion and a death, with no save while a manual
 map run passes — fewer requests, but the catch-up does not recompute a manual map run, so closing the
 tab in the middle of one takes it back to the sending
 of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
@@ -4395,7 +4421,9 @@ additions becomes a rebuild of a screen.
 ### D-285 — How does the menu „Konto” open and close?
 
 The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it
-and on a second click on „Konto”, focus then returning to „Konto”. It stays open while „Wyloguj” or
+and on a second click on „Konto”; after Escape and after a second click on „Konto” focus returns to
+„Konto”, after a click outside it focus stays where the player clicked, and where that place takes
+no focus it returns to „Konto”. It stays open while „Wyloguj” or
 „Wyślij ponownie” waits for the server, and after the answer until the player closes it, so the
 sentence of the outcome can be read.
 
@@ -4403,22 +4431,34 @@ sentence of the outcome can be read.
 - **Based on:** none
 - **Relations:** derives from D-280
 - **Verification:** tests: the menu opening on a click on „Konto”, a native button, and closing on
-  Escape, on a click outside it and on a second click on „Konto”, focus then on „Konto”; the menu
-  standing open while „Wyloguj” or „Wyślij ponownie” waits for the server and after the answer until
-  the player closes it. For the keyboard in a real browser, which the tests on a document imitation
-  do not show, an agent compares a change with the part no test holds:
+  Escape, on a click outside it and on a second click on „Konto”, focus on „Konto” after Escape and
+  after a second click; after a click outside it, on a document imitation given the focus the
+  browser would give, focus staying on the field or the link clicked and returning to „Konto” from
+  a bare background; the menu standing open while „Wyloguj” or „Wyślij ponownie” waits for the
+  server and after the answer until the player closes it. For the focus after a click outside the
+  menu, and for the keyboard in a real browser, which the tests on a document imitation do not show,
+  an agent compares a change with the part no test holds:
   - complies: Enter and Space on „Konto” opening the menu in the browser, as the browser's own click
-    of a native button
+    of a native button; a click on a text field outside the open menu closing it and leaving the
+    caret in that field; a click on the bare background closing it and putting focus on „Konto”
   - violates: a key handler on „Konto” that stops Enter or Space, so the keyboard no longer opens
-    the menu
+    the menu; a click on a text field outside the open menu that closes it and takes focus to
+    „Konto”, so the player's first click into the field is lost; a click on the bare background that
+    leaves focus on an element of the menu, now hidden
 - **Origin:** none
 
-*Rationale:* the player reads the outcome of what the menu sent without opening it again. Accepted
-with it: the accessibility requirements of the browser view (D-42) do not ask for the keyboard
-here, and the styleguide gains a new kind of control worked by the keyboard.
+*Rationale:* the player reads the outcome of what the menu sent without opening it again. A click
+outside the menu is the player pointing at a place, so focus stays there and the first click into a
+text field puts the caret in it; Escape and a second click on „Konto” are of the keyboard and of the
+button, so focus goes back to „Konto”, and so it does after a click on a place that takes no focus,
+since focus would otherwise stay on an element of the menu that is now hidden. Accepted with it: the
+accessibility requirements of the browser view (D-42) do not ask for the keyboard here, and the
+styleguide gains a new kind of control worked by the keyboard.
 *Rejected:* the menu opened and closed by a click on „Konto” alone; the menu closing at once at the
 click — the sentence of the outcome goes; the menu closing by itself after the server's answer, the
-outcome read on opening it again.
+outcome read on opening it again; focus returning to „Konto” after a click outside the menu too,
+this decision naming that the first click into a field only closes the menu — one sentence and no
+change of the code, but the player loses the first click every time.
 
 ### D-286 — How long does the page's sentence stand above the game?
 
@@ -4672,8 +4712,8 @@ In the browser view `character` means that here is the character and here it is 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. tests: an outline on the character's tile and, only while a move runs, an outline on the target of the move, told apart from the first; the revealed tiles holding the icons of what lies there and a tile not revealed none; a hovered tile and its row of the list marking each other, with a line around the tile; the icon of a stock of 0 dimmed by `depleted`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
-  - complies: the target of the current move drawn as a thin dashed line in `character`; the line around a hovered tile drawn in `link-highlight`, the tile's own colour unchanged;
+- **Verification:** invariants: design-token-contrast. tests: an outline on the character's tile and, only while a move runs, an outline on the target of the move, told apart from the first; the revealed tiles holding the icons of what lies there and a tile not revealed none; a hovered revealed tile and its row of the list marking each other, with a line around the tile, and a hovered tile not revealed, which has no row, drawing no line and marking no row; the icon of a stock of 0 dimmed by `depleted`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
+  - complies: the target of the current move drawn as a thin dashed line in `character`; the line around a hovered revealed tile drawn in `link-highlight`, the tile's own colour unchanged;
   - violates: the target of the current move drawn in a colour of its own; a hovered tile filled with another colour.
 - **Origin:** none
 
@@ -5812,7 +5852,8 @@ A character's warmth is its body temperature in degrees Celsius, counted with te
 - **Relations:** none
 - **Verification:** tests: warmth as the body temperature in degrees Celsius, shown cut down to
   tenths in the body row, and a condition on warmth taking a number with tenths and holding it as
-  the decimal the player reads.
+  the decimal the player reads, and writing it in the sentence of a rule and of a rule group with
+  the decimal comma of the body row, „36,5 °C”.
 - **Origin:** none
 
 *Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from. Accepted with it: a condition on warmth takes a number with tenths — in loop its default is 36.5 and its step 0.1 — so the check of a program takes tenths in that condition, not whole numbers only.
@@ -7914,23 +7955,25 @@ During a map run the program panel shows the copy under the heading „Kopia: {p
 
 ### D-172 — How does the game announce a save of the copy over a program that changed?
 
-While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone.
+While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii.” where the copy holds no unsaved changes and „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.” where it holds some; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
 - **Relations:** derives from D-164 · derives from D-39
 - **Verification:** tests: the line „Program {name} ma zmiany, których nie ma w tej kopii — zapis w
   programie je zastąpi.” standing while the copy's program holds changes made since the copy was
-  taken from it or last saved into it, with or without unsaved changes of the copy; „Zapisz w
-  programie” then saving at the first click, replacing those changes, and the line gone after it.
-  For where the line stands and its role, an agent compares a change with the part no test holds:
+  taken from it or last saved into it and the copy holds unsaved changes; „Zapisz w programie” then
+  saving at the first click, replacing those changes, and the line gone after it; the short line
+  „Program {name} ma zmiany, których nie ma w tej kopii.” standing, with „Zapisz w programie”
+  inactive, where the copy holds no unsaved changes. For where the line stands and its role, an
+  agent compares a change with the part no test holds:
   - complies: the line standing beside „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć
     zmiany”, in the colour of the role `warning`
   - violates: the line standing away from the save buttons, or drawn in the colour of plain text
 - **Origin:** none
 
-*Rationale:* the player can edit a program during a map run, so a save of the copy can replace changes the copy lacks; the line says so before the save, and the save stays one click, as D-164 announces such a save and blocks none. An edit of a saved program during a map run touches neither the copy nor the streak nor the counters. The line names what the save replaces, which holds after „Restart” and after a switch as well, and stands in the role `warning`, which means that something will not be carried out or is not saved. Accepted with it: a longer text, which does not say when the program changed.
-*Rejected:* a window asking to confirm the save — one more click at every such save; a message after the save — the changes are gone before the player reads it; the line „Program {nazwa} zmienił się od startu przejścia — zapis w programie zastąpi te zmiany.” — after „Restart” and after a switch it would name the wrong moment.
+*Rationale:* the player can edit a program during a map run, so a save of the copy can replace changes the copy lacks; the line says so before the save, and the save stays one click, as D-164 announces such a save and blocks none. An edit of a saved program during a map run touches neither the copy nor the streak nor the counters. The line names what the save replaces, which holds after „Restart” and after a switch as well, and stands in the role `warning`, which means that something will not be carried out or is not saved. Where the copy holds no unsaved changes „Zapisz w programie” is inactive, so the line says only what the copy lacks and promises no save, which the player who changed the program alone still learns. Accepted with it: a longer text, which does not say when the program changed.
+*Rejected:* a window asking to confirm the save — one more click at every such save; a message after the save — the changes are gone before the player reads it; the line „Program {nazwa} zmienił się od startu przejścia — zapis w programie zastąpi te zmiany.” — after „Restart” and after a switch it would name the wrong moment; the sentence with „— zapis w programie je zastąpi.” only where the copy holds unsaved changes and no line otherwise — one condition and no new text, but the player who changed the program alone does not learn that the copy lacks the change; the sentence with its promise of a save kept at every moment, its cost accepted in this decision — one sentence, but the player reads the announcement of a save beside an inactive button.
 
 ### D-173 — What can the player do with the copy after a map run ends?
 
@@ -8762,7 +8805,7 @@ rule group.
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-44
 - **Verification:** tests: one program panel with its rule list and rule panel on Programy and on
-  the screen of a map run; a rule's row reading „Zapas poniżej 8 · Patyk” and „Zbierz — Patyk”
+  the screen of a map run; a rule's row reading „Zapas poniżej 8 szt. · Patyk” and „Zbierz — Patyk”
   with the arrow between them; the rule panel standing in the list right under the row or the
   header it changes, on both screens, in no column or area of its own, and moving there when
   another rule opens; each pick moving on to the next field; the conditions as cells in two
@@ -8794,7 +8837,7 @@ not the model of rules. Dragging a rule
 already worked, between groups too, but the player could not see it, for there was no handle and no
 sign of where the rule would land; Outlook gives three ways to move a rule at once, a handle,
 arrows and a move to the top or the bottom, and dragging needs a preview of where the rule drops.
-Each pick moving on to the next field costs a rule such as „Zapas poniżej 8 · Patyk → Zbierz —
+Each pick moving on to the next field costs a rule such as „Zapas poniżej 8 szt. · Patyk → Zbierz —
 Patyk” six actions, against about eight interactions in the old editor, an estimate and not a
 measurement. What may not be picked stands greyed with its reason, as in loop; Factorio 2.0 keeps
 its controls and greys them instead of hiding them, since its old interface had things popping out
@@ -8864,16 +8907,18 @@ where the action is picked. Outside a map run no map gives a movement its step.
 
 Which rule groups are folded lasts in the page's memory while the player moves between screens and
 goes with a reload of the page, after which every rule group stands unfolded; the saved game state
-does not hold it.
+does not hold it. Each new copy, made at a send and at a switch of the character to another program,
+has every rule group unfolded, the foldings of the copy before it passing to it no more.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** tests: one memory of the page holding the folding, so that a group folded on
   Programy stands folded on the screen of a map run for the same program, the other screen redrawn
-  at once; a new memory with every rule group unfolded. For the folding going with a reload and
-  staying out of the saved game state, an agent compares a change with the part no invariant and no
-  test holds:
+  at once; a new memory with every rule group unfolded; a group folded in the copy standing
+  unfolded in the new copy made by a send and in the one made by a switch of the character to
+  another program. For the folding going with a reload and staying out of the saved game state, an
+  agent compares a change with the part no invariant and no test holds:
   - complies: a group folded on Programy unfolded after a reload; a save of the game state carrying
     nothing of folding
   - violates: folding kept in the browser's storage; a field of folding in the saved game state
@@ -8881,7 +8926,8 @@ does not hold it.
 
 *Rationale:* folding arranges the player's view of a program and changes nothing the program does,
 so it takes no new storage and leaves the shape of the saved game state, and so its version, as it
-was. At the start of a game, as after a reload, every rule group stands unfolded.
+was. At the start of a game, as after a reload, every rule group stands unfolded, and so it does in
+each new copy.
 *Rejected:* folding kept in the browser — a new storage; folding kept in the saved game state — a
 new version of the save; the groups folded at the start — a new player does not see their rules.
 
@@ -8897,7 +8943,7 @@ program rule dropped on it lands at its end while the group stays folded.
   its rules; a rule dropped on a folded group landing at its end, the line standing under its header
   and the group staying folded. For the condition a folded group shows, an agent compares a change
   with the part no invariant and no test holds:
-  - complies: a folded group under „Temperatura poniżej 35” showing that condition in its header
+  - complies: a folded group under „Temperatura poniżej 35 °C” showing that condition in its header
     beside its name and „3 reguły”
   - violates: the condition left out of the header of a folded group
 - **Origin:** none
@@ -8926,22 +8972,35 @@ row does (D-288).
 ### D-297 — Where does an arrow move a program rule at the edge of its rule group?
 
 „↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the
-first program rule of a group to the end of the previous one; „↑” is disabled only on the program's
-first rule and „↓” only on its last.
+first program rule of a group to the end of the previous one; „↑” is disabled only where no rule
+group stands before the group of the rule and „↓” only where none stands after it, so a rule group
+left empty at the edge of the program takes the rule.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-288
 - **Verification:** tests: „↓” on the last rule of a group moving it to the start of the next
   group, an empty one too, and „↑” on the first rule of a group to the end of the previous one,
-  computed and from the buttons of the list; „↑” disabled only on the program's first rule and „↓”
-  only on its last, the border of a group being no end.
+  computed and from the buttons of the list; „↑” disabled only where no group stands before the
+  group of the rule and „↓” only where none stands after it, the border of a group being no end, and
+  the arrow toward an empty group at the edge of the program enabled. For where the rule lands in
+  an empty group at the edge of the program, an agent compares a change with the part no test holds:
+  - complies: „↑” on the first rule of the program, with an empty group before its group, putting
+    the rule at the end of that group; „↓” on the last rule of the program, with an empty group
+    after its group, putting the rule at the start of that group
+  - violates: „↑” on the first rule of the program, with an empty group before its group, leaving
+    the rule where it stands, and „↓” on the last, with an empty group after its group, the same
 - **Origin:** none
 
 *Rationale:* arrows suit moving a single rule (D-288), and across the edge of a group the rule lands
-next to where it stood, so arrows move a rule between groups as the mouse does.
+next to where it stood, so arrows move a rule between groups as the mouse does. A group left empty
+at the edge of the program takes the rule from an arrow too, since dragging is of the mouse alone
+and the arrow is the keyboard's only way to that group.
 *Rejected:* arrows within a group alone — only the mouse moves a rule between groups; the rule
-landing at the end of the next group — it jumps over the whole group.
+landing at the end of the next group — it jumps over the whole group; „↑” disabled on the first
+rule of the program also where an empty group stands before its group — a change of the code and of
+two tests, and a player of the keyboard loses the only way to an empty group at the edge, since
+dragging works with the mouse alone.
 
 ### D-298 — How does the player fold and unfold every rule group at once?
 
@@ -8974,7 +9033,7 @@ The program editor shows no current value beside a condition, such as „teraz 3
 - **Verification:** tests: no „teraz” in the rule panel open on the pick of conditions outside a
   map run. For a rule's row, and for the rule panel during a map run, an agent compares a change with
   the part no invariant and no test holds:
-  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run, in its row and in
+  - complies: „Zapas poniżej 8 szt. · Patyk” with nothing beside it during a map run, in its row and in
     the rule panel
   - violates: „teraz 3” beside a condition in a rule's row, or in the rule panel during a map run
 - **Origin:** none
@@ -9138,7 +9197,7 @@ screen Wiedza; an action with a target shows the icon of the action, never one o
   action in the pick; the icon of an action beside its name on the screen Wiedza. For the icon of a rule's row whose action has a target and the icon in a cell
   of the pick being its action's own, an agent compares a change with the part no invariant and no
   test holds:
-  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” and in
+  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk” and in
     the cell „Zbierz”, a greyed cell keeping its icon
   - violates: the icon of a stick in the row of „Zbierz — Patyk”; a cell drawing an icon other than
     its action's; a greyed cell drawn with no icon while a cell that may be picked has one
@@ -9204,7 +9263,9 @@ field of a target standing only where the condition or the action has one; each 
 rule at once and moves to the next field, a pick of the value already picked included, and Enter or
 leaving the field confirms the number. In the grid of a field the arrow keys move between the cells,
 a greyed one included so that its reason can be read, and Enter picks, doing nothing on a greyed
-cell. After the last field the panel stays open, and „✕”, Escape or opening another rule closes it.
+cell. After the last field the panel stays open, and „✕”, Escape or opening another rule closes it,
+as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes
+nothing, and the panel stays open on the same field and goes with the rule to its new group.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -9213,23 +9274,31 @@ cell. After the last field the panel stays open, and „✕”, Escape or openin
   opening another rule showing that one on its condition; the fields in the order condition,
   number, target of the condition, action, target of the action, each only where the rule has it;
   each pick changing the rule at once and moving on, a pick of the value held too; Enter
-  committing the number and moving on; the rule „Zapas poniżej 8 · Patyk → Zbierz — Patyk”
+  committing the number and moving on; the rule „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk”
   written from a click on its row in six acts, the panel still open after them; the arrow keys
   moving among the cells of a grid, a greyed one reached, Enter picking and doing nothing on a
-  greyed cell; „✕”, Escape and the opening of another rule closing the panel. For the number
-  confirmed by leaving its field, an agent compares a change with the part no invariant and no
-  test holds:
+  greyed cell; „✕”, Escape and the opening of another rule closing the panel; a rule moved to
+  another group by „↓” and by its handle, the panel staying open on the same field under its new
+  row. For the number confirmed by leaving its field and for the deleting of the rule, an agent
+  compares a change with the part no invariant and no test holds:
   - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
-    with the mouse, the rule then holding 8
-  - violates: a number typed and left with no Enter dropped, the rule keeping the number it held
+    with the mouse, the rule then holding 8; „Usuń” of a rule whose panel stands open closing that
+    panel
+  - violates: a number typed and left with no Enter dropped, the rule keeping the number it held;
+    the panel left open on a rule that was deleted
 - **Origin:** none
 
-*Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 ·
+*Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 szt. ·
 Patyk → Zbierz — Patyk” is written from a click on its row in six acts, and the panel stays open
 after the last field, so a fix takes no new opening. A greyed cell stays within the keyboard's reach
-so that its reason can be read.
+so that its reason can be read. The panel is open on a rule the player is writing, so it goes with
+that rule where the rule moves, between groups as within one, and ends with it where the rule is
+deleted, since nothing is left for it to change.
 *Rejected:* the panel closing by itself after the last field — a fix takes opening it again; greyed
-cells out of the keyboard's reach.
+cells out of the keyboard's reach; the closing at a move to another group staying, with this
+decision naming it beside the deleting of a rule — two sentences and no change of the code, but the
+player goes on losing the open field at every move across the border of a group, and the decision
+would fix a behaviour nobody chose.
 
 ### D-308 — What state does a program rule show during a map run?
 
@@ -9329,7 +9398,7 @@ walce”.
   death in combat too, a combat rule whose condition holds unable to start with „tylko w walce”. For
   the mage's health the signs read and the backgrounds of those minutes, an agent compares a change
   with the part no invariant and no test holds:
-  - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50” winning while the mage
+  - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50 pkt” winning while the mage
     has 40 health, its row on `rule-winning`
   - violates: the signs of an attack counted at the mage's full health; the row of the combat rule
     the turn would choose on `rule-running` or on `highlight`
@@ -9403,10 +9472,10 @@ group unfolds.
 writing (D-294), so the rule being changed stays changeable, and the panel goes to the one place of
 its group that is drawn. A folded group keeps the list where it stood under the pointer (D-295), so
 the panel does not unfold it.
-*Rejected:* closing the panel when its group folds — D-306 names what closes it, „✕”, Escape and
-opening another rule, and a fold is none of them, so the player would lose the field and the rule
-being written; unfolding the group for the panel — the group the player folded opens again and the
-list runs from under the pointer.
+*Rejected:* closing the panel when its group folds — D-306 names what closes it, „✕”, Escape,
+opening another rule and deleting the rule, and a fold is none of them, so the player would lose the
+open field and the place in it; unfolding the group for the panel — the group the player folded
+opens again and the list runs from under the pointer.
 
 ### D-363 — Where does the player read what an action costs?
 
@@ -9730,8 +9799,9 @@ character's tile, never on the drawing.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: terrain-drawing-numbers. tests: a click on a tile of the drawing
-  changing nothing, and nothing in the drawing a control; hovering a tile marking its row in the
-  list of revealed tiles, and hovering a row marking its tile; the numbers of stock standing in the
+  changing nothing, and nothing in the drawing a control; hovering a revealed tile marking its row
+  in the list of revealed tiles, and hovering a row marking its tile; hovering a tile not revealed
+  marking no row; the numbers of stock standing in the
   rows of the list and in the line under the drawing, which gives the hovered tile, or the
   character's tile where none is hovered or the key names no tile. For hovering as a real browser
   delivers it, and for what the player does on the drawing other than a click, an agent compares a
@@ -10489,10 +10559,10 @@ win.
 Each change of the copy a map run carries out gives an entry of the chronicle in the role
 `player-change`, an entry about a program rule naming its number and its sentence at the moment of
 the change and one about a rule group its name: „Dodano regułę 2.3: Zawsze → Wędruj”, „Usunięto
-regułę 1.2: …”, „Zmieniono regułę 2.1: … → …”, „Przesunięto regułę 2.1 na 1.3: …”, the same for rule
-groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany kopii”,
-„Zapisano kopię w programie „…””, „Zapisano kopię jako nowy program „…”” and „Przełączono postać na
-program „…””. Such entries are given after the end of the map run too, until „Restart” or
+regułę 1.2: …”, „Zmieniono regułę 2.1: „…” na „…””, „Przesunięto regułę 2.1 na 1.3: …”, the same
+for rule groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany
+kopii”, „Zapisano kopię w programie „…””, „Zapisano kopię jako nowy program „…”” and „Przełączono
+postać na program „…””. Such entries are given after the end of the map run too, until „Restart” or
 „Zakończ”, at the game minute of the end, and an edit of a saved program, which changes no map run,
 gives none.
 
@@ -10502,9 +10572,11 @@ gives none.
 - **Verification:** tests: the entry in `player-change` of each change of the copy — a program rule
   added, removed, changed or moved with its number and its sentence at the moment of the change, a
   rule group added, removed, changed or moved with its name, a changed trip plan, a discard, a save,
-  a save as a new program and a switch with the program's name; an edit of the copy after a death
-  at the game minute of the death; no entry for an edit of a saved program. For the edits of the
-  copy after a completion, an agent compares a change with the part no invariant and no test holds:
+  a save as a new program and a switch with the program's name; the entry of a changed rule giving
+  its whole sentence before and its whole sentence after, each in quotation marks, joined by „na”;
+  an edit of the copy after a death at the game minute of the death; no entry for an edit of a saved
+  program. For the edits of the copy after a completion, an agent compares a change with the part no
+  invariant and no test holds:
   - complies: a program rule fixed after a completion at game minute 480 giving its entry at 480
   - violates: an edit of the copy after a completion giving no entry, or giving one at another game
     minute
@@ -10515,9 +10587,13 @@ streak stands beside the change that caused it; the copy stays open to changes a
 map run (D-173), so those changes enter the chronicle too, while an edit of a saved program changes
 no map run. Accepted with it: the game describes every kind of change, though the program editor
 hands the simulation the whole program at once, so the copy before a change is compared with the
-copy after it, with more tests.
+copy after it, with more tests. The sentence of a rule has an arrow of its own, so the old sentence
+and the new one of a changed rule stand each in quotation marks joined by „na”, as the names of
+groups and programs already stand in them, and the entry reads no more as one chain.
 *Rejected:* one general entry „Zmieniono kopię programu” — the player does not know what was
-changed, less than loop gave.
+changed, less than loop gave; „Zmieniono regułę 2.1 — było: Zawsze → Eksploruj · jest: Zawsze →
+Wędruj” — the same cost, a longer entry; leaving the entry as it was — costs nothing, but each entry
+of a changed rule reads as one chain.
 
 ### D-343 — How does the chronicle stand in the area with the tabs, and how does the player filter it?
 
@@ -10806,8 +10882,10 @@ after „Restart” and after a load the tint stands at once where the streak, o
   death in the combat and after a completion in it; the tint going evenly from 0 at streak 0 to 0.8
   at the streak the map's condition asks for, staying there as the streak grows on and 1 at a
   completion alone; a loss of the streak while the scene goes on taking the tint back on a return of
-  its own, which in the player's pause and at a discovery begins only where the scene goes on, and
-  the tint standing at once at a death, a completion, a map run started and a first draw. For what
+  its own, which in the player's pause and at a discovery begins only where the scene goes on, a
+  return cut by leaving the screen of the run over, and not played again from its start on the
+  return, and the tint standing at once at a death, a completion, a map run started and a first
+  draw. For what
   the scene holds, the source of its pictures, its motion and the colours of its tint, an agent
   compares a change with the part no invariant and no test holds:
   - complies: the place where the mage stands kept by the scene and not in the game state; the file
@@ -10911,7 +10989,9 @@ a moment shows its last image at once. The scene shows no flash of its whole are
 - **Verification:** tests: the flight of an icon and the fall of a defeated wolf lasting 300 ms with
   no text and gone when their animation ends; an effect overdue when its turn comes dropped — in a
   reading that carries several ends of a gathering, at a stop, after a load and at a reading that
-  carries no attack; the bending through a gathering and the scuffle through a combat lasting as the
+  carries no attack; the flight of an icon, a cloud of dust, the wolf's run in, its fall and its run
+  off cut by leaving the screen of the run over, as the end of their animation makes them, and not
+  played again from their start on the return; the bending through a gathering and the scuffle through a combat lasting as the
   action does; the effect of a discovery, a death and a completion playing once, the scene then
   standing on its last image until the moment ends, and a scene drawn again on the same moment
   showing that image at once; the cold layer blending by colour, so that it leaves the brightness of
@@ -10991,7 +11071,8 @@ fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight �
   to the place of the campfire, with „Eksploruj”, „Wędruj”, „Idź” and „Idź — ognisko” to the one
   place at the right edge, and while it waits to the middle of the clearing, walking there from
   where it stands; „Zbierz” and „Obchód” with fibre as the target, „Zapal — patyk”, „Zjedz” and a
-  fight leaving it where it stands.
+  fight leaving it where it stands, a mage whose walk they cut standing where the walk has brought
+  it and not at the place it was walking to.
 - **Origin:** none
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
@@ -11015,9 +11096,12 @@ place at once, and under that setting the frames stand still.
 - **Relations:** derives from D-316 · derives from D-317
 - **Verification:** tests: the mage standing at its place at once, with no walk, at the scene's first
   draw, a load included, at the start of a map run and after „Restart”, the screen handing the
-  scene the events that tell it so. For the walk itself, a target changed on the way and the
-  system's setting for reduced motion, an agent compares a change with the part no invariant and no
-  test holds:
+  scene the events that tell it so; a walk the player cut by leaving the screen not played a second
+  time on the return, the mage standing at the place of the walk; a target that changes on the way
+  to an action that leads nowhere stopping the mage where its walk has brought it, the place it was
+  walking to not reached. For the walk itself, a target that changes on the way to another place,
+  which turns the mage from the place it has reached, and the system's setting for reduced motion,
+  an agent compares a change with the part no invariant and no test holds:
   - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×, the frames of
     its sprite changing every 160 ms; a target changed half way turning the mage from where it
     stands; the mage standing at its place at once, its frames still, under the system's setting for
@@ -11217,12 +11301,12 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 
 ### D-367 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, unless the map run is left or a new one starts, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
+The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, unless the map run is left, the scene is hidden — by leaving the screen of the run or by the end-of-run window that stands in its place (D-370) — or a new map run starts, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it.
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it; the flight of an icon and the cloud of dust whose animation the browser cancels because the scene is hidden over at once, and not played from their start when the scene is drawn again.
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.

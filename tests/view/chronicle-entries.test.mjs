@@ -60,7 +60,7 @@ test("a rule removed gives its number and sentence before the act, and the rule 
 });
 
 // Catches the whole sentence before or after left out, or a change of the condition missed.
-test("a rule whose action or condition changed gives the whole sentence before, an arrow and the whole sentence after", () => {
+test("a rule whose action or condition changed gives the whole sentence before and the whole sentence after, each in quotation marks, joined by „na”", () => {
   // decision: D-342 "Each change of the copy a map run carries out gives an entry of the chronicle"
   // decision: D-348 "The browser view describes an act of the player on the copy"
   const action = program([
@@ -68,7 +68,7 @@ test("a rule whose action or condition changed gives the whole sentence before, 
     hunger(),
   ]);
   assert.deepEqual(copyChangeTexts(BEFORE, action, null), [
-    "Zmieniono regułę 1.1: Zawsze → Eksploruj → Zawsze → Wędruj",
+    "Zmieniono regułę 1.1: „Zawsze → Eksploruj” na „Zawsze → Wędruj”",
   ]);
   const condition = program([
     fire(),
@@ -78,7 +78,7 @@ test("a rule whose action or condition changed gives the whole sentence before, 
     ]),
   ]);
   assert.deepEqual(copyChangeTexts(BEFORE, condition, null), [
-    "Zmieniono regułę 2.1: Zawsze → Zjedz — jagoda → Sytość poniżej 40 → Zjedz — jagoda",
+    "Zmieniono regułę 2.1: „Zawsze → Zjedz — jagoda” na „Sytość poniżej 40 % → Zjedz — jagoda”",
   ]);
 });
 

@@ -161,7 +161,7 @@ const WOLF = {
   result: null,
 };
 const WOLF_TEXT =
-  "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.";
+  "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz.";
 
 /** The map run after the game has run for a while, so its chronicle holds entries of its own. */
 async function played({ pass, reading }, view) {

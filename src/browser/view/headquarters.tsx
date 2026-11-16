@@ -165,8 +165,13 @@ type MemberProps = {
   onStop: (characterId: CharacterId) => void;
 };
 
-/** One character of the team: its lines, and „Zatrzymaj” where it is in an earning loop. */
+/**
+ * One character of the team: its lines, and „Zatrzymaj” where it is in an earning loop. Once the stop
+ * takes the button away, the focus goes to the character's name, the element of the row that stays.
+ */
 function TeamMember({ character, state, nowMs, onStop }: MemberProps) {
+  const name = useRef<HTMLAnchorElement>(null);
+  const stop = useRef<HTMLButtonElement>(null);
   const generation = generationLabel(character.generation);
   const resurrection = resurrectionLine(state.team, nowMs);
   const loop = state.loops[character.id];
@@ -175,6 +180,7 @@ function TeamMember({ character, state, nowMs, onStop }: MemberProps) {
   return (
     <li className="team-member">
       <a
+        ref={name}
         className="team-member-name"
         href={screenAddress({ kind: "character", characterId: character.id })}
       >
@@ -202,7 +208,13 @@ function TeamMember({ character, state, nowMs, onStop }: MemberProps) {
             text="Zatrzymaj"
             kind="destructive"
             label={`Zatrzymaj: ${character.name}`}
-            onClick={() => onStop(character.id)}
+            buttonRef={stop}
+            onClick={() => {
+              onStop(character.id);
+              // The stop removes the button, which then has no element to keep: the focus moves on to
+              // the name, while a refused stop leaves the button, and its focus, where they stand.
+              if (stop.current === null) name.current?.focus();
+            }}
           />
         </>
       )}

@@ -48,7 +48,6 @@ import {
   countText,
   dropGroup,
   dropRule,
-  focusAfter,
   groupNumber,
   groupSummary,
   moveRule,
@@ -57,7 +56,6 @@ import {
   ruleArrows,
   ruleNumber,
   ruleSentence,
-  type FocusTarget,
 } from "./program-editor.js";
 
 /** What the page gives the list; every call of `update` gives it whole. */
@@ -166,16 +164,33 @@ function ruleCountText(count: number): string {
   return `${count} reguł`;
 }
 
-/** The control keys a focus may go to after an edit of `focusAfter`'s kind, in the order tried. */
+/** The control that recovers focus after „Usuń” removes a rule. */
+type FocusTarget =
+  | { groupId: GroupId; row: number; control: "remove" }
+  | { groupId: GroupId; control: "add" };
+
+/**
+ * Where focus goes after „Usuń” of the rule at `index`, given the rule count after it: the „Usuń” of
+ * the row now at that position, or „Dodaj regułę” when there is none.
+ */
+function focusAfterRemove(
+  groupId: GroupId,
+  index: number,
+  ruleCount: number,
+): FocusTarget {
+  return index < ruleCount
+    ? { groupId, row: index, control: "remove" }
+    : { groupId, control: "add" };
+}
+
+/** The control keys a focus may go to after `focusAfterRemove`, in the order tried. */
 function keysOf(target: FocusTarget, program: Program): string[] {
   if (target.control === "add") return [`group:${target.groupId}:add`];
-  if (!("row" in target)) return [];
   const moved = program.groups.find((group) => group.id === target.groupId)
     ?.rules[target.row];
-  const control = target.control === "condition" ? "open" : target.control;
   return moved === undefined
     ? [`group:${target.groupId}:add`, `group:${target.groupId}:open`]
-    : [`rule:${moved.id}:${control}`, `group:${target.groupId}:open`];
+    : [`rule:${moved.id}:remove`, `group:${target.groupId}:open`];
 }
 
 /** Whether a key press on a row or a header itself, not on a button inside it, asks to open. */
@@ -417,7 +432,7 @@ export function RuleListView({
     if (next === null) return;
     const after =
       next.groups.find((each) => each.id === group.id)?.rules.length ?? 0;
-    commit(next, keysOf(focusAfter("remove", group.id, index, after), next));
+    commit(next, keysOf(focusAfterRemove(group.id, index, after), next));
   }
 
   function add(group: RuleGroup): void {

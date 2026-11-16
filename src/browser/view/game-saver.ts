@@ -3,8 +3,9 @@
  * request at a time, every moment of saving during one coalesced into one more save after its
  * answer, except a moment asked for during the save before a logout that goes on, which is
  * dropped (D-207); a check every 30 real seconds, made only while a manual map run passes, and at a
- * hidden page, that sends only a changed state; each document holding the clock's moment as its save time, which changes no state
- * (D-248); and the sentence of what the player sees of saving, which it gives as a value and a way
+ * hidden page, that sends only a changed state or the state of a save that failed, and then takes
+ * the place of the planned retry, so that one request waits at a time (D-207, D-208); each document
+ * holding the clock's moment as its save time, which changes no state (D-248); and the sentence of what the player sees of saving, which it gives as a value and a way
  * to hear of its changes, so that it builds no element. It is created with the game and disposed
  * with it; nothing here runs when the module is imported.
  */
@@ -80,7 +81,10 @@ export type GameSaver = {
    * when that request is the save before a logout that goes on (D-207).
    */
   moment(): void;
-  /** Sends the current state only where it is not the one last sent; nothing during a request. */
+  /**
+   * Sends the current state only where it is not the one last sent or where the save last sent
+   * failed, in place of a planned retry; nothing during a request.
+   */
   check(): void;
   /**
    * Waits for the request in flight, sends the current state and reports the outcome; the page
@@ -221,7 +225,8 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
 
   const check = (): void => {
     if (disposed || halted !== null || inFlight) return;
-    if (read() !== baseline) sendNow(false);
+    // A failed save leaves its state as the baseline, so the failure itself calls for the send.
+    if (failures > 0 || read() !== baseline) sendNow(false);
   };
 
   const onVisibility = (): void => {

@@ -260,6 +260,18 @@ export function shownContent(
 }
 
 /**
+ * Whether the events of a result start a new copy: a send starts a map run, and a restart carries on
+ * the copy of the map run it replaces, its events naming that run's end (D-164, D-294). A switch of the
+ * character starts a new copy too, but it has no event of its own; the panel knows it from its act.
+ */
+function startsNewCopy(events: readonly GameEvent[]): boolean {
+  return (
+    events.some((event) => event.kind === "mapRunStarted") &&
+    !events.some((event) => event.kind === "mapRunEnded")
+  );
+}
+
+/**
  * Whether „Przełącz postać na ten program” stands beside the saved program shown: a map run not
  * ended, and a program other than the one the copy belongs to (D-174).
  */
@@ -289,6 +301,25 @@ function savedShown(
   return shown.kind === "saved" && programById(state.programs, shown.programId)
     ? shown
     : { kind: "saved", programId: state.programs[0].id };
+}
+
+/**
+ * The open target as the program holds it now: a rule's panel goes with the group that holds the rule
+ * (D-306), so the group named is that one; null where the rule is gone, and where a group's own panel
+ * names a group that is gone. Pure.
+ */
+function holdingTarget(
+  program: Program,
+  target: RulePanelOpen,
+): RulePanelOpen | null {
+  if (target.ruleId === null)
+    return program.groups.some((group) => group.id === target.groupId)
+      ? target
+      : null;
+  const holder = program.groups.find((group) =>
+    group.rules.some((rule) => rule.id === target.ruleId),
+  );
+  return holder === undefined ? null : { ...target, groupId: holder.id };
 }
 
 /** The sentence above the editor of Programy while the game state holds a map run (D-166). */
@@ -395,13 +426,17 @@ export function ProgramPanelView({
     const closed = focusClosed.current;
     if (closed !== null) {
       focusClosed.current = null;
+      // The row of the rule is not drawn while its group is folded: the header of the group takes the focus then.
       const row =
         closed.ruleId === null
-          ? editing.current?.querySelector(
-              `[data-group="${closed.groupId}"] .rule-list-header`,
-            )
+          ? null
           : editing.current?.querySelector(`[data-rule="${closed.ruleId}"]`);
-      if (row instanceof HTMLElement) row.focus();
+      const target =
+        row ??
+        editing.current?.querySelector(
+          `[data-group="${closed.groupId}"] .rule-list-header`,
+        );
+      if (target instanceof HTMLElement) target.focus();
     }
   });
 
@@ -437,18 +472,10 @@ export function ProgramPanelView({
     open = null;
     setOpen(null);
   }
-
-  const openGroup =
-    open === null
-      ? undefined
-      : content.program.groups.find(
-          (group) => group.id === open.target.groupId,
-        );
-  const panelStands =
-    open !== null &&
-    openGroup !== undefined &&
-    (open.target.ruleId === null ||
-      openGroup.rules.some((rule) => rule.id === open.target.ruleId));
+  // The open rule goes with its rule to the group that holds it now; a rule gone closes its panel.
+  const followed =
+    open === null ? null : holdingTarget(content.program, open.target);
+  if (open !== null && followed === null) setOpen(null);
   const folded = memory.get(key) ?? NO_GROUPS;
 
   const checked =
@@ -510,8 +537,8 @@ export function ProgramPanelView({
   }
 
   function closePanel(): void {
-    if (open === null) return;
-    focusClosed.current = open.target;
+    if (followed === null) return;
+    focusClosed.current = followed;
     setOpen(null);
   }
 
@@ -525,11 +552,11 @@ export function ProgramPanelView({
       : state.programs[0];
 
   const rulePanel =
-    panelStands && open !== null ? (
+    followed !== null ? (
       <RulePanelView
         state={state}
         program={content.program}
-        open={open.target}
+        open={followed}
         copy={copyShown}
         onCommit={actions.edit}
         onClose={closePanel}
@@ -626,7 +653,9 @@ export function ProgramPanelView({
                 />
               ) : null}
               {lacks && owner ? (
-                <p className="copy-line">{copyLacksSentence(owner.name)}</p>
+                <p className="copy-line">
+                  {copyLacksSentence(owner.name, unsaved)}
+                </p>
               ) : null}
             </div>
           </div>
@@ -673,7 +702,7 @@ export function ProgramPanelView({
           program={content.program}
           counts={content.counts}
           folded={folded}
-          open={open === null ? null : open.target}
+          open={followed}
           panel={rulePanel}
           signs={copyShown ? ruleSigns(state) : null}
           onCommit={actions.edit}
@@ -710,6 +739,8 @@ export function createProgramPanel(
   let disposed = false;
   // The rule „Dodaj regułę z tym” asked the view to open last; null until it asks.
   let opening: RulePanelOpen | null = null;
+  // Set while a switch of the character runs, so the update it makes sees a new copy (D-294).
+  let switching = false;
 
   function draw(): void {
     if (disposed || state === null) return;
@@ -765,7 +796,12 @@ export function createProgramPanel(
     saveCopyAsNew: (name) => controls.saveCopyAsNew(name),
     discardCopy: () => controls.discardCopy(),
     switchProgram(programId) {
-      controls.switchProgram(programId);
+      switching = true;
+      try {
+        controls.switchProgram(programId);
+      } finally {
+        switching = false;
+      }
       show({ kind: "copy" });
     },
   };
@@ -775,6 +811,10 @@ export function createProgramPanel(
     update(next: GameState, events: readonly GameEvent[]): void {
       const previous = state;
       state = next;
+      // A new copy has every rule group unfolded: the folds of the copy before it do not pass to it
+      // (D-294). The panel of Programy keeps its folds, which are of saved programs.
+      if (mode === "run" && (switching || startsNewCopy(events)))
+        folding.set(COPY_VALUE, []);
       shown =
         mode === "run"
           ? nextShown(shown, previous, next, events)
@@ -795,9 +835,11 @@ export function createProgramPanel(
       const found = discoveryRule(state);
       if (found === null) return;
       shown = { kind: "copy" };
-      // A new object at each call, which the view opens once, at the draw that first gives it.
-      opening = found.open;
       controls.editCopy(found.program);
+      // Asked after the edit: the act's reading of the clock may draw the panel before the edit
+      // lands, and a rule not yet in the program would close the panel asked for. A new object at
+      // each call, which the view opens once, at the draw that first gives it.
+      opening = found.open;
       draw();
     },
     scrollToRule(ruleId: RuleId): void {

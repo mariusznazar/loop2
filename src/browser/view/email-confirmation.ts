@@ -107,20 +107,28 @@ export function browserAddress(): PageAddress {
   };
 }
 
+/** The result of a confirmation from the address: its sentence, and whether the server refused the link. */
+export type ConfirmationAnswer = {
+  notice: ConfirmationNotice;
+  refused: boolean;
+};
+
 /**
  * When the page's address carries a confirmation token, sends it and returns the sentence of the
- * result; returns null when it carries none. The fragment is removed only once the answer is
- * definitive, so after a lost connection a reload tries again and a spent token is never resent.
+ * result and whether the link was refused; returns null when it carries none. The fragment is
+ * removed only once the answer is definitive, so after a lost connection a reload tries again and a
+ * spent token is never resent. A refusal is the one definitive answer in `warning`; a confirmation is
+ * in `positive`.
  */
 export async function confirmFromAddress(
   client: Pick<AccountClient, "confirmEmail">,
   address: PageAddress,
-): Promise<ConfirmationNotice | null> {
+): Promise<ConfirmationAnswer | null> {
   const token = readConfirmationToken(address.hash());
   if (token === null) return null;
   const { notice, definitive } = confirmationOutcome(
     await client.confirmEmail(token),
   );
   if (definitive) address.clearFragment();
-  return notice;
+  return { notice, refused: definitive && notice.role === "warning" };
 }

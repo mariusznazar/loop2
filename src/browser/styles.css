@@ -11,8 +11,9 @@
  * the camp of Siedziba, with the keyframes `scene-frames`. The rules of the credits that name the
  * login card and Siedziba belong to the part credits.css.
  * The rules of each other screen and part stand in the stylesheet of that screen or part, which the
- * page links after this one. It reads each value of appearance from the design tokens of tokens.css by
- * var(--…) (guidelines/styleguide-browser-view.md).
+ * page links after this one; Programy, Mapy and Wiedza have a stylesheet of their own too, and the
+ * rules they share that stand here are named above. It reads each value of appearance from the design
+ * tokens of tokens.css by var(--…) (guidelines/styleguide-browser-view.md).
  * Layout values D-43 leaves out stand here: line-height, the @media threshold, widths and heights, and
  * the sizes of the columns of the layout grid.
  */
@@ -150,8 +151,13 @@ header .failure-line {
   border: var(--frame-width) solid var(--divider);
 }
 
+/* The address is typed by the player and the sentence names it: an address with no space breaks inside the
+ * menu (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the menu
+ * shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
 .account-menu-address,
 .account-menu-sentence {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
 }
 
@@ -417,10 +423,14 @@ header .failure-line {
  * It is `aria-disabled`, not `disabled`, so the keyboard still reaches it to read the reason. Focus is
  * the one :focus-visible rule above.
  */
+/*
+ * A grid of two columns: the icon takes the first, the name the second, so a name that breaks into
+ * two lines keeps its icon beside its first line; the reason takes a line of its own.
+ */
 .button.pick-cell {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
   gap: var(--space-xs);
   text-align: left;
 }
@@ -432,8 +442,13 @@ header .failure-line {
   cursor: default;
 }
 
+/* A greyed cell keeps no highlight under the pointer, so the one that may not be picked looks so. */
+.button.pick-cell.greyed:hover {
+  background: transparent;
+}
+
 .pick-cell-reason {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   font-size: var(--font-size-detail);
   color: var(--text-secondary);
 }
@@ -496,8 +511,12 @@ header .failure-line {
   gap: var(--space-s);
 }
 
-/* The sentence under a form of a server refusal or a lost connection, in `warning` (D-39, D-44). */
+/* The sentence under a form of a server refusal or a lost connection, in `warning` (D-39, D-44). This one
+ * and `form-note` may name a program of a saved game, a name typed by the player, so each breaks inside its
+ * row (styleguide rule "A name typed by the player breaks in its row"). */
 .form-warning {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   color: var(--warning);
 }
@@ -507,6 +526,8 @@ header .failure-line {
  * the colour of that text, so the bar is part of the text (D-40, D-44).
  */
 .form-note {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   padding-left: var(--space-s);
   color: var(--text);
@@ -613,10 +634,23 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-/* The state of the tile's campfire and burning items: content to read, after the stock (D-70). */
+/*
+ * The state of the tile's campfire and burning items: content to read, after the stock (D-70). The cell
+ * breaks between the texts when the table would be wider than its area, so the table fits it whole; each
+ * text keeps to one line, so no name is cut. The other cells of such a row stand at its top.
+ */
 .tile-list tbody td.tile-fire {
   text-align: left;
   color: var(--text);
+  white-space: normal;
+}
+
+.tile-list tbody tr > * {
+  vertical-align: top;
+}
+
+.tile-list .tile-fire-text {
+  white-space: nowrap;
 }
 
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */

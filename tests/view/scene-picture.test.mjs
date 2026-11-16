@@ -21,7 +21,9 @@ import {
   newGame,
   send,
   setProgram,
+  withSaveTime,
 } from "../../dist/browser/sim/game.js";
+import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import {
   creatureEffect,
   creaturePlace,
@@ -454,12 +456,18 @@ test("the player's pause stops the scene, which is then greyed", () => {
 });
 
 test("a loaded map run comes back paused, so it stands as at a pause", () => {
-  const loaded = {
-    ...doing({ kind: "explore" }),
-    paused: true,
-    discovery: null,
-  };
-  assert.equal(sceneDrawing(loaded).standing, "paused");
+  // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused"
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
+  const running = sent();
+  assert.equal(
+    running.paused,
+    false,
+    "precondition: the saved run is not paused",
+  );
+  // The save stamps the real moment of the save on the state, as the view's store does before it saves.
+  const loaded = loadSavedGame(savedGame(withSaveTime(running, 1760000000000)));
+  assert.equal(loaded.ok, true, "the saved game loads");
+  assert.equal(sceneDrawing(loaded.state).standing, "paused");
 });
 
 test("a stop at a discovery stands in colour: the discovery is held with the pause", () => {

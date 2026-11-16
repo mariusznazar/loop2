@@ -154,7 +154,18 @@ function AccountMenu({
     function onClick(event: MouseEvent): void {
       const inside = container.current;
       if (inside !== null && event.composedPath().includes(inside)) return;
-      close();
+      setOpen(false);
+      // The click has already moved the focus to the place it landed on, and it stays there. Where that
+      // place takes none, the focus is on the body or on a control of the menu, which is going, so it
+      // goes to „Konto”.
+      const focused = document.activeElement;
+      if (
+        focused === null ||
+        focused === document.body ||
+        (inside !== null && inside.contains(focused))
+      ) {
+        accountButton.current?.focus();
+      }
     }
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("click", onClick);

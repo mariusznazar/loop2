@@ -145,8 +145,10 @@ test("a definitive answer, confirmed or the link refused, sends the token once a
   ]) {
     const { client, sent } = recordingClient(result);
     const address = fakeAddress(`#confirm-email=${TOKEN}`);
-    const notice = await confirmFromAddress(client, address);
-    assert.equal(notice.text, text, name);
+    const answer = await confirmFromAddress(client, address);
+    assert.equal(answer.notice.text, text, name);
+    // Only the refused link is refused; a confirmation is not (D-381).
+    assert.equal(answer.refused, name === "refused", name);
     assert.deepEqual(sent, [TOKEN], name);
     assert.equal(address.cleared, 1, name);
     assert.equal(address.hash(), "", name);
@@ -161,8 +163,10 @@ test("a lost connection or a server error keeps the fragment, so a reload tries 
   ]) {
     const { client, sent } = recordingClient(result);
     const address = fakeAddress(`#confirm-email=${TOKEN}`);
-    const notice = await confirmFromAddress(client, address);
-    assert.equal(notice.role, "warning", name);
+    const answer = await confirmFromAddress(client, address);
+    assert.equal(answer.notice.role, "warning", name);
+    // A connection lost or a server error is no refusal of the link (D-381).
+    assert.equal(answer.refused, false, name);
     assert.deepEqual(sent, [TOKEN], name);
     assert.equal(address.cleared, 0, name);
     assert.equal(address.hash(), `#confirm-email=${TOKEN}`, name);

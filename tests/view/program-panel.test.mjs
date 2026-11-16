@@ -410,6 +410,43 @@ test("a rule open in a group that gets folded keeps its panel under that group's
   });
 });
 
+// D-350, D-313. The panel under the header of a folded group gives the focus back to that header on
+// „✕” and Escape, since the row of its rule is not drawn. Catches the focus left on the page.
+for (const close of ["✕", "Escape"]) {
+  test(`${close} on a panel under a folded group's header gives the focus to that header`, async () => {
+    // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+    // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+    await withPage(async (page) => {
+      const game = await wiredPanel(page, gameWithRule(), "programs");
+      await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+      await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+      assert.equal(
+        rowOf(game.root, 1),
+        null,
+        "precondition: the row is not drawn",
+      );
+      assert.equal(
+        classed(game.root, "rule-panel").length,
+        1,
+        "precondition: still open",
+      );
+      const panel = game.root.querySelector(".rule-panel");
+      if (close === "✕") await click(buttonNamed(panel, "✕"));
+      else await key(panel, "Escape");
+      assert.equal(
+        classed(game.root, "rule-panel").length,
+        0,
+        `closed by ${close}`,
+      );
+      assert.equal(
+        page.document.activeElement,
+        headerOf(game.root, 1),
+        "the focus went to the header of the folded group",
+      );
+    });
+  });
+}
+
 // D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
 // panel, as the old editor left it.
 test("„+ reguła” adds the rule and opens its panel on the condition", async () => {
@@ -543,6 +580,83 @@ test("a fold made on one panel redraws the other at once, with no update of its 
     await pick(run.root, "1");
     await click(programs.root.querySelector('button[aria-label="Zwiń grupę"]'));
     assert.equal(classed(run.root, "rule-list-rules").length, 0);
+  });
+});
+
+/** How many rule groups stand unfolded: each of them has the button that folds it, „Zwiń grupę”. */
+const unfoldedGroups = (root) =>
+  root.querySelectorAll('button[aria-label="Zwiń grupę"]').length;
+
+// D-294. A new copy made by a send has every rule group unfolded: the folds of the copy
+// before it do not pass to it. Catches the copy's folding kept under its one key across a send.
+test("a send after the copy's group was folded shows the new copy with every group unfolded", async () => {
+  // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule(), "run", createFolding());
+    await game.change(send(game.state, SENT, REAL_MS));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(
+      unfoldedGroups(game.root),
+      0,
+      "precondition: the copy's group is folded",
+    );
+    await game.change(end(game.state));
+    await game.change(send(game.state, SENT, REAL_MS));
+    assert.equal(
+      unfoldedGroups(game.root),
+      1,
+      "the new copy's group is unfolded",
+    );
+  });
+});
+
+// D-294. A switch of the character to another program makes a new copy, which has every rule
+// group unfolded too. Catches the copy's folding kept across a switch.
+test("a switch of the character after the copy's group was folded shows the new copy with every group unfolded", async () => {
+  // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
+  await withPage(async (page) => {
+    const game = await wiredPanel(
+      page,
+      createProgram(gameWithRule()).state,
+      "run",
+      createFolding(),
+    );
+    await game.change(send(game.state, SENT, REAL_MS));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(
+      unfoldedGroups(game.root),
+      0,
+      "precondition: the copy's group is folded",
+    );
+    await pick(game.root, "2");
+    await click(buttonNamed(game.root, SWITCH));
+    assert.deepEqual(game.acts.at(-1), ["switchProgram", 2]);
+    assert.equal(programList(game.root).value, "copy");
+    assert.equal(
+      unfoldedGroups(game.root),
+      1,
+      "the new copy's group is unfolded",
+    );
+  });
+});
+
+// D-164, D-294. A restart carries on the copy of its map run, so the folds of that copy stay. Catches a
+// memory of the copy cleared at every start of a map run, the restart included.
+test("a restart keeps the folds of the copy it carries on", async () => {
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start, except that a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included"
+  // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule(), "run", createFolding());
+    await game.change(send(game.state, SENT, REAL_MS));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(
+      unfoldedGroups(game.root),
+      0,
+      "precondition: the copy's group is folded",
+    );
+    await game.change(restart(game.state));
+    assert.equal(unfoldedGroups(game.root), 0, "the copy's group stays folded");
   });
 });
 
@@ -927,7 +1041,7 @@ test("time passing keeps what is typed in the name field and in an editor field,
   });
 });
 
-/** Ala's map run with a copy whose rule reads „Zapas poniżej 8 · Patyk → Eksploruj”. */
+/** Ala's map run with a copy whose rule reads „Zapas poniżej 8 szt. · Patyk → Eksploruj”. */
 function runWithNumber() {
   const program = programFromRules({
     condition: { kind: "itemBelow", item: "stick", value: 8 },
@@ -1265,7 +1379,7 @@ test("„Zapisz w programie” writes the copy into its program, and the line an
 // D-172. Catches the line missing when the program changed and the
 // copy has no changes, the line staying after the save, and a wrong program name in it.
 test("the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie”", async () => {
-  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
+  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii.” where the copy holds no unsaved changes and „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.” where it holds some; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
   // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());
@@ -1277,9 +1391,11 @@ test("the line of a changed program stands with and without unsaved changes, and
     // The program, not the copy, gets a group.
     await click(buttonNamed(game.root, "+ dodaj grupę"));
     await pick(game.root, "copy");
+    // Without unsaved changes the line promises no save (D-172); with some it names the save.
+    const lacksPlain = "Program Las ma zmiany, których nie ma w tej kopii.";
     const lacks =
       "Program Las ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.";
-    assert.deepEqual(copyTexts(game.root), ["Kopia: Las", lacks]);
+    assert.deepEqual(copyTexts(game.root), ["Kopia: Las", lacksPlain]);
     assert.equal(copyButton(game.root, "Zapisz w programie").disabled, true);
 
     await click(buttonNamed(game.root, "+ dodaj grupę"));
@@ -1291,6 +1407,24 @@ test("the line of a changed program stands with and without unsaved changes, and
     await click(copyButton(game.root, "Zapisz w programie"));
     assert.deepEqual(copyTexts(game.root), ["Kopia: Las"]);
     assert.equal(groupCount(game.state.programs[0].program), 2);
+  });
+});
+
+// D-172. Catches the full sentence, with its promise of a save, standing beside the inactive „Zapisz w
+// programie” of a copy with no unsaved changes, and the short line missing there.
+test("a copy with no unsaved changes whose program was changed reads the short line, with „Zapisz w programie” inactive", async () => {
+  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii.” where the copy holds no unsaved changes and „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.” where it holds some; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule());
+    await game.change(send(game.state, SENT, REAL_MS));
+    await pick(game.root, "1");
+    await click(buttonNamed(game.root, "+ dodaj grupę"));
+    await pick(game.root, "copy");
+    assert.deepEqual(copyTexts(game.root), [
+      "Kopia: Program",
+      "Program Program ma zmiany, których nie ma w tej kopii.",
+    ]);
+    assert.equal(copyButton(game.root, "Zapisz w programie").disabled, true);
   });
 });
 
@@ -1849,5 +1983,65 @@ test("opening a rule, and then a rule of another group, takes the focus into the
       "into the panel again",
     );
     assert.equal(openField(game.root), "Warunek", "on the condition");
+  });
+});
+
+// D-306. A rule moved across a group border by „↓” or by its handle keeps the panel open
+// under its new row on the field it had. Catches the panel closed at the border, or put back on the
+// condition with the focus taken into the grid.
+test("a rule moved across a group border by „↓” and by its handle keeps the panel open under its new row, on the same field", async () => {
+  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it, as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes nothing, and the panel stays open on the same field and goes with the rule to its new group"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    await click(
+      game.root.querySelector('button[aria-label="Czynność: Eksploruj"]'),
+    );
+    assert.equal(openField(game.root), "Czynność", "precondition: the action");
+
+    // Rule 1 is the last of group 1; „↓” moves it to the start of group 2.
+    await click(buttonNamed(rowOf(game.root, 1), "↓"));
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+    assert.deepEqual(
+      game.state.programs[0].program.groups.map((group) =>
+        group.rules.map((rule) => rule.id),
+      ),
+      [[], [1, 2]],
+      "precondition: rule 1 is first in group 2",
+    );
+    assert.ok(
+      rowOf(game.root, 1).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "the panel stands under rule 1's new row",
+    );
+    assert.equal(openField(game.root), "Czynność", "the same field after „↓”");
+    assert.ok(
+      rowOf(game.root, 1).contains(page.document.activeElement),
+      "the focus stays on the moved rule's arrow",
+    );
+
+    // By the handle: dragged back over group 1, which is empty now, the rule lands in it.
+    await drag(rowOf(game.root, 1).querySelector(".drag-handle"), "dragstart");
+    await drag(game.root.querySelector('[data-group="1"]'), "dragover");
+    await drag(game.root.querySelector('[data-group="1"]'), "drop");
+    assert.deepEqual(
+      game.state.programs[0].program.groups.map((group) =>
+        group.rules.map((rule) => rule.id),
+      ),
+      [[1], [2]],
+      "precondition: rule 1 dropped into group 1",
+    );
+    assert.ok(
+      rowOf(game.root, 1).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "the panel stands under rule 1's row after the drag",
+    );
+    assert.equal(
+      openField(game.root),
+      "Czynność",
+      "the same field after the drag",
+    );
   });
 });

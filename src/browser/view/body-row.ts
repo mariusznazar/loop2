@@ -12,8 +12,11 @@ import type { Body, MapRun, RunCharacter } from "../sim/types.js";
 /** One value of the body row and whether it stands in `danger` (D-39). */
 export type BodyValue = { text: string; danger: boolean };
 
-/** A temperature cut down to tenths, with a decimal comma: 36.976 as „36,9”. */
-function tenths(value: number): string {
+/**
+ * A number cut down to tenths, with a decimal comma: 36.976 as „36,9”. The body row writes the
+ * temperature so, and the sentence of a rule the number of a condition that takes tenths.
+ */
+export function tenths(value: number): string {
   // The body's numbers keep six decimal places, so value * 10 lies far from a whole number
   // unless the value is one tenth exactly, and the cut never falls a tenth short.
   return (Math.floor(value * 10) / 10).toFixed(1).replace(".", ",");

@@ -193,12 +193,15 @@ test("a header shows its number, name, condition and number of rules, and a row 
     const header = headerOf(page.root, 1);
     assert.equal(textIn(header, ".rule-list-number"), "1");
     assert.equal(textIn(header, ".rule-list-name"), "Pierwsza");
-    assert.equal(textIn(header, ".rule-list-condition"), "Sytość poniżej 30");
+    assert.equal(textIn(header, ".rule-list-condition"), "Sytość poniżej 30 %");
     assert.equal(textIn(header, ".rule-list-size"), "2 reguły");
     assert.equal(textIn(headerOf(page.root, 2), ".rule-list-size"), "1 reguła");
     const row = rowOf(page.root, 2);
     assert.equal(textIn(row, ".rule-number"), "1.2");
-    assert.equal(textIn(row, ".rule-condition"), "Zapas poniżej 8 · Patyk");
+    assert.equal(
+      textIn(row, ".rule-condition"),
+      "Zapas poniżej 8 szt. · Patyk",
+    );
     assert.equal(textIn(row, ".rule-action"), "Zbierz — Patyk");
     assert.equal(textIn(row, ".rule-time"), "10 min");
     assert.equal(textIn(rowOf(page.root, 3), ".rule-number"), "2.1");
@@ -394,9 +397,9 @@ test("a row has „↑”, „↓” and the destructive „Usuń”, and a head
   });
 });
 
-test("the arrows are off only at the ends of the program: „↑” on the first rule and „↓” on the last", async () => {
+test("the arrows are off only where no group stands before (after) the rule's group, so „↑” on the first rule and „↓” on the last are off", async () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
-  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only on the program's first rule and „↓” only on its last"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     const off = (id) =>
@@ -590,7 +593,10 @@ test("a folded group shows its header alone, with name, condition and number of 
     assert.equal(section.querySelector(".rule-list-row"), null);
     assert.equal(buttonIn(section, "+ reguła"), undefined);
     assert.equal(textIn(section, ".rule-list-name"), "Pierwsza");
-    assert.equal(textIn(section, ".rule-list-condition"), "Sytość poniżej 30");
+    assert.equal(
+      textIn(section, ".rule-list-condition"),
+      "Sytość poniżej 30 %",
+    );
     assert.equal(textIn(section, ".rule-list-size"), "2 reguły");
     assert.ok(rowOf(page.root, 3), "the group not folded keeps its rows");
   });
@@ -1118,7 +1124,7 @@ function withFirstRule(condition, action) {
 const ZAPAS_8_PATYK = { kind: "itemBelow", item: "stick", value: 8 };
 const ZBIERZ_PATYK = { kind: "gather", resource: "stick" };
 
-test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
+test("the acceptance criterion: „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
   // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
@@ -1139,7 +1145,7 @@ test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Paty
     await press(cellNamed(panel, "Patyk"));
     assert.equal(
       textIn(rowOf(page.root, 2), ".rule-condition"),
-      "Zapas poniżej 8 · Patyk",
+      "Zapas poniżej 8 szt. · Patyk",
     );
     assert.equal(textIn(rowOf(page.root, 2), ".rule-action"), "Zbierz — Patyk");
     assert.ok(panelOf(page.root), "the panel stays open after the last field");
@@ -1180,6 +1186,35 @@ test("a number typed in the panel keeps its text and the focus while the game at
       value: 12,
     });
   });
+});
+
+// The unit of the condition stands beside the number field of the panel, taken from the condition's
+// data, so the field reads „20 min” as the sentence of the rule does. Catches a field drawn without
+// its unit, or with the unit of another condition, such as the unit of the time of an action.
+test("the number field of the panel stands with the unit of its condition beside it", async () => {
+  for (const [condition, unit] of [
+    [{ kind: "campfireLeftBelow", value: 20 }, "min"],
+    [{ kind: "satietyBelow", value: 50 }, "%"],
+    [{ kind: "temperatureBelow", value: 36.5 }, "°C"],
+  ]) {
+    await withPage(async (page) => {
+      await mountPanel(page, withFirstRule(condition, EXPLORE), {
+        groupId: 1,
+        ruleId: 1,
+      });
+      const field = [
+        ...panelOf(page.root).querySelectorAll(".rule-panel-field"),
+      ].find((each) => textIn(each, ".rule-panel-label") === "Liczba");
+      assert.ok(field, condition.kind);
+      const number = numberIn(field);
+      const shown = field.querySelector(".rule-panel-unit");
+      assert.equal(shown?.textContent, unit, condition.kind);
+      assert.ok(
+        shown.parentElement.contains(number),
+        `${condition.kind}: the unit stands in the row of the number field`,
+      );
+    });
+  }
 });
 
 // The range and the step of the number field of the panel (D-376). Catches a field drawn with another

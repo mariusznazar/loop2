@@ -1309,7 +1309,7 @@ test("reportBrowserFailure gives a failure, never a throw, for a redirect, a dea
 // delivers it. The wait is observed on the call the client hands the real fetch, which is passed
 // on unchanged, so the request still reaches the local server above.
 test("saveGame hands the real fetch a PUT with keepalive and the server gets that request", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`"
   respond = (_request, response) => reply(response, 200, '{"revision":8}');
   const realFetch = globalThis.fetch;
   const handed = [];

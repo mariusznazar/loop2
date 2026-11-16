@@ -34,7 +34,6 @@ import {
   countText,
   dropGroup,
   fieldAfter,
-  focusAfter,
   groupNumber,
   groupSummary,
   moveRule,
@@ -781,37 +780,6 @@ test("a condition switching to „Zapas poniżej” takes the first of the offer
   );
 });
 
-test("focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition", () => {
-  assert.deepEqual(focusAfter("up", 23, 2, 3), {
-    groupId: 23,
-    row: 1,
-    control: "up",
-  });
-  assert.deepEqual(focusAfter("down", 23, 0, 3), {
-    groupId: 23,
-    row: 1,
-    control: "down",
-  });
-  assert.deepEqual(focusAfter("remove", 23, 1, 2), {
-    groupId: 23,
-    row: 1,
-    control: "remove",
-  });
-  assert.deepEqual(focusAfter("remove", 23, 2, 2), {
-    groupId: 23,
-    control: "add",
-  });
-  assert.deepEqual(focusAfter("remove", 23, 0, 0), {
-    groupId: 23,
-    control: "add",
-  });
-  assert.deepEqual(focusAfter("add", 23, 3, 4), {
-    groupId: 23,
-    row: 3,
-    control: "condition",
-  });
-});
-
 test("every program the editor builds passes setProgram, before sending and during a run", () => {
   const resources = offeredResources(newKnowingGame());
   const conditionKinds = Object.keys(CONDITIONS);
@@ -963,7 +931,7 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   assert.deepEqual(moved.groups[0], first);
   assert.deepEqual(moved.groups[1].rules, [ALWAYS_WALK, BELOW_WANDER]);
   // D-297: „↓” on the last rule of a group goes to the start of the
-  // next group, „↑” on the first to the end of the previous one; null only at the program's ends.
+  // next group, „↑” on the first to the end of the previous one; null only where no group stands on that side.
   const down = moveRule(input, 8, 0, 1);
   assert.deepEqual(down.groups[0].rules, []);
   assert.deepEqual(down.groups[1].rules, [
@@ -1562,7 +1530,7 @@ test("a row reads as a sentence: the condition with its number and target, then 
     action: { kind: "gather", resource: "stick" },
   };
   assert.deepEqual(ruleSentence(rule), {
-    condition: "Zapas poniżej 8 · Patyk",
+    condition: "Zapas poniżej 8 szt. · Patyk",
     action: "Zbierz — Patyk",
   });
   assert.deepEqual(
@@ -1574,11 +1542,19 @@ test("a row reads as a sentence: the condition with its number and target, then 
   );
   assert.equal(
     conditionSentence({ kind: "hereBelow", resource: "berry", value: 4 }),
-    "Tu leży mniej niż 4 · Jagoda",
+    "Tu leży mniej niż 4 szt. · Jagoda",
   );
   assert.equal(
     conditionSentence({ kind: "campfireLeftBelow", value: 20 }),
-    "Zostało mniej niż — ognisko 20",
+    "Zostało mniej niż — ognisko 20 min",
+  );
+  assert.equal(
+    conditionSentence({ kind: "satietyBelow", value: 40 }),
+    "Sytość poniżej 40 %",
+  );
+  assert.equal(
+    conditionSentence({ kind: "healthBelow", value: 8 }),
+    "Zdrowie poniżej 8 pkt",
   );
   assert.equal(
     conditionSentence({ kind: "awayFromCampfire" }),
@@ -1588,6 +1564,34 @@ test("a row reads as a sentence: the condition with its number and target, then 
   assert.equal(
     actionSentence({ kind: "walkTo", resource: "moss" }),
     "Idź — Mech",
+  );
+});
+
+// Catches a number with a fraction that the sentence writes with a dot, as JavaScript prints it, where
+// the body row of the same screen writes „36,5 °C”, with a decimal comma. The row, the group's header
+// and the end-of-run window and the chronicle that read them all take the sentence from these functions.
+test("a number with a fraction stands in the sentence of a rule and of a group with a decimal comma, a whole one without it", () => {
+  const chilly = { kind: "temperatureBelow", value: 36.5 };
+  assert.equal(conditionSentence(chilly), "Temperatura poniżej 36,5 °C");
+  assert.equal(
+    conditionSentence({ kind: "temperatureBelow", value: 30.1 }),
+    "Temperatura poniżej 30,1 °C",
+  );
+  assert.equal(
+    conditionSentence({ kind: "temperatureBelow", value: 36 }),
+    "Temperatura poniżej 36 °C",
+  );
+  assert.deepEqual(
+    ruleSentence({ id: 1, condition: chilly, action: EXPLORE }),
+    {
+      condition: "Temperatura poniżej 36,5 °C",
+      action: "Eksploruj",
+    },
+  );
+  const group = { id: 1, name: "Ogień", condition: chilly, rules: [] };
+  assert.equal(
+    groupSummary(group, null).condition,
+    "Temperatura poniżej 36,5 °C",
   );
 });
 
@@ -1601,7 +1605,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
   };
   assert.deepEqual(groupSummary(group, { 1: 3, 3: 18 }), {
     name: "Ogień",
-    condition: "Temperatura poniżej 35",
+    condition: "Temperatura poniżej 35 °C",
     ruleCount: 3,
     executed: 21,
   });
@@ -1612,9 +1616,9 @@ test("a group's summary: its name, condition, number of rules and the sum of the
   assert.equal(countText(0), "Wykonano 0×");
 });
 
-test("the arrows are off only on the program's first and last rule, a group's edge being no end", () => {
+test("the arrows are off only where no group stands before (after) the rule's group, a group's edge being no end", () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
-  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only on the program's first rule and „↓” only on its last"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it, so a rule group left empty at the edge of the program takes the rule"
   const second = {
     id: 2,
     name: "Dwa",
@@ -1635,6 +1639,17 @@ test("the arrows are off only on the program's first and last rule, a group's ed
   assert.deepEqual(ruleArrows(single, 1, 1), { up: true, down: true });
   assert.deepEqual(ruleArrows(single, 1, 0), { up: false, down: true });
   assert.deepEqual(ruleArrows(single, 1, 2), { up: true, down: false });
+  // A group left empty at the edge of the program takes the rule: the arrow toward it is on.
+  const emptyAtEdges = {
+    ...THREE,
+    groups: [
+      { id: 1, name: "Pusta", condition: ALWAYS, rules: [] },
+      { id: 2, name: "Dwa", condition: ALWAYS, rules: [ALWAYS_EXPLORE] },
+      { id: 3, name: "Trzy", condition: ALWAYS, rules: [] },
+    ],
+    nextGroupId: 4,
+  };
+  assert.deepEqual(ruleArrows(emptyAtEdges, 2, 0), { up: true, down: true });
 });
 
 test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {

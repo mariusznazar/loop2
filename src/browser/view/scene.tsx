@@ -16,7 +16,11 @@
  * the place the mage stands at or walks to, where it starts a walk, the way it faces, and a map run
  * started, at which, as at its first draw, the mage stands at its place at once. A redraw changes no
  * element that runs an animation, so the clock's five redraws a second restart none (D-03's accepted
- * risk); a walk starts on a new element, which starts its animations afresh.
+ * risk); a walk starts on a new element, which starts its animations afresh. A walk that ends, or that
+ * a browser cancels because the scene is hidden, leaves the mage standing at the walk's place, so a
+ * scene shown again does not walk it from where it set out. An effect, the wolf's run in and the return
+ * of the tint that a browser cancels the same way are over too, so a scene shown again does not play
+ * them from their start.
  *
  * The mage that gathers bends in a loop at its place, on a third sheet of its own that takes the idle
  * sheet's place for the whole action (D-364). The end of a gathering shows an effect of an ordinary
@@ -514,10 +518,13 @@ function fallFacing(mageX: number, frame: SceneSprite): Facing {
   return mageX + SCENE.mageMiddle > frame.width / 2 ? "left" : "right";
 }
 
-/** Where the drawing leads the mage: the place of its goal, or `kept` where its goal is to stay. */
-function placeOf(drawing: SceneDrawing, kept: number): number {
+/**
+ * Where the drawing leads the mage: the place of its goal, or, where its goal is to stay, the place it
+ * has reached, which `reached` gives and which is read only where the goal is to stay (D-318, D-319).
+ */
+function placeOf(drawing: SceneDrawing, reached: () => number): number {
   const { goal } = drawing.mage;
-  return goal.kind === "at" ? goal.place.x : kept;
+  return goal.kind === "at" ? goal.place.x : reached();
 }
 
 /**
@@ -544,8 +551,8 @@ function reachedX(
 
 /**
  * The scene. The mage stands where its activity leads it and walks there from where it stands; where
- * the activity leaves it standing, it keeps the place of the previous reading, and at a first draw,
- * which has none, it stands in the clearing.
+ * the activity leaves it standing, it keeps the place it has reached, which on a walk under way is
+ * where the walk has brought it, and at a first draw, which has none, it stands in the clearing.
  */
 export function Scene({
   state,
@@ -577,7 +584,7 @@ export function Scene({
   const started = fresh && events.some((e) => e.kind === "mapRunStarted");
   if (drawing !== null && (current === null || started)) {
     current = {
-      x: placeOf(drawing, SCENE.clearingX),
+      x: placeOf(drawing, () => SCENE.clearingX),
       from: null,
       facing: current?.facing ?? "right",
       walk: (current?.walk ?? 0) + 1,
@@ -586,8 +593,13 @@ export function Scene({
   }
 
   const frameWidth = drawing?.mage.idle.width ?? 0;
+  // Where the mage is led: where its goal is to stay, the place its walk under way has brought it to,
+  // so that it stops there and does not run on to the place of that walk (D-318, D-319).
+  const walked = current;
   const next =
-    drawing === null || current === null ? null : placeOf(drawing, current.x);
+    drawing === null || walked === null
+      ? null
+      : placeOf(drawing, () => reachedX(mageRef.current, walked, frameWidth));
 
   // Where the creature that attacks stands, from the place the mage stands at: the mage turns toward
   // it where it stands still and keeps the way it faces after the fight (D-316).
@@ -716,40 +728,53 @@ export function Scene({
         "--walk-start": percent((current.from ?? 0) - current.x, frameWidth),
       } as CSSProperties)
     : boxOf(mage, frame);
-  // The walk has ended where CSS has run it to its place: the mage stands there from now on, so a
-  // scene hidden and shown again, which starts its animations anew, does not walk it again.
-  const onAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
+  // The walk has ended where CSS has run it to its place, or was cut by the scene being hidden, which
+  // cancels it where it stands: the mage stands at the walk's place from now on, so a scene hidden and
+  // shown again, which starts its animations anew, does not walk it again from where it set out.
+  const walkEnded = () =>
     setShown((now) =>
       now !== null && now.walk === walk && now.from !== null
         ? { ...now, from: null }
         : now,
     );
+  const onAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    walkEnded();
   };
+  // An effect has ended where its own animation has run out, or where the scene was hidden while it
+  // ran, which cancels it: it is dropped, so a scene hidden and shown again, which starts its
+  // animations anew, does not play an effect that is overdue (D-317).
+  const effectOver = (serial: number) =>
+    setEffects((now) =>
+      now.serial === serial ? { ...now, shown: null } : now,
+    );
+  const creatureOver = (serial: number) =>
+    setCreatureEffects((now) =>
+      now.serial === serial ? { ...now, shown: null } : now,
+    );
   const effectEnded =
     (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
-      setEffects((now) =>
-        now.serial === serial ? { ...now, shown: null } : now,
-      );
+      effectOver(serial);
     };
   const creatureEnded =
     (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
-      setCreatureEffects((now) =>
-        now.serial === serial ? { ...now, shown: null } : now,
-      );
+      creatureOver(serial);
     };
-  // A return to the cool tint that has run to its end is over: the layer stands where it is from now
-  // on, so a scene hidden and shown again, which starts its animations anew, does not run it again.
+  // A return to the cool tint that has run to its end, or was cut by the scene being hidden, is over:
+  // the layer stands where it is from now on, so a scene hidden and shown again, which starts its
+  // animations anew, does not run it again.
   const tintSerial = lit.serial;
-  const tintReturned = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
+  const tintOver = () =>
     setTint((now) =>
       now !== null && now.serial === tintSerial && now.from !== null
         ? { ...now, from: null }
         : now,
     );
+  const tintReturned = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    tintOver();
   };
   // The effect of a moment has ended where its last animation has run out, or where the scene was
   // hidden while it ran, which cancels the animations: from then on the scene stands on the last image,
@@ -767,8 +792,16 @@ export function Scene({
     if (scene === null) return;
     const cancelled = (event: Event) => {
       const target = event.target;
-      if (target instanceof Element && target.matches(".scene-moment-master"))
+      if (!(target instanceof Element)) return;
+      if (target.matches(".scene-mage[data-walking]")) walkEnded();
+      else if (target.matches(".scene-moment-master"))
         settle(target.getAttribute("data-moment-key") ?? "");
+      else if (target.matches(".scene-creature-effect"))
+        creatureOver(creatureFx.serial);
+      else if (target.matches(".scene-effect")) effectOver(effect.serial);
+      else if (target.matches(".scene-creature[data-entering]"))
+        creatureOver(creatureFx.serial);
+      else if (target.matches(".scene-tint[data-returning]")) tintOver();
     };
     scene.addEventListener("animationcancel", cancelled);
     return () => scene.removeEventListener("animationcancel", cancelled);

@@ -41,7 +41,7 @@ const WOLF_BEFORE = {
   result: null,
 };
 const WOLF_BEFORE_TEXT =
-  "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.";
+  "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz.";
 const WOLF_AFTER = {
   ...WOLF_BEFORE,
   result: {

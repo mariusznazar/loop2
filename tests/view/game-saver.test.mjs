@@ -202,7 +202,7 @@ const RETRYING = "Nie udało się zapisać postępu. Gra spróbuje ponownie.";
 // --- one request at a time -------------------------------------------------------------------
 
 test("a moment during a request in flight sends once more, after the answer, with the state of that time", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -276,7 +276,8 @@ test("a failed save shows that the game retries, and the retries follow after 5,
     assert.equal(sentenceOf(saver), RETRYING);
 
     // Real milliseconds after each failure, written out from D-208: 5, 10, 20, 30 and 30 s. The
-    // state changes only in the last millisecond, so the 30-second check finds nothing to send.
+    // state changes only in the last millisecond, so each retry sends the state of its time; no
+    // manual map run passes, so the 30-second rhythm stays silent.
     const waits = [5_000, 10_000, 20_000, 30_000, 30_000];
     for (const [index, wait] of waits.entries()) {
       mock.timers.tick(wait - 1);
@@ -326,7 +327,7 @@ test("a moment while a retry waits sends at once, and its failure waits for the 
 });
 
 test("a moment during a request that then fails sends once more at once after the answer, not after the retry's wait", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer"
   // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`"
   await onPage(async () => {
     const held = heldClient();
@@ -424,7 +425,7 @@ test("a save refused as outdated shows its sentence, tells the page, and nothing
 // --- the checks for changes ------------------------------------------------------------------
 
 test("an untouched game sends nothing at the 30-second check or at hiding, and sends at the player's first act", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
   // D-248: every document is stamped, and the load refuses one that is not.
   const loaded = loadSavedGame(savedGame(withSaveTime(passing(), CLOCK_MS)));
   // Precondition: a loaded map run comes back paused, so real time changes nothing in it.
@@ -454,7 +455,7 @@ test("an untouched game sends nothing at the 30-second check or at hiding, and s
 
 test("a passing map run is saved at the 30-second check and at hiding, and a hiding during a request in flight sends nothing more", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(passing());
@@ -517,6 +518,103 @@ test("the 30-second check is silent while no manual map run passes, though the s
   });
 });
 
+// --- after a failed save ---------------------------------------------------------------------
+
+// D-207. Catches a hidden page that sends nothing after a failed save because the game state is
+// the one that failed, so that a change whose save failed is lost when the tab closes.
+test("a page that becomes hidden after a failed save sends the state again with nothing changed since, once, and takes the place of the planned retry", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(withCharacter());
+    const { saver } = saverOf(held, game);
+    saver.moment();
+    await held.answer(FAILED);
+    assert.equal(held.sent.length, 1);
+
+    mock.timers.tick(2_000);
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 2, "the hidden page sends at once");
+    assert.deepEqual(held.sent[1], submissionOf(game.state, 3));
+    fakeDocument.turn("visible");
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 2, "one request waits at a time");
+
+    // The retry planned for 5 s after the first failure is replaced: it does not follow.
+    mock.timers.tick(10_000);
+    assert.equal(held.sent.length, 2);
+    await held.answer(FAILED);
+    // The failure of that send is the second in a row: the next retry waits 10 s from its answer.
+    mock.timers.tick(9_999);
+    assert.equal(held.sent.length, 2);
+    mock.timers.tick(1);
+    assert.equal(held.sent.length, 3);
+    saver.dispose();
+  });
+});
+
+// D-207, D-208. Catches a rhythm that sends beside the planned retry, two requests for one
+// failure, and a rhythm that finds nothing to send after a failed save.
+test("a tick of the 30-second rhythm after a failed save sends once with nothing changed since, and the planned retry does not follow it", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  await onPage(async () => {
+    const held = heldClient();
+    // A manual map run passes and real time changes nothing in it, so no change comes after the failure.
+    const game = gameOf(passing());
+    const { saver } = saverOf(held, game);
+    mock.timers.tick(29_000);
+    saver.moment();
+    await held.answer(FAILED);
+    assert.equal(held.sent.length, 1);
+
+    // The retry stands for 34 000 ms; the rhythm ticks at 30 000 ms.
+    mock.timers.tick(1_000);
+    assert.equal(held.sent.length, 2, "the rhythm sends at once");
+    assert.deepEqual(held.sent[1], submissionOf(game.state, 3));
+
+    mock.timers.tick(4_000);
+    assert.equal(
+      held.sent.length,
+      2,
+      "the retry the rhythm replaced does not come",
+    );
+    await held.answer(FAILED);
+    // The second failure in a row waits 10 s, and the rhythm of 60 000 ms is later than that.
+    mock.timers.tick(9_999);
+    assert.equal(held.sent.length, 2);
+    mock.timers.tick(1);
+    assert.equal(held.sent.length, 3, "one retry, after 10 s");
+    await held.answer(SAVED(4));
+    saver.dispose();
+  });
+});
+
+// D-207, D-208. Catches retries or checks that go on after a success, and a send after a
+// success for the save that failed.
+test("a success ends the retries: the hidden page and the rhythm send nothing more where nothing changed", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(passing());
+    const { saver } = saverOf(held, game);
+    saver.moment();
+    await held.answer(FAILED);
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 2);
+    await held.answer(SAVED(4));
+    assert.equal(sentenceOf(saver), null);
+
+    fakeDocument.turn("visible");
+    fakeDocument.turn("hidden");
+    mock.timers.tick(120_000);
+    assert.equal(held.sent.length, 2, "no retry, no check, nothing sent");
+    saver.dispose();
+  });
+});
+
 // --- the save time ---------------------------------------------------------------------------
 
 /** The document a save sent, as the server hands it back. */
@@ -568,7 +666,7 @@ test("each document holds the moment of the reading made for it and loads, and t
 // D-207, D-248. Catches a stamped state taken for the one last sent, so that the
 // comparison by identity finds a change at every check, and a tab that has only loaded sending.
 test("a loaded paused game sends nothing, and a save of it changes nothing the 30-second check or the hidden page sees", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
   // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const savedMs = CLOCK_MS - 60_000;
@@ -599,7 +697,7 @@ test("a loaded paused game sends nothing, and a save of it changes nothing the 3
 
 test("before logout the saver waits for the request in flight, then sends the current state and reports it saved", async () => {
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -674,7 +772,7 @@ test("a failed save before logout asks to log out again, and the retries go on u
 // is in flight is not sent after its answer. Catches a saver that sends that moment anyway, a save
 // request going out beside the logout that ends the session.
 test("a moment during the save before a logout that goes on is not sent after its answer", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer, unless that request is the save before a logout that goes on (D-97)"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight, each sent with `keepalive`, and a moment of saving during one is sent after its answer, unless that request is the save before a logout that goes on (D-97)"
   for (const outcome of [SAVED(4), { kind: "too-large" }]) {
     await onPage(async () => {
       const held = heldClient();

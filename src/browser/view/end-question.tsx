@@ -14,11 +14,15 @@ import type { GameState } from "../sim/types.js";
 import { ReactButton } from "./controls/react-button.js";
 
 /**
- * The line beside the save buttons of the copy, and under the question of „Zakończ”, when the
- * program `name` the copy belongs to holds changes the copy lacks (D-172).
+ * The line beside the save buttons of the copy, when the program `name` the copy belongs to holds
+ * changes the copy lacks (D-172). With unsaved changes of the copy it promises that the save in the
+ * program replaces them; without, it says only what the copy lacks, since „Zapisz w programie” is
+ * inactive then. The question of „Zakończ” stands only with unsaved changes, so it takes the full form.
  */
-export function copyLacksSentence(name: string): string {
-  return `Program ${name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.`;
+export function copyLacksSentence(name: string, unsaved: boolean): string {
+  return unsaved
+    ? `Program ${name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.`
+    : `Program ${name} ma zmiany, których nie ma w tej kopii.`;
 }
 
 /** What the three answers of the question ask for; the game view turns each into its act. */
@@ -60,7 +64,9 @@ export function EndQuestion({ state, controls }: EndQuestionProps) {
         <ReactButton text="Wróć" onClick={() => controls.back()} />
       </div>
       {owner !== undefined && programHasChangesCopyLacks(state) ? (
-        <p className="end-question-note">{copyLacksSentence(owner.name)}</p>
+        <p className="end-question-note">
+          {copyLacksSentence(owner.name, true)}
+        </p>
       ) : null}
     </div>
   );

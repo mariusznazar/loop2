@@ -7,7 +7,7 @@
  * hovered tile's key is the screen's, not the table's. It imports the pure `tileList` and builds no
  * element after the pattern of a DOM module (D-265). Nothing runs when the module is imported.
  */
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties } from "react";
 import type { GameState } from "../sim/types.js";
 import { tileKey, tileList } from "./tile-list.js";
 
@@ -21,7 +21,10 @@ export type TileTableProps = {
   onHover: (key: string | null) => void;
 };
 
-/** Between the texts of the campfire and the burning items of one row. */
+/**
+ * Between the texts of the campfire and the burning items of one row; each text is a span of its own,
+ * so a cell too wide for its area breaks at the separator and never inside a text.
+ */
 const SEPARATOR = " · ";
 
 /** The table; the listeners sit on the table, so they do not depend on its rows. */
@@ -70,7 +73,14 @@ export function TileTable({ state, hovered, onHover }: TileTableProps) {
               {row.cells.map((value, index) => (
                 <td key={list.columns[index].resource}>{value}</td>
               ))}
-              <td className="tile-fire">{row.fire.join(SEPARATOR)}</td>
+              <td className="tile-fire">
+                {row.fire.map((text, index) => (
+                  <Fragment key={index}>
+                    {index === 0 ? null : SEPARATOR}
+                    <span className="tile-fire-text">{text}</span>
+                  </Fragment>
+                ))}
+              </td>
             </tr>
           );
         })}

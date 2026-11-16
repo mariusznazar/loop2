@@ -16,6 +16,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent } from "react";
 import { ACTIONS } from "../sim/data/actions.js";
+import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { conditionNumber } from "../sim/program.js";
 import type {
   Action,
@@ -222,11 +223,14 @@ export function RulePanelView({
         ? conditionFields(condition)
         : [];
 
-  // The field whose pick stands open, set anew whenever the page opens another rule, group or field.
+  // The field whose pick stands open, set anew whenever the page opens another rule, group or field. A
+  // rule is named by its number alone, so a rule moved to another group keeps the field it stood on.
   const openKey =
     open === null
       ? ""
-      : `${open.groupId}:${open.ruleId ?? "group"}:${open.field ?? "condition"}`;
+      : open.ruleId === null
+        ? `group:${open.groupId}:${open.field ?? "condition"}`
+        : `rule:${open.ruleId}:${open.field ?? "condition"}`;
   const requested: RuleField =
     open?.field !== undefined && fields.includes(open.field)
       ? open.field
@@ -257,15 +261,6 @@ export function RulePanelView({
   const chosenAt = flat.findIndex((cell) => cell.chosen);
   const tabbable =
     cursor !== null && cursor < flat.length ? cursor : Math.max(0, chosenAt);
-
-  // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid. The shared
-  // pick cell sets no tab index, so this sets it on its element after every commit.
-  useLayoutEffect(() => {
-    cellsOf(grid.current).forEach((cell, at) => {
-      const wanted = at === tabbable ? 0 : -1;
-      if (cell.tabIndex !== wanted) cell.tabIndex = wanted;
-    });
-  });
 
   // The focus goes into the panel when it opens, and to the next field after a pick, once that field
   // stands: the page may draw the program a pick made a moment later.
@@ -399,6 +394,7 @@ export function RulePanelView({
   }
 
   function renderGrid(field: RuleField, sections: FieldPick) {
+    let cellsBefore = 0;
     return (
       <div
         // The sections of the conditions bear no names, so a line parts them (D-290).
@@ -424,6 +420,9 @@ export function RulePanelView({
               }
             >
               {section.cells.map((cell) => {
+                // The cells of the grid are counted through all its sections, as `flat` counts them.
+                const index = cellsBefore;
+                cellsBefore += 1;
                 const time =
                   field === "action"
                     ? actionTime(state, cell.value as Action["kind"])
@@ -441,6 +440,8 @@ export function RulePanelView({
                       greyed={cell.greyed}
                       reason={cell.reason}
                       onPick={() => choose(field, cell.value)}
+                      // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid.
+                      tabIndex={index === tabbable ? 0 : -1}
                     />
                     {time === null ? null : (
                       <span className="rule-panel-time">{time}</span>
@@ -461,33 +462,40 @@ export function RulePanelView({
       const number = conditionNumber(condition?.kind ?? "always");
       if (number === null || condition === undefined || !("value" in condition))
         return null;
+      // The unit comes from the condition's data, beside the field and not in the field itself.
+      const def: ConditionDef = CONDITIONS[condition.kind];
       return (
         <div className="rule-panel-field" key={field}>
           <span className="rule-panel-label">{label}</span>
-          <span
-            className="rule-panel-number"
-            onFocus={() => {
-              if (active !== "number") moveTo("number");
-            }}
-            onKeyDown={(event) => {
-              // The field commits a changed number on Enter itself; the panel then moves on, also
-              // where the number stays as it was. The key press is consumed here: the focus goes to
-              // a cell of the next pick during this event, and a browser would otherwise deliver the
-              // same Enter to that cell and pick it.
-              if (event.key !== "Enter") return;
-              event.preventDefault();
-              const following = fieldAfter(fields, "number");
-              if (following !== null) moveTo(following);
-            }}
-          >
-            <ReactNumberField
-              label={label}
-              number={number}
-              value={condition.value}
-              rule={(text, held) => readNumberField(text, held, number)}
-              onCommit={commitNumber}
-              inputRef={numberInput}
-            />
+          <span className="rule-panel-value">
+            <span
+              className="rule-panel-number"
+              onFocus={() => {
+                if (active !== "number") moveTo("number");
+              }}
+              onKeyDown={(event) => {
+                // The field commits a changed number on Enter itself; the panel then moves on, also
+                // where the number stays as it was. The key press is consumed here: the focus goes to
+                // a cell of the next pick during this event, and a browser would otherwise deliver the
+                // same Enter to that cell and pick it.
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                const following = fieldAfter(fields, "number");
+                if (following !== null) moveTo(following);
+              }}
+            >
+              <ReactNumberField
+                label={label}
+                number={number}
+                value={condition.value}
+                rule={(text, held) => readNumberField(text, held, number)}
+                onCommit={commitNumber}
+                inputRef={numberInput}
+              />
+            </span>
+            {def.unit === undefined ? null : (
+              <span className="rule-panel-unit">{def.unit}</span>
+            )}
           </span>
         </div>
       );

@@ -58,7 +58,8 @@ function Icon({
 /**
  * The drawing: a tile for each tile of the map run, revealed ones with their icons (dimmed at a
  * stock of 0) and the campfire's icon (never dimmed, burning or extinguished), then the outlines on
- * top of every tile, and last the line around the hovered tile, so no neighbour or outline covers it.
+ * top of every tile, and last the line around the hovered tile, so no neighbour or outline covers it;
+ * a hovered tile not revealed gets no line.
  */
 export function TerrainDrawing({
   state,
@@ -68,7 +69,10 @@ export function TerrainDrawing({
   const picture = terrainPicture(state);
   const width = picture.width + 2 * MARGIN;
   const height = picture.height + 2 * MARGIN;
-  const hoveredTile = picture.tiles.find((tile) => tileKey(tile) === hovered);
+  // The line stands only at a revealed tile: it has a row in the table to be the same place as (D-41).
+  const hoveredTile = picture.tiles.find(
+    (tile) => tile.revealed && tileKey(tile) === hovered,
+  );
   return (
     <svg
       className="terrain-drawing"
@@ -88,7 +92,7 @@ export function TerrainDrawing({
         const key = tileKey(tile);
         const classes = ["tile"];
         if (tile.revealed) classes.push("revealed");
-        if (key === hovered) classes.push("hovered");
+        if (tile.revealed && key === hovered) classes.push("hovered");
         return (
           <g key={key} data-tile={key} className={classes.join(" ")}>
             <polygon points={tile.points} />

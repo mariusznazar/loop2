@@ -1,5 +1,5 @@
 import { ACTIONS } from "../sim/data/actions.js";
-import { CONDITIONS } from "../sim/data/conditions.js";
+import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { CREATURES } from "../sim/data/creatures.js";
 import { ITEMS } from "../sim/data/items.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -10,13 +10,14 @@ function capitalized(value: string): string {
 }
 
 function conditionText(condition: Condition): string {
-  const label = CONDITIONS[condition.kind].label;
-  if (!("value" in condition)) return label;
+  const def: ConditionDef = CONDITIONS[condition.kind];
+  if (!("value" in condition)) return def.label;
+  const number = `${condition.value}${def.unit === undefined ? "" : ` ${def.unit}`}`;
   if (condition.kind === "hereBelow")
-    return `${label} ${condition.value} ${RESOURCES[condition.resource].name}`;
+    return `${def.label} ${number} ${RESOURCES[condition.resource].name}`;
   if (condition.kind === "itemBelow")
-    return `${label} ${condition.value} ${ITEMS[condition.item].name}`;
-  return `${label} ${condition.value}`;
+    return `${def.label} ${number} ${ITEMS[condition.item].name}`;
+  return `${def.label} ${number}`;
 }
 
 function creatureActionName(action: "strike" | "dodge"): string {

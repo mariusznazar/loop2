@@ -36,6 +36,7 @@ import type {
   RuleGroup,
 } from "../sim/types.js";
 
+import { tenths } from "./body-row.js";
 import { countedName } from "./counted-name.js";
 
 type ConditionKind = Condition["kind"];
@@ -136,23 +137,6 @@ function takesResource(kind: ActionKind): kind is ResourceAction["kind"] {
 function namesResource(action: Action): action is ResourceAction {
   return takesResource(action.kind);
 }
-
-/** The control that recovers focus after a group or rule is added, moved or removed. */
-export type FocusTarget =
-  | {
-      groupId: GroupId;
-      row: number;
-      control: "condition" | "up" | "down" | "remove";
-    }
-  | { groupId: GroupId; control: "add" }
-  | {
-      groupId: GroupId;
-      control: "group-name" | "group-up" | "group-down" | "group-remove";
-    }
-  | { control: "add-group" };
-
-/** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
-export type StructuralEdit = "add" | "remove" | "up" | "down";
 
 /**
  * The items „Zapas poniżej” offers, in the data's order: the repertoire's items of the backpack,
@@ -267,7 +251,7 @@ export function removeRule(
  * „↑” or „↓” on the rule at `index` of the named group: a swap with its neighbour in the group, and
  * at the group's edge the move across it — „↓” on the last rule to the start of the next group, „↑”
  * on the first to the end of the previous one (D-297). Null only where there is no group to move
- * to: „↑” on the program's first rule and „↓” on its last.
+ * to: „↑” at the group's edge with no group before the rule's group, „↓” with none after it.
  */
 export function moveRule(
   program: Program,
@@ -298,7 +282,10 @@ export function moveRule(
   );
 }
 
-/** Whether „↑” and „↓” of the rule at `index` of the named group act: off only at the program's ends. */
+/**
+ * Whether „↑” and „↓” of the rule at `index` of the named group act: off only where no group stands
+ * on that side of the rule's group.
+ */
 export function ruleArrows(
   program: Program,
   groupId: GroupId,
@@ -504,31 +491,6 @@ export function withActionResource(
     ...rule,
     action: { ...rule.action, resource },
   });
-}
-
-/**
- * Where focus goes after a structural edit of the rule at `index`, given the rule count after it:
- * „↑”/„↓” — the same button in the moved rule's new row; „Usuń” — the „Usuń” of the row now at that
- * position, or „Dodaj regułę” when there is none; „Dodaj regułę” — the new row's condition select.
- */
-export function focusAfter(
-  edit: StructuralEdit,
-  groupId: GroupId,
-  index: number,
-  ruleCount: number,
-): FocusTarget {
-  switch (edit) {
-    case "up":
-      return { groupId, row: index - 1, control: "up" };
-    case "down":
-      return { groupId, row: index + 1, control: "down" };
-    case "remove":
-      return index < ruleCount
-        ? { groupId, row: index, control: "remove" }
-        : { groupId, control: "add" };
-    case "add":
-      return { groupId, row: index, control: "condition" };
-  }
 }
 
 /** Why a cell of the rule panel's pick stands greyed (D-289); each is one sentence for the player. */
@@ -829,12 +791,22 @@ export function ruleNumber(groupIndex: number, ruleIndex: number): string {
   return `${groupIndex + 1}.${ruleIndex + 1}`;
 }
 
-/** A condition as a part of a row's sentence: its name, its number and its target — „Zapas poniżej 8 · Patyk”. */
+/**
+ * A condition as a part of a row's sentence: its name, its number with the unit of its data and its
+ * target — „Zapas poniżej 8 szt. · Patyk”. The unit stands after the number, as the band of a discovery
+ * writes it; a number with a fraction, such as „36,5”, has the decimal comma the body row writes. Pure.
+ */
 export function conditionSentence(condition: Condition): string {
+  const def: ConditionDef = CONDITIONS[condition.kind];
+  const unit = def.unit === undefined ? "" : ` ${def.unit}`;
   const head =
     "value" in condition
-      ? `${CONDITIONS[condition.kind].label} ${condition.value}`
-      : CONDITIONS[condition.kind].label;
+      ? `${def.label} ${
+          Number.isInteger(condition.value)
+            ? condition.value
+            : tenths(condition.value)
+        }${unit}`
+      : def.label;
   if (condition.kind === "hereBelow")
     return `${head} · ${targetName(RESOURCES[condition.resource].name)}`;
   if (condition.kind === "itemBelow")

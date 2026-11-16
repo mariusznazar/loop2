@@ -53,6 +53,8 @@
 
 /* The address is the name of the row, in `text-strong` at the emphasis weight. */
 .accounts-email {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--text-strong);
   font-weight: var(--font-weight-emphasis);
 }

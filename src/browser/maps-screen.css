@@ -14,10 +14,10 @@
 
 /*
  * The screen Mapy (D-325, D-331, D-327, D-329; styleguide rule "The screen Mapy"): two areas as the
- * columns of Programy (above), one under the other in a window under 720 px. The list of maps is
+ * columns of Programy (in styles.css), one under the other in a window under 720 px. The list of maps is
  * drawn as the list of programs is: each row a link in `text`, the picked one in `text-strong` with a
  * bar in `selected` at its left, a row under the pointer on `highlight`; „rozwiązana” after the name
- * in `positive` (D-134). Focus is the one :focus-visible rule above.
+ * in `positive` (D-134). Focus is the one :focus-visible rule of styles.css.
  */
 .maps-list-items {
   list-style: none;
@@ -167,7 +167,12 @@
   padding-top: 0;
 }
 
+/* The name of a character, typed by the player: a name with no space breaks inside its row of „Kto idzie”
+ * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the
+ * column shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
 .maps-who-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: var(--font-weight-emphasis);
   color: var(--text-strong);
 }
