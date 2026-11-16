@@ -1,10 +1,9 @@
 /**
- * The shared text field and password field, and the two sentences under a form, in their React
- * form (D-44): the element tree
- * `createInputField` in `text-field.ts` builds, with the same classes and attributes, so
- * `styles.css` stays the one place of the look; `tests/view/react-controls.test.mjs` keeps the
- * two forms alike. The field is controlled by the screen that holds its value. Nothing here runs
- * when the module is imported.
+ * The shared text field and password field, and the two sentences under a form, as React
+ * components (D-44, D-265). The classes and attributes they draw are what `styles.css` reads, so
+ * the stylesheet stays the one place of the look; `tests/view/shared-controls.test.mjs` holds
+ * them. The field is controlled by the screen that holds its value. Nothing here runs when the
+ * module is imported.
  */
 import { useId } from "react";
 import type { ChangeEventHandler, Ref } from "react";
