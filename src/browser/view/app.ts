@@ -13,7 +13,6 @@ import {
   type AccountCard,
   type AccountCardReset,
 } from "./account-card.js";
-import { createButton, setButtonWaiting } from "./controls/button.js";
 import { createFormWarning } from "./controls/text-field.js";
 import {
   browserAddress,
@@ -43,6 +42,7 @@ import {
   RESET_NOT_ALLOWED,
 } from "./previous-save-lines.js";
 import { screenAddress } from "./screen-address.js";
+import { createWaitingScreen, type Waiting } from "./waiting-screen.js";
 
 const EXPIRED = "Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.";
 const PASSWORD_CHANGED = "Hasło zmienione. Zaloguj się nowym hasłem.";
@@ -62,8 +62,6 @@ const LOAD_FAILED = "Nie udało się wczytać gry. Spróbuj ponownie.";
 const CHECKING_SESSION = "Sprawdzanie logowania…";
 /** What the waiting screen says while the page sends the confirmation token of its address. */
 const CONFIRMING_ADDRESS = "Potwierdzanie adresu…";
-/** What „Spróbuj ponownie” reads while its request waits. */
-const RETRY_WAITING = "Sprawdzanie…";
 /** The server's answer that this browser has no valid session: the player is signed out. */
 function signedOut(failure: AccountFailure): boolean {
   return failure.kind === "refused" && failure.status === 401;
@@ -122,19 +120,6 @@ function createPageNotice(sentence: string): HTMLElement {
   element.textContent = sentence;
   return element;
 }
-
-/**
- * What the waiting screen shows: `asking` — the text of what the page asks for; `refused` — the
- * sentence of a request that failed or of a load that met an error of the code, with „Spróbuj
- * ponownie” at rest and the focus on it; `retrying` — „Spróbuj ponownie” waiting as „Sprawdzanie…”
- * with no sentence, which lasts through every request until the waiting screen is left; `stopped` —
- * where the page would build a game after an error nothing handled (D-323).
- */
-type Waiting =
-  | { readonly kind: "asking"; readonly text: string }
-  | { readonly kind: "refused"; readonly sentence: string }
-  | { readonly kind: "retrying" }
-  | { readonly kind: "stopped" };
 
 /**
  * The logout of the game: `idle`, with the sentence of an uncertain end or none; `saving`, while the
@@ -282,16 +267,13 @@ export function startApp(
   const main = document.createElement("main");
   main.className = "app-main";
 
-  // The session check: what the page says while it asks, and the warning with its retry.
-  const check = document.createElement("section");
-  check.className = "session-check";
-  const checking = document.createElement("p");
-  checking.className = "session-check-text";
-  checking.textContent = CHECKING_SESSION;
-  const checkWarning = createFormWarning();
-  const retryButton = createButton("Spróbuj ponownie");
-  retryButton.hidden = true;
-  check.append(checking, checkWarning.element, retryButton);
+  // The waiting screen: what the page says while it asks, and the warning with its retry.
+  const waitingScreen = createWaitingScreen({
+    onRetry: () => {
+      void checkSession();
+    },
+    waiting: { kind: "asking", text: CHECKING_SESSION },
+  });
 
   // What the page shows; changed only by `change`.
   let state: PageState = {
@@ -377,43 +359,11 @@ export function startApp(
       previous.view.dispose();
   }
 
-  /** The waiting screen at rest as it starts: its text, no sentence, no „Spróbuj ponownie”. */
-  function drawAsking(text: string): void {
-    checking.textContent = text;
-    checking.hidden = false;
-    checkWarning.set(null);
-    retryButton.hidden = true;
-    setButtonWaiting(retryButton, null);
-  }
-
-  function drawWaiting(waiting: Waiting): void {
-    switch (waiting.kind) {
-      case "asking":
-        drawAsking(waiting.text);
-        break;
-      case "stopped":
-        drawAsking(CHECKING_SESSION);
-        break;
-      case "refused":
-        checking.hidden = true;
-        checkWarning.set(waiting.sentence);
-        retryButton.hidden = false;
-        setButtonWaiting(retryButton, null);
-        break;
-      case "retrying":
-        checking.hidden = true;
-        checkWarning.set(null);
-        retryButton.hidden = false;
-        setButtonWaiting(retryButton, RETRY_WAITING);
-        break;
-    }
-  }
-
   /** What `main` holds in a state, in the order of the document. */
   function mainContent(next: PageState): readonly HTMLElement[] {
     switch (next.kind) {
       case "checking":
-        return [check];
+        return [waitingScreen.element];
       case "card":
         return [];
       case "game":
@@ -448,8 +398,7 @@ export function startApp(
       !(previous.kind === "card" && previous.card === next.card)
     )
       root.append(next.card.element);
-    if (next.kind === "checking") drawWaiting(next.waiting);
-    else if (previous.kind === "checking") drawAsking(CHECKING_SESSION);
+    if (next.kind === "checking") waitingScreen.update(next.waiting);
     const props = barPropsOf(next);
     if (!sameBarProps(props, drawnBar)) {
       drawnBar = props;
@@ -457,7 +406,7 @@ export function startApp(
     }
     // The button waited disabled, which took the focus, so each refusal moves it back.
     if (next.kind === "checking" && next.waiting.kind === "refused")
-      retryButton.focus();
+      waitingScreen.focusRetry();
   }
 
   /**
@@ -712,11 +661,6 @@ export function startApp(
       askingFailed(result.failure.message);
     }
   }
-
-  retryButton.addEventListener("click", () => {
-    if (retryButton.disabled) return;
-    void checkSession();
-  });
 
   /** Sets the logout of the game `view`, where the page still holds it. */
   function setLogout(view: GameView, logout: Logout): void {
