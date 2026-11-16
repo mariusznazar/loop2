@@ -1020,7 +1020,7 @@ For a change touching a category deliberately left without tests, its author and
 
 ## The gate, test tools and the local start
 
-How the full gate runs its stages, Docker and the test tools, and what the local start gives an agent that checks the game.
+How the full gate runs its stages, Docker and the test tools, what the local start gives an agent that checks the game, and where the screenshots an agent shows the human lie.
 
 ### D-49 — Which port does a loop2 test give the server it starts?
 
@@ -1261,7 +1261,7 @@ every test of a screen, so it stands once in the harness that already awaits Rea
 `act`, and no test file keeps a copy. Only the harness of one kind of test hangs on the choice, so a wrong one
 costs little.
 Accepted with it: a new development dependency, jsdom, with the packages it brings. What
-the imitation does not prove stays with a person and an agent (D-88): pressing Enter in a
+the imitation does not prove stays with a person and an agent (D-88, D-417): pressing Enter in a
 field does not send a form, a click on a label does not move focus, and nothing computes layout.
 *Rejected:* happy-dom — faster and lighter, but a browser constructor the product calls has to be
 written by the test, on a path most cases walk, and it does not honour `hidden` in computed styles;
@@ -1440,6 +1440,117 @@ Where the check cannot run, because git fails inside the repository or the hook 
 
 *Rationale:* the rule of the agent instructions that the process of the-way runs only on the commit the repository pins was kept by the memory of the agent alone, so a session on another commit worked on the wrong version with no signal. A warning given to the agent alone leaves the human to learn of a mismatch only if the agent writes about it, and one given to the human alone leaves the agent unaware, so the hook gives it to both. The hook only warns, because a mismatch is not always a problem, so the human decides what follows it, while the rule of the agent instructions to stop on a mismatch stays in force. A check that cannot run is no agreement, and silence is how the hook shows agreement, so a failure of the check is shown and never turned into that answer; silence stays only where there is nothing to compare, git missing or no submodule pinned, since a warning there would show at every start in a repository that has none. Node.js is already required by the repository and the same command starts it on all three systems, where Bash on Windows needs Git Bash and PowerShell is not installed on Linux and macOS by default. Measured once by the product's own agent, with Claude Code 2.1.325 on Windows, whose record is not open to a reader of the repository: a session started in a subdirectory of the repository did not run the hook of the root, so the hook reaches the sessions started in the root; accepted with it, the sessions started elsewhere get no warning. Accepted with it too: the sessions of Codex stay with the memory of the agent.
 *Rejected:* a hook for Windows alone — people who clone the public repository on Linux or macOS would see an error of the hook at every start of a session instead of the warning; a warning to the agent alone — the human learns of a mismatch only where the agent writes about it, which depends again on the memory of the agent; the warning in the sessions of Codex too — it needs a check first of whether Codex has a hook run at the start of a session, and where it has none the way drops out or the work grows by another mechanism; a block of the calls of the skills of the-way where the copy stands on another commit — it keeps the rule more strongly, but the human who owns the repository prefers a warning because a mismatch is not always a problem; a hook that blocks a commit and a push to `main` — the protection of the branch on GitHub does it better, and the human who owns the repository turns it on in the settings of the repository.
+
+### D-417 — How does an agent operate the game as a player does?
+
+An agent operates the running game in a real browser with Playwright CLI, and with Playwright MCP
+where the CLI fails, and reads motion from a stream of frames. This inspection adds to the checks
+D-75 and D-88 leave with a person and replaces none of them.
+
+- **Scope:** agent-workflow · browser-view
+- **Based on:** playwright-cli-token-efficiency · playwright-cli-default-config-file · playwright-cli-config-browser-context · playwright-screencast-frame-delivery · devtools-protocol-certificate-error-switch
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a changed screen operated once through Playwright CLI, the evidence in the request,
+    and the person's check of that change still made
+  - violates: a Playwright test left in the repository; a request that drops the person's check
+    because an agent has seen the screen
+- **Origin:** none
+
+*Rationale:* the project is made of screens, and an agent that cannot use them as a player does
+cannot check its own work; left as it was, an agent has no described way to the game, and each
+session finds one anew or waits for a person's description. Playwright was no stranger to the
+project, since agents had already operated this game through its MCP server. Its maker recommends
+the CLI to agents writing code for the tokens it saves, though with no figures, its setting for a
+certificate stands in a file of the repository, and it holds the same engine as the MCP server, so
+going back costs almost nothing. The inspection only adds to the checks of D-75 and D-88: an agent
+that looks in addition collides with neither, while one that replaced the person would collide, on
+one reading, with „a changed journey is checked manually” of D-75 and „a person catches event and
+focus defects” of D-88, though both set manual checking against permanent tests and not against an
+agent, and a script left in the repository would be a permanent test against both. Motion is read
+from a stream of frames because the text of a page shows none, a single screenshot of a short
+effect taken a second late shows the state before it, and the model takes images one at a time and
+uses only the first frame of an animated one. A stream of frames, measured once with the library
+form of Playwright on a stand-in page with a moving sprite, came about every tenth of a second and
+caught an effect of 300 ms; that measurement is the product's own, and its record is not open to a
+reader of the repository. The fake clock of Playwright moves the game's clock but not motion made
+by CSS, so motion at the faster paces is judged in real time. A cropped picture of the scene costs
+far less than a picture of the whole screen, and a text read of the game is not cheaper than a
+screenshot of it. Lacks of the option chosen: its version is below 1.0 and leans on an alpha of
+Playwright, a session with no window closes by itself after an hour, the text of a page shows no
+motion, and images cost tokens. Risks taken, each a hypothesis: a drag may catch a select list
+instead of a handle; an agent judging motion from a few frames may report that a scene works while a
+person sees it jerk at 16×.
+*Rejected:* Playwright MCP as the first way — more tokens, a part of which the loading of the tool
+descriptions on demand takes away, and a command sent at each tab where the
+CLI reads one file of the repository, a version that changes with no question because it runs the
+latest release and is not pinned in the repository, a setting for a certificate that lies in a
+plugin and not in the repository, and a stream of frames only through its tool that runs any code;
+Playwright as a library — a script written at each check costs tokens, each version wants its own
+browser version, and kept in the repository the script is a permanent test against D-75 and D-88,
+with a new dependency for the audit and the lock file and files that must each belong to a part;
+Chrome DevTools MCP and agent-browser — no clock found in their descriptions, which only a return
+after an absence needs, and a stream of frames never shown to arrive as images, the first also
+sending usage statistics to Google by default, though it has ready tools for measuring performance,
+useful were a screen to be measured at 16×, and the second being a young project; Puppeteer,
+Selenium, WebdriverIO, Cypress and Stagehand — nothing above Playwright, Puppeteer and Selenium
+having no skeleton of a project, Puppeteer and Cypress downloading a browser or a program at their
+install, as a development dependency also at the install of the server image, Selenium wanting a
+newer Node than the computer had and types apart, Cypress being tests only and its dragging made of
+events a browser does not trust, and Stagehand needing a key and a bill for a model; Claude in
+Chrome — it waits for a person at a login, gives a moving image of which the model sees the first
+frame alone, and whether it is installed was not checked; computer use — in the command line it
+works only on macOS, and on Windows only in the Desktop application, a route never tried; direct
+calls to the API — the game is computed in the browser, and they show a save and not a screen; a
+document model — it computes no layout, and a hand-made model proves no real events (D-88); a
+person clicking and describing — the agent knows only what the person describes, and only the
+person judges whether the game is fun; Protractor, PhantomJS, Nightmare and Zombie — discontinued
+or not maintained; browser-use, Nightwatch and TestCafe were not examined.
+
+### D-418 — Where do the screenshots that a task cycle of loop2 shows the human lie, and how does the description of its request embed them?
+
+The screenshots that a task cycle shows the human lie in the public GitHub repository `mariusznazar/screenshots`, in its directory `loop2/` and in that a directory for each cycle, named as the directory of the cycle's own record, on a branch of that repository named `loop2/` and the name of that directory, never on `main`, and the description of the request embeds each as an image by a link to its file in a particular commit of that repository, with `?raw=true` appended. That repository holds only the screenshots of public products and may be cleared after a long time, and the images of old requests then stop showing.
+
+- **Scope:** agent-workflow
+- **Based on:** screenshots-repository-readers · loop2-repository-visibility · https://github.com/mariusznazar/loop2/pull/67 § description — "![The screen of a map run in two columns](https://github.com/mariusznazar/loop2/blob/a70acfacb9909615ba5ff7c98d557cd066d351cc/docs/task-cycles/proporcje-sceny-i-programu/reports/screens/run-two-columns-1280.png?raw=true)"; read 2026-11-11
+- **Relations:** derives from D-417
+- **Verification:** an agent compares a change with the decision:
+  - complies: a task cycle that changes a screen, whose author puts the screenshot in the directory `loop2/` of `mariusznazar/screenshots`, in a directory of that cycle, on the branch `loop2/<cycle>`, and whose request embeds it as `![…](https://github.com/mariusznazar/screenshots/blob/<commit>/loop2/<cycle>/<file>.png?raw=true)`; the repository cleared a year later, the images of old requests stop showing and nothing in loop2 changes
+  - violates: a request that embeds a screenshot by a link to a branch of `mariusznazar/screenshots` or by an address on `raw.githubusercontent.com`; a directory of a cycle placed outside `loop2/`; a push of a screenshot to `main` of that repository; a screenshot of loop2 stored in a private repository; a screenshot of a private product stored in `mariusznazar/screenshots`; a screenshot file committed to the repository of loop2
+- **Origin:** none
+
+*Rationale:* the owner accepts a request by seeing the screen in its description, without running the game, and a screenshot is evidence for the time of acceptance: the owner does not go back to views of half a year ago, so the place may be cleared after a long time, and the images of old requests then stop showing. A repository of its own keeps the screenshots out of the history of loop2, which every clone downloads. The files of a cycle lie on a branch of that cycle, so that cycles pushing at the same time do not meet and no agent pushes to the default branch of a repository that serves several products. The repository is public because loop2 and its requests are public: a private repository would show an image in a request to the owner alone and a broken icon to every other reader, and would need a trial of the mechanism, while a link to a file in a commit with `?raw=true` already showed images in a request of loop2. One repository serves the public products, with a directory for each product, so a private product does not use it: its screenshots would be public, and deleting the repository and creating it anew clears the screenshots of all products at once. Price taken: the images of old requests break once the repository is cleared.
+*Rejected:* a separate private repository — a picture in a public request of loop2 would be seen only by the owner, and to other readers it would show as a broken icon, and the mechanism needed a trial; privacy protects nothing, since loop2 and its requests are public; a place that is never cleared, the matter returning when it grows — no one reaches for views of half a year ago when something in the look breaks then; a repository for loop2 alone, named `loop2-screenshots` — clearing would concern loop2 only, but every next product would create a repository of its own.
+
+### D-419 — Who puts a screenshot into the repository for screenshots?
+
+The agent that shows a screenshot pushes it itself to the repository `mariusznazar/screenshots` with the `gh` account of the human who owns that repository, with no step of the human.
+
+- **Scope:** agent-workflow
+- **Based on:** none
+- **Relations:** derives from D-418
+- **Verification:** an agent compares a change with the decision:
+  - complies: an agent that has looked at a changed screen, pushes the screenshot to the directory of its cycle in `mariusznazar/screenshots` with the `gh` account of that repository's owner and embeds it in the request
+  - violates: an instruction that has the agent hand the screenshot to the human to upload; a push to the repository with an account or a token written into a file of loop2 or into a request
+- **Origin:** none
+
+*Rationale:* in an earlier request of loop2 the agent committed its screenshots itself, and a hand-over to the human would put a step of the human into every cycle that shows a screen. D-12 sets what the agent may do on the server, and the repository for screenshots is no part of the server. Price taken, a hypothesis: the push is made with the human's own account, whose rights reach beyond that repository.
+*Rejected:* unknown
+
+### D-420 — From which session may an agent use Playwright MCP?
+
+An agent uses Playwright MCP, the fallback way of D-417, only from a session of the agent started in the worktree of its cycle.
+
+- **Scope:** agent-workflow
+- **Based on:** playwright-mcp-default-profile-sharing · playwright-cli-workspace-lookup · playwright-cli-session-separation
+- **Relations:** narrows D-417
+- **Verification:** an agent compares a change with the decision:
+  - complies: two task cycles, each in its own worktree and each with an agent session started in that worktree, both driving the game through Playwright MCP at the same time
+  - violates: a Playwright MCP session started in the main checkout, or in the worktree of another cycle, that a cycle drives the game with
+- **Origin:** none
+
+*Rationale:* the process the product pins asks that two task cycles in separate worktrees can check at the same time without a browser they share. By default Playwright MCP keeps one persistent profile for the workspace root of its client and one browser instance can use it at a time, so two sessions started from one directory block each other; a session started in the worktree of its cycle has a profile of its own. Playwright CLI, the main way of D-417, needs no such condition: it keeps the sessions of each workspace apart from those of every other, and every worktree of loop2 is one. Risk taken, a hypothesis: the client of the agent gives the directory a session started in as its workspace root; this was not checked.
+*Rejected:* unknown
 
 ## The server: hosting, deployment, logs and failure reports
 
@@ -1797,7 +1908,7 @@ and goes to the console.
 
 - **Scope:** browser-view, agent-workflow
 - **Based on:** playwright-cli-console-messages
-- **Relations:** derives from D-323 · derives from D-253
+- **Relations:** derives from D-417 · derives from D-323 · derives from D-253
 - **Verification:** tests: an exception in the game, an error or a rejection no code handled,
   showing on the screen as the sentence of D-323 and leaving its line in the console. An agent
   compares a change with the part no test holds:
@@ -11159,8 +11270,8 @@ The human judges, at the request that brings an effect of the scene, whether its
 | Identifier | Why | Successors |
 |---|---|---|
 | D-80 | withdrawn: it repeated, for a game parameter, the rule of the testing guidelines that D-73 adopts and D-82 supplies, that an expectation never comes from what the code gives today; the rule stands in `guidelines/testing.md`, in "Where the expected value comes from" | none |
-| D-254 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, to operate the running game in a real browser with Playwright CLI, with Playwright MCP where the CLI fails, and to read motion from a stream of frames, stands in the skill `loop2-play` | none |
-| D-357 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, where the screenshots a task cycle shows the human lie and how the request embeds them, stands in the skill `loop2-play` | none |
-| D-358 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, that the agent pushes the screenshot itself with the owner's `gh` account, stands in the skill `loop2-play` | none |
-| D-359 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, that Playwright MCP is used only from a session started in the worktree of the cycle, stands in the skill `loop2-play` | none |
+| D-254 | withdrawn when it was taken for an instruction to the agent; its question, how an agent operates the game as a player does, is answered again by D-417 | D-417 |
+| D-357 | withdrawn when it was taken for an instruction to the agent; its question, where the screenshots a task cycle shows the human lie and how the request embeds them, is answered again by D-418 | D-418 |
+| D-358 | withdrawn when it was taken for an instruction to the agent; its question, who puts a screenshot into the repository for screenshots, is answered again by D-419 | D-419 |
+| D-359 | withdrawn when it was taken for an instruction to the agent; its question, from which session an agent may use Playwright MCP, is answered again by D-420 | D-420 |
 | D-361 | withdrawn: it was an instruction to the agent, not a decision of the product; its rule, that root's SSH configuration is read only as a count of lines by the one command the skill gives, stands in the skill `loop2-deploy` | none |
