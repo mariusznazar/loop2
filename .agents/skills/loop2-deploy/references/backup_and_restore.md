@@ -283,14 +283,19 @@ the earlier version, and the players of those saves start a new game at the firs
 ### Trying a backup on the operator's computer
 
 This proves a backup restores in the built image without touching the server. The operator repeats
-it every month and after each change of the database's schema version or of the saved game's
-version; a trial made before such a change does not cover it. Run on the
+it every month and after each change of the database's schema version; a trial made before such a
+change does not cover it. Run on the
 operator's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
 the operator's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
 server's opened the backup. The zip only unpacks `age.exe` into a folder, which is not on the
 path: in each PowerShell window of the trial, run `$env:PATH += ';<folder holding age.exe>'`
 once, and `age` then runs by name in step 3 (without it PowerShell says that the term `age` is
 not recognized).
+
+A change of `SAVED_GAME_VERSION` erases the marker from the test account's saved game state: the
+game discards a saved game state of another version and starts a new game (D-96). Before the next
+trial, give a new marker as in step 8 of "Installing and reinstalling", let the game save it, and
+take the backup for the trial from a night after that.
 
 1. Make a private folder and enter it, and work in it to the end:
 
