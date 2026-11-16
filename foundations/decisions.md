@@ -2218,7 +2218,7 @@ restored would otherwise show only on the day of the failure, so the trial is re
 month and at the moments when what the backups hold changes its shape: a change of the database's
 schema version. A change of the saved game's version is no such moment: the game discards a saved
 game state of another version when it loads it (D-96), so what a restore loses to that change is
-already lost at its deployment, and a trial repeated for it would show nothing the last one did not.
+already lost at the first load after its deployment, and a trial repeated for it would show nothing the last one did not.
 The trial does not show that a new server can be
 built, with its secrets and tunnel; Docker has to run on the operator's computer. The paths of the
 restore procedure that nobody has run, `umask 077` among them, are an accepted cost: rehearsing them

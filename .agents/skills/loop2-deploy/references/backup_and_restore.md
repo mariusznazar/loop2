@@ -294,8 +294,8 @@ not recognized).
 
 A change of `SAVED_GAME_VERSION` erases the marker from the test account's saved game state: the
 game discards a saved game state of another version and starts a new game (D-96). Before the next
-trial, give a new marker as in step 8 of "Installing and reinstalling", let the game save it, and
-take the backup for the trial from a night after that.
+trial, give a new marker as in step 8 of "Installing and reinstalling", let the game save it, write
+it down, and take the backup for the trial from a night after that.
 
 1. Make a private folder and enter it, and work in it to the end:
 
@@ -350,7 +350,7 @@ take the backup for the trial from a night after that.
 
    ```powershell
    $credential = New-Object System.Net.NetworkCredential('', $secure)
-   $credential.Password | node <path to the checkout>\scripts\restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down in the install step 8>' --email <test account address>
+   $credential.Password | node <path to the checkout>\scripts\restore-trial.mjs --image <image> --database .\accounts.sqlite --marker '<the marker name written down last, as in the install step 8>' --email <test account address>
    ```
 6. Read the result. Exit 0 is PASS; 1 the trial ran and judged the backup (FAIL), for example the
    test account could not log in; 2 refused,
