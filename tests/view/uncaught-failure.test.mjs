@@ -762,8 +762,8 @@ async function signInOn(held, root, loaded) {
 /**
  * The page waits where a sign-in after the error stays, with the sentence of the failure in the
  * header alone and no game. D-323: at that waiting screen the sentence "stands alone, with no
- * „Sprawdzanie logowania…” beside it" (To do 4 of the task), so the waiting screen's place stands
- * and draws no text and no button.
+ * „Sprawdzanie logowania…” beside it", so the waiting screen's place stands and draws no text and
+ * no button.
  */
 function assertWaitingWithSentence(root, intervals, reason) {
   assert.equal(sentencesShown(root).length, 1, `${reason}: one sentence`);
@@ -860,7 +860,7 @@ const PRIVILEGED_ACCOUNT = {
 // in place: it would keep its clock and its saver running and the bar's items and „Wyloguj” over the
 // waiting screen, where no new game is built and the sentence of the failure stands alone.
 test("after an error nothing handled, a reset that succeeds closes the game that stood, builds none and leaves the waiting screen with the sentence alone", async () => {
-  // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save"
+  // decision: D-402 "Where an error that no code of the game handled came first (D-323), a reset that succeeds closes the game that stood, with its saving, and builds none, so the page shows the waiting screen with the sentence of the failure alone."
   // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it, sending the last whole game state from before the error, which it reads without a new reading of the clock; the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence, and the catch-up of D-247"
   // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262), and at the waiting screen where a sign-in after the error stays it stands alone, with no „Sprawdzanie logowania…” beside it"
   // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262)"

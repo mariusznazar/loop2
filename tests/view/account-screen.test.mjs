@@ -567,7 +567,8 @@ test("an answer that names no account and is not a refusal of the session shows 
 test("„Spróbuj ponownie” is one button through a refusal, a retry and a next refusal, waiting as „Sprawdzanie…”, and takes the focus at each refusal", async () => {
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
   // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`"
-  // To do 2 of the task: the player sees the same texts, roles, places and focus as before the change.
+  // decision: D-262 "At each entry into the warning with „Spróbuj ponownie”, the first and one after a retry, focus moves to that button."
+  // decision: D-262 "The button is one element through the refusal, the retry, in which it reads „Sprawdzanie…” and is disabled, and the next refusal."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
