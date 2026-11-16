@@ -285,15 +285,33 @@ test("Escape closes the menu and focus lands on „Konto”", async () => {
   });
 });
 
-test("a click outside the menu closes it and focus lands on „Konto”", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”"
+test("a click outside the menu closes it; focus stays where the player clicked, and on a bare background it lands on „Konto”", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”; after Escape and after a second click on „Konto” focus returns to „Konto”, after a click outside it focus stays where the player clicked, and where that place takes no focus it returns to „Konto”"
   await withPage(async (page) => {
-    const { outside } = await openBar(page);
+    const { field } = await openBar(page);
+    const background = page.document.createElement("div");
+    page.root.append(background);
     const konto = buttonNamed(page.root, "Konto");
     await press(konto);
-    await press(outside);
+    // A browser focuses the field it clicks before the click reaches the page.
+    field.focus();
+    await press(field);
     assert.equal(isOpen(page.root), false);
-    assert.equal(active(), konto);
+    assert.equal(active(), field, "a click on a field leaves the caret in it");
+
+    await press(konto);
+    // The menu's own control holds the focus, and the click lands on a place that takes none.
+    buttonNamed(blockOf(page.root), "Wyloguj").focus();
+    await press(background);
+    assert.equal(isOpen(page.root), false);
+    assert.equal(active(), konto, "focus is not left in the hidden menu");
+
+    await press(konto);
+    // A browser leaves the focus on the body when a click lands on a place that takes none.
+    active().blur();
+    await press(background);
+    assert.equal(isOpen(page.root), false);
+    assert.equal(active(), konto, "focus is not left on the body");
   });
 });
 
