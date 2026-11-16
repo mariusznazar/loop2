@@ -18,6 +18,7 @@ REPAIR = "git submodule update --init -- .the-way"
 # The names carry a space, quotes and an ampersand: nothing of a path may reach a shell.
 CLONE_NAME = "work tree {} 'it' & more"
 
+NL = "\n"
 GIT_ENVIRONMENT = {
     **{name: value for name, value in os.environ.items() if not name.startswith("GIT_")},
     "GIT_CONFIG_GLOBAL": os.devnull,
@@ -72,6 +73,7 @@ class TheWayPinHook(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.base = Path(tempfile.mkdtemp())
+        cls.addClassCleanup(shutil.rmtree, cls.base, onexc=make_writable_then_remove)
         cls.counter = 0
         submodule = cls.base / "the-way-origin"
         submodule.mkdir()
@@ -85,10 +87,6 @@ class TheWayPinHook(unittest.TestCase):
         git(cls.origin, "submodule", "add", str(submodule), ".the-way")
         git(cls.origin, "commit", "-m", "pin the-way")
         cls.hook_path = declared_handler()["args"][0].removeprefix(PLACEHOLDER)
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.base, onexc=make_writable_then_remove)
 
     def clone(self, initialized):
         """A clone of the repository with the hook in place, and its submodule checked out where
@@ -148,7 +146,7 @@ class TheWayPinHook(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertIn(self.pinned, json.loads(run.stdout)["systemMessage"])
 
-    def test_a_session_started_in_a_subdirectory_checks_the_same_repository(self):
+    def test_a_hook_run_from_a_directory_other_than_the_root_checks_the_same_repository(self):
         directory = self.clone(initialized=True)
         git(directory / ".the-way", "checkout", "--detach", self.older)
         inner = directory / "inner folder"
@@ -157,8 +155,50 @@ class TheWayPinHook(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertIn(self.older, json.loads(run.stdout)["systemMessage"])
 
+    def test_a_repository_whose_git_fails_warns_that_the_check_could_not_run(self):
+        # decision: D-414 "Where the check cannot run, because git fails inside the repository"
+        directory = self.clone(initialized=True)
+        git(directory / ".the-way", "checkout", "--detach", self.older)
+        (directory / ".git" / "index").write_bytes(b"damaged")
+        precondition = subprocess.run(["git", "ls-files", "--stage", "--", ".the-way"], cwd=directory,
+                                      env=GIT_ENVIRONMENT, capture_output=True, check=False)
+        self.assertNotEqual(precondition.returncode, 0, "git fails on the damaged index")
+        run = run_hook(hook_command(directory), directory)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        output = json.loads(run.stdout)
+        self.assertEqual(output["hookSpecificOutput"]["hookEventName"], "SessionStart")
+        for message in (output["systemMessage"], output["hookSpecificOutput"]["additionalContext"]):
+            self.assertIn(REPAIR, message)
+
+    def test_a_hook_that_fails_itself_warns_that_the_check_could_not_run(self):
+        # decision: D-414 "Where the check cannot run, because git fails inside the repository"
+        directory = self.clone(initialized=True)
+        git(directory / ".the-way", "checkout", "--detach", self.older)
+        fault = self.base / "fault.mjs"
+        fault.write_text("const stringify = JSON.stringify;" + NL
+                         + "let calls = 0;" + NL
+                         + "JSON.stringify = (...args) => {" + NL
+                         + "  if (calls++ === 0) throw new Error('injected failure');" + NL
+                         + "  return stringify(...args);" + NL
+                         + "};" + NL, encoding="utf-8", newline=NL)
+        command = [declared_handler()["command"], "--import", fault.as_uri(),
+                   *hook_command(directory)[1:]]
+        run = run_hook(command, directory)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        output = json.loads(run.stdout)
+        for message in (output["systemMessage"], output["hookSpecificOutput"]["additionalContext"]):
+            self.assertIn("injected failure", message)
+            self.assertIn(REPAIR, message)
+
+    def test_a_git_directory_variable_of_the_caller_does_not_send_the_check_to_another_repository(self):
+        # decision: D-414 "At the start of a Claude Code session started in the repository root"
+        directory = self.clone(initialized=True)
+        environment = {**GIT_ENVIRONMENT, "GIT_DIR": str(self.origin / ".git")}
+        run = run_hook(hook_command(directory), directory, environment)
+        self.assertEqual((run.returncode, run.stdout, run.stderr), (0, "", ""))
+
     def test_with_no_git_the_hook_says_nothing_and_ends_with_0(self):
-        # decision: D-414 "The hook is a Node.js script, started by the same command on Windows, Linux and macOS"
+        # decision: D-414 "It prints nothing only where git is missing or the repository pins nothing"
         directory = self.clone(initialized=True)
         git(directory / ".the-way", "checkout", "--detach", self.older)
         empty_path = self.base / "no programs"
@@ -169,7 +209,7 @@ class TheWayPinHook(unittest.TestCase):
         self.assertEqual((run.returncode, run.stdout), (0, ""))
 
     def test_where_the_repository_pins_nothing_the_hook_says_nothing_and_ends_with_0(self):
-        # decision: D-414 "At the start of a Claude Code session started in the repository root"
+        # decision: D-414 "It prints nothing only where git is missing or the repository pins nothing"
         cases = {"no repository at all": (False, False),
                  "a repository with no submodule": (True, False),
                  "a repository with no submodule beside a repository in .the-way": (True, True)}

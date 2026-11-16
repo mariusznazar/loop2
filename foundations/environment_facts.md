@@ -863,9 +863,15 @@ The runner image that GitHub's label `ubuntu-24.04` names is the x64 image Ubunt
 
 ## claude-code-session-start-hook-output
 
-A command hook of the event `SessionStart` of Claude Code shows a warning to the person through the field `systemMessage` of the JSON it prints, and adds text to the context of the agent through the field `additionalContext` of that JSON.
+A command hook of the event `SessionStart` of Claude Code surfaces a message to the person through the field `systemMessage` of the JSON it prints, and adds text to the context of the agent through the field `additionalContext` of that JSON's `hookSpecificOutput`.
 
-- **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § JSON output — "Warning message shown to the user." · § SessionStart decision control — "A SessionStart hook can add context for Claude, supply the first user message, set the session title, watch files, and reload skills." · § Add context for Claude — "Claude Code wraps the string in a system reminder and inserts it into the conversation at the point where the hook fired."; read 2026-11-16
+- **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § Hook input and output — "To surface a message to the user on any platform, return systemMessage in JSON output." · § SessionStart decision control — "String added to Claude’s context at the start of the conversation, before the first prompt." · § Add context for Claude — "The additionalContext field passes a string from your hook into Claude’s context window."; read 2026-11-16
+
+## claude-code-hook-exec-form
+
+A command hook of Claude Code given `args` starts `command`, resolved as an executable on `PATH`, directly with no shell and with the path placeholder `${CLAUDE_PROJECT_DIR}`, the project root where the session started, substituted into `command` and into each element of `args`, and `node` with a script path in `args` works on every platform.
+
+- **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § Exec form and shell form — "Exec form runs when args is present. Claude Code resolves command as an executable on PATH and spawns it directly with args as the argument vector. There is no shell, so each args element is one argument exactly as written, and path placeholders like ${CLAUDE_PLUGIN_ROOT} are substituted into command and into each args element as plain strings." · "Both forms support the same path placeholders, and both export them as the environment variables CLAUDE_PROJECT_DIR, CLAUDE_PLUGIN_ROOT, and CLAUDE_PLUGIN_DATA on the spawned process, so a script can read process.env.CLAUDE_PLUGIN_ROOT regardless of how it was launched." · "The node plus script-path pattern works on every platform because node.exe is a real binary." · § Reference scripts by path — "${CLAUDE_PROJECT_DIR}: the project root where the session started."; read 2026-11-16
 
 ## Withdrawn identifiers
 
