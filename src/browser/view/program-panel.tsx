@@ -835,9 +835,11 @@ export function createProgramPanel(
       const found = discoveryRule(state);
       if (found === null) return;
       shown = { kind: "copy" };
-      // A new object at each call, which the view opens once, at the draw that first gives it.
-      opening = found.open;
       controls.editCopy(found.program);
+      // Asked after the edit: the act's reading of the clock may draw the panel before the edit
+      // lands, and a rule not yet in the program would close the panel asked for. A new object at
+      // each call, which the view opens once, at the draw that first gives it.
+      opening = found.open;
       draw();
     },
     scrollToRule(ruleId: RuleId): void {
