@@ -410,6 +410,31 @@ test("a rule open in a group that gets folded keeps its panel under that group's
   });
 });
 
+// D-350, D-313. The panel under the header of a folded group gives the focus back to that header on
+// „✕” and Escape, since the row of its rule is not drawn. Catches the focus left on the page.
+for (const close of ["✕", "Escape"]) {
+  test(`${close} on a panel under a folded group's header gives the focus to that header`, async () => {
+    // decision: D-350 "A rule panel open on a rule whose rule group is folded stands directly under the header of that group, where the row of the rule is not drawn"
+    // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it"
+    await withPage(async (page) => {
+      const game = await wiredPanel(page, gameWithRule(), "programs");
+      await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+      await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+      assert.equal(rowOf(game.root, 1), null, "precondition: the row is not drawn");
+      assert.equal(classed(game.root, "rule-panel").length, 1, "precondition: still open");
+      const panel = game.root.querySelector(".rule-panel");
+      if (close === "✕") await click(buttonNamed(panel, "✕"));
+      else await key(panel, "Escape");
+      assert.equal(classed(game.root, "rule-panel").length, 0, `closed by ${close}`);
+      assert.equal(
+        page.document.activeElement,
+        headerOf(game.root, 1),
+        "the focus went to the header of the folded group",
+      );
+    });
+  });
+}
+
 // D-124: a rule added by „+ reguła” opens its panel. Catches the new rule standing with no
 // panel, as the old editor left it.
 test("„+ reguła” adds the rule and opens its panel on the condition", async () => {

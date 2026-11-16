@@ -395,13 +395,17 @@ export function ProgramPanelView({
     const closed = focusClosed.current;
     if (closed !== null) {
       focusClosed.current = null;
+      // The row of the rule is not drawn while its group is folded: the header of the group takes the focus then.
       const row =
         closed.ruleId === null
-          ? editing.current?.querySelector(
-              `[data-group="${closed.groupId}"] .rule-list-header`,
-            )
+          ? null
           : editing.current?.querySelector(`[data-rule="${closed.ruleId}"]`);
-      if (row instanceof HTMLElement) row.focus();
+      const target =
+        row ??
+        editing.current?.querySelector(
+          `[data-group="${closed.groupId}"] .rule-list-header`,
+        );
+      if (target instanceof HTMLElement) target.focus();
     }
   });
 
