@@ -243,7 +243,7 @@ test("„Wróć do przejścia” stands as a link to the map run's address when 
 // --- the menu „Konto”: opening and closing (D-285) -------------------------------------------
 
 test("„Konto” is a native button that says whether the menu stands open, and the menu starts closed", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     const konto = buttonNamed(page.root, "Konto");
@@ -255,7 +255,7 @@ test("„Konto” is a native button that says whether the menu stands open, and
 
 test("a click on „Konto” opens the menu with the account's address and „Wyloguj”", async () => {
   // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -271,7 +271,7 @@ test("a click on „Konto” opens the menu with the account's address and „Wy
 });
 
 test("Escape closes the menu and focus lands on „Konto”", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”; after Escape and after a second click on „Konto” focus returns to „Konto”, after a click outside it focus stays where the player clicked, and where that place takes no focus it returns to „Konto”"
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: UNCONFIRMED }) });
     const konto = buttonNamed(page.root, "Konto");
@@ -286,7 +286,7 @@ test("Escape closes the menu and focus lands on „Konto”", async () => {
 });
 
 test("a click outside the menu closes it and focus lands on „Konto”", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”"
   await withPage(async (page) => {
     const { outside } = await openBar(page);
     const konto = buttonNamed(page.root, "Konto");
@@ -298,7 +298,7 @@ test("a click outside the menu closes it and focus lands on „Konto”", async 
 });
 
 test("a click on an item of the bar, which stands outside the menu, closes it", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
@@ -309,7 +309,7 @@ test("a click on an item of the bar, which stands outside the menu, closes it", 
 });
 
 test("a second click on „Konto” closes the menu and focus lands on „Konto”", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”; after Escape and after a second click on „Konto” focus returns to „Konto”, after a click outside it focus stays where the player clicked, and where that place takes no focus it returns to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     const konto = buttonNamed(page.root, "Konto");

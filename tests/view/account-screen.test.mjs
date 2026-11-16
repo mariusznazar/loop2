@@ -1061,7 +1061,7 @@ test("a confirmed logout or an expired session removes the game and its clock an
   // decision: D-97 "The shared „Wyloguj” button stands in the menu „Konto”, first saves the current game state on the server"
   // decision: D-97 "A confirmed logout returns to the account forms and hides the game, while a failed server operation keeps the game with a warning instead of claiming that logout succeeded; logout disposes the mounted game's timers"
   // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   // decision: D-259 "The login card opens on „Zaloguj się”."
   for (const [name, answer] of Object.entries({
     "a confirmed logout": { ok: true, value: null },
@@ -1705,7 +1705,7 @@ test("a change clears the fragment first, then shows a new card with the sentenc
   // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
   // decision: D-259 "The login card opens on „Zaloguj się”."
   // decision: D-261 "The one sentence of the page that D-97, D-156, D-160, D-211 and D-225 put above the account forms stands in the login card, above the switch, and above the form where no switch stands."
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root, intervals }) => {
     const held = heldClient();
     const address = resetAddress(root);
@@ -2174,7 +2174,7 @@ const pageNotices = (root) =>
 // D-96. Catches a game built before the saved game state answers, and a new game
 // saved by itself over nothing.
 test("after the session check the page keeps „Sprawdzanie logowania…” until the saved game state answers, and none gives a new game that saves nothing by itself", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
   // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -2201,7 +2201,7 @@ test("after the session check the page keeps „Sprawdzanie logowania…” unti
 // D-212. Catches a loaded map run left running, at another pace, or moved to the
 // headquarters, an ended one closed, and a loaded game saved again by itself.
 test("a save builds the game the load gives: a map run that went on comes back paused at its pace, an ended one on its screen after the end", async () => {
-  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, the save time of a document being no change of it"
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
   // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
   const passingAt8 = { ...passing(), pace: 8 };
@@ -5472,7 +5472,7 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
 test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
   // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(RESET_LINK));
@@ -5508,7 +5508,7 @@ test("the card of a reset link stands alone at once, and each way out of it show
 test("an error of the code in the load of the kept state closes the card, so its warning and retry show", async () => {
   // decision: D-96 "The browser constructs the game only after the server confirms the session and then answers with the account's saved game state or that it has none, and an unavailable or uncertain answer to either request shows a warning and retry rather than an anonymous game or a new one, as does a load that meets an error of the code (D-213), which discards nothing, with „Nie udało się wczytać gry."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await expiredPage(held);
@@ -5528,7 +5528,7 @@ test("an error of the code in the load of the kept state closes the card, so its
 // waiting screen before it, leaving the card over the game.
 test("a sign-in that goes straight back to the kept game closes the card", async () => {
   // decision: D-211 "After a sign-in to the same account the game sends that state and goes on from it, a manual map run in it coming back as D-96 and D-212 give"
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await expiredPage(held);
@@ -5542,7 +5542,7 @@ test("a sign-in that goes straight back to the kept game closes the card", async
 // D-381: focus() is called after a confirmed logout and after a password was set, and no other
 // opening of the card moves focus. Catches a call of focus() added to `showForms` itself.
 test("a card opened by the session check or by an expired save takes no focus", async () => {
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async () => {
     const held = heldClient();
     await signedOutPage(held);
@@ -6083,7 +6083,7 @@ test("the card stands in its element when createAccountCard returns", async () =
 // and a focus() that holds the first state's field after a change of state.
 test("the card takes no focus when it opens, and focus() moves it to the first field of the state it stands in", async () => {
   // decision: D-381 "The page opens the login card as an object it creates, focuses and closes: an element that holds the whole card from the moment the card is created, a call that moves focus to the first field of the form the card stands on, and a call that closes the card and takes the element out of the page with whatever it holds; every opening is a new card, so nothing typed, a password included, outlives the card and an answer awaited by a closed card changes nothing."
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const outside = pageDocument().createElement("button");
@@ -6146,7 +6146,7 @@ test("dispose() takes the element out with what it holds, and an answer still aw
 // unmounted while it renders, and the harness fails the case on that report; called from render or
 // an effect these would do so. Catches those two places.
 test("signedIn and finished may dispose the card, from the answer and from the click", async () => {
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session and after a password was set — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     const opened = await waitingLogin(root, held, {

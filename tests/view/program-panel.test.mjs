@@ -1265,7 +1265,7 @@ test("„Zapisz w programie” writes the copy into its program, and the line an
 // D-172. Catches the line missing when the program changed and the
 // copy has no changes, the line staying after the save, and a wrong program name in it.
 test("the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie”", async () => {
-  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.”; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
+  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii.” where the copy holds no unsaved changes and „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.” where it holds some; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
   // decision: D-164 "A change made during a map run goes into the copy and reaches the program only when the player saves it there or as a new program, or is dropped when the player discards it or switches the character to another program"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule());

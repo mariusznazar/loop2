@@ -1614,7 +1614,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
 
 test("the arrows are off only on the program's first and last rule, a group's edge being no end", () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
-  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only on the program's first rule and „↓” only on its last"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it, so a rule group left empty at the edge of the program takes the rule"
   const second = {
     id: 2,
     name: "Dwa",

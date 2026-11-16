@@ -396,7 +396,7 @@ test("a row has „↑”, „↓” and the destructive „Usuń”, and a head
 
 test("the arrows are off only at the ends of the program: „↑” on the first rule and „↓” on the last", async () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
-  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only on the program's first rule and „↓” only on its last"
+  // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it, so a rule group left empty at the edge of the program takes the rule"
   await withPage(async (page) => {
     await mount(page, twoGroups());
     const off = (id) =>
