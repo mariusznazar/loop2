@@ -13,7 +13,6 @@ import {
   type AccountCard,
   type AccountCardReset,
 } from "./account-card.js";
-import { createFormWarning } from "./controls/text-field.js";
 import {
   browserAddress,
   confirmFromAddress,
@@ -28,11 +27,8 @@ import {
   type KeptGame,
   type ScreenPlace,
 } from "./game-view.js";
-import {
-  errorWords,
-  FAILURE_SENTENCE,
-  installLastResort,
-} from "./last-resort.js";
+import { createFailureRow } from "./header-rows.js";
+import { errorWords, installLastResort } from "./last-resort.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
 import {
   createPageSentences,
@@ -243,7 +239,8 @@ function sameBarProps(a: MenuBarProps, b: MenuBarProps): boolean {
  * An error that no code of the game handled — an exception, a rejected promise — reaches the
  * window; the page cancels it, writes one line of it in the console (`last-resort.ts`) and says
  * „Coś w grze się zepsuło — odśwież stronę.” until the page is reloaded: on the line under the bar,
- * beside the line of saving, on every screen with the header; in the card, under the form; and,
+ * beside the line of saving, on every screen with the header — a row drawn when the page starts, in
+ * a root of its own, hidden, which the error only shows; in the card, under the form; and,
  * where React has taken the card down, alone in its place. The game then takes no change but goes
  * on saving the state it held, and no game is built after the error: a sign-in stays at the waiting
  * screen with the sentence (D-323, D-262).
@@ -259,7 +256,10 @@ export function startApp(
     onLogout: () => logOut(),
     props: NAME_ALONE,
   });
-  header.append(bar.element);
+  // The row of the failure: drawn now, hidden, and only shown at an error (D-323, D-407). It stands
+  // right after the bar and before the line of saving, which the game's header appends later.
+  const failureRow = createFailureRow();
+  header.append(bar.element, failureRow.element);
 
   const main = document.createElement("main");
   main.className = "app-main";
@@ -301,20 +301,15 @@ export function startApp(
   // An error nothing handled came: the game takes no change and the sentence stands, until the page
   // is reloaded (D-323).
   let failed = false;
-  // The sentence of that error in the row under the bar, above the line of saving (D-323, D-208);
-  // it comes with the error and stays on every screen with the header.
-  let failureLine: HTMLElement | null = null;
 
-  /** An error nothing handled: the page stops the game and says so, its line already written. */
+  /**
+   * An error nothing handled: the page shows the sentence of the failure, stops the game and tells
+   * the card, its line already written. It may be called from inside React's work, so it renders
+   * nothing: showing the row is one attribute of an element the page owns (D-323, D-407).
+   */
   function onUncaught(): void {
     failed = true;
-    if (failureLine === null) {
-      const warning = createFormWarning();
-      warning.set(FAILURE_SENTENCE);
-      failureLine = warning.element;
-      failureLine.classList.add("failure-line");
-      bar.element.after(failureLine);
-    }
+    failureRow.show();
     if (state.kind === "game") state.view.halt();
     if (state.kind === "card") state.card.fail();
   }
