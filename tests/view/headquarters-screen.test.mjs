@@ -323,6 +323,54 @@ test("a running loop shows its line with „Zatrzymaj”, which asks the page to
   });
 });
 
+// Catches the focus left on the page once „Zatrzymaj” takes its button away: the keyboard would then
+// start the screen again from its top (styleguide, "Focus does not fall to the page").
+test("after „Zatrzymaj” the focus stands on the name of that character once its loop has stopped", async () => {
+  await withPage(async (page) => {
+    const state = { ...teamOf(2), loops: { 2: LOOP } };
+    let screen = null;
+    await inAct(() => {
+      screen = createHeadquarters({
+        controls: {
+          create: () => {},
+          // The page stops the loop and gives the screen the state at once.
+          stop: (characterId) =>
+            screen.update(
+              propsOf({
+                ...state,
+                loops: {},
+                stoppedLoops: { [characterId]: { eating: 4 } },
+              }),
+            ),
+          closeReport: () => {},
+          takePractice: () => {},
+        },
+        props: propsOf(state),
+      });
+      page.root.append(screen.element);
+    });
+    const stop = buttonLabelled(page.root, "Zatrzymaj: Ola");
+    stop.focus();
+    await press(stop);
+    assert.equal(
+      globalThis.document.activeElement,
+      rowOf(page.root, "Ola").querySelector(".team-member-name"),
+    );
+  });
+});
+
+// Catches a focus moved although the page refused the stop and the button stays where it stood.
+test("a stop the page refuses leaves the focus on „Zatrzymaj”", async () => {
+  await withPage(async (page) => {
+    const state = { ...teamOf(2), loops: { 2: LOOP } };
+    await mount(page, propsOf(state));
+    const stop = buttonLabelled(page.root, "Zatrzymaj: Ola");
+    stop.focus();
+    await press(stop);
+    assert.equal(globalThis.document.activeElement, stop);
+  });
+});
+
 // --- the report ------------------------------------------------------------------------------
 
 const reported = () => ({

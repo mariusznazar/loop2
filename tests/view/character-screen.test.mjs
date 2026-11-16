@@ -177,6 +177,54 @@ test("a running loop shows its line with „Zatrzymaj”, which acts through onS
   });
 });
 
+// Catches the focus left on the page once „Zatrzymaj” takes its button away: the keyboard would then
+// start the screen again from its top (styleguide, "Focus does not fall to the page").
+test("after „Zatrzymaj” the focus stands on the character's name once its loop has stopped", async () => {
+  await withPage(async (page) => {
+    const loop = {
+      runNumber: 3,
+      completed: 2,
+      run: { mapId: "forest", minute: 212 },
+    };
+    let screen = null;
+    await inAct(() => {
+      screen = createCharacterScreen({
+        onBuy: () => {},
+        // The page stops the loop and gives the screen the state at once.
+        onStop: () =>
+          screen.update(
+            propsOf(stateWith({}, { stoppedLoops: { [ID]: { eating: 4 } } })),
+          ),
+        props: propsOf(stateWith({}, { loops: { [ID]: loop } })),
+      });
+      page.root.append(screen.element);
+    });
+    const stop = buttonLabelled(page.root, "Zatrzymaj: Ala");
+    stop.focus();
+    await press(stop);
+    assert.equal(
+      globalThis.document.activeElement,
+      page.root.querySelector(".character-screen-name"),
+    );
+  });
+});
+
+// Catches a focus moved although the page refused the stop and the button stays where it stood.
+test("a stop the page refuses leaves the focus on „Zatrzymaj”", async () => {
+  await withPage(async (page) => {
+    const loop = {
+      runNumber: 3,
+      completed: 2,
+      run: { mapId: "forest", minute: 212 },
+    };
+    await mount(page, propsOf(stateWith({}, { loops: { [ID]: loop } })));
+    const stop = buttonLabelled(page.root, "Zatrzymaj: Ala");
+    stop.focus();
+    await press(stop);
+    assert.equal(globalThis.document.activeElement, stop);
+  });
+});
+
 test("the section „Umiejętności” is absent before a tree is known, then shows the known tree's row alone", async () => {
   // decision: D-199 "The screen Postać shows „Umiejętności” after a tree is known, with a row for each known tree giving „{umiejętność} — poziom {p} · wprawa {w}/{próg} · punkty {k}”, or „{umiejętność} — poziom {p} (najwyższy) · wprawa {w} · punkty {k}” after its last threshold; before the first known tree the section is absent"
   await withPage(async (page) => {
