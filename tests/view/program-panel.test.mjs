@@ -1041,7 +1041,7 @@ test("time passing keeps what is typed in the name field and in an editor field,
   });
 });
 
-/** Ala's map run with a copy whose rule reads „Zapas poniżej 8 · Patyk → Eksploruj”. */
+/** Ala's map run with a copy whose rule reads „Zapas poniżej 8 szt. · Patyk → Eksploruj”. */
 function runWithNumber() {
   const program = programFromRules({
     condition: { kind: "itemBelow", item: "stick", value: 8 },

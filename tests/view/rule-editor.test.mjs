@@ -1124,7 +1124,7 @@ function withFirstRule(condition, action) {
 const ZAPAS_8_PATYK = { kind: "itemBelow", item: "stick", value: 8 };
 const ZBIERZ_PATYK = { kind: "gather", resource: "stick" };
 
-test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
+test("the acceptance criterion: „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open", async () => {
   // decision: D-282 "Each column of a screen is an area of its own that a narrower layout can rearrange, Siedziba draws the team as a section with a heading, and the rule panel offers its pick in steps, the action first and its target after it"
   // decision: D-288 "A rule's row reads as a sentence and a rule panel changes it, opening in place on the list under the row of the rule or the header of the rule group it changes, on both screens, and taking no column of its own: each pick moves on to the next field, conditions, actions and targets stand as cells in groups that the keyboard can reach, the conditions in two columns, and what the player may not pick stands greyed with its reason"
   // decision: D-306 "A click on a program rule's row opens the rule panel on the condition, and its fields follow as condition, number, target of the condition, action and target of the action, the number field and a field of a target standing only where the condition or the action has one; each pick changes the rule at once and moves to the next field, a pick of the value already picked included, and Enter or leaving the field confirms the number"
