@@ -3,8 +3,9 @@
  * with the tabs and the chronicle, its header with the bar of the solving condition, the band of a
  * discovery, the question „Zapisać, odrzucić, wrócić?”, the end-of-run window, the rows „Teraz” and
  * „Potem”, the row of the body, and the world area with the scene: its layers, effects, frost, motion
- * and keyframes. The page links it after styles.css, and it reads each value of appearance from the
- * design tokens of tokens.css by var(--…).
+ * and keyframes, but for the rule that runs the frames of the sprites of the scene and of the camp and its
+ * keyframes `scene-frames`, which stand in styles.css (D-421). The page links it after styles.css, and it
+ * reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
 /*
@@ -1117,10 +1118,9 @@
  * first, the mage stands at its place at once and the bar jumps at each reading. The animations are
  * written in longhands, so none sets the play state the stop below sets.
  *
- * - The frames of the mage's sheets and of the burning fire change every 160 ms: the picture of all
- *   frames moves its own width in as many steps as it holds frames, one frame a step. An extinguished
- *   fire and the props, one frame each, stand still. The camp's fire and the idle sheet of each character
- *   in it run at this beat too, always, since the camp's fire has no state; its chest is one frame.
+ * - The frames of the mage's sheets and of the burning fire change every 160 ms by the rule that styles.css
+ *   holds with the keyframes `scene-frames`, because the camp of Siedziba runs its frames by the same
+ *   rule. The rules below that name `scene-frames` give it their own duration.
  * - A walk lasts 640 ms at every pace: the mage's element starts it at the offset it walks from,
  *   `--walk-start`, which TypeScript gives as a percentage of the mage's own frame, and ends it at its
  *   place, linear, at the speed of a run. For the same 640 ms the run sheet shows in place of the idle
@@ -1147,16 +1147,6 @@
  *   moment and animates nothing, so that its end tells the scene the effect is over.
  */
 @media (prefers-reduced-motion: no-preference) {
-  .scene-mage-sprite img,
-  .scene-fire[data-burning="true"] img,
-  .camp-member img,
-  .camp-fire img {
-    animation-name: scene-frames;
-    animation-duration: calc(var(--frames) * 160ms);
-    animation-timing-function: steps(var(--frames));
-    animation-iteration-count: infinite;
-  }
-
   .scene-mage[data-walking],
   .scene-badge-carrier[data-walking] {
     animation-name: scene-walk;
@@ -1398,12 +1388,6 @@
 
   100% {
     translate: 0 0;
-  }
-}
-
-@keyframes scene-frames {
-  to {
-    translate: -100%;
   }
 }
 

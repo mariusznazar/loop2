@@ -2,11 +2,10 @@
  * The stylesheet of the screen Siedziba (D-421): the camp at the top, the sections „Drużyna” and
  * „Skrzynka”, the team and the chest, the report on earning loops and the creation of a character.
  * The folded credits at its foot stand in credits.css. The frames of the camp's characters and fire
- * (`.camp-member img`, `.camp-fire img`) are animated by a rule that stands whole in the block of
- * motion of run-screen.css, beside the frames of the scene's sprites, because one selector list holds
- * both; every stylesheet is linked on every page, so the camp moves as it did. The page links this
- * file after styles.css, and it reads each value of appearance from the design tokens of tokens.css
- * by var(--…).
+ * (`.camp-member img`, `.camp-fire img`) are animated by a rule that stands whole in styles.css, beside
+ * the frames of the scene's sprites, because one selector list holds both. The page links this file
+ * after styles.css, and it reads each value of appearance from the design tokens of tokens.css by
+ * var(--…).
  */
 
 /*
@@ -21,7 +20,7 @@
  * creation, as many as fit. Every size and every gap is a number of pixels of the picture times
  * `PICTURE_PIXEL`, which TypeScript puts in the elements' styles, so the stylesheet holds none. A
  * character's frame is wider than its cell and the cell's overflow is the frame's transparent edges.
- * The camp is a picture and takes no click; its motion is in the rules for motion of the scene.
+ * The camp is a picture and takes no click; its motion is the rule for the frames in styles.css.
  */
 .camp {
   position: relative;

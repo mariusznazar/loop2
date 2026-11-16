@@ -3,10 +3,14 @@
  * the menu bar and the menu „Konto”, the rows of sentences, the place of the screens and their common
  * layout, the shared controls with the icon mask and the forms, and the rules of what the kitchen-sink
  * page draws besides the controls — the drawing of the map, the table of tiles, the form and the
- * block of the account menu. It holds also the sentence `trip-warning`, which the screens Przejście
- * and Mapy both draw. The rules of each screen and of each part several screens use stand in the
- * stylesheet of that screen or part, which the page links after this one. It reads each value of
- * appearance from the design tokens of tokens.css by var(--…) (guidelines/styleguide-browser-view.md).
+ * block of the account menu. By the exception D-421 gives it holds also each rule that the elements
+ * of several screens need and that cannot be divided without changing its text: the columns of the
+ * screens Programy, Mapy and Wiedza with their @media, one selector list of three screens; the
+ * sentence `trip-warning`, which the screens Przejście and Mapy both draw; and the rule that runs the
+ * frames of the sprites of the scene and of the camp of Siedziba, with the keyframes `scene-frames`.
+ * The rules of each other screen and part stand in the stylesheet of that screen or part, which the
+ * page links after this one. It reads each value of appearance from the design tokens of tokens.css by
+ * var(--…) (guidelines/styleguide-browser-view.md).
  * Layout values D-43 leaves out stand here: line-height, the @media threshold, widths and heights, and
  * the sizes of the columns of the layout grid.
  */
@@ -230,6 +234,7 @@ header .failure-line {
   align-items: start;
 }
 
+/* The columns of Programy, Mapy and Wiedza, one selector list of three screens, stand here by the exception of D-421. */
 .screen.programs-screen,
 .screen.maps-screen,
 .screen.knowledge-areas {
@@ -506,6 +511,7 @@ header .failure-line {
   border-left: var(--bar-width) solid currentColor;
 }
 
+/* The sentence the screens Przejście and Mapy both draw, which stands here by the exception of D-421. */
 .trip-warning {
   color: var(--warning);
   margin: 0;
@@ -614,4 +620,35 @@ header .failure-line {
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */
 .tile-list tbody tr.hovered th {
   border-left-color: var(--link-highlight);
+}
+
+/*
+ * The frames of the sprites of the scene and of the camp of Siedziba (D-316, D-319, D-317), from CSS at a
+ * beat apart from the pace, and only where the system's setting asks for no less motion; under that
+ * setting the frames stand on the first. The rule names the classes of two screens, the mage's sheets and
+ * the burning fire of Przejście and the camp's characters and fire of Siedziba, so it stands whole here
+ * by the exception of D-421, with the keyframes it uses, and the rules of run-screen.css that run other
+ * frames name the same keyframes.
+ *
+ * The frames of the mage's sheets and of the burning fire change every 160 ms: the picture of all frames
+ * moves its own width in as many steps as it holds frames, one frame a step. An extinguished fire and
+ * the props, one frame each, stand still. The camp's fire and the idle sheet of each character in it run
+ * at this beat too, always, since the camp's fire has no state; its chest is one frame.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .scene-mage-sprite img,
+  .scene-fire[data-burning="true"] img,
+  .camp-member img,
+  .camp-fire img {
+    animation-name: scene-frames;
+    animation-duration: calc(var(--frames) * 160ms);
+    animation-timing-function: steps(var(--frames));
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes scene-frames {
+  to {
+    translate: -100%;
+  }
 }
