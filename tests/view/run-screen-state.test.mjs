@@ -276,3 +276,111 @@ test("a window that stands when the game is built owes the focus once, after the
     "no window stands over another screen",
   );
 });
+
+/** Subscribes a counting listener to `screen`; `stop` ends the subscription, `calls` counts the calls. */
+function listen(screen) {
+  let calls = 0;
+  const stop = screen.subscribe(() => {
+    calls += 1;
+  });
+  return { calls: () => calls, stop };
+}
+
+// Catches a screen and a panel that do not hear of a change of the question, whichever method made it.
+test("a listener is called after each change of the question, by a method of the state and by a result taken", () => {
+  // decision: D-407 "The screen Przejście and its program panel read the question and the window from the state of the screen Przejście"
+  const { screen, take } = screenOf(renamed(going()));
+  screen.entered();
+  const listener = listen(screen);
+  screen.ask(null);
+  assert.equal(listener.calls(), 1, "the question stands");
+  screen.closeQuestion();
+  assert.equal(listener.calls(), 2, "„Wróć” closed it");
+  screen.ask(null);
+  assert.equal(listener.calls(), 3, "asked again");
+  take(going(), [], false);
+  assert.equal(screen.question(), null, "the copy matches its program");
+  assert.equal(listener.calls(), 4, "a result taken dropped the question");
+});
+
+// Catches a screen and a panel that do not hear of a change of whether the window is shown.
+test("a listener is called after each change of whether the window is shown, by a method of the state and by a result taken", () => {
+  // decision: D-407 "The screen Przejście and its program panel read the question and the window from the state of the screen Przejście"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run"
+  const { screen, take } = screenOf(ended(going()));
+  const listener = listen(screen);
+  screen.entered();
+  assert.equal(listener.calls(), 1, "the window stands over the screen");
+  screen.closeWindow();
+  assert.equal(listener.calls(), 2, "„✕” closed it");
+  screen.left();
+  screen.entered();
+  assert.equal(listener.calls(), 3, "the entering opens it again");
+  take(going(), [], false);
+  assert.equal(listener.calls(), 4, "a result that ends no map run hides it");
+});
+
+// Catches a listener that hears of the window before the scene's effect of the end has ended.
+test("a result taken that makes the window wait for the scene's effect calls the listener only when the wait ends", () => {
+  // decision: D-311 "It opens of itself at the end of the map run once the scene's effect of the death or the completion has played"
+  const { screen, game, take } = screenOf(going());
+  screen.entered();
+  const listener = listen(screen);
+  take(ended(game.state), DIED, true);
+  assert.equal(listener.calls(), 0, "the window waits for the effect");
+  screen.effectEnded();
+  assert.equal(listener.calls(), 1, "the effect has ended");
+});
+
+// Catches a snapshot that changes its identity while nothing it holds changes, which
+// `useSyncExternalStore` reads as a change at every drawing.
+test("the snapshot is one value while the question and the window do not change, and a new one after each change", () => {
+  const { screen } = screenOf(renamed(going()));
+  screen.entered();
+  const before = screen.snapshot();
+  assert.deepEqual(before, { question: null, windowShown: false });
+  assert.equal(screen.snapshot(), before, "nothing changed");
+  screen.closeWindow();
+  screen.forgetQuestion();
+  screen.effectEnded();
+  assert.equal(screen.snapshot(), before, "no method changed what stands");
+  screen.ask(null);
+  const asked = screen.snapshot();
+  assert.notEqual(asked, before, "the question stands now");
+  assert.deepEqual(asked, {
+    question: { resume: true, opens: null },
+    windowShown: false,
+  });
+  assert.equal(screen.snapshot(), asked, "still one value");
+});
+
+// Catches a listener called by a method or a result that changes neither the question nor the
+// window: the panel would redraw for nothing.
+test("no listener is called by a method or a result that changes neither the question nor the window", () => {
+  const { screen, game, take } = screenOf(renamed(going()));
+  const listener = listen(screen);
+  screen.entered();
+  screen.closeWindow();
+  screen.closeQuestion();
+  screen.forgetQuestion();
+  screen.effectEnded();
+  screen.built();
+  assert.equal(screen.takeOwedFocus(true), false);
+  screen.left();
+  take(game.state, [], false);
+  assert.equal(listener.calls(), 0);
+});
+
+// Catches a subscription that outlives its stop: a screen that has left would still redraw.
+test("a stopped listener is not called, while another one subscribed to the same screen still is", () => {
+  const { screen } = screenOf(ended(going()));
+  const stopped = listen(screen);
+  const other = listen(screen);
+  stopped.stop();
+  screen.entered();
+  assert.equal(stopped.calls(), 0, "stopped before the change");
+  assert.equal(other.calls(), 1, "the other one hears of it");
+  screen.closeWindow();
+  assert.equal(stopped.calls(), 0);
+  assert.equal(other.calls(), 2);
+});

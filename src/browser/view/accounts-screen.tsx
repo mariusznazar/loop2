@@ -17,7 +17,7 @@
  * `update(props)`, `focus()` and `dispose()`. The page calls them from an event handler or the
  * continuation of an answer, never from render or an effect. Nothing runs when the module is imported.
  *
- * Classes the style rules read (`src/browser/styles.css`), and what each holds:
+ * Classes the style rules read (`src/browser/accounts-screen.css`), and what each holds:
  * `accounts-screen-host` the element of the screen; `accounts-screen` the screen's root, beside
  * `screen`; `accounts-area` its one area; `accounts-heading` its heading „Panel właściciela”, which
  * stands in place of an item of the bar, as the screen has none (D-281); `accounts-loading` the line

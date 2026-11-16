@@ -1,0 +1,55 @@
+/*
+ * The stylesheet of the screen Programy (D-421): what only Programy draws, the list of programs and
+ * the confirmation of „Zacznij od zera”. The page links it after styles.css, and it reads each value
+ * of appearance from the design tokens of tokens.css by var(--…).
+ */
+
+/*
+ * The confirmation of „Zacznij od zera” under the list's acts (D-402, D-44): its sentence in `warning`
+ * with a bar at its left in the colour of that text (D-39, D-279), as the question „Zapisać, odrzucić,
+ * wrócić?” writes its text, then the destructive confirm and the plain withdraw.
+ */
+.program-reset-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.program-reset-text {
+  margin: 0;
+  margin-right: auto;
+  padding-left: var(--space-s);
+  border-left: var(--bar-width) solid currentColor;
+  color: var(--warning);
+}
+
+/*
+ * The list of programs on the screen Programy (styleguide rule "Menu bar, the menu „Konto” and the
+ * list of programs"): each program a link in `text`, the chosen one in `text-strong` with a bar in
+ * `selected` of `--bar-width` at its left, a row under the pointer on `highlight`. Focus is the one
+ * :focus-visible rule above.
+ */
+.program-list-items {
+  list-style: none;
+  margin: 0 0 var(--space-s);
+  padding: 0;
+}
+
+.program-list-item {
+  display: block;
+  padding: var(--space-2xs) var(--space-s);
+  color: var(--text);
+  text-decoration: none;
+  border-left: var(--bar-width) solid transparent;
+}
+
+.program-list-item[aria-current="page"] {
+  color: var(--text-strong);
+  border-left-color: var(--selected);
+}
+
+.program-list-item:hover {
+  background: var(--highlight);
+}

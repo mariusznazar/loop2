@@ -14,7 +14,7 @@
  * own state, in the component: every entering of the screen builds it anew, so each entering starts
  * with the trees folded. Nothing runs when the module is imported.
  *
- * Classes the style rules read (`src/browser/styles.css`): `knowledge-screen-host` the element of the
+ * Classes the style rules read (`src/browser/knowledge-screen.css`): `knowledge-screen-host` the element of the
  * screen; `knowledge-screen` its root, over `knowledge-heading` and `knowledge-areas` (beside
  * `screen`); `knowledge-understanding` and `knowledge-skills` the two areas, each with a
  * `knowledge-area-head` holding `knowledge-area-name` and `knowledge-area-count`; `knowledge-group`

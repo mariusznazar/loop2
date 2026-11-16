@@ -1,10 +1,12 @@
 /**
  * The entry of the screen Przejście in the registry of screens (D-281, D-283, D-284, D-311, D-368):
  * the screen of a manual map run with its program panel, built once and hidden while another screen
- * shows. The entry carries out the acts of the screen against the store and tells the screen what
- * the state of the screen (`run-screen-state.ts`) decided: the question „Zapisać, odrzucić,
- * wrócić?”, the end-of-run window and the focus owed to it. The screen takes its map run as a
- * parameter and reads none by itself (D-281). Nothing here runs when the module is imported.
+ * shows. The entry carries out the acts of the screen against the store and gives the screen and
+ * its panel the state of the screen (`run-screen-state.ts`), from which each reads the question
+ * „Zapisać, odrzucić, wrócić?” and the end-of-run window itself (D-407); it moves the focus after a
+ * change, to the question, to the window and to a button of the header, and carries out the focus
+ * owed to the window. The screen takes its map run as a parameter and reads none by itself (D-281).
+ * Nothing here runs when the module is imported.
  */
 import {
   end,
@@ -54,21 +56,12 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
     kinds: ["run"],
     lives: "always",
     build(port) {
-      // The panel of Przejście stands in the program's area of its screen, under the band of a
-      // discovery.
-      const panel = createProgramPanel(options.acts, "run", options.folding);
-
-      /** Tells the screen of the map run whether the window stands. */
-      function syncWindow(): void {
-        runScreen.setWindow(screenState.windowShown());
-      }
-
       /**
        * Closes the question without a word to the map run: „Wznów”, „Restart”, the leaving of the
        * screen and the end of the map run each do their own act after it. Nothing after `halt()`.
        */
       function closeQuestion(): void {
-        if (screenState.closeQuestion()) runScreen.setQuestion(false);
+        screenState.closeQuestion();
       }
 
       /**
@@ -118,8 +111,6 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
           if (asked === null) return;
           // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
           if (asked.resume) take(setPaused(store.get(), true));
-          runScreen.setQuestion(true);
-          syncWindow();
           runScreen.focusQuestion();
         });
         leadTo(target);
@@ -163,19 +154,16 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
         // „Koniec przejścia” of the header opens the window; a question standing goes as „Wróć”
         // closes it, since the window and the question never stand together (D-311).
         openWindow() {
-          if (screenState.openWindow()) runScreen.setQuestion(false);
-          syncWindow();
+          screenState.openWindow();
         },
         // „✕” and Escape of the window; the screen moves the focus to „Koniec przejścia” (D-368).
         closeWindow() {
           screenState.closeWindow();
-          syncWindow();
         },
         // The scene's effect of a death or a completion has ended, or the scene was hidden while it
         // ran: the window that waited for it stands now (D-322).
         effectEnded() {
           screenState.effectEnded();
-          syncWindow();
         },
         // „Zapisz”: the copy goes into its program, or, its program gone, into a new program under
         // the first free name, and the map run ends (D-173, D-171, D-172).
@@ -234,7 +222,18 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
           port.focusIfLost();
         },
       };
-      const runScreen = createRunScreen(panel, controls, options.chronicle);
+      // The panel of Przejście stands in the program's area of its screen, under the band of a
+      // discovery; it and the screen read the question and the window from the state of the screen.
+      const panel = createProgramPanel(options.acts, "run", options.folding, {
+        state: screenState,
+        answers: controls,
+      });
+      const runScreen = createRunScreen(
+        panel,
+        controls,
+        options.chronicle,
+        screenState,
+      );
       if (port.current().kind === "run") screenState.entered();
 
       return {
@@ -250,19 +249,16 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
           });
           screenState.left();
         },
-        // The window opens at every entering of the screen of an ended map run (D-368), and the
-        // screen is told whether it stands after the screen shows, so that the window takes the
-        // focus on a screen that is there to take it.
+        // The window opens at every entering of the screen of an ended map run (D-368), which
+        // the state of the screen holds and the screen reads, so that the window takes the focus
+        // on a screen that is there to take it.
         placed(screen) {
           if (screen.kind === "run") screenState.entered();
-          syncWindow();
         },
         // Przejście, its program panel included, is given the state's map run while the state holds
         // one (D-281); without one it keeps what it showed, hidden, until the next send.
         drawResult(events) {
           const state = store.get();
-          runScreen.setQuestion(screenState.question() !== null);
-          syncWindow();
           if (state.run !== null) runScreen.update(state, state.run, events);
         },
         // The window opened before the page placed the game takes the focus at the first reading

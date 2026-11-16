@@ -16,35 +16,43 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/account-rules.ts`                | copy        | —        |
 | `src/browser/view/accounts-entry.ts`               | copy        | —        |
 | `src/browser/view/accounts-screen.tsx`             | copy        | —        |
-| `src/browser/view/app.ts`                          | do not copy | —        |
+| `src/browser/view/app.ts`                          | copy        | —        |
 | `src/browser/view/away-report.ts`                  | copy        | —        |
-| `src/browser/view/body-row.ts`                     | do not copy | —        |
+| `src/browser/view/body-row.ts`                     | copy        | —        |
+| `src/browser/view/camp-picture.ts`                 | copy        | —        |
+| `src/browser/view/camp.tsx`                        | copy        | —        |
 | `src/browser/view/character-entry.ts`              | copy        | —        |
 | `src/browser/view/character-screen.tsx`            | copy        | —        |
 | `src/browser/view/character-skills.ts`             | copy        | —        |
 | `src/browser/view/chronicle-entries.ts`            | copy        | —        |
 | `src/browser/view/chronicle.ts`                    | copy        | —        |
 | `src/browser/view/clock.ts`                        | copy        | —        |
-| `src/browser/view/combat-line.ts`                  | do not copy | —        |
+| `src/browser/view/combat-line.ts`                  | copy        | —        |
 | `src/browser/view/controls/react-button.tsx`       | copy        | —        |
 | `src/browser/view/controls/react-number-field.tsx` | copy        | —        |
 | `src/browser/view/controls/react-pick-cell.tsx`    | copy        | —        |
 | `src/browser/view/controls/react-select-list.tsx`  | copy        | —        |
 | `src/browser/view/controls/react-text-field.tsx`   | copy        | —        |
+| `src/browser/view/counted-name.ts`                 | copy        | —        |
 | `src/browser/view/credit-lines.ts`                 | copy        | —        |
 | `src/browser/view/credits-section.tsx`             | copy        | —        |
 | `src/browser/view/credits.ts`                      | copy        | —        |
 | `src/browser/view/discovery-band-text.ts`          | copy        | —        |
 | `src/browser/view/discovery-band.tsx`              | copy        | —        |
 | `src/browser/view/discovery-rule.ts`               | copy        | —        |
-| `src/browser/view/email-confirmation.ts`           | do not copy | —        |
+| `src/browser/view/email-confirmation.ts`           | copy        | —        |
 | `src/browser/view/email-status.ts`                 | copy        | —        |
+| `src/browser/view/end-question.tsx`                | copy        | —        |
 | `src/browser/view/end-window-lines.ts`             | copy        | —        |
 | `src/browser/view/end-window.tsx`                  | copy        | —        |
-| `src/browser/view/game-saver.ts`                   | do not copy | —        |
+| `src/browser/view/game-saver.ts`                   | copy        | —        |
 | `src/browser/view/game-view.ts`                    | do not copy | —        |
+| `src/browser/view/header-rows.tsx`                 | copy        | —        |
 | `src/browser/view/headquarters-entry.ts`           | do not copy | —        |
 | `src/browser/view/headquarters.tsx`                | copy        | —        |
+| `src/browser/view/knowledge-entry.ts`              | copy        | —        |
+| `src/browser/view/knowledge-lines.ts`              | copy        | —        |
+| `src/browser/view/knowledge-screen.tsx`            | copy        | —        |
 | `src/browser/view/last-resort.ts`                  | copy        | —        |
 | `src/browser/view/map-lines.ts`                    | copy        | —        |
 | `src/browser/view/maps-entry.ts`                   | copy        | —        |
@@ -52,16 +60,19 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/menu-bar.tsx`                    | copy        | —        |
 | `src/browser/view/now-lines.ts`                    | copy        | —        |
 | `src/browser/view/now-rows.tsx`                    | copy        | —        |
+| `src/browser/view/page-sentences.tsx`              | copy        | —        |
 | `src/browser/view/password-reset.ts`               | copy        | —        |
-| `src/browser/view/program-editor.ts`               | do not copy | —        |
+| `src/browser/view/previous-save-lines.ts`          | copy        | —        |
+| `src/browser/view/program-editor.ts`               | copy        | —        |
 | `src/browser/view/program-list.tsx`                | copy        | —        |
 | `src/browser/view/program-panel-acts.ts`           | copy        | —        |
 | `src/browser/view/program-panel.tsx`               | copy        | —        |
 | `src/browser/view/programs-entry.ts`               | do not copy | —        |
-| `src/browser/view/rule-list.tsx`                   | copy        | —        |
+| `src/browser/view/rule-list.tsx`                   | do not copy | —        |
 | `src/browser/view/rule-panel.tsx`                  | copy        | —        |
 | `src/browser/view/run-entry.ts`                    | copy        | —        |
 | `src/browser/view/run-header.tsx`                  | copy        | —        |
+| `src/browser/view/run-screen-reading.ts`           | copy        | —        |
 | `src/browser/view/run-screen-state.ts`             | copy        | —        |
 | `src/browser/view/run-screen.tsx`                  | copy        | —        |
 | `src/browser/view/scene-picture.ts`                | copy        | —        |
@@ -69,16 +80,17 @@ Czytaj również ogólne wytyczne kodowania.
 | `src/browser/view/screen-address.ts`               | copy        | —        |
 | `src/browser/view/screen-registry.ts`              | copy        | —        |
 | `src/browser/view/state-store.ts`                  | copy        | —        |
-| `src/browser/view/status-row.ts`                   | do not copy | —        |
+| `src/browser/view/status-row.ts`                   | copy        | —        |
 | `src/browser/view/tabs-area.tsx`                   | copy        | —        |
 | `src/browser/view/team-lines.ts`                   | copy        | —        |
 | `src/browser/view/terrain-drawing.tsx`             | copy        | —        |
 | `src/browser/view/terrain-picture.ts`              | copy        | —        |
-| `src/browser/view/tile-list.ts`                    | do not copy | —        |
+| `src/browser/view/tile-list.ts`                    | copy        | —        |
 | `src/browser/view/tile-table.tsx`                  | copy        | —        |
-| `src/browser/view/trip-editor.ts`                  | do not copy | —        |
-| `src/browser/view/trip-lines.ts`                   | do not copy | —        |
+| `src/browser/view/trip-editor.ts`                  | copy        | —        |
+| `src/browser/view/trip-lines.ts`                   | copy        | —        |
 | `src/browser/view/trip-plan.tsx`                   | copy        | —        |
+| `src/browser/view/waiting-screen.tsx`              | copy        | —        |
 | `src/browser/view/world-area.tsx`                  | copy        | —        |
 
 ## Rules

@@ -7,7 +7,7 @@
 // motion are read from a stream of frames in the browser (D-417, D-88). Every comparison is of plain
 // data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
-import { readFileSync } from "node:fs";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
@@ -27,10 +27,8 @@ import {
   withEdgeSolved,
 } from "../sim/understanding-fixture.mjs";
 
-const STYLES = readFileSync(
-  new URL("../../src/browser/styles.css", import.meta.url),
-  "utf8",
-);
+// The text of the game's stylesheets as the page links them, in their cascade order (D-421).
+const STYLES = gameStylesheetText();
 const SENT = { mapId: "forest", characterId: 1 };
 const ALWAYS = { kind: "always" };
 const GATHER_STICK = { kind: "gather", resource: "stick" };
@@ -336,7 +334,7 @@ test("the scene marks how it stands: going, paused, at a discovery, dead, comple
 });
 
 /**
- * A property of an element as the real stylesheet, laid on its page, gives it. jsdom reads no rule
+ * A property of an element as the game's stylesheets, laid on its page, give it. jsdom reads no rule
  * inside an `@media` rule of a feature, so this shows what the scene does under any setting of motion.
  */
 function computed(element, property) {
@@ -2235,7 +2233,10 @@ test("at its stop only the effect of a moment runs, and every other animation of
 test("the cold layer blends by colour, so it keeps the brightness of what it lies over", () => {
   // decision: D-317 "The scene shows no flash of its whole area"
   const match = /\.scene-chill\s*\{([^}]*)\}/.exec(STYLES);
-  assert.ok(match, "the rule of the cold layer stands in the stylesheet");
+  assert.ok(
+    match,
+    "the rule of the cold layer stands in the game's stylesheets",
+  );
   assert.match(match[1], /mix-blend-mode:\s*color\s*;/);
 });
 

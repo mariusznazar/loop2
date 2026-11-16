@@ -2,10 +2,10 @@
 // jsdom through tests/view/page-document.mjs: which rows stand as winning or running, the bar of
 // each row and header, the reason, and where the signs do not stand. The look itself, the colours and
 // the order of the backgrounds under the pointer, is checked in the browser (D-88); one case here
-// reads the order of the rules of the stylesheet, which that look rests on. Every comparison is of
-// plain data (D-268).
+// reads the order of the rules of the game's stylesheets (D-421), which that look rests on. Every
+// comparison is of plain data (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
-import { readFileSync } from "node:fs";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 import { test } from "node:test";
 import {
   createCharacter,
@@ -240,15 +240,13 @@ test("the signs stand on the screen after a death and go with „Zakończ”", a
   });
 });
 
-// Catches a reorder of the rules of the stylesheet that lets the pointer cover the state of a row
-// or the state cover the open row (D-308): of rules of equal weight the later wins, so the pointer
-// must come first, then the states, then the open row.
+// Catches a reorder of the rules of the game's stylesheets that lets the pointer cover the state of
+// a row or the state cover the open row (D-308): of rules of equal weight the later wins, so the
+// pointer must come first, then the states, then the open row. The stylesheets are read in the
+// order the page links them, as the cascade reads them (D-421).
 test("the stylesheet puts the background under the pointer before the states, and the open row after them", () => {
   // decision: D-308 "During a manual map run and on its screen after its end, until „Restart” or „Zakończ”, the rule of the copy that wins now stands on the background `rule-winning`"
-  const sheet = readFileSync(
-    new URL("../../src/browser/styles.css", import.meta.url),
-    "utf8",
-  );
+  const sheet = gameStylesheetText();
   const place = (selector) => {
     const found = sheet.search(
       new RegExp(`^${selector.replace(/[.]/g, "\\.")}[,\\s{]`, "m"),

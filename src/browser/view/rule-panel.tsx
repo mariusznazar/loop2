@@ -96,7 +96,7 @@ const COPY_NOTE = "Zmiana zeruje passę tego przejścia.";
 
 /**
  * Cells to a line in a field's grid: the conditions in two columns (D-290), every other pick in four.
- * `styles.css` draws the same numbers, the class `two-columns` naming the first.
+ * `program-panel.css` draws the same numbers, the class `two-columns` naming the first.
  */
 function columnsOf(field: RuleField): number {
   return field === "condition" ? 2 : 4;

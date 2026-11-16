@@ -1,0 +1,18 @@
+/*
+ * The stylesheet of the waiting screen (D-421): the section `session-check` and its text, shown while
+ * the page asks the server whom this browser is signed in as. The page links it after styles.css, and
+ * it reads each value of appearance from the design tokens of tokens.css by var(--…).
+ */
+
+/* While the page asks the server whom this browser is signed in as (D-96). */
+.session-check {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-s);
+}
+
+.session-check-text {
+  margin: 0;
+  color: var(--text-secondary);
+}

@@ -5,8 +5,10 @@
  * that is synchronous, `update(state, events)`, `showProgram`, `addDiscoveredRule` and `dispose()`,
  * called from an event handler or the continuation of an answer, never from render or an effect. On
  * the screen of a map run the panel also draws the question „Zapisać, odrzucić, wrócić?” of
- * „Zakończ” (D-173), just above the heading of the copy, while the screen tells it to
- * (`setQuestion`). The panel holds the rule list, which draws the rule panel in place, under the row
+ * „Zakończ” (D-173), just above the heading of the copy, while the state of the screen Przejście
+ * holds it: the page gives the panel that state and the answers of the question when it creates the
+ * panel, and the panel reads the question from it as the screen reads the window (D-407); the panel
+ * of Programy is given neither and never draws it. The panel holds the rule list, which draws the rule panel in place, under the row
  * or header it changes, the open rule a state of the panel. It asks the game for every change
  * through `ProgramPanelControls` and never writes the game state. Which program it shows is the
  * boundary's, changed by picking on the list and by the operations of the game. The folding of rule
@@ -50,6 +52,10 @@ import {
 import { offeredItems } from "./program-editor.js";
 import { RuleListView, type RuleListTarget } from "./rule-list.js";
 import { RulePanelView, type RulePanelOpen } from "./rule-panel.js";
+import {
+  useRunScreenSnapshot,
+  type RunScreenReading,
+} from "./run-screen-reading.js";
 import { TripPlanView } from "./trip-plan.js";
 
 /** What the panel shows: the copy of the map run, or a saved program by its number (D-165). */
@@ -129,6 +135,15 @@ export function createFolding(): Folding {
   };
 }
 
+/**
+ * What the panel of a map run needs to draw the question „Zapisać, odrzucić, wrócić?” (D-173): the
+ * state of the screen Przejście it reads the question from, and the answers of its three buttons.
+ */
+export type EndQuestionSource = {
+  state: RunScreenReading;
+  answers: EndQuestionControls;
+};
+
 export type ProgramPanel = {
   /** The panel, for the page to place. */
   element: HTMLElement;
@@ -153,13 +168,6 @@ export type ProgramPanel = {
    * nothing.
    */
   addDiscoveredRule(): void;
-  /**
-   * Shows the question „Zapisać, odrzucić, wrócić?” of „Zakończ” (D-173) in the panel of a map run,
-   * just above the heading of the copy and under the band of a discovery the screen draws above the
-   * panel, with `answers` for its three buttons; null takes it away. The panel of Programy never
-   * draws it. Setting what is set changes nothing.
-   */
-  setQuestion(answers: EndQuestionControls | null): void;
   /**
    * A click on „Teraz” or „Potem” (D-336), for the screen of a map run to call from an event handler:
    * scrolls the program once so that the row of the rule numbered `ruleId` stands in the middle of the
@@ -322,14 +330,32 @@ type ProgramPanelViewProps = {
   shown: ShownProgram;
   actions: PanelActions;
   folding: Folding;
-  /** The answers of the question of „Zakończ” while it stands in a panel of a map run; else null. */
-  question?: EndQuestionControls | null;
+  /** The source of the question of „Zakończ” in a panel of a map run; null where the panel draws none. */
+  endQuestion?: EndQuestionSource | null;
   /**
    * A rule the boundary asks to open, „Dodaj regułę z tym”'s; each request a new object, opened at
    * the first draw that gives it, as a click on its row would open it.
    */
   opening?: RulePanelOpen | null;
 };
+
+/**
+ * The question „Zapisać, odrzucić, wrócić?” while the state of the screen Przejście holds it, and
+ * nothing otherwise. A component of its own, so that the Hook reading that state is called whether
+ * the question stands or not.
+ */
+function EndQuestionSlot({
+  state,
+  source,
+}: {
+  state: GameState;
+  source: EndQuestionSource;
+}) {
+  const { question } = useRunScreenSnapshot(source.state);
+  return question === null ? null : (
+    <EndQuestion state={state} controls={source.answers} />
+  );
+}
 
 /**
  * The panel drawn from the game state and the program shown. In `run` mode it holds the list
@@ -343,7 +369,7 @@ export function ProgramPanelView({
   shown,
   actions,
   folding,
-  question = null,
+  endQuestion = null,
   opening = null,
 }: ProgramPanelViewProps) {
   const key = shownValue(shown);
@@ -560,8 +586,8 @@ export function ProgramPanelView({
             </>
           )}
         </div>
-        {question === null ? null : (
-          <EndQuestion state={state} controls={question} />
+        {endQuestion === null ? null : (
+          <EndQuestionSlot state={state} source={endQuestion} />
         )}
         {copyShown && run ? (
           <div className="copy-section">
@@ -665,12 +691,16 @@ export function ProgramPanelView({
  * `update`. Which program it shows is the boundary's: `update` changes it at a map run started or
  * ended and for a program gone from the list, a pick on the list and `showProgram` change it, and
  * picking changes no game state. `folding` is the page's memory of folded groups, which the panels of
- * both screens read; left out, the panel has one of its own.
+ * both screens read; left out, the panel has one of its own. `endQuestion` is what the panel of a map
+ * run draws the question „Zapisać, odrzucić, wrócić?” from, the state of the screen Przejście with
+ * the answers of the question; the panel of Programy is given none, and the panel of a map run
+ * given none draws no question.
  */
 export function createProgramPanel(
   controls: ProgramPanelControls,
   mode: ProgramPanelMode = "run",
   folding: Folding = createFolding(),
+  endQuestion: EndQuestionSource | null = null,
 ): ProgramPanel {
   const element = document.createElement("section");
   element.className = "program-panel";
@@ -678,8 +708,6 @@ export function createProgramPanel(
   let state: GameState | null = null;
   let shown: ShownProgram = { kind: "saved", programId: 1 };
   let disposed = false;
-  // The answers of the question of „Zakończ” while it stands; null while none does.
-  let question: EndQuestionControls | null = null;
   // The rule „Dodaj regułę z tym” asked the view to open last; null until it asks.
   let opening: RulePanelOpen | null = null;
 
@@ -694,7 +722,7 @@ export function createProgramPanel(
           shown={shown}
           actions={actions}
           folding={folding}
-          question={question}
+          endQuestion={endQuestion}
           opening={opening}
         />,
       );
@@ -770,11 +798,6 @@ export function createProgramPanel(
       // A new object at each call, which the view opens once, at the draw that first gives it.
       opening = found.open;
       controls.editCopy(found.program);
-      draw();
-    },
-    setQuestion(answers: EndQuestionControls | null): void {
-      if (answers === question) return;
-      question = answers;
       draw();
     },
     scrollToRule(ruleId: RuleId): void {

@@ -4,7 +4,8 @@
 // tabs „Kronika” and „Teren” and the chronicle or the table of revealed tiles (D-346) — drawn from
 // the map run the screen is given, and the one hovered tile the screen holds for the drawing, its
 // line and the table. A rule panel opens in the program, under its row. The
-// screen is built here as the game view builds it, with a program panel of its own and controls
+// screen is built here as the game view builds it, with a program panel of its own, a real state of
+// the screen Przejście that the screen and the panel read the question and the window from, and controls
 // that make the real simulation calls. Real events, focus and the look are checked in the browser
 // (D-88). Every comparison is of plain data or of a handful of words (D-268).
 import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
@@ -30,6 +31,7 @@ import {
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { createProgramPanel } from "../../dist/browser/view/program-panel.js";
 import { createRunScreen } from "../../dist/browser/view/run-screen.js";
+import { createRunScreenState } from "../../dist/browser/view/run-screen-state.js";
 
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000000;
@@ -72,7 +74,8 @@ function buttonLabelled(root, label) {
 /**
  * The screen as the game view builds it: a program panel of the screen of a map run and the
  * controls of the header, each a real simulation call whose result the screen is given with the
- * map run it holds. `acts` records what was asked.
+ * map run it holds, and the state of the screen Przejście over the game of the case, which the
+ * screen and the panel read the question and the window from. `acts` records what was asked.
  */
 async function wiredScreen({ root }, start) {
   const game = {
@@ -86,7 +89,44 @@ async function wiredScreen({ root }, start) {
         game.screen.update(game.state, game.state.run, result.events);
     },
   };
+  game.screenState = createRunScreenState({
+    game: { get: () => game.state, halted: () => false },
+    reducedMotion: () => false,
+  });
   const unused = (name) => () => game.acts.push(name);
+  const controls = {
+    togglePause() {
+      game.acts.push("togglePause");
+      game.apply(setPaused(game.state, !game.state.paused));
+    },
+    setPace(pace) {
+      game.acts.push("setPace");
+      game.apply(setPace(game.state, pace));
+    },
+    restart() {
+      game.acts.push("restart");
+      game.apply(restart(game.state));
+    },
+    end() {
+      game.acts.push("end");
+      game.apply(end(game.state));
+    },
+    saveAndEnd: unused("saveAndEnd"),
+    discardAndEnd: unused("discardAndEnd"),
+    back: unused("back"),
+    // The state of the screen keeps whether the window stands, and the screen reads it.
+    openWindow() {
+      game.acts.push("openWindow");
+      game.screenState.openWindow();
+    },
+    closeWindow() {
+      game.acts.push("closeWindow");
+      game.screenState.closeWindow();
+    },
+    openMap(mapId) {
+      game.acts.push(`openMap ${mapId}`);
+    },
+  };
   game.panel = createProgramPanel(
     {
       editCopy(program) {
@@ -103,46 +143,12 @@ async function wiredScreen({ root }, start) {
       switchProgram: unused("switchProgram"),
     },
     "run",
+    undefined,
+    { state: game.screenState, answers: controls },
   );
   // Inside act: the screen draws its first render as it is built.
   game.screen = await inAct(() =>
-    createRunScreen(
-      game.panel,
-      {
-        togglePause() {
-          game.acts.push("togglePause");
-          game.apply(setPaused(game.state, !game.state.paused));
-        },
-        setPace(pace) {
-          game.acts.push("setPace");
-          game.apply(setPace(game.state, pace));
-        },
-        restart() {
-          game.acts.push("restart");
-          game.apply(restart(game.state));
-        },
-        end() {
-          game.acts.push("end");
-          game.apply(end(game.state));
-        },
-        saveAndEnd: unused("saveAndEnd"),
-        discardAndEnd: unused("discardAndEnd"),
-        back: unused("back"),
-        // The game view keeps whether the window stands and tells the screen with `setWindow`.
-        openWindow() {
-          game.acts.push("openWindow");
-          game.screen.setWindow(true);
-        },
-        closeWindow() {
-          game.acts.push("closeWindow");
-          game.screen.setWindow(false);
-        },
-        openMap(mapId) {
-          game.acts.push(`openMap ${mapId}`);
-        },
-      },
-      game.chronicle,
-    ),
+    createRunScreen(game.panel, controls, game.chronicle, game.screenState),
   );
   root.append(game.screen.element);
   await inAct(() => game.screen.update(game.state, game.state.run, []));
@@ -282,17 +288,18 @@ test("at a discovery the band stands in the program's area, above the program pa
   });
 });
 
-// D-173. Catches the question standing before the
-// screen asks for it, in the world or the area under the drawing, above the band of a discovery, outside the
-// program panel or not directly above the heading of the copy, or kept after `setQuestion(false)`.
-test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the screen is told to show it", async () => {
+// D-173. Catches the question standing before the state of the screen holds it, in the world or the
+// area under the drawing, above the band of a discovery, outside the program panel or not directly
+// above the heading of the copy, or kept after the state takes it away.
+test("the question stands in the program panel, directly above the heading of the copy and under the band of a discovery, only while the state of the screen holds it", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await withPage(async (page) => {
-    const { screen } = await wiredScreen(page, firstChill());
+    const game = await wiredScreen(page, firstChill());
+    const { screen, screenState } = game;
     const [world, program, tabs] = areasOf(screen.element);
     assert.equal(byClass(screen.element, "end-question").length, 0);
-    await inAct(() => screen.setQuestion(true));
+    await inAct(() => screenState.ask(null));
     assert.equal(byClass(world, "end-question").length, 0);
     assert.equal(byClass(tabs, "end-question").length, 0);
     assert.deepEqual(
@@ -307,9 +314,10 @@ test("the question stands in the program panel, directly above the heading of th
       question.nextElementSibling.classList.contains("copy-section"),
       "directly above the heading of the copy",
     );
-    await inAct(() => screen.setQuestion(true));
+    await inAct(() => screenState.ask(null));
+    await inAct(() => screen.update(game.state, game.state.run, []));
     assert.equal(byClass(program, "end-question").length, 1, "shown once");
-    await inAct(() => screen.setQuestion(false));
+    await inAct(() => screenState.closeQuestion());
     assert.equal(byClass(screen.element, "end-question").length, 0);
   });
 });
@@ -846,27 +854,31 @@ function coveredState(screen) {
   assert.fail(`the header and the areas differ in being hidden: ${states}`);
 }
 
-// D-311, D-368, D-370. Catches a window drawn while it is not set open or
+// D-311, D-368, D-370. Catches a window drawn while the state of the screen does not show it or
 // over a map run that goes on, a header or an area left visible under the window, and a screen
-// that stays covered after the window is set closed.
-test("told the window stands, the screen of an ended map run draws it and hides the header and the three areas; told it does not, it shows them again", async () => {
+// that stays covered after the state takes the window away.
+test("while the state of the screen shows the window, the screen of an ended map run draws it and hides the header and the three areas; once it does not, the screen shows them again", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
   // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
-    assert.equal(windowIn(game.screen), undefined, "not drawn until told");
+    assert.equal(
+      windowIn(game.screen),
+      undefined,
+      "not drawn until the state shows it",
+    );
     assert.equal(coveredState(game.screen), false);
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     assert.ok(windowIn(game.screen), "the window stands");
     assert.equal(coveredState(game.screen), true, "the screen is covered");
-    await inAct(() => game.screen.setWindow(false));
+    await inAct(() => game.screenState.closeWindow());
     assert.equal(windowIn(game.screen), undefined);
     assert.equal(coveredState(game.screen), false, "the screen is shown");
 
     const running = await wiredScreen(page, pausedRun());
-    await inAct(() => running.screen.setWindow(true));
+    await inAct(() => running.screenState.entered());
     assert.equal(windowIn(running.screen), undefined, "no window, no end");
     assert.equal(coveredState(running.screen), false, "nothing is covered");
   });
@@ -882,10 +894,10 @@ test("what the window covers stays in the tree and keeps its state: the tab pick
     const [, program, tabs] = areasOf(game.screen.element);
     await press(buttonNamed(tabs, "Teren"));
     const panel = byClass(program, "program-panel")[0];
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     assert.ok(panel.isConnected, "the panel's element stays in the screen");
     assert.ok(program.contains(panel));
-    await inAct(() => game.screen.setWindow(false));
+    await inAct(() => game.screenState.closeWindow());
     assert.ok(
       byClass(areasOf(game.screen.element)[2], "tabs")
         .flatMap((tabsRow) => [...tabsRow.querySelectorAll("button")])
@@ -908,7 +920,7 @@ test("„✕” asks the game view to close the window and the focus goes to „
   // decision: D-370 "The window takes the focus when it opens"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     await press(buttonLabelled(expectWindowIn(game.screen), "Zamknij okno"));
     assert.deepEqual(game.acts, ["closeWindow"]);
     assert.equal(windowIn(game.screen), undefined);
@@ -926,7 +938,7 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
   // decision: D-368 "The window scrolls in itself while its buttons"
   await withPage(async (page) => {
     const game = await wiredScreen(page, completedRun(pausedRun()));
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     await press(buttonNamed(expectWindowIn(game.screen), "Zakończ"));
     await press(
       buttonNamed(expectWindowIn(game.screen), "Otwarte: Las — głębiej →"),
@@ -936,7 +948,7 @@ test("the buttons of the window ask for „Restart”, „Zakończ” and the op
     // the buttons that stand in a window of a map run whose end the player has not asked for are
     // drawn again for „Restart”.
     const again = await wiredScreen(page, completedRun(pausedRun()));
-    await inAct(() => again.screen.setWindow(true));
+    await inAct(() => again.screenState.entered());
     await press(buttonNamed(expectWindowIn(again.screen), "Restart"));
     assert.deepEqual(again.acts, ["restart"]);
   });
@@ -949,7 +961,7 @@ test("„Dodaj regułę z tym” of the window closes the window and then does w
   await withPage(async (page) => {
     const chilled = firstChill();
     const game = await wiredScreen(page, completedRun(chilled));
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     const discovery = byClass(
       expectWindowIn(game.screen),
       "end-window-discovery",
@@ -982,7 +994,7 @@ test("the window's „Ostatnie minuty” are the entries of the chronicle memory
     const game = await wiredScreen(page, freezingRun());
     await inAct(() => game.apply(advanceMinutes(game.state, 5000)));
     assert.ok(game.state.run.death, "precondition: the character died");
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     const minutes = byClass(
       expectWindowIn(game.screen),
       "end-window-minutes",
@@ -1024,17 +1036,19 @@ test("the page scrolls to its top when the window appears, and at no other draw"
     });
     const game = await wiredScreen(page, completedRun(pausedRun()));
     assert.deepEqual(writes, [], "none while no window is drawn");
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     assert.deepEqual(writes, [0], "at the appearance");
     await inAct(() => game.screen.update(game.state, game.state.run, []));
-    await inAct(() => game.screen.setWindow(true));
+    await inAct(() => game.screenState.entered());
     assert.deepEqual(writes, [0], "not at a draw while the window stands");
-    await inAct(() => game.screen.setWindow(false));
+    await inAct(() => game.screenState.closeWindow());
     assert.deepEqual(writes, [0], "not at the closing");
-    await inAct(() => game.screen.setWindow(true));
+    // Leaving the screen and entering it again opens the window of an ended map run again.
+    await inAct(() => game.screenState.left());
+    await inAct(() => game.screenState.entered());
     assert.deepEqual(writes, [0, 0], "at the next appearance");
     const running = await wiredScreen(page, pausedRun());
-    await inAct(() => running.screen.setWindow(true));
+    await inAct(() => running.screenState.entered());
     assert.deepEqual(writes, [0, 0], "none where no end stands to draw it");
   });
 });

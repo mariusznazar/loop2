@@ -7,7 +7,7 @@
 // browser (D-88), so a hover case here holds only what jsdom shows. Every comparison is of plain
 // data or of a handful of words (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
-import { readFileSync } from "node:fs";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 import { test } from "node:test";
 import { Fragment, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -31,10 +31,8 @@ import {
   withEdgeSolved,
 } from "../sim/understanding-fixture.mjs";
 
-const STYLES = readFileSync(
-  new URL("../../src/browser/styles.css", import.meta.url),
-  "utf8",
-);
+// The game's stylesheets as the page links them (D-421), read as one text.
+const STYLES = gameStylesheetText();
 const SENT = { mapId: "forest", characterId: 1 };
 const ALWAYS = { kind: "always" };
 
@@ -786,7 +784,7 @@ test("without a map run the world area and the table draw nothing", async () => 
 });
 
 /**
- * A property of an element as the real stylesheet, laid on its page, gives it, as `computed` of
+ * A property of an element as the game's stylesheets, laid on its page, give it, as `computed` of
  * `scene.test.mjs` does: the page is the test's own jsdom page, whose first import started the
  * memory limit.
  */

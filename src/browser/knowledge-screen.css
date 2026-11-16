@@ -1,0 +1,102 @@
+/*
+ * The stylesheet of the screen Wiedza (D-421): its heading, the Understanding with its groups and
+ * things, and the skill trees with their branches. The columns of the two areas stand in styles.css
+ * with those of Programy and Mapy. The page links it after styles.css, and it reads each value of
+ * appearance from the design tokens of tokens.css by var(--…).
+ */
+
+/*
+ * The screen Wiedza (D-416, D-281; styleguide rule "The screen Wiedza"): the heading „Wiedza” in
+ * `text-strong` as the heading of Siedziba is, over two areas as the columns of Mapy (above), one
+ * under the other in a window under 720 px. The names of the areas and of the groups are names of
+ * sections, so `text-label`; the counters are notes, so `text-secondary`; the things stand in `text`
+ * with their icons drawn as masks in that colour (D-291, D-43). A tree is a shared button that folds
+ * and opens it; a branch's name stands in `text-strong`, its number of ranks in `text-label`, its
+ * description in `text-secondary` and its prices in `text`. Focus is the one :focus-visible rule
+ * above.
+ */
+.knowledge-heading {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-strong);
+}
+
+.knowledge-area-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-xs) var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.knowledge-area-name,
+.knowledge-group-name {
+  margin: 0;
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-emphasis);
+  color: var(--text-label);
+}
+
+.knowledge-area-count {
+  font-size: var(--font-size-label);
+  color: var(--text-secondary);
+}
+
+.knowledge-group {
+  margin-bottom: var(--space-m);
+}
+
+.knowledge-group-name {
+  margin-bottom: var(--space-xs);
+}
+
+.knowledge-things,
+.knowledge-trees,
+.knowledge-branches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.knowledge-thing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-2xs) 0;
+  color: var(--text);
+}
+
+.knowledge-tree {
+  margin-bottom: var(--space-xs);
+}
+
+.knowledge-branches {
+  margin: var(--space-xs) 0 var(--space-s) var(--space-l);
+}
+
+.knowledge-branch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-s);
+  padding: var(--space-2xs) 0;
+}
+
+.knowledge-branch-name {
+  color: var(--text-strong);
+}
+
+.knowledge-branch-steps {
+  font-size: var(--font-size-label);
+  color: var(--text-label);
+}
+
+.knowledge-branch-description {
+  color: var(--text-secondary);
+}
+
+.knowledge-branch-costs {
+  color: var(--text);
+}
