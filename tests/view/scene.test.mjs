@@ -1977,6 +1977,102 @@ test("the end of an effect's own animation stands the scene on its last image an
   });
 });
 
+/** Fires `animationcancel` on an element and on everything under it, as a browser does for a hidden subtree. */
+function cancelWithin(element) {
+  for (const part of [element, ...element.querySelectorAll("*")])
+    cancelAnimation(part);
+}
+
+// D-317, D-367, D-316. Catches a flight, a cloud of dust, a wolf's run in, fall or run off and a return of
+// the tint that the player cut by leaving the screen, whose animations a browser cancels while the screen
+// is hidden and fires no end for: left standing, they play again from their start on the return, an effect
+// overdue that D-317 drops and a return of 2 s run twice.
+test("an effect or a return of the tint cut by leaving the screen is over as its animation's end makes it, and a scene shown again does not play it", async () => {
+  // decision: D-317 "An effect of an ordinary event is a short sign of one event"
+  // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
+  await withPage(async (page) => {
+    const afterTheCombat = async (outcome) => {
+      const read = await mounted(page, inCombat());
+      await read.draw(afterCombat(outcome), [OVER(outcome)]);
+      return read;
+    };
+    const cases = [
+      {
+        name: "the flight of an icon",
+        start: () =>
+          reading(page, GATHER_STICK, {
+            before: 0,
+            after: 1,
+            events: [ended(GATHER_STICK)],
+          }),
+        again: carrying(doingFrom(GATHER_STICK, 10, 10), "stick", 1),
+        cut: ".scene-flight",
+        standing: (scene) => scene.querySelector(".scene-flight") !== null,
+      },
+      {
+        name: "the cloud of dust",
+        start: () =>
+          reading(page, GATHER_STICK, {
+            before: 2,
+            after: 2,
+            events: [ended(GATHER_STICK)],
+          }),
+        again: carrying(doingFrom(GATHER_STICK, 10, 10), "stick", 2),
+        cut: ".scene-dust",
+        standing: (scene) => scene.querySelector(".scene-dust") !== null,
+      },
+      {
+        name: "the wolf's run in",
+        start: async () => {
+          const read = await mounted(
+            page,
+            withRun(sent(), { current: WAITING }),
+          );
+          await read.draw(inCombat(), [ATTACK]);
+          return read;
+        },
+        again: inCombat(),
+        cut: ".scene-creature",
+        standing: (scene) =>
+          one(scene, ".scene-creature").hasAttribute("data-entering"),
+      },
+      {
+        name: "the fall of a defeated wolf",
+        start: () => afterTheCombat("creatureDefeated"),
+        again: afterCombat("creatureDefeated"),
+        cut: ".scene-creature-effect",
+        standing: (scene) => scene.querySelector(".scene-creature-effect"),
+      },
+      {
+        name: "the run off of a departing wolf",
+        start: () => afterTheCombat("creatureDeparted"),
+        again: afterCombat("creatureDeparted"),
+        cut: ".scene-creature-effect",
+        standing: (scene) => scene.querySelector(".scene-creature-effect"),
+      },
+      {
+        name: "the return of the tint",
+        start: async () => {
+          const read = await mounted(page, lit({ streak: 480 }));
+          await read.draw(lit({ streak: 0 }));
+          return read;
+        },
+        again: lit({ streak: 0 }),
+        cut: ".scene-tint",
+        standing: (scene) => tintOf(scene).hasAttribute("data-returning"),
+      },
+    ];
+    for (const { name, start, again, cut, standing } of cases) {
+      const read = await start();
+      assert.ok(standing(read.scene()), `${name}: precondition`);
+      await inAct(() => cancelWithin(one(read.scene(), cut)));
+      assert.ok(!standing(read.scene()), `${name}: over when cut`);
+      await read.draw(again, []);
+      assert.ok(!standing(read.scene()), `${name}: not played afresh`);
+    }
+  });
+});
+
 // D-322. Catches a moment that plays again because the same state was drawn after its end, and one that
 // does not play when the next moment of the same kind comes after the scene went on.
 test("a moment that has played does not play again, and the next one after the scene went on does", async () => {

@@ -18,7 +18,9 @@
  * element that runs an animation, so the clock's five redraws a second restart none (D-03's accepted
  * risk); a walk starts on a new element, which starts its animations afresh. A walk that ends, or that
  * a browser cancels because the scene is hidden, leaves the mage standing at the walk's place, so a
- * scene shown again does not walk it from where it set out.
+ * scene shown again does not walk it from where it set out. An effect, the wolf's run in and the return
+ * of the tint that a browser cancels the same way are over too, so a scene shown again does not play
+ * them from their start.
  *
  * The mage that gathers bends in a loop at its place, on a third sheet of its own that takes the idle
  * sheet's place for the whole action (D-364). The end of a gathering shows an effect of an ordinary
@@ -739,30 +741,40 @@ export function Scene({
     if (event.target !== event.currentTarget) return;
     walkEnded();
   };
+  // An effect has ended where its own animation has run out, or where the scene was hidden while it
+  // ran, which cancels it: it is dropped, so a scene hidden and shown again, which starts its
+  // animations anew, does not play an effect that is overdue (D-317).
+  const effectOver = (serial: number) =>
+    setEffects((now) =>
+      now.serial === serial ? { ...now, shown: null } : now,
+    );
+  const creatureOver = (serial: number) =>
+    setCreatureEffects((now) =>
+      now.serial === serial ? { ...now, shown: null } : now,
+    );
   const effectEnded =
     (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
-      setEffects((now) =>
-        now.serial === serial ? { ...now, shown: null } : now,
-      );
+      effectOver(serial);
     };
   const creatureEnded =
     (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
       if (event.target !== event.currentTarget) return;
-      setCreatureEffects((now) =>
-        now.serial === serial ? { ...now, shown: null } : now,
-      );
+      creatureOver(serial);
     };
-  // A return to the cool tint that has run to its end is over: the layer stands where it is from now
-  // on, so a scene hidden and shown again, which starts its animations anew, does not run it again.
+  // A return to the cool tint that has run to its end, or was cut by the scene being hidden, is over:
+  // the layer stands where it is from now on, so a scene hidden and shown again, which starts its
+  // animations anew, does not run it again.
   const tintSerial = lit.serial;
-  const tintReturned = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
+  const tintOver = () =>
     setTint((now) =>
       now !== null && now.serial === tintSerial && now.from !== null
         ? { ...now, from: null }
         : now,
     );
+  const tintReturned = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    tintOver();
   };
   // The effect of a moment has ended where its last animation has run out, or where the scene was
   // hidden while it ran, which cancels the animations: from then on the scene stands on the last image,
@@ -784,6 +796,12 @@ export function Scene({
       if (target.matches(".scene-mage[data-walking]")) walkEnded();
       else if (target.matches(".scene-moment-master"))
         settle(target.getAttribute("data-moment-key") ?? "");
+      else if (target.matches(".scene-creature-effect"))
+        creatureOver(creatureFx.serial);
+      else if (target.matches(".scene-effect")) effectOver(effect.serial);
+      else if (target.matches(".scene-creature[data-entering]"))
+        creatureOver(creatureFx.serial);
+      else if (target.matches(".scene-tint[data-returning]")) tintOver();
     };
     scene.addEventListener("animationcancel", cancelled);
     return () => scene.removeEventListener("animationcancel", cancelled);
