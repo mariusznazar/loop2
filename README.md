@@ -39,7 +39,7 @@ Two commands build and run the server, `npm run build` and `npm start`; `npm run
 
 ## Code check tools
 
-`npm ci` also installs the developer tools according to the shared `package-lock.json`. The npm that comes with Node.js is enough for the first install; the checks then use the pinned local tools and download nothing while checking. When the lock file is updated on purpose, the local `min-release-age` setting may reject a newly accepted version of a tool as too fresh. For such an accepted version, `--min-release-age=0` can be added to the one command that updates the lock file, keeping the global settings. An ordinary install still uses `npm ci`.
+`npm ci` also installs the developer tools according to the shared `package-lock.json`. The npm that comes with Node.js is enough for the first install; the checks then use the pinned local tools and download nothing while checking. When the lock file is updated on purpose, the local `min-release-age` setting may reject a newly accepted version of a tool as too fresh. For such an accepted version, `--min-release-age=0` can be added to the one-off command that updates the lock file, keeping the global settings. An ordinary install still uses `npm ci`.
 
 The `typescript` package gives the linter the TypeScript 6.0.2 API; an `overrides` entry also pins the actual API version that its compatibility package exports. The separate `typescript-compiler` holds TypeScript 7, and the build script runs its compiler explicitly for both configurations of the application. Use the project's build commands; a bare `npx tsc` picks among the executables available.
 
