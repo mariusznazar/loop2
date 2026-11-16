@@ -16,7 +16,7 @@ import {
   type SkillId,
 } from "../sim/data/skills.js";
 import type { Understanding } from "../sim/types.js";
-import { countedName } from "./program-editor.js";
+import { countedName } from "./counted-name.js";
 
 /** One thing of the Understanding: what keys it in its list, its icon file and its name from the data. */
 export type KnownThing = { key: string; icon: string; name: string };

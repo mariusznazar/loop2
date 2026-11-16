@@ -275,6 +275,7 @@ test("the section credits the wolf's icon, by Lorc, after the actions' icons and
 
 test("the wolf's data names the icon file wolf-head.svg and its title on game-icons.net, and the file exists", () => {
   // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
   assert.equal(CREATURES.wolf.icon, "wolf-head");
   assert.equal(CREATURES.wolf.iconTitle, "Wolf head icon");
   assert.ok(existsSync(`${ICONS}wolf-head.svg`));

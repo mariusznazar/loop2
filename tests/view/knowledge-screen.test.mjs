@@ -70,6 +70,7 @@ test("a game that knows no thing shows the heading and the heading of the left a
 test("the left area lists the discovered actions, items and creatures in three groups, each in the order of discovery, with the icon and the name from the data", async () => {
   // decision: D-416 "Its left area is as in the predecessor game, loop"
   // decision: D-416 "The counter „{n} poznanych rzeczy” counts the actions, items and creatures together, with no condition and no tree"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
   // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza"
   await withPage(async (page) => {
     await mount(

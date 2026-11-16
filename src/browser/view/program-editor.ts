@@ -36,6 +36,8 @@ import type {
   RuleGroup,
 } from "../sim/types.js";
 
+import { countedName } from "./counted-name.js";
+
 type ConditionKind = Condition["kind"];
 type ActionKind = Action["kind"];
 
@@ -780,19 +782,6 @@ export function actionTime(state: GameState, kind: ActionKind): string | null {
   if (base === null) return null;
   const minutes = run ? actionMinutes(base, kind, run.character.skills) : base;
   return `${minutes} min`;
-}
-
-/** The form of a name that follows `count` in Polish: 1 takes `one`, 2 to 4 `few` (not 12 to 14), every other count `many`. */
-export function countedName(
-  count: number,
-  forms: { one: string; few: string; many: string },
-): string {
-  if (count === 1) return forms.one;
-  const last = count % 10;
-  const lastTwo = count % 100;
-  return last >= 2 && last <= 4 && !(lastTwo >= 12 && lastTwo <= 14)
-    ? forms.few
-    : forms.many;
 }
 
 /**

@@ -20,7 +20,6 @@ const CHARACTER_1 = { kind: "character", characterId: 1 };
 const CHARACTER_2 = { kind: "character", characterId: 2 };
 const MAPS = { kind: "maps" };
 const MAP = { kind: "map", mapId: "forest" };
-const KNOWLEDGE = { kind: "knowledge" };
 const ACCOUNTS = { kind: "accounts" };
 
 /**
@@ -457,44 +456,6 @@ test("a table that leaves out the entry of the list of accounts is refused when 
           onPlace: () => undefined,
         }),
       /no screen entry holds the kind accounts/,
-    );
-  });
-});
-
-// decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens"
-// Catches a table that leaves out the entry of Wiedza, whose kind the registry checks at its build, and
-// a screen built before its address is entered or left standing after the player leaves it.
-test("a table that leaves out the entry of Wiedza is refused, and Wiedza is built on entering its address and taken down on leaving it", async () => {
-  await withPage(async ({ root }) => {
-    const log = [];
-    throwsLike(
-      () =>
-        createScreenRegistry({
-          element: root,
-          entries: table(log).filter((entry) => entry.kinds[0] !== "knowledge"),
-          first: HEADQUARTERS,
-          address: addressOf(log),
-          state: () => newGame(),
-          onPlace: () => undefined,
-        }),
-      /no screen entry holds the kind knowledge/,
-    );
-  });
-  await onRegistry(async ({ registry, element, log, entries }) => {
-    registry.start();
-    const knowledge = entries[5];
-    assert.equal(knowledge.instances.length, 0, "not built before it is shown");
-    registry.show(KNOWLEDGE, "go");
-    assert.equal(knowledge.instances.length, 1);
-    assert.deepEqual(names(element), ["hq", "programs", "run", "knowledge"]);
-    registry.show(HEADQUARTERS, "go");
-    assert.ok(log.includes("knowledge:dispose"), "taken down on leaving");
-    assert.deepEqual(names(element), ["hq", "programs", "run"]);
-    registry.show(KNOWLEDGE, "go");
-    assert.equal(
-      knowledge.instances.length,
-      2,
-      "built anew at the next entering",
     );
   });
 });

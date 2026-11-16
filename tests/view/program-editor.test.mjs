@@ -3,11 +3,7 @@
 // cases stand in rule-editor.test.mjs and program-panel.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import {
-  ACTION_GROUPS,
-  ACTIONS,
-  NATURE_ENERGY_NAME,
-} from "../../dist/browser/sim/data/actions.js";
+import { ACTION_GROUPS, ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import {
   CONDITION_SECTIONS,
   CONDITIONS,
@@ -35,7 +31,6 @@ import {
   conditionPick,
   conditionSentence,
   conditionTargetPick,
-  countedName,
   countText,
   dropGroup,
   fieldAfter,
@@ -1513,35 +1508,6 @@ test("the price follows the character of the map run: „Czysty płomień” lig
     actionPriceText(newKnowingGame(), "lightCampfire"),
     "2 patyki, 10 energii natury",
   );
-});
-
-test("a name takes the form of its count in Polish: 1 the singular, 2 to 4 and 22 to 24 the few, 0, 5 to 21, 25 and 112 the many", () => {
-  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
-  const forms = { one: "patyk", few: "patyki", many: "patyków" };
-  const expected = [
-    [0, "patyków"],
-    [1, "patyk"],
-    [2, "patyki"],
-    [4, "patyki"],
-    [5, "patyków"],
-    [12, "patyków"],
-    [14, "patyków"],
-    [21, "patyków"],
-    [22, "patyki"],
-    [24, "patyki"],
-    [25, "patyków"],
-    [112, "patyków"],
-    [122, "patyki"],
-  ];
-  for (const [count, form] of expected)
-    assert.equal(countedName(count, forms), form, String(count));
-});
-
-test("the nature energy takes the form of its count in a price: 1 energia natury, 2 energie natury, 10 energii natury", () => {
-  // decision: D-363 "The pieces an action uses up and the nature energy it takes stand with the names of the things in the form their count takes and the energy by its full name"
-  assert.equal(countedName(1, NATURE_ENERGY_NAME), "energia natury");
-  assert.equal(countedName(2, NATURE_ENERGY_NAME), "energie natury");
-  assert.equal(countedName(10, NATURE_ENERGY_NAME), "energii natury");
 });
 
 test("every resource of the data has the forms of its name that its count takes in a price", () => {

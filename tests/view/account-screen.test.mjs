@@ -4170,7 +4170,11 @@ test("the item Wiedza of the bar opens the screen Wiedza, which the bar marks an
   // decision: D-277 "The menu bar marks the place the player is at"
   await onPage(async ({ root }) => {
     const held = heldClient();
-    const address = await reloadedAt(held, "#/", fullGame());
+    const game = fullGame();
+    const address = await reloadedAt(held, "#/", {
+      ...game,
+      understanding: { ...game.understanding, trees: ["exploration"] },
+    });
     const item = barItems(root).find(([text]) => text === "Wiedza");
     assert.deepEqual(item, ["Wiedza", "#/wiedza", null]);
     await follow(address, item[1]);
@@ -4182,9 +4186,17 @@ test("the item Wiedza of the bar opens the screen Wiedza, which the bar marks an
         .map(([text]) => text),
       ["Wiedza"],
     );
+    // A tree the player opens stands folded again at the next entering of the screen.
+    const row = () =>
+      byClass(root, "knowledge-tree")[0].querySelector("button");
+    assert.equal(row().getAttribute("aria-expanded"), "false");
+    await press(row());
+    assert.equal(row().getAttribute("aria-expanded"), "true");
     await follow(address, "#/");
     assert.equal(shownScreen(root), "headquarters");
     assert.equal(byClass(root, "knowledge-screen-host").length, 0);
+    await follow(address, item[1]);
+    assert.equal(row().getAttribute("aria-expanded"), "false");
   });
 });
 
