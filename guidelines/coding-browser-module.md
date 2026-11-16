@@ -191,7 +191,7 @@ stan kontrolki dostaje w nim przypadek w tej samej zmianie.
 
 - **Decision:** D-265 · D-407
 - **Invariant:** none
-- **Good:** Nowy ekran jest korzeniem Reacta i importuje czystą funkcję modułu ze statusem `do not copy`; strona buduje przez API DOM tylko miejsca, w których montują się korzenie, i panel w miejscu zdjętej karty.
+- **Good:** Nowy ekran jest korzeniem Reacta i importuje czystą funkcję modułu ze statusem `do not copy`; strona i fabryki jej korzeni budują przez API DOM tylko miejsca, w których montują się korzenie, a panel w miejscu zdjętej karty buduje `createFailureCard`.
 - **Bad:** Nowy ekran buduje elementy przez `document.createElement` na wzór modułu ze statusem `do not copy`.
 
 Żaden ekran nie powstaje przez API DOM. Strona (`src/browser/view/app.ts`)
