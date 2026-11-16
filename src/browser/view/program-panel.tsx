@@ -475,10 +475,7 @@ export function ProgramPanelView({
   // The open rule goes with its rule to the group that holds it now; a rule gone closes its panel.
   const followed =
     open === null ? null : holdingTarget(content.program, open.target);
-  if (open !== null && followed === null) {
-    open = null;
-    setOpen(null);
-  }
+  if (open !== null && followed === null) setOpen(null);
   const folded = memory.get(key) ?? NO_GROUPS;
 
   const checked =

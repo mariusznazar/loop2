@@ -420,12 +420,24 @@ for (const close of ["✕", "Escape"]) {
       const game = await wiredPanel(page, gameWithRule(), "programs");
       await click(rowOf(game.root, 1).querySelector(".rule-condition"));
       await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
-      assert.equal(rowOf(game.root, 1), null, "precondition: the row is not drawn");
-      assert.equal(classed(game.root, "rule-panel").length, 1, "precondition: still open");
+      assert.equal(
+        rowOf(game.root, 1),
+        null,
+        "precondition: the row is not drawn",
+      );
+      assert.equal(
+        classed(game.root, "rule-panel").length,
+        1,
+        "precondition: still open",
+      );
       const panel = game.root.querySelector(".rule-panel");
       if (close === "✕") await click(buttonNamed(panel, "✕"));
       else await key(panel, "Escape");
-      assert.equal(classed(game.root, "rule-panel").length, 0, `closed by ${close}`);
+      assert.equal(
+        classed(game.root, "rule-panel").length,
+        0,
+        `closed by ${close}`,
+      );
       assert.equal(
         page.document.activeElement,
         headerOf(game.root, 1),
@@ -2006,6 +2018,10 @@ test("a rule moved across a group border by „↓” and by its handle keeps th
       ),
       "the panel stands under rule 1's row after the drag",
     );
-    assert.equal(openField(game.root), "Czynność", "the same field after the drag");
+    assert.equal(
+      openField(game.root),
+      "Czynność",
+      "the same field after the drag",
+    );
   });
 });
