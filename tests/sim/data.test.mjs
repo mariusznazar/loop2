@@ -264,6 +264,33 @@ test("conditions carry labels and the value range of hereBelow", () => {
   });
 });
 
+test("each condition that takes a number carries its unit, and a condition that takes none carries no unit", () => {
+  // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
+  const numberFields = ["defaultValue", "min", "max", "step"];
+  for (const [id, condition] of Object.entries(CONDITIONS)) {
+    if (numberFields.some((field) => field in condition)) {
+      for (const field of numberFields) {
+        assert.ok(
+          field in condition,
+          `${id} takes a number but lacks ${field}`,
+        );
+      }
+      assert.equal(
+        typeof condition.unit,
+        "string",
+        `${id} takes a number without a unit`,
+      );
+      assert.notEqual(condition.unit, "", `${id} has an empty unit`);
+    } else {
+      assert.equal(
+        "unit" in condition,
+        false,
+        `${id} has a unit but takes no number`,
+      );
+    }
+  }
+});
+
 test("health conditions use the approved thresholds and are revealed by an attack", () => {
   // decision: D-376 "„Zdrowie poniżej” and „Przeciwnik ma poniżej” take the numbers D-151 gives"
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
