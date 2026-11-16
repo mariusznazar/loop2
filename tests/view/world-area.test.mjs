@@ -1036,20 +1036,29 @@ test("a hovered tile marks its row and the line under the drawing shows its numb
   });
 });
 
-// Catches a line that gives the stock of a tile not revealed, which the player has not seen.
-test("a hovered tile not revealed marks the tile alone, and the line gives its label with nothing of its stock", async () => {
+// Catches a line of `link-highlight` drawn round a tile not revealed, which has no row in the table to
+// be the same place as (D-41), and a line under the drawing that gives the stock of such a tile, which
+// the player has not seen. The line round a revealed tile is the case above.
+test("a hovered tile not revealed draws no line of link-highlight and marks no row, and the line under the drawing gives its label with nothing of its stock", async () => {
+  // decision: D-41 "`link-highlight` means that this tile and this row of the list of revealed tiles are the same place"
+  // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles"
   await withPage(async ({ window, document }) => {
     const { container } = await draw(document, withTiles());
+    const drawing = container.querySelector(".terrain-drawing");
     await dispatch(
       window,
       tileOf(container, "0,0").querySelector("polygon"),
       "pointerover",
     );
-    assert.deepEqual(
-      [...container.querySelectorAll("g.hovered")].map((g) =>
-        g.getAttribute("data-tile"),
-      ),
-      ["0,0"],
+    assert.equal(
+      drawing.querySelector("polygon.link-highlight"),
+      null,
+      "no line round a tile not revealed",
+    );
+    assert.equal(
+      container.querySelector("tr.hovered"),
+      null,
+      "no row of the table marked",
     );
     assert.equal(
       rowOf(container, "0,0"),
@@ -1057,6 +1066,21 @@ test("a hovered tile not revealed marks the tile alone, and the line gives its l
       "no row for a tile not revealed",
     );
     assert.equal(lineOf(container), "(0, 0)");
+
+    // From it to a revealed tile: the line stands round that tile and its row is marked.
+    await dispatch(
+      window,
+      tileOf(container, "1,0").querySelector("polygon"),
+      "pointerover",
+    );
+    assert.equal(
+      drawing.querySelector("polygon.link-highlight").getAttribute("points"),
+      tileOf(container, "1,0").querySelector("polygon").getAttribute("points"),
+    );
+    assert.equal(
+      container.querySelector("tr.hovered").getAttribute("data-tile"),
+      "1,0",
+    );
   });
 });
 
@@ -1138,6 +1162,37 @@ test("the campfire's icon stands in its tile and its state in the row of the sam
         },
       );
     }
+  });
+});
+
+// Catches a fire cell whose texts are one run of words, which a cell too wide for its area would break
+// inside a name, or whose separator or order is lost (D-70, D-385). The breaking itself is the look,
+// checked in the browser (D-88).
+test("the fire cell of a tile with a campfire and a burning stick gives each text in a span of its own, joined by a dot", async () => {
+  // decision: D-70 "A campfire shows on the drawing of the game map as an icon on its tile, one icon for a burning campfire and one for an extinguished one, and its minutes left stand in the tile's row of the list of revealed tiles"
+  await withPage(async ({ document }) => {
+    const at = TILES[1].at;
+    const state = withRun(withTiles(), {
+      campfires: [{ at, minutesLeft: 42 }],
+      burningItems: [{ item: "stick", at, minutesLeft: 2 }],
+    });
+    const { container } = await draw(document, state);
+    const cell = rowOf(container, "1,0").querySelector(".tile-fire");
+    assert.deepEqual(
+      [...cell.querySelectorAll(".tile-fire-text")].map(
+        (span) => span.textContent,
+      ),
+      ["ognisko — płonie, zostało 42 min", "patyk — płonie, zostało 2 min"],
+    );
+    assert.equal(
+      cell.textContent,
+      "ognisko — płonie, zostało 42 min · patyk — płonie, zostało 2 min",
+    );
+    assert.equal(
+      rowOf(container, "0,1").querySelector(".tile-fire").textContent,
+      "",
+      "a tile with nothing burning has an empty cell",
+    );
   });
 });
 

@@ -622,10 +622,23 @@ header .failure-line {
   color: var(--text-strong);
 }
 
-/* The state of the tile's campfire and burning items: content to read, after the stock (D-70). */
+/*
+ * The state of the tile's campfire and burning items: content to read, after the stock (D-70). The cell
+ * breaks between the texts when the table would be wider than its area, so the table fits it whole; each
+ * text keeps to one line, so no name is cut. The other cells of such a row stand at its top.
+ */
 .tile-list tbody td.tile-fire {
   text-align: left;
   color: var(--text);
+  white-space: normal;
+}
+
+.tile-list tbody tr > * {
+  vertical-align: top;
+}
+
+.tile-list .tile-fire-text {
+  white-space: nowrap;
 }
 
 /* The line at the left edge of the hovered tile's row, the row's colours unchanged. */
