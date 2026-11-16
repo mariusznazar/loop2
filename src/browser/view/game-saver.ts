@@ -4,14 +4,14 @@
  * answer, except a moment asked for during the save before a logout that goes on, which is
  * dropped (D-207); a check every 30 real seconds, made only while a manual map run passes, and at a
  * hidden page, that sends only a changed state; each document holding the clock's moment as its save time, which changes no state
- * (D-248); and the header sentence of what the player sees of saving. It is created with the game
- * and disposed with it; nothing here runs when the module is imported.
+ * (D-248); and the sentence of what the player sees of saving, which it gives as a value and a way
+ * to hear of its changes, so that it builds no element. It is created with the game and disposed
+ * with it; nothing here runs when the module is imported.
  */
 import type { AccountClient, SaveOutcome } from "../account-api.js";
 import { withSaveTime } from "../sim/game.js";
 import { savedGame } from "../sim/saved-game.js";
 import type { GameState } from "../sim/types.js";
-import { createFormWarning } from "./controls/text-field.js";
 
 const RETRYING = "Nie udało się zapisać postępu. Gra spróbuje ponownie.";
 const TOO_LARGE =
@@ -67,8 +67,14 @@ export type LogoutSave = {
 };
 
 export type GameSaver = {
-  /** The header sentence of saving, in the role `warning`; hidden while there is none. */
-  readonly element: HTMLElement;
+  /** The header sentence of saving, which the page draws in the role `warning`; null while there is none. */
+  sentence(): string | null;
+  /**
+   * Calls `listener` after each change of the sentence, and returns the call that stops it. The
+   * sentence changes only when the saver is created and in the continuation of a save's answer,
+   * never inside the work of a screen, so a listener may draw at once.
+   */
+  subscribe(listener: () => void): () => void;
   /**
    * A moment of saving: sends the current state, at once or after the request in flight, except
    * when that request is the save before a logout that goes on (D-207).
@@ -91,7 +97,6 @@ export type GameSaver = {
 
 export function createGameSaver(options: GameSaverOptions): GameSaver {
   const { client, read } = options;
-  const warning = createFormWarning();
   /** The state of the request last sent, or the state the game was built on. */
   let baseline = options.state;
   let revision = options.revision;
@@ -113,7 +118,14 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     sent: boolean;
   } | null = null;
 
-  warning.set(options.afterConflict ? CONFLICT : null);
+  let sentence: string | null = options.afterConflict ? CONFLICT : null;
+  const listeners = new Set<() => void>();
+
+  const setSentence = (next: string | null): void => {
+    if (next === sentence) return;
+    sentence = next;
+    for (const listener of [...listeners]) listener();
+  };
 
   const cancelRetry = (): void => {
     if (retry !== null) clearTimeout(retry);
@@ -152,7 +164,7 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     halted = kind;
     pending = false;
     cancelRetry();
-    if (kind === "outdated") warning.set(OUTDATED);
+    if (kind === "outdated") setSentence(OUTDATED);
     if (logout !== null) {
       finishLogout({ kind });
       return;
@@ -177,15 +189,15 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
       revision = outcome.revision;
       failures = 0;
       logoutFailed = false;
-      warning.set(null);
+      setSentence(null);
     } else if (outcome.kind === "too-large") {
       failures = 0;
       logoutFailed = false;
-      warning.set(TOO_LARGE);
+      setSentence(TOO_LARGE);
     } else {
       failures += 1;
       if (forLogout) logoutFailed = true;
-      warning.set(logoutFailed ? LOGOUT_FAILED : RETRYING);
+      setSentence(logoutFailed ? LOGOUT_FAILED : RETRYING);
     }
     if (logout !== null && !logout.sent) {
       // The request the logout waited for has its answer: the logout's own save goes now.
@@ -222,7 +234,13 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
   document.addEventListener("visibilitychange", onVisibility);
 
   return {
-    element: warning.element,
+    sentence: () => sentence,
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     moment() {
       if (disposed || halted !== null) return;
       if (inFlight) pending = true;
@@ -245,6 +263,7 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     revision: () => revision,
     dispose() {
       disposed = true;
+      listeners.clear();
       cancelRetry();
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisibility);

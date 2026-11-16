@@ -19,26 +19,11 @@ import { loadSavedGame, savedGame } from "../../dist/browser/sim/saved-game.js";
 import { createGameSaver } from "../../dist/browser/view/game-saver.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 
-// --- a document model with just what the saver builds and listens to -----------------------
-
-class FakeElement {
-  constructor(tag) {
-    this.tag = tag;
-    this.attributes = new Map();
-    this.className = "";
-    this.hidden = false;
-    this.textContent = "";
-  }
-
-  setAttribute(name, value) {
-    this.attributes.set(name, String(value));
-  }
-}
+// --- a document model with just what the saver listens to ----------------------------------
 
 const fakeDocument = {
   visibilityState: "visible",
   listeners: new Map(),
-  createElement: (tag) => new FakeElement(tag),
   addEventListener(type, listener) {
     if (!this.listeners.has(type)) this.listeners.set(type, new Set());
     this.listeners.get(type).add(listener);
@@ -256,9 +241,9 @@ const OUTDATED = "Gra została zaktualizowana. Odśwież stronę.";
 const LOGOUT_FAILED =
   "Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.";
 
-/** The header sentence the saver stands for, or null while its line is hidden. */
+/** The header sentence the saver stands for, or null while it stands for none. */
 function sentenceOf(saver) {
-  return saver.element.hidden ? null : saver.element.textContent;
+  return saver.sentence();
 }
 
 test("a save that succeeds keeps its revision for the next save and takes away the sentence that stood from a conflict", async () => {

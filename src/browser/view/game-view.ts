@@ -8,6 +8,7 @@ import {
   type PageAddress,
 } from "./email-confirmation.js";
 import type { LogoutSave } from "./game-saver.js";
+import { createSaveRow } from "./header-rows.js";
 import { createHeadquartersEntry } from "./headquarters-entry.js";
 import { createMapsEntry } from "./maps-entry.js";
 import { readResetToken } from "./password-reset.js";
@@ -93,7 +94,7 @@ export type GameViewOptions = {
 export type GameView = {
   /** The game with its screens, one shown at a time, for the page to place. */
   element: HTMLElement;
-  /** The header line of saving, for the page to place under the menu bar (D-208). */
+  /** The host of the row of saving, for the page to place under the menu bar (D-208). */
   saveLine: HTMLElement;
   /** A moment of saving the page calls itself: the current state goes at once. */
   saveNow(): void;
@@ -196,6 +197,11 @@ export function createGameView(options: GameViewOptions): GameView {
     },
     onReading: () => registry.drawReading(),
   });
+  // The header's line of saving is a root of its own, drawn from the saver's sentence (D-407).
+  const saveRow = createSaveRow({
+    sentence: () => store.saveSentence(),
+    subscribe: (listener) => store.subscribeSaveSentence(listener),
+  });
   const screenState = createRunScreenState({
     game: store,
     reducedMotion: prefersReducedMotion,
@@ -283,7 +289,7 @@ export function createGameView(options: GameViewOptions): GameView {
 
   return {
     element,
-    saveLine: store.saveLine,
+    saveLine: saveRow.element,
     saveNow: () => store.saveNow(),
     saveBeforeLogout: () => store.saveBeforeLogout(),
     keep: () => store.keep(),
@@ -299,7 +305,7 @@ export function createGameView(options: GameViewOptions): GameView {
       store.dispose();
       registry.dispose();
       element.remove();
-      store.saveLine.remove();
+      saveRow.dispose();
     },
   };
 }

@@ -91,8 +91,10 @@ export type StateStore = {
   saveNow(): void;
   /** The save before logout and its outcome (D-97). */
   saveBeforeLogout(): Promise<LogoutSave>;
-  /** The header line of saving (D-208). */
-  readonly saveLine: HTMLElement;
+  /** The sentence of the header line of saving (D-208), or null while the line says nothing. */
+  saveSentence(): string | null;
+  /** Calls `listener` after each change of that sentence; returns the call that stops it. */
+  subscribeSaveSentence(listener: () => void): () => void;
   /** From now on every result is refused and the clock stops (D-323). Calling it again does nothing. */
   halt(): void;
   /** Stops the clock and the saver. */
@@ -195,7 +197,8 @@ export function createStateStore(options: StateStoreOptions): StateStore {
     },
     saveNow: () => saver.moment(),
     saveBeforeLogout: () => saver.saveBeforeLogout(),
-    saveLine: saver.element,
+    saveSentence: () => saver.sentence(),
+    subscribeSaveSentence: (listener) => saver.subscribe(listener),
     halt() {
       halted = true;
       clock.dispose();
