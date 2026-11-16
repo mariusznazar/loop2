@@ -111,7 +111,23 @@ into a decision, a test or a rule of style.
    (`loop2-play`) shows the tint, and `--ground` and `--prop` read it, but a frame is the screen
    scaled down to fit 800 px, lossy (JPEG) and with its colour at half resolution, so a pixel of it
    is an approximation: good for a broad area such as the snow, not for a prop drawn in thin
-   strokes. For such a prop take the sample from its sprite file or from a full-size PNG screenshot.
+   strokes. For such a prop take the sample from its sprite file or from a full-size PNG screenshot,
+   which `--ground` and `--prop` read as they read any picture. Take it with a map run going and not
+   paused, since the pause greys the scene, and read the page's numbers beside it:
+
+   ```sh
+   playwright-cli screenshot --filename=.playwright-cli/shot.png
+   playwright-cli eval "JSON.stringify({ ratio: window.devicePixelRatio, scene: document.querySelector('.scene').getBoundingClientRect() })"
+   node .claude/skills/loop2-scene-art/contrast.mjs --effect <effect.png> --ground .playwright-cli/shot.png@<x>,<y> --prop .playwright-cli/shot.png@<x>,<y>
+   ```
+
+   The screenshot is the page at its full size, a window of 1280 × 720 px at the pixel ratio 1 giving
+   a file of 1280 × 720 px, saved where `--filename` says, as `loop2-play` gives it. The scene is
+   672 × 304 px on the screen, twice its picture (D-349), so the pixel `sx,sy` of the scene's picture
+   is the block of 2 × 2 pixels of the screenshot whose top left lies `round(left) + 2*sx` across
+   and `round(top) + 2*sy` down, with `left` and `top` of the rectangle the second command prints;
+   any of the four pixels of the block is the sample. Where the ratio is not 1, multiply every number
+   by it first.
 
 3. **Whether the effect is covered by another element of the scene.** Lay the effect and every
    element that may cover it over the forest, in the order the section "The scene of a map run" of
@@ -135,11 +151,14 @@ into a decision, a test or a rule of style.
 An effect is also measured against the rule that the scene shows no flash of its whole area (D-317).
 With a map run going, `loop2-play` gives the frames; keep what
 `.claude/skills/loop2-play/save-frames.mjs` prints, which holds the time of each frame. A frame is the
-screen scaled down, so give the script the ratio of the frame's width to `window.innerWidth` as
-`--scale`, and the rectangle of the scene in the frame's pixels, `getBoundingClientRect()` of the
-element `.scene` times that ratio:
+screen scaled down to fit 800 px (a window of 1280 × 720 px gives frames of 800 × 450 px), so give the
+script the ratio of the frame's width to `window.innerWidth` as `--scale`, and the rectangle of the
+scene in the frame's pixels, `getBoundingClientRect()` of the element `.scene` times that ratio, in
+whole pixels. The script prints the size of the frames on its first line, and the page's numbers
+come from one command:
 
 ```sh
+playwright-cli eval "JSON.stringify({ width: window.innerWidth, scene: document.querySelector('.scene').getBoundingClientRect() })"
 playwright-cli --raw run-code --filename .claude/skills/loop2-play/frames.js | node .claude/skills/loop2-play/save-frames.mjs > .playwright-cli/frames.log
 node .claude/skills/loop2-scene-art/flashes.mjs --log .playwright-cli/frames.log --region <x>,<y>,<w>,<h> --scale <ratio>
 ```
