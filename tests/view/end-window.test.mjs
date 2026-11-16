@@ -87,7 +87,7 @@ const WOLF = {
   result: null,
 };
 const WOLF_PARAGRAPH =
-  "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.";
+  "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz.";
 
 const LAST_MINUTES = [
   { kind: "action", minute: 309, text: "Zbierz — Patyk", role: "text" },

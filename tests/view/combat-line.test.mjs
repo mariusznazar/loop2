@@ -15,7 +15,7 @@ test("before the turns, the line reads the creature health and ordered program f
   // decision: D-148 "An attacking creature appears in the encounter's text"
   assert.equal(
     combatText(creature),
-    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.",
+    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz.",
   );
 });
 
@@ -44,6 +44,6 @@ test("a resolved encounter lists both actions and ends with its result", () => {
         ],
       },
     }),
-    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk pokonany.",
+    "Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk pokonany.",
   );
 });
