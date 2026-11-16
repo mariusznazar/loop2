@@ -1,0 +1,253 @@
+### Ran Playwright code
+```js
+await page.goto('https://127.0.0.1:49153/#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+```
+### Page
+- Page URL: https://127.0.0.1:49153/#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+- Page Title: Loop
+- Console: 3 errors, 0 warnings
+### Snapshot
+- [Snapshot](.playwright-cli\page-2026-11-16T20-32-00-594Z.yml)
+### Page
+- Page URL: https://127.0.0.1:49153/#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+- Page Title: Loop
+- Console: 3 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e21]:
+  - heading "Loop" [level=1] [ref=e22]
+  - paragraph [ref=e23]: Napisz postaci program i sprawdź, jak długo przeżyje bez ciebie.
+  - alert [ref=e24]: Odnośnik jest nieważny albo wygasł.
+  - generic [ref=e25]:
+    - button "Zaloguj się" [pressed] [ref=e26] [cursor=pointer]
+    - button "Załóż konto" [ref=e27] [cursor=pointer]
+  - generic [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Adres e-mail
+        - textbox "Adres e-mail" [active] [ref=e32]:
+          - /placeholder: adres e-mail
+      - generic [ref=e33]:
+        - generic [ref=e34]: Hasło
+        - textbox "Hasło" [ref=e35]:
+          - /placeholder: hasło
+      - button "Zaloguj się" [ref=e36] [cursor=pointer]
+    - button "Nie pamiętam hasła" [ref=e38] [cursor=pointer]
+  - group [ref=e39]:
+    - generic "Autorzy grafiki" [ref=e40] [cursor=pointer]
+```
+### Ran Playwright code
+```js
+await page.goto('https://127.0.0.1:49153/?run=cancel#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+```
+### Page
+- Page URL: https://127.0.0.1:49153/?run=cancel#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+- Page Title: Loop
+### Snapshot
+- [Snapshot](.playwright-cli\page-2026-11-16T20-32-12-675Z.yml)
+### Events
+- New console entries: .playwright-cli\console-2026-11-16T20-32-12-593Z.log#L1
+### Page
+- Page URL: https://127.0.0.1:49153/?run=cancel#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+- Page Title: Loop
+### Snapshot
+```yaml
+- generic [ref=f1e3]:
+  - heading "Loop" [level=1] [ref=f1e4]
+  - paragraph [ref=f1e5]: Napisz postaci program i sprawdź, jak długo przeżyje bez ciebie.
+  - generic [ref=f1e6]:
+    - heading "Ustaw nowe hasło" [level=2] [ref=f1e7]
+    - generic [ref=f1e8]:
+      - generic [ref=f1e9]:
+        - generic [ref=f1e10]: Nowe hasło
+        - textbox "Nowe hasło" [ref=f1e11]:
+          - /placeholder: nowe hasło
+      - generic [ref=f1e12]:
+        - generic [ref=f1e13]: Powtórz hasło
+        - textbox "Powtórz hasło" [ref=f1e14]:
+          - /placeholder: hasło jeszcze raz
+      - button "Ustaw hasło" [ref=f1e15] [cursor=pointer]
+    - button "Anuluj" [ref=f1e17] [cursor=pointer]
+  - group [ref=f1e18]:
+    - generic "Autorzy grafiki" [ref=f1e19] [cursor=pointer]
+```
+### Ran Playwright code
+```js
+await page.getByRole('button', { name: 'Anuluj' }).click();
+```
+### Page
+- Page URL: https://127.0.0.1:49153/?run=cancel
+- Page Title: Loop
+- Console: 1 errors, 0 warnings
+### Snapshot
+- [Snapshot](.playwright-cli\page-2026-11-16T20-32-18-794Z.yml)
+### Events
+- New console entries: .playwright-cli\console-2026-11-16T20-32-12-593Z.log#L2
+### Page
+- Page URL: https://127.0.0.1:49153/?run=cancel
+- Page Title: Loop
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=f1e21]:
+  - heading "Loop" [level=1] [ref=f1e22]
+  - paragraph [ref=f1e23]: Napisz postaci program i sprawdź, jak długo przeżyje bez ciebie.
+  - generic [ref=f1e24]:
+    - button "Zaloguj się" [pressed] [ref=f1e25] [cursor=pointer]
+    - button "Załóż konto" [ref=f1e26] [cursor=pointer]
+  - generic [ref=f1e27]:
+    - generic [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - generic [ref=f1e30]: Adres e-mail
+        - textbox "Adres e-mail" [active] [ref=f1e31]:
+          - /placeholder: adres e-mail
+      - generic [ref=f1e32]:
+        - generic [ref=f1e33]: Hasło
+        - textbox "Hasło" [ref=f1e34]:
+          - /placeholder: hasło
+      - button "Zaloguj się" [ref=f1e35] [cursor=pointer]
+    - button "Nie pamiętam hasła" [ref=f1e37] [cursor=pointer]
+  - group [ref=f1e38]:
+    - generic "Autorzy grafiki" [ref=f1e39] [cursor=pointer]
+```
+### Result
+"{\"tag\":\"INPUT\",\"label\":\"Adres e-mail\",\"inCard\":true,\"isBody\":false,\"hash\":\"\"}"
+### Ran Playwright code
+```js
+await page.evaluate('() => ((() => { const a = document.activeElement; return JSON.stringify({tag: a.tagName, label: a.labels?.[0]?.textContent || null, inCard: !!a.closest(\'.account-card\'), isBody: a === document.body, hash: location.hash}); })())');
+```
+### Result
+Total messages: 2 (Errors: 1, Warnings: 0)
+Returning 1 messages for level "error"
+
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ https://127.0.0.1:49153/api/account:0
+Browser 'default' closed
+
+### Ran Playwright code
+```js
+await page.goto('https://127.0.0.1:49153/?run=confirm#confirm-email=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+```
+### Page
+- Page URL: https://127.0.0.1:49153/?run=confirm
+- Page Title: Loop
+- Console: 2 errors, 0 warnings
+### Snapshot
+- [Snapshot](.playwright-cli\page-2026-11-16T20-32-27-367Z.yml)
+### Events
+- New console entries: .playwright-cli\console-2026-11-16T20-32-27-280Z.log#L1-L2
+### Result
+"{\"tag\":\"BODY\",\"label\":null,\"inCard\":false,\"isBody\":true,\"alert\":\"Coś w grze się zepsuło — odśwież stronę.\"}"
+### Ran Playwright code
+```js
+await page.evaluate('() => ((() => { const a = document.activeElement; return JSON.stringify({tag: a.tagName, label: a.labels?.[0]?.textContent || null, inCard: !!a.closest(\'.account-card\'), isBody: a === document.body, alert: document.querySelector(\'[role=alert]\')?.textContent || null}); })())');
+```
+### Result
+Total messages: 2 (Errors: 2, Warnings: 0)
+
+[ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ https://127.0.0.1:49153/api/email-confirmation:0
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ https://127.0.0.1:49153/api/account:0
+### Result
+"{\"cardPresent\":true,\"shownAlerts\":[\"Odnośnik jest nieważny albo wygasł.\"],\"active\":\"BODY\"}"
+### Ran Playwright code
+```js
+await page.evaluate('() => ((() => { const card = document.querySelector(\'.account-card\'); const shownAlerts = [...document.querySelectorAll(\'[role=alert]\')].filter(e => !e.closest(\'[hidden]\')).map(e => e.textContent); return JSON.stringify({cardPresent: !!card, shownAlerts, active: document.activeElement.tagName}); })())');
+```
+### Browser `default` opened with pid 8012.
+### Ran Playwright code
+```js
+await page.goto('https://127.0.0.1:49153/#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+```
+### Page
+- Page URL: https://127.0.0.1:49153/#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+- Page Title: Loop
+- Console: 1 errors, 0 warnings
+### Snapshot
+- [Snapshot](.playwright-cli\page-2026-11-16T20-31-39-303Z.yml)
+### Events
+- New console entries: .playwright-cli\console-2026-11-16T20-31-39-110Z.log#L1-L2
+### Page
+- Page URL: https://127.0.0.1:49153/#reset-password=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+- Page Title: Loop
+- Console: 1 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e3]:
+  - heading "Loop" [level=1] [ref=e4]
+  - paragraph [ref=e5]: Napisz postaci program i sprawdź, jak długo przeżyje bez ciebie.
+  - generic [ref=e6]:
+    - heading "Ustaw nowe hasło" [level=2] [ref=e7]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Nowe hasło
+        - textbox "Nowe hasło" [ref=e11]:
+          - /placeholder: nowe hasło
+      - generic [ref=e12]:
+        - generic [ref=e13]: Powtórz hasło
+        - textbox "Powtórz hasło" [ref=e14]:
+          - /placeholder: hasło jeszcze raz
+      - button "Ustaw hasło" [ref=e15] [cursor=pointer]
+    - button "Anuluj" [ref=e17] [cursor=pointer]
+  - group [ref=e18]:
+    - generic "Autorzy grafiki" [ref=e19] [cursor=pointer]
+```
+### Ran Playwright code
+```js
+await page.getByRole('button', { name: 'Ustaw hasło' }).click();
+```
+### Page
+- Page URL: https://127.0.0.1:49153/
+- Page Title: Loop
+- Console: 3 errors, 0 warnings
+### Snapshot
+- [Snapshot](.playwright-cli\page-2026-11-16T20-31-46-561Z.yml)
+### Events
+- New console entries: .playwright-cli\console-2026-11-16T20-31-39-110Z.log#L3-L4
+### Ran Playwright code
+```js
+await page.getByRole('textbox', { name: 'Nowe hasło' }).fill('nowe haslo 12345');
+```
+### Ran Playwright code
+```js
+await page.getByRole('textbox', { name: 'Powtórz hasło' }).fill('nowe haslo 12345');
+```
+### Page
+- Page URL: https://127.0.0.1:49153/
+- Page Title: Loop
+- Console: 3 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [ref=e21]:
+  - heading "Loop" [level=1] [ref=e22]
+  - paragraph [ref=e23]: Napisz postaci program i sprawdź, jak długo przeżyje bez ciebie.
+  - alert [ref=e24]: Odnośnik jest nieważny albo wygasł.
+  - generic [ref=e25]:
+    - button "Zaloguj się" [pressed] [ref=e26] [cursor=pointer]
+    - button "Załóż konto" [ref=e27] [cursor=pointer]
+  - generic [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Adres e-mail
+        - textbox "Adres e-mail" [active] [ref=e32]:
+          - /placeholder: adres e-mail
+      - generic [ref=e33]:
+        - generic [ref=e34]: Hasło
+        - textbox "Hasło" [ref=e35]:
+          - /placeholder: hasło
+      - button "Zaloguj się" [ref=e36] [cursor=pointer]
+    - button "Nie pamiętam hasła" [ref=e38] [cursor=pointer]
+  - group [ref=e39]:
+    - generic "Autorzy grafiki" [ref=e40] [cursor=pointer]
+```
+### Result
+"{\"tag\":\"INPUT\",\"name\":\"Adres e-mail\",\"type\":\"text\",\"inCard\":true,\"isBody\":false}"
+### Ran Playwright code
+```js
+await page.evaluate('() => ((() => { const a = document.activeElement; return JSON.stringify({tag: a.tagName, name: a.getAttribute(\'aria-label\') || a.labels?.[0]?.textContent || a.textContent.slice(0,40), type: a.type, inCard: !!a.closest(\'.account-card\'), isBody: a === document.body}); })())');
+```
+### Result
+Total messages: 4 (Errors: 3, Warnings: 0)
+Returning 3 messages for level "error"
+
+[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ https://127.0.0.1:49153/favicon.ico:0
+[ERROR] Failed to load resource: the server responded with a status of 400 (Bad Request) @ https://127.0.0.1:49153/api/password-reset:0
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ https://127.0.0.1:49153/api/account:0

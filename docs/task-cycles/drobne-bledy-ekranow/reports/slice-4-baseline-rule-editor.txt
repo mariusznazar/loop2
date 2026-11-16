@@ -1,0 +1,127 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/rule-editor.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the list stands under the heading „sprawdzane od góry” (35.3446ms)
+✖ a header shows its number, name, condition and number of rules, and a row its number, sentence and time (15.5979ms)
+✔ the plural of the number of rules follows Polish: 0 and 5 reguł, 1 reguła, 2 to 4 reguły, 12 reguł, 22 reguły (42.6367ms)
+✔ the action's icon stands in a mask whose file is the action's own, and the sentence has the arrow between condition and action (10.988ms)
+✔ the time of one execution: minutes, „tura” in combat, nothing for a move outside a map run and the map's step in one (24.5408ms)
+✔ counts stand where the page gives them: a rule's „Wykonano n×” and a group's sum, and none where counts are null (35.0565ms)
+✔ the list shows no ⊘, no „N reguł nie zadziała” and no amber „0×” (10.8068ms)
+✔ an empty group says „Pusta grupa — przepuszcza dalej.” and a group with rules does not (11.161ms)
+✔ the open row and the open header stand marked, the others not (18.8688ms)
+✔ a click on a row asks to open that rule, on a header that group, and a click on a button in the row asks nothing (13.1708ms)
+✔ Enter and Space on a row or a header ask to open it, and other keys do not (9.2944ms)
+✔ a row has „↑”, „↓” and the destructive „Usuń”, and a header has no arrows (8.6134ms)
+✔ the arrows are off only at the ends of the program: „↑” on the first rule and „↓” on the last (9.8874ms)
+✔ „↑” on the first rule of a group moves it to the end of the previous group (9.7065ms)
+✔ a „↓” inside a group swaps the rule with its neighbour (9.4469ms)
+✔ „↑” and „↓” hand the identity of the rule moved as the hint of the edit, across a group border too (9.1963ms)
+✔ the drop of a rule hands the identity of the rule dragged as the hint, and the drop of a group that of the group (11.2304ms)
+✔ an edit that moves nothing hands no hint: „Usuń”, „✕”, „+ reguła” and „+ dodaj grupę” (9.7415ms)
+✔ „Usuń” of a rule and „✕” of a group delete at once, with no question (9.5637ms)
+✔ „+ reguła” adds „Zawsze → Eksploruj” at the end of its group and asks to open its panel (10.4172ms)
+✔ „+ reguła” is never disabled, in a new game or in a game whose Understanding holds no action, and adds its rule there (29.721ms)
+✔ „+ dodaj grupę” appends an empty group with the next number (9.4205ms)
+✔ the buttons of an old „Dodaj regułę”, „Dodaj grupę” and the arrows of a group are gone (9.3815ms)
+✔ groups do not move by the keyboard: arrow keys on a header commit nothing (9.6823ms)
+✖ a folded group shows its header alone, with name, condition and number of rules (8.4137ms)
+✔ the fold button asks for the group folded or unfolded and the list changes only when the page says so (16.662ms)
+✔ „zwiń wszystkie” and „rozwiń wszystkie” stand only beside more than one group, every group unfolded at the start (42.2798ms)
+✔ only the handle is draggable, never the row or the header (9.3847ms)
+✔ the drop line stands once, with „tu wyląduje”, at the place a rule dragged over a row of another group would land (14.636ms)
+✔ a rule dropped between groups lands before the rule it was dropped on and the line leaves (13.773ms)
+✔ the lower half of a row puts the rule after it, and a drop on the empty rest of a group puts it at the end (15.6132ms)
+✔ a rule dropped on a folded group lands at its end, the line stands under the header and the group stays folded (13.0777ms)
+✔ a rule dragged over its own place shows no line and a drop there changes nothing (10.1073ms)
+✔ the line is gone after a cancelled drag and after a drag that leaves the list, and stays while the drag moves inside it (20.5962ms)
+✔ a drag that ends where the list does not see it still takes the line away (15.2509ms)
+✔ a drag that is none of the list's — a file or a text — makes no line and is not accepted (8.2345ms)
+✔ a group dragged by its handle shows the line between groups, and a drop puts it there (27.1127ms)
+✔ a group dragged to the lower half of the last group lands at the end, and over its own place shows no line (15.665ms)
+✔ a group dragged over one of its rows is placed among the groups, never among rules (11.9751ms)
+✔ a group dragged by its handle can be dropped on a folded group too, before or after it (9.5321ms)
+✔ after „↓” across a group border the focus stands on the moved rule's „↓” in its new group (55.9441ms)
+✔ after „↑” across a group border the focus stands on the moved rule's „↑” in its new group (15.9037ms)
+✔ a rule that reaches an end of the program, where its own arrow is off, takes the focus on the other arrow (13.4626ms)
+✔ a rule moved into a folded group leaves the focus on that group's header (11.4227ms)
+✔ after „Usuń” the focus goes to the „Usuń” of the rule now in its place, and to „+ reguła” where none is left (24.9512ms)
+✔ after a rule is added the focus goes to its row, and after a group is added to its header (15.9856ms)
+✔ after „✕” the focus goes to the „✕” of the group now in its place, and to „+ dodaj grupę” after the last (11.7279ms)
+✔ after a drop the focus goes to the dropped rule's row, and to a folded group's header when the rule is out of sight (23.0695ms)
+✖ the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open (48.4366ms)
+✔ a number typed in the panel keeps its text and the focus while the game at 16× redraws the panel, and Enter commits it (30.8486ms)
+✔ the number field of the panel takes the range and the step of the condition kind (68.1805ms)
+✔ the number field is selected when the focus goes to it, so what is typed replaces the number held (8.8183ms)
+✔ the fields of a rule stand in the order condition, number, target of the condition, action, target of the action, each only where the rule has it (42.7066ms)
+✔ the panel opens on the condition and its focus on the cell chosen there, or on the field its opener names (24.7908ms)
+✔ each pick changes the rule at once with a whole new program and moves on, a pick of the value held too (21.4176ms)
+✔ in a grid the arrow keys move among the cells, two columns of conditions, a greyed cell reached and Enter on it doing nothing (28.6058ms)
+✔ each reason stands beside its greyed cell: „gałąź niewykupiona”, „wybierzesz w przejściu…”, „nie znasz jeszcze celu”, „nie ma go na tej mapie” (57.1941ms)
+✔ a value the rule holds outside the pick stands chosen and greyed, with no reason made up where none fits, and another pick changes it (22.0549ms)
+✔ the actions stand in the groups Ruch, Zbieranie, Ogień, Żywność i walka, each with its icon and the time of one execution beside it (10.6018ms)
+✔ the price stands in the name of each action cell, a greyed one too, and the row of the rule shows no price (24.4081ms)
+✔ the value shown for the action field is its name with its price, and the time of one execution stands beside it (9.8679ms)
+✔ the conditions stand in two columns in their sections, parted by a line, with no names; no search, no row „ostatnio” and no current value (16.5848ms)
+✔ the panel of a group holds its name and its condition with its number and target, and no action (16.8727ms)
+✔ the panel of the copy says „Zmiana zeruje passę tego przejścia.”, with no word of the count, and that of a saved program says nothing (16.8485ms)
+✔ „✕” and Escape ask to close the panel, and with nothing open it draws nothing (13.7353ms)
+✔ opening another rule shows that rule on its condition (12.8205ms)
+✔ a list given a panel draws it right after the open row and never inside the row's item (7.6553ms)
+✔ a list given a panel draws it right after the open header, above the rules of that group (8.045ms)
+✔ the panel of a rule in a folded group stands right after that group's header (17.1845ms)
+✔ no panel is drawn without one handed over or with nothing open, and opening another rule moves it (46.8933ms)
+✔ a click, a key and a drag over the panel reach no handler of the row or the header (24.4272ms)
+✔ the panel is the same element wherever the list puts it: after a fold, an unfold and a move of the open rule to another group (16.5507ms)
+✔ a panel closed and opened again is drawn once, at the place of the row opened (16.2127ms)
+✔ the item that holds the panel under a row is no list item to assistive technology (9.7905ms)
+✔ a rule or a group dragged over the panel shows no line, is not accepted there, and a drop on the panel changes nothing (28.1629ms)
+ℹ tests 75
+ℹ suites 0
+ℹ pass 72
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2138.649
+
+✖ failing tests:
+
+test at tests\view\rule-editor.test.mjs:177:1
+✖ a header shows its number, name, condition and number of rules, and a row its number, sentence and time (15.5979ms)
+  Error: expected "Sytość poniżej 30", got "Sytość poniżej 30 %"
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.equal (file:///tests/view/page-document.mjs:220:5)
+      at file:///tests/view/rule-editor.test.mjs:196:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/rule-editor.test.mjs:181:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\rule-editor.test.mjs:583:1
+✖ a folded group shows its header alone, with name, condition and number of rules (8.4137ms)
+  Error: expected "Sytość poniżej 30", got "Sytość poniżej 30 %"
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.equal (file:///tests/view/page-document.mjs:220:5)
+      at file:///tests/view/rule-editor.test.mjs:593:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/rule-editor.test.mjs:585:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at tests\view\rule-editor.test.mjs:1121:1
+✖ the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Patyk” is written from a click on its row in six actions, and the panel stays open (48.4366ms)
+  Error: expected "Zapas poniżej 8 · Patyk", got "Zapas poniżej 8 szt. · Patyk"
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.equal (file:///tests/view/page-document.mjs:220:5)
+      at file:///tests/view/rule-editor.test.mjs:1140:12
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async TestContext.<anonymous> (file:///tests/view/rule-editor.test.mjs:1127:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+exit 1

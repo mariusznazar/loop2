@@ -1,0 +1,6 @@
+end-window exit 0
+program-panel exit 0
+rule-editor exit 0
+program-editor exit 0
+run-screen exit 0
+foundation exit 0

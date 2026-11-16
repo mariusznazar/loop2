@@ -1,0 +1,37 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/login-card-focus.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a refused reset link moves focus to the first field of the card the session check shows (212.3764ms)
+✔ „Anuluj” moves focus to the first field of the card the session check shows (25.332ms)
+✔ a refused link whose session check fails and passes at the retry still moves focus to the card (31.7014ms)
+✔ a refused reset link of a signed-in player opens the game and no card takes focus (37.8289ms)
+✖ a refused confirmation link moves focus to the first field of the card the session check shows (15.4717ms)
+✔ a confirmation that succeeds moves no focus into the card (15.4608ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 952.6985
+
+✖ failing tests:
+
+test at tests\view\login-card-focus.test.mjs:302:1
+✖ a refused confirmation link moves focus to the first field of the card the session check shows (15.4717ms)
+  Error: expected <input>, got <body>
+      at refuse (file:///tests/view/page-document.mjs:192:9)
+      at Object.equal (file:///tests/view/page-document.mjs:220:5)
+      at file:///tests/view/login-card-focus.test.mjs:311:12
+      at async file:///tests/view/login-card-focus.test.mjs:24:7
+      at async withPage (file:///tests/view/page-document.mjs:100:5)
+      at async onPage (file:///tests/view/login-card-focus.test.mjs:20:3)
+      at async TestContext.<anonymous> (file:///tests/view/login-card-focus.test.mjs:304:3)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

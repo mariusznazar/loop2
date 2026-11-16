@@ -1,0 +1,13 @@
+tests/view/game-saver.test.mjs:527: the quotation does not begin a sentence of `D-208`
+tests/view/game-saver.test.mjs:561: the quotation does not begin a sentence of `D-208`
+tests/view/login-card-focus.test.mjs:218: the quotation stands in no binding sentence of `D-381`
+tests/view/login-card-focus.test.mjs:233: the quotation stands in no binding sentence of `D-381`
+tests/view/login-card-focus.test.mjs:249: the quotation stands in no binding sentence of `D-381`
+tests/view/login-card-focus.test.mjs:269: the quotation stands in no binding sentence of `D-381`
+tests/view/login-card-focus.test.mjs:303: the quotation stands in no binding sentence of `D-381`
+tests/view/login-card-focus.test.mjs:318: the quotation stands in no binding sentence of `D-381`
+tests/view/program-panel.test.mjs:617: the quotation stands in no binding sentence of `D-174`
+tests/view/program-panel.test.mjs:647: the quotation does not begin a sentence of `D-164`
+tests/view/program-panel.test.mjs:1993: the quotation does not begin a sentence of `D-306`
+tests/view/shared-controls.test.mjs:787: the quotation does not begin a sentence of `D-267`
+12 errors

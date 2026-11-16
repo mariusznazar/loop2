@@ -1,0 +1,76 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/program-panel.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ Programy holds the trip plan between the program's name and its rules; the screen of a map run holds none (60.5245ms)
+✔ an edit of the trip plan on Programy goes to the program shown, and another program's section stands folded (71.5099ms)
+✔ the rule panel opens from a row and from a header under it (programs), takes the focus, and „✕” and Escape give it back to the row (43.3448ms)
+✔ the rule panel opens from a row and from a header under it (run), takes the focus, and „✕” and Escape give it back to the row (43.5349ms)
+✔ a rule open in a group that gets folded keeps its panel under that group's header, and under its row again once unfolded (31.4887ms)
+✔ ✕ on a panel under a folded group's header gives the focus to that header (20.7643ms)
+✔ Escape on a panel under a folded group's header gives the focus to that header (23.7054ms)
+✔ „+ reguła” adds the rule and opens its panel on the condition (19.7935ms)
+✔ the open rule stays through the game's minutes and goes when the program shown changes (28.7065ms)
+✔ the rule panel of the copy says „Zmiana zeruje passę tego przejścia.”; that of a saved program and of Programy does not (46.2105ms)
+✔ a group folded on one screen stays folded on the other for the same program, the copy's folding is its own, and a new memory forgets (40.4905ms)
+✔ a fold made on one panel redraws the other at once, with no update of its own (13.133ms)
+✔ a send after the copy's group was folded shows the new copy with every group unfolded (16.211ms)
+✔ a switch of the character after the copy's group was folded shows the new copy with every group unfolded (20.0607ms)
+✔ a restart keeps the folds of the copy it carries on (16.1272ms)
+✔ a new game's panel lists „Program”, shows it, and „Usuń” is disabled (8.0229ms)
+✔ „Nowy program” shows „Program 2”, makes „Usuń” active, and the editor edits program 2 (13.1978ms)
+✔ „Zmień nazwę” fills the field with the name, warns of an empty or taken name, and saves a trimmed one (22.786ms)
+✔ the name field leaves without saving at „Zmień nazwę” again and at another program shown (24.0368ms)
+✔ „Usuń” of the shown program shows the first program of the list, and is disabled with one left (29.2244ms)
+✔ during a map run the copy stands first and is shown with counts; a saved program picked shows none and takes its own edits (22.0645ms)
+✔ „↓” on a rule of the copy and the drop of a rule or a group reach editCopy with the hint of the move (25.3226ms)
+✔ an edit of a saved program, a move included, carries no hint (13.3646ms)
+✔ a panel whose first state holds a map run shows the copy, as after a load (10.5723ms)
+✔ „Restart” and a death show the copy with counts; „Zakończ” shows the copy's program with them (33.2276ms)
+✔ „Zakończ” after the copy's program was deleted shows the first program of the list, without counts (15.6047ms)
+✔ time passing keeps what is typed in the name field and in an editor field, and the focus (41.3826ms)
+✔ a number typed into the panel on the screen of a map run at 16× keeps its text, its cursor field and the focus over three seconds of redraws (65.1182ms)
+✔ Enter in the number field is consumed, so the press cannot reach the cell the focus moves to (21.8314ms)
+✔ at the first chill „Dodaj regułę z tym” adds „Zawsze → Wędruj” at the end of the copy's group „Program”, opens it under the new row on the action with the focus there, and the streak goes to zero (26.1925ms)
+✔ with a saved program shown on the list „Program:”, „Dodaj regułę z tym” shows the copy and opens the new rule there, once (26.2177ms)
+✔ text typed into the copy's editor and not yet committed lands in the copy before „Dodaj regułę z tym” adds its rule (26.0673ms)
+✔ with no discovery held, and on Programy, „Dodaj regułę z tym” changes nothing and opens nothing (15.7095ms)
+✔ the copy shows its heading; an edit of the copy brings „Niezapisane zmiany w kopii.” and activates the three buttons (10.1369ms)
+✔ uncommitted text in the copy's editor lands in the copy when the program shown changes without moving focus (18.7982ms)
+✔ „Zapisz w programie” writes the copy into its program, and the line and the activity go (13.1119ms)
+✔ the line of a changed program stands with and without unsaved changes, and goes after „Zapisz w programie” (27.153ms)
+✔ a copy with no unsaved changes whose program was changed reads the short line, with „Zapisz w programie” inactive (13.8091ms)
+✔ „Zapisz jako nowy program” offers the first free name, refuses a taken one, and the copy then belongs to the new program (16.3253ms)
+✔ „Zapisz jako nowy program” suggests „Program 3” beside „Program 2”, and its field leaves at the same action again (15.7587ms)
+✔ „Porzuć zmiany” restores the copy's program and the line goes (11.3818ms)
+✔ a copy whose program was deleted keeps its heading, offers only „Zapisz jako nowy program”, and it is active (14.2382ms)
+✔ „Przełącz postać na ten program” stands beside another saved program only, and a click switches and shows the copy (12.7571ms)
+✔ after „Zapisz jako nowy program” the switch button stands beside the first program and not beside the new one (21.6651ms)
+✔ on the screen after a death the copy's buttons work and there is no switch button (13.4902ms)
+✔ after „Zakończ” with unsaved changes the copy's section is gone (11.5692ms)
+✔ Programy beside a map run going on shows the saved program, with the sentence above the editor and no list, copy or switch (12.0973ms)
+✔ Programy beside a map run paused shows the saved program, with the sentence above the editor and no list, copy or switch (10.2031ms)
+✔ Programy beside a map run ended in a death shows the saved program, with the sentence above the editor and no list, copy or switch (10.1996ms)
+✔ Programy beside a map run ended in a completion shows the saved program, with the sentence above the editor and no list, copy or switch (10.2278ms)
+✔ the sentence stands only while the game state holds a map run: not before a send, gone after „Zakończ” (9.2136ms)
+✔ the panel of a map run's screen holds the sentence of Programy nowhere (9.9193ms)
+✔ showProgram shows the saved program asked for and takes its edits; one gone from the list gives way to the first (13.0414ms)
+✔ uncommitted text lands in the program it was typed into when Programy shows another, and showing the same one keeps the field (23.7724ms)
+✔ the offer of Programy follows the character of the map run held by the game state, an ended one included, and goes with „Zakończ” (22.2467ms)
+✔ dispose() takes the panel out of the page (5.3608ms)
+✔ folding and unfolding the group of the open rule leaves the focus on the fold button and the panel on its field (19.3302ms)
+✔ „zwiń wszystkie” and „rozwiń wszystkie” leave the focus on the button pressed and the panel on its field (19.8059ms)
+✔ opening a rule, and then a rule of another group, takes the focus into the panel each time (21.5444ms)
+✔ a rule moved across a group border by „↓” and by its handle keeps the panel open under its new row, on the same field (24.2784ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 60
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1990.9023

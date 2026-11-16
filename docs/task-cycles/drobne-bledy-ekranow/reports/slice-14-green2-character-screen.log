@@ -1,0 +1,26 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/character-screen.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ the screen names the character and its archetype, and gives the generation from 2 up only (26.9378ms)
+✔ the resurrection line reads the time left in danger, shows the minutes below an hour, turns ready at the moment and moves with each reading of the clock (10.2713ms)
+✔ a running loop shows its line with „Zatrzymaj”, which acts through onStop; a stopped loop shows its line in its place (12.8118ms)
+✔ after „Zatrzymaj” the focus stands on the character's name once its loop has stopped (61.8984ms)
+✔ a stop the page refuses leaves the focus on „Zatrzymaj” (11.1782ms)
+✔ the section „Umiejętności” is absent before a tree is known, then shows the known tree's row alone (15.555ms)
+✔ unknown trees are hidden, purchases update existing buttons and refuse unaffordable and maximum ranks (10.4976ms)
+✔ „Kup” is inactive with the sentence under the heading beside a waiting map run and beside an ended one (14.5ms)
+✔ a purchase leaves focus on its button, which stays buyable after it (10.6915ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 809.9698
+exit 0

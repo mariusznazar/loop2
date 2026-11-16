@@ -1,0 +1,20 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/login-card-focus.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a refused reset link moves focus to the first field of the card the session check shows (207.4845ms)
+✔ „Anuluj” moves focus to the first field of the card the session check shows (25.6448ms)
+✔ a refused link whose session check fails and passes at the retry still moves focus to the card (29.2033ms)
+✔ a refused reset link of a signed-in player opens the game and no card takes focus (38.342ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 932.0699
