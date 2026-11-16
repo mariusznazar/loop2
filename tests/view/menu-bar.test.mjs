@@ -315,14 +315,17 @@ test("a click outside the menu closes it; focus stays where the player clicked, 
   });
 });
 
-test("a click on an item of the bar, which stands outside the menu, closes it", async () => {
-  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”"
+test("a click on an item of the bar, which stands outside the menu, closes it and leaves the focus on that item", async () => {
+  // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”; after Escape and after a second click on „Konto” focus returns to „Konto”, after a click outside it focus stays where the player clicked, and where that place takes no focus it returns to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
     await press(buttonNamed(page.root, "Konto"));
-    await press(all(page.root, ".menu-bar a")[1]);
+    const link = all(page.root, ".menu-bar a")[1];
+    // A browser focuses the link it clicks before the click reaches the page.
+    link.focus();
+    await press(link);
     assert.equal(isOpen(page.root), false);
-    assert.equal(active(), buttonNamed(page.root, "Konto"));
+    assert.equal(active(), link, "a click on a link leaves the focus on it");
   });
 });
 
