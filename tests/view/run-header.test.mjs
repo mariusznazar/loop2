@@ -6,8 +6,8 @@
 // here holds only what jsdom shows. Every comparison is of plain data or of a handful of words
 // (D-268).
 import { assert, inAct, withPage } from "./page-document.mjs";
+import { gameStylesheetText } from "./game-stylesheets.mjs";
 import { test } from "node:test";
-import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../../dist/browser/sim/data/maps.js";
@@ -424,13 +424,10 @@ test("the header draws nothing while the game state holds no map run", async () 
   });
 });
 
-/** Puts the real stylesheet into the document; jsdom resolves the cascade, not a custom property. */
+/** Puts the game's stylesheets (D-421) into the document; jsdom resolves the cascade, not a custom property. */
 function addStylesheet(document) {
   const style = document.createElement("style");
-  style.textContent = readFileSync(
-    new URL("../../src/browser/styles.css", import.meta.url),
-    "utf8",
-  );
+  style.textContent = gameStylesheetText();
   document.head.append(style);
 }
 
