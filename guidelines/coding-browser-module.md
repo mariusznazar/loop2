@@ -195,10 +195,12 @@ stan kontrolki dostaje w nim przypadek w tej samej zmianie.
 - **Bad:** Nowy ekran buduje elementy przez `document.createElement` na wzór modułu ze statusem `do not copy`.
 
 Żaden ekran nie powstaje przez API DOM. Strona (`src/browser/view/app.ts`)
-buduje przez nie tylko miejsca, w których montują się korzenie Reacta —
-nagłówek, blok główny i hosty korzeni — oraz panel, który staje w miejscu karty
-zdjętej przez React (reguła _Wspólna kontrolka w jednej postaci_); wszystko,
-co ma pokazać, rysuje korzeń Reacta, osobny dla każdego miejsca (D-407).
+i fabryki jej korzeni budują przez nie tylko miejsca, w których montują się
+korzenie Reacta — nagłówek i blok główny stawia strona, a host każdego korzenia
+jego fabryka — oraz panel, który staje w miejscu karty zdjętej przez React
+(reguła _Wspólna kontrolka w jednej postaci_) i który buduje `createFailureCard`
+z `src/browser/view/account-card.tsx`; wszystko, co ma pokazać, rysuje korzeń
+Reacta, osobny dla każdego miejsca (D-407).
 
 Nowy ekran nie powstaje na wzór pliku ze statusem `do not copy` w tabeli
 _Files of this kind_. Nowy ekran powstaje po wzorze pliku ze statusem
@@ -346,8 +348,10 @@ strony — nagłówek, blok główny, zdania nad grą i pasek menu. Wartości, k
 mają przeżyć przejście między rodzajami — oczekujące zdanie potwierdzenia,
 wiadomość rejestracji, sposób wejścia do gry, stan zachowany po 401, numer
 ostatniego żądania i znacznik awarii — stoją w `startApp` osobno. Strona buduje
-przez API DOM tylko nagłówek, blok główny i panel w miejscu zdjętej karty;
-każde miejsce, które pokazuje coś poza ekranami gry, ma korzeń Reacta: pasek menu,
+przez API DOM tylko nagłówek i blok główny, host każdego korzenia stawia fabryka
+tego korzenia, a panel w miejscu zdjętej karty buduje `createFailureCard`
+z `account-card.tsx`; każde miejsce, które pokazuje coś poza ekranami gry, ma
+korzeń Reacta: pasek menu,
 ekran oczekiwania (`waiting-screen.tsx`), zdania nad grą (`page-sentences.tsx`),
 wiersz zapisu i wiersz awarii (`header-rows.tsx`) oraz karta logowania. Zdanie
 potwierdzenia adresu i zdanie o zapisie, który się nie wczytał, rysuje
