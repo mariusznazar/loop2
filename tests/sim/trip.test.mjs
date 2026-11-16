@@ -70,7 +70,7 @@ function sent(state = equipped()) {
 test("a bought branch acts on entry equipment and completion pays practice and loot once", () => {
   // decision: D-214 "A map run restart after the completion that solved the map is such a run: it takes its equipment from nowhere and pays nothing"
   // decision: D-189 "A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // decision: D-194 "A manual map run holds the practice it gathers separately by character skill and pays all of it once to the character making the run in the game minute of the completion that first solves its map, while a manual run of a solved map keeps its practice with the run"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-379 "Each rank of a branch gives the effect below, and the ranks of a branch cost the points listed, in order"
@@ -360,7 +360,7 @@ test("saved plan edits stay out of the copy; saves and overwrite detection inclu
 
 test("switching programs retains the entry snapshot, including on solved-map runs", () => {
   // invariant: trip-transfer
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   let state = equipped();
   state = { ...state, solvedMaps: ["forestEdge", "forest"] };
   state = createProgram(state).state;
@@ -583,7 +583,7 @@ function aboutToComplete(state) {
 test("a manual run of a solved map takes its take list from nowhere, cut by capacity, and leaves the chest as it is", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together, and its height is the character's carrying capacity"
   // invariant: solved-map-manual-run
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   const capacity = equipped().team.characters[0].traits.carryingCapacity;
   const started = sent(solvedForest());
   assert.deepEqual(started.run.character.backpack, {
@@ -617,7 +617,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
   // invariant: solved-map-manual-run
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
   assert.deepEqual(
@@ -641,7 +641,7 @@ test("takeFromNowhere clips the take list by capacity and the entry cap of the m
 // out of list order, drops a partial row, or ignores the entry cap of the map.
 test("clippedTake lists the take entries cut by capacity and the entry cap in list order, a partial row included, and keeps the plan", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   const plan = { take: [entry("moss", 9), entry("berry", 9)], bring: [] };
   const before = structuredClone(plan);
   // Capacity 12 is spent on moss first, the rest, 3, goes to berry.
@@ -796,7 +796,7 @@ test("sendTake at an unsolved map is cut by the map's entry cap of 4 before the 
 });
 
 test("sendTake at a solved map takes the take list from nowhere, clipped by capacity 12 only", () => {
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // Null chest: the list's own counts stand in for the stock. Stick: min(8, 8, 12) = 8, room 4.
   // Berry: min(9, 9, 4) = 4.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
@@ -807,7 +807,7 @@ test("sendTake at a solved map takes the take list from nowhere, clipped by capa
 });
 
 test("sendTake at a solved map is not cut by any chest's stock, as no chest is an argument there", () => {
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // Capacity 15: stick min(8, 8, 15) = 8, room 7. Berry: min(9, 9, 7) = 7. The chest is not an
   // argument, so its stock cannot cut the list.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
@@ -819,7 +819,7 @@ test("sendTake at a solved map is not cut by any chest's stock, as no chest is a
 
 test("the backpack of a solved map's run is the entries sendTake gives from nowhere", () => {
   // decision: D-64 "The backpack's cap counts the pieces of all items together"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // Capacity 12 with a list of stick 8 and berry 9: stick 8 and berry 4 come into the backpack.
   const plan = { take: [entry("stick", 8), entry("berry", 9)], bring: [] };
   const backpack = takeFromNowhere(plan, 12, MAPS.forest);

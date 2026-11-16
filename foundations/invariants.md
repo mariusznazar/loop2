@@ -651,7 +651,7 @@ The deployed loop2 container image has passed, after warmup, at least 20 hashes 
 
 - **Method:** review
 - **Rests on:** cgroup-memory-accounting
-- **Derives from:** D-106
+- **Derives from:** D-106 · D-113
 - **Part:** account-server · build-tools · deployment
 - **Violated:** no
 
@@ -951,7 +951,7 @@ At every game minute of a map run, the mage's nature energy lies between 0 and t
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** D-63 · D-71 · D-177
+- **Derives from:** D-63 · D-71 · D-177 · D-377
 - **Part:** simulation
 - **Violated:** no
 
@@ -1207,7 +1207,7 @@ Every file the build copies from `assets/sprites/` is a PNG image.
 
 ## loop2-container-sprites
 
-The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing or the camp's drawing asks for.
+The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing, the camp's drawing or the picture behind the login card asks for.
 
 - **Method:** test
 - **Rests on:** none
@@ -1240,7 +1240,7 @@ After an error that no code of the game handled, the game state held in the page
 No file of a part imports a file of another part, unless the *Depends on* of the importing file's part names the other part, the importing file stands under `tests/` and the imported file belongs to the part `test-helpers`, or an invariant "the part `<X>` does not depend on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing file depends on the part `<Y>` of the imported file today.
 
 - **Method:** test
-- **Rests on:** TODO — the fact is not named in the foundation (a bare TODO since 2026-11-08, commit 842beb7); the human names the fact and its source
+- **Rests on:** git-path-patterns
 - **Derives from:** D-351
 - **Part:** every
 - **Violated:** no

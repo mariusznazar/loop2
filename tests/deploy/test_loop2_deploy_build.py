@@ -184,7 +184,7 @@ class ResourceGate(DeployBuildTestCase):
         return self.log_lines()[self.index_of("MemAvailable")]
 
     def test_memory_below_1024_mib_exits_5_without_a_build(self):
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.set_mem_available_kb(1024 * MIB_KB - 1)
@@ -196,7 +196,7 @@ class ResourceGate(DeployBuildTestCase):
         self.assertIn(f"{22 * 1024} MiB", line, "the disk value is not logged on a refusal")
 
     def test_disk_below_4_gib_exits_5_without_a_build(self):
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.fixture.answer("df", stdout=f"Avail\n{4 * GIB_KB - 1}\n")
@@ -208,7 +208,7 @@ class ResourceGate(DeployBuildTestCase):
         self.assertIn("MemAvailable 3700 MiB", line, "the memory value is not logged on a refusal")
 
     def test_exact_thresholds_pass(self):
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.set_mem_available_kb(1024 * MIB_KB)
@@ -234,7 +234,7 @@ class ResourceGate(DeployBuildTestCase):
         self.assertLess(self.index_of("MemAvailable"), self.index_of("build of"))
 
     def test_unreadable_values_exit_5(self):
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         cases = {
             "docker info fails": lambda: self.fixture.answer("docker", exit_code=1,
                                                              match="info *"),
@@ -273,7 +273,7 @@ class Build(DeployBuildTestCase):
     def test_build_command_and_commit(self):
         # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit"
         # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
-        # decision: D-14 "The loop2 container is a Docker container"
+        # decision: D-14 "loop2's containers, the application's and the connector's, are Docker containers"
         sha = self.fixture.deployable_commit()
         self.fixture.install()
         self.fixture.answer_passing_run()

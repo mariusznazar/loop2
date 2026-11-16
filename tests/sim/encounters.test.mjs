@@ -312,7 +312,7 @@ test("each waiting minute M+1 through M+4 can complete without turns or an inven
 
 test("combat death in M+5 wins over completion and keeps the streak", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
-  // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
+  // decision: D-61 "A character whose health reaches zero through combat dies with the cause combat in the game minute of the combat turns"
   // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"

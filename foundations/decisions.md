@@ -39,7 +39,7 @@ pass this project's documentation filter.
 
 ### D-03 — How is the browser view built?
 
-The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, and no other UI framework stands in its code or its runtime dependencies.
+The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, except the waiting screens of D-262, which `src/browser/view/app.ts` builds, and no other UI framework stands in its code or its runtime dependencies.
 
 - **Scope:** browser-view, build-tools
 - **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
@@ -67,7 +67,7 @@ the server or the unsaved game state it kept in the page's memory after a save f
 - **Scope:** browser-view, build-tools, simulation
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: simulation-isolation · simulation-inputs. tests: the browser's
+- **Verification:** invariants: simulation-isolation · simulation-inputs · minute-span-split. tests: the browser's
   source, the simulation's included, held in TypeScript files alone. For whether the game runs in
   the browser, for the shape of the simulation's functions that pass game time and for how the
   browser view uses the game state, an agent compares the change with the part no invariant and no
@@ -393,7 +393,7 @@ Automation secrets and server access values — its name, SSH port, SSH user and
 
 ### D-14 — What kind of container does loop2 run in?
 
-The loop2 container is a Docker container.
+loop2's containers, the application's and the connector's, are Docker containers.
 
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads
@@ -461,7 +461,7 @@ source would stop.
 
 ### D-17 — How does loop2 share the Mikrus host with other workloads?
 
-A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes; it removes or replaces nothing of another workload. It builds only while the host's available memory and free disk stay above thresholds the repository sets, and each loop2 container runs under its own memory limit. The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000 and the database preserved across application-container replacement and code rollback.
+A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes; it removes or replaces nothing of another workload. It builds only while the host's available memory and free disk stay at or above thresholds the repository sets, and each loop2 container runs under its own memory limit. The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000 and the database preserved across application-container replacement and code rollback.
 
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · mikrus-host-swap · docker-volume-lifecycle · loop2-deploy-resource-gate-lines · loop2-deploy-stage-exit-lines
@@ -863,7 +863,7 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
 - **Based on:** none
 - **Relations:** none
 - **Verification:** tests: that ESLint, Ruff and ShellCheck fail the gate on any report in any file they check, with no allowance for a file that broke a rule before; that ESLint and Prettier reach the test files of the parts in their scope as they reach the other files. An agent compares a change with the part no test holds:
-  - complies: general and four kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, with no transitional per-file no-regression invariant beside the full-compliance source invariants
+  - complies: general and kind guidelines follow the pinned templates, retain the stated deferrals and direct test authors to the testing guidelines, with no transitional per-file no-regression invariant beside the full-compliance source invariants
   - violates: a stylesheet exemplar or guidelines of their own for stylesheets, automatic Python formatting, a transition-debt check or another departure from the templates, introduced without a new decision
 - **Origin:** none
 
@@ -1418,7 +1418,7 @@ Outside combat, a character loses health in each game minute in which it is chil
 
 ### D-61 — When does a character die, and of what?
 
-A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise. A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns.
+A character dies in the game minute in which its health reaches zero, also during the character's action in progress, and the map run then ends in death with its cause. For a death of cold or hunger, the cause is cold where the character's body is chilled in that game minute, and hunger otherwise. A character whose health reaches zero through combat dies with the cause combat in the game minute of the combat turns.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -2257,7 +2257,7 @@ The built game and the account and save server use one public HTTPS origin at lo
 - **Scope:** browser-view, account-server, deployment
 - **Based on:** fetch-same-origin-credentials
 - **Relations:** derives from D-05 · derives from D-10
-- **Verification:** invariants: loop2-shared-public-origin.
+- **Verification:** invariants: loop2-shared-public-origin · account-client-requests.
 - **Origin:** none
 
 *Rationale:* A shared origin carries eligible session cookies without a separate cross-origin agreement. An API moved to another machine can keep its public route through forwarding, at the cost of maintaining that forwarding.
@@ -2356,7 +2356,7 @@ The exemplar for kind `password-hashing` is `src/server/passwords.ts`, and its k
 - **Scope:** account-server
 - **Based on:** argon2-password-api · argon2-native-platform · password-hash-work-factor
 - **Relations:** derives from D-98 · derives from D-103 · derives from D-106
-- **Verification:** invariants: password-operation-gate · player-argon2-password-hash · player-argon2-deployment-check. tests: a password hashed and verified with its exact content, the trimmed password failing, under the explicit Argon2id profile of 64 MiB, three passes and one lane; the measurement made with that profile and the gate of two operations at once. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** invariants: password-operation-gate · player-argon2-deployment-check. tests: a password hashed and verified with its exact content, the trimmed password failing, under the explicit Argon2id profile of 64 MiB, three passes and one lane; the measurement made with that profile and the gate of two operations at once. An agent compares a change with the part no invariant and no test holds:
   - complies: the kind guidelines of password hashing naming `src/server/passwords.ts` as the exemplar, and the table of kinds in `guidelines/coding.md` sending a password-hashing file to them
   - violates: the kind guidelines of password hashing naming another file as the exemplar; the table of kinds in `guidelines/coding.md` no longer sending a password-hashing file to them
 - **Origin:** none
@@ -3939,7 +3939,7 @@ The trip plan is a field of the program, both its lists are bound at the start o
 - **Scope:** simulation · browser-view
 - **Based on:** none
 - **Relations:** derives from D-50 · derives from D-64 · derives from D-164
-- **Verification:** invariants: trip-transfer. tests: the trip plan held as a field of the program,
+- **Verification:** invariants: trip-transfer · trip-run-end. tests: the trip plan held as a field of the program,
   which an edit of the program, a save of the copy and the detection of a change over the program
   include; a map's own cap down to zero, on entry and on exit; a trip plan over the map's entry cap
   entering the map cut, the player told so beforehand on the card of the map and beside „Restart”.
@@ -4116,7 +4116,7 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 
 ### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment.
 
 - **Scope:** simulation
 - **Based on:** none
@@ -4133,7 +4133,7 @@ A manual map run that first solves its map pays practice and loot once per map f
   solved map where that cut equipment is more than the chest holds.
 - **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the list of maps shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the card of the map shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
 *Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it; „Odbierz” paying completed map runs alone — after eight hours there is usually nothing to take.
 
 ### D-190 — What does a character's death take?
@@ -4144,7 +4144,7 @@ A character's death takes what it carried and pays nothing of its map run; when 
 - **Based on:** none
 - **Relations:** derives from D-179 · narrows D-189
 - **Verification:** invariants: trip-run-end · resurrection-renewal · death-settled-once ·
-  catch-up-death-moment. tests: a death taking what was carried and paying nothing of its map run,
+  catch-up-death-moment · catch-up-state. tests: a death taking what was carried and paying nothing of its map run,
   a resurrection ready or not and on a solved map too; with none ready, all practice, the practice
   gathered at the earning loop included, every rank bought and one more generation taken, the
   name, archetype, traits and place in the team kept, and the earning loop stopped; the death of a
@@ -4244,7 +4244,7 @@ A manual map run holds the practice it gathers separately by character skill and
 
 ### D-195 — When does a character skill tree become known?
 
-A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill. The band of a discovery names the tree beside the action, as „Odkryto: Zbierz, drzewo umiejętności Zbieranie.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
+A character skill tree with all its branches enters the Understanding in the game minute in which the player discovers the first action grown by that skill, together with any action a branch of that tree opens, and a tree whose first action the Understanding holds from the start enters with the first finished action of that skill. The band of a discovery names the tree beside the action, as „Odkryto: Zbierz, drzewo umiejętności Zbieranie małych przedmiotów.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one.
 
 - **Scope:** simulation · browser-view
 - **Based on:** none

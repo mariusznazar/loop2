@@ -224,7 +224,7 @@ function fought() {
 
 test("the minutes of a fight count to the fight, the minute of the attack to what the character was doing, and the last minute of a death in the fight too", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
-  // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
+  // decision: D-61 "A character whose health reaches zero through combat dies with the cause combat in the game minute of the combat turns"
   // decision: D-135 "A manual map run keeps the longest streak it reached"
   // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const { state, seen } = fought();
@@ -326,7 +326,7 @@ test("a map run entered with an empty backpack keeps an empty list", () => {
 });
 
 test("a map run of a solved map keeps what it took from nowhere, and the chest stays as it was", () => {
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // decision: D-369 "A manual map run keeps, in the map run of the game state and so in the saved game state"
   const state = sentWithChest(
     taking([{ item: "stick", count: 4 }], {

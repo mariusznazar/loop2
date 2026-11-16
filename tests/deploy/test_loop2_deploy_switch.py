@@ -87,7 +87,7 @@ class Success(DeploySwitchTestCase):
         # decision: D-08 "The existing loop container remains untouched"
         # decision: D-10 "Players reach loop2 at `https://loop2.mariusznazar.com/` through an encrypted remotely managed Cloudflare Tunnel, whose `cloudflared` connector is a second service of the loop2 Compose project"
         # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
-        # decision: D-14 "The loop2 container is a Docker container"
+        # decision: D-14 "loop2's containers, the application's and the connector's, are Docker containers"
         # decision: D-15 "No earlier image is kept"
         # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         result = self.deploy()
