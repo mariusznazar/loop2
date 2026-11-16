@@ -3,8 +3,10 @@
  * D-322, D-324, D-368, D-371): the question „Zapisać, odrzucić, wrócić?”, the end-of-run window,
  * the window's wait for the scene's effect and the focus owed to a window opened before the game
  * stood in the page. All of it is a memory of the page, never of the game state or the save. The
- * module decides what stands; it calls no screen, no act of the store and no registry, so the entry
- * of the screen tells the screen what changed. Nothing here runs when the module is imported.
+ * module decides what stands; it calls no screen, no act of the store and no registry. What stands
+ * is also read through `snapshot()`, a value that stays the same until the question or whether the
+ * window is shown changes, and each such change calls the listeners of `subscribe()`, whichever
+ * method or result made it (D-407). Nothing here runs when the module is imported.
  */
 import { mapRunEnded } from "../sim/game.js";
 import { copyHasUnsavedChanges } from "../sim/programs.js";
@@ -28,6 +30,14 @@ export type RunScreenStateOptions = {
   readonly game: Pick<StateStore, "get" | "halted">;
   /** Whether the system's setting asks for less motion, which leaves the scene's effects out (D-317). */
   reducedMotion(): boolean;
+};
+
+/** What stands on the screen Przejście: the question and whether the end-of-run window is shown. */
+export type RunScreenSnapshot = {
+  /** The question standing, or null. */
+  readonly question: EndQuestion | null;
+  /** Whether the end-of-run window stands over the screen, as `windowShown()` gives it. */
+  readonly windowShown: boolean;
 };
 
 export type RunScreenState = {
@@ -81,6 +91,16 @@ export type RunScreenState = {
    * window shows, so that focus is to go to it.
    */
   takeOwedFocus(connected: boolean): boolean;
+  /**
+   * Calls `listener` after each change of the question or of whether the window is shown, whichever
+   * method or result made it; a call that changes neither calls none. Returns the way to stop.
+   */
+  subscribe(listener: () => void): () => void;
+  /**
+   * What stands now: the same value until the question or whether the window is shown changes, so
+   * that React can read it through `useSyncExternalStore`.
+   */
+  snapshot(): RunScreenSnapshot;
 };
 
 /** Makes the state of the screen of a map run of the game `options.game` holds. */
@@ -106,7 +126,8 @@ export function createRunScreenState(
   let onScreen = false;
   let focusOwed = false;
 
-  function closeQuestion(): boolean {
+  /** Closes the question without telling the listeners; the public methods do that after it. */
+  function closeQuestionNow(): boolean {
     if (game.halted() || question === null) return false;
     question = null;
     return true;
@@ -124,68 +145,102 @@ export function createRunScreenState(
     );
   }
 
+  const listeners = new Set<() => void>();
+  let shown: RunScreenSnapshot = { question, windowShown: windowShown() };
+
+  /** Holds `shown` to what stands now and calls the listeners where it has changed. */
+  function settle(): void {
+    const now = windowShown();
+    if (question === shown.question && now === shown.windowShown) return;
+    shown = { question, windowShown: now };
+    for (const listener of [...listeners]) listener();
+  }
+
+  /** Runs a change of the state and then settles what the listeners hear of it. */
+  function settled<Result>(change: () => Result): Result {
+    const result = change();
+    settle();
+    return result;
+  }
+
   return {
     question: () => question,
     windowShown,
     taken({ endedRun, result }) {
-      const { state } = result;
-      // The window opens at the game minute a map run ends, once the scene's effect of the end has
-      // played where it plays one. The end and the restart of the map run leave no ended map run,
-      // which is where it stands no more (D-368, D-322).
-      if (endedRun) {
-        windowOpen = true;
-        effectPending =
-          onScreen &&
-          endEffectBegins(result.events) &&
-          !options.reducedMotion();
-      } else if (state.run === null || !mapRunEnded(state.run)) {
-        effectPending = false;
-      }
-      // The question has no sense once the copy holds no unsaved changes; it does not come back.
-      if (question !== null && !copyHasUnsavedChanges(state)) question = null;
+      settled(() => {
+        const { state } = result;
+        // The window opens at the game minute a map run ends, once the scene's effect of the end has
+        // played where it plays one. The end and the restart of the map run leave no ended map run,
+        // which is where it stands no more (D-368, D-322).
+        if (endedRun) {
+          windowOpen = true;
+          effectPending =
+            onScreen &&
+            endEffectBegins(result.events) &&
+            !options.reducedMotion();
+        } else if (state.run === null || !mapRunEnded(state.run)) {
+          effectPending = false;
+        }
+        // The question has no sense once the copy holds no unsaved changes; it does not come back.
+        if (question !== null && !copyHasUnsavedChanges(state)) question = null;
+      });
     },
     entered() {
-      if (onScreen) return;
-      onScreen = true;
-      const { run } = game.get();
-      if (run !== null && mapRunEnded(run)) windowOpen = true;
+      settled(() => {
+        if (onScreen) return;
+        onScreen = true;
+        const { run } = game.get();
+        if (run !== null && mapRunEnded(run)) windowOpen = true;
+      });
     },
     left() {
-      closeQuestion();
-      effectPending = false;
-      onScreen = false;
+      settled(() => {
+        closeQuestionNow();
+        effectPending = false;
+        onScreen = false;
+      });
     },
     ask(opens) {
-      const { run, paused } = game.get();
-      if (run === null || game.halted() || question !== null) return null;
-      // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
-      question = { resume: !mapRunEnded(run) && !paused, opens };
-      // The window covers the program panel, where the question stands, so it closes and stays closed
-      // after „Wróć” (D-173, D-311).
-      windowOpen = false;
-      effectPending = false;
-      return question;
+      return settled(() => {
+        const { run, paused } = game.get();
+        if (run === null || game.halted() || question !== null) return null;
+        // A map run that goes on stops as „Pauza” stops it; „Wróć” sets it going again.
+        question = { resume: !mapRunEnded(run) && !paused, opens };
+        // The window covers the program panel, where the question stands, so it closes and stays closed
+        // after „Wróć” (D-173, D-311).
+        windowOpen = false;
+        effectPending = false;
+        return question;
+      });
     },
-    closeQuestion,
+    closeQuestion: () => settled(closeQuestionNow),
     forgetQuestion() {
-      question = null;
+      settled(() => {
+        question = null;
+      });
     },
     openWindow() {
-      const { run } = game.get();
-      if (game.halted() || run === null || !mapRunEnded(run)) return false;
-      const closed = closeQuestion();
-      windowOpen = true;
-      effectPending = false;
-      return closed;
+      return settled(() => {
+        const { run } = game.get();
+        if (game.halted() || run === null || !mapRunEnded(run)) return false;
+        const closed = closeQuestionNow();
+        windowOpen = true;
+        effectPending = false;
+        return closed;
+      });
     },
     closeWindow() {
-      if (game.halted()) return;
-      windowOpen = false;
-      effectPending = false;
+      settled(() => {
+        if (game.halted()) return;
+        windowOpen = false;
+        effectPending = false;
+      });
     },
     effectEnded() {
-      if (game.halted() || !effectPending) return;
-      effectPending = false;
+      settled(() => {
+        if (game.halted() || !effectPending) return;
+        effectPending = false;
+      });
     },
     built() {
       focusOwed = windowShown();
@@ -195,5 +250,12 @@ export function createRunScreenState(
       focusOwed = false;
       return windowShown();
     },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    snapshot: () => shown,
   };
 }
