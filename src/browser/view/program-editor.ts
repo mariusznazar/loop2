@@ -36,6 +36,7 @@ import type {
   RuleGroup,
 } from "../sim/types.js";
 
+import { tenths } from "./body-row.js";
 import { countedName } from "./counted-name.js";
 
 type ConditionKind = Condition["kind"];
@@ -793,13 +794,19 @@ export function ruleNumber(groupIndex: number, ruleIndex: number): string {
 /**
  * A condition as a part of a row's sentence: its name, its number with the unit of its data and its
  * target — „Zapas poniżej 8 szt. · Patyk”. The unit stands after the number, as the band of a discovery
- * writes it. Pure.
+ * writes it; a number with a fraction, such as „36,5”, has the decimal comma the body row writes. Pure.
  */
 export function conditionSentence(condition: Condition): string {
   const def: ConditionDef = CONDITIONS[condition.kind];
   const unit = def.unit === undefined ? "" : ` ${def.unit}`;
   const head =
-    "value" in condition ? `${def.label} ${condition.value}${unit}` : def.label;
+    "value" in condition
+      ? `${def.label} ${
+          Number.isInteger(condition.value)
+            ? condition.value
+            : tenths(condition.value)
+        }${unit}`
+      : def.label;
   if (condition.kind === "hereBelow")
     return `${head} · ${targetName(RESOURCES[condition.resource].name)}`;
   if (condition.kind === "itemBelow")

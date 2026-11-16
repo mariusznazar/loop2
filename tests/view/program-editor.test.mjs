@@ -1567,6 +1567,34 @@ test("a row reads as a sentence: the condition with its number and target, then 
   );
 });
 
+// Catches a number with a fraction that the sentence writes with a dot, as JavaScript prints it, where
+// the body row of the same screen writes „36,5 °C”, with a decimal comma. The row, the group's header
+// and the end-of-run window and the chronicle that read them all take the sentence from these functions.
+test("a number with a fraction stands in the sentence of a rule and of a group with a decimal comma, a whole one without it", () => {
+  const chilly = { kind: "temperatureBelow", value: 36.5 };
+  assert.equal(conditionSentence(chilly), "Temperatura poniżej 36,5 °C");
+  assert.equal(
+    conditionSentence({ kind: "temperatureBelow", value: 30.1 }),
+    "Temperatura poniżej 30,1 °C",
+  );
+  assert.equal(
+    conditionSentence({ kind: "temperatureBelow", value: 36 }),
+    "Temperatura poniżej 36 °C",
+  );
+  assert.deepEqual(
+    ruleSentence({ id: 1, condition: chilly, action: EXPLORE }),
+    {
+      condition: "Temperatura poniżej 36,5 °C",
+      action: "Eksploruj",
+    },
+  );
+  const group = { id: 1, name: "Ogień", condition: chilly, rules: [] };
+  assert.equal(
+    groupSummary(group, null).condition,
+    "Temperatura poniżej 36,5 °C",
+  );
+});
+
 test("a group's summary: its name, condition, number of rules and the sum of their counts where counts stand", () => {
   // decision: D-93 "On Programy and on the screen of a map run the list of rules stands under the heading „sprawdzane od góry”, and during a manual map run every program rule of the copy the map run carries out shows how many times it fired in that map run, written as „Wykonano {n}×”"
   const group = {
