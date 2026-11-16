@@ -16,7 +16,9 @@
  * the place the mage stands at or walks to, where it starts a walk, the way it faces, and a map run
  * started, at which, as at its first draw, the mage stands at its place at once. A redraw changes no
  * element that runs an animation, so the clock's five redraws a second restart none (D-03's accepted
- * risk); a walk starts on a new element, which starts its animations afresh.
+ * risk); a walk starts on a new element, which starts its animations afresh. A walk that ends, or that
+ * a browser cancels because the scene is hidden, leaves the mage standing at the walk's place, so a
+ * scene shown again does not walk it from where it set out.
  *
  * The mage that gathers bends in a loop at its place, on a third sheet of its own that takes the idle
  * sheet's place for the whole action (D-364). The end of a gathering shows an effect of an ordinary
@@ -724,15 +726,18 @@ export function Scene({
         "--walk-start": percent((current.from ?? 0) - current.x, frameWidth),
       } as CSSProperties)
     : boxOf(mage, frame);
-  // The walk has ended where CSS has run it to its place: the mage stands there from now on, so a
-  // scene hidden and shown again, which starts its animations anew, does not walk it again.
-  const onAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
+  // The walk has ended where CSS has run it to its place, or was cut by the scene being hidden, which
+  // cancels it where it stands: the mage stands at the walk's place from now on, so a scene hidden and
+  // shown again, which starts its animations anew, does not walk it again from where it set out.
+  const walkEnded = () =>
     setShown((now) =>
       now !== null && now.walk === walk && now.from !== null
         ? { ...now, from: null }
         : now,
     );
+  const onAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    walkEnded();
   };
   const effectEnded =
     (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
@@ -775,7 +780,9 @@ export function Scene({
     if (scene === null) return;
     const cancelled = (event: Event) => {
       const target = event.target;
-      if (target instanceof Element && target.matches(".scene-moment-master"))
+      if (!(target instanceof Element)) return;
+      if (target.matches(".scene-mage[data-walking]")) walkEnded();
+      else if (target.matches(".scene-moment-master"))
         settle(target.getAttribute("data-moment-key") ?? "");
     };
     scene.addEventListener("animationcancel", cancelled);

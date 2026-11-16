@@ -1052,3 +1052,82 @@ test("the page scrolls to its top when the window appears, and at no other draw"
     assert.deepEqual(writes, [0, 0], "none where no end stands to draw it");
   });
 });
+
+/**
+ * A running map run of Ala whose only rule is „Zawsze → Eksploruj”: the mage stands at the right
+ * edge of the scene, 275 of its 336 pixels, and the exploring ends at game minute 20, when no rule
+ * is left to pick and the mage walks to the clearing, 144.
+ */
+function exploringRun() {
+  const game = setProgram(
+    withEdgeSolved(newKnowingGame()),
+    programFromRules(ALWAYS_EXPLORE),
+  ).state;
+  return send(createCharacter(game, "Ala").state, SENT, REAL_MS).state;
+}
+
+/**
+ * Fires `animationcancel` on the mage's element, the sheets in it and the badge's carrier, as a
+ * browser does for the animations of a screen that is hidden. jsdom runs no animation and cancels
+ * none, so the case fires them.
+ */
+function cancelWalk(scene) {
+  const { Event } = scene.ownerDocument.defaultView;
+  const mage = scene.querySelector(".scene-mage");
+  for (const element of [
+    mage,
+    ...mage.querySelectorAll(".scene-sheet"),
+    scene.querySelector(".scene-badge-carrier"),
+  ])
+    element.dispatchEvent(new Event("animationcancel", { bubbles: true }));
+}
+
+/** How the mage and the badge's carrier stand: whether they walk, the left edge and the offset they walk from. */
+const walkOf = (scene) =>
+  [".scene-mage", ".scene-badge-carrier"].map((selector) => {
+    const element = scene.querySelector(selector);
+    return {
+      walking: element.hasAttribute("data-walking"),
+      left: element.style.left,
+      from: element.style.getPropertyValue("--walk-start"),
+    };
+  });
+
+// D-319, D-283. Catches a mage whose walk the player cut by leaving the screen, which a browser
+// cancels the animations of while the screen is hidden, that walks it again from where it set out
+// when the player comes back, because the walk's end was never told.
+test("a walk the player cut by leaving the screen plays no second time on the return: the mage stands at the place of the walk", async () => {
+  await withPage(async (page) => {
+    const game = await wiredScreen(page, exploringRun());
+    const scene = game.screen.element.querySelector(".scene");
+    assert.equal(walkOf(scene)[0].walking, false, "precondition: it stands");
+    assert.equal(walkOf(scene)[0].left, "81.8452%", "precondition: at 275");
+    await inAct(() => game.apply(advanceMinutes(game.state, 20)));
+    assert.deepEqual(
+      walkOf(scene),
+      [
+        { walking: true, left: "42.8571%", from: "204.6875%" },
+        { walking: true, left: "42.8571%", from: "204.6875%" },
+      ],
+      "precondition: the mage and its badge walk from 275 to 144",
+    );
+
+    // The walk is cut inside its 640 ms by leaving; the registry hides the screen's element, the
+    // browser cancels every animation in it, and the player comes back.
+    await inAct(() => {
+      game.screen.element.hidden = true;
+      cancelWalk(scene);
+    });
+    await inAct(() => {
+      game.screen.element.hidden = false;
+    });
+    assert.deepEqual(
+      walkOf(scene),
+      [
+        { walking: false, left: "42.8571%", from: "" },
+        { walking: false, left: "42.8571%", from: "" },
+      ],
+      "the mage and its badge stand at the place of the walk, with no walk from where it set out",
+    );
+  });
+});
