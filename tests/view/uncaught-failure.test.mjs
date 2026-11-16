@@ -212,6 +212,8 @@ function heldClient() {
       sendConfirmationMessage: call("sendConfirmationMessage"),
       setPassword: call("setPassword"),
       loadSavedGame: call("loadSavedGame"),
+      loadPreviousSavedGame: call("loadPreviousSavedGame"),
+      resetSavedGame: call("resetSavedGame"),
       saveGame: call("saveGame"),
     },
     /** Gives the answer to the oldest call still waiting of the given name. */
@@ -842,6 +844,54 @@ test("an error on the waiting screen before the first game leaves a sign-in that
     await held.answer("loadSavedGame", saveOf(loopingAla(), 3));
 
     assertWaitingWithSentence(root, intervals, "after the load");
+    mock.timers.tick(60_000);
+    await settle();
+    assert.deepEqual(waitingCalls(held), [], "nothing is saved");
+  });
+});
+
+/** An account with the previous-save privilege, whose game has the control „Zacznij od zera”. */
+const PRIVILEGED_ACCOUNT = {
+  ok: true,
+  value: { ...ACCOUNT.value, previousSaveAllowed: true },
+};
+
+// D-323, D-402, D-280. Catches a reset that succeeds after the error and leaves the game that stood
+// in place: it would keep its clock and its saver running and the bar's items and „Wyloguj” over the
+// waiting screen, where no new game is built and the sentence of the failure stands alone.
+test("after an error nothing handled, a reset that succeeds closes the game that stood, builds none and leaves the waiting screen with the sentence alone", async () => {
+  // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save"
+  // decision: D-323 "the page builds no game until it is reloaded, so a sign-in, whatever load or kept game state it leads to, stays at the waiting screen with the sentence"
+  // decision: D-323 "at the waiting screen where a sign-in after the error stays it stands alone, with no „Sprawdzanie logowania…” beside it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262)"
+  await onPage(async ({ root, intervals }) => {
+    const held = heldClient();
+    await startPage(held, fakeAddress("#/programy"));
+    await held.answer("currentAccount", PRIVILEGED_ACCOUNT);
+    await held.answer("loadSavedGame", saveOf(newGame(), 4));
+    await held.answer("loadPreviousSavedGame", { ok: true, value: null });
+    await press(buttonNamed(root, "Zacznij od zera"));
+    await press(buttonNamed(root, "Tak, zacznij od zera"));
+    assert.deepEqual(
+      waitingCalls(held),
+      ["resetSavedGame"],
+      "precondition: the reset waits for the server",
+    );
+    assert.ok(
+      byClass(root, "program-panel").length > 0,
+      "precondition: the game stands",
+    );
+
+    await inAct(() => reportError(new TypeError(QUOTED)));
+    await held.answer("resetSavedGame", { ok: true, value: null });
+
+    assertWaitingWithSentence(root, intervals, "after the reset");
+    assert.equal(
+      buttonNamed(root, "Konto"),
+      undefined,
+      "the bar holds the game's name alone",
+    );
+    assert.deepEqual(waitingCalls(held), [], "no load and no save");
     mock.timers.tick(60_000);
     await settle();
     assert.deepEqual(waitingCalls(held), [], "nothing is saved");
