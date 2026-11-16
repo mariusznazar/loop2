@@ -48,7 +48,6 @@ import {
   countText,
   dropGroup,
   dropRule,
-  focusAfter,
   groupNumber,
   groupSummary,
   moveRule,
@@ -57,7 +56,6 @@ import {
   ruleArrows,
   ruleNumber,
   ruleSentence,
-  type FocusTarget,
 } from "./program-editor.js";
 
 /** What the page gives the list; every call of `update` gives it whole. */
@@ -164,6 +162,49 @@ function ruleCountText(count: number): string {
   if (last >= 2 && last <= 4 && (tens < 12 || tens > 14))
     return `${count} reguły`;
   return `${count} reguł`;
+}
+
+/** The control that recovers focus after a group or rule is added, moved or removed. */
+type FocusTarget =
+  | {
+      groupId: GroupId;
+      row: number;
+      control: "condition" | "up" | "down" | "remove";
+    }
+  | { groupId: GroupId; control: "add" }
+  | {
+      groupId: GroupId;
+      control: "group-name" | "group-up" | "group-down" | "group-remove";
+    }
+  | { control: "add-group" };
+
+/** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
+type StructuralEdit = "add" | "remove" | "up" | "down";
+
+/**
+ * Where focus goes after a structural edit of the rule at `index`, given the rule count after it:
+ * „↑”/„↓” — the same button in the moved rule's new row; „Usuń” — the „Usuń” of the row now at that
+ * position, or „Dodaj regułę” when there is none; „Dodaj regułę” — the new row's opening control,
+ * since its panel opens on the condition.
+ */
+function focusAfter(
+  edit: StructuralEdit,
+  groupId: GroupId,
+  index: number,
+  ruleCount: number,
+): FocusTarget {
+  switch (edit) {
+    case "up":
+      return { groupId, row: index - 1, control: "up" };
+    case "down":
+      return { groupId, row: index + 1, control: "down" };
+    case "remove":
+      return index < ruleCount
+        ? { groupId, row: index, control: "remove" }
+        : { groupId, control: "add" };
+    case "add":
+      return { groupId, row: index, control: "condition" };
+  }
 }
 
 /** The control keys a focus may go to after an edit of `focusAfter`'s kind, in the order tried. */

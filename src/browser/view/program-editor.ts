@@ -137,23 +137,6 @@ function namesResource(action: Action): action is ResourceAction {
   return takesResource(action.kind);
 }
 
-/** The control that recovers focus after a group or rule is added, moved or removed. */
-export type FocusTarget =
-  | {
-      groupId: GroupId;
-      row: number;
-      control: "condition" | "up" | "down" | "remove";
-    }
-  | { groupId: GroupId; control: "add" }
-  | {
-      groupId: GroupId;
-      control: "group-name" | "group-up" | "group-down" | "group-remove";
-    }
-  | { control: "add-group" };
-
-/** An edit that changes the rows: „Dodaj regułę”, „Usuń”, „↑”, „↓”. */
-export type StructuralEdit = "add" | "remove" | "up" | "down";
-
 /**
  * The items „Zapas poniżej” offers, in the data's order: the repertoire's items of the backpack,
  * bound to no map, since an item can reach the backpack from elsewhere than the map's tiles. The
@@ -504,31 +487,6 @@ export function withActionResource(
     ...rule,
     action: { ...rule.action, resource },
   });
-}
-
-/**
- * Where focus goes after a structural edit of the rule at `index`, given the rule count after it:
- * „↑”/„↓” — the same button in the moved rule's new row; „Usuń” — the „Usuń” of the row now at that
- * position, or „Dodaj regułę” when there is none; „Dodaj regułę” — the new row's condition select.
- */
-export function focusAfter(
-  edit: StructuralEdit,
-  groupId: GroupId,
-  index: number,
-  ruleCount: number,
-): FocusTarget {
-  switch (edit) {
-    case "up":
-      return { groupId, row: index - 1, control: "up" };
-    case "down":
-      return { groupId, row: index + 1, control: "down" };
-    case "remove":
-      return index < ruleCount
-        ? { groupId, row: index, control: "remove" }
-        : { groupId, control: "add" };
-    case "add":
-      return { groupId, row: index, control: "condition" };
-  }
 }
 
 /** Why a cell of the rule panel's pick stands greyed (D-289); each is one sentence for the player. */

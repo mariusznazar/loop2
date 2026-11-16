@@ -34,7 +34,6 @@ import {
   countText,
   dropGroup,
   fieldAfter,
-  focusAfter,
   groupNumber,
   groupSummary,
   moveRule,
@@ -779,37 +778,6 @@ test("a condition switching to „Zapas poniżej” takes the first of the offer
       .rules[0].condition,
     { kind: "temperatureBelow", value: 36.5 },
   );
-});
-
-test("focus after a structural edit: same button in the moved rule's row, next „Usuń” or „Dodaj regułę”, new condition", () => {
-  assert.deepEqual(focusAfter("up", 23, 2, 3), {
-    groupId: 23,
-    row: 1,
-    control: "up",
-  });
-  assert.deepEqual(focusAfter("down", 23, 0, 3), {
-    groupId: 23,
-    row: 1,
-    control: "down",
-  });
-  assert.deepEqual(focusAfter("remove", 23, 1, 2), {
-    groupId: 23,
-    row: 1,
-    control: "remove",
-  });
-  assert.deepEqual(focusAfter("remove", 23, 2, 2), {
-    groupId: 23,
-    control: "add",
-  });
-  assert.deepEqual(focusAfter("remove", 23, 0, 0), {
-    groupId: 23,
-    control: "add",
-  });
-  assert.deepEqual(focusAfter("add", 23, 3, 4), {
-    groupId: 23,
-    row: 3,
-    control: "condition",
-  });
 });
 
 test("every program the editor builds passes setProgram, before sending and during a run", () => {
