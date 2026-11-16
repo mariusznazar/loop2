@@ -561,6 +561,66 @@ test("an answer that names no account and is not a refusal of the session shows 
   }
 });
 
+// Catches a „Spróbuj ponownie” that is drawn again as a new element between the refusal and the
+// retry or back (the page then holds a button that is gone), and one that is left without focus at
+// a refusal, the first or one after a retry (the button lost focus while it waited disabled).
+test("„Spróbuj ponownie” is one button through a refusal, a retry and a next refusal, waiting as „Sprawdzanie…”, and takes the focus at each refusal", async () => {
+  // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
+  // decision: D-44 "A control awaiting a server response is disabled with text in `text-disabled`"
+  // To do 2 of the task: the player sees the same texts, roles, places and focus as before the change.
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    await startPage(held);
+    const session = byClass(root, "session-check")[0];
+    assert.equal(
+      tagged(session, "button").length,
+      0,
+      "precondition: no button while the page asks",
+    );
+
+    await held.answer("currentAccount", NO_CONNECTION);
+    assert.equal(
+      tagged(session, "button").length,
+      1,
+      "one button at the first refusal",
+    );
+    const retry = tagged(session, "button")[0];
+    assert.equal(retry.textContent, "Spróbuj ponownie");
+    assert.equal(retry.disabled, false);
+    assert.equal(
+      pageDocument().activeElement,
+      retry,
+      "focus at the first refusal",
+    );
+
+    await press(retry);
+    assert.equal(tagged(session, "button").length, 1, "one button retries");
+    assert.equal(
+      tagged(session, "button")[0],
+      retry,
+      "the same button while it retries",
+    );
+    assert.equal(retry.textContent, "Sprawdzanie…");
+    assert.equal(retry.disabled, true);
+
+    await held.answer("currentAccount", ACCOUNT);
+    await held.answer("loadSavedGame", NO_CONNECTION);
+    assert.equal(tagged(session, "button").length, 1, "one button refused");
+    assert.equal(
+      tagged(session, "button")[0],
+      retry,
+      "the same button at the refusal after the retry",
+    );
+    assert.equal(retry.textContent, "Spróbuj ponownie");
+    assert.equal(retry.disabled, false);
+    assert.equal(
+      pageDocument().activeElement,
+      retry,
+      "focus back on it at the refusal after the retry",
+    );
+  });
+});
+
 // --- the forms ------------------------------------------------------------------------------
 
 // D-381: one form stands, so the lock of the whole card holds its field, its button and the switch.
