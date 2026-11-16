@@ -587,7 +587,7 @@ test("a fold made on one panel redraws the other at once, with no update of its 
 const unfoldedGroups = (root) =>
   root.querySelectorAll('button[aria-label="Zwiń grupę"]').length;
 
-// D-294 (To do 7). A new copy made by a send has every rule group unfolded: the folds of the copy
+// D-294. A new copy made by a send has every rule group unfolded: the folds of the copy
 // before it do not pass to it. Catches the copy's folding kept under its one key across a send.
 test("a send after the copy's group was folded shows the new copy with every group unfolded", async () => {
   // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
@@ -610,7 +610,7 @@ test("a send after the copy's group was folded shows the new copy with every gro
   });
 });
 
-// D-294 (To do 7). A switch of the character to another program makes a new copy, which has every rule
+// D-294. A switch of the character to another program makes a new copy, which has every rule
 // group unfolded too. Catches the copy's folding kept across a switch.
 test("a switch of the character after the copy's group was folded shows the new copy with every group unfolded", async () => {
   // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
@@ -1986,7 +1986,7 @@ test("opening a rule, and then a rule of another group, takes the focus into the
   });
 });
 
-// D-306, To do 15. A rule moved across a group border by „↓” or by its handle keeps the panel open
+// D-306. A rule moved across a group border by „↓” or by its handle keeps the panel open
 // under its new row on the field it had. Catches the panel closed at the border, or put back on the
 // condition with the focus taken into the grid.
 test("a rule moved across a group border by „↓” and by its handle keeps the panel open under its new row, on the same field", async () => {
