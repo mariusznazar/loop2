@@ -198,7 +198,7 @@ class TheWayPinHook(unittest.TestCase):
         self.assertEqual((run.returncode, run.stdout, run.stderr), (0, "", ""))
 
     def test_with_no_git_the_hook_says_nothing_and_ends_with_0(self):
-        # decision: D-414 "It prints nothing only where git is missing or the repository pins nothing"
+        # decision: D-414 "Apart from the case where the commits agree, it prints nothing only where there is nothing to compare with"
         directory = self.clone(initialized=True)
         git(directory / ".the-way", "checkout", "--detach", self.older)
         empty_path = self.base / "no programs"
@@ -209,7 +209,7 @@ class TheWayPinHook(unittest.TestCase):
         self.assertEqual((run.returncode, run.stdout), (0, ""))
 
     def test_where_the_repository_pins_nothing_the_hook_says_nothing_and_ends_with_0(self):
-        # decision: D-414 "It prints nothing only where git is missing or the repository pins nothing"
+        # decision: D-414 "Apart from the case where the commits agree, it prints nothing only where there is nothing to compare with"
         cases = {"no repository at all": (False, False),
                  "a repository with no submodule": (True, False),
                  "a repository with no submodule beside a repository in .the-way": (True, True)}
