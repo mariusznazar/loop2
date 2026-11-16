@@ -4,10 +4,12 @@
  * layout, the shared controls with the icon mask and the forms, and the rules of what the kitchen-sink
  * page draws besides the controls — the drawing of the map, the table of tiles, the form and the
  * block of the account menu. By the exception D-421 gives it holds also each rule that the elements
- * of several screens need and that cannot be divided without changing its text: the columns of the
- * screens Programy, Mapy and Wiedza with their @media, one selector list of three screens; the
- * sentence `trip-warning`, which the screens Przejście and Mapy both draw; and the rule that runs the
- * frames of the sprites of the scene and of the camp of Siedziba, with the keyframes `scene-frames`.
+ * of several screens need, that cannot be divided without changing its text and that belongs to no
+ * part with a stylesheet of its own: the columns of the screens Programy, Mapy and Wiedza with their
+ * @media, one selector list of three screens; the sentence `trip-warning`, which the screens
+ * Przejście and Mapy both draw; and the rule that runs the frames of the sprites of the scene and of
+ * the camp of Siedziba, with the keyframes `scene-frames`. The rules of the credits that name the
+ * login card and Siedziba belong to the part credits.css.
  * The rules of each other screen and part stand in the stylesheet of that screen or part, which the
  * page links after this one. It reads each value of appearance from the design tokens of tokens.css by
  * var(--…) (guidelines/styleguide-browser-view.md).
