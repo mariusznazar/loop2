@@ -144,7 +144,10 @@ class TheWayPinHook(unittest.TestCase):
         (directory / ".the-way" / ".git").write_text("gitdir: nowhere\n", encoding="utf-8")
         run = run_hook(hook_command(directory), directory)
         self.assertEqual(run.returncode, 0, run.stderr)
-        self.assertIn(self.pinned, json.loads(run.stdout)["systemMessage"])
+        output = json.loads(run.stdout)
+        for message in (output["systemMessage"], output["hookSpecificOutput"]["additionalContext"]):
+            self.assertIn(self.pinned, message)
+            self.assertIn(REPAIR, message)
 
     def test_a_hook_run_from_a_directory_other_than_the_root_checks_the_same_repository(self):
         directory = self.clone(initialized=True)
