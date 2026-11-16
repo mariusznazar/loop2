@@ -1,2 +1,0 @@
-L8-13 .session-check :: session-check[waiting-screen]  // /* * The stylesheet of the waiting screen (D-421): the section `session-check` and its text, shown while * the
-L15-18 .session-check-text :: session-check-text[waiting-screen]

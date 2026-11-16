@@ -1,9 +1,0 @@
-L22-31 .account-card-screen :: account-card-screen[account-card]  // /* * The stylesheet of the login card (D-421): the screen of the card with the picture behind it, the * card a
-L38-47 .account-card,.account-card-failure :: account-card[account-card] account-card-failure[account-card]  // /* * The login card (D-96): one panel, 400 px wide, or as wide as a narrower window lets it. The panel * of th
-L49-54 .account-card h1 :: account-card[account-card]
-L57-60 .account-card-about :: account-card-about[account-card]  // /* The sentence about the game: a description in `text-secondary` (D-40). */ 
-L66-70 .account-card-switch :: account-card-switch[account-card]  // /* * The switch between „Zaloguj się” and „Załóż konto”: two tabs, buttons selected in their group, * in a con
-L72-77 .account-form h2 :: account-form[account-card]
-L80-83 .account-form .input-field,.account-form .form>.button :: account-form[account-card] input-field[controls/react-number-field,controls/react-text-field] form[kitchen-sink/kitchen-sink,account-card] button[controls/react-button]  // /* The fields and the main button take the width of the card, so a long address stays visible. */ 
-L85-87 .account-form .input-field input :: account-form[account-card] input-field[controls/react-number-field,controls/react-text-field]
-L90-92 .account-form-switch :: account-form-switch[account-card]  // /* The secondary action under a form, which opens or leaves a state of the card, sits with a gap below the for
