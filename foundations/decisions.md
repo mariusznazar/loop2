@@ -4706,8 +4706,8 @@ In the browser view `character` means that here is the character and here it is 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** none
-- **Verification:** invariants: design-token-contrast. tests: an outline on the character's tile and, only while a move runs, an outline on the target of the move, told apart from the first; the revealed tiles holding the icons of what lies there and a tile not revealed none; a hovered tile and its row of the list marking each other, with a line around the tile; the icon of a stock of 0 dimmed by `depleted`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
-  - complies: the target of the current move drawn as a thin dashed line in `character`; the line around a hovered tile drawn in `link-highlight`, the tile's own colour unchanged;
+- **Verification:** invariants: design-token-contrast. tests: an outline on the character's tile and, only while a move runs, an outline on the target of the move, told apart from the first; the revealed tiles holding the icons of what lies there and a tile not revealed none; a hovered revealed tile and its row of the list marking each other, with a line around the tile, and a hovered tile not revealed, which has no row, drawing no line and marking no row; the icon of a stock of 0 dimmed by `depleted`, through the real stylesheet. An agent compares a change with the part no invariant and no test holds:
+  - complies: the target of the current move drawn as a thin dashed line in `character`; the line around a hovered revealed tile drawn in `link-highlight`, the tile's own colour unchanged;
   - violates: the target of the current move drawn in a colour of its own; a hovered tile filled with another colour.
 - **Origin:** none
 
@@ -8975,13 +8975,14 @@ left empty at the edge of the program takes the rule.
 - **Verification:** tests: „↓” on the last rule of a group moving it to the start of the next
   group, an empty one too, and „↑” on the first rule of a group to the end of the previous one,
   computed and from the buttons of the list; „↑” disabled only where no group stands before the
-  group of the rule and „↓” only where none stands after it, the border of a group being no end. For
+  group of the rule and „↓” only where none stands after it, the border of a group being no end, and
+  the arrow toward an empty group at the edge of the program enabled. For where the rule lands in
   an empty group at the edge of the program, an agent compares a change with the part no test holds:
-  - complies: „↑” on the first rule of the program, with an empty group before its group, enabled
-    and putting the rule at the end of that group; „↓” on the last rule of the program, with an
-    empty group after its group, enabled and putting the rule at the start of that group
-  - violates: „↑” disabled on the first rule of the program with a group standing before its group,
-    and „↓” disabled on the last with a group standing after its group
+  - complies: „↑” on the first rule of the program, with an empty group before its group, putting
+    the rule at the end of that group; „↓” on the last rule of the program, with an empty group
+    after its group, putting the rule at the start of that group
+  - violates: „↑” on the first rule of the program, with an empty group before its group, leaving
+    the rule where it stands, and „↓” on the last, with an empty group after its group, the same
 - **Origin:** none
 
 *Rationale:* arrows suit moving a single rule (D-288), and across the edge of a group the rule lands
@@ -9791,8 +9792,9 @@ character's tile, never on the drawing.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: terrain-drawing-numbers. tests: a click on a tile of the drawing
-  changing nothing, and nothing in the drawing a control; hovering a tile marking its row in the
-  list of revealed tiles, and hovering a row marking its tile; the numbers of stock standing in the
+  changing nothing, and nothing in the drawing a control; hovering a revealed tile marking its row
+  in the list of revealed tiles, and hovering a row marking its tile; hovering a tile not revealed
+  marking no row; the numbers of stock standing in the
   rows of the list and in the line under the drawing, which gives the hovered tile, or the
   character's tile where none is hovered or the key names no tile. For hovering as a real browser
   delivers it, and for what the player does on the drawing other than a click, an agent compares a
@@ -11058,7 +11060,8 @@ fibre as the target, „Zapal — patyk”, „Zjedz — jagoda” and a fight �
   to the place of the campfire, with „Eksploruj”, „Wędruj”, „Idź” and „Idź — ognisko” to the one
   place at the right edge, and while it waits to the middle of the clearing, walking there from
   where it stands; „Zbierz” and „Obchód” with fibre as the target, „Zapal — patyk”, „Zjedz” and a
-  fight leaving it where it stands.
+  fight leaving it where it stands, a mage whose walk they cut standing where the walk has brought
+  it and not at the place it was walking to.
 - **Origin:** none
 
 *Rationale:* each place tells the player what the character does: the props it gathers from, the
@@ -11082,7 +11085,8 @@ place at once, and under that setting the frames stand still.
 - **Relations:** derives from D-316 · derives from D-317
 - **Verification:** tests: the mage standing at its place at once, with no walk, at the scene's first
   draw, a load included, at the start of a map run and after „Restart”, the screen handing the
-  scene the events that tell it so. For the walk itself, a target changed on the way and the
+  scene the events that tell it so; a walk the player cut by leaving the screen not played a second
+  time on the return, the mage standing at the place of the walk. For the walk itself, a target changed on the way and the
   system's setting for reduced motion, an agent compares a change with the part no invariant and no
   test holds:
   - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×, the frames of
