@@ -306,7 +306,7 @@ test("a listener is called after each change of the question, by a method of the
 // Catches a screen and a panel that do not hear of a change of whether the window is shown.
 test("a listener is called after each change of whether the window is shown, by a method of the state and by a result taken", () => {
   // decision: D-407 "The screen Przejście and its program panel read the question and the window from the state of the screen Przejście"
-  // decision: D-371 "it becomes open again at every entering of the screen of an ended map run"
+  // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page, kept by the game view and never written into the game state or the save: it is open when a map run ends and when the game is built on an ended map run, it becomes open again at every entering of the screen of an ended map run"
   const { screen, take } = screenOf(ended(going()));
   const listener = listen(screen);
   screen.entered();
