@@ -32,9 +32,6 @@ type WithIcon = { name: string; icon: string; iconTitle: string };
 function actionIcons(): WithIcon[] {
   const byIcon = new Map<string, WithIcon>();
   for (const action of Object.values<ActionDef>(ACTIONS)) {
-    if (action.icon === undefined) continue;
-    if (action.iconTitle === undefined)
-      throw new Error(`credit-lines: no title for the icon ${action.icon}`);
     const seen = byIcon.get(action.icon);
     if (!seen) {
       byIcon.set(action.icon, {
