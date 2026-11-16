@@ -1,0 +1,6 @@
+L12-19 .account-card details,.headquarters details :: account-card[account-card] headquarters[headquarters]  // /* * The stylesheet of the folded credits (D-421), which the login card and Siedziba both show: the * section 
+L21-24 .account-card summary,.headquarters summary :: account-card[account-card] headquarters[headquarters]
+L26-29 .account-card .credits,.headquarters .credits :: account-card[account-card] credits[credits-section] headquarters[headquarters]
+L32-35 .account-card .credits li+li,.headquarters .credits li+li :: account-card[account-card] credits[credits-section] headquarters[headquarters]  // /* A row of the credits wraps, so a gap tells one icon's row from the next. */ 
+L37-41 .credits :: credits[credits-section]
+L43-45 .credits a :: credits[credits-section]

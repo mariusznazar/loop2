@@ -1,0 +1,119 @@
+linked stylesheets, in order: styles.css, run-screen.css, program-panel.css, programs-screen.css
+style rules and at-rules: base 444, after 444
+1. rules in one and not the other: 0
+   pairs by stylesheets: rules of program-panel.css stood before rules of run-screen.css and now stand after them: 1583
+   pairs by stylesheets: rules of program-panel.css stood before rules of styles.css and now stand after them: 2398
+   pairs by stylesheets: rules of programs-screen.css stood before rules of program-panel.css and now stand after them: 149
+   pairs by stylesheets: rules of programs-screen.css stood before rules of run-screen.css and now stand after them: 174
+   pairs by stylesheets: rules of programs-screen.css stood before rules of styles.css and now stand after them: 272
+   pairs by stylesheets: rules of run-screen.css stood before rules of styles.css and now stand after them: 2385
+2. pairs whose order changed, with the same specificity and a common property: 6961
+2a. pairs judged by the script: different pseudo-element 0, different element type 18, no source file names the classes of both subjects 6935
+2b. pairs left to judge: 8
+PAIR base 365/1058: [run-screen.css:125 .chronicle-minute] stood before [styles.css:734 .trip-warning] and now stands after it; common color; spec 0.1.0; cond []/[]; files naming both: end-window
+PAIR base 2112/2921: [run-screen.css:676 .scene-mage[data-bending] .scene-mage-bend] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common display; spec 0.3.0; cond []/[]; files naming both: scene
+PAIR base 2116/2921: [run-screen.css:680 .scene-mage[data-bending] .scene-mage-idle] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common display; spec 0.3.0; cond []/[]; files naming both: scene
+PAIR base 2157/2921: [run-screen.css:721 .scene-creature:not([data-scuffling]) .scene-creature-bite] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common display; spec 0.3.0; cond []/[]; files naming both: scene
+PAIR base 2162/2921: [run-screen.css:726 .scene-creature:not([data-scuffling]) .scene-creature-idle] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common display; spec 0.3.0; cond []/[]; files naming both: scene
+PAIR base 2203/2921: [run-screen.css:767 .scene[data-standing="dead"] .scene-mage-death] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common display; spec 0.3.0; cond []/[]; files naming both: scene
+PAIR base 2207/2921: [run-screen.css:771 .scene[data-standing="dead"] .scene-mage-idle] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common display; spec 0.3.0; cond []/[]; files naming both: scene
+PAIR base 2750/2921: [run-screen.css:1314 .scene[data-standing="going"] .scene-badge-fill] stood before [styles.css:953 .terrain-drawing .icon .icon-mask] and now stands after it; common width; spec 0.3.0; cond [@media (prefers-reduced-motion:no-preference);@starting-style]/[]; files naming both: scene
+recorded pages used as DOM evidence: kitchen-sink, programs-reset, programs-rulepanel, programs-trip, programs, run-completion, run-death, run-discovery, run-kronika, run-question, run-rulepanel, run-teren
+2c. flagged pairs whose two selectors match one element in a recorded page: 0 (selectors jsdom could not evaluate: 0)
+3. selectors of moved rules that match an element of the kitchen-sink page: 0; selectors of moved rules whose every class the page's sources give an element: 0
+4. selectors of moved rules: 296; matching no element of any recorded game page (states and pseudo-elements left out of the match): 95
+   UNMATCHED run-screen.css:137 .chronicle-text.discovery
+   UNMATCHED run-screen.css:145 .chronicle-text.danger
+   UNMATCHED run-screen.css:149 .chronicle-text.positive
+   UNMATCHED run-screen.css:231 .run-header-requirement.positive
+   UNMATCHED run-screen.css:255 .run-header-requirement.positive .run-header-requirement-fill
+   UNMATCHED run-screen.css:264 .end-window-discovery
+   UNMATCHED run-screen.css:272 .end-window-discovery-text
+   UNMATCHED run-screen.css:310 .end-question-note
+   UNMATCHED run-screen.css:376 .end-window-discovery
+   UNMATCHED run-screen.css:386 .end-window-cost.danger
+   UNMATCHED run-screen.css:406 .end-window-minutes
+   UNMATCHED run-screen.css:415 .end-window-minutes
+   UNMATCHED run-screen.css:415 .end-window-paragraph
+   UNMATCHED run-screen.css:421 .end-window-paragraph
+   UNMATCHED run-screen.css:542 .now-text.warning
+   UNMATCHED run-screen.css:622 .scene-fire
+   UNMATCHED run-screen.css:622 .scene-dust
+   UNMATCHED run-screen.css:622 .scene-creature
+   UNMATCHED run-screen.css:622 .scene-creature-effect
+   UNMATCHED run-screen.css:622 .scene-scuffle
+   UNMATCHED run-screen.css:692 .scene-mage[data-facing="left"][data-bend-facing="right"] .scene-mage-bend
+   UNMATCHED run-screen.css:692 .scene-mage[data-facing="right"][data-bend-facing="left"] .scene-mage-bend
+   UNMATCHED run-screen.css:706 .scene-creature-sprite
+   UNMATCHED run-screen.css:706 .scene-creature-sprite>.scene-sheet
+   UNMATCHED run-screen.css:712 .scene-creature[data-facing="right"] .scene-creature-sprite
+   UNMATCHED run-screen.css:712 .scene-creature-effect[data-facing="right"] .scene-creature-sprite
+   UNMATCHED run-screen.css:717 .scene-creature-run
+   UNMATCHED run-screen.css:721 .scene-creature-idle
+   UNMATCHED run-screen.css:721 .scene-creature:not([data-scuffling]) .scene-creature-bite
+   UNMATCHED run-screen.css:726 .scene-creature:not([data-scuffling]) .scene-creature-idle
+   UNMATCHED run-screen.css:730 .scene-creature-effect[data-kind="down"] img
+   UNMATCHED run-screen.css:746 .scene-fire[data-burning="false"]
+   UNMATCHED run-screen.css:838 .scene-flight
+   UNMATCHED run-screen.css:838 .scene-flight-across
+   UNMATCHED run-screen.css:838 .scene-flight-rise
+   UNMATCHED run-screen.css:845 .scene-flight-plaque
+   UNMATCHED run-screen.css:854 .scene-flight-plaque .icon-mask
+   UNMATCHED run-screen.css:860 .scene-effect
+   UNMATCHED run-screen.css:1094 .scene-specks
+   UNMATCHED run-screen.css:1099 .scene-speck
+   UNMATCHED run-screen.css:1106 .scene-speck[data-shade="ember"]
+   UNMATCHED run-screen.css:1110 .scene-speck[data-shade="bronze"]
+   UNMATCHED run-screen.css:1150 .scene-fire[data-burning="true"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1150 .camp-member img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1160 .scene-mage[data-walking] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1160 .scene-badge-carrier[data-walking] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1167 .scene-tint[data-returning] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1173 .scene-mage[data-walking] .scene-mage-run [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1178 .scene-mage[data-walking] .scene-mage-idle [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1178 .scene-mage[data-walking] .scene-mage-bend [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1185 .scene-dust img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1200 .scene-creature-bite img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1200 .scene-scuffle img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1208 .scene-creature[data-entering] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1214 .scene-creature[data-entering] .scene-creature-sprite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1218 .scene-creature[data-entering] .scene-creature-run [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1223 .scene-creature[data-entering] .scene-creature-bite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1228 .scene-creature[data-entering] .scene-creature-run img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1228 .scene-creature-effect[data-kind="out"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1237 .scene-creature[data-entering]~.scene-scuffle [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1241 .scene-creature-effect[data-kind="down"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1248 .scene-creature-effect[data-kind="out"] .scene-creature-sprite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1255 .scene-flight-across [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1261 .scene-flight-rise [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1266 .scene[data-moment-playing] .scene-mage-death [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1271 .scene[data-moment-playing] .scene-mage-sprite .scene-mage-death img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1278 .scene[data-moment-playing] .scene-chill [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1284 .scene[data-moment-playing] .scene-discovery [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1289 .scene[data-moment-playing] .scene-discovery-item [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1297 .scene[data-moment-playing] .scene-specks [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1302 .scene[data-moment-playing] .scene-speck [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1309 .scene[data-standing="going"] .scene-badge-fill [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1314 .scene[data-standing="going"] .scene-badge-fill [@media (prefers-reduced-motion:no-preference); @starting-style]
+   UNMATCHED program-panel.css:9 .program-name
+   UNMATCHED program-panel.css:20 .program-name
+   UNMATCHED program-panel.css:54 .copy-save .copy-line
+   UNMATCHED program-panel.css:93 .program-switch
+   UNMATCHED program-panel.css:97 .rule-group
+   UNMATCHED program-panel.css:102 .trip-editor
+   UNMATCHED program-panel.css:108 .trip-editor h3
+   UNMATCHED program-panel.css:108 .trip-editor h4
+   UNMATCHED program-panel.css:116 .trip-editor section
+   UNMATCHED program-panel.css:186 .rule-group-header
+   UNMATCHED program-panel.css:186 .group-condition
+   UNMATCHED program-panel.css:195 .rule-group-header input
+   UNMATCHED program-panel.css:201 .rules
+   UNMATCHED program-panel.css:206 .rule
+   UNMATCHED program-panel.css:211 .rule>*
+   UNMATCHED program-panel.css:216 .rule input[type="number"]
+   UNMATCHED program-panel.css:216 .group-condition input[type="number"]
+   UNMATCHED program-panel.css:283 .rule-list-row.running
+   UNMATCHED program-panel.css:287 .rule-list-header.open
+   UNMATCHED program-panel.css:303 .rule-list-header.bar-unmet
+   UNMATCHED program-panel.css:351 .rule-list-empty
+   UNMATCHED program-panel.css:375 .drop-line

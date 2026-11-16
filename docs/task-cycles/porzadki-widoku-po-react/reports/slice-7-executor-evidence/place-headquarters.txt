@@ -1,0 +1,28 @@
+L26-33 .camp :: camp[camp]  // /* * The stylesheet of the screen Siedziba (D-421): the camp at the top, the sections „Drużyna” and * „Skrzynk
+L35-43 .camp-background :: camp-background[camp]
+L45-49 .camp-team,.camp-fire,.camp-stores :: camp-team[camp] camp-fire[camp] camp-stores[camp]
+L51-58 .camp-team,.camp-stores :: camp-team[camp] camp-stores[camp]
+L60-63 .camp-team :: camp-team[camp]
+L65-67 .camp-stores :: camp-stores[camp]
+L69-72 .camp-fire :: camp-fire[camp]
+L74-76 .camp-chest :: camp-chest[camp]
+L78-81 .camp-member :: camp-member[camp]
+L83-85 .camp-member-sprite :: camp-member-sprite[camp]
+L87-92 .headquarters h2 :: headquarters[headquarters]
+L95-97 .headquarters-section :: headquarters-section[headquarters]  // /* The sections „Drużyna” and „Skrzynka”: their names in `text-label` (D-40). */ 
+L99-104 .headquarters-section h3 :: headquarters-section[headquarters]
+L107-112 .away-report-list :: away-report-list[headquarters]  // /* The report on earning loops (D-246): the lines in `text`, a loop that stopped in `danger`, a full chest in 
+L114-120 .away-report-line :: away-report-line[-]
+L122-124 .away-report-line.danger :: away-report-line[-] danger[world-area]
+L126-129 .away-report-full :: away-report-full[headquarters]
+L132-135 .headquarters-empty :: headquarters-empty[headquarters]  // /* An empty team or chest: a note in `text-secondary` (D-40). */ 
+L137-142 .team-list,.chest-list :: team-list[headquarters] chest-list[headquarters]
+L144-151 .team-member,.character-creation :: team-member[headquarters] character-creation[headquarters]
+L153-156 .team-member-name :: team-member-name[headquarters]
+L158-160 .team-member-archetype :: team-member-archetype[headquarters]
+L163-165 .team-member-generation :: team-member-generation[headquarters]  // /* The generation beside the name: `text-secondary`, as the archetype is (D-40). */ 
+L168-172 .team-member-resurrection :: team-member-resurrection[-]  // /* The resurrection line, on a row of its own: ready in `text-secondary`, not ready in `danger` (D-39, D-40). 
+L174-176 .team-member-resurrection.danger :: team-member-resurrection[-] danger[world-area]
+L179-182 .team-member-loop :: team-member-loop[headquarters]  // /* The line of a character in an earning loop, in `text`, with „Zatrzymaj” beside it (D-244). */ 
+L185-189 .team-member-stopped :: team-member-stopped[headquarters]  // /* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */ 
+L191-193 .character-creation-label :: character-creation-label[headquarters]

@@ -1,0 +1,276 @@
+linked stylesheets, in order: styles.css, run-screen.css, waiting-screen.css, account-card.css, credits.css, program-panel.css, programs-screen.css, accounts-screen.css, headquarters.css, maps-screen.css, character-screen.css, knowledge-screen.css
+style rules and at-rules: before 444, after 444
+   before styles.css: 78 rules and at-rules, 96 selectors
+   before run-screen.css: 168 rules and at-rules, 201 selectors
+   before waiting-screen.css: 2 rules and at-rules, 2 selectors
+   before account-card.css: 9 rules and at-rules, 11 selectors
+   before credits.css: 6 rules and at-rules, 10 selectors
+   before program-panel.css: 70 rules and at-rules, 89 selectors
+   before programs-screen.css: 6 rules and at-rules, 6 selectors
+   before accounts-screen.css: 14 rules and at-rules, 17 selectors
+   before headquarters.css: 28 rules and at-rules, 33 selectors
+   before maps-screen.css: 33 rules and at-rules, 39 selectors
+   before character-screen.css: 15 rules and at-rules, 16 selectors
+   before knowledge-screen.css: 15 rules and at-rules, 18 selectors
+   after styles.css: 80 rules and at-rules, 100 selectors
+   after run-screen.css: 166 rules and at-rules, 197 selectors
+   after waiting-screen.css: 2 rules and at-rules, 2 selectors
+   after account-card.css: 9 rules and at-rules, 11 selectors
+   after credits.css: 6 rules and at-rules, 10 selectors
+   after program-panel.css: 70 rules and at-rules, 89 selectors
+   after programs-screen.css: 6 rules and at-rules, 6 selectors
+   after accounts-screen.css: 14 rules and at-rules, 17 selectors
+   after headquarters.css: 28 rules and at-rules, 33 selectors
+   after maps-screen.css: 33 rules and at-rules, 39 selectors
+   after character-screen.css: 15 rules and at-rules, 16 selectors
+   after knowledge-screen.css: 15 rules and at-rules, 18 selectors
+1. rules in one and not the other: 0
+   pairs by stylesheets: rules of run-screen.css stood before rules of styles.css and now stand after them: 1
+2. pairs whose order changed, with the same specificity and a common property: 1
+SHAREDPAIR [run-screen.css:778 .scene-mage-sprite .scene-mage-death img] stood before [styles.css:639 .scene-fire[data-burning="true"] img] and now stands after it; common animation-name; cond []/[@media (prefers-reduced-motion:no-preference)]
+2a. pairs judged by the script: different pseudo-element 0, different element type 0, no source file names the classes of both subjects 0
+2b. pairs left to judge: 1
+2b'. pairs judged by the script in which a class of a subject is given to no element by any source file I could find (distinct): 0
+2b''. of the pairs the script judged by the files, those whose two subjects' classes stand together as string literals in one file (any line): 0
+PAIR base 777/1150: [run-screen.css:778 .scene-mage-sprite .scene-mage-death img] stood before [styles.css:639 .scene-fire[data-burning="true"] img] and now stands after it; common animation-name; spec 0.2.1; cond []/[@media (prefers-reduced-motion:no-preference)]; files naming both: scene
+recorded pages used as DOM evidence: headquarters-camp, headquarters, run-completion, run-death, run-discovery, run-fire-walk, run-fire, run-live
+2c. flagged pairs whose two selectors match one element in a recorded page: 0 (selectors jsdom could not evaluate: 0)
+4. selectors of moved rules: 438; matching no element of any recorded game page (states and pseudo-elements left out of the match): 238
+   UNMATCHED run-screen.css:105 .chronicle-list
+   UNMATCHED run-screen.css:111 .chronicle-list
+   UNMATCHED run-screen.css:119 .chronicle-row
+   UNMATCHED run-screen.css:126 .chronicle-minute
+   UNMATCHED run-screen.css:132 .chronicle-text
+   UNMATCHED run-screen.css:138 .chronicle-text.discovery
+   UNMATCHED run-screen.css:142 .chronicle-text.player-change
+   UNMATCHED run-screen.css:146 .chronicle-text.danger
+   UNMATCHED run-screen.css:150 .chronicle-text.positive
+   UNMATCHED run-screen.css:232 .run-header-requirement.positive
+   UNMATCHED run-screen.css:256 .run-header-requirement.positive .run-header-requirement-fill
+   UNMATCHED run-screen.css:265 .end-window-discovery
+   UNMATCHED run-screen.css:273 .end-window-discovery-text
+   UNMATCHED run-screen.css:289 .end-question
+   UNMATCHED run-screen.css:296 .end-question-row
+   UNMATCHED run-screen.css:303 .end-question-text
+   UNMATCHED run-screen.css:311 .end-question-note
+   UNMATCHED run-screen.css:377 .end-window-discovery
+   UNMATCHED run-screen.css:387 .end-window-cost.danger
+   UNMATCHED run-screen.css:407 .end-window-minutes
+   UNMATCHED run-screen.css:416 .end-window-minutes
+   UNMATCHED run-screen.css:416 .end-window-paragraph
+   UNMATCHED run-screen.css:422 .end-window-paragraph
+   UNMATCHED run-screen.css:543 .now-text.warning
+   UNMATCHED run-screen.css:623 .scene-dust
+   UNMATCHED run-screen.css:623 .scene-creature
+   UNMATCHED run-screen.css:623 .scene-creature-effect
+   UNMATCHED run-screen.css:623 .scene-scuffle
+   UNMATCHED run-screen.css:693 .scene-mage[data-facing="left"][data-bend-facing="right"] .scene-mage-bend
+   UNMATCHED run-screen.css:693 .scene-mage[data-facing="right"][data-bend-facing="left"] .scene-mage-bend
+   UNMATCHED run-screen.css:707 .scene-creature-sprite
+   UNMATCHED run-screen.css:707 .scene-creature-sprite>.scene-sheet
+   UNMATCHED run-screen.css:713 .scene-creature[data-facing="right"] .scene-creature-sprite
+   UNMATCHED run-screen.css:713 .scene-creature-effect[data-facing="right"] .scene-creature-sprite
+   UNMATCHED run-screen.css:718 .scene-creature-run
+   UNMATCHED run-screen.css:722 .scene-creature-idle
+   UNMATCHED run-screen.css:722 .scene-creature:not([data-scuffling]) .scene-creature-bite
+   UNMATCHED run-screen.css:727 .scene-creature:not([data-scuffling]) .scene-creature-idle
+   UNMATCHED run-screen.css:731 .scene-creature-effect[data-kind="down"] img
+   UNMATCHED run-screen.css:747 .scene-fire[data-burning="false"]
+   UNMATCHED run-screen.css:839 .scene-flight
+   UNMATCHED run-screen.css:839 .scene-flight-across
+   UNMATCHED run-screen.css:839 .scene-flight-rise
+   UNMATCHED run-screen.css:846 .scene-flight-plaque
+   UNMATCHED run-screen.css:855 .scene-flight-plaque .icon-mask
+   UNMATCHED run-screen.css:861 .scene-effect
+   UNMATCHED run-screen.css:1095 .scene-specks
+   UNMATCHED run-screen.css:1100 .scene-speck
+   UNMATCHED run-screen.css:1107 .scene-speck[data-shade="ember"]
+   UNMATCHED run-screen.css:1111 .scene-speck[data-shade="bronze"]
+   UNMATCHED run-screen.css:1157 .scene-tint[data-returning] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1175 .scene-dust img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1190 .scene-creature-bite img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1190 .scene-scuffle img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1198 .scene-creature[data-entering] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1204 .scene-creature[data-entering] .scene-creature-sprite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1208 .scene-creature[data-entering] .scene-creature-run [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1213 .scene-creature[data-entering] .scene-creature-bite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1218 .scene-creature[data-entering] .scene-creature-run img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1218 .scene-creature-effect[data-kind="out"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1227 .scene-creature[data-entering]~.scene-scuffle [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1231 .scene-creature-effect[data-kind="down"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1238 .scene-creature-effect[data-kind="out"] .scene-creature-sprite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1245 .scene-flight-across [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1251 .scene-flight-rise [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1256 .scene[data-moment-playing] .scene-mage-death [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1261 .scene[data-moment-playing] .scene-mage-sprite .scene-mage-death img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1268 .scene[data-moment-playing] .scene-chill [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1274 .scene[data-moment-playing] .scene-discovery [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1279 .scene[data-moment-playing] .scene-discovery-item [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1287 .scene[data-moment-playing] .scene-specks [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1292 .scene[data-moment-playing] .scene-speck [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1299 .scene[data-standing="going"] .scene-badge-fill [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1304 .scene[data-standing="going"] .scene-badge-fill [@media (prefers-reduced-motion:no-preference); @starting-style]
+   UNMATCHED waiting-screen.css:8 .session-check
+   UNMATCHED waiting-screen.css:15 .session-check-text
+   UNMATCHED account-card.css:22 .account-card-screen
+   UNMATCHED account-card.css:38 .account-card
+   UNMATCHED account-card.css:38 .account-card-failure
+   UNMATCHED account-card.css:49 .account-card h1
+   UNMATCHED account-card.css:57 .account-card-about
+   UNMATCHED account-card.css:66 .account-card-switch
+   UNMATCHED account-card.css:72 .account-form h2
+   UNMATCHED account-card.css:80 .account-form .input-field
+   UNMATCHED account-card.css:80 .account-form .form>.button
+   UNMATCHED account-card.css:85 .account-form .input-field input
+   UNMATCHED account-card.css:90 .account-form-switch
+   UNMATCHED credits.css:12 .account-card details
+   UNMATCHED credits.css:21 .account-card summary
+   UNMATCHED credits.css:26 .account-card .credits
+   UNMATCHED credits.css:32 .account-card .credits li+li
+   UNMATCHED program-panel.css:9 .program-name
+   UNMATCHED program-panel.css:20 .program-name
+   UNMATCHED program-panel.css:42 .copy-line
+   UNMATCHED program-panel.css:54 .copy-save .copy-line
+   UNMATCHED program-panel.css:87 .rule-list-panel
+   UNMATCHED program-panel.css:93 .program-switch
+   UNMATCHED program-panel.css:97 .rule-group
+   UNMATCHED program-panel.css:102 .trip-editor
+   UNMATCHED program-panel.css:108 .trip-editor h3
+   UNMATCHED program-panel.css:108 .trip-editor h4
+   UNMATCHED program-panel.css:116 .trip-editor section
+   UNMATCHED program-panel.css:120 .trip-list
+   UNMATCHED program-panel.css:125 .trip-entry
+   UNMATCHED program-panel.css:129 .trip-entry>*
+   UNMATCHED program-panel.css:134 .trip-entry input
+   UNMATCHED program-panel.css:175 .trip-plan-list
+   UNMATCHED program-panel.css:179 .trip-plan-heading
+   UNMATCHED program-panel.css:186 .rule-group-header
+   UNMATCHED program-panel.css:186 .group-condition
+   UNMATCHED program-panel.css:195 .rule-group-header input
+   UNMATCHED program-panel.css:201 .rules
+   UNMATCHED program-panel.css:206 .rule
+   UNMATCHED program-panel.css:211 .rule>*
+   UNMATCHED program-panel.css:216 .rule input[type="number"]
+   UNMATCHED program-panel.css:216 .group-condition input[type="number"]
+   UNMATCHED program-panel.css:283 .rule-list-row.running
+   UNMATCHED program-panel.css:287 .rule-list-header.open
+   UNMATCHED program-panel.css:287 .rule-list-row.open
+   UNMATCHED program-panel.css:303 .rule-list-header.bar-unmet
+   UNMATCHED program-panel.css:375 .drop-line
+   UNMATCHED program-panel.css:392 .rule-panel
+   UNMATCHED program-panel.css:402 .rule-panel-top
+   UNMATCHED program-panel.css:409 .rule-panel-heading
+   UNMATCHED program-panel.css:416 .rule-panel-note
+   UNMATCHED program-panel.css:421 .rule-panel-field
+   UNMATCHED program-panel.css:428 .rule-panel-label
+   UNMATCHED program-panel.css:428 .rule-panel-section-name
+   UNMATCHED program-panel.css:428 .rule-panel-time
+   UNMATCHED program-panel.css:435 .rule-panel-value
+   UNMATCHED program-panel.css:441 .rule-panel-pick
+   UNMATCHED program-panel.css:448 .rule-panel-section-name
+   UNMATCHED program-panel.css:454 .rule-panel-pick.parted>.rule-panel-section+.rule-panel-section
+   UNMATCHED program-panel.css:459 .rule-panel-cells
+   UNMATCHED program-panel.css:465 .rule-panel-cells.two-columns
+   UNMATCHED program-panel.css:469 .rule-panel-cell
+   UNMATCHED program-panel.css:475 .rule-panel-cell>.pick-cell
+   UNMATCHED programs-screen.css:12 .program-reset-confirm
+   UNMATCHED programs-screen.css:20 .program-reset-text
+   UNMATCHED accounts-screen.css:15 .accounts-heading
+   UNMATCHED accounts-screen.css:22 .accounts-loading
+   UNMATCHED accounts-screen.css:22 .accounts-empty
+   UNMATCHED accounts-screen.css:28 .accounts-retry
+   UNMATCHED accounts-screen.css:35 .accounts-list
+   UNMATCHED accounts-screen.css:44 .accounts-row
+   UNMATCHED accounts-screen.css:48 .accounts-summary
+   UNMATCHED accounts-screen.css:55 .accounts-email
+   UNMATCHED accounts-screen.css:60 .accounts-field
+   UNMATCHED accounts-screen.css:64 .accounts-label
+   UNMATCHED accounts-screen.css:68 .accounts-state
+   UNMATCHED accounts-screen.css:68 .accounts-privilege
+   UNMATCHED accounts-screen.css:68 .accounts-role
+   UNMATCHED accounts-screen.css:75 .accounts-state.accounts-state-blocked
+   UNMATCHED accounts-screen.css:79 .accounts-actions
+   UNMATCHED accounts-screen.css:92 .accounts-confirm
+   UNMATCHED accounts-screen.css:100 .accounts-confirm-text
+   UNMATCHED headquarters.css:106 .away-report-list
+   UNMATCHED headquarters.css:113 .away-report-line
+   UNMATCHED headquarters.css:121 .away-report-line.danger
+   UNMATCHED headquarters.css:125 .away-report-full
+   UNMATCHED headquarters.css:136 .chest-list
+   UNMATCHED headquarters.css:162 .team-member-generation
+   UNMATCHED headquarters.css:173 .team-member-resurrection.danger
+   UNMATCHED headquarters.css:178 .team-member-loop
+   UNMATCHED headquarters.css:184 .team-member-stopped
+   UNMATCHED maps-screen.css:9 .rehearsal-mark
+   UNMATCHED maps-screen.css:22 .maps-list-items
+   UNMATCHED maps-screen.css:28 .maps-list-item
+   UNMATCHED maps-screen.css:38 .maps-list-item[aria-current="page"]
+   UNMATCHED maps-screen.css:43 .maps-list-item:hover
+   UNMATCHED maps-screen.css:47 .maps-list-solved
+   UNMATCHED maps-screen.css:52 .maps-card-empty
+   UNMATCHED maps-screen.css:63 .maps-card-heading
+   UNMATCHED maps-screen.css:71 .maps-card-name
+   UNMATCHED maps-screen.css:78 .maps-card-solved
+   UNMATCHED maps-screen.css:82 .maps-card-sep
+   UNMATCHED maps-screen.css:82 .maps-card-opened-by
+   UNMATCHED maps-screen.css:87 .maps-card-part
+   UNMATCHED maps-screen.css:91 .maps-card-part p
+   UNMATCHED maps-screen.css:95 .maps-card-part-name
+   UNMATCHED maps-screen.css:102 .maps-card-lines
+   UNMATCHED maps-screen.css:108 .maps-card-note
+   UNMATCHED maps-screen.css:112 .maps-card-warning
+   UNMATCHED maps-screen.css:117 .maps-card-icon
+   UNMATCHED maps-screen.css:132 .maps-who
+   UNMATCHED maps-screen.css:138 .maps-who-heading
+   UNMATCHED maps-screen.css:145 .maps-who-empty
+   UNMATCHED maps-screen.css:150 .maps-who-list
+   UNMATCHED maps-screen.css:156 .maps-who-member
+   UNMATCHED maps-screen.css:165 .maps-who-member:first-child
+   UNMATCHED maps-screen.css:170 .maps-who-name
+   UNMATCHED maps-screen.css:175 .maps-who-resurrection
+   UNMATCHED maps-screen.css:175 .maps-who-enters
+   UNMATCHED maps-screen.css:175 .maps-who-run-note
+   UNMATCHED maps-screen.css:182 .maps-who-resurrection.danger
+   UNMATCHED maps-screen.css:186 .maps-who-loop
+   UNMATCHED maps-screen.css:186 .maps-who-program
+   UNMATCHED maps-screen.css:186 .maps-who-actions
+   UNMATCHED maps-screen.css:186 .maps-who-loop-start
+   UNMATCHED maps-screen.css:196 .maps-who-actions
+   UNMATCHED maps-screen.css:200 .maps-who-loop-line
+   UNMATCHED maps-screen.css:205 .maps-who-program-label
+   UNMATCHED maps-screen.css:210 .maps-who-enter
+   UNMATCHED maps-screen.css:218 .maps-who-empty-loop
+   UNMATCHED character-screen.css:15 .character-screen
+   UNMATCHED character-screen.css:22 .character-screen h2
+   UNMATCHED character-screen.css:29 .character-screen-facts
+   UNMATCHED character-screen.css:36 .character-screen-generation
+   UNMATCHED character-screen.css:36 .character-screen-archetype
+   UNMATCHED character-screen.css:41 .character-screen-resurrection
+   UNMATCHED character-screen.css:46 .character-screen-resurrection.danger
+   UNMATCHED character-screen.css:50 .character-screen-loop
+   UNMATCHED character-screen.css:58 .character-screen-loop-line
+   UNMATCHED character-screen.css:63 .character-screen-stopped
+   UNMATCHED character-screen.css:68 .character-screen-skills
+   UNMATCHED character-screen.css:72 .character-screen-skills h3
+   UNMATCHED character-screen.css:79 .character-screen-skills-note
+   UNMATCHED character-screen.css:84 .character-screen-tree
+   UNMATCHED character-screen.css:88 .character-screen-tree-summary
+   UNMATCHED character-screen.css:93 .character-screen-branch
+   UNMATCHED knowledge-screen.css:18 .knowledge-heading
+   UNMATCHED knowledge-screen.css:25 .knowledge-area-head
+   UNMATCHED knowledge-screen.css:34 .knowledge-area-name
+   UNMATCHED knowledge-screen.css:34 .knowledge-group-name
+   UNMATCHED knowledge-screen.css:42 .knowledge-area-count
+   UNMATCHED knowledge-screen.css:47 .knowledge-group
+   UNMATCHED knowledge-screen.css:51 .knowledge-group-name
+   UNMATCHED knowledge-screen.css:55 .knowledge-things
+   UNMATCHED knowledge-screen.css:55 .knowledge-trees
+   UNMATCHED knowledge-screen.css:55 .knowledge-branches
+   UNMATCHED knowledge-screen.css:63 .knowledge-thing
+   UNMATCHED knowledge-screen.css:71 .knowledge-tree
+   UNMATCHED knowledge-screen.css:75 .knowledge-branches
+   UNMATCHED knowledge-screen.css:79 .knowledge-branch
+   UNMATCHED knowledge-screen.css:87 .knowledge-branch-name
+   UNMATCHED knowledge-screen.css:91 .knowledge-branch-steps
+   UNMATCHED knowledge-screen.css:96 .knowledge-branch-description
+   UNMATCHED knowledge-screen.css:100 .knowledge-branch-costs

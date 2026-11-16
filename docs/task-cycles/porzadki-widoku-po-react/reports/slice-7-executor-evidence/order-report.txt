@@ -1,0 +1,218 @@
+linked stylesheets, in order: styles.css, run-screen.css, waiting-screen.css, account-card.css, credits.css, program-panel.css, programs-screen.css, accounts-screen.css, headquarters.css, maps-screen.css, character-screen.css, knowledge-screen.css
+style rules and at-rules: before 444, after 444
+   before styles.css: 200 rules and at-rules, 242 selectors
+   before run-screen.css: 168 rules and at-rules, 201 selectors
+   before program-panel.css: 70 rules and at-rules, 89 selectors
+   before programs-screen.css: 6 rules and at-rules, 6 selectors
+   after styles.css: 78 rules and at-rules, 96 selectors
+   after run-screen.css: 168 rules and at-rules, 201 selectors
+   after waiting-screen.css: 2 rules and at-rules, 2 selectors
+   after account-card.css: 9 rules and at-rules, 11 selectors
+   after credits.css: 6 rules and at-rules, 10 selectors
+   after program-panel.css: 70 rules and at-rules, 89 selectors
+   after programs-screen.css: 6 rules and at-rules, 6 selectors
+   after accounts-screen.css: 14 rules and at-rules, 17 selectors
+   after headquarters.css: 28 rules and at-rules, 33 selectors
+   after maps-screen.css: 33 rules and at-rules, 39 selectors
+   after character-screen.css: 15 rules and at-rules, 16 selectors
+   after knowledge-screen.css: 15 rules and at-rules, 18 selectors
+1. rules in one and not the other: 0
+   pairs by stylesheets: rules of account-card.css stood before rules of run-screen.css and now stand after them: 228
+   pairs by stylesheets: rules of account-card.css stood before rules of styles.css and now stand after them: 9
+   pairs by stylesheets: rules of accounts-screen.css stood before rules of credits.css and now stand after them: 7
+   pairs by stylesheets: rules of accounts-screen.css stood before rules of program-panel.css and now stand after them: 374
+   pairs by stylesheets: rules of accounts-screen.css stood before rules of programs-screen.css and now stand after them: 40
+   pairs by stylesheets: rules of accounts-screen.css stood before rules of run-screen.css and now stand after them: 494
+   pairs by stylesheets: rules of accounts-screen.css stood before rules of styles.css and now stand after them: 16
+   pairs by stylesheets: rules of character-screen.css stood before rules of maps-screen.css and now stand after them: 235
+   pairs by stylesheets: rules of character-screen.css stood before rules of program-panel.css and now stand after them: 433
+   pairs by stylesheets: rules of character-screen.css stood before rules of programs-screen.css and now stand after them: 44
+   pairs by stylesheets: rules of character-screen.css stood before rules of run-screen.css and now stand after them: 483
+   pairs by stylesheets: rules of credits.css stood before rules of run-screen.css and now stand after them: 35
+   pairs by stylesheets: rules of credits.css stood before rules of styles.css and now stand after them: 1
+   pairs by stylesheets: rules of headquarters.css stood before rules of credits.css and now stand after them: 13
+   pairs by stylesheets: rules of headquarters.css stood before rules of program-panel.css and now stand after them: 610
+   pairs by stylesheets: rules of headquarters.css stood before rules of programs-screen.css and now stand after them: 62
+   pairs by stylesheets: rules of headquarters.css stood before rules of run-screen.css and now stand after them: 819
+   pairs by stylesheets: rules of headquarters.css stood before rules of styles.css and now stand after them: 7
+   pairs by stylesheets: rules of knowledge-screen.css stood before rules of program-panel.css and now stand after them: 429
+   pairs by stylesheets: rules of knowledge-screen.css stood before rules of programs-screen.css and now stand after them: 46
+   pairs by stylesheets: rules of knowledge-screen.css stood before rules of run-screen.css and now stand after them: 508
+   pairs by stylesheets: rules of maps-screen.css stood before rules of credits.css and now stand after them: 1
+   pairs by stylesheets: rules of maps-screen.css stood before rules of headquarters.css and now stand after them: 1
+   pairs by stylesheets: rules of maps-screen.css stood before rules of program-panel.css and now stand after them: 845
+   pairs by stylesheets: rules of maps-screen.css stood before rules of programs-screen.css and now stand after them: 90
+   pairs by stylesheets: rules of maps-screen.css stood before rules of run-screen.css and now stand after them: 1014
+   pairs by stylesheets: rules of waiting-screen.css stood before rules of run-screen.css and now stand after them: 73
+   pairs by stylesheets: rules of waiting-screen.css stood before rules of styles.css and now stand after them: 2
+2. pairs whose order changed, with the same specificity and a common property: 6919
+SHAREDPAIR [waiting-screen.css:8 .session-check] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [waiting-screen.css:15 .session-check-text] stood before [styles.css:509 .trip-warning] and now stands after it; common margin,color; cond []/[]
+SHAREDPAIR [account-card.css:22 .account-card-screen] stood before [styles.css:509 .trip-warning] and now stands after it; common margin; cond []/[]
+SHAREDPAIR [account-card.css:22 .account-card-screen] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [account-card.css:38 .account-card] stood before [styles.css:509 .trip-warning] and now stands after it; common color; cond []/[]
+SHAREDPAIR [account-card.css:38 .account-card] stood before [styles.css:514 .terrain-drawing] and now stands after it; common max-width; cond []/[]
+SHAREDPAIR [account-card.css:38 .account-card] stood before [styles.css:571 .tile-list] and now stands after it; common border~border-collapse; cond []/[]
+SHAREDPAIR [account-card.css:57 .account-card-about] stood before [styles.css:509 .trip-warning] and now stands after it; common margin,color; cond []/[]
+SHAREDPAIR [account-card.css:66 .account-card-switch] stood before [styles.css:509 .trip-warning] and now stands after it; common margin-bottom~margin; cond []/[]
+SHAREDPAIR [account-card.css:66 .account-card-switch] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [account-card.css:90 .account-form-switch] stood before [styles.css:509 .trip-warning] and now stands after it; common margin-top~margin; cond []/[]
+SHAREDPAIR [credits.css:12 .account-card details] stood before [styles.css:577 .tile-list th] and now stands after it; common padding-top~padding; cond []/[]
+SHAREDPAIR [accounts-screen.css:15 .accounts-heading] stood before [styles.css:509 .trip-warning] and now stands after it; common margin,color; cond []/[]
+SHAREDPAIR [accounts-screen.css:22 .accounts-loading] stood before [styles.css:509 .trip-warning] and now stands after it; common margin,color; cond []/[]
+SHAREDPAIR [accounts-screen.css:28 .accounts-retry] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [accounts-screen.css:35 .accounts-list] stood before [styles.css:509 .trip-warning] and now stands after it; common margin; cond []/[]
+SHAREDPAIR [accounts-screen.css:35 .accounts-list] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [accounts-screen.css:48 .accounts-summary] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [accounts-screen.css:55 .accounts-email] stood before [styles.css:509 .trip-warning] and now stands after it; common color; cond []/[]
+SHAREDPAIR [accounts-screen.css:60 .accounts-field] stood before [styles.css:509 .trip-warning] and now stands after it; common color; cond []/[]
+SHAREDPAIR [accounts-screen.css:64 .accounts-label] stood before [styles.css:509 .trip-warning] and now stands after it; common color; cond []/[]
+SHAREDPAIR [accounts-screen.css:68 .accounts-state] stood before [styles.css:509 .trip-warning] and now stands after it; common color; cond []/[]
+SHAREDPAIR [accounts-screen.css:75 .accounts-state.accounts-state-blocked] stood before [styles.css:534 .terrain-drawing .icon] and now stands after it; common color; cond []/[]
+SHAREDPAIR [accounts-screen.css:79 .accounts-actions] stood before [styles.css:509 .trip-warning] and now stands after it; common margin-top~margin; cond []/[]
+SHAREDPAIR [accounts-screen.css:79 .accounts-actions] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [accounts-screen.css:92 .accounts-confirm] stood before [styles.css:509 .trip-warning] and now stands after it; common margin-top~margin; cond []/[]
+SHAREDPAIR [accounts-screen.css:92 .accounts-confirm] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [accounts-screen.css:100 .accounts-confirm-text] stood before [styles.css:509 .trip-warning] and now stands after it; common margin,color; cond []/[]
+SHAREDPAIR [headquarters.css:26 .camp] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [headquarters.css:35 .camp-background] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display,max-width; cond []/[]
+SHAREDPAIR [headquarters.css:51 .camp-team] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [headquarters.css:114 .away-report-line] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [headquarters.css:122 .away-report-line.danger] stood before [styles.css:534 .terrain-drawing .icon] and now stands after it; common color; cond []/[]
+SHAREDPAIR [headquarters.css:144 .team-member] stood before [styles.css:514 .terrain-drawing] and now stands after it; common display; cond []/[]
+SHAREDPAIR [headquarters.css:174 .team-member-resurrection.danger] stood before [styles.css:534 .terrain-drawing .icon] and now stands after it; common color; cond []/[]
+2a. pairs judged by the script: different pseudo-element 0, different element type 19, no source file names the classes of both subjects 6900
+2b. pairs left to judge: 0
+2b'. pairs judged by the script in which a class of a subject is given to no element by any source file I could find (distinct): 1558
+2b''. of the pairs the script judged by the files, those whose two subjects' classes stand together as string literals in one file (any line): 0
+recorded pages used as DOM evidence: accounts-confirm, accounts, character, headquarters, kitchen-sink, knowledge, login-forgot, login-in, login-register, maps-card, maps, waiting-held, waiting-refused, programs-reset, programs-rulepanel, programs-trip, programs, run-completion, run-death, run-discovery, run-kronika, run-question, run-rulepanel, run-teren
+2c. flagged pairs whose two selectors match one element in a recorded page: 0 (selectors jsdom could not evaluate: 0)
+3. selectors of moved rules that match an element of the kitchen-sink page: 0; selectors of moved rules whose every class the page's sources give an element: 0
+4. selectors of moved rules: 442; matching no element of any recorded game page (states and pseudo-elements left out of the match): 127
+   UNMATCHED run-screen.css:137 .chronicle-text.discovery
+   UNMATCHED run-screen.css:145 .chronicle-text.danger
+   UNMATCHED run-screen.css:149 .chronicle-text.positive
+   UNMATCHED run-screen.css:231 .run-header-requirement.positive
+   UNMATCHED run-screen.css:255 .run-header-requirement.positive .run-header-requirement-fill
+   UNMATCHED run-screen.css:264 .end-window-discovery
+   UNMATCHED run-screen.css:272 .end-window-discovery-text
+   UNMATCHED run-screen.css:310 .end-question-note
+   UNMATCHED run-screen.css:376 .end-window-discovery
+   UNMATCHED run-screen.css:386 .end-window-cost.danger
+   UNMATCHED run-screen.css:406 .end-window-minutes
+   UNMATCHED run-screen.css:415 .end-window-minutes
+   UNMATCHED run-screen.css:415 .end-window-paragraph
+   UNMATCHED run-screen.css:421 .end-window-paragraph
+   UNMATCHED run-screen.css:542 .now-text.warning
+   UNMATCHED run-screen.css:622 .scene-fire
+   UNMATCHED run-screen.css:622 .scene-dust
+   UNMATCHED run-screen.css:622 .scene-creature
+   UNMATCHED run-screen.css:622 .scene-creature-effect
+   UNMATCHED run-screen.css:622 .scene-scuffle
+   UNMATCHED run-screen.css:692 .scene-mage[data-facing="left"][data-bend-facing="right"] .scene-mage-bend
+   UNMATCHED run-screen.css:692 .scene-mage[data-facing="right"][data-bend-facing="left"] .scene-mage-bend
+   UNMATCHED run-screen.css:706 .scene-creature-sprite
+   UNMATCHED run-screen.css:706 .scene-creature-sprite>.scene-sheet
+   UNMATCHED run-screen.css:712 .scene-creature[data-facing="right"] .scene-creature-sprite
+   UNMATCHED run-screen.css:712 .scene-creature-effect[data-facing="right"] .scene-creature-sprite
+   UNMATCHED run-screen.css:717 .scene-creature-run
+   UNMATCHED run-screen.css:721 .scene-creature-idle
+   UNMATCHED run-screen.css:721 .scene-creature:not([data-scuffling]) .scene-creature-bite
+   UNMATCHED run-screen.css:726 .scene-creature:not([data-scuffling]) .scene-creature-idle
+   UNMATCHED run-screen.css:730 .scene-creature-effect[data-kind="down"] img
+   UNMATCHED run-screen.css:746 .scene-fire[data-burning="false"]
+   UNMATCHED run-screen.css:838 .scene-flight
+   UNMATCHED run-screen.css:838 .scene-flight-across
+   UNMATCHED run-screen.css:838 .scene-flight-rise
+   UNMATCHED run-screen.css:845 .scene-flight-plaque
+   UNMATCHED run-screen.css:854 .scene-flight-plaque .icon-mask
+   UNMATCHED run-screen.css:860 .scene-effect
+   UNMATCHED run-screen.css:1094 .scene-specks
+   UNMATCHED run-screen.css:1099 .scene-speck
+   UNMATCHED run-screen.css:1106 .scene-speck[data-shade="ember"]
+   UNMATCHED run-screen.css:1110 .scene-speck[data-shade="bronze"]
+   UNMATCHED run-screen.css:1150 .scene-fire[data-burning="true"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1160 .scene-mage[data-walking] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1160 .scene-badge-carrier[data-walking] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1167 .scene-tint[data-returning] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1173 .scene-mage[data-walking] .scene-mage-run [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1178 .scene-mage[data-walking] .scene-mage-idle [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1178 .scene-mage[data-walking] .scene-mage-bend [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1185 .scene-dust img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1200 .scene-creature-bite img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1200 .scene-scuffle img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1208 .scene-creature[data-entering] [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1214 .scene-creature[data-entering] .scene-creature-sprite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1218 .scene-creature[data-entering] .scene-creature-run [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1223 .scene-creature[data-entering] .scene-creature-bite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1228 .scene-creature[data-entering] .scene-creature-run img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1228 .scene-creature-effect[data-kind="out"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1237 .scene-creature[data-entering]~.scene-scuffle [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1241 .scene-creature-effect[data-kind="down"] img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1248 .scene-creature-effect[data-kind="out"] .scene-creature-sprite [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1255 .scene-flight-across [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1261 .scene-flight-rise [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1266 .scene[data-moment-playing] .scene-mage-death [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1271 .scene[data-moment-playing] .scene-mage-sprite .scene-mage-death img [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1278 .scene[data-moment-playing] .scene-chill [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1284 .scene[data-moment-playing] .scene-discovery [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1289 .scene[data-moment-playing] .scene-discovery-item [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1297 .scene[data-moment-playing] .scene-specks [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1302 .scene[data-moment-playing] .scene-speck [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1309 .scene[data-standing="going"] .scene-badge-fill [@media (prefers-reduced-motion:no-preference)]
+   UNMATCHED run-screen.css:1314 .scene[data-standing="going"] .scene-badge-fill [@media (prefers-reduced-motion:no-preference); @starting-style]
+   UNMATCHED account-card.css:38 .account-card-failure
+   UNMATCHED program-panel.css:9 .program-name
+   UNMATCHED program-panel.css:20 .program-name
+   UNMATCHED program-panel.css:54 .copy-save .copy-line
+   UNMATCHED program-panel.css:93 .program-switch
+   UNMATCHED program-panel.css:97 .rule-group
+   UNMATCHED program-panel.css:102 .trip-editor
+   UNMATCHED program-panel.css:108 .trip-editor h3
+   UNMATCHED program-panel.css:108 .trip-editor h4
+   UNMATCHED program-panel.css:116 .trip-editor section
+   UNMATCHED program-panel.css:186 .rule-group-header
+   UNMATCHED program-panel.css:186 .group-condition
+   UNMATCHED program-panel.css:195 .rule-group-header input
+   UNMATCHED program-panel.css:201 .rules
+   UNMATCHED program-panel.css:206 .rule
+   UNMATCHED program-panel.css:211 .rule>*
+   UNMATCHED program-panel.css:216 .rule input[type="number"]
+   UNMATCHED program-panel.css:216 .group-condition input[type="number"]
+   UNMATCHED program-panel.css:283 .rule-list-row.running
+   UNMATCHED program-panel.css:287 .rule-list-header.open
+   UNMATCHED program-panel.css:303 .rule-list-header.bar-unmet
+   UNMATCHED program-panel.css:375 .drop-line
+   UNMATCHED accounts-screen.css:22 .accounts-loading
+   UNMATCHED accounts-screen.css:22 .accounts-empty
+   UNMATCHED accounts-screen.css:28 .accounts-retry
+   UNMATCHED accounts-screen.css:75 .accounts-state.accounts-state-blocked
+   UNMATCHED headquarters.css:107 .away-report-list
+   UNMATCHED headquarters.css:114 .away-report-line
+   UNMATCHED headquarters.css:122 .away-report-line.danger
+   UNMATCHED headquarters.css:126 .away-report-full
+   UNMATCHED headquarters.css:137 .chest-list
+   UNMATCHED headquarters.css:163 .team-member-generation
+   UNMATCHED headquarters.css:174 .team-member-resurrection.danger
+   UNMATCHED headquarters.css:179 .team-member-loop
+   UNMATCHED headquarters.css:185 .team-member-stopped
+   UNMATCHED maps-screen.css:9 .rehearsal-mark
+   UNMATCHED maps-screen.css:47 .maps-list-solved
+   UNMATCHED maps-screen.css:78 .maps-card-solved
+   UNMATCHED maps-screen.css:82 .maps-card-sep
+   UNMATCHED maps-screen.css:82 .maps-card-opened-by
+   UNMATCHED maps-screen.css:108 .maps-card-note
+   UNMATCHED maps-screen.css:112 .maps-card-warning
+   UNMATCHED maps-screen.css:145 .maps-who-empty
+   UNMATCHED maps-screen.css:175 .maps-who-run-note
+   UNMATCHED maps-screen.css:182 .maps-who-resurrection.danger
+   UNMATCHED maps-screen.css:186 .maps-who-loop
+   UNMATCHED maps-screen.css:186 .maps-who-loop-start
+   UNMATCHED maps-screen.css:200 .maps-who-loop-line
+   UNMATCHED maps-screen.css:218 .maps-who-empty-loop
+   UNMATCHED character-screen.css:36 .character-screen-generation
+   UNMATCHED character-screen.css:46 .character-screen-resurrection.danger
+   UNMATCHED character-screen.css:50 .character-screen-loop
+   UNMATCHED character-screen.css:58 .character-screen-loop-line
+   UNMATCHED character-screen.css:63 .character-screen-stopped
+   UNMATCHED character-screen.css:79 .character-screen-skills-note
