@@ -492,7 +492,7 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    fails with exit 8.
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
    and its marker is there. The marker is the name given to a character or a program in the test
-   account in step 8 of "Installing and reinstalling" and written down then. If it was not
+   account in step 8 of "Installing and reinstalling" and written down last. If it was not
    written down, log in and check that the test account holds a saved game state the operator
    recognises from before the backup's time. Only when the check passes, remove the whole
    directory: `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go
