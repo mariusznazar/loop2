@@ -1,0 +1,28 @@
+1	Architecture and technology	12
+2	Code rules, exemplars and static checks	20
+3	Testing discipline	15
+4	The gate, test tools and the local start	17
+5	The server: hosting, deployment, logs and failure reports	17
+6	Database backup and restore	10
+7	Account server: access, security and blocked accounts	18
+8	Signing in: the login card and credentials	11
+9	Account email and password reset	19
+10	Saving the game state and the previous save	16
+11	Browser view: screens, navigation and their code	14
+12	Look of the browser view: styleguide, controls, pictures and fonts	21
+13	Maps: their content, time and solving	20
+14	Team, body, death and resurrection	18
+15	Gathering, campfire and backpack	10
+16	Combat	11
+17	Character skills and nature energy	19
+18	Discovery and the Understanding	11
+19	How a program runs: rules, actions and conditions	13
+20	Programs: ownership, names and the copy	12
+21	Trip plan, chest and items	13
+22	Earning loop and time away	14
+23	Program editor	13
+24	Rule panel and the signs of a rule	11
+25	Screen Mapy and Siedziba	11
+26	Screen of a map run and the end-of-run window	17
+27	Chronicle	11
+28	Scene	14

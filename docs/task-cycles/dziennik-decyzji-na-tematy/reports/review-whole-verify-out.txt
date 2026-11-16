@@ -1,0 +1,53 @@
+CR in before: 0, CR in after: 0
+before ends with newline: ' |\n', after: ' |\n'
+entries before 408 (distinct 408), after 408 (distinct 408)
+missing in after: []
+added in after: []
+entries differing exactly (incl. trailing blank lines): 4 ['D-10', 'D-13', 'D-15', 'D-227']
+entries differing after stripping trailing newlines: 0 []
+trailing newline counts before {1: 404, 2: 4} after {1: 408}
+before non-entry blocks: [('h1', 'Decision log', 15), ('h2', 'Withdrawn identifiers', 1560)]
+before h1 block repr: '# Decision log\n'
+after h1 block repr: '# Decision log\n'
+withdrawn blocks before 1 after 1, equal: True
+withdrawn block is last in after: True
+task table rows: 28
+sections in after: 28
+1. Architecture and technology: 12 entries (task projection 12)
+2. Code rules, exemplars and static checks: 20 entries (task projection 20)
+3. Testing discipline: 15 entries (task projection 15)
+4. The gate, test tools and the local start: 17 entries (task projection 14)
+5. The server: hosting, deployment, logs and failure reports: 17 entries (task projection 17)
+6. Database backup and restore: 10 entries (task projection 10)
+7. Account server: access, security and blocked accounts: 18 entries (task projection 17)
+8. Signing in: the login card and credentials: 11 entries (task projection 11)
+9. Account email and password reset: 19 entries (task projection 19)
+10. Saving the game state and the previous save: 16 entries (task projection 16)
+11. Browser view: screens, navigation and their code: 14 entries (task projection 13)
+12. Look of the browser view: styleguide, controls, pictures and fonts: 21 entries (task projection 21)
+13. Maps: their content, time and solving: 20 entries (task projection 20)
+14. Team, body, death and resurrection: 18 entries (task projection 18)
+15. Gathering, campfire and backpack: 10 entries (task projection 10)
+16. Combat: 11 entries (task projection 11)
+17. Character skills and nature energy: 19 entries (task projection 19)
+18. Discovery and the Understanding: 11 entries (task projection 11)
+19. How a program runs: rules, actions and conditions: 13 entries (task projection 13)
+20. Programs: ownership, names and the copy: 12 entries (task projection 12)
+21. Trip plan, chest and items: 13 entries (task projection 13)
+22. Earning loop and time away: 14 entries (task projection 14)
+23. Program editor: 13 entries (task projection 13)
+24. Rule panel and the signs of a rule: 11 entries (task projection 11)
+25. Screen Mapy and Siedziba: 11 entries (task projection 11)
+26. Screen of a map run and the end-of-run window: 17 entries (task projection 17)
+27. Chronicle: 11 entries (task projection 11)
+28. Scene: 14 entries (task projection 14)
+projection sections parsed: 28, entries 403
+section 4 differs from projection: extra ['D-412', 'D-413', 'D-414'] missing []
+section 7 differs from projection: extra ['D-410'] missing []
+section 11 differs from projection: extra ['D-411'] missing []
+projection entries not in before: []
+before entries not in projection: ['D-410', 'D-411', 'D-412', 'D-413', 'D-414']
+split/join round trip of before exact: True
+non-blank lines added beyond sections: 0 []
+non-blank lines lost: 0 []
+runs of 2+ blank lines in after: {}; in before: {3: 4}
