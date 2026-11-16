@@ -961,6 +961,76 @@ test("an error in the drawing of a root of the game reaches the page through the
   });
 });
 
+// D-323, D-407. Catches a row of the failure that stands in a root whose drawing can fail, or
+// that is drawn only at the error, so that the root of the waiting screen or of the sentences above
+// the game, taken down by React, takes the sentence with it or leaves it unshown.
+test("an error in the drawing of the waiting screen's root or of the sentences' root leaves the sentence of the failure shown once in the header's row and writes one line", async () => {
+  // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save"
+  // decision: D-407 "The rows of sentences are three roots, the row of the failure, the row of saving and the sentences above the game, and the row of the failure holds nothing else, is drawn when the page starts and is shown by the page at the error without a render, so that an error in the drawing of another root cannot take down the sentence of D-323."
+  const noText = {
+    ok: false,
+    failure: { kind: "unexpected", status: 200, message: {} },
+  };
+  const variants = [
+    {
+      name: "the waiting screen, whose sentence of a failed check is no text",
+      address: () => fakeAddress(),
+      async toTheFailure(held) {
+        await held.answer("currentAccount", noText, { inside: false });
+      },
+    },
+    {
+      name: "the sentences above the game, whose sentence of a confirmation is no text, for a signed-in player",
+      address: () =>
+        fakeAddress(
+          "#confirm-email=Zm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmFyZm9vYmE",
+        ),
+      async toTheFailure(held) {
+        await held.answer("confirmEmail", noText, { inside: false });
+        await held.answer("currentAccount", ACCOUNT, { inside: false });
+        await held.answer(
+          "loadSavedGame",
+          { ok: true, value: null },
+          { inside: false },
+        );
+      },
+    },
+  ];
+  for (const { name, address, toTheFailure } of variants) {
+    await onPage(async ({ root, lines }) => {
+      // React's development build adds a warning of its own about the root it takes down.
+      const warning = mock.method(console, "warn", () => {});
+      await outsideAct(async () => {
+        const held = heldClient();
+        await startPage(held, address(), { inside: false });
+        assert.deepEqual(sentencesShown(root), [], `${name}: precondition`);
+        assert.deepEqual(lines(), [], `${name}: precondition, no line`);
+
+        await toTheFailure(held);
+
+        const header = headerOf(root);
+        const [sentence, ...others] = sentencesShown(root);
+        assert.deepEqual(others, [], `${name}: one sentence`);
+        assert.ok(sentence, `${name}: the sentence is shown`);
+        assert.ok(header.contains(sentence), `${name}: in the header`);
+        assert.equal(sentence.getAttribute("role"), "alert", name);
+        assert.ok(
+          sentence.classList.contains("form-warning"),
+          `${name}: warning`,
+        );
+        assertInOrder(header, [byClass(header, "menu-bar-host")[0], sentence]);
+        assert.deepEqual(
+          lines(),
+          [
+            "uncaught kind=Error code=none place=view/last-resort.installLastResort",
+          ],
+          `${name}: one line`,
+        );
+      }).finally(() => warning.mock.restore());
+    });
+  }
+});
+
 test("a card that React takes down after an error is replaced by the sentence alone in its place, and the page hears of the error", async () => {
   // decision: D-323 "Until the page is reloaded the sentence „Coś w grze się zepsuło — odśwież stronę.” stands once, in `warning`: on a screen with the header, a game screen or a waiting screen, in the row under the menu bar beside the sentence of a failed save, on the screen of the login card in the card under the form, and, where React takes the card down, alone in the card's place (D-262)"
   // decision: D-347 "An exception in the game shows on the screen as a sentence that something broke and goes to the console"
