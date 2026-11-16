@@ -1,0 +1,21 @@
+# Findings of the review of the return step (head e684b22a16dfa4fccd624f80a27fe91862d8dbfd), for the fix
+
+Cut word for word from `reports/review-return-report.md` by the orchestrator: the two blocking findings. The Minor finding M-1 of that review is not fixed (a Minor finding of the review of the return step goes to the request's list).
+
+### Important
+
+**I-1 — D-414 *Verification* names a test for the unreadable checkout that the test file does not hold** (blocking, within the task)
+
+- Place: `foundations/decisions.md:10966` (the words added by this commit: "warning the agent and the human with both commits and the repair command where the submodule stands on another commit, is not initialized **or has a checkout git cannot read**"); against `tests/agent_workflow/test_the_way_pin_hook.py:142-147`.
+- What is wrong: the clause now says the tests show the hook warning *the agent and the human* *with the repair command* for a checkout git cannot read. The one test of that case, `test_a_checkout_git_cannot_read_warns_as_an_uninitialized_one`, asserts only the exit code and that `self.pinned` stands in `systemMessage` (line 147). It reads neither `hookSpecificOutput.additionalContext` (the agent's warning) nor the repair command. Compare the uninitialized case at lines 137-139, which asserts both messages, the pinned commit and `REPAIR`.
+- Why it matters: the *Verification* field tells a reader, and the next reviewer, which behaviour a test holds. Here it says more than the test holds. A change that dropped the agent's context or the repair command for an unreadable checkout would pass every test, though D-414 says a test would catch it. The code itself is right: `checkedOutCommit` returns `null` for an unreadable checkout (`.claude/hooks/the-way-pin-check.mjs:81-85`), and `mismatchWarning` writes both messages with `REPAIR` (lines 98-118). So the gap is between the entry and its test, which WAY-263 grades Important, since the entry's statement is broader than what the change's files do.
+- Evidence: reading lines 142-147 against 10966. The test run below passes, so it cannot show the gap.
+- Smallest fix, either one: (a) in that test, loop over both messages and assert `self.pinned` and `REPAIR` in each, as lines 137-139 do; or (b) drop "or has a checkout git cannot read" from the clause, or narrow it to what the test asserts. (a) is cheap and keeps the new words true.
+
+**I-2 — "the folder is no repository" does not say which folder, and the likely misreading contradicts the code** (blocking, within the task)
+
+- Place: `foundations/decisions.md:10961` (binding: "it prints nothing only where there is nothing to compare with: git is missing, **the folder is no repository**, or the repository pins nothing"); the same words in the *Verification* clause at `:10966`.
+- What is wrong: no earlier sentence of D-414 gives "the folder" an antecedent. The only folder the entry names before it is `.the-way`, and an uninitialized `.the-way` is an empty folder that is no repository and has "nothing to compare with" (no checked-out commit). Read that way, the sentence says the hook stays silent for an uninitialized submodule. Both the first paragraph ("Where they differ, or `.the-way` is not initialized, the hook warns") and the code (`checkedOutCommit` → `null` → `mismatchWarning`) say the opposite. What the code actually tests is the repository root, two directories above the script: `existsSync(join(root, ".git"))` at `.claude/hooks/the-way-pin-check.mjs:62`, with `root` from line 142. The test case "no repository at all" (`test_the_way_pin_hook.py:213`) is that root case.
+- Why it matters: the return step was there to make this sentence agree with the code on every path. WAY-263 counts a restatement without a qualification as a mismatch, and the missing qualifier here leaves a reading under which the binding text contradicts both itself and the hook on the uninitialized path, which is the path the task cares about most.
+- Evidence: the code lines cited, plus the binding paragraph's own first sentence.
+- Smallest fix: name the folder, e.g. "the repository root is no repository" or "the folder the hook stands in is no repository", in both places. The `decision:` quotes at test lines 201 and 212 stop before the colon, so they would still match.

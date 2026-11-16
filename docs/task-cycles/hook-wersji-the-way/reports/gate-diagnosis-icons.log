@@ -1,0 +1,7 @@
+Production image sha256:165f4f305d8c401e1e30305666664cc8370aa2096b85618672de1a08dd4b81a1; container loop2-image-icons-check-a91ced2f84d5; data volume loop2-account-data-check-ed9afd389ec840f2ac5d2260c0067132; secret volume loop2-account-secret-check-ed9afd389ec840f2ac5d2260c0067132; uid/gid 1000; memory 536870912; resources verified
+.
+----------------------------------------------------------------------
+Ran 1 test in 3.640s
+
+OK
+exit=0
