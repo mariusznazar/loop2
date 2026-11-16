@@ -1,2 +1,0 @@
-tests/view/run-screen-state.test.mjs:309: the quotation does not begin a sentence of `D-371`
-1 error
