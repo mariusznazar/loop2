@@ -3090,9 +3090,7 @@ The page opens the login card as an object it creates, focuses and closes: an el
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · derives from D-260
-- **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after a session check or an expired save, focus in the first field after a confirmed logout, a logout answered with no session and a set password; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts. For the focus after a refused emailed link and after „Anuluj”, an agent compares a change with the part no test holds:
-  - complies: a refused emailed link followed by focus in the first field of the card; „Anuluj” of the form „Ustaw nowe hasło” followed by focus in the first field of the card the page opens in its place
-  - violates: focus left on the page after a refused emailed link or after „Anuluj”, so that a player of the keyboard starts again from the top of the page
+- **Verification:** tests: the card standing in its element when it is created; its focus call moving focus to the first field of the state it stands on; its closing taking the element out with what it holds, an answer awaited by a closed card changing nothing, and the next card after a logout opening with empty fields; no focus taken when the card opens after an expired save or after a session check that no refused emailed link and no „Anuluj” led to, focus in the first field after a confirmed logout, a logout answered with no session, a set password, a refused emailed link and „Anuluj” of the form „Ustaw nowe hasło”; the card closed from the handlers of an answer and of a click and on each way to the game or a waiting screen; every field and button, the switch and „Nie pamiętam hasła” included, locked while a form waits, the folded credits staying usable; a second send and a press of the switch before the lock is drawn changing nothing; a press of the state already shown clearing nothing and moving no focus; focus back on the field or the button the player sent from when the lock lifts.
 - **Origin:** none
 
 *Rationale:* the card is a root of its own beside the roots of the page's other places, so the page and the card meet at one narrow place, an object the page creates, focuses and closes as it does the game. The element holds the card at once, so every change of the page happens in one step, no moment shows an empty place, and a call that moves focus right after the placing finds the field there. A new card at every opening keeps no password behind the game and needs no reset of its own, since nothing is kept. Closing the card while it is drawn is a fault the framework reports, so the closing is done in the handler of an answer or of a click. The lock covers every field and button of the card, the switch and „Nie pamiętam hasła” included; the folded credits send nothing and their links open in a new tab, so they stay usable. A second send has to be refused before the lock is drawn, since the state of the card shows only after the page has drawn it. Focus goes back only after the lock lifts, since a disabled control cannot take it. A press of the switch at the state already shown is no change of state, so D-260 does not apply to it. A refused emailed link and „Anuluj” leave the player at the card, so focus goes to it as after the other ways in and never to the page.
@@ -3743,18 +3741,15 @@ as refused as too large (D-208).
   loaded paused game and a new save time included; one save request in flight, a moment of saving
   during it sent once after its answer, except during the save before a logout that goes on; each
   save handed to `fetch` with `keepalive`; a body of 65 536 bytes sent whole, and a larger one never
-  sent and counted as refused as too large. For the send after a failed save, an agent compares a
-  change with the part no test holds:
+  sent and counted as refused as too large; the game state sent once more at the hidden page and at
+  a tick of the 30-second rhythm after a failed save with nothing changed since, the rhythm sending
+  at once and taking the place of the planned retry. An agent compares a change with the part no
+  test holds:
   - complies: a reading of the clock whose result ended map runs of two earning loops followed by
     one save request; a tab closed while its last save is on its way, nothing holding the page open
-    for the answer; a save that failed and the page then hidden, with nothing changed since, the
-    game state sent once more with `keepalive`; the 30-second rhythm of a manual map run, after a
-    failed save with a retry planned, sending at once and taking the place of that retry, so that
-    one request waits at a time
+    for the answer
   - violates: a save request for each map run of an earning loop that one reading ended; the closing
-    of a tab held back, or a question raised, until its last save is answered; the hidden page
-    sending nothing after a failed save because the game state is the one that failed; the
-    30-second rhythm sending while the planned retry still stands, so that both are sent
+    of a tab held back, or a question raised, until its last save is answered
 - **Origin:** none
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
@@ -4431,7 +4426,9 @@ sentence of the outcome can be read.
 - **Relations:** derives from D-280
 - **Verification:** tests: the menu opening on a click on „Konto”, a native button, and closing on
   Escape, on a click outside it and on a second click on „Konto”, focus on „Konto” after Escape and
-  after a second click; the menu standing open while „Wyloguj” or „Wyślij ponownie” waits for the
+  after a second click; after a click outside it, on a document imitation given the focus the
+  browser would give, focus staying on the field or the link clicked and returning to „Konto” from
+  a bare background; the menu standing open while „Wyloguj” or „Wyślij ponownie” waits for the
   server and after the answer until the player closes it. For the focus after a click outside the
   menu, and for the keyboard in a real browser, which the tests on a document imitation do not show,
   an agent compares a change with the part no test holds:
@@ -7959,16 +7956,13 @@ While the program the copy belongs to holds changes made since the copy was take
 - **Verification:** tests: the line „Program {name} ma zmiany, których nie ma w tej kopii — zapis w
   programie je zastąpi.” standing while the copy's program holds changes made since the copy was
   taken from it or last saved into it and the copy holds unsaved changes; „Zapisz w programie” then
-  saving at the first click, replacing those changes, and the line gone after it. For the line of
-  a copy with no unsaved changes, and for where the line stands and its role, an agent compares a
-  change with the part no test holds:
+  saving at the first click, replacing those changes, and the line gone after it; the short line
+  „Program {name} ma zmiany, których nie ma w tej kopii.” standing, with „Zapisz w programie”
+  inactive, where the copy holds no unsaved changes. For where the line stands and its role, an
+  agent compares a change with the part no test holds:
   - complies: the line standing beside „Zapisz w programie”, „Zapisz jako nowy program” and „Porzuć
-    zmiany”, in the colour of the role `warning`; a copy with no unsaved changes whose program was
-    edited, with „Zapisz w programie” inactive, reading „Program Las ma zmiany, których nie ma w
-    tej kopii.”
-  - violates: the line standing away from the save buttons, or drawn in the colour of plain text;
-    the sentence ending „— zapis w programie je zastąpi.” standing beside the inactive „Zapisz w
-    programie” of a copy with no unsaved changes
+    zmiany”, in the colour of the role `warning`
+  - violates: the line standing away from the save buttons, or drawn in the colour of plain text
 - **Origin:** none
 
 *Rationale:* the player can edit a program during a map run, so a save of the copy can replace changes the copy lacks; the line says so before the save, and the save stays one click, as D-164 announces such a save and blocks none. An edit of a saved program during a map run touches neither the copy nor the streak nor the counters. The line names what the save replaces, which holds after „Restart” and after a switch as well, and stands in the role `warning`, which means that something will not be carried out or is not saved. Where the copy holds no unsaved changes „Zapisz w programie” is inactive, so the line says only what the copy lacks and promises no save, which the player who changed the program alone still learns. Accepted with it: a longer text, which does not say when the program changed.
@@ -8804,7 +8798,7 @@ rule group.
 - **Based on:** none
 - **Relations:** derives from D-23 · derives from D-44
 - **Verification:** tests: one program panel with its rule list and rule panel on Programy and on
-  the screen of a map run; a rule's row reading „Zapas poniżej 8 · Patyk” and „Zbierz — Patyk”
+  the screen of a map run; a rule's row reading „Zapas poniżej 8 szt. · Patyk” and „Zbierz — Patyk”
   with the arrow between them; the rule panel standing in the list right under the row or the
   header it changes, on both screens, in no column or area of its own, and moving there when
   another rule opens; each pick moving on to the next field; the conditions as cells in two
@@ -8836,7 +8830,7 @@ not the model of rules. Dragging a rule
 already worked, between groups too, but the player could not see it, for there was no handle and no
 sign of where the rule would land; Outlook gives three ways to move a rule at once, a handle,
 arrows and a move to the top or the bottom, and dragging needs a preview of where the rule drops.
-Each pick moving on to the next field costs a rule such as „Zapas poniżej 8 · Patyk → Zbierz —
+Each pick moving on to the next field costs a rule such as „Zapas poniżej 8 szt. · Patyk → Zbierz —
 Patyk” six actions, against about eight interactions in the old editor, an estimate and not a
 measurement. What may not be picked stands greyed with its reason, as in loop; Factorio 2.0 keeps
 its controls and greys them instead of hiding them, since its old interface had things popping out
@@ -8914,15 +8908,13 @@ has every rule group unfolded, the foldings of the copy before it passing to it 
 - **Relations:** derives from D-288
 - **Verification:** tests: one memory of the page holding the folding, so that a group folded on
   Programy stands folded on the screen of a map run for the same program, the other screen redrawn
-  at once; a new memory with every rule group unfolded. For the folding going with a reload and
-  staying out of the saved game state, and for the groups of a new copy, an agent compares a change
-  with the part no invariant and no test holds:
+  at once; a new memory with every rule group unfolded; a group folded in the copy standing
+  unfolded in the new copy made by a send and in the one made by a switch of the character to
+  another program. For the folding going with a reload and staying out of the saved game state, an
+  agent compares a change with the part no invariant and no test holds:
   - complies: a group folded on Programy unfolded after a reload; a save of the game state carrying
-    nothing of folding; a group folded in the copy of one map run standing unfolded in the copy made
-    by the next send of a character, and in the copy made by a switch of the character to another
-    program
-  - violates: folding kept in the browser's storage; a field of folding in the saved game state; a
-    group folded in the copy before a send folded again in the new copy
+    nothing of folding
+  - violates: folding kept in the browser's storage; a field of folding in the saved game state
 - **Origin:** none
 
 *Rationale:* folding arranges the player's view of a program and changes nothing the program does,
@@ -8944,7 +8936,7 @@ program rule dropped on it lands at its end while the group stays folded.
   its rules; a rule dropped on a folded group landing at its end, the line standing under its header
   and the group staying folded. For the condition a folded group shows, an agent compares a change
   with the part no invariant and no test holds:
-  - complies: a folded group under „Temperatura poniżej 35” showing that condition in its header
+  - complies: a folded group under „Temperatura poniżej 35 °C” showing that condition in its header
     beside its name and „3 reguły”
   - violates: the condition left out of the header of a folded group
 - **Origin:** none
@@ -9033,7 +9025,7 @@ The program editor shows no current value beside a condition, such as „teraz 3
 - **Verification:** tests: no „teraz” in the rule panel open on the pick of conditions outside a
   map run. For a rule's row, and for the rule panel during a map run, an agent compares a change with
   the part no invariant and no test holds:
-  - complies: „Zapas poniżej 8 · Patyk” with nothing beside it during a map run, in its row and in
+  - complies: „Zapas poniżej 8 szt. · Patyk” with nothing beside it during a map run, in its row and in
     the rule panel
   - violates: „teraz 3” beside a condition in a rule's row, or in the rule panel during a map run
 - **Origin:** none
@@ -9197,7 +9189,7 @@ screen Wiedza; an action with a target shows the icon of the action, never one o
   action in the pick; the icon of an action beside its name on the screen Wiedza. For the icon of a rule's row whose action has a target and the icon in a cell
   of the pick being its action's own, an agent compares a change with the part no invariant and no
   test holds:
-  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” and in
+  - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk” and in
     the cell „Zbierz”, a greyed cell keeping its icon
   - violates: the icon of a stick in the row of „Zbierz — Patyk”; a cell drawing an icon other than
     its action's; a greyed cell drawn with no icon while a cell that may be picked has one
@@ -9277,17 +9269,15 @@ nothing, and the panel stays open on the same field and goes with the rule to it
   committing the number and moving on; the rule „Zapas poniżej 8 szt. · Patyk → Zbierz — Patyk”
   written from a click on its row in six acts, the panel still open after them; the arrow keys
   moving among the cells of a grid, a greyed one reached, Enter picking and doing nothing on a
-  greyed cell; „✕”, Escape and the opening of another rule closing the panel. For the number
-  confirmed by leaving its field, for the deleting of the rule and for the moving of the rule to
-  another group, an agent compares a change with the part no invariant and no test holds:
+  greyed cell; „✕”, Escape and the opening of another rule closing the panel; a rule moved to
+  another group by „↓” and by its handle, the panel staying open on the same field under its new
+  row. For the number confirmed by leaving its field and for the deleting of the rule, an agent
+  compares a change with the part no invariant and no test holds:
   - complies: 8 typed into the number field of the panel and the focus moved to the cell „Patyk”
     with the mouse, the rule then holding 8; „Usuń” of a rule whose panel stands open closing that
-    panel; „↓” on the last rule of a group, with its panel open on the field „Czynność”, leaving
-    the panel open on that field under the rule, now the first of the next group; the same rule
-    dragged by its handle into another group, the panel open on it there
+    panel
   - violates: a number typed and left with no Enter dropped, the rule keeping the number it held;
-    the panel left open on a rule that was deleted; the panel closing when its rule crosses the
-    border of its group
+    the panel left open on a rule that was deleted
 - **Origin:** none
 
 *Rationale:* each pick moves on to the next field (D-288), so a rule such as „Zapas poniżej 8 szt. ·
@@ -9400,7 +9390,7 @@ walce”.
   death in combat too, a combat rule whose condition holds unable to start with „tylko w walce”. For
   the mage's health the signs read and the backgrounds of those minutes, an agent compares a change
   with the part no invariant and no test holds:
-  - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50” winning while the mage
+  - complies: in the minutes of an attack „Odskocz” under „Zdrowie poniżej 50 pkt” winning while the mage
     has 40 health, its row on `rule-winning`
   - violates: the signs of an attack counted at the mage's full health; the row of the combat rule
     the turn would choose on `rule-running` or on `highlight`
@@ -10573,16 +10563,14 @@ gives none.
 - **Verification:** tests: the entry in `player-change` of each change of the copy — a program rule
   added, removed, changed or moved with its number and its sentence at the moment of the change, a
   rule group added, removed, changed or moved with its name, a changed trip plan, a discard, a save,
-  a save as a new program and a switch with the program's name; an edit of the copy after a death
-  at the game minute of the death; no entry for an edit of a saved program. For the edits of the
-  copy after a completion and for the entry of a changed rule, an agent compares a change with the
-  part no invariant and no test holds:
-  - complies: a program rule fixed after a completion at game minute 480 giving its entry at 480;
-    the rule 2.1 changed from „Zawsze → Eksploruj” to „Zawsze → Wędruj” giving „Zmieniono regułę
-    2.1: „Zawsze → Eksploruj” na „Zawsze → Wędruj””
+  a save as a new program and a switch with the program's name; the entry of a changed rule giving
+  its whole sentence before and its whole sentence after, each in quotation marks, joined by „na”;
+  an edit of the copy after a death at the game minute of the death; no entry for an edit of a saved
+  program. For the edits of the copy after a completion, an agent compares a change with the part no
+  invariant and no test holds:
+  - complies: a program rule fixed after a completion at game minute 480 giving its entry at 480
   - violates: an edit of the copy after a completion giving no entry, or giving one at another game
-    minute; the same change giving „Zmieniono regułę 2.1: Zawsze → Eksploruj → Zawsze → Wędruj”,
-    where the arrow of the rule's sentence and the arrow of the change are one sign
+    minute
 - **Origin:** none
 
 *Rationale:* the player reads what was changed in the program and when, as in loop, so a loss of the

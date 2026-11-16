@@ -308,8 +308,7 @@ Kontrolki odstępujące od tej listy stanów:
   obwódka z reguły Visible focus (D-47); wybrana wygląda jak przycisk wybrany
   w grupie, z ramką w `selected` i tekstem w `text-strong` (D-40);
   wyszarzona (stan disabled) ma ramkę przerywaną w `text-disabled` — słowo
-  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled`, więc
-  ramka ma kolor swojego tekstu (D-279), i z powodem w `text-secondary` (D-289);
+  kluczowe `dashed`, bez nowej wartości — z nazwą też w `text-disabled` i z powodem w `text-secondary` (D-289);
   pod kursorem nie dostaje tła `highlight`; klawiatura dochodzi do wyszarzonej komórki, żeby przeczytać jej
   powód, a wybór jej niczego nie robi. Error nie dotyczy, bo komórka nie ma
   wpisu, który mógłby być błędny; empty nie dotyczy, bo komórka jest jedną
