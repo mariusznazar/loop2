@@ -571,6 +571,83 @@ test("a fold made on one panel redraws the other at once, with no update of its 
   });
 });
 
+/** How many rule groups stand unfolded: each of them has the button that folds it, „Zwiń grupę”. */
+const unfoldedGroups = (root) =>
+  root.querySelectorAll('button[aria-label="Zwiń grupę"]').length;
+
+// D-294 (To do 7). A new copy made by a send has every rule group unfolded: the folds of the copy
+// before it do not pass to it. Catches the copy's folding kept under its one key across a send.
+test("a send after the copy's group was folded shows the new copy with every group unfolded", async () => {
+  // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule(), "run", createFolding());
+    await game.change(send(game.state, SENT, REAL_MS));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(
+      unfoldedGroups(game.root),
+      0,
+      "precondition: the copy's group is folded",
+    );
+    await game.change(end(game.state));
+    await game.change(send(game.state, SENT, REAL_MS));
+    assert.equal(
+      unfoldedGroups(game.root),
+      1,
+      "the new copy's group is unfolded",
+    );
+  });
+});
+
+// D-294 (To do 7). A switch of the character to another program makes a new copy, which has every rule
+// group unfolded too. Catches the copy's folding kept across a switch.
+test("a switch of the character after the copy's group was folded shows the new copy with every group unfolded", async () => {
+  // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
+  // decision: D-174 "During a map run ... its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
+  await withPage(async (page) => {
+    const game = await wiredPanel(
+      page,
+      createProgram(gameWithRule()).state,
+      "run",
+      createFolding(),
+    );
+    await game.change(send(game.state, SENT, REAL_MS));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(
+      unfoldedGroups(game.root),
+      0,
+      "precondition: the copy's group is folded",
+    );
+    await pick(game.root, "2");
+    await click(buttonNamed(game.root, SWITCH));
+    assert.deepEqual(game.acts.at(-1), ["switchProgram", 2]);
+    assert.equal(programList(game.root).value, "copy");
+    assert.equal(
+      unfoldedGroups(game.root),
+      1,
+      "the new copy's group is unfolded",
+    );
+  });
+});
+
+// D-164, D-294. A restart carries on the copy of its map run, so the folds of that copy stay. Catches a
+// memory of the copy cleared at every start of a map run, the restart included.
+test("a restart keeps the folds of the copy it carries on", async () => {
+  // decision: D-164 "a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included"
+  // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule(), "run", createFolding());
+    await game.change(send(game.state, SENT, REAL_MS));
+    await click(game.root.querySelector('button[aria-label="Zwiń grupę"]'));
+    assert.equal(
+      unfoldedGroups(game.root),
+      0,
+      "precondition: the copy's group is folded",
+    );
+    await game.change(restart(game.state));
+    assert.equal(unfoldedGroups(game.root), 0, "the copy's group stays folded");
+  });
+});
+
 // --- the panel's states, carried over from the hand-made model -----------------------------------
 
 // D-166, D-167. Catches a list missing its program or the last
