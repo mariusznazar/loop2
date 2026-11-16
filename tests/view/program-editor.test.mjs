@@ -1562,7 +1562,7 @@ test("a row reads as a sentence: the condition with its number and target, then 
     action: { kind: "gather", resource: "stick" },
   };
   assert.deepEqual(ruleSentence(rule), {
-    condition: "Zapas poniżej 8 · Patyk",
+    condition: "Zapas poniżej 8 szt. · Patyk",
     action: "Zbierz — Patyk",
   });
   assert.deepEqual(
@@ -1574,11 +1574,19 @@ test("a row reads as a sentence: the condition with its number and target, then 
   );
   assert.equal(
     conditionSentence({ kind: "hereBelow", resource: "berry", value: 4 }),
-    "Tu leży mniej niż 4 · Jagoda",
+    "Tu leży mniej niż 4 szt. · Jagoda",
   );
   assert.equal(
     conditionSentence({ kind: "campfireLeftBelow", value: 20 }),
-    "Zostało mniej niż — ognisko 20",
+    "Zostało mniej niż — ognisko 20 min",
+  );
+  assert.equal(
+    conditionSentence({ kind: "satietyBelow", value: 40 }),
+    "Sytość poniżej 40 %",
+  );
+  assert.equal(
+    conditionSentence({ kind: "healthBelow", value: 8 }),
+    "Zdrowie poniżej 8 pkt",
   );
   assert.equal(
     conditionSentence({ kind: "awayFromCampfire" }),
@@ -1601,7 +1609,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
   };
   assert.deepEqual(groupSummary(group, { 1: 3, 3: 18 }), {
     name: "Ogień",
-    condition: "Temperatura poniżej 35",
+    condition: "Temperatura poniżej 35 °C",
     ruleCount: 3,
     executed: 21,
   });

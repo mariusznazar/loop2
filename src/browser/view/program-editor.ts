@@ -829,12 +829,16 @@ export function ruleNumber(groupIndex: number, ruleIndex: number): string {
   return `${groupIndex + 1}.${ruleIndex + 1}`;
 }
 
-/** A condition as a part of a row's sentence: its name, its number and its target — „Zapas poniżej 8 · Patyk”. */
+/**
+ * A condition as a part of a row's sentence: its name, its number with the unit of its data and its
+ * target — „Zapas poniżej 8 szt. · Patyk”. The unit stands after the number, as the band of a discovery
+ * writes it. Pure.
+ */
 export function conditionSentence(condition: Condition): string {
+  const def: ConditionDef = CONDITIONS[condition.kind];
+  const unit = def.unit === undefined ? "" : ` ${def.unit}`;
   const head =
-    "value" in condition
-      ? `${CONDITIONS[condition.kind].label} ${condition.value}`
-      : CONDITIONS[condition.kind].label;
+    "value" in condition ? `${def.label} ${condition.value}${unit}` : def.label;
   if (condition.kind === "hereBelow")
     return `${head} · ${targetName(RESOURCES[condition.resource].name)}`;
   if (condition.kind === "itemBelow")

@@ -78,7 +78,7 @@ test("a rule whose action or condition changed gives the whole sentence before, 
     ]),
   ]);
   assert.deepEqual(copyChangeTexts(BEFORE, condition, null), [
-    "Zmieniono regułę 2.1: Zawsze → Zjedz — jagoda → Sytość poniżej 40 → Zjedz — jagoda",
+    "Zmieniono regułę 2.1: Zawsze → Zjedz — jagoda → Sytość poniżej 40 % → Zjedz — jagoda",
   ]);
 });
 
