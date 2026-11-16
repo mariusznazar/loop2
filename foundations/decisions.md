@@ -4185,7 +4185,7 @@ item there. A player who leaves a map run keeps one way back to it, and a map ru
 stays until „Restart” or „Zakończ”, so the way back stays after its end too. The minute beside „Wróć
 do przejścia” stands still, since the map run waits in its pause, and it reads as the clock in the
 header of the screen of the map run does. The way into the owner panel is a link in the menu „Konto”, so the bar stays as it is and looks the same for a player and for an account with the owner role; the cost accepted is that the panel is less visible than an item of the bar, also to those who assess the game, and that the menu „Konto” gets a first link beside its buttons.
-*Rejected:* a fourth item „Konta” on the menu bar, only for an account with the owner role — the panel is easier to see, also for those who assess the game, but D-280's fixed list of items and its tests change and the bar looks different by role; one page holding everything — unreadable; the width of the content changing between
+*Rejected:* one more item „Konta” on the menu bar, only for an account with the owner role — the panel is easier to see, also for those who assess the game, but D-280's fixed list of items and its tests change and the bar looks different by role; one page holding everything — unreadable; the width of the content changing between
 screens, as in loop — the logo and the menu jump by about 190 px between Siedziba and Programy;
 another largest width — it changes that one
 dimension alone; the skill trees shown on two screens, as in loop — the same rows on Postać and in
