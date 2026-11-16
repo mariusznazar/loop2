@@ -861,6 +861,12 @@ The runner image that GitHub's label `ubuntu-24.04` names is the x64 image Ubunt
 
 - **Source:** https://raw.githubusercontent.com/actions/runner-images/95e6f51a068507e8f43d061d2166a39d0ef36ce8/README.md § Available Images — "Ubuntu 24.04" · "x64" · "ubuntu-latest or ubuntu-24.04" · https://raw.githubusercontent.com/actions/runner-images/95e6f51a068507e8f43d061d2166a39d0ef36ce8/images/ubuntu/Ubuntu2404-Readme.md § Installed Software, Tools — "Docker Client 28.0.4" · "Docker Server 28.0.4"; read 2026-11-15
 
+## claude-code-session-start-hook-output
+
+A command hook of the event `SessionStart` of Claude Code shows a warning to the person through the field `systemMessage` of the JSON it prints, and adds text to the context of the agent through the field `additionalContext` of that JSON.
+
+- **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § JSON output — "Warning message shown to the user." · § SessionStart decision control — "A SessionStart hook can add context for Claude, supply the first user message, set the session title, watch files, and reload skills." · § Add context for Claude — "Claude Code wraps the string in a system reminder and inserts it into the conversation at the point where the hook fired."; read 2026-11-16
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
