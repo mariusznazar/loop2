@@ -276,7 +276,8 @@ test("a failed save shows that the game retries, and the retries follow after 5,
     assert.equal(sentenceOf(saver), RETRYING);
 
     // Real milliseconds after each failure, written out from D-208: 5, 10, 20, 30 and 30 s. The
-    // state changes only in the last millisecond, so the 30-second check finds nothing to send.
+    // state changes only in the last millisecond, so each retry sends the state of its time; no
+    // manual map run passes, so the 30-second rhythm stays silent.
     const waits = [5_000, 10_000, 20_000, 30_000, 30_000];
     for (const [index, wait] of waits.entries()) {
       mock.timers.tick(wait - 1);
@@ -513,6 +514,103 @@ test("the 30-second check is silent while no manual map run passes, though the s
     const { saver } = saverOf(held, game);
     mock.timers.tick(30_000);
     assert.equal(held.sent.length, 1, "a passing manual map run is checked");
+    saver.dispose();
+  });
+});
+
+// --- after a failed save ---------------------------------------------------------------------
+
+// D-207. Catches a hidden page that sends nothing after a failed save because the game state is
+// the one that failed, so that a change whose save failed is lost when the tab closes.
+test("a page that becomes hidden after a failed save sends the state again with nothing changed since, once, and takes the place of the planned retry", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
+  // decision: D-208 "each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(withCharacter());
+    const { saver } = saverOf(held, game);
+    saver.moment();
+    await held.answer(FAILED);
+    assert.equal(held.sent.length, 1);
+
+    mock.timers.tick(2_000);
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 2, "the hidden page sends at once");
+    assert.deepEqual(held.sent[1], submissionOf(game.state, 3));
+    fakeDocument.turn("visible");
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 2, "one request waits at a time");
+
+    // The retry planned for 5 s after the first failure is replaced: it does not follow.
+    mock.timers.tick(10_000);
+    assert.equal(held.sent.length, 2);
+    await held.answer(FAILED);
+    // The failure of that send is the second in a row: the next retry waits 10 s from its answer.
+    mock.timers.tick(9_999);
+    assert.equal(held.sent.length, 2);
+    mock.timers.tick(1);
+    assert.equal(held.sent.length, 3);
+    saver.dispose();
+  });
+});
+
+// D-207, D-208. Catches a rhythm that sends beside the planned retry, two requests for one
+// failure, and a rhythm that finds nothing to send after a failed save.
+test("a tick of the 30-second rhythm after a failed save sends once with nothing changed since, and the planned retry does not follow it", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight"
+  // decision: D-208 "each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  await onPage(async () => {
+    const held = heldClient();
+    // A manual map run passes and real time changes nothing in it, so no change comes after the failure.
+    const game = gameOf(passing());
+    const { saver } = saverOf(held, game);
+    mock.timers.tick(29_000);
+    saver.moment();
+    await held.answer(FAILED);
+    assert.equal(held.sent.length, 1);
+
+    // The retry stands for 34 000 ms; the rhythm ticks at 30 000 ms.
+    mock.timers.tick(1_000);
+    assert.equal(held.sent.length, 2, "the rhythm sends at once");
+    assert.deepEqual(held.sent[1], submissionOf(game.state, 3));
+
+    mock.timers.tick(4_000);
+    assert.equal(
+      held.sent.length,
+      2,
+      "the retry the rhythm replaced does not come",
+    );
+    await held.answer(FAILED);
+    // The second failure in a row waits 10 s, and the rhythm of 60 000 ms is later than that.
+    mock.timers.tick(9_999);
+    assert.equal(held.sent.length, 2);
+    mock.timers.tick(1);
+    assert.equal(held.sent.length, 3, "one retry, after 10 s");
+    await held.answer(SAVED(4));
+    saver.dispose();
+  });
+});
+
+// D-207, D-208. Catches retries or checks that go on after a success, and a send after a
+// success for the save that failed.
+test("a success ends the retries: the hidden page and the rhythm send nothing more where nothing changed", async () => {
+  // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
+  // decision: D-208 "A save of the game state that succeeds shows nothing"
+  await onPage(async () => {
+    const held = heldClient();
+    const game = gameOf(passing());
+    const { saver } = saverOf(held, game);
+    saver.moment();
+    await held.answer(FAILED);
+    fakeDocument.turn("hidden");
+    assert.equal(held.sent.length, 2);
+    await held.answer(SAVED(4));
+    assert.equal(sentenceOf(saver), null);
+
+    fakeDocument.turn("visible");
+    fakeDocument.turn("hidden");
+    mock.timers.tick(120_000);
+    assert.equal(held.sent.length, 2, "no retry, no check, nothing sent");
     saver.dispose();
   });
 });
