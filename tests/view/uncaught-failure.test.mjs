@@ -963,6 +963,16 @@ test("a card that React takes down after an error is replaced by the sentence al
         [SENTENCE],
         "nothing but the sentence",
       );
+      const [panel] = card.element.querySelectorAll("p");
+      assert.ok(
+        panel.classList.contains("form-warning"),
+        "the panel's sentence carries the class form-warning",
+      );
+      assert.equal(
+        panel.getAttribute("role"),
+        "alert",
+        "the panel's sentence carries the role alert",
+      );
       assert.deepEqual(lines(), [], "the card writes no line itself");
       // The page may go on with the card as with any other.
       card.fail();
