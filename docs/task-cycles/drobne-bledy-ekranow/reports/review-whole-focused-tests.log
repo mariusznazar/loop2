@@ -1,0 +1,26 @@
+﻿
+tests/view/menu-bar.test.mjs EXIT=0 
+tests/view/program-panel.test.mjs EXIT=0 
+tests/view/game-saver.test.mjs EXIT=0 
+tests/view/login-card-focus.test.mjs EXIT=0 
+tests/view/scene.test.mjs EXIT=0 
+tests/view/run-screen.test.mjs EXIT=0 
+tests/view/world-area.test.mjs EXIT=0 
+tests/view/rule-editor.test.mjs EXIT=0 
+tests/view/shared-controls.test.mjs EXIT=0 
+tests/view/headquarters-screen.test.mjs EXIT=0 
+tests/view/character-screen.test.mjs EXIT=0 
+tests/view/program-editor.test.mjs EXIT=0 
+tests/view/chronicle-entries.test.mjs EXIT=0 
+tests/view/combat-line.test.mjs EXIT=0 
+tests/view/scene-picture.test.mjs EXIT=0 
+tests/view/email-confirmation.test.mjs EXIT=0 
+tests/sim/data.test.mjs EXIT=0 
+tests/view/end-question.test.mjs EXIT=0 
+tests/view/chronicle-game.test.mjs EXIT=0 
+tests/view/end-window.test.mjs EXIT=0 
+tests/view/tabs-area.test.mjs EXIT=0 
+tests/sim/copy-actions.test.mjs EXIT=0 
+tests/sim/trip.test.mjs EXIT=0 
+tests/account-api.test.mjs EXIT=0 
+tests/view/account-screen.test.mjs EXIT=0 

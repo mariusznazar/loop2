@@ -1,0 +1,33 @@
+Build with the fix (scene.tsx at commit 4c6b4496), 1280 x 720, Playwright CLI run-code. One line per sample.
+"cut" = the screen of the run hidden (hash to #/mapy) 100 ms after the effect appeared; back after 1.2 s; the run is paused on return.
+
+== gather (flight of an icon)
+appeared t=3497 scene-effect scene-flight anims=scene-effect-life:0
+cut t=3603 present=true anims=scene-effect-life:103
+returned +4988 present=false anims=
+returned +5145 present=false anims=
+returned +5661 present=false anims=
+== dust (cloud of a miss)
+appeared t=3527 scene-effect scene-dust anims=scene-effect-life:0
+cut t=3635 present=true anims=scene-effect-life:103
+returned +5011 present=false anims=
+returned +5174 present=false anims=
+returned +5691 present=false anims=
+== wolf (run in)
+appeared t=3506 scene-creature anims=scene-creature-in:0
+cut t=3610 present=true anims=scene-creature-in:97
+returned +5001 present=false anims=    (present = the wolf element still carries data-entering)
+returned +5159 present=false anims=
+returned +5664 present=false anims=
+== wolfend (outcome of a combat)
+appeared t=3503 scene-effect scene-creature-effect anims=scene-effect-life:0
+cut t=3605 present=true anims=scene-effect-life:103
+returned +5015 present=false anims=
+returned +5179 present=false anims=
+returned +5688 present=false anims=
+== tint (return of the tint)
+appeared t=3176 scene-tint anims=scene-tint-return:0
+cut t=3278 present=true anims=scene-tint-return:109
+returned +4679 present=false anims=    (present = the layer still carries data-returning)
+returned +4836 present=false anims=
+returned +5351 present=false anims=

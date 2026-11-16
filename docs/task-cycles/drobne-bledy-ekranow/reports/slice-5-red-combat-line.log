@@ -1,0 +1,64 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/view/combat-line.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ before the turns, the line reads the creature health and ordered program from creature data (1.1492ms)
+✖ a resolved encounter lists both actions and ends with its result (0.2611ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.2605
+
+✖ failing tests:
+
+test at tests\view\combat-line.test.mjs:12:1
+✖ before the turns, the line reads the creature health and ordered program from creature data (1.1492ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.'
+  - 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz.'
+  
+      at TestContext.<anonymous> (file:///tests/view/combat-line.test.mjs:16:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz.',
+    expected: 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\view\combat-line.test.mjs:22:1
+✖ a resolved encounter lists both actions and ends with its result (0.2611ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk pokonany.'
+  - 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk pokonany.'
+  
+      at TestContext.<anonymous> (file:///tests/view/combat-line.test.mjs:25:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk pokonany.',
+    expected: 'Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz; Zawsze → Uderz. Wilk gryzie: −7 · Mag uderza patykiem: wilk 18/24 · Wilk pokonany.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,4 @@
+Checking formatting...
+[[33mwarn[39m] foundations/decisions.md
+[[33mwarn[39m] guidelines/styleguide-browser-view.md
+[[33mwarn[39m] Code style issues found in 2 files. Run Prettier with --write to fix.

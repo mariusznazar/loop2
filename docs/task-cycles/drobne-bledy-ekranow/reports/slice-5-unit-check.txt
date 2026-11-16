@@ -1,0 +1,6 @@
+healthBelow: Napada wilk (24/24). Wilk: Zdrowie poniżej 8 pkt → Odskocz.
+opponentHealthBelow: Napada wilk (24/24). Wilk: Przeciwnik ma poniżej 10 pkt → Odskocz.
+hereBelow: Napada wilk (24/24). Wilk: Tu leży mniej niż 3 szt. patyk → Odskocz.
+itemBelow: Napada wilk (24/24). Wilk: Zapas poniżej 4 szt. patyk → Odskocz.
+campfireLeftBelow: Napada wilk (24/24). Wilk: Zostało mniej niż — ognisko 20 min → Odskocz.
+always: Napada wilk (24/24). Wilk: Zawsze → Odskocz.

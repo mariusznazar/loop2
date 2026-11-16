@@ -1,0 +1,20 @@
+cut=true
+at the cut | 30456 | walking=true | translate=-177.59% | anims=running:85 | Minuta 84
+animationcancel target=scene-mage bubbles=true t=30484
+animationcancel target=scene-sheet scene-mage-idle bubbles=true t=30484
+animationcancel target= bubbles=true t=30484
+animationcancel target=scene-sheet scene-mage-run bubbles=true t=30484
+animationcancel target= bubbles=true t=30484
+animationcancel target=scene-tint bubbles=true t=30484
+animationcancel target=scene-badge-carrier bubbles=true t=30484
+hidden | 30794 | walking=true | translate=-204.688% | anims= | 
+returned | 30825 | walking=true | translate=-204.688% | anims=paused:0 | Minuta 84 (pauza)
+after Wznów | 30850 | walking=true | translate=-204.688% | anims=running:0 | Minuta 84
+after Wznów | 30956 | walking=true | translate=-169.788% | anims=running:109 | Minuta 85
+after Wznów | 31061 | walking=true | translate=-136.814% | anims=running:212 | Minuta 85
+after Wznów | 31164 | walking=true | translate=-103.872% | anims=running:315 | Minuta 86
+after Wznów | 31266 | walking=true | translate=-70.834% | anims=running:419 | Minuta 86
+after Wznów | 31370 | walking=true | translate=-37.9561% | anims=running:521 | Minuta 88
+after Wznów | 31478 | walking=true | translate=-3.09526% | anims=running:630 | Minuta 88
+after Wznów | 31582 | walking=false | translate=none | anims= | Minuta 90
+after Wznów | 31685 | walking=false | translate=none | anims= | Minuta 90

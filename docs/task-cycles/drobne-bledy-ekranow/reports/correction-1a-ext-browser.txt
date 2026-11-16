@@ -1,0 +1,44 @@
+Extension of 1(c), 1280 x 720, Playwright CLI, npm run local. 'after' = the rule in place; 'before' = the same page with an injected style 'overflow-wrap: normal; min-width: auto' on the selectors.
+Real elements (states composed with the simulation; the account's address is 200 letters): run-header-name, copy-heading, copy-line, end-question-note, rule-list-name, program-title, program-list-item, discovery-band-text, account-menu-address. Probes (markup of the view put into its real parent): account-menu-sentence, away-report-text, accounts-email, form-note, form-warning.
+
+=== 200
+200 after run: {"run-header-name":"text 200 | right 1264 of box 1264 | height 39 | scroll 1248 client 1248 | doc 2234/1280","copy-heading":"text 207 | right 1247 of box 1247 | height 98 | scroll 492 client 492 | doc 2234/1280","copy-line":"text 27 | right 1247 of box 1247 | height 18 | scroll 492 client 492 | doc 2234/1280","end-question-note":"text 278 | right 1247 of box 1247 | height 91 | scroll 492 client 492 | doc 2234/1280","rule-list-name":"text 200 | right 1243 of box 1247 | height 73 | scroll 482 client 482 | doc 2234/1280"}
+200 wide elements after, run screen: ["img.","select.select-list"]
+200 before run: {"run-header-name":"text 200 | right 1612 of box 1612 | height 20 | scroll 1596 client 1596 | doc 2352/1280","copy-heading":"text 207 | right 1595 of box 1595 | height 39 | scroll 1597 client 840 | doc 2352/1280","copy-line":"text 27 | right 1595 of box 1595 | height 18 | scroll 840 client 840 | doc 2352/1280","end-question-note":"text 278 | right 1595 of box 1595 | height 55 | scroll 1459 client 840 | doc 2352/1280","rule-list-name":"text 200 | right 2342 of box 1595 | height 18 | scroll 1581 client 1581 | doc 2352/1280"}
+200 before programy: {"program-title":"text 200 | right 1247 of box 1264 | height 20 | scroll 1597 client 884 | doc 1960/1280","program-list-item":"text 200 | right 305 of box 322 | height 22 | scroll 1457 client 270 | doc 1960/1280"}
+200 after programy: {"program-title":"text 200 | right 1247 of box 1264 | height 39 | scroll 884 client 884 | doc 1280/1280","program-list-item":"text 200 | right 305 of box 322 | height 113 | scroll 270 client 270 | doc 1280/1280"}
+200 after chill: {"discovery-band-text":"text 329 | right 1247 of box 1247 | height 109 | scroll 490 client 490 | doc 1280/1280","run-header-name":"text 200 | right 1264 of box 1264 | height 39 | scroll 1248 client 1248 | doc 1280/1280"}
+200 before chill: {"discovery-band-text":"text 329 | right 2327 of box 1595 | height 55 | scroll 1570 client 1570 | doc 2342/1280","run-header-name":"text 200 | right 1612 of box 1612 | height 20 | scroll 1596 client 1596 | doc 2342/1280"}
+=== 40
+40 after run: {"run-header-name":"text 40 | right 335 of box 1264 | height 20 | scroll 319 client 319 | doc 1280/1280","copy-heading":"text 47 | right 1247 of box 1247 | height 20 | scroll 492 client 492 | doc 1280/1280","copy-line":"text 27 | right 1247 of box 1247 | height 18 | scroll 492 client 492 | doc 1280/1280","end-question-note":"text 118 | right 1247 of box 1247 | height 36 | scroll 492 client 492 | doc 1280/1280","rule-list-name":"text 40 | right 1106 of box 1247 | height 18 | scroll 316 client 316 | doc 1280/1280"}
+40 wide elements after, run screen: ["img."]
+40 before run: {"run-header-name":"text 40 | right 335 of box 1264 | height 20 | scroll 319 client 319 | doc 1280/1280","copy-heading":"text 47 | right 1247 of box 1247 | height 20 | scroll 492 client 492 | doc 1280/1280","copy-line":"text 27 | right 1247 of box 1247 | height 18 | scroll 492 client 492 | doc 1280/1280","end-question-note":"text 118 | right 1247 of box 1247 | height 36 | scroll 492 client 492 | doc 1280/1280","rule-list-name":"text 40 | right 1106 of box 1247 | height 18 | scroll 316 client 316 | doc 1280/1280"}
+40 before programy: {"program-title":"text 40 | right 1247 of box 1264 | height 20 | scroll 884 client 884 | doc 1280/1280","program-list-item":"text 40 | right 305 of box 322 | height 22 | scroll 298 client 270 | doc 1280/1280"}
+40 after programy: {"program-title":"text 40 | right 1247 of box 1264 | height 20 | scroll 884 client 884 | doc 1280/1280","program-list-item":"text 40 | right 305 of box 322 | height 40 | scroll 270 client 270 | doc 1280/1280"}
+40 after chill: {"discovery-band-text":"text 169 | right 1247 of box 1247 | height 55 | scroll 490 client 490 | doc 1280/1280","run-header-name":"text 40 | right 335 of box 1264 | height 20 | scroll 319 client 319 | doc 1280/1280"}
+40 before chill: {"discovery-band-text":"text 169 | right 1247 of box 1247 | height 55 | scroll 490 client 490 | doc 1280/1280","run-header-name":"text 40 | right 335 of box 1264 | height 20 | scroll 319 client 319 | doc 1280/1280"}
+
+=== 200
+200 menu after: {"account-menu-address":"right 1247 of box 1264 | height 36 | scroll 1214 client 1214 | doc 1280/1280","account-menu-sentence":"right 1247 of box 1264 | height 55 | scroll 1214 client 1214 | doc 1280/1280"}
+200 menu block width after: 1248
+200 menu before: {"account-menu-address":"right 1457 of box 1264 | height 18 | scroll 1424 client 1424 | doc 1573/1280","account-menu-sentence":"right 1573 of box 1264 | height 36 | scroll 1540 client 1540 | doc 1573/1280"}
+200 menu block width before: 1248
+200 siedziba probes after: {"away-report-text":"right 1247 of box 1247 | height 36 | scroll 1214 client 1214 | doc 1280/1280","accounts-email":"right 1239 of box 1247 | height 36 | scroll 1198 client 1198 | doc 1280/1280"}
+200 siedziba probes before: {"away-report-text":"right 1622 of box 1622 | height 36 | scroll 1589 client 1589 | doc 1639/1280","accounts-email":"right 1614 of box 1622 | height 18 | scroll 1573 client 1573 | doc 1639/1280"}
+200 programy probes after: {"form-note":"right 305 of box 305 | height 127 | scroll 270 client 270 | doc 1280/1280","form-warning":"right 305 of box 305 | height 127 | scroll 272 client 272 | doc 1280/1280"}
+200 programy probes before: {"form-note":"right 1504 of box 305 | height 36 | scroll 1469 client 1469 | doc 1504/1280","form-warning":"right 1494 of box 305 | height 36 | scroll 1461 client 1461 | doc 1504/1280"}
+=== 40
+40 menu after: {"account-menu-address":"right 1005 of box 1264 | height 18 | scroll 378 client 378 | doc 1280/1280","account-menu-sentence":"right 1247 of box 1264 | height 18 | scroll 620 client 620 | doc 1280/1280"}
+40 menu block width after: 654
+40 menu before: {"account-menu-address":"right 1005 of box 1264 | height 18 | scroll 378 client 378 | doc 1280/1280","account-menu-sentence":"right 1247 of box 1264 | height 18 | scroll 620 client 620 | doc 1280/1280"}
+40 menu block width before: 654
+40 siedziba probes after: {"away-report-text":"right 630 of box 1247 | height 18 | scroll 597 client 597 | doc 1280/1280","accounts-email":"right 1239 of box 1247 | height 18 | scroll 1198 client 1198 | doc 1280/1280"}
+40 siedziba probes before: {"away-report-text":"right 630 of box 1247 | height 18 | scroll 597 client 597 | doc 1280/1280","accounts-email":"right 1239 of box 1247 | height 18 | scroll 1198 client 1198 | doc 1280/1280"}
+40 programy probes after: {"form-note":"right 305 of box 305 | height 55 | scroll 270 client 270 | doc 1280/1280","form-warning":"right 305 of box 305 | height 55 | scroll 272 client 272 | doc 1280/1280"}
+40 programy probes before: {"form-note":"right 345 of box 305 | height 36 | scroll 310 client 310 | doc 1280/1280","form-warning":"right 335 of box 305 | height 36 | scroll 302 client 302 | doc 1280/1280"}
+
+chronicle-text (probe row in the chronicle list, 200 letters): with its rule: right 705 of list 705, height 67 (three lines, the word broken); with the rule taken away: height 34 (two lines, the 200-letter word runs out of its line).
+
+copy-line (a second run of the check, since the first run read the other line of the class, 'Niezapisane zmiany w kopii.'; the line that names the program is the one of 278 letters; run screen, 200-letter program name, one change of the copy made):
+after: ["text 27 \"Niezapisane zmiany w kopii.…\" | right 1247 of box 1247 | height 18 | scroll 492 client 492 | doc 2234/1280","text 278 \"Program NMLKJIHGFEDCBAzyxwvu…\" | right 1247 of box 1247 | height 91 | scroll 492 client 492 | doc 2234/1280"]
+before: ["text 27 \"Niezapisane zmiany w kopii.…\" | right 1247 of box 1247 | height 18 | scroll 492 client 492 | doc 2234/1280","text 278 \"Program NMLKJIHGFEDCBAzyxwvu…\" | right 2204 of box 1247 | height 55 | scroll 1449 client 1449 | doc 2234/1280"]
