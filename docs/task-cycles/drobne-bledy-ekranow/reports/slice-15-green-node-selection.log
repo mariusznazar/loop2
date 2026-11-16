@@ -1,9 +1,0 @@
-
-> loop2@0.0.0 test
-> python -B scripts/test.py tests/quality/test_node_test_selection.py
-
-.
-----------------------------------------------------------------------
-Ran 1 test in 2.458s
-
-OK
