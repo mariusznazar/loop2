@@ -614,7 +614,7 @@ test("a send after the copy's group was folded shows the new copy with every gro
 // group unfolded too. Catches the copy's folding kept across a switch.
 test("a switch of the character after the copy's group was folded shows the new copy with every group unfolded", async () => {
   // decision: D-294 "Each new copy, made at a send and at a switch of the character to another program, has every rule group unfolded, the foldings of the copy before it passing to it no more"
-  // decision: D-174 "During a map run ... its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
+  // decision: D-174 "During a map run, picking a saved program on the program panel's list opens it for editing, and while the panel shows a saved program other than the program the copy belongs to, the button „Przełącz postać na ten program” stands under the list; its click switches the character to that program at once, and the panel shows „Kopia w przejściu” again"
   await withPage(async (page) => {
     const game = await wiredPanel(
       page,
@@ -644,7 +644,7 @@ test("a switch of the character after the copy's group was folded shows the new 
 // D-164, D-294. A restart carries on the copy of its map run, so the folds of that copy stay. Catches a
 // memory of the copy cleared at every start of a map run, the restart included.
 test("a restart keeps the folds of the copy it carries on", async () => {
-  // decision: D-164 "a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included"
+  // decision: D-164 "Programs belong to the player, as one list shared by all characters; a character picks a program when it enters a map — by default the one it used last — and a manual map run or an earning loop carries out a copy taken at its start, except that a map run restart carries on the copy of the map run it replaces as it is, its unsaved changes included"
   // decision: D-294 "Which rule groups are folded lasts in the page's memory while the player moves between screens"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "run", createFolding());
@@ -1990,7 +1990,7 @@ test("opening a rule, and then a rule of another group, takes the focus into the
 // under its new row on the field it had. Catches the panel closed at the border, or put back on the
 // condition with the focus taken into the grid.
 test("a rule moved across a group border by „↓” and by its handle keeps the panel open under its new row, on the same field", async () => {
-  // decision: D-306 "moving the rule to another group, by an arrow or by the handle, closes nothing, and the panel stays open on the same field and goes with the rule to its new group"
+  // decision: D-306 "After the last field the panel stays open, and „✕”, Escape or opening another rule closes it, as does deleting the rule; moving the rule to another group, by an arrow or by the handle, closes nothing, and the panel stays open on the same field and goes with the rule to its new group"
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
     await click(rowOf(game.root, 1).querySelector(".rule-condition"));

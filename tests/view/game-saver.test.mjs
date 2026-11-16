@@ -524,7 +524,7 @@ test("the 30-second check is silent while no manual map run passes, though the s
 // the one that failed, so that a change whose save failed is lost when the tab closes.
 test("a page that becomes hidden after a failed save sends the state again with nothing changed since, once, and takes the place of the planned retry", async () => {
   // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it"
-  // decision: D-208 "each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
   await onPage(async () => {
     const held = heldClient();
     const game = gameOf(withCharacter());
@@ -558,7 +558,7 @@ test("a page that becomes hidden after a failed save sends the state again with 
 // failure, and a rhythm that finds nothing to send after a failed save.
 test("a tick of the 30-second rhythm after a failed save sends once with nothing changed since, and the planned retry does not follow it", async () => {
   // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight"
-  // decision: D-208 "each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
   await onPage(async () => {
     const held = heldClient();
     // A manual map run passes and real time changes nothing in it, so no change comes after the failure.

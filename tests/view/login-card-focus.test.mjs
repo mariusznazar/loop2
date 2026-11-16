@@ -215,7 +215,7 @@ async function sendResetForm(held, root) {
 // focus in the card's first field, not on the page. Catches a refused link that shows the card
 // without moving focus to it.
 test("a refused reset link moves focus to the first field of the card the session check shows", async () => {
-  // decision: D-381 "…after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await sendResetForm(held, root);
@@ -230,7 +230,7 @@ test("a refused reset link moves focus to the first field of the card the sessio
 // D-381: „Anuluj” of the form „Ustaw nowe hasło” is named with the refused link as a moment the card
 // takes the focus. Catches „Anuluj” that shows the card with the focus left on the page.
 test("„Anuluj” moves focus to the first field of the card the session check shows", async () => {
-  // decision: D-381 "…after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(RESET_LINK));
@@ -246,7 +246,7 @@ test("„Anuluj” moves focus to the first field of the card the session check 
 // card it then shows still follows the refused link. Catches a focus that is spent by the failed
 // check, so the retry shows the card with the focus on the page.
 test("a refused link whose session check fails and passes at the retry still moves focus to the card", async () => {
-  // decision: D-381 "…after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   // decision: D-262 "At each entry into the warning with „Spróbuj ponownie”, the first and one after a retry, focus moves to that button."
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -266,7 +266,7 @@ test("a refused link whose session check fails and passes at the retry still mov
 // and the page does not move focus into one. Catches a focus call made before the check decides
 // between the card and the game.
 test("a refused reset link of a signed-in player opens the game and no card takes focus", async () => {
-  // decision: D-381 "Where the session check leads to the game instead, nothing changes."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await sendResetForm(held, root);
@@ -300,7 +300,7 @@ const CONFIRM_REFUSED = {
 // the player at the card, so the focus goes to the card's first field. Catches a refused
 // confirmation that shows the card with the focus left on the page.
 test("a refused confirmation link moves focus to the first field of the card the session check shows", async () => {
-  // decision: D-381 "…after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(CONFIRM_LINK));
@@ -315,7 +315,7 @@ test("a refused confirmation link moves focus to the first field of the card the
 // D-381 lists the endings that move focus to the card, and a confirmation that succeeds is not one
 // of them. Catches a focus given to the card after every confirmation.
 test("a confirmation that succeeds moves no focus into the card", async () => {
-  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło”."
+  // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held, fakeAddress(CONFIRM_LINK));
