@@ -514,10 +514,13 @@ function fallFacing(mageX: number, frame: SceneSprite): Facing {
   return mageX + SCENE.mageMiddle > frame.width / 2 ? "left" : "right";
 }
 
-/** Where the drawing leads the mage: the place of its goal, or `kept` where its goal is to stay. */
-function placeOf(drawing: SceneDrawing, kept: number): number {
+/**
+ * Where the drawing leads the mage: the place of its goal, or, where its goal is to stay, the place it
+ * has reached, which `reached` gives and which is read only where the goal is to stay (D-318, D-319).
+ */
+function placeOf(drawing: SceneDrawing, reached: () => number): number {
   const { goal } = drawing.mage;
-  return goal.kind === "at" ? goal.place.x : kept;
+  return goal.kind === "at" ? goal.place.x : reached();
 }
 
 /**
@@ -544,8 +547,8 @@ function reachedX(
 
 /**
  * The scene. The mage stands where its activity leads it and walks there from where it stands; where
- * the activity leaves it standing, it keeps the place of the previous reading, and at a first draw,
- * which has none, it stands in the clearing.
+ * the activity leaves it standing, it keeps the place it has reached, which on a walk under way is
+ * where the walk has brought it, and at a first draw, which has none, it stands in the clearing.
  */
 export function Scene({
   state,
@@ -577,7 +580,7 @@ export function Scene({
   const started = fresh && events.some((e) => e.kind === "mapRunStarted");
   if (drawing !== null && (current === null || started)) {
     current = {
-      x: placeOf(drawing, SCENE.clearingX),
+      x: placeOf(drawing, () => SCENE.clearingX),
       from: null,
       facing: current?.facing ?? "right",
       walk: (current?.walk ?? 0) + 1,
@@ -586,8 +589,13 @@ export function Scene({
   }
 
   const frameWidth = drawing?.mage.idle.width ?? 0;
+  // Where the mage is led: where its goal is to stay, the place its walk under way has brought it to,
+  // so that it stops there and does not run on to the place of that walk (D-318, D-319).
+  const walked = current;
   const next =
-    drawing === null || current === null ? null : placeOf(drawing, current.x);
+    drawing === null || walked === null
+      ? null
+      : placeOf(drawing, () => reachedX(mageRef.current, walked, frameWidth));
 
   // Where the creature that attacks stands, from the place the mage stands at: the mage turns toward
   // it where it stands still and keeps the way it faces after the fight (D-316).

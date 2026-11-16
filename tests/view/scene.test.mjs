@@ -645,6 +645,58 @@ test("where the activity leaves the mage standing, it keeps the place of the pre
   });
 });
 
+// D-318, D-319. Catches a mage that, on a walk cut by an action that leads nowhere, runs on to the
+// place of the walk before, instead of standing where its walk has brought it. jsdom runs no
+// animation, so the offset CSS has reached is given to the mage's element: -100% of its own frame
+// of 64 pixels, so that the walk from the sticks (42) to the right edge (275) has brought it to
+// 275 - 64 = 211, which is 62.7976 % of the frame of 336 pixels.
+test("a walk cut by an action that leads nowhere stops the mage where it has reached, and the place it was walking to is not reached", async () => {
+  // decision: D-318 "Where its action leads nowhere"
+  // decision: D-319 "A target that changes on the way turns the mage from the place it has reached"
+  await withPage(async (page) => {
+    const { window } = page;
+    const own = window.getComputedStyle;
+    window.getComputedStyle = (element, ...rest) => {
+      const style = own.call(window, element, ...rest);
+      if (!element.matches(".scene-mage[data-walking]")) return style;
+      return {
+        getPropertyValue: (name) =>
+          name === "translate" ? "-100%" : style.getPropertyValue(name),
+      };
+    };
+    try {
+      const states = {
+        eating: doingFrom({ kind: "eat" }, 10),
+        "lighting a stick": doingFrom({ kind: "lightItem" }, 10),
+        combat: withRun(sent(), { current: null, minute: 10 }),
+        "gathering fibre": doingFrom(GATHER_FIBER, 10),
+        "patrolling for fibre": doingFrom(
+          { kind: "patrol", resource: "fiber" },
+          10,
+        ),
+      };
+      for (const [name, state] of Object.entries(states)) {
+        const { draw, mage } = await mounted(page, doingFrom(GATHER_STICK, 0));
+        await draw(
+          doingFrom({ kind: "explore" }, 5),
+          changed({ kind: "explore" }, 5),
+        );
+        const walking = standingOf(mage());
+        assert.equal(walking.walking, true, `${name}: precondition: it walks`);
+        near(walking.left, 81.8452, `${name}: precondition: to the edge 275`);
+
+        await draw(state, changed(state.run.current?.activity.action, 10));
+        const stopped = standingOf(mage());
+        near(stopped.left, 62.7976, `${name}: where the walk had brought it`);
+        assert.equal(stopped.walking, false, `${name}: no walk`);
+        assert.equal(stopped.from, "", `${name}: no place it walks from`);
+      }
+    } finally {
+      window.getComputedStyle = own;
+    }
+  });
+});
+
 // D-322. Catches a stop that leaves an animation of the scene running: the frames of
 // the mage's sheets, the fire's or the mage's walk, at the player's pause, a discovery, a death or a
 // completion; and a scene going on whose animations stand.
