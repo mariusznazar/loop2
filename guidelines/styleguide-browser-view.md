@@ -360,10 +360,13 @@ regułę `:focus-visible`, pasek menu, wiersze zdań, wspólne kontrolki, wspól
 układ ekranów (miejsce ekranów, czyli `.app-main`, `.screen` i `.screen-area`,
 oraz kolumny ekranów Programy, Mapy i Wiedza z ich `@media`) i reguły tego, co
 strona wszystkich stanów rysuje poza kontrolkami. Trzyma też regułę, której
-potrzebują elementy kilku ekranów i której nie da się podzielić bez zmiany jej
-tekstu: regułę, której lista selektorów nazywa klasy więcej niż jednego ekranu,
-i regułę zdania, które rysuje kilka ekranów. Dziś to zdanie `trip-warning` i
-animacja klatek obrazków sceny i obozu z jej `@keyframes`. Taka reguła stoi
+potrzebują elementy kilku ekranów, której nie da się podzielić bez zmiany jej
+tekstu i która nie należy do żadnej części z własnym arkuszem — tak jak reguły
+sekcji „Autorzy grafiki”, które nazywają kartę logowania i Siedzibę, należą do
+`src/browser/credits.css`: regułę, której lista selektorów nazywa klasy więcej
+niż jednego ekranu, i regułę zdania, które rysuje kilka ekranów. Dziś to, poza
+wymienionymi kolumnami, zdanie `trip-warning` i animacja klatek obrazków sceny
+i obozu z jej `@keyframes`. Taka reguła stoi
 w całości w `src/browser/styles.css`, nie w pliku własnym, a komentarz przy niej
 mówi, że stoi tam z tego powodu. Reguły jednego ekranu tam nie stoją; wygląd
 wspólnej kontrolki stoi tylko tam (D-265). Strona
