@@ -547,7 +547,7 @@ test("an answer that names no account and is not a refusal of the session shows 
 
       const retry = buttonNamed(root, "Spróbuj ponownie");
       assert.ok(retry && shown(retry), `${name}: a retry button is shown`);
-      fire(retry, "click");
+      await press(retry);
       await settle();
       assert.equal(
         held.calls.filter((entry) => entry.name === "currentAccount").length,
@@ -1273,6 +1273,25 @@ function noticeOf(root) {
   return byClass(root, "confirmation-notice").filter(shown);
 }
 
+/**
+ * The page's sentences shown under `root` — a confirmation's and a refused load's — in the order of
+ * the document, wherever the page places them.
+ */
+const shownSentences = (root) =>
+  all(root).filter(
+    (element) =>
+      (element.classList.contains("confirmation-notice") ||
+        element.classList.contains("page-notice")) &&
+      shown(element),
+  );
+
+/** The page's `<main>`, the place of the screen. */
+const mainOf = (root) =>
+  childrenOf(root).find((child) => child.localName === "main");
+
+/** The game's element, which holds its screens (D-280). */
+const gameElementOf = (root) => byClass(root, "game-view")[0];
+
 /** The page's sentence in the card, above its switch and form (D-261). */
 function assertAboveTheForm(root, notice) {
   const card = cardOf(root);
@@ -1322,8 +1341,11 @@ test("the result stands as one sentence above the game for a signed-in player an
     assert.equal(noticeOf(root).length, 1);
     assert.equal(notice.textContent, "Adres e-mail potwierdzony.");
     assert.equal(notice.classList.contains("positive"), true);
-    const main = notice.parentElement;
-    assert.equal(childrenOf(main).indexOf(notice), 0);
+    const main = mainOf(root);
+    assert.equal(shownSentences(main).indexOf(notice), 0);
+    const game = gameElementOf(main);
+    assertInOrder(main, [notice, game]);
+    assert.equal(shown(game), true);
     assert.equal(gameShown(main), true);
 
     await press(await logoutOf(root));
@@ -1394,7 +1416,7 @@ test("the sentence of a confirmation waits through a failed session check and sh
     await held.answer("confirmEmail", CONFIRMED);
     await held.answer("currentAccount", NO_CONNECTION);
     assert.equal(noticeOf(root).length, 0);
-    fire(buttonNamed(root, "Spróbuj ponownie"), "click");
+    await press(buttonNamed(root, "Spróbuj ponownie"));
     await settle();
     await held.answer("currentAccount", ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
@@ -1992,7 +2014,7 @@ test("an error of the code in the load of a downloaded save keeps the save, buil
     assert.match(line, /a1/, "the account");
     assert.doesNotMatch(line, /the-quoted-value|a fault/);
 
-    fire(buttonNamed(root, "Spróbuj ponownie"), "click");
+    await press(buttonNamed(root, "Spróbuj ponownie"));
     await settle();
     assert.deepEqual(waitingCalls(held), ["currentAccount"], "both requests");
     await held.answer("currentAccount", ACCOUNT);
@@ -2031,7 +2053,7 @@ test("an error of the code in the load of the kept state keeps it for the retry,
     assert.equal(fault.lines().length, 1);
     assert.doesNotMatch(fault.lines()[0], /the-quoted-value|a fault/);
 
-    fire(buttonNamed(root, "Spróbuj ponownie"), "click");
+    await press(buttonNamed(root, "Spróbuj ponownie"));
     await settle();
     await held.answer("currentAccount", ACCOUNT);
     assert.deepEqual(
@@ -2052,7 +2074,7 @@ test("an error of the code in the load of the kept state keeps it for the retry,
     } finally {
       fault.end();
     }
-    fire(buttonNamed(root, "Spróbuj ponownie"), "click");
+    await press(buttonNamed(root, "Spróbuj ponownie"));
     await settle();
     await held.answer("currentAccount", OTHER_ACCOUNT);
     assert.deepEqual(
@@ -3281,7 +3303,7 @@ test("a failed or uncertain answer for the saved game state shows the warning wi
       assert.equal(gameShown(root), false, name);
       assert.equal(intervals.size, 0, name);
       assert.deepEqual(forms(root), {}, name);
-      fire(buttonNamed(root, "Spróbuj ponownie"), "click");
+      await press(buttonNamed(root, "Spróbuj ponownie"));
       await settle();
       assert.deepEqual(waitingCalls(held), ["currentAccount"], name);
       await held.answer("currentAccount", ACCOUNT);
@@ -3337,17 +3359,16 @@ test("a refused save starts a new game with its one-time sentence above it, afte
       await held.answer("confirmEmail", CONFIRMED);
       await held.answer("currentAccount", ACCOUNT);
       await held.answer("loadSavedGame", save);
-      const main = childrenOf(root).find((child) => child.localName === "main");
-      const [confirmation, refusal, game] = main.children;
-      assert.equal(
-        confirmation.textContent,
-        "Adres e-mail potwierdzony.",
+      const main = mainOf(root);
+      const sentences = shownSentences(main);
+      assert.deepEqual(
+        sentences.map((element) => element.textContent),
+        ["Adres e-mail potwierdzony.", sentence],
         name,
       );
-      assert.equal(refusal.textContent, sentence, name);
+      const [, refusal] = sentences;
       assert.equal(refusal.classList.contains("page-notice"), true, name);
-      // The game's element holds its screens (D-280).
-      assert.equal(game.className, "game-view", name);
+      assertInOrder(main, [...sentences, gameElementOf(main)]);
       assert.ok(shown(byClass(root, "headquarters")[0]), name);
       assert.deepEqual(
         argsOf(held, "saveGame"),
@@ -3383,13 +3404,21 @@ test("a failed save shows its line under the menu bar, outside the menu „Konto
       line.textContent,
       "Nie udało się zapisać postępu. Gra spróbuje ponownie.",
     );
-    assert.equal(line.classList.contains("form-warning"), true);
-    const header = line.parentElement;
-    assert.equal(header.localName, "header");
-    const [bar] = childrenOf(header);
+    assert.deepEqual(
+      byClass(line, "form-warning")
+        .filter(shown)
+        .map((sentence) => sentence.textContent),
+      ["Nie udało się zapisać postępu. Gra spróbuje ponownie."],
+      "the line's sentence in warning",
+    );
+    const header = childrenOf(root).find(
+      (child) => child.localName === "header",
+    );
+    const shownInHeader = childrenOf(header).filter(shown);
+    const [bar] = shownInHeader;
     assert.ok(bar.classList.contains("menu-bar-host"), "the bar stands first");
     assert.deepEqual(
-      childrenOf(header).map((child) => child.classList.contains("save-line")),
+      shownInHeader.map((child) => child.classList.contains("save-line")),
       [false, true],
       "the line stands under the bar",
     );
@@ -5838,7 +5867,7 @@ test("a press of the state already shown clears nothing and moves no focus", asy
   });
 });
 
-// D-261, and the roles of createConfirmationNotice. Catches a sentence outside the card,
+// D-261, and the roles of the page's sentence. Catches a sentence outside the card,
 // below the switch or the heading, gone at a change of state, or in another role.
 test("the page's sentence stands in the card above the switch, or above the form where none stands, in its role, through every change of state", async () => {
   // decision: D-260 "A change of state at the switch of the login card empties every field and removes every message of the card's forms and moves focus to the address field of the form it opened, as the button „Nie pamiętam hasła” does, and the page's one sentence (D-261) stays."
