@@ -1495,6 +1495,7 @@ for (const held of HELD_OUTCOMES) {
   test(`${held.name} of the game a reset built acts at once, while the logout of the old game still waits`, async () => {
     // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails"
     // decision: D-402 "On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once"
+    // decision: D-402 "An outcome of the saver of the game a reset built acts at once, also while the logout of the old game waits for its answer."
     await onPage(async () => {
       const page = await startedPage();
       await pressLogout();
