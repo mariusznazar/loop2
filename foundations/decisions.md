@@ -8610,7 +8610,7 @@ An act of the player that depends on the passing of time goes through the store 
 - **Based on:** none
 - **Relations:** derives from D-04
 - **Verification:** tests: that the store reads the clock and passes the time elapsed to the simulation before the body of an act runs, and that its act without catch-up reads no clock. An agent compares a change with the part no test holds:
-  - complies: a new act of the screen Wiedza written as an act of the store that reads the state in its body, after the store's reading of the clock; a new character created with no reading of the clock before it
+  - complies: a new act of a screen written as an act of the store that reads the state in its body, after the store's reading of the clock; a new character created with no reading of the clock before it
   - violates: an act that calls the simulation with the state it holds with no reading of the clock before it; an act that reads the clock itself and then calls the simulation, beside the store's own reading
 - **Origin:** none
 
