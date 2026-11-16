@@ -2,8 +2,8 @@ import type { ConfirmationMessage } from "../account-api.js";
 
 /**
  * The sentences about an unconfirmed address (D-157), pure and with no DOM, so that the menu
- * „Konto” of `menu-bar.tsx` and the kitchen-sink page, which reaches no React file (D-269), write
- * the same words.
+ * „Konto” of `menu-bar.tsx` and the kitchen-sink page, which holds React (D-269), write the same
+ * words from this one module.
  */
 
 /** The role a sentence about the address is written in (D-39, D-40). */

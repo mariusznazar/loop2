@@ -22,7 +22,7 @@ bez odstępstw zgodnie z D-38.
 | `control-border`  | other      | To da się kliknąć albo wpisać.                                                                                                                                                                                                                                                                                                                                               | —          | D-40     |
 | `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                                                                                             | —          | D-40     |
 | `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                                                                                   | —          | D-40     |
-| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                                                                                        | —          | D-40     |
+| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                                                                                      | —          | D-40     |
 | `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
@@ -110,7 +110,8 @@ minimum i maksimum, rozmiary kolumn siatki układu — ani treść pliku ikony
 w `assets/icons/`. Ikona z `assets/icons/` jest rysowana jednym sposobem,
 maską: obok tekstu bierze kolor tego tekstu, więc szarzeje razem z wyszarzoną
 komórką i zmiana `text-strong` dochodzi do niej sama, a tam, gdzie obok niej nie
-ma tekstu — nad głową postaci, na plakietce ikony lecącej do maga i na rysunku mapy — stoi w `text-strong` (D-43).
+ma tekstu — nad głową postaci, na plakietce ikony lecącej do maga, na każdej plakietce odkrycia w scenie
+i na rysunku mapy — stoi w `text-strong` (D-43).
 
 Czcionki interfejsu to Geist i Geist Mono z plików produktu (D-46): tekst gry
 idzie stosem Geist, kronika i zegar przejścia stosem Geist Mono.
@@ -123,7 +124,7 @@ Wyjątki ze sceny przepuszcza test `browser-view-token-values`, bo żaden z nich
 nie jest kolorem, nazwą czcionki ani wartością w `px`, `rem` lub `em` spoza
 wymiarów układu, a to test czyta: geometria i położenia obrazków stoją w TypeScripcie
 (`src/browser/view/scene.tsx`, `src/browser/view/scene-picture.ts`) jako procenty
-kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/styles.css`,
+kadru; rozmiar ikony w plakietce jest wymiarem układu, który stoi w `src/browser/run-screen.css`,
 przy jednym rozmiarze sceny (D-349). Geometria obozu w Siedzibie — rozmiary jego obrazków, odstępy i położenia —
 stoi w TypeScripcie (`src/browser/view/camp.tsx`, `src/browser/view/camp-picture.ts`) jako liczby pikseli
 obrazka razy rozmiar piksela obrazka, wpisane w style elementów, a jej liczby w danych gry, w
@@ -131,7 +132,7 @@ obrazka razy rozmiar piksela obrazka, wpisane w style elementów, a jej liczby w
 Ten przewodnik nie wymienia w liście wartości dwóch rzeczy, które scena
 ma w tym samym pliku stylów: czasów ruchu sceny (klatek, dojścia maga, paska, lotu ikony, kurzu, powrotu odcienia i efektów odkrycia, śmierci i rozwiązania) oraz dwóch
 filtrów szarości, pauzy i martwego maga z wygasłym ogniskiem. Ich wartości stoją w regułach
-sceny w `src/browser/styles.css`, a źródła w komentarzach przy tych regułach; geometria szronu stoi w
+sceny w `src/browser/run-screen.css`, a źródła w komentarzach przy tych regułach; geometria szronu stoi w
 TypeScripcie jako grubość w pikselach obrazu sceny i jako procenty kadru, a okresy jego zębów i
 kryształków w regułach szronu. D-43 ich też
 nie liczy; czy staną się tokenami, ten przewodnik nie rozstrzyga.
@@ -333,6 +334,34 @@ w komponencie tego ekranu — w jego module albo w jego regułach arkusza styló
 nigdy przez zmianę wartości globalnego tokenu ze względu na ten jeden ekran.
 Przegląd zmiany pliku tokenów ocenia, czy zmienia ona znaczenie roli albo
 zmienia wartość globalną dla jednego ekranu.
+
+### A stylesheet of its own for each screen and each shared part
+
+- **Decision:** D-421 · D-408 · D-28
+- **Invariant:** none
+- **Good:** Nowy ekran z plikiem `.css` leżącym wprost w `src/browser/` i z własnym `<link>` w `src/browser/index.html`; reguły części, której używają dwa ekrany, w pliku tej części, a nie w arkuszu jednego z nich.
+- **Bad:** Reguły nowego ekranu dopisane na końcu `src/browser/styles.css` albo do arkusza innego ekranu; arkusz ekranu w podkatalogu `src/browser/`; strona wszystkich stanów z `<link>` do arkusza ekranu.
+
+Każdy ekran i każda część, której używa kilka ekranów, ma własny arkusz: plik
+`.css` leżący wprost w `src/browser/`, nie w podkatalogu, i własny znacznik
+`<link>` w `src/browser/index.html`, po `/styles.css`. Nowy ekran dodaje oba
+w tej samej zmianie, w której dodaje sam ekran (D-408); budowanie kopiuje plik
+tak jak inne pliki tego rodzaju, więc nie dokładasz żadnego kroku budowania.
+Plik zaczyna się komentarzem, który mówi, co zawiera, a wartości wyglądu czyta
+z tokenów przez `var(--…)` (reguła No value in place of a design token).
+Reguły ekranu piszesz w arkuszu tego ekranu, nigdy w `src/browser/styles.css`
+ani w arkuszu innego ekranu; gdy tej samej reguły potrzebują dwa ekrany, część
+wspólna dostaje własny plik, żaden ekran nie czyta arkusza drugiego. Arkusz
+ekranu nie ustawia `outline` i nie powtarza reguły `:focus-visible` (reguła
+Visible focus).
+
+`src/browser/styles.css` trzyma to, co wspólne: reguły podstawowe, jedyną
+regułę `:focus-visible`, pasek menu, wiersze zdań, wspólne kontrolki i reguły
+tego, co strona wszystkich stanów rysuje poza kontrolkami. Reguły jednego
+ekranu tam nie stoją; wygląd wspólnej kontrolki stoi tylko tam (D-265). Strona
+wszystkich stanów linkuje poza plikiem tokenów `src/browser/styles.css` i własny
+arkusz, `src/browser/kitchen-sink/kitchen-sink.css`, i nic więcej: żadnego
+arkusza ekranu.
 
 ### Every value with its source
 
@@ -676,7 +705,7 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 
 Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, wilkiem. Stoi
 w `src/browser/view/scene.tsx` i `src/browser/view/scene-picture.ts`, a jej
-ruch i szarości w `src/browser/styles.css`; nazwy plików obrazków postaci,
+ruch i szarości w `src/browser/run-screen.css`; nazwy plików obrazków postaci,
 stworzeń i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
 widoku (D-316).
 Scena jest obrazem: nie ma na niej tekstu ani przycisku, kod nie daje jej
@@ -705,7 +734,7 @@ a jasność obrazu zostawia; jej kolor to mieszanka chłodnego i ciepłego odcie
 i oba krycia to tokeny `--scene-tint-*`, a `t` (`--tint`, od 0 do 1) przychodzi z TypeScriptu jako liczba
 w stylu warstwy: żaden kolor nie jest składany z liczb w kodzie (D-43). Jak `t` idzie za passą, kiedy
 stoi w pełnym złocie i jak wraca po utracie passy, mówi D-316; długość powrotu stoi w regule powrotu
-w `src/browser/styles.css`. Utrata passy w toku przejścia daje warstwie nowy element, który startuje od
+w `src/browser/run-screen.css`. Utrata passy w toku przejścia daje warstwie nowy element, który startuje od
 odcienia, jaki stał, a animacja CSS prowadzi `--tint` do nowej wartości; pod ustawieniem ograniczenia
 ruchu odcień pokazuje od razu swój koniec. W pauzie gracza i przy odkryciu odcień stoi, a powrót po
 utracie passy w tym czasie zaczyna się dopiero, gdy scena rusza dalej. Przy śmierci, rozwiązaniu, na
@@ -724,7 +753,7 @@ całkowita, przychodzi z TypeScriptu i idzie za temperaturą ciała tak, jak mó
 ogniu ją cofa; przychodzi też wielkość jednego piksela obrazu sceny jako część szerokości i część
 wysokości kadru. CSS buduje szron z kwadratów jednego piksela obrazu sceny na jego siatce (D-271),
 z masek na czterech elementach: kolor obrysu, kolor wypełnienia i kolory kryształków to tokeny
-`--scene-frost-*`. Kształt postrzępionego brzegu stoi w regułach szronu w `src/browser/styles.css`:
+`--scene-frost-*`. Kształt postrzępionego brzegu stoi w regułach szronu w `src/browser/run-screen.css`:
 wzdłuż każdej krawędzi pas pełny nieco cieńszy od szronu, nad nim dwa rzędy zębów o różnych okresach,
 na bokach w innych okresach; kryształki to pojedyncze piksele w dwóch kratach o różnych okresach, tylko
 w wypełnieniu. Pełna grubość szronu stoi więc tylko na najgłębszych zębach. Obrys, jeden piksel obrazu
@@ -740,7 +769,7 @@ czego wyłączać: każda jego zmiana pokazuje od razu swój koniec.
 Ruch daje CSS, bez pętli rysowania: klatki maga i ognia zmieniają się w stałym
 takcie, dojście maga na miejsce trwa zawsze tyle samo, niezależnie od tempa gry,
 a pasek płynie między odczytami zegara (D-316, D-319, D-320); czasy stoją
-w `src/browser/styles.css`. Zmiana celu w drodze skręca maga z miejsca, w którym jest.
+w `src/browser/run-screen.css`. Zmiana celu w drodze skręca maga z miejsca, w którym jest.
 Mag, który zbiera, schyla się w pętli w tym samym takcie klatek przez całe zbieranie,
 od chwili, gdy stanie na miejscu czynności, zwrócony ku rekwizytowi, który zbiera, z danych
 gry: ku prawej przy patykach i jagodach, ku lewej przy mchu; przy włóknie, które rekwizytu nie ma,
@@ -753,7 +782,7 @@ tułowia ikona zasobu z danych gry, ta sama co na rysunku mapy, na małej plakie
 jak plakietka nad głową; ikona jest maską w `text-strong`, jak ikona nad głową, choć obok niej nie ma tekstu (D-365, D-40, D-43). Gdy „Zbierz” chybi,
 przy rekwizycie, a przy włóknie pod stopami maga, staje obłok kurzu z paczki Smoke & Fire
 Animated Particle [16x16], przekolorowany na brązy sceny, które odróżniają się od gruntu, na
-którym stoi (D-366, D-271). Lot i kurz biegną w CSS z `src/browser/styles.css`, każdy 300 ms, kurz
+którym stoi (D-366, D-271). Lot i kurz biegną w CSS z `src/browser/run-screen.css`, każdy 300 ms, kurz
 raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zdarzenia wywołania,
 żeby rozpoznać koniec zbierania i trafienie albo chybienie, i nie zaczyna efektu zaległego: tego, którego
 kolej przychodzi przy zatrzymaniu, tego z odczytu, który niesie kilka końców zbierania, i tego z odczytu,
@@ -770,7 +799,7 @@ każdej klatki, więc bieg, gryzienie i śmierć nie podskakują przy zmianie an
 a po lewej stronie maga i przy odbiegnięciu za prawy brzeg odbija je CSS, jak maga. Kłąb szamotaniny to ten
 sam plik kurzu co chybienie, osiem klatek w pętli w takcie klatek sceny, między wilkiem a magiem; jest mały,
 nie zakrywa żadnego z nich i nie błyska. Plik wilka i miejsce kłębu stoją w danych sceny, a czasy w regułach
-sceny w `src/browser/styles.css`; kod widoku nie nazywa żadnego pliku wilka.
+sceny w `src/browser/run-screen.css`; kod widoku nie nazywa żadnego pliku wilka.
 
 Bieg wilka z prawego brzegu kadru na jego miejsce to efekt zwykłego zdarzenia (D-317): trwa 300 ms przy
 każdym tempie, pięć klatek biegu raz, i scena zaczyna go w odczycie, którego zdarzenia niosą napaść, tylko
@@ -816,7 +845,7 @@ trybem `color`, który zostawia jasność obrazu.
   już przy magu. Ta sama ikona stoi raz, a rzecz bez ikony — warunek i drzewo umiejętności — jest
   nazwana tylko przez pas nad programem (D-122). Plakietki leżą nad odcieniem światła, więc ramka
   ma kolor roli. Miejsca wyjścia i ułożenie stoją w danych sceny, jako piksele obrazu sceny, a czasy
-  w regułach sceny w `src/browser/styles.css`.
+  w regułach sceny w `src/browser/run-screen.css`.
 - Śmierć: mag upada w sześciu klatkach arkusza śmierci z danych sceny i leży na ostatniej, szary jak
   dotąd; upada w stronę środka kadru, więc leży w obrazie, a nie za jego brzegiem ani pod szronem.
   Po śmierci z zimna nad całą sceną leży chłodna, niebieska warstwa, nad odcieniem światła i pod
@@ -835,7 +864,7 @@ a Mariusz wybrał je przy prośbie o scalenie, przyjmując propozycję (reguła 
 Szarości mają wartości z kodu, nie z tokenu. Pauza szarzy całą scenę filtrem
 `grayscale(1) brightness(0.5)` (D-322). Martwy mag i wygasłe ognisko mają jedną
 wspólną szarość, `grayscale(1) brightness(0.55)` (D-316, D-322); obie wartości
-stoją w regułach sceny w `src/browser/styles.css`, a źródła w ich komentarzach. Przy
+stoją w regułach sceny w `src/browser/run-screen.css`, a źródła w ich komentarzach. Przy
 zatrzymaniu na odkryciu scena zostaje kolorowa, a po ukończeniu mag stoi
 w kolorze; po śmierci mag jest szary (D-322). Wygasłe ognisko to ten sam obrazek
 bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).
@@ -904,7 +933,7 @@ gdzie scena pokazuje ostatni obraz od razu (D-311, D-322) — i otwiera się zno
 zakończonego przejścia (D-368). Jego treść i kolejność podaje D-368, jego
 teksty — `src/browser/view/end-window-lines.ts`; ta reguła podaje, jak okno
 wygląda, jak przykrywa ekran, jak się zamyka i jak bierze fokus. Reguły okna
-stoją w `src/browser/styles.css` pod klasami `end-window`.
+stoją w `src/browser/run-screen.css` pod klasami `end-window`.
 
 Jak przykrywa ekran:
 
@@ -918,7 +947,7 @@ Jak przykrywa ekran:
   miejsce na pasek menu i wiersz ostrzeżeń.
 - Najwyższą wysokość okna zadaje `max-height` w jednostce `vh`: wymiar układu,
   którego D-43 nie liczy jako wartości wpisanej zamiast tokenu. Jej wartość
-  stoi w regule `end-window` w `src/browser/styles.css`. Wyższa treść przewija
+  stoi w regule `end-window` w `src/browser/run-screen.css`. Wyższa treść przewija
   się w oknie, nie wypycha go.
 - Przewija się tylko część środkowa: nagłówek okna — napis „Koniec przejścia”,
   tytuł i „✕” — oraz rząd przycisków u dołu stoją w miejscu i są stale w polu
