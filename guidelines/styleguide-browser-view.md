@@ -22,7 +22,7 @@ bez odstępstw zgodnie z D-38.
 | `control-border`  | other      | To da się kliknąć albo wpisać.                                                                                                                                                                                                                                                                                                                                               | —          | D-40     |
 | `selected`        | other      | To jest wybrane w swojej grupie.                                                                                                                                                                                                                                                                                                                                             | —          | D-40     |
 | `condition-unmet` | other      | Warunek tej reguły programu albo grupy reguł nie jest spełniony; jest to pasek stanu, bez progu kontrastu.                                                                                                                                                                                                                                                                   | —          | D-40     |
-| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                                                                                      | —          | D-40     |
+| `text-strong`     | text       | Nazwa, nagłówek albo wartość, na którą patrzy się najpierw; stoi też na ikonie czynności nad głową postaci, na ikonie zasobu lecącej do maga, na ikonie na każdej plakietce odkrycia w scenie i na ikonach rysunku mapy, choć obok nich nie ma tekstu.                                                                                                                                                                      | —          | D-40 · D-43 |
 | `text`            | text       | Treść do przeczytania; stoi też jako wypełnienie paska wymagania warunku mapy w nagłówku, póki wymaganie nie jest spełnione, choć wypełnienie nie jest tekstem.                                                                                                                                                                                                              | —          | D-40     |
 | `text-secondary`  | text       | Opis, wyjaśnienie albo dopisek, także dopisek pod temperaturą i pod sytością w wierszu ciała, poza „marznie” i „głoduje”.                                                                                                                                                                                                                                                    | —          | D-40     |
 | `text-label`      | text       | Nazwa pola albo sekcji, albo data.                                                                                                                                                                                                                                                                                                                                           | —          | D-40     |
@@ -356,9 +356,17 @@ ekranu nie ustawia `outline` i nie powtarza reguły `:focus-visible` (reguła
 Visible focus).
 
 `src/browser/styles.css` trzyma to, co wspólne: reguły podstawowe, jedyną
-regułę `:focus-visible`, pasek menu, wiersze zdań, wspólne kontrolki i reguły
-tego, co strona wszystkich stanów rysuje poza kontrolkami. Reguły jednego
-ekranu tam nie stoją; wygląd wspólnej kontrolki stoi tylko tam (D-265). Strona
+regułę `:focus-visible`, pasek menu, wiersze zdań, wspólne kontrolki, wspólny
+układ ekranów (miejsce ekranów, czyli `.app-main`, `.screen` i `.screen-area`,
+oraz kolumny ekranów Programy, Mapy i Wiedza z ich `@media`) i reguły tego, co
+strona wszystkich stanów rysuje poza kontrolkami. Trzyma też regułę, której
+potrzebują elementy kilku ekranów i której nie da się podzielić bez zmiany jej
+tekstu: regułę, której lista selektorów nazywa klasy więcej niż jednego ekranu,
+i regułę zdania, które rysuje kilka ekranów. Dziś to zdanie `trip-warning` i
+animacja klatek obrazków sceny i obozu z jej `@keyframes`. Taka reguła stoi
+w całości w `src/browser/styles.css`, nie w pliku własnym, a komentarz przy niej
+mówi, że stoi tam z tego powodu. Reguły jednego ekranu tam nie stoją; wygląd
+wspólnej kontrolki stoi tylko tam (D-265). Strona
 wszystkich stanów linkuje poza plikiem tokenów `src/browser/styles.css` i własny
 arkusz, `src/browser/kitchen-sink/kitchen-sink.css`, i nic więcej: żadnego
 arkusza ekranu.
