@@ -1,6 +1,6 @@
 /**
  * The screen of a manual map run in React, Przejście (D-311, D-280, D-281, D-282, D-19, D-122, D-313,
- * D-368, D-173): one header — the character's name, the map's name, the clock, the bar of the
+ * D-368, D-173, D-407): one header — the character's name, the map's name, the clock, the bar of the
  * solving condition and the buttons — over three areas, each a `screen-area` element a narrower
  * layout can rearrange, in this order in the document: the world, the program, the band of a
  * discovery above the program panel, and the area under the drawing, with the tabs „Kronika” and
@@ -9,17 +9,17 @@
  * program in the right one, and one under the other in a narrow window. A rule panel opens in the
  * program panel, under its row (D-288), and changes neither the tabs nor the tab picked. The
  * question „Zapisać, odrzucić, wrócić?” of „Zakończ” is the program panel's: it stands inside the
- * panel, just above the heading of the copy, and the screen only tells the panel when to show it
- * (`setQuestion`). The end-of-run window (D-368) stands over the screen of an ended map run while
- * the game view tells the screen it is open (`setWindow`): the header and the three areas are then
- * `hidden`, which keeps them in the tree with their state, so the window covers the screen with its
- * header and the menu bar of the page, outside the game view, stays above it; the screen gives the
- * window the entries of „Ostatnie minuty” its chronicle memory holds, and carries out the window's
- * „✕”, Escape and „Dodaj regułę z tym” itself, asking the game view for the rest. The page holds
- * the screen behind one boundary, `createRunScreen`, as it holds the screen Postać: an element of
- * its own for the page to place, a first render that is synchronous, `update(state, run, events)`,
- * `setQuestion(open)`, `setWindow(open)` and `focus()`, called from an event handler or the clock,
- * never from render or an effect. The screen takes its map run as a parameter and reads
+ * panel, just above the heading of the copy, and the panel reads it from the state of the screen
+ * Przejście itself. The end-of-run window (D-368) stands over the screen of an ended map run while
+ * the state of the screen Przejście (`run-screen-state.ts`), which the screen reads itself (D-407),
+ * shows it: the header and the three areas are then `hidden`, which keeps them in the tree with
+ * their state, so the window covers the screen with its header and the menu bar of the page,
+ * outside the game view, stays above it; the screen gives the window the entries of „Ostatnie
+ * minuty” its chronicle memory holds, and carries out the window's „✕”, Escape and „Dodaj regułę z
+ * tym” itself, asking the game view for the rest. The page holds the screen behind one boundary,
+ * `createRunScreen`, as it holds the screen Postać: an element of its own for the page to place, a
+ * first render that is synchronous, `update(state, run, events)` and the focus methods, called from
+ * an event handler or the clock, never from render or an effect. The screen takes its map run as a parameter and reads
  * no map run of the game state by itself (D-281): it draws from a game state holding the map run it
  * is given, and hands the program panel that state. The program panel keeps its own root; the screen
  * puts its element into the program's area. The screen holds the hovered tile's key, which the
@@ -27,7 +27,7 @@
  * area for its scene (D-04). A click on „Teraz” or „Potem” in the world area asks the program panel
  * to scroll to the rule the row names (D-336). Nothing runs when the module is imported.
  */
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import type { MapId } from "../sim/data/maps.js";
@@ -39,17 +39,30 @@ import { EndWindow, type EndWindowControls } from "./end-window.js";
 import type { ProgramPanel } from "./program-panel.js";
 import { RunHeader, type RunHeaderControls } from "./run-header.js";
 import type { EndQuestionControls } from "./end-question.js";
+import {
+  useRunScreenSnapshot,
+  type RunScreenReading,
+} from "./run-screen-reading.js";
 import { TabsArea } from "./tabs-area.js";
 import { WorldArea } from "./world-area.js";
 
 /** The entries of „Ostatnie minuty” the screen asks its chronicle memory for (D-368). */
 const LAST_MINUTES = 4;
 
+/** The reading of a screen given no state of the screen Przejście: it holds no question and no window. */
+const NO_WINDOW: RunScreenReading = {
+  subscribe: () => () => undefined,
+  snapshot: (() => {
+    const none = { question: null, windowShown: false };
+    return () => none;
+  })(),
+};
+
 /**
  * What the screen asks of the game view: the header's buttons, the three answers of the question
  * „Zapisać, odrzucić, wrócić?” and the acts of the end-of-run window the screen does not carry out
- * itself. `openWindow` and `closeWindow` change the game view's memory of whether the window
- * stands, and the game view tells the screen the result with `setWindow`; `openMap` ends the map run
+ * itself. `openWindow` and `closeWindow` change the state of the screen Przejście, which the screen
+ * reads to show or take away the window; `openMap` ends the map run
  * as `end` does and opens the card of the map named, asking the question where the copy holds
  * unsaved changes (D-173, D-53).
  */
@@ -77,20 +90,8 @@ export type RunScreen = {
   update(state: GameState, run: GameMapRun, events: readonly GameEvent[]): void;
   /** Moves keyboard focus to the screen, for the page to call when a send opens it. */
   focus(): void;
-  /**
-   * Shows the question „Zapisać, odrzucić, wrócić?” in the program panel, just above the heading of
-   * the copy, while `open`, and takes it away otherwise; the game view decides when it stands
-   * (D-173). Showing what is shown changes nothing.
-   */
-  setQuestion(open: boolean): void;
   /** Moves keyboard focus to the first answer of the question, where it stands. */
   focusQuestion(): void;
-  /**
-   * Shows the end-of-run window over the screen while `open` and the map run has ended, hiding the
-   * header and the three areas under it, and takes it away otherwise; the game view decides when it
-   * stands (D-368). Showing what is shown changes nothing.
-   */
-  setWindow(open: boolean): void;
   /**
    * Moves keyboard focus to the header's button named `name` where it stands and is shown: after
    * „✕” or Escape to „Koniec przejścia”, after a restart to „Restart”.
@@ -103,7 +104,7 @@ export type RunScreen = {
 /** What the screen needs of the program panel of the screen of a map run. */
 export type RunScreenPanel = Pick<
   ProgramPanel,
-  "element" | "update" | "addDiscoveredRule" | "setQuestion" | "scrollToRule"
+  "element" | "update" | "addDiscoveredRule" | "scrollToRule"
 >;
 
 type RunScreenViewProps = {
@@ -112,8 +113,8 @@ type RunScreenViewProps = {
   /** The events of the simulation call that returned `state`; none before the first `update`. */
   events: readonly GameEvent[];
   controls: RunScreenControls;
-  /** Whether the game view has the window open; it stands only over an ended map run. */
-  windowOpen: boolean;
+  /** The state of the screen Przejście, which says whether the window stands; it stands only over an ended map run. */
+  reading: RunScreenReading;
   /** What the window's controls carry out. */
   windowControls: EndWindowControls;
   /** The program panel's element, which keeps its own root. */
@@ -137,7 +138,7 @@ function RunScreenView({
   state,
   events,
   controls,
-  windowOpen,
+  reading,
   windowControls,
   panelElement,
   chronicle,
@@ -146,11 +147,20 @@ function RunScreenView({
 }: RunScreenViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
   const panelPlace = useRef<HTMLDivElement>(null);
+  const { windowShown } = useRunScreenSnapshot(reading);
   const covering =
-    windowOpen &&
+    windowShown &&
     state !== null &&
     state.run !== null &&
     mapRunEnded(state.run);
+
+  // The window takes the focus as it appears, which scrolls the page to its top edge, past the menu
+  // bar of the page where the player had scrolled down the screen it covers now; the page goes to
+  // its top, so the menu bar stands above the window in sight (D-368). The window's own effect runs
+  // before this one, so the page goes to its top after the focus has moved.
+  useEffect(() => {
+    if (covering) document.documentElement.scrollTop = 0;
+  }, [covering]);
 
   // The program panel is an element outside this tree: the effect puts it into its area and takes it
   // out again at cleanup.
@@ -221,13 +231,15 @@ function RunScreenView({
  * panel it opens is drawn on the uncovered screen, and „✕” of the window and Escape ask for the
  * closing and move the focus to „Koniec przejścia” in the header. The chronicle memory is
  * the game view's: the area with the tabs reads it and tells it the tab and the filter picked, and
- * the game view records into it (D-339). The render is synchronous, so the areas stand in the
- * element when this returns.
+ * the game view records into it (D-339). `reading` is the state of the screen Przejście, which the
+ * screen reads to show the window; given none, the screen shows none. The render is synchronous, so
+ * the areas stand in the element when this returns.
  */
 export function createRunScreen(
   panel: RunScreenPanel,
   controls: RunScreenControls,
   chronicle: Chronicle,
+  reading: RunScreenReading = NO_WINDOW,
 ): RunScreen {
   const element = document.createElement("section");
   element.className = "screen run-screen";
@@ -235,13 +247,6 @@ export function createRunScreen(
   const onAddRule = () => panel.addDiscoveredRule();
   const onShowRule = (ruleId: RuleId) => panel.scrollToRule(ruleId);
   const root = createRoot(element);
-  /** Whether the game view has the window open; the view draws it over an ended map run only. */
-  let windowOpen = false;
-  /** What was last drawn, so a change of the window draws the same state and the same events again. */
-  let drawn: { state: GameState | null; events: readonly GameEvent[] } = {
-    state: null,
-    events: [],
-  };
 
   function focusHeaderButton(name: string): void {
     [...element.querySelectorAll<HTMLButtonElement>(".run-header button")]
@@ -264,15 +269,13 @@ export function createRunScreen(
   };
 
   function draw(state: GameState | null, events: readonly GameEvent[]): void {
-    drawn = { state, events };
-    const hadWindow = element.querySelector(".end-window") !== null;
     flushSync(() => {
       root.render(
         <RunScreenView
           state={state}
           events={events}
           controls={controls}
-          windowOpen={windowOpen}
+          reading={reading}
           windowControls={windowControls}
           panelElement={panel.element}
           chronicle={chronicle}
@@ -281,11 +284,6 @@ export function createRunScreen(
         />,
       );
     });
-    // The window takes the focus as it appears, which scrolls the page to its top edge, past the menu
-    // bar of the page where the player had scrolled down the screen it covers now; the page goes to
-    // its top, so the menu bar stands above the window in sight (D-368).
-    if (!hadWindow && element.querySelector(".end-window") !== null)
-      document.documentElement.scrollTop = 0;
   }
   draw(null, []);
 
@@ -303,16 +301,8 @@ export function createRunScreen(
     focus(): void {
       element.focus();
     },
-    setQuestion(open: boolean): void {
-      panel.setQuestion(open ? controls : null);
-    },
     focusQuestion(): void {
       element.querySelector<HTMLElement>(".end-question button")?.focus();
-    },
-    setWindow(open: boolean): void {
-      if (open === windowOpen) return;
-      windowOpen = open;
-      draw(drawn.state, drawn.events);
     },
     focusHeaderButton,
     focusWindow(): void {
