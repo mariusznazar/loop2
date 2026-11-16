@@ -5852,7 +5852,8 @@ A character's warmth is its body temperature in degrees Celsius, counted with te
 - **Relations:** none
 - **Verification:** tests: warmth as the body temperature in degrees Celsius, shown cut down to
   tenths in the body row, and a condition on warmth taking a number with tenths and holding it as
-  the decimal the player reads.
+  the decimal the player reads, and writing it in the sentence of a rule and of a rule group with
+  the decimal comma of the body row, „36,5 °C”.
 - **Origin:** none
 
 *Rationale:* A body temperature reads as what it means for the character — a mage below the threshold of chill is cold — and the cold of a game map stands in the same unit, so a colder game map is a lower number of the same kind. Tenths let the player set a threshold between two whole degrees, while the body changes by hundredths of a degree in a game minute. The unit and its numbers are those of loop, the game loop2 starts from. Accepted with it: a condition on warmth takes a number with tenths — in loop its default is 36.5 and its step 0.1 — so the check of a program takes tenths in that condition, not whole numbers only.
@@ -11305,9 +11306,7 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it. For an effect running when the scene is hidden, an agent compares a change with the part no test of this decision holds:
-  - complies: the flight of an icon or the cloud of dust whose animation the browser cancels because the scene is hidden — the player left the screen of the run, or the end-of-run window stands — over at once and not drawn again when the scene is shown
-  - violates: the same effect left standing at its first frame, so that it plays from its start when the screen is shown again
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it; the flight of an icon and the cloud of dust whose animation the browser cancels because the scene is hidden over at once, and not played from their start when the scene is drawn again.
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.
