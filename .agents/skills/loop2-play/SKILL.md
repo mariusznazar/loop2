@@ -7,12 +7,10 @@ description: How an agent runs the game on this computer and operates it in a re
 
 `npm run local` builds the game and runs it on this computer over HTTPS, with a database made for
 that start. An agent operates it in a real browser with Playwright CLI, and with Playwright MCP
-where the CLI fails. A check made here touches neither the test server nor a player's save.
+where the CLI fails (D-417). A check made here touches neither the test server nor a player's save.
 
-This inspection adds to what a person checks and replaces none of it: a changed journey, real events
-and focus stay checked by a person (D-75, D-88), and a Playwright test kept in the repository would
-be the permanent test of them that those decisions defer. Nothing of it stays in the repository of
-loop2: no Playwright test, no frame, no snapshot, no screenshot. A screenshot you
+This inspection adds to what a person checks and replaces none of it. Nothing of it stays in the
+repository of loop2: no Playwright test, no frame, no snapshot, no screenshot. A screenshot you
 show the human goes to the public repository `mariusznazar/screenshots` and reaches the
 description of the request as an image (section "Show a screenshot to the human"); the rest of its
 evidence goes into the report.
@@ -42,9 +40,7 @@ Every account is made through the login card, with a made-up address at `example
 
 ## Operate the game with Playwright CLI
 
-Playwright CLI is the first way because its maker recommends it to agents writing code for the
-tokens it saves, though with no figures, and it holds the same engine as the Playwright MCP server,
-so going back to MCP costs almost nothing.
+Playwright CLI is the first way of operating the game (D-417).
 
 `playwright-cli` is a program installed on the computer, not a dependency of the repository. Where
 `playwright-cli --version` fails, stop and tell the human: installing it is their step.
@@ -169,11 +165,8 @@ Of what a check makes, only a screenshot reaches the description of the request;
 in words and keep logs and outputs in the report. A screenshot you show lies in
 `mariusznazar/screenshots`, a public repository that holds only the screenshots of public products,
 in the directory `loop2/` and in it a directory named as your cycle (the name of the cycle's
-directory under `.runs/task-cycles/`). The owner accepts a request by seeing the screen in its
-description, without running the game, and does not go back to views of half a year ago, so the
-repository may be cleared after a long time, and the images of old requests then stop showing; a
-repository of its own keeps the images out of the history of loop2, which every clone downloads.
-The repository is public and keeps its history, so look at the screenshot
+directory under `.runs/task-cycles/`), as D-418 settles. The repository is public and keeps its
+history, so look at the screenshot
 before you push it: it may show only the made-up account of this start, an address at
 `example.test`, and no real address, password or token. Never write an access value into a file of
 the repository or into a request.
@@ -184,8 +177,7 @@ playwright-cli screenshot --filename=.playwright-cli/<name>.png
 
 On Playwright MCP, call `browser_take_screenshot` with the `filename` `.playwright-cli/<name>.png`
 in its place. Then push it yourself, with the owner's `gh` account, already signed in on this
-computer, and no step of the human: a hand-over to the human would put a step of the human into
-every cycle that shows a screen. The push goes to a branch named `loop2/<cycle>`, never to
+computer, and no step of the human (D-419). The push goes to a branch named `loop2/<cycle>`, never to
 `main`, so that two cycles pushing at once do not meet; the clone stands in `.runs/`, which git
 ignores:
 
@@ -222,7 +214,7 @@ on.
 
 ## Where the CLI fails: Playwright MCP
 
-Use this way only from a session of the agent that started in the worktree of your cycle. Playwright
+Use this way only from a session of the agent that started in the worktree of your cycle (D-420). Playwright
 MCP by default keeps one browser profile for the workspace root of its client, which is taken to
 be the directory the session started in, and a profile serves one browser at a time, so two
 sessions started from one directory block each other.
