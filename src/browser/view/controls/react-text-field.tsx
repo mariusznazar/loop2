@@ -95,14 +95,30 @@ export type ReactFormSentenceProps = {
 };
 
 /**
+ * The tag, class and role of the sentence under a form that tells of a server refusal or a lost
+ * connection. `ReactFormWarning` draws it, and the panel built outside React that stands in place
+ * of a card React took down reads the same three values, so the two draw one sentence (D-265).
+ */
+export const FORM_WARNING = {
+  tag: "p",
+  className: "form-warning",
+  role: "alert",
+} as const;
+
+/**
  * The one sentence under a form that tells of a server refusal or a lost connection, announced to
  * assistive technology when it appears.
  */
 export function ReactFormWarning({ sentence }: ReactFormSentenceProps) {
+  const Tag = FORM_WARNING.tag;
   return (
-    <p className="form-warning" role="alert" hidden={sentence === null}>
+    <Tag
+      className={FORM_WARNING.className}
+      role={FORM_WARNING.role}
+      hidden={sentence === null}
+    >
       {sentence ?? ""}
-    </p>
+    </Tag>
   );
 }
 
