@@ -757,11 +757,34 @@ async function signInOn(held, root, loaded) {
   await held.answer("loadSavedGame", loaded);
 }
 
-/** The page waits as it does while it asks the server, with the sentence under the bar, and no game. */
+/**
+ * The page waits where a sign-in after the error stays, with the sentence of the failure in the
+ * header alone and no game. D-323: at that waiting screen the sentence "stands alone, with no
+ * „Sprawdzanie logowania…” beside it" (To do 4 of the task), so the waiting screen's place stands
+ * and draws no text and no button.
+ */
 function assertWaitingWithSentence(root, intervals, reason) {
   assert.equal(sentencesShown(root).length, 1, `${reason}: one sentence`);
   assert.ok(headerOf(root).contains(sentencesShown(root)[0]), reason);
   assert.ok(shown(byClass(root, "session-check")[0]), `${reason}: waiting`);
+  assert.equal(
+    all(root).filter(
+      (element) =>
+        shown(element) && element.textContent === "Sprawdzanie logowania…",
+    ).length,
+    0,
+    `${reason}: „Sprawdzanie logowania…” is not shown`,
+  );
+  assert.equal(
+    byClass(root, "session-check")[0].textContent,
+    "",
+    `${reason}: the waiting screen's root draws no text`,
+  );
+  assert.equal(
+    tagged(byClass(root, "session-check")[0], "button").length,
+    0,
+    `${reason}: the waiting screen's root draws no button`,
+  );
   assert.equal(cardOf(root), undefined, `${reason}: no card`);
   assert.equal(
     byClass(root, "program-panel").length +
