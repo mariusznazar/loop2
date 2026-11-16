@@ -1249,7 +1249,8 @@ jsdom and happy-dom, and failed on that screen's hand-made model. A ready-made i
 calls left as they are, which the tests need, because when the choice was made the hand-made model
 took the first part of the account screen's tests, and most of the cases there read the inside of
 the model directly, fired events through its own `.fire` or walked the whole page; the cases that walk the page also
-build the screens still in DOM, so what stands in for the model has to carry those too. Other tests
+walk what the page builds by hand, the header, the main block and the panel of a card taken down, so
+what stands in for the model has to carry those too. Other tests
 had stand-ins of their own for the document, among them those that draw the section of credits, and
 only the files of screens built with React leave theirs. Each rule of the harness answers what
 such an imitation leaves out: with the window installed after React loads a controlled field's
@@ -2893,6 +2894,10 @@ signed-in player too. When React takes the card down after an exception no code 
 handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” stands alone in the card's place
 (D-323).
 
+At each entry into the warning with „Spróbuj ponownie”, the first and one after a retry, focus moves
+to that button. The button is one element through the refusal, the retry, in which it reads
+„Sprawdzanie…” and is disabled, and the next refusal.
+
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96 · narrows D-156
@@ -2900,7 +2905,9 @@ handled, the sentence „Coś w grze się zepsuło — odśwież stronę.” sta
   page's body, the header and the place of the screen hidden; „Sprawdzanie logowania…” at a reload,
   after a sign-in and after a way out of the reset form, and the warning with „Spróbuj ponownie”,
   each with the header shown and no card; a card that React takes down, alone and on the page,
-  leaving „Coś w grze się zepsuło — odśwież stronę.” alone in its place. An agent compares a change
+  leaving „Coś w grze się zepsuło — odśwież stronę.” alone in its place; „Spróbuj ponownie” one
+  button through a refusal, a retry and the next refusal, reading „Sprawdzanie…” and disabled while
+  it retries, and taking the focus at the first refusal and at the refusal after the retry. An agent compares a change
   with the part no test holds:
   - complies: a page opened by a confirmation link showing „Potwierdzanie adresu…” with the header
     and no card, for a signed-in and a signed-out player alike
@@ -2913,9 +2920,12 @@ written here, where the rule is read, because a screen the card has left is no l
 the card, yet this rule read to the letter would look contradictory to D-323, which places the
 sentence there; a reader of this decision meets the exception where the rule stands, and a search of
 the foundation finds no apparent collision. The sentence stands alone, outside React, since React
-takes down the root of the card with whatever stood in it. Accepted with it: at each entry a
-signed-out visitor sees the header for a moment before the card comes, and the waiting screen shows
-no credits, which stand one click away on the login card and on Siedziba (D-27).
+takes down the root of the card with whatever stood in it. The button waits disabled while it
+retries and a disabled control cannot hold focus, so each refusal moves focus back to it, the one
+after a retry too, and a player at the keyboard keeps the place; the button stays one element
+through the retry, so what moves focus to it never meets a button that is gone. Accepted with it: at each
+entry a signed-out visitor sees the header for a moment before the card comes, and the waiting
+screen shows no credits, which stand one click away on the login card and on Siedziba (D-27).
 *Rejected:* the waiting in the card — a signed-in player sees the login card at every reload, as if
 logged out; the header and a footer beside the card too — the visitor sees one card (D-96), and
 D-27 refuses credits in a footer of every screen, dozens of rows standing below the game; a folded
@@ -3926,15 +3936,17 @@ An account with the previous-save privilege has on the screen Programy, at any t
 
 An account with the previous-save privilege has in the game the control „Zacznij od zera”, which opens a confirmation saying that the present game goes to the place of the previous save, that a previous save already there is replaced and its programs can no longer be pulled, and that the game starts from zero; the click that opens the confirmation changes nothing, and an account without the privilege has no such control. After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`, holding while it waits the outcomes of the old game's saver, which it acts on only if the reset fails, with the control disabled and „Wyloguj” not pressable, and the server, in one transaction that reads the account's blocked state, its privilege and its saved game state, moves the saved game state to the previous save (D-399) and leaves the account with none, answering 204 also where there was nothing to move. On 204 the page replaces the game with a new one built as for an account with no saved game state, revision 0 and no save sent at once, with one sentence above it that the game starts anew and the previous game waits as the previous save; D-209 is unchanged, so a save of the old game that reaches the server later, based on a revision other than 0, is refused.
 
+Where an error that no code of the game handled came first (D-323), a reset that succeeds closes the game that stood, with its saving, and builds none, so the page shows the waiting screen with the sentence of the failure alone. An outcome of the saver of the game a reset built acts at once, also while the logout of the old game waits for its answer.
+
 - **Scope:** account-server, browser-view
 - **Based on:** none
-- **Relations:** derives from D-399 · derives from D-400
-- **Verification:** invariants: previous-save-slot. tests: the control „Zacznij od zera” only for an account with the privilege, the click that opens the confirmation sending and changing nothing, and the confirmation naming the previous save, its replacement and the start from zero; the confirmed reset sent as the next request with no save before it, the control disabled and „Wyloguj” not pressable while it waits, and the old saver's outcomes held then and acted on only if the reset fails; the server reading the block, the privilege and the saved game state in the transaction of the move, leaving the account with no saved game state and answering 204 also when nothing moved; on 204 a new game on revision 0 with its sentence above it and no save sent at once, and a later save on another revision refused. An agent compares a change with the part no invariant and no test holds:
-  - complies: the confirmation saying that the programs of a previous save already there can no longer be pulled
-  - violates: a confirmation that names the replacement of the previous save but not the loss of its programs
+- **Relations:** derives from D-399 · derives from D-400 · derives from D-323
+- **Verification:** invariants: previous-save-slot. tests: the control „Zacznij od zera” only for an account with the privilege, the click that opens the confirmation sending and changing nothing, and the confirmation naming the previous save, its replacement and the start from zero; the confirmed reset sent as the next request with no save before it, the control disabled and „Wyloguj” not pressable while it waits, and the old saver's outcomes held then and acted on only if the reset fails; the server reading the block, the privilege and the saved game state in the transaction of the move, leaving the account with no saved game state and answering 204 also when nothing moved; on 204 a new game on revision 0 with its sentence above it and no save sent at once, and a later save on another revision refused; a reset that succeeds after an error nothing handled leaving the waiting screen with the sentence of the failure alone, with no game, no saving and nothing sent. An agent compares a change with the part no invariant and no test holds:
+  - complies: the confirmation saying that the programs of a previous save already there can no longer be pulled; a conflict or a missing session answered to the saver of the game a reset built, while the logout of the old game still waits, reloading the game or showing the forms at once
+  - violates: a confirmation that names the replacement of the previous save but not the loss of its programs; an outcome of the saver of the game a reset built held until the logout of the old game answers
 - **Origin:** none
 
-*Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
+*Rationale:* a player who tests the game starts from zero with each raising of the version, so the reset is a button in the game with a confirmation and costs no SSH session and `docker exec` each time. The present game goes to the previous save, so its programs can be pulled afterwards, and the confirmation says that a previous save already there is replaced, since the player cannot see the previous save and would not otherwise know. The page sends no save before the reset because programs are saved right after each edit (D-207), so the stored saved game state already holds them. D-209 stays as it is: after the reset the account has no saved game state, so a save based on 0 is accepted and gets revision 1 and any other basis is refused, and the reset names no basis itself, since the player confirmed the act and from a stale card it moves what the server holds, which still lands in the previous save. After an error nothing handled the page builds no game (D-323), so a reset that succeeds leaves none: the game that stood would keep its clock and its saving over a waiting screen, and a save of it on the basis 0 would be accepted over the start from zero the player asked for. The saver of the game a reset built is that game's own, so its outcomes are held neither with those of the old game nor until the old game's logout answers; held, a conflict of the new game would never reload it and a missing session would never show the forms. Accepted with it, all in the account of the player who has the privilege: the last moments of the old game not saved at the confirmation, up to the 30 seconds of a manual map run (D-207) or a save in flight, are not in the previous save; a card open across the reset gets the refusal of D-209, loads the server's saved game state, which is none, and builds a new game with the sentence of D-209, which then reads imprecisely; a card whose basis is 0, or equals a revision that the saves of the new game have since reached, is accepted over the new game, which is then lost, never the previous save; a tab of an older version after the reset passes D-210, which compares with a stored saved game state that is none, and the next move into the previous save may replace the document the reset put there, in a rare sequence of an older tab open across a deployment and a reset; a reset whose answer is lost shows its failure sentence and heals itself, the next save being refused as a conflict and the page loading the server's none.
 *Rejected:* the reset as a command of the operator, like the block — every reset is an SSH session and a `docker exec`; the reset put off to the work on carrying saves between versions — a reset comes today with every raising of the version, and a new account has nothing to pull; the revision continuing from that of the previous save after a reset — it closes the case of a card whose basis equals a revision the new game has reached, with one more read in the save write, but it changes D-209, which this decision keeps, couples two tables and calls for a sentence of its own.
 
 ### D-403 — What does the load do with a saved game state whose Understanding lacks „Eksploruj”?
@@ -4068,7 +4080,7 @@ compiler emitting the page's modules and esbuild joining them into the one file 
 script's lines that serve files.
 
 - **Scope:** browser-view · build-tools
-- **Based on:** browser-bare-import-resolution
+- **Based on:** browser-bare-import-resolution · react-entry-build
 - **Relations:** derives from D-45 · derives from D-76 · derives from D-265 · derives from D-263 ·
   derives from D-266
 - **Verification:** an agent compares a change with the decision:
@@ -4085,8 +4097,9 @@ the game's build uses, from the compiler's output, so there is one way of buildi
 and not two. The page shows what the player gets: a shared control has one form, and a page that
 drew another would show a form no player sees. Accepted with it: the page's command stands at a
 trust boundary and its build step changes, so review checks that the lines that serve files and the
-directory served stand as before (D-76); the bundle holds React's development build, which reports a
-misused control in the console, and the page, a tool of the developer, takes its larger size.
+directory served stand as before (D-76); the bundle holds React's development build, which the entry of
+React's package loads wherever the bundle does not mark production and which reports a misused
+control in the console, and the page, a tool of the developer, takes its larger size.
 *Rejected:* the page kept on DOM forms that live only for it, with D-265 giving the reason they live —
 it costs nothing at once, but each new control and each new attribute is written twice, a test
 keeping the forms alike stays, and the page shows a form the player never gets.
@@ -4356,9 +4369,9 @@ The rows of sentences are three roots, the row of the failure, the row of saving
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-03 · derives from D-323
-- **Verification:** tests: the question „Zapisać, odrzucić, wrócić?” and the end-of-run window held outside the screen Przejście, which draws each only while the game view tells it to and asks the game view to close the window, and outside the game state and the document it saves; the folding of the rule groups as one memory of the page given to the program panels of Programy and Przejście, a fold on one shown on the other at once, with no update of its own. An agent compares a change with the part no test holds:
-  - complies: a new screen built as a root of its own, whose factory receives the game state from the store and the memory of its unfolded trees, shared with another screen, as a memory of the page read through `useSyncExternalStore`; a setting only that screen reads kept in its component; the row of the failure drawn once when the page starts into a host of its own that stays hidden, and shown at the error by the page with no render
-  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a new memory two screens share held in the component of one of them; the state of the screen Przejście moved from `run-screen-state.ts` into the game view's controller, `game-view.ts`; the waiting screen, a row of sentences or the card drawn inside one root of the page's skeleton; the sentence of the failure drawn in the root of another place of the page, or rendered by a root at the error
+- **Verification:** tests: the question „Zapisać, odrzucić, wrócić?” and the end-of-run window held outside the screen Przejście, which draws each only while the game view tells it to and asks the game view to close the window, and outside the game state and the document it saves; the folding of the rule groups as one memory of the page given to the program panels of Programy and Przejście, a fold on one shown on the other at once, with no update of its own; an error in the drawing of the waiting screen's root or of the root of the sentences above the game, each taken down by React, leaving the sentence of the failure shown once in its row and one line written. An agent compares a change with the part no test holds:
+  - complies: a new screen built as a root of its own, whose factory receives the game state from the store and the memory of its unfolded trees, shared with another screen, as a memory of the page read through `useSyncExternalStore`; a setting only that screen reads kept in its component
+  - violates: one root mounted over the screens of the game; a context of React that carries the game state; a new memory two screens share held in the component of one of them; the state of the screen Przejście moved from `run-screen-state.ts` into the game view's controller, `game-view.ts`; the waiting screen, a row of sentences or the card drawn inside one root of the page's skeleton
 - **Origin:** none
 
 *Rationale:* the store and the state of the screen Przejście stay as they are under any later choice of one root for the view, so a change of mind costs only the table of screens. Separate roots change nothing the player sees, and an error in the drawing of one root takes down that root alone, which one root over the page's places would not give: the sentence of D-323 stays up when any other root falls. The row of the failure is drawn once, when the page starts, and only shown at the error, since a render at the error would wait until React next works, and a synchronous render from inside React's own commit is refused by React, so the sentence would depend on React still working after the error. The waiting screen and the sentences above the game are roots apart, so that an error in the drawing of a sentence that comes from the server's answer does not take down the waiting screen's place. Accepted with it: the menu bar, the waiting screen, the rows of sentences and the account card stay roots of their own beside the screens, a panel that the page moves by hand between two places stays moved by hand, outside what React knows, and a context of React reaches only the inside of one root.
@@ -4896,7 +4909,7 @@ the tab not chosen; no tabs, with „Załóż konto” as text under the form �
 D-259, a heading and a way back for the state „Załóż konto”, no tabs in
 the styleguide, and the visitor no longer sees the two ways side by side at once; leaving it — two
 „Zaloguj się” one above the other in one look; real tabs with arrow keys and activation by Enter —
-keyboard handling written by hand in both forms of the control (D-265) and its tests, which D-42
+keyboard handling written by hand in the control's React component and its tests, which D-42
 does not ask for, while W3C and Carbon advise switching at once on an arrow for a quick panel,
 which here would empty what was typed; the nouns „Logowanie” and „Nowe konto” as the tabs' labels
 — changes of D-96 and D-259, and „Logowanie” collides with the
