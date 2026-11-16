@@ -20,6 +20,7 @@ const CHARACTER_1 = { kind: "character", characterId: 1 };
 const CHARACTER_2 = { kind: "character", characterId: 2 };
 const MAPS = { kind: "maps" };
 const MAP = { kind: "map", mapId: "forest" };
+const KNOWLEDGE = { kind: "knowledge" };
 const ACCOUNTS = { kind: "accounts" };
 
 /**
@@ -79,8 +80,8 @@ function addressOf(log) {
 }
 
 /**
- * The six entries of a game's table in the order of its document: Siedziba, Programy, Przejście,
- * Postać, Mapy and the list of accounts, the last three `while-shown`.
+ * The seven entries of a game's table in the order of its document: Siedziba, Programy, Przejście,
+ * Postać, Mapy, Wiedza and the list of accounts, the last four `while-shown`.
  */
 function table(log) {
   return [
@@ -91,6 +92,7 @@ function table(log) {
       String(screen.characterId),
     ),
     entryOf("maps", ["maps", "map"], log, "while-shown", () => "maps"),
+    entryOf("knowledge", ["knowledge"], log, "while-shown", () => "knowledge"),
     entryOf("accounts", ["accounts"], log, "while-shown", () => "accounts"),
   ];
 }
@@ -363,7 +365,7 @@ test("start draws the instances with no events, then shows the first screen with
   });
 });
 
-// decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+// decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
 // Catches a page told of the same place twice, one that is never told of a way back to the map run,
 // and a page told after the game was taken down.
 test("the page is told its place once for each change, with the way back to a map run, and never after dispose", async () => {
@@ -448,7 +450,7 @@ test("a table that leaves out the entry of the list of accounts is refused when 
       () =>
         createScreenRegistry({
           element: root,
-          entries: table(log).slice(0, 5),
+          entries: table(log).slice(0, 6),
           first: HEADQUARTERS,
           address: addressOf(log),
           state: () => newGame(),
@@ -460,12 +462,50 @@ test("a table that leaves out the entry of the list of accounts is refused when 
 });
 
 // decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens"
+// Catches a table that leaves out the entry of Wiedza, whose kind the registry checks at its build, and
+// a screen built before its address is entered or left standing after the player leaves it.
+test("a table that leaves out the entry of Wiedza is refused, and Wiedza is built on entering its address and taken down on leaving it", async () => {
+  await withPage(async ({ root }) => {
+    const log = [];
+    throwsLike(
+      () =>
+        createScreenRegistry({
+          element: root,
+          entries: table(log).filter((entry) => entry.kinds[0] !== "knowledge"),
+          first: HEADQUARTERS,
+          address: addressOf(log),
+          state: () => newGame(),
+          onPlace: () => undefined,
+        }),
+      /no screen entry holds the kind knowledge/,
+    );
+  });
+  await onRegistry(async ({ registry, element, log, entries }) => {
+    registry.start();
+    const knowledge = entries[5];
+    assert.equal(knowledge.instances.length, 0, "not built before it is shown");
+    registry.show(KNOWLEDGE, "go");
+    assert.equal(knowledge.instances.length, 1);
+    assert.deepEqual(names(element), ["hq", "programs", "run", "knowledge"]);
+    registry.show(HEADQUARTERS, "go");
+    assert.ok(log.includes("knowledge:dispose"), "taken down on leaving");
+    assert.deepEqual(names(element), ["hq", "programs", "run"]);
+    registry.show(KNOWLEDGE, "go");
+    assert.equal(
+      knowledge.instances.length,
+      2,
+      "built anew at the next entering",
+    );
+  });
+});
+
+// decision: D-408 "A new screen of the game is added as a module of its own, one entry in the registry of screens"
 // decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba."
 // Catches a list that is never built for its address, or one left standing after the player leaves it.
 test("the list of accounts is built on entering its address and taken down on leaving it", async () => {
   await onRegistry(async ({ registry, element, log, entries }) => {
     registry.start();
-    const accounts = entries[5];
+    const accounts = entries[6];
     assert.equal(accounts.instances.length, 0, "not built before it is shown");
     registry.show(ACCOUNTS, "go");
     assert.equal(accounts.instances.length, 1);

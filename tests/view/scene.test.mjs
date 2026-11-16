@@ -221,7 +221,7 @@ test("the mage stands where the activity leads it: the sticks, the fire, the rig
 test("the badge over the mage holds the icon of the action as a mask and a fill as long as the progress", async () => {
   // decision: D-43 "None is `0`, a percentage, a size in `fr`, `vw` or `vh`, a keyword such as `transparent`, `currentColor`, `inherit` or `none`, a screen-width threshold of an `@media` rule, the geometry of the terrain drawing or of the scene computed in TypeScript, the frames and positions of a sprite, the `width` and `height` attributes of an image, a layout dimension — a width or height with its minimum and maximum, or the sizes of the columns of a layout grid — or the content of an icon file in `assets/icons/`, which is drawn as a mask and takes its colour from the text beside it or, where no text stands beside it — in the badge over the mage's head, on the plaque of the icon flying to the mage and in the drawing of the map — from `text-strong`"
   // decision: D-320 "Over the mage's head stands a badge"
-  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza; an action with a target shows the icon of the action, never one of its target"
   await withPage(async (page) => {
     const state = {
       ...withRun(sent(), { current: current(GATHER_STICK), minute: 4 }),
@@ -1996,12 +1996,12 @@ test("a discovery shows a plaque for each icon on the clearing, each coming from
   });
 });
 
-// D-322, D-122. Catches a discovery of conditions alone that stands a layer of plaques of nothing.
+// D-322, D-122. Catches a discovery of conditions and trees alone that stands a layer of plaques of nothing.
 test("a discovery whose things have no icon shows no plaque, and the scene stays in colour", async () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered and the program rule the game wrote, the discoveries of one game minute in one band, with „Dodaj regułę z tym” and „Wznów”, whose „Wznów” goes on as the „Wznów” of the header does, and it stands until the player goes on, the scene keeping its colours"
   // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   await withPage(async (page) => {
-    const found = { conditions: ["always"], creatures: ["wolf"] };
+    const found = { conditions: ["always"], trees: ["exploration"] };
     const scene = await drawn(page, discoveredOf(found));
     assert.equal(scene.querySelectorAll(".scene-discovery-plaque").length, 0);
     assert.equal(filterOf(scene), "");
@@ -2457,6 +2457,15 @@ test("at the stop at a discovery the wolf stands beside the mage with no run in,
     assert.equal(scene().getAttribute("data-standing"), "discovery");
     const wolf = one(scene(), ".scene-creature");
     assert.equal(wolf.hasAttribute("data-entering"), false, "no run at a stop");
+    // The wolf has an icon in the data, so its head comes out of the forest on a plaque over the
+    // clearing, beside the wolf that already stands at the mage.
+    const plaques = [...scene().querySelectorAll(".scene-discovery-plaque")];
+    assert.deepEqual(
+      plaques.map((plaque) =>
+        one(plaque, ".icon-mask").style.getPropertyValue("--icon"),
+      ),
+      ['url("/icons/wolf-head.svg")'],
+    );
     for (const [standing, state] of [
       ["going", inCombat()],
       ["paused", { ...inCombat(), paused: true }],

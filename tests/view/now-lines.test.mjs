@@ -51,7 +51,7 @@ const nextOf = (next, now = { kind: "wait" }) =>
 // without "z" the whole.
 test("Teraz names an action under way with the icon of the action, the words of the rule's row and, at the right, the rule's number as the editor numbers it and the minutes", () => {
   // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
-  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza; an action with a target shows the icon of the action, never one of its target"
   const row = nowOf({
     kind: "action",
     ruleId: 9,
@@ -152,7 +152,7 @@ test("Teraz after a completion says the text of the map in the role positive", (
 // does not follow the editor's.
 test("Potem names the rule that wins with its icon, the words of its row and, at the right, its number", () => {
   // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
-  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza; an action with a target shows the icon of the action, never one of its target"
   assert.equal(NEXT_LABEL, "Potem");
   assert.deepEqual(nextOf(NEXT_9), {
     icon: "grab",

@@ -43,8 +43,11 @@ export type ResourceLine = {
   renewal: CardLine;
 };
 
-/** An attacker of „Czyha”: its name, health and blow, and its chance, quiet time and mean gap. */
-export type AttackerLines = { head: string; odds: string };
+/**
+ * An attacker of „Czyha”: its icon file from the data, its name, health and blow, and its chance,
+ * quiet time and mean gap.
+ */
+export type AttackerLines = { icon: string; head: string; odds: string };
 
 /**
  * The heading of a card (D-327): the map's name, „rozwiązana” once the map is solved, and
@@ -123,13 +126,14 @@ function percentText(chancePerMinute: number): string {
 }
 
 /**
- * The lines of „Czyha” (D-327, D-142): for each attacker, its creature's name, health and blow, and
- * its chance per minute, its quiet time and its mean gap in one number. Pure.
+ * The lines of „Czyha” (D-327, D-142): for each attacker, its creature's icon, name, health and blow,
+ * and its chance per minute, its quiet time and its mean gap in one number. Pure.
  */
 export function attackerLines(map: MapDef): AttackerLines[] {
   return (map.attackers ?? []).map((attacker) => {
     const creature = CREATURES[attacker.id];
     return {
+      icon: creature.icon,
       head: `${creature.name} · ${creature.health} zdrowia · cios ${creature.strikeDamage}`,
       odds: `${percentText(attacker.chancePerMinute)} % szansy na minutę, ${attacker.cooldownMinutes} min spokoju od wejścia i po każdej walce — średnio co ≈ ${meanAttackGap(attacker)} min`,
     };

@@ -1120,7 +1120,7 @@ test("the end effect begins at the game minute of a death or a completion, not a
 });
 
 // D-322. The icons are the files of the game's data: a discovered action's, a discovered
-// item's and the campfire's, in the order of the band's text, each on a plaque in a row over the
+// item's, the campfire's and a creature's, in the order of the band's text, each on a plaque in a row over the
 // clearing centred on the mage's middle, 144 + 32 = 176, the line 56, a step of 22. Catches a plaque for
 // a thing with no icon, a missing icon, a row that is not centred and a plaque that comes out of the
 // wrong pine: the left half of a row from the left pine, the right half from the right one.
@@ -1139,10 +1139,11 @@ test("a discovery shows the icon of each thing it revealed that has one, in a ce
   assert.deepEqual(
     moment.plaques.map((p) => [p.href, p.x, p.y, p.from]),
     [
-      ["/icons/binoculars.svg", 143, 56, left],
-      ["/icons/hiking.svg", 165, 56, left],
-      ["/icons/wood-stick.svg", 187, 56, right],
-      ["/icons/campfire.svg", 209, 56, right],
+      ["/icons/binoculars.svg", 132, 56, left],
+      ["/icons/hiking.svg", 154, 56, left],
+      ["/icons/wood-stick.svg", 176, 56, right],
+      ["/icons/campfire.svg", 198, 56, right],
+      ["/icons/wolf-head.svg", 220, 56, right],
     ],
   );
   assert.equal(moment.key, "discovery:" + sent().run.minute);
@@ -1166,18 +1167,29 @@ test("a discovery shows an icon once, however many of the things it revealed sha
   );
 });
 
-// Catches a plaque, or a band, for what the data gives no icon: conditions, creatures and skill trees
+// Catches a plaque, or a band, for what the data gives no icon: conditions and skill trees
 // are named by the band over the program alone (D-122).
-test("a discovery of conditions and creatures alone shows no plaque", () => {
+test("a discovery of conditions and skill trees alone shows no plaque", () => {
   // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
   const moment = momentOf(
     discovering({
       conditions: ["always", "temperatureBelow"],
-      creatures: ["wolf"],
+      trees: ["exploration"],
     }),
   );
   assert.equal(moment.kind, "discovery");
   assert.deepEqual(moment.plaques, []);
+});
+
+// Catches a creature left without its plaque: the wolf has an icon in the data, so the first attack's
+// discovery shows its head on one plaque in the middle of the row, coming from the right pine.
+test("a discovery of the wolf alone shows its head on one plaque in the middle of the row", () => {
+  // decision: D-322 "In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once"
+  const moment = momentOf(discovering({ creatures: ["wolf"] }));
+  assert.deepEqual(
+    moment.plaques.map((p) => [p.href, p.x, p.y, p.from]),
+    [["/icons/wolf-head.svg", 176, 56, { x: 265, y: 50 }]],
+  );
 });
 
 // Catches a row that runs out of the frame: eight to a row, the ninth in a second row 22 above the

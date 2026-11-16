@@ -10,6 +10,7 @@ import {
 import type { LogoutSave } from "./game-saver.js";
 import { createSaveRow } from "./header-rows.js";
 import { createHeadquartersEntry } from "./headquarters-entry.js";
+import { createKnowledgeEntry } from "./knowledge-entry.js";
 import { createMapsEntry } from "./maps-entry.js";
 import { readResetToken } from "./password-reset.js";
 import { createFolding } from "./program-panel.js";
@@ -148,9 +149,9 @@ function prefersReducedMotion(): boolean {
  * end-of-run window and the focus owed to it; the registry (`screen-registry.ts`) shows the screens
  * and draws them from the state and from the real moment of the clock's latest reading, which the
  * resurrection lines need and the state never holds. The screens are the entries of the table
- * below: Siedziba, Programy and Przejście built once and hidden while another shows, Postać, Mapy and
- * the list of accounts built on entering and taken down on leaving. A new screen is one more line of
- * the table.
+ * below: Siedziba, Programy and Przejście built once and hidden while another shows, Postać, Mapy,
+ * Wiedza and the list of accounts built on entering and taken down on leaving. A new screen is one
+ * more line of the table.
  *
  * The view shows one screen at a time, the one the address names (D-280, D-281). The two program
  * panels are two, so the program each shows stays its own. The first screen is the entry's (D-96,
@@ -255,6 +256,7 @@ export function createGameView(options: GameViewOptions): GameView {
       }),
       createCharacterEntry({ store }),
       createMapsEntry({ store }),
+      createKnowledgeEntry({ store }),
       createAccountsEntry({
         client: options.client,
         onSignedOut: () => options.onSignedOut(),

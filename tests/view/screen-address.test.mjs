@@ -17,6 +17,7 @@ import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
 const HEADQUARTERS = { kind: "headquarters" };
 const PROGRAMS = { kind: "programs" };
 const MAPS_SCREEN = { kind: "maps" };
+const KNOWLEDGE = { kind: "knowledge" };
 const ACCOUNTS = { kind: "accounts" };
 
 /** A game whose team holds the characters 1 and 2, whose programs are 1 and 3, and no map run. */
@@ -90,6 +91,10 @@ const NO_SCREEN_FRAGMENTS = [
   ["a map address naming a prototype property", "#/mapy/__proto__"],
   ["a map address naming an inherited property", "#/mapy/constructor"],
   ["an upper-case map address", "#/MAPY"],
+  ["an upper-case address of Wiedza", "#/WIEDZA"],
+  ["an address of Wiedza with a trailing slash", "#/wiedza/"],
+  ["an address of Wiedza with a fragment after it", "#/wiedza/x"],
+  ["an address of Wiedza with a hash after it", "#/wiedza#x"],
   ["a map address with a trailing slash", "#/mapy/forest/"],
   ["a hash alone", "#"],
   ["the empty fragment", ""],
@@ -143,6 +148,11 @@ test("the address of the maps reads as the maps screen", () => {
   assert.deepEqual(readScreenAddress("#/mapy"), MAPS_SCREEN);
 });
 
+test("the address of Wiedza reads as its screen", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
+  assert.deepEqual(readScreenAddress("#/wiedza"), KNOWLEDGE);
+});
+
 test("the address of a map reads as its screen, by the identifier of the map in the data", () => {
   // decision: D-281 "An address names a screen in the fragment after `#`"
   // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
@@ -168,6 +178,7 @@ test("every screen writes the address that reads back to it", () => {
     [MAPS_SCREEN, "#/mapy"],
     [{ kind: "map", mapId: "forest" }, "#/mapy/forest"],
     [{ kind: "map", mapId: "forestDeep" }, "#/mapy/forestDeep"],
+    [KNOWLEDGE, "#/wiedza"],
     [ACCOUNTS, "#/konta"],
   ]) {
     assert.equal(screenAddress(screen), address);
@@ -262,6 +273,16 @@ test("the maps screen stays", () => {
     resolveScreen(MAPS_SCREEN, explicitGame(), false),
     MAPS_SCREEN,
   );
+});
+
+test("Wiedza stays, for a player and for an account with the owner role", () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
+  for (const owner of [false, true])
+    assert.deepEqual(
+      resolveScreen(KNOWLEDGE, explicitGame(), owner),
+      KNOWLEDGE,
+      `owner ${owner}`,
+    );
 });
 
 test("a map off the list of open maps gives Siedziba: a map whose opening map is not solved", () => {
@@ -364,13 +385,18 @@ test("the maps screen and a map's screen mark the maps item of the menu bar", ()
   assert.equal(markedMenuItem({ kind: "map", mapId: "forest" }), "maps");
 });
 
+test("Wiedza marks the knowledge item of the menu bar", () => {
+  // decision: D-277 "The menu bar marks the place the player is at"
+  assert.equal(markedMenuItem(KNOWLEDGE), "knowledge");
+});
+
 test("with no map run in the game state, the return entry is absent", () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   assert.equal(returnToRunEntry(explicitGame()), null);
 });
 
 test("a map run going on gives the return entry with its map's name, its minute and its address", () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   assert.deepEqual(returnToRunEntry(withRunOfCharacterTwo(212)), {
     text: "Wróć do przejścia · Las · minuta 212",
     address: "#/postac/2/przejscie",
@@ -378,7 +404,7 @@ test("a map run going on gives the return entry with its map's name, its minute 
 });
 
 test("a map run ended in death and waiting for „Restart” or „Zakończ” keeps the return entry, with its minute still", () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   assert.deepEqual(
     returnToRunEntry(
       withRunOfCharacterTwo(212, { minute: 212, cause: "hunger" }),

@@ -11,6 +11,7 @@ export type Screen =
   | { readonly kind: "run"; readonly characterId: CharacterId }
   | { readonly kind: "maps" }
   | { readonly kind: "map"; readonly mapId: MapId }
+  | { readonly kind: "knowledge" }
   | { readonly kind: "accounts" };
 
 /**
@@ -26,12 +27,13 @@ const KIND_NAMED = {
   run: true,
   maps: true,
   map: true,
+  knowledge: true,
   accounts: true,
 } as const satisfies Record<Screen["kind"], true>;
 export const SCREEN_KINDS = Object.keys(KIND_NAMED) as Screen["kind"][];
 
 /** The items of the menu bar that a screen can mark (D-280, D-277). */
-export type MenuItem = "headquarters" | "programs" | "maps";
+export type MenuItem = "headquarters" | "programs" | "maps" | "knowledge";
 
 /** The menu bar's entry back to the map run, with the address it leads to (D-280). */
 export type ReturnEntry = { readonly text: string; readonly address: string };
@@ -62,6 +64,7 @@ export function readScreenAddress(hash: string): Screen | null {
   if (hash === "#/") return { kind: "headquarters" };
   if (hash === "#/programy") return { kind: "programs" };
   if (hash === "#/mapy") return { kind: "maps" };
+  if (hash === "#/wiedza") return { kind: "knowledge" };
   if (hash === "#/konta") return { kind: "accounts" };
   const map = MAP.exec(hash);
   if (map) {
@@ -110,6 +113,7 @@ export function resolveScreen(
     case "headquarters":
     case "programs":
     case "maps":
+    case "knowledge":
       return named;
     case "accounts":
       return owner ? named : { kind: "headquarters" };
@@ -150,6 +154,8 @@ export function screenAddress(screen: Screen): string {
       return "#/mapy";
     case "map":
       return `#/mapy/${screen.mapId}`;
+    case "knowledge":
+      return "#/wiedza";
     case "accounts":
       return "#/konta";
   }
@@ -158,7 +164,8 @@ export function screenAddress(screen: Screen): string {
 /**
  * The item of the menu bar that marks a screen (D-277, D-280): Siedziba on Siedziba and on the
  * character's screen, Programy on the programs screen and on a program's, Mapy on the maps screen
- * and on a map's, and none on a map run's screen or on the list of accounts (D-411). Pure.
+ * and on a map's, Wiedza on the screen Wiedza, and none on a map run's screen or on the list of
+ * accounts (D-411). Pure.
  */
 export function markedMenuItem(screen: Screen): MenuItem | null {
   switch (screen.kind) {
@@ -171,6 +178,8 @@ export function markedMenuItem(screen: Screen): MenuItem | null {
     case "maps":
     case "map":
       return "maps";
+    case "knowledge":
+      return "knowledge";
     case "run":
     case "accounts":
       return null;

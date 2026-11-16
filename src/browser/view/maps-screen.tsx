@@ -211,7 +211,18 @@ function MapCard({ mapId, solved }: { mapId: MapId; solved: boolean }) {
                 key={`${attacker.head}|${attacker.odds}`}
                 className="maps-card-attacker"
               >
-                <p className="maps-card-attacker-head">{attacker.head}</p>
+                <p className="maps-card-attacker-head">
+                  <span
+                    className="icon-mask maps-card-icon"
+                    aria-hidden="true"
+                    style={
+                      {
+                        "--icon": `url("/icons/${attacker.icon}.svg")`,
+                      } as CSSProperties
+                    }
+                  />
+                  {attacker.head}
+                </p>
                 <p className="maps-card-attacker-odds">{attacker.odds}</p>
               </li>
             ))}

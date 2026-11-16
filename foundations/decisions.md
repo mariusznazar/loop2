@@ -4135,10 +4135,10 @@ open while the screens move to React.
 
 ### D-280 — Which screens does the game have, and how does the player move between them?
 
-The game has the screens Siedziba, Postać, Mapy, Programy and Przejście, all of one content width
+The game has the screens Siedziba, Postać, Mapy, Programy, Wiedza and Przejście, all of one content width
 under one menu bar: at most 1344 px, and the full width of a narrower window. The menu bar holds at
 its left the game's name, which stands alone on the waiting screens (D-262), and over the game the
-items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
+items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and
 outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or
 „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of
 that map run, its minute being the map run's game minute as the clock in the header of that screen
@@ -4155,7 +4155,7 @@ An account with the owner role (D-410) has one more screen, the list of accounts
 - **Relations:** derives from D-277
 - **Verification:** tests: the game opening the screens Siedziba, Postać, Mapy, Programy and
   Przejście at their addresses; the menu bar holding the game's name alone on the waiting screens,
-  and over the game the name, the items Siedziba, Mapy and Programy in that order with no icons and
+  and over the game the name, the items Siedziba, Mapy, Programy and Wiedza in that order with no icons and
   the menu „Konto” with the address and „Wyloguj”; „Wróć do przejścia · {mapa} · minuta {m}” with the
   map run's game minute, leading to the screen of the map run, on Siedziba, Postać, Programy and Mapy
   while the map run goes on or has ended in a death until „Zakończ”, and on no screen of a map run;
@@ -4206,7 +4206,7 @@ it; the clock of „Wróć do przejścia” written as „03:32” — a notatio
 ### D-281 — How does an address name a screen?
 
 An address names a screen in the fragment after `#`: `#/`, `#/postac/{n}`, `#/mapy`,
-`#/mapy/{map}`, `#/programy`, `#/programy/{n}` and `#/postac/{n}/przejscie`, {n} being the number of
+`#/mapy/{map}`, `#/programy`, `#/programy/{n}`, `#/wiedza` and `#/postac/{n}/przejscie`, {n} being the number of
 a character (D-56) or of a program (D-165), {map} the identifier of a map (D-332) and the last
 address naming a map run by the number of its character, and an address that leads to no existing
 screen silently opens the nearest one: `#/postac/{n}/przejscie` with no map run the screen Postać of
@@ -4220,7 +4220,7 @@ apart from these, and after them the page opens Siedziba.
 - **Scope:** browser-view
 - **Based on:** uri-fragment-in-requests
 - **Relations:** derives from D-280
-- **Verification:** tests: the seven addresses in the fragment after `#`, each read as its screen,
+- **Verification:** tests: the eight addresses in the fragment after `#`, each read as its screen,
   written by it and opened at a reload, a program's and a map's by their number and identifier; the
   page writing and following them in the fragment; an address that leads to no existing screen
   opening the nearest one, a map run with none the screen Postać of its character, a program with
@@ -4404,6 +4404,35 @@ The screen of the list of accounts, at `#/konta` for an account with the owner r
 
 *Rationale:* the list shows what the four operations need and no more, so whoever takes over the session of an account with the owner role takes away less of the players' data. The role stands in the list as a fourth field, because the screen leaves out „Zablokuj” at the account with the owner role and cannot know which account it is without the role; a list of the three other fields would show a button that the server always refuses. „Zablokuj” asks, since a mistaken block ends the player's sessions on every device and the unblock restores none of them; the other three operations are undone by the opposite operation without a loss, so a confirmation would only cost a click.
 *Rejected:* the list with the date the account was created and the confirmation of its address — mass creation of accounts is easier to spot, but the answer of the API, the test and the screen hold two more fields and a taken-over session of an account with the owner role shows more; „Zablokuj” with no confirmation — one click less, but a mistake logs a player out on every device.
+
+### D-416 — What does the screen Wiedza show?
+
+The screen Wiedza shows the actions, items and creatures in the Understanding and the skill trees to read, with no levels and no buying. Its left area is as in the predecessor game, loop: the heading „Zrozumienie” with the counter „{n} poznanych rzeczy”, three groups „Czynności · {n}”, „Przedmioty · {n}” and „Stworzenia · {n}”, each in the order of discovery with the newest thing last, a group with no thing standing nowhere, the campfire standing among the items, and no sentence for an empty area. Its right area has the heading „Umiejętności” with the counter „{n} drzew”, the trees the player knows in the order of the data, each a folded row with its name and „{n} gałęzi”, opened by a click or the keyboard, and an open tree shows each branch with its name, „{n} stopni”, its description from the data and the prices of all its steps in turn; each entering of the screen starts with the trees folded, and before the first known tree the area stands nowhere.
+
+The counter „{n} poznanych rzeczy” counts the actions, items and creatures together, with no condition and no tree. The counters of the screen decline by the number, as in loop: „1 poznana rzecz”, „3 poznane rzeczy”, „13 poznanych rzeczy”, „1 drzewo”, „3 drzewa”, „8 drzew”, „1 gałąź”, „3 gałęzie”, „1 stopień”, „3 stopnie”.
+
+- **Scope:** browser-view
+- **Based on:** none
+- **Relations:** derives from D-280 · derives from D-282
+- **Verification:** tests: the screen Wiedza with its heading and its two areas, each an area of its
+  own; the left area with its heading and its counter, the three groups with their counts, each
+  in the order of discovery with the newest thing last, a group with no thing standing nowhere,
+  the campfire among the items, each thing with its icon and its name from the data, and no
+  sentence in an area that holds no thing; the right area with its heading and its counter, the
+  known trees in the order of the data as folded rows with their numbers of branches, opened by a
+  click and by the keyboard, an open tree showing each branch with its name, its number of steps,
+  its description and the prices of all its steps, and the trees folded at each entering of the
+  screen; the right area standing nowhere before the first known tree; no level, no practice, no
+  points, no „Kup” and no change of the game state on the screen; the first counter counting the
+  actions, items and creatures together and the counters declining by their number. An agent
+  compares a change with the part no test holds:
+  - complies: in a window narrower than 720 px the two areas of the screen standing one under the
+    other, each an area of its own
+  - violates: the two areas drawn as one block that a narrower layout cannot set apart
+- **Origin:** none
+
+*Rationale:* the Understanding is the one gain a death never takes, and the player sees it nowhere today, so after losing a character the player sees only what was lost and not what stayed. The predecessor game, loop, has such a screen, with a count of the things known. The screen is for recalling what the player already knows. Buying stands on Postać, so the same rows do not stand on two screens. Accepted with it: one more screen, and with the discoveries the game has today the collection is short.
+*Rejected:* the same rows of skills on two screens, as in loop — the rows of Postać repeated in Wiedza; the left area with, for a game that knows no thing yet, the sentence of loop „Pusto. Zrozumienie rośnie z zetknięcia: odsłania je to, co postać napotka na mapie.” — one sentence and its test more, and a player sees it only where a game starts with no known action; the heading „Poznane” in place of „Zrozumienie” — a departure from loop, which writes „Zrozumienie”, and if the tutorial names the record „Zrozumienie”, the player learns one thing under two names; one list of names with no groups, counters and icons — less than loop, whose screens are the minimum this game takes, and a list with no groups reads worse at a dozen things; the trees always open — about 22 rows at eight trees and fourteen branches, where loop kept the trees folded; the trees under the heading of an archetype, as in loop — today one group with a heading that tells nothing apart, and loop gave the group a description of the archetype that the data of this game do not have; before the first known tree a sentence on the right, such as „Drzewa umiejętności poznasz razem z czynnościami, które rozwijają.” — the area would not stand empty, but the game would announce skills before the player discovers them, which the screen Postać avoids; no rule for the counters — what the first counter counts, conditions and trees included, and how a numeral declines would be left to each author of the screen.
 
 ## Look of the browser view: styleguide, controls, pictures and fonts
 
@@ -8968,8 +8997,8 @@ conditions of its own, as in loop — a second control and a second keyboard han
 ### D-291 — Which icon stands for an action?
 
 Each action has one icon, which stands for it in a program rule's row, in its cell of the pick,
-over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target
-shows the icon of the action, never one of its target.
+over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the
+screen Wiedza; an action with a target shows the icon of the action, never one of its target.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -8977,7 +9006,7 @@ shows the icon of the action, never one of its target.
 - **Verification:** tests: every action of the data naming one icon; the icon of the action in a
   rule's row for „Eksploruj”, over the mage's head and in the rows „Teraz” and „Potem”, there the
   icon of „Zbierz” and never one of its target for „Zbierz — Patyk”; an icon in the cell of an
-  action in the pick. For the icon of a rule's row whose action has a target and the icon in a cell
+  action in the pick; the icon of an action beside its name on the screen Wiedza. For the icon of a rule's row whose action has a target and the icon in a cell
   of the pick being its action's own, an agent compares a change with the part no invariant and no
   test holds:
   - complies: the icon of „Zbierz” in the row „Zapas poniżej 8 · Patyk → Zbierz — Patyk” and in
@@ -9338,7 +9367,7 @@ Where the bring list of the program picked is empty, „Pętla nic nie zarobi do
 
 ### D-327 — What does the card of a map hold?
 
-The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map and, once it is solved, „rozwiązana” in `positive`, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; „Żąda” holds the sentence of the map's solving condition (D-133); „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one (D-333), and the minutes without fire (D-333) with the temperature of the surroundings; „Leży tu” holds each resource with its icon, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`. It departs from the card of the predecessor game in five things only: the line of an attack gives that one total number in place of the quiet time and the mean gap after it, an unsolved map shows no „otwarta”, „Odbiera” has no „gasi: {umiejętność}”, the creature stands with no icon, and „Żąda” is the one sentence of the condition from the data.
+The card of a map follows the card of the predecessor game, loop, with its numbers taken from the map's data, and a part the map lacks stands nowhere: the heading names the map and, once it is solved, „rozwiązana” in `positive`, and for a map that another map opens „odsłania ją {mapa}” in `text-secondary`; „Żąda” holds the sentence of the map's solving condition (D-133); „Teren” holds the grid, the entry, the step, with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other than the usual one (D-333), and the minutes without fire (D-333) with the temperature of the surroundings; „Leży tu” holds each resource with its icon, the approximate number of tiles that hold it, its stock and its renewal, or „nie odnawia się” in `warning`; „Czyha” holds the creature with its icon, its health and blow, the chance of an attack in a minute, the quiet time and one total number, the mean gap between attacks counted with that quiet time; „Odbiera” holds the entry cap and the exit cap, each in `warning`. It departs from the card of the predecessor game in four things only: the line of an attack gives that one total number in place of the quiet time and the mean gap after it, an unsolved map shows no „otwarta”, „Odbiera” has no „gasi: {umiejętność}”, and „Żąda” is the one sentence of the condition from the data.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -9349,8 +9378,8 @@ The card of a map follows the card of the predecessor game, loop, with its numbe
   the entrance, the step with „— drożej niż zwykle” or „— taniej niż zwykle” beside a step other
   than the usual one, and the minutes without fire with the temperature of the surroundings;
   „Leży tu” with each resource's icon, its approximate number of tiles, its stock and its renewal,
-  or „nie odnawia się” marked as a warning; „Czyha” with the creature's health and blow, the
-  creature with no icon, and one line of the chance, the quiet time and the one total mean gap;
+  or „nie odnawia się” marked as a warning; „Czyha” with the creature's icon, health and
+  blow, and one line of the chance, the quiet time and the one total mean gap;
   „Odbiera” with the entry and the exit cap, each marked as a warning, and nothing else; a part the
   map lacks drawn nowhere. For the colours the marks and the words of the card are drawn in, an
   agent compares a change with the part no test holds:
@@ -9360,7 +9389,7 @@ The card of a map follows the card of the predecessor game, loop, with its numbe
     drawn in `text-secondary`; „odsłania ją {mapa}” drawn in `text-strong`
 - **Origin:** none
 
-*Rationale:* the player reads on the card what a map asks before sending a character, and a number such as „bez ognia 33 min” tells the player that without supplies the fire will not be made in time, where otherwise the player would find it out by losing progress. The card follows the card of the predecessor game, because the screens and solutions of the predecessor game are the minimum that the screens of this game take and they are departed from only where the result is better, never worse; the numbers come from the data of the map, and a part that the map lacks stands nowhere. The card has no „gasi: {umiejętność}” because the data of the maps hold no field for it, and the creature has no icon because the creatures have none. Accepted with it: the game computes new numbers from the map's data — the minutes without fire, the approximate number of tiles that hold a resource and the mean gap between attacks with the quiet time — which follow a change of balance by themselves; „≈ 11 z 16” and „≈ 280 min” are means, so a given map run may fall out otherwise; the card runs to a dozen or so lines; the player knows the health and the blow of the wolf before its first attack.
+*Rationale:* the player reads on the card what a map asks before sending a character, and a number such as „bez ognia 33 min” tells the player that without supplies the fire will not be made in time, where otherwise the player would find it out by losing progress. The card follows the card of the predecessor game, because the screens and solutions of the predecessor game are the minimum that the screens of this game take and they are departed from only where the result is better, never worse; the numbers come from the data of the map, and a part that the map lacks stands nowhere. The card has no „gasi: {umiejętność}” because the data of the maps hold no field for it. Accepted with it: the game computes new numbers from the map's data — the minutes without fire, the approximate number of tiles that hold a resource and the mean gap between attacks with the quiet time — which follow a change of balance by themselves; „≈ 11 z 16” and „≈ 280 min” are means, so a given map run may fall out otherwise; the card runs to a dozen or so lines; the player knows the health and the blow of the wolf before its first attack.
 *Rejected:* the line of an attack as in the predecessor game, with the numbers of the game: „1 % szansy na minutę, potem 3 h karencji — średnio raz na ≈ 2 h” — the player sees apart how long they are safe and how often the wolf comes after it, and the line stays as in the predecessor game, so it needs no reason for a departure, but „≈ 2 h” is 100 minutes rounded up and „potem” does not say that the quiet time counts from the entry too; a short card with „Żąda”, „Teren” with the temperature alone, „Leży tu” and „Czyha” with the names alone — less code, but the player would not read „bez ognia 33 min”, which says by itself that without supplies the fire will not be made in time, nor the strength of the wolf, and the card would come out worse than the card of the predecessor game, where a departure is allowed only if it comes out better; and, once a map has a cap, the card without „Odbiera” would not say what the map takes, which D-325 gives it; „Żąda” alone, which is what Siedziba shows — nothing new to compute, but the player would still learn a map through a death, and the card would again be worse than the card of the predecessor game and would lack the parts D-325 gives it.
 
 ### D-328 — Does the card of a map show what the player has not discovered?
@@ -10965,7 +10994,8 @@ While the player's pause holds a map run, the scene is greyed with `grayscale(1)
   `grayscale(1) brightness(0.55)`, and the cold layer over the tint and under the frost after a death
   of cold alone; after a completion no badge, the mage in colour in the full gold, and specks rising
   over a part of the clearing and gone at the last image; at the stop at a discovery that the first
-  attack makes, the wolf beside the mage with no run in and its scuffle held until the scene goes on;
+  attack makes, the wolf beside the mage with no run in and its scuffle held until the scene goes on,
+  and the plaque of the wolf's head over the clearing;
   a death or a completion in the game minute of a discovery showing the effect of the end alone, and
   a scene drawn again on a moment showing its last image at once. For the colours of the plaques and
   of the cold layer and the system's setting for reduced motion, an agent compares a change with the
@@ -10990,7 +11020,7 @@ and not an effect, and it keeps the picture's brightness, so no effect lights or
 scene for a moment. After a completion the specks go out and leave the scene in the full gold, which
 the tint already gives. Accepted with it: a player who misses the effect does not see it again at that
 moment; the fire stands still for seconds beside the moving effect; the first discovery of a map
-stands several plaques at once, and a discovery of conditions or of a creature alone has no plaque,
+stands several plaques at once, and a discovery of conditions alone has no plaque,
 the band naming it; in the game minute of a discovery a death or a completion hides the reward of
 that discovery from the scene, the window of the end naming it; the colours of the cold layer and of
 the specks and the lengths of the effects come from a choice of the human made on screenshots.

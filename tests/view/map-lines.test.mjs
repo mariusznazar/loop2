@@ -193,12 +193,13 @@ test("a resource that does not renew says so apart, in warning, in place of its 
 // D-327, D-142: the wolf's name, health and blow; its chance per minute, its cooldown and its mean
 // gap: 180 + 1 / 0.01 = 280 minutes. Catches a wrong creature field, a cooldown or gap left out,
 // and a mean gap that counts the chance alone.
-test("an attacker gives its name, health and blow, and its chance, quiet time and mean gap", () => {
+test("an attacker gives its icon, name, health and blow, and its chance, quiet time and mean gap", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game in four things only"
   // decision: D-333 "The minutes without fire are the game minutes that a body"
   assert.deepEqual(attackerLines(forestDeep), [
     {
+      icon: "wolf-head",
       head: "wilk · 24 zdrowia · cios 7",
       odds: "1 % szansy na minutę, 180 min spokoju od wejścia i po każdej walce — średnio co ≈ 280 min",
     },
@@ -233,7 +234,7 @@ test("the chance is written with a decimal comma and at most one decimal, and th
 test("the entry and exit caps stand apart, each in warning; a zero cap counts; no cap gives no line", () => {
   // decision: D-18 "The game's content — game maps, items, creatures, character skills and their numbers — stands in data files"
   // decision: D-327 "The card of a map follows the card of the predecessor game"
-  // decision: D-327 "It departs from the card of the predecessor game in five things only"
+  // decision: D-327 "It departs from the card of the predecessor game in four things only"
   assert.deepEqual(capLines(forest), []);
   assert.deepEqual(capLines({ ...forest, carryIn: 0, carryOut: 12 }), [
     { text: "wnosisz najwyżej 0", warning: true },

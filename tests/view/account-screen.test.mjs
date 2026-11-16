@@ -1178,7 +1178,7 @@ test("a reload or sign-in with an unconfirmed address shows the sentence and Wy�
     await held.answer("currentAccount", UNCONFIRMED_ACCOUNT);
     await held.answer("loadSavedGame", NO_SAVE);
     // The closed menu shows nothing of the address, and no row of it stands in the header.
-    assert.equal(barText(root), `${ABOUT.name}SiedzibaMapyProgramyKonto`);
+    assert.equal(barText(root), `${ABOUT.name}SiedzibaMapyProgramyWiedzaKonto`);
     assert.deepEqual(menuSentences(root), []);
     assert.equal(buttonNamed(root, "Wyślij ponownie"), undefined);
     assert.equal(byClass(root, "email-status").length, 0);
@@ -1263,7 +1263,7 @@ test("a created account starts the sentence of its menu with the outcome of its 
       await held.answer("loadSavedGame", NO_SAVE);
       assert.equal(
         barText(root),
-        `${ABOUT.name}SiedzibaMapyProgramyKonto`,
+        `${ABOUT.name}SiedzibaMapyProgramyWiedzaKonto`,
         message,
       );
       const opened = await unconfirmedPart(root);
@@ -3997,6 +3997,7 @@ function shownScreen(root) {
   if (shows("run-screen")) return "run";
   if (shows("headquarters")) return "headquarters";
   if (shows("programs-screen")) return "programs";
+  if (shows("knowledge-screen")) return "knowledge";
   return null;
 }
 
@@ -4113,7 +4114,7 @@ test("the first screen of each entry: the sign-in form and a reload with no frag
 // the save's map run winning over the address, and the screen Postać not built for the address.
 test("a reload at #/postac/1 while the save holds a map run opens the screen Postać of Ala, with the bar marking Siedziba and „Wróć do przejścia”", async () => {
   // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   // decision: D-281 "An address names a screen in the fragment after `#`"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339), and the screen the page opens on is the one D-96 gives"
@@ -4128,6 +4129,7 @@ test("a reload at #/postac/1 while the save holds a map run opens the screen Pos
       ["Siedziba", "#/", "page"],
       ["Mapy", "#/mapy", null],
       ["Programy", "#/programy", null],
+      ["Wiedza", "#/wiedza", null],
       ["Wróć do przejścia · Las · minuta 0", RUN_ADDRESS, null],
     ]);
     assert.deepEqual(waitingCalls(held), [], "nothing is saved by a reload");
@@ -4136,9 +4138,9 @@ test("a reload at #/postac/1 while the save holds a map run opens the screen Pos
 
 // D-281. Catches an address of the five that opens another screen, or one the page
 // rewrites although it names an existing screen.
-test("a reload at each of the seven addresses opens its screen and leaves the address as it is", async () => {
+test("a reload at each of the eight addresses opens its screen and leaves the address as it is", async () => {
   // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
-  // decision: D-280 "The game has the screens Siedziba, Postać, Mapy, Programy and Przejście"
+  // decision: D-280 "The game has the screens Siedziba, Postać, Mapy, Programy, Wiedza and Przejście"
   // decision: D-281 "An address names a screen in the fragment after `#`"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339), and the screen the page opens on is the one D-96 gives"
   for (const [hash, screen] of [
@@ -4148,6 +4150,7 @@ test("a reload at each of the seven addresses opens its screen and leaves the ad
     ["#/mapy/forest", "maps"],
     ["#/programy", "programs"],
     ["#/programy/2", "programs"],
+    ["#/wiedza", "knowledge"],
     [RUN_ADDRESS, "run"],
   ]) {
     await onPage(async ({ root }) => {
@@ -4158,6 +4161,31 @@ test("a reload at each of the seven addresses opens its screen and leaves the ad
       assert.equal(address.entries.length, 1, hash);
     });
   }
+});
+
+// D-280, D-281, D-416. Catches a bar with no way to Wiedza, an address that opens another screen,
+// a bar that marks another item on it, and a screen of Wiedza left standing after the player leaves it.
+test("the item Wiedza of the bar opens the screen Wiedza, which the bar marks and which is gone when the player leaves it", async () => {
+  // decision: D-281 "An address names a screen in the fragment after `#`"
+  // decision: D-277 "The menu bar marks the place the player is at"
+  await onPage(async ({ root }) => {
+    const held = heldClient();
+    const address = await reloadedAt(held, "#/", fullGame());
+    const item = barItems(root).find(([text]) => text === "Wiedza");
+    assert.deepEqual(item, ["Wiedza", "#/wiedza", null]);
+    await follow(address, item[1]);
+    assert.equal(shownScreen(root), "knowledge");
+    assert.equal(byClass(root, "knowledge-heading")[0].textContent, "Wiedza");
+    assert.deepEqual(
+      barItems(root)
+        .filter(([, , current]) => current === "page")
+        .map(([text]) => text),
+      ["Wiedza"],
+    );
+    await follow(address, "#/");
+    assert.equal(shownScreen(root), "headquarters");
+    assert.equal(byClass(root, "knowledge-screen-host").length, 0);
+  });
 });
 
 // D-281, D-331. Catches a reload that leaves Mapy for another
@@ -4362,7 +4390,7 @@ test("an address that leads to no existing screen opens the nearest one and has 
 // left standing under the map run, and the back button after „Zakończ” landing on a screen of a map
 // run that is gone.
 test("a send leads to the screen of the map run and „Zakończ” to the screen Postać of that character, each with a new entry, and back after „Zakończ” lands on Postać", async () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   // decision: D-53 "The player sends a character to a game map from the card of the map on the screen Mapy, and „Zakończ” returns to the screen Postać of that character"
@@ -4386,7 +4414,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
     );
     assert.deepEqual(
       barItems(root).map(([, , current]) => current),
-      [null, null, null],
+      [null, null, null, null],
       "no item marked on the screen of a map run",
     );
     await held.answer("saveGame", { kind: "saved", revision: 5 });
@@ -4576,7 +4604,7 @@ test("after an emailed link — a confirmation, „Anuluj” of „Ustaw nowe ha
   // decision: D-96 "Anyone can create an account without operator approval or email confirmation and immediately enters Siedziba signed in; signing in with email and password, and reloading with a valid session at an address with no fragment, that form apart, also lead to Siedziba, or, when the saved game state holds a manual map run, to that map run — paused while it goes on, or on its screen after its end when it ended in a completion or in the character's death — while a reload at another address stays on the screen that address leads to, and after an emailed link (D-156, D-224) the page opens Siedziba."
   // decision: D-225 "The form „Ustaw nowe hasło” holds the fields „Nowe hasło” and „Powtórz hasło” and the buttons „Ustaw hasło” and „Anuluj”, which removes the fragment of the address and opens Siedziba for a signed-in player and the account forms for a signed-out one, and the page shows it without asking the server about the link, so a player learns that a link does not work only after sending the form."
   // decision: D-225 "Zaloguj się nowym hasłem.” stands in `positive` above the account forms and the fragment is gone; after a refusal of the link, whatever its reason, the fragment is gone and the page runs its session check and puts „Odnośnik jest nieważny albo wygasł.” in `warning` above what that leads to, the account forms or the game."
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-281 "The fragments of emailed links (D-156, D-224) stand apart from these, and after them the page opens Siedziba"
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -5061,7 +5089,7 @@ test("the page's sentence above the first screen leaves at the first change of s
 // status row writes it, or an item marked on the screen of a map run.
 test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Postać, Programy and Mapy while a map run waits or has ended, leads to its screen and is gone there", async () => {
   // decision: D-277 "The menu bar marks the place the player is at"
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   await onPage(async ({ root }) => {
     const held = heldClient();
@@ -5083,6 +5111,7 @@ test("„Wróć do przejścia · {mapa} · minuta {m}” stands on Siedziba, Pos
       ["Siedziba", "#/", null],
       ["Mapy", "#/mapy", null],
       ["Programy", "#/programy", null],
+      ["Wiedza", "#/wiedza", null],
     ]);
   });
   await onPage(async ({ root }) => {
@@ -5389,7 +5418,7 @@ test("the card stands alone in the page's body, and the screens before and after
 // or „Konto” on a waiting screen, and a bar over the game that lacks its items or its menu.
 test("the header holds the menu bar: the game's name alone on every waiting screen, the items and „Konto” over the game", async () => {
   // decision: D-277 "The menu bar marks the place the player is at"
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await onPage(async ({ root }) => {
     const held = heldClient();
     await startPage(held);
@@ -5413,11 +5442,12 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
         ["Siedziba", "#/"],
         ["Mapy", "#/mapy"],
         ["Programy", "#/programy"],
+        ["Wiedza", "#/wiedza"],
       ],
     );
     assert.deepEqual(
       items.map((item) => item.getAttribute("aria-current")),
-      ["page", null, null],
+      ["page", null, null, null],
       "the bar marks Siedziba",
     );
     assert.ok(accountButton(root), "„Konto” stands");
