@@ -4153,7 +4153,7 @@ An account with the owner role (D-410) has one more screen, the list of accounts
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-277
-- **Verification:** tests: the game opening the screens Siedziba, Postać, Mapy, Programy and
+- **Verification:** tests: the game opening the screens Siedziba, Postać, Mapy, Programy, Wiedza and
   Przejście at their addresses; the menu bar holding the game's name alone on the waiting screens,
   and over the game the name, the items Siedziba, Mapy, Programy and Wiedza in that order with no icons and
   the menu „Konto” with the address and „Wyloguj”; „Wróć do przejścia · {mapa} · minuta {m}” with the
