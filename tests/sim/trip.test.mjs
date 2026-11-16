@@ -402,7 +402,6 @@ test("unlisted and clipped contents of a completed backpack cannot fund a subseq
     1,
   ).state;
   assert.deepEqual(finished.team.chest.pieces, { stick: 4, berry: 3, moss: 2 });
-  // The restart follows the completion that solved forest, so it takes from nowhere (D-214).
   // A later run that takes from the chest starts on the still unsolved forestDeep: its backpack
   // holds the chest's four sticks and three berries, none of the leftovers of the completed run.
   const next = send(

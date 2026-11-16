@@ -257,7 +257,7 @@ test("a spell short of nature energy gives the energy the character has, rounded
   );
 });
 
-test("of several reasons the world and the backpack come before the nature energy", () => {
+test("the reason of the world comes before the nature energy, which is the reason where the world and the backpack allow", () => {
   // decision: D-310 "A program rule whose condition holds and whose action cannot be carried out names one reason"
   // decision: D-380 "„Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and „Uderz — patyk” short of a thing in the backpack"
   const drained = { ...revealedHere(freshRun()), natureEnergy: 0 };

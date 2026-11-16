@@ -583,11 +583,14 @@ test("groups do not move by the keyboard: arrow keys on a header commit nothing"
 test("a folded group shows its header alone, with name, condition and number of rules", async () => {
   // decision: D-295 "A folded rule group shows its name, its condition and the number of its program rules"
   await withPage(async (page) => {
-    await mount(page, twoGroups(), { folded: [1] });
+    const program = twoGroups();
+    program.groups[0].condition = { kind: "satietyBelow", value: 30 };
+    await mount(page, program, { folded: [1] });
     const section = sectionOf(page.root, 1);
     assert.equal(section.querySelector(".rule-list-row"), null);
     assert.equal(buttonIn(section, "+ reguła"), undefined);
     assert.equal(textIn(section, ".rule-list-name"), "Pierwsza");
+    assert.equal(textIn(section, ".rule-list-condition"), "Sytość poniżej 30");
     assert.equal(textIn(section, ".rule-list-size"), "2 reguły");
     assert.ok(rowOf(page.root, 3), "the group not folded keeps its rows");
   });

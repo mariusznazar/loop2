@@ -609,7 +609,7 @@ test("a name empty once trimmed creates nothing and says „Wpisz imię postaci.
 });
 
 // Catches the field and the button rebuilt at a refresh of the game state: they would lose the text
-// typed and the focus the player has in them, at every game minute (D-36).
+// typed and the focus the player has in them, at every game minute.
 test("the field keeps its element, its text and its focus, and the button its focus, through every refresh of the state and of the moment", async () => {
   await withPage(async (page) => {
     const state = teamOf(1);
@@ -671,7 +671,7 @@ test("the camp stands over the panel of the screen, the heading under it, and ad
 });
 
 // Catches the camp made a control: a link, a button or a field in it, a stop in the keyboard's order, a name
-// for a reader, or a picture a reader would announce (D-272, D-321): the screen's names in „Drużyna” lead
+// for a reader, or a picture a reader would announce (D-389): the screen's names in „Drużyna” lead
 // to the character (D-280), the camp leads nowhere.
 test("the camp is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
   // decision: D-389 "The camp moves as the scene does"

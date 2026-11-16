@@ -478,7 +478,6 @@ test("a creature-only discovery pauses before turns and does not write a combat 
 
 // D-118, D-119, D-143: the first attack permanently teaches the wolf, so the
 // next attack must use that very knowledge, not an independently knowing game.
-// Sources: foundations/decisions.md:2008, :2032, :2575.
 test("the discovered wolf stays known through another attack, restart and end", () => {
   // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
   // decision: D-119 "The Understanding belongs to the player"

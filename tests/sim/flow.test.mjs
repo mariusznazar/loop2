@@ -152,7 +152,6 @@ test("Restart with the starting program gives back the sent map run", () => {
   assert.deepEqual(restart(later).state, start);
 });
 
-// D-173: „Zakończ” drops the copy; the program sent with stays.
 test("Zakończ ends the map run, keeps the program and the last seed", () => {
   let state = advanceMinutes(sent().state, 30).state;
   state = passRealTime(state, 600).state;

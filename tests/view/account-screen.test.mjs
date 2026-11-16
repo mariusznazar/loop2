@@ -194,7 +194,7 @@ const menuSentences = (root) =>
 
 /**
  * The bar holds the game's name alone: no item and no „Konto”, so no „Wyloguj” can stand anywhere
- * (D-262, D-280).
+ * (D-280).
  */
 function assertNameAloneOnBar(root, reason) {
   const bar = byClass(root, "menu-bar")[0];
@@ -3040,7 +3040,7 @@ test("a change of the chest redraws the chest alone: the rows of Siedziba and th
   });
 });
 
-// D-251, D-329. Catches a mark in the wrong place or role, a mark at a map not yet solved,
+// D-251. Catches a mark in the wrong place, a mark at a map not yet solved,
 // and a mark that ignores the chest.
 test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
@@ -3584,8 +3584,7 @@ test("a tab that stopped saving as outdated logs out without a save and shows th
 });
 
 // D-97, D-211. Catches the expiry path started while the logout's request is under way, and a
-// logout that does not happen leaving the save's 401 unanswered. D-261: the sentence stands in the
-// card.
+// logout that does not happen leaving the save's 401 unanswered.
 test("a save that finds no session while the logout's request is under way waits for its answer: a logout ends it, an uncertain one then takes the expiry path", async () => {
   // decision: D-211 "When the server answers a save of the game state that there is no session, whatever ended it — an expiry, a block of the account (D-137) or a password reset (D-138) — the game leaves the screen and its time stops, the account forms return with „Sesja wygasła. Zaloguj się ponownie, aby zapisać postęp.”"
   for (const [name, answer] of [
@@ -5296,7 +5295,7 @@ test("the card stands alone in the page's body, and the screens before and after
   });
 });
 
-// D-262, D-280. Catches the game's name left as a title of its own beside the bar, an item
+// D-280. Catches the game's name left as a title of its own beside the bar, an item
 // or „Konto” on a waiting screen, and a bar over the game that lacks its items or its menu.
 test("the header holds the menu bar: the game's name alone on every waiting screen, the items and „Konto” over the game", async () => {
   // decision: D-277 "The menu bar marks the place the player is at"

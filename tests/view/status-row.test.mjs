@@ -344,7 +344,7 @@ test("on Las — głębiej a requirement that is met reads its own numbers while
   );
 });
 
-// D-135: the bar shows the streak as it stands, which a death of cold or hunger has set to zero.
+// D-133: the bar shows the streak as it stands, which a death of cold or hunger has set to zero.
 test("the words after a death of cold show the streak at zero", () => {
   assert.deepEqual(
     requirementsOf("forest", { streak: 0 }).map(requirementText),

@@ -72,7 +72,6 @@ class ComposeLogDriver(unittest.TestCase):
 
     def test_both_services_log_to_the_local_driver_and_no_other_option(self):
         # decision: D-355 "Just before a deployment replaces the containers of the game, it appends the whole log of the application and of the tunnel connector to `/var/log/loop2-app.log` on the test server, and when that append fails it says so in the deploy log and goes on; both services run under the `local` log driver of Docker with its default rotation, which bounds the log of a running container at about 100 MB"
-        # D-355, A2: Docker's own defaults of the `local` driver bound each log
         logging = service_logging(self.lines)
         for service in SERVICES:
             with self.subTest(service=service):
@@ -82,7 +81,6 @@ class ComposeLogDriver(unittest.TestCase):
 
     def test_no_other_logging_key_in_the_compose_file(self):
         # decision: D-355 "Just before a deployment replaces the containers of the game, it appends the whole log of the application and of the tunnel connector to `/var/log/loop2-app.log` on the test server, and when that append fails it says so in the deploy log and goes on; both services run under the `local` log driver of Docker with its default rotation, which bounds the log of a running container at about 100 MB"
-        # D-355, A2: one `logging:` key per service, and no legacy `log_driver`
         keys = [line for line in self.lines if is_code(line)
                 and re.match(r"\s*(logging|log_driver|log_opt)\s*:", line)]
         self.assertEqual(len(keys), len(SERVICES),
@@ -97,16 +95,13 @@ class LogrotateStanza(unittest.TestCase):
 
     def test_one_stanza_for_the_dump_file(self):
         # decision: D-355 "`logrotate` rotates the file"
-        # D-355, A3: the file holds one stanza, for /var/log/loop2-app.log only
         self.assertTrue(self.lines, f"{LOGROTATE} holds no stanza")
         self.assertEqual(self.lines[0], LOGROTATE_HEADER)
         self.assertEqual(self.lines[-1], "}")
         self.assertEqual(self.lines.count(LOGROTATE_HEADER), 1)
 
-    def test_the_stanza_holds_exactly_the_directives_of_a3(self):
+    def test_the_stanza_holds_exactly_its_directives(self):
         # decision: D-355 "`logrotate` rotates the file weekly, or sooner when it grows large, and keeps four rotated generations"
-        # D-355, A3: weekly or past 100 MiB, four files, copy and truncate, owner root, and no
-        # create and no user name
         # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository"
         body = self.lines[1:-1]
         self.assertEqual(sorted(body), LOGROTATE_DIRECTIVES)

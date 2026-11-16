@@ -13,7 +13,7 @@ import {
 } from "../../dist/browser/sim/game.js";
 import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 
-// D-92 and D-93 (foundations/decisions.md:1619,1641): starts, not elapsed minutes,
+// D-92 and D-93: starts, not elapsed minutes,
 // with independent counts attached to stable identities. Deliberately no program fixture builder.
 const PROGRAM = {
   groups: [

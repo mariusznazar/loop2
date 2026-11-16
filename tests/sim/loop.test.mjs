@@ -1164,7 +1164,7 @@ test("a send throws for a character in a loop, and clears the stopped line of th
   });
 });
 
-test("every state a loop makes over a whole map run, an end and the next map run loads back, with the save time it was stamped with", () => {
+test("every state a loop makes over 520 minutes of a map run loads back, with the save time it was stamped with", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   let state = looping(SURVIVING, { stick: 4, berry: 2 }, COLD_REAL_MS);
   let loaded = 0;
