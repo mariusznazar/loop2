@@ -844,9 +844,9 @@ raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zd
 kolej przychodzi przy zatrzymaniu, tego z odczytu, który niesie kilka końców zbierania, i tego z odczytu,
 w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zaczęty stawia przy miejscu, w którym
 mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
-a nowy zajmuje jego miejsce (D-367). Efekt, który gracz przerwał wyjściem z ekranu przejścia, a którego
-animację przeglądarka anuluje, kończy się jak przy końcu animacji i po powrocie na ekran nie gra od
-początku, bo zaległy efekt przepada (D-367, D-317).
+a nowy zajmuje jego miejsce (D-367). Efekt, którego animację przeglądarka anuluje, bo scena zniknęła —
+gracz wyszedł z ekranu przejścia albo stanęło okno końca przejścia (D-370) — kończy się jak przy końcu
+animacji i gdy scena wraca, nie gra od początku, bo zaległy efekt przepada (D-367, D-317).
 
 Wilk (D-316, D-148, D-271) stoi w scenie przez minuty starcia, obok maga, tuż za jego sylwetką,
 z odstępem z danych sceny: po prawej, a gdy mag stoi przy prawym brzegu i prawa strona wyszłaby poza
@@ -868,8 +868,8 @@ który niesie koniec starcia: pokonany wilk pada w czterech klatkach śmierci i 
 a potem go nie ma; wilk, który odchodzi, odbiega w pięciu klatkach biegu za prawy brzeg kadru; po śmierci
 maga w walce wilk stoi nieruchomo obok niego w klatce stania, a po rozwiązaniu mapy w trakcie starcia stoi
 nieruchomo tam, gdzie stał. Zaległy efekt przepada i wilka po prostu nie ma; tak samo bieg wilka i wynik
-starcia, które gracz przerwał wyjściem z ekranu przejścia, kończą się z anulowaną animacją i po powrocie
-nie grają od początku. Bieg wilka, szamotanina i jej
+starcia, których animację przeglądarka anuluje, bo scena zniknęła (wyjście z ekranu przejścia albo okno
+końca przejścia, D-370), kończą się z anulowaną animacją i gdy scena wraca, nie grają od początku. Bieg wilka, szamotanina i jej
 wynik nie rozjaśniają ani nie przyciemniają całego obszaru sceny (D-317, D-42): zmienia się najwyżej klatka
 wilka i kłąb kurzu, część kadru dużo mniejsza od progu błysku.
 
