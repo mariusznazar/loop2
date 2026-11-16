@@ -126,6 +126,7 @@ The part directs and records the work performed on this repository, and holds th
 
 - **Files:** AGENTS.md
   CLAUDE.md
+  security-notes.md
   .agents/**
   .claude/**
   .playwright/**
