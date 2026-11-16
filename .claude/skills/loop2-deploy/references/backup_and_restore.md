@@ -13,9 +13,9 @@ for the other read commands.
 | Backup script / its source | `/usr/local/bin/loop2-backup` (root, 0755) / `deploy/loop2-backup` |
 | Schedule / its source | `/etc/cron.d/loop2-backup` (root, 0644; the installed name has no dot, because cron skips a file with a dot) / `deploy/loop2-backup.cron`. 03:17 daily by the server's clock, as root |
 | Log | `/var/log/loop2-backup.log` |
-| Encryption key | `/etc/loop2/backup-encryption-key`, root:root, mode 0400, made by `age-keygen`, a copy in the owner's private note. Outside the checkout, in no Compose secret and in no container |
+| Encryption key | `/etc/loop2/backup-encryption-key`, root:root, mode 0400, made by `age-keygen`, a copy in the operator's private note. Outside the checkout, in no Compose secret and in no container |
 | Host-key file for Strych | `/etc/loop2/strych-known-hosts` (root, 0644): one line, the host key of Strych with the fingerprint given in step 6 of "Installing and reinstalling" |
-| Strych key | `/backup_key` on the game server, a copy in the owner's private note |
+| Strych key | `/backup_key` on the game server, a copy in the operator's private note |
 | Strych login | in root's SSH configuration on the server (`~/.ssh/config`, an entry for Strych's host naming the login and `IdentityFile /backup_key`), a copy in the private note. Never in the repository |
 | Strych's host | the constants block of `deploy/loop2-backup` (`STRYCH_HOST`). This skill names no Mikrus host or address; Mikrus's pages are the Strych page of its wiki and the Strych option in its panel |
 | Lock | `/run/loop2-deploy.lock`, shared with the deployment |
@@ -120,7 +120,7 @@ script with `bash -n`, then `install` (see "Installing a script from an exact co
 3. `apt install age` on the server (`age --version` shows it works). The package holds
    `age-keygen` too.
 4. Make the key: `age-keygen -o /etc/loop2/backup-encryption-key` as root, then set owner root,
-   group root, mode 0400. Copy the file into the owner's private note. Check with `stat`.
+   group root, mode 0400. Copy the file into the operator's private note. Check with `stat`.
 5. Write root's SSH configuration entry for Strych's host (host from the constants block, login
    and `IdentityFile /backup_key` from the private note). Write nothing else into root's SSH
    configuration or the system-wide one. Above all never set `KnownHostsCommand` or
@@ -129,7 +129,7 @@ script with `bash -n`, then `install` (see "Installing a script from an exact co
 6. Fill `/etc/loop2/strych-known-hosts` (root, 0644) from `ssh-keyscan` for that host, keeping
    the one line whose fingerprint is `SHA256:3WieS14O9NRnaiL5imCQfMugcVExGOoPqZEMhUD/LZk` (not a
    secret; compared at the first access to Strych). `ssh-keygen -lf /etc/loop2/strych-known-hosts`
-   shows the fingerprint. A key showing another fingerprint is not used until the owner has found
+   shows the fingerprint. A key showing another fingerprint is not used until the operator has found
    out why.
 7. Install `/usr/local/bin/loop2-backup` from `deploy/loop2-backup` at the commit, root 0755.
    Check with `cmp`.
@@ -171,7 +171,7 @@ Older backups need the key they were made with, so the old key stays until no ba
 
 1. Make the new key in a file of its own beside the old one, with `age-keygen -o` and mode 0400,
    root. Do not touch the old key yet.
-2. Add the new key to the owner's private note as the current one. Keep the old key in the note
+2. Add the new key to the operator's private note as the current one. Keep the old key in the note
    too, marked old.
 3. Move the new file over `/etc/loop2/backup-encryption-key`. Check with `stat`.
 4. Run the script by hand once; the log shows `end: sent`.
@@ -249,7 +249,7 @@ on.
 Never: reading the content of the key, the known-hosts file or root's SSH configuration (the count
 above is the only reading of the configuration); running
 the backup script or the command; making the hand run of the send; fetching or opening a backup;
-listing Strych with the owner's key; installing, changing a key or the schedule.
+listing Strych with the operator's key; installing, changing a key or the schedule.
 
 ## Restoring
 
@@ -280,13 +280,13 @@ restore trial, which only looks for the marker in the saved game state. Nothing 
 checks it: a backup made before the commit that changed `SAVED_GAME_VERSION` brings back saves of
 the earlier version, and the players of those saves start a new game at the first load.
 
-### Trying a backup on the owner's computer
+### Trying a backup on the operator's computer
 
-This proves a backup restores in the built image without touching the server. The owner repeats
+This proves a backup restores in the built image without touching the server. The operator repeats
 it every month and after each change of the database's schema version or of the saved game's
 version; a trial made before such a change does not cover it. Run on the
-owner's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
-the owner's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
+operator's computer in PowerShell, with the Docker engine on and `age` installed. `winget` hung on
+the operator's computer; the Windows zip of `age`'s releases page serves too. A newer `age` than the
 server's opened the backup. The zip only unpacks `age.exe` into a folder, which is not on the
 path: in each PowerShell window of the trial, run `$env:PATH += ';<folder holding age.exe>'`
 once, and `age` then runs by name in step 3 (without it PowerShell says that the term `age` is
@@ -380,13 +380,13 @@ commit's passes, although the game discards them and starts a new game (see "Res
 
 ### Restoring over the server's database
 
-Eight steps, all the human's. Tried once, on 2026-11-11, by the owner on the real test server,
+Eight steps, all the human's. Tried once, on 2026-11-11, by the operator on the real test server,
 steps 1 to 8 in order, from the newest nightly backup chosen by its time (the weekday file 3).
 Each step that was run worked as written except three places, which this text now corrects: the
 host in step 1, the mode of the decrypted file in step 2 and the marker in step 7. Two branches
 inside steps were never reached: in step 4 no `-wal` and no `-shm` stood in the volume after the
-clean stop of `app`, so moving them was not tried, and in step 8 the owner had reset no password
-and blocked no account since the backup, so nothing was redone. In step 7 the owner reported the
+clean stop of `app`, so moving them was not tried, and in step 8 the operator had reset no password
+and blocked no account since the backup, so nothing was redone. In step 7 the operator reported the
 public page, the login of the test account and the saved game as in order, and said no more.
 Not tried: the way back, a second attempt after a failed one, the old key of step 2, the move of
 `-wal` and `-shm` in step 4, a password reset or a block redone in step 8, `rsync` exit 23, a
@@ -446,7 +446,7 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
 
    Take the newest unless another is wanted. A size near 200 bytes is an empty backup (see "The
    log"): take the next newest. While the log of the backup exists, its last `end: sent` line
-   names the weekday file of the newest night and should agree; a disagreement is for the owner
+   names the weekday file of the newest night and should agree; a disagreement is for the operator
    to understand before going on. Then enter the directory and stay in it for step 2:
    `cd /root/loop2-restore`.
 2. Decrypt it there, from `/root/loop2-restore`, so that the plain database is written inside
@@ -488,7 +488,7 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
    and its marker is there. The marker is the name given to a character or a program in the test
    account in step 8 of "Installing and reinstalling" and written down then. If it was not
-   written down, log in and check that the test account holds a saved game state the owner
+   written down, log in and check that the test account holds a saved game state the operator
    recognises from before the backup's time. Only when the check passes, remove the whole
    directory: `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go
    the way back below.
@@ -496,7 +496,7 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    gave back to people:
    - Whoever is known to have reset a password since the backup resets it again with „Nie
      pamiętam hasła” on the login card, because the old password works again; today that is
-     the owner's own account. This instruction has no way to find the other accounts, so it
+     the operator's own account. This instruction has no way to find the other accounts, so it
      names none.
    - Block again each account that was blocked since the backup (the command in "Blocking a
      player account" in `SKILL.md`), because the restore brought it back unblocked.
@@ -528,7 +528,7 @@ in this order:
 2. Create `/etc/loop2` as in H2 of "H1-H5" in `setup_and_secrets.md` (deployment account as
    owner, numeric group 65532, mode 0750).
 3. Put the SMTP password and the tunnel token in place, each by its section of
-   `setup_and_secrets.md`, from the owner's private note. Put the session keys in place as the
+   `setup_and_secrets.md`, from the operator's private note. Put the session keys in place as the
    keys the players' sessions were signed with, not as new ones: write `/etc/loop2/session-secrets`
    from the private note's copy of the file, whole, in a private terminal (paste it, end with
    Enter and Ctrl-D), then give it owner root, group 1000 and mode 0440:
@@ -551,7 +551,7 @@ in this order:
    `notice: pusher exit 127` in the log; with a `pusher` that runs but whose message never comes,
    the log shows a `notice: pusher exit` line whose status tells little, because `pusher` reports
    no connection and not a refused message. Then do not leave the schedule unwatched: read
-   `/var/log/loop2-backup.log` every morning, or take the missing notice to the owner as a
+   `/var/log/loop2-backup.log` every morning, or take the missing notice to the operator as a
    decision before step 10.
 5. Write `/etc/loop2/backup-encryption-key` from the private note, root:root, mode 0400.
 6. Write `/backup_key` from the private note, root:root, mode 0600 (`ssh` refuses a private key

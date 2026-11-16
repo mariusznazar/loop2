@@ -1,4 +1,4 @@
-// The restore trial (D-234): the owner runs a decrypted backup of the account
+// The restore trial (D-234): the operator runs a decrypted backup of the account
 // database in the built image of the same commit, logs in as the test account
 // and checks that the saved game state came back.
 //
@@ -6,7 +6,7 @@
 //       --marker <text> --email <address>
 //
 // The password comes on standard input, never as an argument. The marker is the
-// name the owner gave a character or a program in the test account before the
+// name the operator gave a character or a program in the test account before the
 // backup was made; it must stand in the saved game state.
 //
 // One container starts from the image on two fresh volumes, the database in one
@@ -318,7 +318,7 @@ function integerOrNull(value) {
   return Number.isSafeInteger(value) ? value : null;
 }
 
-// Docker's own text, with what the owner gave removed and cut short.
+// Docker's own text, with what the operator gave removed and cut short.
 function safeText(text, secrets) {
   let shown = text;
   for (const secret of secrets)

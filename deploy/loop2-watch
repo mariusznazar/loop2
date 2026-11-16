@@ -1,5 +1,5 @@
 #!/bin/bash
-# loop2-watch: tells the owner, through pusher, that the loop2 game on the test server has failed.
+# loop2-watch: tells the operator, through pusher, that the loop2 game on the test server has failed.
 #
 # Installed root-owned, mode 0755, at /usr/local/bin/loop2-watch, outside the checkout, by a human;
 # deploy/loop2-watch.cron starts it as root every five minutes. A human may run it too. It takes no
@@ -178,7 +178,7 @@ fail() {
 
 on_exit() {
   # Bash runs this handler for a signal no trap names too, with $? still that of the last command.
-  # It never calls pusher: a watcher that reported its own failure would flood the owner.
+  # It never calls pusher: a watcher that reported its own failure would flood the operator.
   local code=$?
   trap - EXIT
   trap '' HUP INT USR1 USR2 PIPE ALRM TERM

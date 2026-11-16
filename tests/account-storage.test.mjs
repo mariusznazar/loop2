@@ -3069,7 +3069,7 @@ const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
 // sessions expire a day from now.
 const liveExpiry = () => Date.now() + 86_400_000;
 
-test("the owner's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
+test("the operator's command blocks and unblocks by address beside an open connection and says which outcome it reached", async (t) => {
   // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for"
   // decision: D-112 "The account server opens one application-owned SQLite connection before readiness, and the operator's blocking command of D-137, its command for the previous-save privilege of D-400, its command for the role of an account of D-410 and the backup command of D-231 each open one short-lived connection beside it under the same rules"
@@ -3130,7 +3130,7 @@ test("the owner's command blocks and unblocks by address beside an open connecti
 // D-252, business events of the guidelines' list. Faults: no line for a
 // change, a line for a command that changed nothing, the wrong account's
 // number, the address in the line.
-test("the owner's command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
+test("the operator's command writes one event with the account's number for a change, none for no change, and no address", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-252 "The product logs changes of a player's account and of access to it"
@@ -3164,7 +3164,7 @@ test("the owner's command writes one event with the account's number for a chang
 // D-252, D-354. Faults: the failure's reason left out, so the owner only
 // hears to try again; SQLite's message or the file's path in the output; a
 // sentence dropped, so the owner no longer reads what happened.
-test("a database failure of the owner's command adds the error's kind and code and nothing of its text", async (t) => {
+test("a database failure of the operator's command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
@@ -3194,7 +3194,7 @@ test("a database failure of the owner's command adds the error's kind and code a
 
 // D-253. Faults: no handler, so the default print writes the
 // message and the stack; a handler that goes on after what no code handled.
-test("what no code of the owner's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
+test("what no code of the operator's command handled ends it with one line of its kind, code and place, and none of its text", async (t) => {
   // decision: D-253 "Each process that touches the data of accounts — the server, `account-block`, `account-previous-save`, `account-role` and `account-backup` — has one last-resort handler of its own, which writes the kind, the code and the place of what no code handled"
   const { path } = await fixture(t);
   const run = await runBlockCommand(
@@ -3256,7 +3256,7 @@ test("a cleanup that fails in the background writes one line of its kind and cod
 });
 
 // invariant: unblock-restores-no-link
-test("the owner's command stops every emailed link of the account it blocks, and its unblock brings none back", async (t) => {
+test("the operator's command stops every emailed link of the account it blocks, and its unblock brings none back", async (t) => {
   // decision: D-137 "Blocking marks the account blocked, deletes every session of the account and stops every emailed link of the account"
   // decision: D-112 "Expired sessions are rejected on reads and pruned at startup and periodically with a disposed lifecycle timer"
   // The command prunes by the real clock, so the server's connection uses it
@@ -3292,7 +3292,7 @@ test("the owner's command stops every emailed link of the account it blocks, and
   );
 });
 
-test("the owner's command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
+test("the operator's command changes nothing on a usage error, an unknown address or an unusable database, and creates none", async (t) => {
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
   const { path, database, store, raw, account } = await fixture(t);
   await call(store, "set", "one", data(account.id, liveExpiry()));

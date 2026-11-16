@@ -6,7 +6,7 @@ import {
 } from "./database.js";
 import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 
-// The owner grants or revokes the previous-save privilege of one player
+// The operator grants or revokes the previous-save privilege of one player
 // account, named by its email address, from a shell in the loop2 container:
 //
 //   node dist/server/account-previous-save.js grant <email>

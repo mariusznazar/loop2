@@ -7,7 +7,7 @@ import {
 } from "./database.js";
 import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 
-// The owner blocks or unblocks one player account, named by its email address,
+// The operator blocks or unblocks one player account, named by its email address,
 // from a shell in the loop2 container:
 //
 //   node dist/server/account-block.js block <email>

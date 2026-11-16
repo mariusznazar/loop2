@@ -527,7 +527,7 @@ export class AccountDatabase {
   // Records a link before its message is handed to the mail service. Its row
   // counts against the limits whatever the sending's outcome (D-161), so the
   // count and the insert share one transaction. The block is read there too:
-  // a block committed by the owner's command either comes first, and nothing
+  // a block committed by the operator's command either comes first, and nothing
   // is recorded or sent, or comes after and stops the recorded link. Recording
   // stops every earlier link of the account and purpose at once, so a sending
   // that then fails leaves no earlier link working (D-155).

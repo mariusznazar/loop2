@@ -202,7 +202,7 @@ class EveryFailedEndCallsPusher(unittest.TestCase):
 
     def test_each_failed_end_calls_pusher_once_with_the_one_fixed_notice(self):
         # invariant: account-save-backup-failure-notice
-        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed, with no player's data, no tool's output and no step's name"
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed, with no player's data, no tool's output and no step's name"
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure"
         notices = set()
         for arrange in FAILED_ENDS:

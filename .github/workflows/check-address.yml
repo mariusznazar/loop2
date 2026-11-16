@@ -2,7 +2,7 @@ name: Check the public address
 
 # Every five minutes, at the minutes GitHub does not delay (never the top of the hour), the step
 # opens the game's public address and fails unless it answers 200. The run ships no files, checks
-# out no code and holds no secret; it deploys nothing. A failed run makes GitHub notify the owner.
+# out no code and holds no secret; it deploys nothing. A failed run makes GitHub notify the operator.
 
 on:
   schedule:

@@ -1,6 +1,6 @@
 # Setup, secrets and rotation
 
-All changes here are the human's. Access values and key material live in the owner's private
+All changes here are the human's. Access values and key material live in the operator's private
 note, never in repository files, request text, shell history or shared logs.
 
 ## Initial host provisioning
@@ -43,7 +43,7 @@ pre-transition running application SHA and previous script in the private operat
 2. **H2 — token:** create `/etc/loop2` with the deployment account as owner, numeric group 65532,
    mode 0750. Put the token into `/etc/loop2/cloudflared-token`, same owner/group, mode 0640,
    using a private editor or secure input; never paste a token into command arguments or a
-   logged shell command. Keep its second copy in the owner's private note. Root and the owner
+   logged shell command. Keep its second copy in the operator's private note. Root and the owner
    can read it; group 65532 can read the file and traverse the directory; other users cannot.
    The pinned image runs as 65532:65532. Compose mounts the file read-only for the connector
    at `/run/secrets/cloudflare_tunnel_token`; it grants nothing to `app`. File-backed Compose
@@ -146,7 +146,7 @@ wc -c < "$f"
 ```
 
 Expected: `root 1000 440`, then `48` (two quotes, two brackets, 43 characters, a newline).
-Then copy the file's whole content into the owner's private note: read it with `cat` in a
+Then copy the file's whole content into the operator's private note: read it with `cat` in a
 private terminal and paste it there. Do this before the deployment.
 
 **Rotating: a new key first, the old one kept.**
@@ -235,7 +235,7 @@ named M1 to M4, so that they are not mistaken for the tunnel's H1–H5 above:
   Outsider's documentation gives them; the DKIM TXT record at `x._domainkey` with the value from
   the panel (selector `x`). The records of the website (A, CNAME) are left alone.
 - M3, on the server: the file `/etc/loop2/smtp-password` as below, and a copy of the password
-  in the owner's private note.
+  in the operator's private note.
 
 **Creating or replacing the file.** Run in bash as root on the server, from a private terminal.
 The password is typed at the prompt without echo, so it appears in no command argument, no
@@ -484,7 +484,7 @@ record and alerts" in `SKILL.md`. Do the steps in this order, from the exact com
 was reviewed at (`target_sha`). Extract each file with `git show "${target_sha}:<path>"` into a
 temporary file, as in "Installing a script from an exact commit"; run Git as the account that owns
 the checkout and the `install` and file changes with the privileges they need. `<run account>`
-is the deployment account and its group from the owner's private note, never from this file.
+is the deployment account and its group from the operator's private note, never from this file.
 
 1. **The dump file.** Create it owned by the run account, mode 0640, if it does not exist:
 
@@ -546,7 +546,7 @@ is the deployment account and its group from the owner's private note, never fro
    `target_sha`. A quiet healthy run writes no line in `/var/log/loop2-watch.log`; the proof of a
    run is the state file's modification time moving on by about five minutes. A deliberate
    trial: restart the game container once with `docker restart loop2` and wait for the next one
-   or two runs. The `restarted` message (subject `loop2_ponowny_start`) arrives in the owner's
+   or two runs. The `restarted` message (subject `loop2_ponowny_start`) arrives in the operator's
    Mikrus mail, and a run that falls while the container is still starting may send a `down`
    message too. This is the only check that delivery by `pusher` works. Do not repeat it within
    six hours: the message of a kind is held for that long.
