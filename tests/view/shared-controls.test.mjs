@@ -780,6 +780,35 @@ test("a pick cell with the icon of an action draws it as a hidden mask of that f
   });
 });
 
+// Breaks: a cell that takes its tab index from an effect of its panel instead of from the property
+// has none at its first drawing, so the keyboard finds it out of the order of Tab; a cell that sets
+// a tab index when none is given puts every cell of a grid in the order of Tab, which D-306 forbids.
+test("a pick cell takes its tab index from the property it is given, and sets none when none is given", async () => {
+  // decision: D-267 "that an Effect serves to synchronize with such a system, never to transform data for rendering or to handle a user event"
+  await withPage(async ({ document }) => {
+    const bare = drawnElement(
+      await drawn(document, createElement(ReactPickCell, { text: PICK_TEXT })),
+    );
+    assert.equal(bare.hasAttribute("tabindex"), false);
+
+    const inOrder = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, { text: PICK_TEXT, tabIndex: 0 }),
+      ),
+    );
+    assert.equal(inOrder.getAttribute("tabindex"), "0");
+
+    const outOfOrder = drawnElement(
+      await drawn(
+        document,
+        createElement(ReactPickCell, { text: PICK_TEXT, tabIndex: -1 }),
+      ),
+    );
+    assert.equal(outOfOrder.getAttribute("tabindex"), "-1");
+  });
+});
+
 // Breaks: a greyed cell that calls `onPick` fills `picks` at the first click; one that is
 // `disabled` in place of aria-disabled loses the attribute asserted here and drops out of the
 // keyboard's reach, which D-289 keeps for reading its reason; a cell that gives no pick when

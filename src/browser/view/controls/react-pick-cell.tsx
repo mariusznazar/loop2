@@ -19,6 +19,8 @@ export type ReactPickCellProps = {
   reason?: string | null;
   /** Called on a click of a cell that may be picked; a greyed cell never calls it. */
   onPick?: MouseEventHandler<HTMLButtonElement>;
+  /** The cell's place in the order of Tab; left out, the button sets none. The rule panel sets it. */
+  tabIndex?: number;
 };
 
 /** A pick cell of the rule panel: a button of its group, selected when chosen, greyed when not picked. */
@@ -29,6 +31,7 @@ export function ReactPickCell({
   greyed = false,
   reason,
   onPick,
+  tabIndex,
 }: ReactPickCellProps) {
   return (
     <button
@@ -44,6 +47,7 @@ export function ReactPickCell({
       aria-pressed={chosen}
       aria-disabled={greyed ? "true" : undefined}
       onClick={greyed ? undefined : onPick}
+      tabIndex={tabIndex}
     >
       {icon !== undefined ? (
         <span

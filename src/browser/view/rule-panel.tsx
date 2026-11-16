@@ -258,15 +258,6 @@ export function RulePanelView({
   const tabbable =
     cursor !== null && cursor < flat.length ? cursor : Math.max(0, chosenAt);
 
-  // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid. The shared
-  // pick cell sets no tab index, so this sets it on its element after every commit.
-  useLayoutEffect(() => {
-    cellsOf(grid.current).forEach((cell, at) => {
-      const wanted = at === tabbable ? 0 : -1;
-      if (cell.tabIndex !== wanted) cell.tabIndex = wanted;
-    });
-  });
-
   // The focus goes into the panel when it opens, and to the next field after a pick, once that field
   // stands: the page may draw the program a pick made a moment later.
   useLayoutEffect(() => {
@@ -399,6 +390,7 @@ export function RulePanelView({
   }
 
   function renderGrid(field: RuleField, sections: FieldPick) {
+    let cellsBefore = 0;
     return (
       <div
         // The sections of the conditions bear no names, so a line parts them (D-290).
@@ -424,6 +416,9 @@ export function RulePanelView({
               }
             >
               {section.cells.map((cell) => {
+                // The cells of the grid are counted through all its sections, as `flat` counts them.
+                const index = cellsBefore;
+                cellsBefore += 1;
                 const time =
                   field === "action"
                     ? actionTime(state, cell.value as Action["kind"])
@@ -441,6 +436,8 @@ export function RulePanelView({
                       greyed={cell.greyed}
                       reason={cell.reason}
                       onPick={() => choose(field, cell.value)}
+                      // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid.
+                      tabIndex={index === tabbable ? 0 : -1}
                     />
                     {time === null ? null : (
                       <span className="rule-panel-time">{time}</span>
