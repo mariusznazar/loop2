@@ -1,0 +1,57 @@
+// Own-work check of slice 7: the waiting screen's refusal after a retry, with the focus.
+import { assert, inAct, press, settle, withPage } from "../../tests/view/page-document.mjs";
+import { test } from "node:test";
+
+const doc = () => globalThis.document;
+function held() {
+  const calls = [];
+  const call = (name) => () => new Promise((resolve) => calls.push({ name, answer: resolve }));
+  return {
+    calls,
+    client: { currentAccount: call("currentAccount"), loadSavedGame: call("loadSavedGame") },
+    async answer(name, result) {
+      const i = calls.findIndex((c) => c.name === name);
+      assert.notEqual(i, -1, name);
+      calls.splice(i, 1)[0].answer(result);
+      await settle();
+    },
+  };
+}
+const FAIL = (message) => ({ ok: false, failure: { kind: "unreachable", reason: "network", message } });
+const address = { hash: () => "", clearFragment() {}, go() {}, replace() {}, reload() {}, onChange: () => () => {} };
+const button = () => [...doc().querySelectorAll("button")].find((b) => ["Spróbuj ponownie", "Sprawdzanie…"].includes(b.textContent));
+
+test("refusal, retry, refusal again: the same button, focused at each refusal, waiting between", async () => {
+  await withPage(async () => {
+    const h = held();
+    const { startApp } = await import("../../dist/browser/view/app.js");
+    await inAct(() => startApp(doc().body, h.client, address));
+    await settle();
+    const text = () => doc().querySelector(".session-check-text");
+    assert.equal(text().hidden, false);
+    await h.answer("currentAccount", FAIL("Pierwsza."));
+    const b = button();
+    assert.equal(text().hidden, true);
+    assert.equal(doc().activeElement, b);
+    assert.equal(b.disabled, false);
+    await press(b);
+    await settle();
+    assert.equal(button(), b, "the same element");
+    assert.equal(b.textContent, "Sprawdzanie…");
+    assert.equal(b.disabled, true);
+    assert.equal(doc().querySelectorAll(".form-warning").length === 0 || [...doc().querySelectorAll(".form-warning")].every((w) => w.hidden || w.textContent === ""), true);
+    await h.answer("currentAccount", FAIL("Druga."));
+    assert.equal(button(), b);
+    assert.equal(b.textContent, "Spróbuj ponownie");
+    assert.equal(b.disabled, false);
+    assert.equal(doc().activeElement, b, "focus again after a refusal following a retry");
+    await press(b);
+    await settle();
+    await h.answer("currentAccount", { ok: true, value: { id: "a1", email: "a@b.c", emailConfirmed: true, previousSaveAllowed: false } });
+    assert.equal(b.textContent, "Sprawdzanie…", "retrying lasts through the load");
+    assert.equal(b.disabled, true);
+    await h.answer("loadSavedGame", FAIL("Trzecia."));
+    assert.equal(b.textContent, "Spróbuj ponownie");
+    assert.equal(doc().activeElement, b);
+  });
+});
