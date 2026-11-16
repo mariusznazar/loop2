@@ -223,11 +223,14 @@ export function RulePanelView({
         ? conditionFields(condition)
         : [];
 
-  // The field whose pick stands open, set anew whenever the page opens another rule, group or field.
+  // The field whose pick stands open, set anew whenever the page opens another rule, group or field. A
+  // rule is named by its number alone, so a rule moved to another group keeps the field it stood on.
   const openKey =
     open === null
       ? ""
-      : `${open.groupId}:${open.ruleId ?? "group"}:${open.field ?? "condition"}`;
+      : open.ruleId === null
+        ? `group:${open.groupId}:${open.field ?? "condition"}`
+        : `rule:${open.ruleId}:${open.field ?? "condition"}`;
   const requested: RuleField =
     open?.field !== undefined && fields.includes(open.field)
       ? open.field

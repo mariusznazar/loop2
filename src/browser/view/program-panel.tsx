@@ -291,6 +291,25 @@ function savedShown(
     : { kind: "saved", programId: state.programs[0].id };
 }
 
+/**
+ * The open target as the program holds it now: a rule's panel goes with the group that holds the rule
+ * (D-306), so the group named is that one; null where the rule is gone, and where a group's own panel
+ * names a group that is gone. Pure.
+ */
+function holdingTarget(
+  program: Program,
+  target: RulePanelOpen,
+): RulePanelOpen | null {
+  if (target.ruleId === null)
+    return program.groups.some((group) => group.id === target.groupId)
+      ? target
+      : null;
+  const holder = program.groups.find((group) =>
+    group.rules.some((rule) => rule.id === target.ruleId),
+  );
+  return holder === undefined ? null : { ...target, groupId: holder.id };
+}
+
 /** The sentence above the editor of Programy while the game state holds a map run (D-166). */
 function runNoteText(run: NonNullable<GameState["run"]>): string {
   return `Zmiany tutaj nie dotykają przejścia na mapie ${MAPS[run.mapId].name}.`;
@@ -441,18 +460,13 @@ export function ProgramPanelView({
     open = null;
     setOpen(null);
   }
-
-  const openGroup =
-    open === null
-      ? undefined
-      : content.program.groups.find(
-          (group) => group.id === open.target.groupId,
-        );
-  const panelStands =
-    open !== null &&
-    openGroup !== undefined &&
-    (open.target.ruleId === null ||
-      openGroup.rules.some((rule) => rule.id === open.target.ruleId));
+  // The open rule goes with its rule to the group that holds it now; a rule gone closes its panel.
+  const followed =
+    open === null ? null : holdingTarget(content.program, open.target);
+  if (open !== null && followed === null) {
+    open = null;
+    setOpen(null);
+  }
   const folded = memory.get(key) ?? NO_GROUPS;
 
   const checked =
@@ -514,8 +528,8 @@ export function ProgramPanelView({
   }
 
   function closePanel(): void {
-    if (open === null) return;
-    focusClosed.current = open.target;
+    if (followed === null) return;
+    focusClosed.current = followed;
     setOpen(null);
   }
 
@@ -529,11 +543,11 @@ export function ProgramPanelView({
       : state.programs[0];
 
   const rulePanel =
-    panelStands && open !== null ? (
+    followed !== null ? (
       <RulePanelView
         state={state}
         program={content.program}
-        open={open.target}
+        open={followed}
         copy={copyShown}
         onCommit={actions.edit}
         onClose={closePanel}
@@ -677,7 +691,7 @@ export function ProgramPanelView({
           program={content.program}
           counts={content.counts}
           folded={folded}
-          open={open === null ? null : open.target}
+          open={followed}
           panel={rulePanel}
           signs={copyShown ? ruleSigns(state) : null}
           onCommit={actions.edit}

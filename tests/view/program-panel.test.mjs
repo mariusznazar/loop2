@@ -1876,3 +1876,59 @@ test("opening a rule, and then a rule of another group, takes the focus into the
     assert.equal(openField(game.root), "Warunek", "on the condition");
   });
 });
+
+// D-306, To do 15. A rule moved across a group border by „↓” or by its handle keeps the panel open
+// under its new row on the field it had. Catches the panel closed at the border, or put back on the
+// condition with the focus taken into the grid.
+test("a rule moved across a group border by „↓” and by its handle keeps the panel open under its new row, on the same field", async () => {
+  // decision: D-306 "moving the rule to another group, by an arrow or by the handle, closes nothing, and the panel stays open on the same field and goes with the rule to its new group"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithTwoGroups(), "programs");
+    await click(rowOf(game.root, 1).querySelector(".rule-condition"));
+    await click(
+      game.root.querySelector('button[aria-label="Czynność: Eksploruj"]'),
+    );
+    assert.equal(openField(game.root), "Czynność", "precondition: the action");
+
+    // Rule 1 is the last of group 1; „↓” moves it to the start of group 2.
+    await click(buttonNamed(rowOf(game.root, 1), "↓"));
+    assert.deepEqual(game.acts.at(-1), ["editProgram", 1]);
+    assert.deepEqual(
+      game.state.programs[0].program.groups.map((group) =>
+        group.rules.map((rule) => rule.id),
+      ),
+      [[], [1, 2]],
+      "precondition: rule 1 is first in group 2",
+    );
+    assert.ok(
+      rowOf(game.root, 1).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "the panel stands under rule 1's new row",
+    );
+    assert.equal(openField(game.root), "Czynność", "the same field after „↓”");
+    assert.ok(
+      rowOf(game.root, 1).contains(page.document.activeElement),
+      "the focus stays on the moved rule's arrow",
+    );
+
+    // By the handle: dragged back over group 1, which is empty now, the rule lands in it.
+    await drag(rowOf(game.root, 1).querySelector(".drag-handle"), "dragstart");
+    await drag(game.root.querySelector('[data-group="1"]'), "dragover");
+    await drag(game.root.querySelector('[data-group="1"]'), "drop");
+    assert.deepEqual(
+      game.state.programs[0].program.groups.map((group) =>
+        group.rules.map((rule) => rule.id),
+      ),
+      [[1], [2]],
+      "precondition: rule 1 dropped into group 1",
+    );
+    assert.ok(
+      rowOf(game.root, 1).nextElementSibling.contains(
+        game.root.querySelector(".rule-panel"),
+      ),
+      "the panel stands under rule 1's row after the drag",
+    );
+    assert.equal(openField(game.root), "Czynność", "the same field after the drag");
+  });
+});
