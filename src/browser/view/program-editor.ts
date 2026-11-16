@@ -250,7 +250,7 @@ export function removeRule(
  * „↑” or „↓” on the rule at `index` of the named group: a swap with its neighbour in the group, and
  * at the group's edge the move across it — „↓” on the last rule to the start of the next group, „↑”
  * on the first to the end of the previous one (D-297). Null only where there is no group to move
- * to: „↑” on the program's first rule and „↓” on its last.
+ * to: „↑” at the group's edge with no group before the rule's group, „↓” with none after it.
  */
 export function moveRule(
   program: Program,
@@ -281,7 +281,10 @@ export function moveRule(
   );
 }
 
-/** Whether „↑” and „↓” of the rule at `index` of the named group act: off only at the program's ends. */
+/**
+ * Whether „↑” and „↓” of the rule at `index` of the named group act: off only where no group stands
+ * on that side of the rule's group.
+ */
 export function ruleArrows(
   program: Program,
   groupId: GroupId,

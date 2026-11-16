@@ -931,7 +931,7 @@ test("rule edits preserve other groups, group boundaries and identities", () => 
   assert.deepEqual(moved.groups[0], first);
   assert.deepEqual(moved.groups[1].rules, [ALWAYS_WALK, BELOW_WANDER]);
   // D-297: „↓” on the last rule of a group goes to the start of the
-  // next group, „↑” on the first to the end of the previous one; null only at the program's ends.
+  // next group, „↑” on the first to the end of the previous one; null only where no group stands on that side.
   const down = moveRule(input, 8, 0, 1);
   assert.deepEqual(down.groups[0].rules, []);
   assert.deepEqual(down.groups[1].rules, [
@@ -1588,7 +1588,7 @@ test("a group's summary: its name, condition, number of rules and the sum of the
   assert.equal(countText(0), "Wykonano 0×");
 });
 
-test("the arrows are off only on the program's first and last rule, a group's edge being no end", () => {
+test("the arrows are off only where no group stands before (after) the rule's group, a group's edge being no end", () => {
   // decision: D-288 "Rules move by a handle with a line showing where they land, by arrows, and between groups, and whole rule groups move by a handle with such a line, with no arrows in the header of a rule group"
   // decision: D-297 "„↓” on the last program rule of a rule group moves it to the start of the next group, and „↑” on the first program rule of a group to the end of the previous one; „↑” is disabled only where no rule group stands before the group of the rule and „↓” only where none stands after it, so a rule group left empty at the edge of the program takes the rule"
   const second = {
@@ -1611,6 +1611,17 @@ test("the arrows are off only on the program's first and last rule, a group's ed
   assert.deepEqual(ruleArrows(single, 1, 1), { up: true, down: true });
   assert.deepEqual(ruleArrows(single, 1, 0), { up: false, down: true });
   assert.deepEqual(ruleArrows(single, 1, 2), { up: true, down: false });
+  // A group left empty at the edge of the program takes the rule: the arrow toward it is on.
+  const emptyAtEdges = {
+    ...THREE,
+    groups: [
+      { id: 1, name: "Pusta", condition: ALWAYS, rules: [] },
+      { id: 2, name: "Dwa", condition: ALWAYS, rules: [ALWAYS_EXPLORE] },
+      { id: 3, name: "Trzy", condition: ALWAYS, rules: [] },
+    ],
+    nextGroupId: 4,
+  };
+  assert.deepEqual(ruleArrows(emptyAtEdges, 2, 0), { up: true, down: true });
 });
 
 test("„↓” on the last rule of a group makes it the first of the next, „↑” on the first the last of the previous; an empty group takes it too", () => {
