@@ -79,8 +79,8 @@ function addressOf(log) {
 }
 
 /**
- * The six entries of a game's table in the order of its document: Siedziba, Programy, Przejście,
- * Postać, Mapy and the list of accounts, the last three `while-shown`.
+ * The seven entries of a game's table in the order of its document: Siedziba, Programy, Przejście,
+ * Postać, Mapy, Wiedza and the list of accounts, the last four `while-shown`.
  */
 function table(log) {
   return [
@@ -91,6 +91,7 @@ function table(log) {
       String(screen.characterId),
     ),
     entryOf("maps", ["maps", "map"], log, "while-shown", () => "maps"),
+    entryOf("knowledge", ["knowledge"], log, "while-shown", () => "knowledge"),
     entryOf("accounts", ["accounts"], log, "while-shown", () => "accounts"),
   ];
 }
@@ -363,7 +364,7 @@ test("start draws the instances with no events, then shows the first screen with
   });
 });
 
-// decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+// decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
 // Catches a page told of the same place twice, one that is never told of a way back to the map run,
 // and a page told after the game was taken down.
 test("the page is told its place once for each change, with the way back to a map run, and never after dispose", async () => {
@@ -448,7 +449,7 @@ test("a table that leaves out the entry of the list of accounts is refused when 
       () =>
         createScreenRegistry({
           element: root,
-          entries: table(log).slice(0, 5),
+          entries: table(log).slice(0, 6),
           first: HEADQUARTERS,
           address: addressOf(log),
           state: () => newGame(),
@@ -465,7 +466,7 @@ test("a table that leaves out the entry of the list of accounts is refused when 
 test("the list of accounts is built on entering its address and taken down on leaving it", async () => {
   await onRegistry(async ({ registry, element, log, entries }) => {
     registry.start();
-    const accounts = entries[5];
+    const accounts = entries[6];
     assert.equal(accounts.instances.length, 0, "not built before it is shown");
     registry.show(ACCOUNTS, "go");
     assert.equal(accounts.instances.length, 1);

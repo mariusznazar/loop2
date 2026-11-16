@@ -9,6 +9,10 @@ export type CreatureRule = {
 
 export type CreatureDef = {
   name: string;
+  /** File name in assets/icons, without the extension. */
+  icon: string;
+  /** Title of the icon, as its page on game-icons.net gives it; the section of credits names it. */
+  iconTitle: string;
   /** The event that reveals the creature to the player. */
   revealedBy: { kind: "attacked"; creature: string };
   health: number;
@@ -20,6 +24,8 @@ export type CreatureDef = {
 export const CREATURES = {
   wolf: {
     name: "wilk",
+    icon: "wolf-head",
+    iconTitle: "Wolf head icon",
     revealedBy: { kind: "attacked", creature: "wolf" },
     health: 24,
     strikeDamage: 7,

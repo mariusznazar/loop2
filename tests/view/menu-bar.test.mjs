@@ -112,7 +112,7 @@ const isWarning = (sentence) => sentence.classList.contains("warning");
 // --- the bar --------------------------------------------------------------------------------
 
 test("a waiting screen's bar holds the game's name alone, with no item and no „Konto”", async () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await withPage(async (page) => {
     await openBar(page, { props: propsOf({ account: null, screen: null }) });
     const bar = page.root.querySelector(".menu-bar");
@@ -122,8 +122,8 @@ test("a waiting screen's bar holds the game's name alone, with no item and no �
   });
 });
 
-test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to #/mapy, „Programy” to #/programy and „Konto”, in that order and without icons", async () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to #/mapy, „Programy” to #/programy, „Wiedza” to #/wiedza and „Konto”, in that order and without icons", async () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await withPage(async (page) => {
     await openBar(page);
     const bar = page.root.querySelector(".menu-bar");
@@ -139,6 +139,7 @@ test("over the game the bar holds the name, „Siedziba” to #/, „Mapy” to 
         ["Siedziba", "#/"],
         ["Mapy", "#/mapy"],
         ["Programy", "#/programy"],
+        ["Wiedza", "#/wiedza"],
       ],
     );
     assert.equal(all(bar, "img, svg").length, 0, "no icon");
@@ -156,7 +157,7 @@ test("the item of the place the page gives is marked with aria-current, and none
   // decision: D-277 "The menu bar marks the place the player is at"
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character, on which the menu bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on the screen of a map run the menu bar marks no item"
   // D-277, D-280: Siedziba on Siedziba and on Postać, Mapy on Mapy and on a map, Programy on Programy
-  // and on a program, none on the screen of a map run; the page gives the screen, the bar reads the
+  // and on a program, Wiedza on Wiedza, none on the screen of a map run; the page gives the screen, the bar reads the
   // item from it.
   const cases = [
     [{ kind: "headquarters" }, "Siedziba"],
@@ -165,6 +166,7 @@ test("the item of the place the page gives is marked with aria-current, and none
     [{ kind: "map", mapId: "forest" }, "Mapy"],
     [{ kind: "programs" }, "Programy"],
     [{ kind: "program", programId: 5 }, "Programy"],
+    [{ kind: "knowledge" }, "Wiedza"],
     [{ kind: "run", characterId: 2 }, null],
     [null, null],
   ];
@@ -211,8 +213,8 @@ test("the bar follows the page's update: the marked item moves, and the open men
   });
 });
 
-test("„Wróć do przejścia” stands as a link to the map run's address when the page gives it, after „Programy”, and not otherwise", async () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+test("„Wróć do przejścia” stands as a link to the map run's address when the page gives it, after „Wiedza”, and not otherwise", async () => {
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   await withPage(async (page) => {
     const { bar } = await openBar(page, {
       props: propsOf({ returnEntry: RETURN_ENTRY }),
@@ -224,6 +226,7 @@ test("„Wróć do przejścia” stands as a link to the map run's address when 
         ["Siedziba", "#/"],
         ["Mapy", "#/mapy"],
         ["Programy", "#/programy"],
+        ["Wiedza", "#/wiedza"],
         ["Wróć do przejścia · Las · minuta 212", "#/postac/3/przejscie"],
       ],
     );
@@ -232,7 +235,7 @@ test("„Wróć do przejścia” stands as a link to the map run's address when 
     });
     assert.deepEqual(
       all(page.root, ".menu-bar a").map((link) => link.textContent),
-      ["Siedziba", "Mapy", "Programy"],
+      ["Siedziba", "Mapy", "Programy", "Wiedza"],
     );
   });
 });
@@ -251,7 +254,7 @@ test("„Konto” is a native button that says whether the menu stands open, and
 });
 
 test("a click on „Konto” opens the menu with the account's address and „Wyloguj”", async () => {
-  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy and Programy, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
+  // decision: D-280 "The menu bar holds at its left the game's name, which stands alone on the waiting screens (D-262), and over the game the items Siedziba, Mapy, Programy and Wiedza, with no icons, and the menu „Konto” with the address and „Wyloguj”, and outside the screen of a manual map run that goes on, or that has ended and waits for „Restart” or „Zakończ”, it also holds „Wróć do przejścia · {mapa} · minuta {m}”, which leads to the screen of that map run, its minute being the map run's game minute as the clock in the header of that screen writes it"
   // decision: D-285 "The menu „Konto” opens on a click and from the keyboard, and closes on Escape, on a click outside it and on a second click on „Konto”, focus then returning to „Konto”"
   await withPage(async (page) => {
     await openBar(page);
@@ -380,6 +383,7 @@ test("the controls of the open menu stand after „Konto” in the order Tab wal
       "Siedziba",
       "Mapy",
       "Programy",
+      "Wiedza",
       "Konto",
       "Wyślij ponownie",
       "Wyloguj",
@@ -767,6 +771,7 @@ const BAR_ITEMS = [
   ["Siedziba", "#/"],
   ["Mapy", "#/mapy"],
   ["Programy", "#/programy"],
+  ["Wiedza", "#/wiedza"],
 ];
 const menuLinksOf = (root) => all(blockOf(root), "a");
 const barItemsOf = (root) =>

@@ -177,13 +177,16 @@ test("combat actions carry the accepted damage, item requirement and attack reve
   });
 });
 
-test("the wolf has 24 health, bites for 7 and keeps its ordered combat rules", () => {
+test("the wolf has its icon, 24 health, bites for 7 and keeps its ordered combat rules", () => {
   // decision: D-128 "What reveals each action, item, condition and creature of the game stands in the data files beside that action, item, condition or creature, as one of the kinds of revealing event the simulation handles, such as the first chill, the first gathered piece of an item or an attack naming its creature"
   // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules"
   // decision: D-143 "The first wolf attack brings the wolf, „Uderz — patyk”, „Kopnij”, „Odskocz”, „Zdrowie poniżej” and „Przeciwnik ma poniżej” into the Understanding, with the game paused after the attack minute and before the first combat turn"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
   // decision: D-144 "The wolf has 24 health and a strike of 7 damage, follows „Zdrowie poniżej 8 → Odskocz; Zawsze → Uderz”, and its dodge gives up its action with no protection"
   assert.deepEqual(CREATURES.wolf, {
     name: "wilk",
+    icon: "wolf-head",
+    iconTitle: "Wolf head icon",
     revealedBy: { kind: "attacked", creature: "wolf" },
     health: 24,
     strikeDamage: 7,

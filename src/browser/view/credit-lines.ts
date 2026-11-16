@@ -1,5 +1,6 @@
 import { ACTIONS, type ActionDef } from "../sim/data/actions.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
+import { CREATURES } from "../sim/data/creatures.js";
 import { RESOURCES } from "../sim/data/resources.js";
 import { ICON_CREDITS, ICON_LICENCE, PACK_CREDITS } from "./credits.js";
 
@@ -52,13 +53,14 @@ function actionIcons(): WithIcon[] {
 
 /**
  * Everything the data gives an icon, in the section's order: the resources, then the campfire and
- * the extinguished campfire, then the actions.
+ * the extinguished campfire, then the actions, then the creatures.
  */
 const WITH_ICONS: readonly WithIcon[] = [
   ...Object.values(RESOURCES),
   CAMPFIRE,
   CAMPFIRE.extinguished,
   ...actionIcons(),
+  ...Object.values(CREATURES),
 ];
 
 /** The credits, one per icon the data names in the order of WITH_ICONS, then one per pack of the scene. Pure. */

@@ -13,6 +13,7 @@ import {
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { RESOURCES } from "../../dist/browser/sim/data/resources.js";
 import { CAMPFIRE } from "../../dist/browser/sim/data/campfire.js";
+import { CREATURES } from "../../dist/browser/sim/data/creatures.js";
 import { CreditsSection } from "../../dist/browser/view/credits-section.js";
 
 const ICONS = fileURLToPath(new URL("../../assets/icons/", import.meta.url));
@@ -171,6 +172,7 @@ const TITLES = {
   "boot-kick": "Boot kick icon",
   dodge: "Dodge icon",
   "wood-pile": "Wood Pile icon",
+  "wolf-head": "Wolf head icon",
 };
 
 /**
@@ -191,15 +193,19 @@ const ACTION_ICONS = [
   { name: "Odskocz", icon: "dodge" },
 ];
 
+/** The icon of the creatures, one line after the actions' (creatures.ts). */
+const CREATURE_ICONS = [{ name: "wilk", icon: "wolf-head" }];
+
 /**
  * Everything the data gives an icon, in the section's order: the resources, the campfire, the
- * extinguished campfire, the actions.
+ * extinguished campfire, the actions, the creatures.
  */
 const NAMED = [
   ...Object.values(RESOURCES),
   CAMPFIRE,
   CAMPFIRE.extinguished,
   ...ACTION_ICONS,
+  ...CREATURE_ICONS,
 ];
 
 // The credits of the packs of the scene's pictures, which follow the icons' lines (D-271,
@@ -246,10 +252,33 @@ test("the section credits the actions' icons after the two campfires', one line 
   const items = itemsOf(sectionMarkup());
   assert.deepEqual(
     items
-      .slice(6, NAMED.length)
+      .slice(6, 6 + ACTION_ICONS.length)
       .map((item) => textOfMarkup(item).split(":")[0]),
     ACTION_ICONS.map((action) => action.name),
   );
+});
+
+test("the section credits the wolf's icon, by Lorc, after the actions' icons and before the packs", () => {
+  // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba, as its last part, and credits each icon with its title as game-icons.net gives it, its author, its page on game-icons.net and its licence, and says how the icon file differs from its source"
+  const items = itemsOf(sectionMarkup());
+  const at = 6 + ACTION_ICONS.length;
+  assert.equal(
+    textOfMarkup(items[at]),
+    "wilk: „Wolf head icon”, Lorc, game-icons.net, CC BY 3.0, zmienione (bez tła, jasny kolor)",
+  );
+  assert.match(
+    linksOf(items[at])[0].attributes,
+    /^href="https:\/\/game-icons\.net\/1x1\/lorc\/wolf-head\.html"/,
+  );
+  assert.match(textOfMarkup(items[at + 1]), /^Kurz i obłok walki: /);
+});
+
+test("the wolf's data names the icon file wolf-head.svg and its title on game-icons.net, and the file exists", () => {
+  // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
+  // decision: D-416 "Each thing of the Understanding on the screen stands with its icon from the game's data and its name, and a creature has its icon in the data"
+  assert.equal(CREATURES.wolf.icon, "wolf-head");
+  assert.equal(CREATURES.wolf.iconTitle, "Wolf head icon");
+  assert.ok(existsSync(`${ICONS}wolf-head.svg`));
 });
 
 test("the campfire's data names the icon file campfire.svg and its title on game-icons.net", () => {
@@ -271,7 +300,7 @@ test("each icon the data names, the campfire's included, exists as a file", () =
 
 test("each action of the data names an icon and its title, and the icon file exists", () => {
   // decision: D-27 "The game's icons are SVG files from game-icons.net, kept in `assets/icons/`"
-  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head and in the rows „Teraz” and „Potem” under the scene; an action with a target shows the icon of the action, never one of its target"
+  // decision: D-291 "Each action has one icon, which stands for it in a program rule's row, in its cell of the pick, over the mage's head, in the rows „Teraz” and „Potem” under the scene and beside the action on the screen Wiedza; an action with a target shows the icon of the action, never one of its target"
   for (const [id, action] of Object.entries(ACTIONS)) {
     assert.ok(action.icon, `${id} names no icon`);
     assert.ok(action.iconTitle, `${id} names no icon title`);

@@ -501,7 +501,7 @@ Pasek:
 
 - po lewej stoi nazwa gry w `text-strong` (rola nazwy, D-40); na ekranach
   oczekiwania (D-262) stoi sama, bez pozycji i bez menu „Konto” (D-280);
-- pozycje to „Siedziba”, „Mapy”, „Programy” i, poza ekranem przejścia, „Wróć do
+- pozycje to „Siedziba”, „Mapy”, „Programy”, „Wiedza” i, poza ekranem przejścia, „Wróć do
   przejścia · {mapa} · minuta {m}”, bez ikon (D-280); każda jest odnośnikiem do
   ekranu (D-281), nie przyciskiem — przeciwnie niż akcja poboczna, która adresu
   nie ma (D-275); „Mapy” to pierwsze z trzech kliknięć do pierwszego przejścia,
@@ -512,7 +512,8 @@ Pasek:
   pod kursorem tło `highlight`, a rola tekstu zostaje; fokus rysuje reguła
   Visible focus bez dodatku (D-47);
 - na ekranie Postać pasek znaczy Siedzibę, na ekranie Mapy pod każdym jego
-  adresem znaczy Mapy, a na ekranie przejścia nie znaczy żadnej pozycji (D-280);
+  adresem znaczy Mapy, na ekranie Wiedza znaczy Wiedzę jak każdą inną pozycję (D-277), a na
+  ekranie przejścia nie znaczy żadnej pozycji (D-280);
 - pozycje paska są te same dla gracza i dla konta z rolą właściciela (D-280,
   D-410); ekran listy kont (D-411) nie jest pozycją paska i na nim żadna
   pozycja nie jest zaznaczona (D-281);
@@ -593,6 +594,37 @@ listę otwartych map, po prawej kartę wybranej mapy.
   `text-secondary` (D-287).
 - Drużyna bez postaci: „Drużyna nie ma jeszcze postaci. Załóż ją w Siedzibie.”
   w `text-secondary`.
+
+### The screen Wiedza
+
+- **Decision:** D-416 · D-280 · D-281 · D-282 · D-291 · D-200 · D-44 · D-39 · D-40 · D-43
+- **Invariant:** none
+- **Good:** Nagłówek „Wiedza” w `text-strong` nad dwoma obszarami; „Czynności · 2” w `text-label` nad wierszami z ikoną w kolorze nazwy; wiersz drzewa „▸ Eksploracja · 3 gałęzie” jako zwykły wspólny przycisk, a po rozwinięciu gałąź z nazwą w `text-strong`, „3 stopnie” w `text-label`, opisem w `text-secondary` i „1 · 1 · 2 pkt” w `text`.
+- **Bad:** Przy drzewie albo gałęzi poziom, wprawa, punkty, kupiony stopień albo „Kup”; zdanie w obszarze, który nie ma jeszcze rzeczy; obszar „Umiejętności” przed pierwszym poznanym drzewem; nazwa rzeczy bez jej ikony; wiersz drzewa w osobnej kontrolce zamiast wspólnego przycisku.
+
+Ekran Wiedza (`#/wiedza`, D-416, D-281) ma nagłówek „Wiedza” i pod nim dwa obszary, każdy
+osobny (D-282): po lewej Zrozumienie, po prawej drzewa umiejętności. Nagłówek jest w
+`text-strong`, jak „Siedziba” na swoim ekranie (D-40); obszary stoją obok siebie jak na ekranie
+Mapy, a w oknie węższym niż 720 px jeden pod drugim.
+
+- Obszar Zrozumienie: nagłówek „Zrozumienie” w `text-label` (nazwa sekcji, D-40) i obok niego
+  licznik „{n} poznanych rzeczy” w `text-secondary`. Pod nimi grupy „Czynności · {n}”,
+  „Przedmioty · {n}” i „Stworzenia · {n}” z nagłówkiem w `text-label`; w grupie każda rzecz to
+  ikona z danych gry i nazwa w `text`, a ikona jest rysowana maską w kolorze nazwy obok niej,
+  jak ikona czynności w edytorze programu (D-291, D-43). Grupa bez rzeczy nie stoi, a obszar bez
+  żadnej rzeczy ma sam nagłówek i licznik, bez zdania.
+- Obszar Umiejętności: nagłówek „Umiejętności” w `text-label` i licznik „{n} drzew” w
+  `text-secondary`. Obszaru nie ma, póki gracz nie zna żadnego drzewa. Drzewo to wiersz, a wiersz
+  to zwykły wspólny przycisk (D-44) z tekstem „▸ {nazwa} · {n} gałęzi”, po rozwinięciu „▾”; mówi
+  `aria-expanded`, a rozwija go kliknięcie i klawiatura, Enter albo Spacja, jak każdy przycisk.
+  Jego stany podaje reguła States of shared controls: error, empty i loading go nie dotyczą, bo
+  wiersz nie ma wpisu, listy i nie czeka na serwer. Każde wejście na ekran zaczyna ze zwiniętymi
+  drzewami.
+- Gałąź rozwiniętego drzewa: nazwa w `text-strong`, „{n} stopni” w `text-label`, opis w
+  `text-secondary` i ceny wszystkich stopni po kolei, „1 · 1 · 2 pkt”, w `text`.
+- Ekran nie pokazuje poziomu, wprawy, punktów, kupionych stopni, podglądu „teraz → po kupnie”
+  ani „Kup” i niczego w grze nie zmienia (D-416); kupuje się na ekranie Postać (D-200).
+- Ekran nie wnosi nowej roli, wartości tokenu ani znaczenia roli.
 
 ### Program editor
 
@@ -778,10 +810,11 @@ na chwilę całego obszaru sceny (D-317, D-42): efekty są małe albo, jak chło
 trybem `color`, który zostawia jasność obrazu.
 
 - Odkrycie: scena zostaje kolorowa, a ikona każdej odkrytej rzeczy, która ma ikonę w danych gry
-  (czynności, zasoby i ognisko), wychodzi z lasu na plakietce na tle `panel` z ramką w `discovery`
-  o grubości `--bar-width`, jak plakietka nad głową maga (D-320, D-39), i stoi w rzędzie nad polaną
-  do „Wznów”; ta sama ikona stoi raz, a rzecz bez ikony — warunek, stworzenie, drzewo umiejętności —
-  jest nazwana tylko przez pas nad programem (D-122). Plakietki leżą nad odcieniem światła, więc ramka
+  (czynności, zasoby, ognisko i stworzenia), wychodzi z lasu na plakietce na tle `panel` z ramką w
+  `discovery` o grubości `--bar-width`, jak plakietka nad głową maga (D-320, D-39), i stoi w rzędzie
+  nad polaną do „Wznów”; przy pierwszej napaści jest wśród nich głowa wilka, obok wilka, który stoi
+  już przy magu. Ta sama ikona stoi raz, a rzecz bez ikony — warunek i drzewo umiejętności — jest
+  nazwana tylko przez pas nad programem (D-122). Plakietki leżą nad odcieniem światła, więc ramka
   ma kolor roli. Miejsca wyjścia i ułożenie stoją w danych sceny, jako piksele obrazu sceny, a czasy
   w regułach sceny w `src/browser/styles.css`.
 - Śmierć: mag upada w sześciu klatkach arkusza śmierci z danych sceny i leży na ostatniej, szary jak

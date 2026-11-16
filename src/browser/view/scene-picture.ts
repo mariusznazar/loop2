@@ -1,7 +1,10 @@
 import { ACTIONS } from "../sim/data/actions.js";
 import type { ArchetypeId } from "../sim/data/archetypes.js";
 import { CAMPFIRE } from "../sim/data/campfire.js";
-import type { CreatureId } from "../sim/data/creatures.js";
+import {
+  CREATURES as CREATURE_DATA,
+  type CreatureId,
+} from "../sim/data/creatures.js";
 import { MAPS } from "../sim/data/maps.js";
 import type { SolvingDef } from "../sim/data/maps.js";
 import { RESOURCES } from "../sim/data/resources.js";
@@ -304,10 +307,10 @@ function iconHref(icon: string): string {
 }
 
 /**
- * The plaques of what a discovery revealed: the icon of each action and each item, the campfire's
- * included, that the data gives one, each icon once however many things share it. What has no icon in
- * the data, a condition, a creature or a skill tree, has no plaque; the band over the program names
- * it (D-122). The plaques stand in rows over the clearing, each row centred (D-322).
+ * The plaques of what a discovery revealed: the icon of each action, each item, the campfire's
+ * included, and each creature that the data gives one, each icon once however many things share it.
+ * What has no icon in the data, a condition or a skill tree, has no plaque; the band over the program
+ * names it (D-122). The plaques stand in rows over the clearing, each row centred (D-322).
  */
 function plaquesOf(discovery: Understanding): ScenePlaque[] {
   const icons = new Set([
@@ -315,6 +318,7 @@ function plaquesOf(discovery: Understanding): ScenePlaque[] {
     ...discovery.items.map((id) =>
       iconHref(id === CAMPFIRE.id ? CAMPFIRE.icon : RESOURCES[id].icon),
     ),
+    ...discovery.creatures.map((id) => iconHref(CREATURE_DATA[id].icon)),
   ]);
   const { centreX, y, step, perRow, rowStep, from } = SCENE_MOMENTS.discovery;
   return [...icons].map((href, index) => {

@@ -83,6 +83,7 @@ AUTHORS = {
     "boot-kick.svg": "Lorc",
     "dodge.svg": "Felbrigg",
     "wood-pile.svg": "Delapouite",
+    "wolf-head.svg": "Lorc",
 }
 # Titles of the current icon files, as the headings of their pages on game-icons.net give them
 # (the environment facts game-icons-wood-stick-title, game-icons-berry-bush-title,
@@ -90,7 +91,8 @@ AUTHORS = {
 # game-icons-binoculars-title, game-icons-hiking-title, game-icons-direction-sign-title,
 # game-icons-grab-title, game-icons-claw-hammer-title, game-icons-match-tip-title,
 # game-icons-logging-title, game-icons-meal-title, game-icons-deadly-strike-title,
-# game-icons-boot-kick-title, game-icons-dodge-title and game-icons-wood-pile-title).
+# game-icons-boot-kick-title, game-icons-dodge-title, game-icons-wood-pile-title and
+# game-icons-wolf-head-title).
 TITLES = {
     "wood-stick.svg": "Wood stick icon",
     "berry-bush.svg": "Berry bush icon",
@@ -109,6 +111,7 @@ TITLES = {
     "boot-kick.svg": "Boot kick icon",
     "dodge.svg": "Dodge icon",
     "wood-pile.svg": "Wood Pile icon",
+    "wolf-head.svg": "Wolf head icon",
 }
 
 REACT_DRIVER = r"""
