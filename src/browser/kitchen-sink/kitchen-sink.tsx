@@ -136,12 +136,15 @@ function buttonSample(text: string, look: ButtonLook, loading: Loading) {
         />
       );
     }
-    const shown = (
+    const button = (
+      <ReactButton text={text} {...look} disabled={state === "disabled"} />
+    );
+    // The container stands inside the wrapper, so `.tabs > .button.tab` of styles.css still holds.
+    return (
       <Forced state={state}>
-        <ReactButton text={text} {...look} disabled={state === "disabled"} />
+        {look.kind === "tab" ? <div className="tabs">{button}</div> : button}
       </Forced>
     );
-    return look.kind === "tab" ? <div className="tabs">{shown}</div> : shown;
   };
 }
 
