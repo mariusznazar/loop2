@@ -118,6 +118,14 @@
   margin-bottom: var(--space-xs);
 }
 
+/* The line names the character, a name typed by the player: a name with no space breaks inside its row
+ * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the row
+ * shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
+.away-report-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .away-report-line.danger {
   color: var(--danger);
 }

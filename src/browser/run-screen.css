@@ -180,7 +180,12 @@
   gap: var(--space-s);
 }
 
+/* The name of the character, typed by the player: a name with no space breaks inside the header
+ * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the
+ * header shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
 .run-header-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
@@ -270,8 +275,12 @@
   gap: var(--space-s);
 }
 
+/* The text names the group the game wrote its rule in, a name typed by the player: it breaks inside the band
+ * (styleguide rule "A name typed by the player breaks in its row"). */
 .discovery-band-text,
 .end-window-discovery-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   margin-right: auto;
   padding-left: var(--space-s);
@@ -308,7 +317,11 @@
   color: var(--warning);
 }
 
+/* The line names the program, a name typed by the player: it breaks inside the question
+ * (styleguide rule "A name typed by the player breaks in its row"). */
 .end-question-note {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   padding-left: calc(var(--space-s) + var(--bar-width));
   color: var(--warning);

@@ -151,8 +151,13 @@ header .failure-line {
   border: var(--frame-width) solid var(--divider);
 }
 
+/* The address is typed by the player and the sentence names it: an address with no space breaks inside the
+ * menu (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the menu
+ * shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
 .account-menu-address,
 .account-menu-sentence {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
 }
 
@@ -506,8 +511,12 @@ header .failure-line {
   gap: var(--space-s);
 }
 
-/* The sentence under a form of a server refusal or a lost connection, in `warning` (D-39, D-44). */
+/* The sentence under a form of a server refusal or a lost connection, in `warning` (D-39, D-44). This one
+ * and `form-note` may name a program of a saved game, a name typed by the player, so each breaks inside its
+ * row (styleguide rule "A name typed by the player breaks in its row"). */
 .form-warning {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   color: var(--warning);
 }
@@ -517,6 +526,8 @@ header .failure-line {
  * the colour of that text, so the bar is part of the text (D-40, D-44).
  */
 .form-note {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   padding-left: var(--space-s);
   color: var(--text);

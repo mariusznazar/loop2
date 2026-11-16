@@ -31,7 +31,10 @@
   margin-bottom: var(--space-s);
 }
 
+/* The heading names the program, a name typed by the player: a name with no space breaks inside the panel
+ * (styleguide rule "A name typed by the player breaks in its row"). */
 .copy-heading {
+  overflow-wrap: anywhere;
   margin: 0 0 var(--space-xs);
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
@@ -39,7 +42,11 @@
 }
 
 /* A line about the copy: something that will be lost or replaced, in `warning` (D-39). */
+/* The line names the program, a name typed by the player: it breaks inside its row
+ * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the row shrink below its longest word. */
 .copy-line {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0 0 var(--space-xs);
   color: var(--warning);
 }
@@ -69,6 +76,7 @@
  * The sentence of a waiting map run above it is the one `.program-run-note` draws.
  */
 .program-title {
+  overflow-wrap: anywhere;
   margin: 0 0 var(--space-s);
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
