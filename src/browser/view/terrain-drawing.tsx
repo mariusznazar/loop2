@@ -92,7 +92,7 @@ export function TerrainDrawing({
         const key = tileKey(tile);
         const classes = ["tile"];
         if (tile.revealed) classes.push("revealed");
-        if (key === hovered) classes.push("hovered");
+        if (tile.revealed && key === hovered) classes.push("hovered");
         return (
           <g key={key} data-tile={key} className={classes.join(" ")}>
             <polygon points={tile.points} />

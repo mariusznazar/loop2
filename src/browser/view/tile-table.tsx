@@ -75,7 +75,7 @@ export function TileTable({ state, hovered, onHover }: TileTableProps) {
               ))}
               <td className="tile-fire">
                 {row.fire.map((text, index) => (
-                  <Fragment key={text}>
+                  <Fragment key={index}>
                     {index === 0 ? null : SEPARATOR}
                     <span className="tile-fire-text">{text}</span>
                   </Fragment>
