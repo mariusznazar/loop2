@@ -53,6 +53,7 @@ import {
 import { CreditsSection } from "./credits-section.js";
 import type { ConfirmationNotice, PageAddress } from "./email-confirmation.js";
 import { FAILURE_SENTENCE } from "./last-resort.js";
+import { PageSentence } from "./page-sentences.js";
 import { resetOutcome } from "./password-reset.js";
 import type { ResetEnding } from "./password-reset.js";
 
@@ -581,18 +582,6 @@ function ResetForm({
         {...confirmation.control}
       />
     </CardForm>
-  );
-}
-
-/** The one sentence of the page, in its role, as `createConfirmationNotice` gives it. */
-function PageSentence({ notice }: { notice: ConfirmationNotice }) {
-  return (
-    <p
-      className={`confirmation-notice ${notice.role}`}
-      role={notice.role === "warning" ? "alert" : "status"}
-    >
-      {notice.text}
-    </p>
   );
 }
 

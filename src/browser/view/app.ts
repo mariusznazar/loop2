@@ -17,7 +17,6 @@ import { createFormWarning } from "./controls/text-field.js";
 import {
   browserAddress,
   confirmFromAddress,
-  createConfirmationNotice,
   readConfirmationToken,
   type ConfirmationNotice,
   type PageAddress,
@@ -35,6 +34,10 @@ import {
   installLastResort,
 } from "./last-resort.js";
 import { createMenuBar, type MenuBarProps } from "./menu-bar.js";
+import {
+  createPageSentences,
+  type PageSentenceValue,
+} from "./page-sentences.js";
 import { readResetToken, type ResetEnding } from "./password-reset.js";
 import {
   GAME_STARTS_ANEW,
@@ -112,14 +115,8 @@ const NAME_ALONE: MenuBarProps = {
   logout: { waiting: false, sentence: null, unavailable: false },
 };
 
-/** A sentence of the page in `warning`, standing once above the screen it opens. */
-function createPageNotice(sentence: string): HTMLElement {
-  const element = document.createElement("p");
-  element.className = "page-notice";
-  element.setAttribute("role", "alert");
-  element.textContent = sentence;
-  return element;
-}
+/** The page's sentences above the game while no game stands, or none is to be shown. */
+const NO_SENTENCES: readonly PageSentenceValue[] = [];
 
 /**
  * The logout of the game: `idle`, with the sentence of an uncertain end or none; `saving`, while the
@@ -148,7 +145,7 @@ type GamePage = {
   /** Where the player is in the game, as the game last told; none before it tells. */
   readonly place: ScreenPlace | null;
   /** The page's sentences above the game's first screen; they leave at its first change of screen. */
-  readonly notices: readonly HTMLElement[];
+  readonly notices: readonly PageSentenceValue[];
   /** The outcome of a registration's first message, which the bar starts its menu with. */
   readonly message: ConfirmationMessage | null;
   readonly logout: Logout;
@@ -219,7 +216,7 @@ function sameBarProps(a: MenuBarProps, b: MenuBarProps): boolean {
  * What the page shows is one value of three kinds — the waiting screen, the card, the game with its
  * account, its place, its sentences, its logout and its reset — which the page changes only through
  * one function; that function closes the card or the game the next value no longer holds and draws
- * the header, the place of the screen and the bar from the value.
+ * the header, the place of the screen, the page's sentences above the game and the bar from the value.
  *
  * The game shows one screen at a time, the one its address names (D-280, D-281); the page tells it
  * which entry built it — the sign-in form, an emailed link or the address itself — which picks the
@@ -267,6 +264,10 @@ export function startApp(
   const main = document.createElement("main");
   main.className = "app-main";
 
+  // The page's sentences above the game, in a root of their own that stands in `main` before the
+  // game's element; they stand only in a game, where the state holds them.
+  const sentences = createPageSentences({ sentences: NO_SENTENCES });
+
   // The waiting screen: what the page says while it asks, and the warning with its retry.
   const waitingScreen = createWaitingScreen({
     onRetry: () => {
@@ -282,6 +283,8 @@ export function startApp(
   };
   // What the bar was last given.
   let drawnBar: MenuBarProps = NAME_ALONE;
+  // What the row of sentences was last given.
+  let drawnSentences: readonly PageSentenceValue[] = NO_SENTENCES;
   // The result of a confirmation from the address, until the first screen shows it.
   let pendingNotice: ConfirmationNotice | null = null;
   // The outcome of a registration's first message, until the game it leads to is built.
@@ -363,11 +366,11 @@ export function startApp(
   function mainContent(next: PageState): readonly HTMLElement[] {
     switch (next.kind) {
       case "checking":
-        return [waitingScreen.element];
+        return [sentences.element, waitingScreen.element];
       case "card":
-        return [];
+        return [sentences.element];
       case "game":
-        return [...next.notices, next.view.element];
+        return [sentences.element, next.view.element];
     }
   }
 
@@ -399,6 +402,11 @@ export function startApp(
     )
       root.append(next.card.element);
     if (next.kind === "checking") waitingScreen.update(next.waiting);
+    const standing = next.kind === "game" ? next.notices : NO_SENTENCES;
+    if (standing !== drawnSentences) {
+      drawnSentences = standing;
+      sentences.update(standing);
+    }
     const props = barPropsOf(next);
     if (!sameBarProps(props, drawnBar)) {
       drawnBar = props;
@@ -411,7 +419,8 @@ export function startApp(
 
   /**
    * The one way to change what the page shows: the card or the game the next value no longer holds
-   * is closed, and the header, the place of the screen and the bar are drawn from it (D-262, D-381).
+   * is closed, and the header, the place of the screen, the sentences and the bar are drawn from it
+   * (D-262, D-381).
    */
   function change(next: PageState): void {
     const previous = state;
@@ -555,11 +564,13 @@ export function startApp(
       onSignedOut: () => whenNotBusy(view, () => expire()),
     });
     building = false;
-    view.saveLine.classList.add("save-line");
     const notice = takeNotice();
-    const notices = notice === null ? [] : [createConfirmationNotice(notice)];
+    const notices: PageSentenceValue[] = notice === null ? [] : [notice];
     if (start.refused !== null)
-      notices.push(createPageNotice(REFUSED_LOAD[start.refused]));
+      notices.push({
+        text: REFUSED_LOAD[start.refused],
+        role: "refused-load",
+      });
     change({
       kind: "game",
       view,

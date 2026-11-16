@@ -124,15 +124,3 @@ export async function confirmFromAddress(
   if (definitive) address.clearFragment();
   return notice;
 }
-
-/** The one sentence of the result, to stand above the screen. */
-export function createConfirmationNotice(
-  notice: ConfirmationNotice,
-): HTMLElement {
-  const element = document.createElement("p");
-  element.className = "confirmation-notice";
-  element.classList.add(notice.role);
-  element.setAttribute("role", notice.role === "warning" ? "alert" : "status");
-  element.textContent = notice.text;
-  return element;
-}
