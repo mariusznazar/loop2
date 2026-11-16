@@ -4,7 +4,14 @@
 // expects. Every expected value is written out below. The harness stands first, and every
 // comparison is of plain data: Node's assert on a rendered element can take the machine's memory
 // (D-264, D-268).
-import { assert, inAct, press, typeInto, withPage } from "./page-document.mjs";
+import {
+  assert,
+  fire,
+  inAct,
+  press,
+  typeInto,
+  withPage,
+} from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
@@ -882,7 +889,7 @@ test("a disabled select list is disabled", async () => {
 // here, and a handler that is not called on the change fails the first assertion.
 test("a choice in a select list reaches the screen's handler and a controlled list keeps the value the screen holds", async () => {
   // decision: D-265 "Each shared control in `src/browser/view/controls/` has one form, a React component"
-  await withPage(async ({ document, window }) => {
+  await withPage(async ({ document }) => {
     const seen = [];
     const drawing = await drawn(
       document,
@@ -896,7 +903,7 @@ test("a choice in a select list reaches the screen's handler and a controlled li
     const select = drawing.container.querySelector("select");
     await inAct(() => {
       select.value = "beta";
-      select.dispatchEvent(new window.Event("change", { bubbles: true }));
+      fire(select, "change");
     });
     assert.deepEqual(seen, ["beta"]);
     assert.equal(
