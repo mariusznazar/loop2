@@ -653,7 +653,9 @@ export function ProgramPanelView({
                 />
               ) : null}
               {lacks && owner ? (
-                <p className="copy-line">{copyLacksSentence(owner.name)}</p>
+                <p className="copy-line">
+                  {copyLacksSentence(owner.name, unsaved)}
+                </p>
               ) : null}
             </div>
           </div>

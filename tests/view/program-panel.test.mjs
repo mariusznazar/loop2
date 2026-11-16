@@ -1391,9 +1391,11 @@ test("the line of a changed program stands with and without unsaved changes, and
     // The program, not the copy, gets a group.
     await click(buttonNamed(game.root, "+ dodaj grupę"));
     await pick(game.root, "copy");
+    // Without unsaved changes the line promises no save (D-172); with some it names the save.
+    const lacksPlain = "Program Las ma zmiany, których nie ma w tej kopii.";
     const lacks =
       "Program Las ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.";
-    assert.deepEqual(copyTexts(game.root), ["Kopia: Las", lacks]);
+    assert.deepEqual(copyTexts(game.root), ["Kopia: Las", lacksPlain]);
     assert.equal(copyButton(game.root, "Zapisz w programie").disabled, true);
 
     await click(buttonNamed(game.root, "+ dodaj grupę"));
@@ -1405,6 +1407,24 @@ test("the line of a changed program stands with and without unsaved changes, and
     await click(copyButton(game.root, "Zapisz w programie"));
     assert.deepEqual(copyTexts(game.root), ["Kopia: Las"]);
     assert.equal(groupCount(game.state.programs[0].program), 2);
+  });
+});
+
+// D-172. Catches the full sentence, with its promise of a save, standing beside the inactive „Zapisz w
+// programie” of a copy with no unsaved changes, and the short line missing there.
+test("a copy with no unsaved changes whose program was changed reads the short line, with „Zapisz w programie” inactive", async () => {
+  // decision: D-172 "While the program the copy belongs to holds changes made since the copy was taken from it or last saved into it, a line in the role `warning` beside the save buttons reads „Program {name} ma zmiany, których nie ma w tej kopii.” where the copy holds no unsaved changes and „Program {name} ma zmiany, których nie ma w tej kopii — zapis w programie je zastąpi.” where it holds some; „Zapisz w programie” then saves at once, in one click, and after the save the line is gone"
+  await withPage(async (page) => {
+    const game = await wiredPanel(page, gameWithRule());
+    await game.change(send(game.state, SENT, REAL_MS));
+    await pick(game.root, "1");
+    await click(buttonNamed(game.root, "+ dodaj grupę"));
+    await pick(game.root, "copy");
+    assert.deepEqual(copyTexts(game.root), [
+      "Kopia: Program",
+      "Program Program ma zmiany, których nie ma w tej kopii.",
+    ]);
+    assert.equal(copyButton(game.root, "Zapisz w programie").disabled, true);
   });
 });
 
