@@ -76,7 +76,7 @@ export type RunScreenState = {
   /**
    * „Koniec przejścia”: nothing after halt or without an ended map run; otherwise a standing question
    * closes as `closeQuestion()` closes it, the window opens and the wait ends. Returns whether a
-   * question was closed, so that the entry tells the screen (D-311, D-324).
+   * question was closed (D-311, D-324); the screen and its panel read the change from the state.
    */
   openWindow(): boolean;
   /** „✕” and Escape of the window: it closes and the wait ends; nothing after halt (D-368). */
