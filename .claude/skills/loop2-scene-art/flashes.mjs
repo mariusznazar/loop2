@@ -2,24 +2,30 @@
 // (JPEG) or any PNG frames, against the rule that the scene shows no flash of its whole area
 // (D-317). It gives numbers and sets no threshold of its own.
 //
-//   node flashes.mjs --log FILE [--region X,Y,W,H]
-//   node flashes.mjs FRAME... [--region X,Y,W,H]
+//   node flashes.mjs --log FILE [--region X,Y,W,H] [--scale R]
+//   node flashes.mjs FRAME... [--region X,Y,W,H] [--scale R]
 //
 // `--log` is the output of `save-frames.mjs` kept in a file, the lines `path +N ms`, which also
 // gives the time of each frame; frames named one by one have none. `--region` is the rectangle of
 // the scene in the frame, in the frame's pixels; the whole frame by default. A pixel counts as
 // moved between two frames when its relative luminance (WCAG 2.2) moves by 0.10 or more and the
 // darker of the two is under 0.80, the change a flash is made of; whether moved pixels make a
-// flash, and of how much of the area, is for the reader of the numbers. The frames must be of one
-// size. A frame that cannot be read, frames of two sizes or fewer than two frames end the script
-// with a message and a non-zero exit code.
+// flash, and of how much of the area, is for the reader of the numbers. The counts are in pixels
+// of the frame. The field of 341 x 256 pixels and its quarter, 21,824, which WCAG 2.3.1 gives (it
+// is the source of D-317, kept by D-42), are in pixels of the screen, so `--scale` is how many
+// pixels of the frame one pixel of the screen is, the frame's width over `window.innerWidth`; the
+// field and the threshold are scaled by it before the counts are set beside them. Without
+// `--scale` no comparison with the field is printed. The frames must be of one size. A frame that
+// cannot be read, frames of two sizes, fewer than two frames or a scale that is no positive number
+// end the script with a message and a non-zero exit code.
 import { readFileSync } from "node:fs";
 import { Refusal, parseArgs, parseNumbers, runCli } from "./cli.mjs";
 import { crop, readPicture } from "./image.mjs";
 
 const MOVE = 0.1;
 const DARKER_BELOW = 0.8;
-// D-317 gives the general flash threshold as a quarter of a field of 341 x 256 pixels, 21,824.
+// The general flash threshold of WCAG 2.3.1, the source of D-317: a quarter of a field of 341 x 256
+// pixels of the screen, 21,824.
 const FIELD = { width: 341, height: 256, threshold: 21824 };
 
 const linear = Float64Array.from({ length: 256 }, (_, v) => {
@@ -58,12 +64,9 @@ function readLog(file) {
   return frames;
 }
 
-// The most pixels of `mask` inside one field of the size D-317 names (or the region, where smaller).
-function busiestField(mask, width, height) {
-  const [fw, fh] = [
-    Math.min(FIELD.width, width),
-    Math.min(FIELD.height, height),
-  ];
+// The most pixels of `mask` inside one field of `fw` x `fh` pixels (the region where it is smaller).
+function busiestField(mask, width, height, [fieldWidth, fieldHeight]) {
+  const [fw, fh] = [Math.min(fieldWidth, width), Math.min(fieldHeight, height)];
   const sums = new Int32Array((width + 1) * (height + 1));
   for (let y = 0; y < height; y++)
     for (let x = 0; x < width; x++)
@@ -100,7 +103,13 @@ await runCli(async (argv) => {
   const { positional, options } = parseArgs(argv, {
     log: "value",
     region: "value",
+    scale: "value",
   });
+  const scale = options.scale === undefined ? null : Number(options.scale);
+  if (scale !== null && !(Number.isFinite(scale) && scale > 0))
+    throw new Refusal(
+      `--scale must be a positive number, the frame's width over window.innerWidth, got "${options.scale}"`,
+    );
   const named = options.log
     ? readLog(options.log)
     : positional.map((file) => ({ file, ms: null }));
@@ -145,9 +154,20 @@ await runCli(async (argv) => {
   console.log(
     `moved pixels between consecutive frames, at most ${worst.count} of ${area} (${((worst.count / area) * 100).toFixed(2)} %), frames ${worst.i - 1} and ${worst.i} (${at(worst.i)})`,
   );
-  console.log(
-    `  at most ${busiestField(worst.mask, width, height)} of them in one field of ${Math.min(FIELD.width, width)} x ${Math.min(FIELD.height, height)} px; D-317 gives ${FIELD.threshold} px as the general flash threshold`,
-  );
+  if (scale === null)
+    console.log(
+      "  no --scale given, so no comparison with the field and the flash threshold of WCAG 2.3.1; give --scale, the frame's width over window.innerWidth",
+    );
+  else {
+    const field = [
+      Math.round(FIELD.width * scale),
+      Math.round(FIELD.height * scale),
+    ];
+    const threshold = Math.round(FIELD.threshold * scale * scale);
+    console.log(
+      `  at most ${busiestField(worst.mask, width, height, field)} of them in one field of ${Math.min(field[0], width)} x ${Math.min(field[1], height)} frame px (${FIELD.width} x ${FIELD.height} screen px at scale ${scale}); WCAG 2.3.1, the source of D-317, gives ${threshold} frame px (${FIELD.threshold} screen px) as the general flash threshold`,
+    );
+  }
   let apart = { count: -1 };
   for (let i = 1; i < values.length; i++) {
     const step = moved(values[0], values[i]);

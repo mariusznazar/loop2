@@ -43,6 +43,14 @@ class Grid(unittest.TestCase):
             self.assertEqual(chunks, ["IHDR", "IDAT", "IEND"])
             self.assertIn("info: figure 3 x 2 px", result.stdout)
 
+    def test_a_grid_is_written_in_a_folder_that_is_not_there_yet(self):
+        with tempfile.TemporaryDirectory() as directory:
+            picture = support.write_png(directory, "frame.png", [[DARK]])
+            out = os.path.join(directory, "new", "deeper", "frame.txt")
+            result = support.run_script("grid.mjs", "to-grid", picture, out)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(os.path.exists(out))
+
     def test_a_trim_and_a_rectangle_cut_the_picture_to_what_the_frame_is(self):
         with tempfile.TemporaryDirectory() as directory:
             picture = support.write_png(directory, "frame.png", [[NONE, NONE, NONE, NONE],
@@ -104,6 +112,12 @@ class Grid(unittest.TestCase):
             reference = text_of(directory, "reference.txt", "A #0a0a0a\nB #643200\n---\nAAB\nABB\n")
             same_size = grid_to_png(directory, "A #0a0a0a\nB #643200\n---\nABB\nAAA\n", "--reference", reference)
             self.assertIn("info: 3 pixels differ from the reference", same_size.stdout)
+            recoloured = grid_to_png(directory, "A #0a0a0a\nB #ffffff\n---\nAAB\nABB\n", "--reference", reference)
+            self.assertIn("info: 3 pixels differ from the reference", recoloured.stdout,
+                          "the keys are the same and three pixels show another colour")
+            renamed = grid_to_png(directory, "X #0a0a0a\nY #643200\n---\nXXY\nXYY\n", "--reference", reference)
+            self.assertIn("info: 0 pixels differ from the reference", renamed.stdout,
+                          "the keys differ and every pixel shows the same colour")
             other_size = grid_to_png(directory, "A #0a0a0a\nB #643200\n---\nAB\nAA\n", "--reference", reference)
             self.assertIn("warning: 2 x 2 where the reference is 3 x 2", other_size.stdout)
 

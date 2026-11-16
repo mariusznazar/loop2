@@ -117,6 +117,64 @@ class Flashes(unittest.TestCase):
             self.assertIn("at most 64 of 64", beside.stdout)
             self.assertIn("region 8 x 8 at 8,0 (64 px)", beside.stdout)
 
+    def test_the_field_and_the_threshold_are_scaled_to_the_frames_before_the_count_is_set_beside_them(self):
+        # 400 x 300 frames, black then white over a block of 380 x 280: 106,400 moved pixels. WCAG 2.3.1
+        # gives a field of 341 x 256 screen pixels, which holds 87,296 of them, and a threshold of 21,824.
+        # At scale 1 a frame pixel is a screen pixel; at scale 2 a screen pixel is two frame pixels
+        # across, the field is 682 x 512 frame pixels and so the whole region, and the threshold 4 times.
+        with tempfile.TemporaryDirectory() as directory:
+            white_block = [[WHITE] * 380 + [BLACK] * 20 if y < 280 else [BLACK] * 400 for y in range(300)]
+            first = support.write_png(directory, "a.png", solid(400, 300, BLACK))
+            second = support.write_png(directory, "b.png", white_block)
+            one = flashes(first, second, "--scale", "1").stdout.splitlines()
+            two = flashes(first, second, "--scale", "2").stdout.splitlines()
+            self.assertIn("at most 106400 of 120000 (88.67 %), frames 0 and 1", "\n".join(one))
+            field_one = next(line for line in one if "in one field" in line)
+            field_two = next(line for line in two if "in one field" in line)
+            self.assertEqual(field_one, "  at most 87296 of them in one field of 341 x 256 frame px (341 x 256 screen px at scale 1); "
+                                        "WCAG 2.3.1, the source of D-317, gives 21824 frame px (21824 screen px) as the general flash threshold")
+            self.assertEqual(field_two, "  at most 106400 of them in one field of 400 x 300 frame px (341 x 256 screen px at scale 2); "
+                                        "WCAG 2.3.1, the source of D-317, gives 87296 frame px (21824 screen px) as the general flash threshold")
+
+    def test_a_small_block_is_counted_whole_in_the_field_wherever_it_lies(self):
+        with tempfile.TemporaryDirectory() as directory:
+            moved = [[WHITE if 300 <= x < 400 and 200 <= y < 300 else BLACK for x in range(400)] for y in range(300)]
+            first = support.write_png(directory, "a.png", solid(400, 300, BLACK))
+            second = support.write_png(directory, "b.png", moved)
+            line = next(line for line in flashes(first, second, "--scale", "1").stdout.splitlines() if "in one field" in line)
+            self.assertIn("at most 10000 of them in one field of 341 x 256 frame px", line)
+
+    def test_without_a_scale_the_counts_are_in_frame_pixels_and_no_comparison_is_printed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            first = support.write_png(directory, "a.png", solid(4, 4, BLACK))
+            second = support.write_png(directory, "b.png", solid(4, 4, WHITE))
+            result = flashes(first, second)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("no --scale given", result.stdout)
+            self.assertNotIn("in one field", result.stdout)
+            self.assertNotIn("21824", result.stdout)
+
+    def test_a_scale_that_is_no_positive_number_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            first = support.write_png(directory, "a.png", solid(4, 4, BLACK))
+            second = support.write_png(directory, "b.png", solid(4, 4, WHITE))
+            for scale in ("0", "-1", "abc", ""):
+                result = flashes(first, second, "--scale", scale)
+                self.assertEqual(result.returncode, 1, scale)
+                self.assertIn("--scale must be a positive number", result.stderr)
+
+    def test_the_move_against_the_first_frame_can_be_larger_than_between_any_two_neighbours(self):
+        # White, then white with the left half black (8 of 16 moved against the first), then black
+        # (16 of 16 against the first, 8 of 16 against the one before).
+        with tempfile.TemporaryDirectory() as directory:
+            half = [[BLACK] * 2 + [WHITE] * 2 for _ in range(4)]
+            frames = [support.write_png(directory, "a.png", solid(4, 4, WHITE)),
+                      support.write_png(directory, "b.png", half),
+                      support.write_png(directory, "c.png", solid(4, 4, BLACK))]
+            result = flashes(*frames)
+            self.assertIn("moved pixels between consecutive frames, at most 8 of 16 (50.00 %), frames 0 and 1", result.stdout)
+            self.assertIn("moved pixels against the first frame, at most 16 of 16 (100.00 %), at frame 2", result.stdout)
+
     def test_the_log_of_save_frames_gives_the_time_of_each_frame(self):
         with tempfile.TemporaryDirectory() as directory:
             frames = [support.write_png(directory, name, solid(4, 4, pixel))
@@ -179,6 +237,7 @@ class Flashes(unittest.TestCase):
             for name, content, said in (("progressive", PROGRESSIVE_JPEG, "progressive JPEG is not held"),
                                         ("cut in its data", FLAT_JPEG[:-60], "truncated"),
                                         ("cut in its header", FLAT_JPEG[:40], "truncated"),
+                                        ("without its end marker", FLAT_JPEG[:-2], "end marker is missing"),
                                         ("no marker", bytes(damaged), "damaged JPEG")):
                 bad = support.write_bytes(directory, "bad.jpeg", content)
                 result = flashes(png, bad)

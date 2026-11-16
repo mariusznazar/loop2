@@ -29,6 +29,10 @@ def bad_pngs():
         "bytes after the end": (good + b"\x00\x00", "bytes follow its IEND"),
         "pixel data of another size than the header": (
             support.png_bytes(4, 3, None, raw=rows_of_three), "pixel data has 39 bytes where its header of 4 x 3 asks 51"),
+        "a PNG with a second header": (
+            support.SIGNATURE + support.chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 3, 8, 6, 0, 0, 0)) * 2
+            + support.chunk(b"IDAT", zlib.compress(bytes(17 * 3)))
+            + support.chunk(b"IEND", b""), "more than one IHDR"),
         "a PNG of no width": (support.png_bytes(0, 3, None, raw=b""), "PNG of no size"),
         "an interlaced PNG": (support.png_bytes(4, 3, GOOD_ROWS, interlace=1), "interlaced PNG is not held"),
         "a PNG of 16 bits": (support.png_bytes(4, 3, GOOD_ROWS, depth=16), "colour type 6 and depth 16"),

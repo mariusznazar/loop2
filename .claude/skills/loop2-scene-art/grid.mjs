@@ -11,7 +11,8 @@
 // whose rows differ in width or that uses a key its colours lack, and writes nothing then; it only
 // warns of a pixel with no neighbour above, below or at either side, of a figure whose lowest
 // pixel is not on the last row, and of a size that differs from the `--reference` grid.
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { Refusal, parseArgs, parseNumbers, runCli } from "./cli.mjs";
 import {
   crop,
@@ -75,6 +76,7 @@ function toGrid(file, out, options) {
     }
     lines.push(row);
   }
+  mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, `${lines.join("\n")}\n`);
   console.log(
     `grid ${picture.width} x ${picture.height}, ${colours.size} colours`,
@@ -112,6 +114,10 @@ function readGrid(file) {
   if (rows.length === 0) throw new Refusal(`${file}: no rows of pixels`);
   return { palette, rows };
 }
+
+// The colour a key stands for in its grid, "." being no colour: grids are compared by what they show.
+const colourAt = (palette, key) =>
+  key === "." ? null : palette.get(key).join();
 
 function toPng(file, out, options) {
   const { palette, rows } = readGrid(file);
@@ -163,6 +169,12 @@ function toPng(file, out, options) {
     ];
     if (reference.rows.some((row) => row.length !== refWidth))
       throw new Refusal(`${options.reference}: rows of unequal width`);
+    if (
+      [...reference.rows.join("")].some(
+        (key) => key !== "." && !reference.palette.has(key),
+      )
+    )
+      throw new Refusal(`${options.reference}: a key outside its colours`);
     if ([refWidth, refHeight].join() !== [width, height].join())
       findings.push(
         `warning: ${width} x ${height} where the reference is ${refWidth} x ${refHeight}`,
@@ -171,7 +183,11 @@ function toPng(file, out, options) {
       let differing = 0;
       for (let y = 0; y < height; y++)
         for (let x = 0; x < width; x++)
-          if (rows[y][x] !== reference.rows[y][x]) differing++;
+          if (
+            colourAt(palette, rows[y][x]) !==
+            colourAt(reference.palette, reference.rows[y][x])
+          )
+            differing++;
       findings.push(`info: ${differing} pixels differ from the reference`);
     }
   }

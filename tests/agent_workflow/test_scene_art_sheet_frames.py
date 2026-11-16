@@ -94,9 +94,9 @@ class SheetFrames(unittest.TestCase):
             self.assertIn("frame 0: figure 3 px wide, 5 px high (x 2-5, y 1-6", result.stdout)
             self.assertIn("frame 1: no visible pixel", result.stdout)
 
-    def test_the_figures_of_the_wolf_and_the_mage_in_the_game_are_the_ones_the_review_measured(self):
-        # The review of tasks 17 to 20 measured wolf-idle.png at 31 px high and 63 px long and
-        # mage-idle.png at 32 x 25 px, the mage's frames being 64 px wide.
+    def test_the_box_of_the_visible_pixels_of_frame_0_of_the_idle_files_of_the_wolf_and_the_mage(self):
+        # Frame 0 of each file, its frames 64 px wide: the wolf's figure is 63 px wide and 31 px
+        # high, the mage's 25 px wide and 32 px high.
         wolf = os.path.join(support.SPRITES, "wolf-idle.png")
         mage = os.path.join(support.SPRITES, "mage-idle.png")
         result = support.run_script("sheet-frames.mjs", "measure", wolf, mage, "--frame", "64")

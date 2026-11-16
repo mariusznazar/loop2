@@ -2,7 +2,10 @@
 // Huffman coded, one scan with every component, any sampling factors, restart intervals. It
 // returns the picture as png.mjs does, `{ width, height, data }` of RGBA. A file that is no whole
 // JPEG, or one of another kind (progressive, arithmetic coded, four components), is refused with a
-// message naming `label`.
+// message naming `label`. The colour planes of a frame, half the size of the picture, are enlarged
+// by repeating their samples where other readers smooth them, so the colour at a sharp edge can
+// differ from theirs by tens of levels, while the brightness of a flat area agrees to a level or
+// two: a pixel read here is an approximation, good for a broad area and not for a thin line.
 import { Refusal } from "./cli.mjs";
 
 const MAX_PIXELS = 50_000_000;
@@ -211,6 +214,7 @@ function scan(bytes, start, header, state, refuse) {
       }
     }
   }
+  reader.end();
   return toRgba(frame, hmax, vmax, state.adobe === 0);
 }
 
@@ -242,6 +246,13 @@ function bitReader(bytes, start, refuse) {
       let value = 0;
       for (let i = 0; i < n; i++) value = (value << 1) | bit();
       return value;
+    },
+    // After the last block the end marker stands, whole: a file cut after its data has none.
+    end() {
+      held = 0;
+      while (bytes[at] === 0xff && bytes[at + 1] === 0xff) at++;
+      if (bytes[at] !== 0xff || bytes[at + 1] !== 0xd9)
+        throw refuse("truncated JPEG (its end marker is missing)");
     },
     // After a restart interval the entropy data stops at a byte boundary and a marker D0 to D7 stands.
     restart() {

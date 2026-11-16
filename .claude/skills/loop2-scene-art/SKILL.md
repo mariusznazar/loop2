@@ -13,11 +13,12 @@ below in the repository's root.
 The rules stay where they are, and this skill does not repeat them; read them before the steps:
 D-271 (where the pictures come from, and that the colour of an effect stands out from the ground it
 stands on), D-317 (how long effects last, and that the scene shows no flash of its whole area), D-349
-(the scene is 672 × 304 px, twice its picture of 336 × 152) and the section "The scene of a map
-run" of `guidelines/styleguide-browser-view.md`.
+(the scene is 672 × 304 px, twice its picture of 336 × 152), D-415 (the human judges the colour of
+an effect against its prop and whether another element covers it, and no threshold decides) and the
+section "The scene of a map run" of `guidelines/styleguide-browser-view.md`.
 
 The options of a script stand in the comment at its head. A file that is no sound PNG (or, for the
-frames of `flashes.mjs`, no baseline JPEG) ends a script with `error: <file>: <what is wrong>` and
+frames of `loop2-play` that `flashes.mjs` and `contrast.mjs` read, no baseline JPEG) ends a script with `error: <file>: <what is wrong>` and
 exit code 1, and no output file is written. Working files, cuts, previews and grids go under `.runs/`,
 which git ignores; a picture reaches `assets/sprites/` only as a PNG with pixels alone, which the
 scripts write. A preview shown to the human goes as a screenshot, as `loop2-play` gives it.
@@ -81,10 +82,10 @@ A task goes through as many steps as its picture needs; most stop at the second.
 
 ## The three checks
 
-Each check gives numbers and an image for the description of the request, and the human judges them.
-A check sets no threshold: a threshold binds only where a decision gives one, as D-271 gives the
-frost 3:1 against the snow, and a number that looks low is no ground to write a threshold into a
-decision, a test or a rule of style.
+Each check gives numbers and an image for the description of the request, and the human judges them
+(D-415). A check sets no threshold: a threshold binds only where a decision gives one, as D-271
+gives the frost 3:1 against the snow, and a number that looks low is no ground to write a threshold
+into a decision, a test or a rule of style.
 
 1. **The scale of a new pack against Pixel Crawler.** Measure the figure each frame draws, the new
    one and the mage's, and set the numbers side by side; `#<w>` after a file name is the width of
@@ -106,9 +107,11 @@ decision, a test or a rule of style.
    A sample is `<picture>@<x>,<y>`, one pixel of a picture, or `#rrggbb`. Name a sample for each
    colour of the prop that the effect lies over or against, not for one convenient pixel, and as
    many of the ground. Which prop an effect stands at, and where, is in `src/browser/sim/data/scene.ts`.
-   Samples of picture files are before the tint of the scene's light; for a colour as it shows on the
-   screen, take the sample from a frame of the running game (`loop2-play`), which `--ground` and
-   `--prop` read too.
+   Samples of picture files are before the tint of the scene's light. A frame of the running game
+   (`loop2-play`) shows the tint, and `--ground` and `--prop` read it, but a frame is the screen
+   scaled down to fit 800 px, lossy (JPEG) and with its colour at half resolution, so a pixel of it
+   is an approximation: good for a broad area such as the snow, not for a prop drawn in thin
+   strokes. For such a prop take the sample from its sprite file or from a full-size PNG screenshot.
 
 3. **Whether the effect is covered by another element of the scene.** Lay the effect and every
    element that may cover it over the forest, in the order the section "The scene of a map run" of
@@ -119,29 +122,39 @@ decision, a test or a rule of style.
    ```
 
    A picture is laid by the box of its visible pixels, its top left corner at the place named in the
-   pixels of the scene's picture. Try the places the mage and the wolf stand at, not one.
+   pixels of the scene's picture. The game places a frame by its whole cell (`ScenePicture` and
+   `SceneSpot` in `src/browser/sim/data/scene.ts`: the cell's left edge and the line it stands on,
+   its bottom edge). Turn the game's place into the preview's with the box `sheet-frames.mjs measure`
+   prints for that frame, `x L-R, y T-B` of its cell: the preview's x is the cell's left edge plus L,
+   its y the cell's top, which is its bottom edge less the frame's height, plus T. The box differs
+   from frame to frame, so take it for each frame laid. Try the places the mage and the wolf stand
+   at, not one.
 
 ## Flashes
 
 An effect is also measured against the rule that the scene shows no flash of its whole area (D-317).
-With a map run going, `loop2-play` gives the frames; keep what `.claude/skills/loop2-play/save-frames.mjs` prints,
-which holds the time of each frame, and give the script the rectangle of the scene in the frame's pixels,
-`getBoundingClientRect()` of the element `.scene` times the ratio of the frame's width to
-`window.innerWidth`:
+With a map run going, `loop2-play` gives the frames; keep what
+`.claude/skills/loop2-play/save-frames.mjs` prints, which holds the time of each frame. A frame is the
+screen scaled down, so give the script the ratio of the frame's width to `window.innerWidth` as
+`--scale`, and the rectangle of the scene in the frame's pixels, `getBoundingClientRect()` of the
+element `.scene` times that ratio:
 
 ```sh
 playwright-cli --raw run-code --filename .claude/skills/loop2-play/frames.js | node .claude/skills/loop2-play/save-frames.mjs > .playwright-cli/frames.log
-node .claude/skills/loop2-scene-art/flashes.mjs --log .playwright-cli/frames.log --region <x>,<y>,<w>,<h>
+node .claude/skills/loop2-scene-art/flashes.mjs --log .playwright-cli/frames.log --region <x>,<y>,<w>,<h> --scale <ratio>
 ```
 
 It gives the share of the region whose luminance moved by 0.10 or more between frames, and the
-most of it inside one field of 341 × 256 px that D-317 names. The paused map run gives one frame,
-and the script needs two.
+most of it inside one field. The field of 341 × 256 px and its quarter, 21,824 px, are the general
+flash threshold of WCAG 2.3.1 at the screen, which D-317 rests on (D-42 keeps it); the script scales
+both by `--scale` to the frame's pixels before it sets them beside the counts, and without `--scale`
+it prints the counts in frame pixels and no comparison. The paused map run gives one frame, and the
+script needs two.
 
 ## Who judges, and the reviewer
 
-The numbers and the preview go into the description of the request, and the human judges them; this
-skill's checks decide nothing.
+The numbers and the preview go into the description of the request, and the human judges them
+(D-415); this skill's checks decide nothing.
 
 A reviewer who checks a result with the same script and the same samples as the author has stopped
 checking independently: the script's arithmetic is held by its tests, but the choice of what to

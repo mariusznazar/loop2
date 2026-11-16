@@ -2,6 +2,7 @@
 scaled up. Standard library only, with Node.js for the script."""
 
 import os
+import re
 import tempfile
 import unittest
 
@@ -31,6 +32,30 @@ class Preview(unittest.TestCase):
             self.assertEqual(rows, [[piece[y // 2][x // 2] for x in range(8)] for y in range(6)])
             self.assertEqual(chunks, ["IHDR", "IDAT", "IEND"])
             self.assertIn("preview 8 x 6 px, scale 2, 1 laid", result.stdout)
+
+    def test_the_cell_of_the_game_turned_by_the_box_of_measure_lays_the_pixels_where_the_cell_would(self):
+        # The instruction of the skill: the preview's x is the cell's left edge plus L, its y the
+        # cell's top plus T, with `x L-R, y T-B` read from `measure`.
+        with tempfile.TemporaryDirectory() as directory:
+            cell = [[NONE] * 5 for _ in range(5)]
+            for y, x in ((2, 1), (2, 2), (3, 1), (3, 2)):
+                cell[y][x] = RED
+            figure = support.write_png(directory, "cell.png", cell)
+            scene = support.write_png(directory, "scene.png", [[BLUE] * 8 for _ in range(8)])
+            measured = support.run_script("sheet-frames.mjs", "measure", figure)
+            box = re.search(r"\(x (\d+)-\d+, y (\d+)-\d+ of", measured.stdout)
+            left, top = int(box.group(1)), int(box.group(2))
+            cell_left, cell_top = 2, 1  # where the game puts the cell, its top left corner
+            out = os.path.join(directory, "preview.png")
+            result = support.run_script("preview.mjs", "--scene", scene, "--put",
+                                        f"{figure}@{cell_left + left},{cell_top + top}", "--scale", "1", "--out", out)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            rows, _ = support.read_png(out)
+            # The cell's red pixels at its own (1,2), (2,2), (1,3), (2,3), the cell at 2,1 of the scene.
+            red_at = {(cell_left + x, cell_top + y) for y, x in ((2, 1), (2, 2), (3, 1), (3, 2))}
+            for y in range(8):
+                for x in range(8):
+                    self.assertEqual(rows[y][x], RED if (x, y) in red_at else BLUE, (x, y))
 
     def test_a_frame_of_a_strip_is_the_one_named_and_a_later_picture_lies_over_an_earlier_one(self):
         with tempfile.TemporaryDirectory() as directory:

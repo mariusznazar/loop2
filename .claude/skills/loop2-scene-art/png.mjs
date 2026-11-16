@@ -44,6 +44,8 @@ export function decodePng(bytes, label) {
     throw refuse("damaged PNG (bytes follow its IEND chunk)");
   if (chunks[0].type !== "IHDR" || chunks[0].data.length !== 13)
     throw refuse("damaged PNG (it does not start with a whole IHDR chunk)");
+  if (chunks.filter((c) => c.type === "IHDR").length !== 1)
+    throw refuse("damaged PNG (more than one IHDR chunk)");
   const header = chunks[0].data;
   const width = header.readUInt32BE(0);
   const height = header.readUInt32BE(4);
