@@ -63,10 +63,16 @@ functions, of which those that pass game time take a game state and a span of ga
 return the next game state together with the events it produced, and real time enters the
 simulation only as an argument. The browser view draws the game only from the game state, the
 game's content data, the moment of the browser's clock, which it reads and passes to the
-simulation, and, for the scene and the chronicle, its previous reading of the game state and the
-events the simulation returned, for the chronicle also the player's acts on the copy with the copy
-before each act and after it (D-348), for the end-of-run window the page's memory of whether it is
-open (D-371), and for the scene the place the browser gives for the mage while it walks, and changes
+simulation, the address of the page for the screen it shows (D-281), the system's setting for
+reduced motion for the scene (D-317), the saver's sentence for the row of saving (D-207, D-407),
+and, for the scene and the chronicle, its previous reading of the game state and the events the
+simulation returned, for the chronicle also the player's acts on the copy with the copy before each
+act and after it (D-348), and for the scene the place the browser gives for the mage while it walks,
+and from the memories of the page, none of them in the game state or the save: the folding of rule
+groups (D-294), the chronicle with the tab and the filter the player picks over it (D-339, D-346,
+D-383), the question „Zapisać, odrzucić, wrócić?” (D-324), whether the end-of-run window is open
+(D-371), the pull of the previous save and the reset control of Programy (D-401, D-402) and, for
+what one screen alone shows, the state of that screen's own component (D-407); it changes
 the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
 the server or the unsaved game state it kept in the page's memory after a save found no session (D-211).
@@ -10875,8 +10881,10 @@ after „Restart” and after a load the tint stands at once where the streak, o
   death in the combat and after a completion in it; the tint going evenly from 0 at streak 0 to 0.8
   at the streak the map's condition asks for, staying there as the streak grows on and 1 at a
   completion alone; a loss of the streak while the scene goes on taking the tint back on a return of
-  its own, which in the player's pause and at a discovery begins only where the scene goes on, and
-  the tint standing at once at a death, a completion, a map run started and a first draw. For what
+  its own, which in the player's pause and at a discovery begins only where the scene goes on, a
+  return cut by leaving the screen of the run over, and not played again from its start on the
+  return, and the tint standing at once at a death, a completion, a map run started and a first
+  draw. For what
   the scene holds, the source of its pictures, its motion and the colours of its tint, an agent
   compares a change with the part no invariant and no test holds:
   - complies: the place where the mage stands kept by the scene and not in the game state; the file
@@ -10980,7 +10988,9 @@ a moment shows its last image at once. The scene shows no flash of its whole are
 - **Verification:** tests: the flight of an icon and the fall of a defeated wolf lasting 300 ms with
   no text and gone when their animation ends; an effect overdue when its turn comes dropped — in a
   reading that carries several ends of a gathering, at a stop, after a load and at a reading that
-  carries no attack; the bending through a gathering and the scuffle through a combat lasting as the
+  carries no attack; the flight of an icon, a cloud of dust, the wolf's run in, its fall and its run
+  off cut by leaving the screen of the run over, as the end of their animation makes them, and not
+  played again from their start on the return; the bending through a gathering and the scuffle through a combat lasting as the
   action does; the effect of a discovery, a death and a completion playing once, the scene then
   standing on its last image until the moment ends, and a scene drawn again on the same moment
   showing that image at once; the cold layer blending by colour, so that it leaves the brightness of
@@ -11086,9 +11096,11 @@ place at once, and under that setting the frames stand still.
 - **Verification:** tests: the mage standing at its place at once, with no walk, at the scene's first
   draw, a load included, at the start of a map run and after „Restart”, the screen handing the
   scene the events that tell it so; a walk the player cut by leaving the screen not played a second
-  time on the return, the mage standing at the place of the walk. For the walk itself, a target changed on the way and the
-  system's setting for reduced motion, an agent compares a change with the part no invariant and no
-  test holds:
+  time on the return, the mage standing at the place of the walk; a target that changes on the way
+  to an action that leads nowhere stopping the mage where its walk has brought it, the place it was
+  walking to not reached. For the walk itself, a target that changes on the way to another place,
+  which turns the mage from the place it has reached, and the system's setting for reduced motion,
+  an agent compares a change with the part no invariant and no test holds:
   - complies: the walk from the sticks to the campfire taking 640 ms at 1× and at 16×, the frames of
     its sprite changing every 160 ms; a target changed half way turning the mage from where it
     stands; the mage standing at its place at once, its frames still, under the system's setting for
@@ -11288,12 +11300,14 @@ When „Zbierz” ends with no piece more in the backpack, a cloud of dust stand
 
 ### D-367 — Which readings of the game show an effect of the end of a gathering?
 
-The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, unless the map run is left or a new one starts, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
+The scene shows an effect of the end of a gathering, D-365 or D-366, only in a reading of a map run that goes on, drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and which a map run started does not accompany; it places the effect at the place the mage stands or walks to at the previous reading. Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, unless the map run is left, the screen of the run is left or a new map run starts, and an effect of a gathering that comes while another still runs takes its place, while the effects of the wolf (D-316), which belong to another part of the scene, are neither taken by it nor take it.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it.
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it. For an effect running when the screen of the run is left, an agent compares a change with the part no test of this decision holds:
+  - complies: the flight of an icon or the cloud of dust that the player cut by leaving the screen of the run, which the browser cancels the animation of, over at once and not drawn again when the screen is shown
+  - violates: the same effect left standing at its first frame, so that it plays from its start when the screen is shown again
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.
