@@ -37,8 +37,11 @@
   padding: 0;
 }
 
+/* The name of a program, typed by the player, breaks inside its row (styleguide rule "A name typed by the
+ * player breaks in its row"): `overflow-wrap: anywhere` breaks a name with no space. */
 .program-list-item {
   display: block;
+  overflow-wrap: anywhere;
   padding: var(--space-2xs) var(--space-s);
   color: var(--text);
   text-decoration: none;

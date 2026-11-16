@@ -19,8 +19,11 @@
   color: var(--text);
 }
 
+/* The heading is the name of the character, typed by the player: a name with no space breaks inside the
+ * screen (styleguide rule "A name typed by the player breaks in its row"). */
 .character-screen h2 {
   margin: 0 0 var(--space-xs);
+  overflow-wrap: anywhere;
   font-size: var(--font-size-heading);
   font-weight: var(--font-weight-emphasis);
   color: var(--text-strong);

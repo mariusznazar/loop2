@@ -167,7 +167,12 @@
   padding-top: 0;
 }
 
+/* The name of a character, typed by the player: a name with no space breaks inside its row of „Kto idzie”
+ * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the
+ * column shrink below its longest word, and `overflow-wrap: anywhere` breaks that word. */
 .maps-who-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: var(--font-weight-emphasis);
   color: var(--text-strong);
 }
