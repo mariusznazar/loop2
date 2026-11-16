@@ -16,6 +16,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent } from "react";
 import { ACTIONS } from "../sim/data/actions.js";
+import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { conditionNumber } from "../sim/program.js";
 import type {
   Action,
@@ -458,33 +459,40 @@ export function RulePanelView({
       const number = conditionNumber(condition?.kind ?? "always");
       if (number === null || condition === undefined || !("value" in condition))
         return null;
+      // The unit comes from the condition's data, beside the field and not in the field itself.
+      const def: ConditionDef = CONDITIONS[condition.kind];
       return (
         <div className="rule-panel-field" key={field}>
           <span className="rule-panel-label">{label}</span>
-          <span
-            className="rule-panel-number"
-            onFocus={() => {
-              if (active !== "number") moveTo("number");
-            }}
-            onKeyDown={(event) => {
-              // The field commits a changed number on Enter itself; the panel then moves on, also
-              // where the number stays as it was. The key press is consumed here: the focus goes to
-              // a cell of the next pick during this event, and a browser would otherwise deliver the
-              // same Enter to that cell and pick it.
-              if (event.key !== "Enter") return;
-              event.preventDefault();
-              const following = fieldAfter(fields, "number");
-              if (following !== null) moveTo(following);
-            }}
-          >
-            <ReactNumberField
-              label={label}
-              number={number}
-              value={condition.value}
-              rule={(text, held) => readNumberField(text, held, number)}
-              onCommit={commitNumber}
-              inputRef={numberInput}
-            />
+          <span className="rule-panel-value">
+            <span
+              className="rule-panel-number"
+              onFocus={() => {
+                if (active !== "number") moveTo("number");
+              }}
+              onKeyDown={(event) => {
+                // The field commits a changed number on Enter itself; the panel then moves on, also
+                // where the number stays as it was. The key press is consumed here: the focus goes to
+                // a cell of the next pick during this event, and a browser would otherwise deliver the
+                // same Enter to that cell and pick it.
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                const following = fieldAfter(fields, "number");
+                if (following !== null) moveTo(following);
+              }}
+            >
+              <ReactNumberField
+                label={label}
+                number={number}
+                value={condition.value}
+                rule={(text, held) => readNumberField(text, held, number)}
+                onCommit={commitNumber}
+                inputRef={numberInput}
+              />
+            </span>
+            {def.unit === undefined ? null : (
+              <span className="rule-panel-unit">{def.unit}</span>
+            )}
           </span>
         </div>
       );

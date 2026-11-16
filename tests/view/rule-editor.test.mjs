@@ -193,12 +193,15 @@ test("a header shows its number, name, condition and number of rules, and a row 
     const header = headerOf(page.root, 1);
     assert.equal(textIn(header, ".rule-list-number"), "1");
     assert.equal(textIn(header, ".rule-list-name"), "Pierwsza");
-    assert.equal(textIn(header, ".rule-list-condition"), "Sytość poniżej 30");
+    assert.equal(textIn(header, ".rule-list-condition"), "Sytość poniżej 30 %");
     assert.equal(textIn(header, ".rule-list-size"), "2 reguły");
     assert.equal(textIn(headerOf(page.root, 2), ".rule-list-size"), "1 reguła");
     const row = rowOf(page.root, 2);
     assert.equal(textIn(row, ".rule-number"), "1.2");
-    assert.equal(textIn(row, ".rule-condition"), "Zapas poniżej 8 · Patyk");
+    assert.equal(
+      textIn(row, ".rule-condition"),
+      "Zapas poniżej 8 szt. · Patyk",
+    );
     assert.equal(textIn(row, ".rule-action"), "Zbierz — Patyk");
     assert.equal(textIn(row, ".rule-time"), "10 min");
     assert.equal(textIn(rowOf(page.root, 3), ".rule-number"), "2.1");
@@ -590,7 +593,10 @@ test("a folded group shows its header alone, with name, condition and number of 
     assert.equal(section.querySelector(".rule-list-row"), null);
     assert.equal(buttonIn(section, "+ reguła"), undefined);
     assert.equal(textIn(section, ".rule-list-name"), "Pierwsza");
-    assert.equal(textIn(section, ".rule-list-condition"), "Sytość poniżej 30");
+    assert.equal(
+      textIn(section, ".rule-list-condition"),
+      "Sytość poniżej 30 %",
+    );
     assert.equal(textIn(section, ".rule-list-size"), "2 reguły");
     assert.ok(rowOf(page.root, 3), "the group not folded keeps its rows");
   });
@@ -1139,7 +1145,7 @@ test("the acceptance criterion: „Zapas poniżej 8 · Patyk → Zbierz — Paty
     await press(cellNamed(panel, "Patyk"));
     assert.equal(
       textIn(rowOf(page.root, 2), ".rule-condition"),
-      "Zapas poniżej 8 · Patyk",
+      "Zapas poniżej 8 szt. · Patyk",
     );
     assert.equal(textIn(rowOf(page.root, 2), ".rule-action"), "Zbierz — Patyk");
     assert.ok(panelOf(page.root), "the panel stays open after the last field");
@@ -1180,6 +1186,35 @@ test("a number typed in the panel keeps its text and the focus while the game at
       value: 12,
     });
   });
+});
+
+// The unit of the condition stands beside the number field of the panel, taken from the condition's
+// data, so the field reads „20 min” as the sentence of the rule does. Catches a field drawn without
+// its unit, or with the unit of another condition, such as the unit of the time of an action.
+test("the number field of the panel stands with the unit of its condition beside it", async () => {
+  for (const [condition, unit] of [
+    [{ kind: "campfireLeftBelow", value: 20 }, "min"],
+    [{ kind: "satietyBelow", value: 50 }, "%"],
+    [{ kind: "temperatureBelow", value: 36.5 }, "°C"],
+  ]) {
+    await withPage(async (page) => {
+      await mountPanel(page, withFirstRule(condition, EXPLORE), {
+        groupId: 1,
+        ruleId: 1,
+      });
+      const field = [
+        ...panelOf(page.root).querySelectorAll(".rule-panel-field"),
+      ].find((each) => textIn(each, ".rule-panel-label") === "Liczba");
+      assert.ok(field, condition.kind);
+      const number = numberIn(field);
+      const shown = field.querySelector(".rule-panel-unit");
+      assert.equal(shown?.textContent, unit, condition.kind);
+      assert.ok(
+        shown.parentElement.contains(number),
+        `${condition.kind}: the unit stands in the row of the number field`,
+      );
+    });
+  }
 });
 
 // The range and the step of the number field of the panel (D-376). Catches a field drawn with another
