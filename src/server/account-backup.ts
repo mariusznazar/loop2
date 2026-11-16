@@ -6,7 +6,7 @@ import { pipeline } from "node:stream/promises";
 import { AccountDatabase } from "./database.js";
 import { installLastResort, writeFailure } from "./log-line.js";
 
-// The backup script, or the owner, writes one consistent backup of the account
+// The backup script, or the operator, writes one consistent backup of the account
 // database to standard output from a shell in the loop2 container:
 //
 //   node dist/server/account-backup.js --to-standard-output

@@ -312,7 +312,7 @@ test("each waiting minute M+1 through M+4 can complete without turns or an inven
 
 test("combat death in M+5 wins over completion and keeps the streak", () => {
   // decision: D-71 "In each game minute of combat the body and the nature energy stand still"
-  // decision: D-61 "A character whose health reaches zero through combat dies with the cause „walka” in the game minute of the combat turns"
+  // decision: D-61 "A character whose health reaches zero through combat dies with the cause combat in the game minute of the combat turns"
   // decision: D-136 "A streak counts the successive game minutes in which the character loses no health to cold or hunger: a game minute with such a loss sets it to zero, wounds taken in combat do not"
   // decision: D-141 "During M+1 through M+5 the needs, automatic health recovery and nature energy stand still, burning and resource renewal continue and the streak grows; the turns change health in M+5"
   // decision: D-146 "The encounter ends immediately when either side reaches zero health: a creature at zero makes a beaten attack, and a character at zero dies of combat in the minute of the turns, before it can answer a lethal strike"
@@ -478,7 +478,6 @@ test("a creature-only discovery pauses before turns and does not write a combat 
 
 // D-118, D-119, D-143: the first attack permanently teaches the wolf, so the
 // next attack must use that very knowledge, not an independently knowing game.
-// Sources: foundations/decisions.md:2008, :2032, :2575.
 test("the discovered wolf stays known through another attack, restart and end", () => {
   // decision: D-118 "The condition „Zawsze” and the action „Eksploruj” are in the Understanding from the start of a new game; every other action, item, condition, creature and branch enters the Understanding only when discovered in play, each by the need, action, item or encounter that reveals it"
   // decision: D-119 "The Understanding belongs to the player"
@@ -724,7 +723,7 @@ test("M+5 counts the second defeated attack before checking both map requirement
 // an ending minute. No state field is normalized. Real-time chunks are whole
 // seconds, so their carry is also directly comparable. advanceMinutes ignores
 // pause by contract; stop its driver at discovery instead of silently resuming.
-// Source: foundations/invariants.md:528.
+// Source: the invariant minute-span-split.
 function traceChunks(initial, chunks, advance = advanceMinutes) {
   let state = initial;
   const events = [];
@@ -834,7 +833,6 @@ for (const scenario of COMBAT_SPLITS) {
       (event) => event.kind === "combatExchange",
     );
     // D-144: 24 / 3 = 8 kicks; without a reply, ceil(100 / 7) = 15 bites.
-    // Source: foundations/decisions.md:2590.
     assert.equal(
       exchanges.length,
       scenario.outcome === null
@@ -869,7 +867,7 @@ for (const scenario of COMBAT_SPLITS) {
 // Invariants map-run-repeatability and restart-seed: start with an ordinary
 // public send, then replay the same real-time inputs after restart. No patched
 // random state, clock, counters or body: even the initial whole states agree.
-// Sources: foundations/invariants.md:165, :309; decisions.md:450 (D-22).
+// Sources: the invariants map-run-repeatability and restart-seed; D-22.
 test("restart replays the actual attack stream and combat minute by minute", () => {
   // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"
   // decision: D-142 "The attack generator is a separate stream seeded by the map run, advanced by the eligible trials, with cooldown, active combat, death and completion leaving it as it stands, so two continuing runs on one seed meet their first attack in the same minute"

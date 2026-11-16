@@ -900,7 +900,7 @@ async function typeInFocused(input, text) {
   await typeInto(input, text);
 }
 
-// D-03, D-36: the controls are updated in place. Catches time passing rewriting the
+// The controls are updated in place. Catches time passing rewriting the
 // name field or an editor field the player is typing into, or moving focus.
 test("time passing keeps what is typed in the name field and in an editor field, and the focus", async () => {
   await withPage(async (page) => {
@@ -1713,7 +1713,7 @@ test("the offer of Programy follows the character of the map run held by the gam
   });
 });
 
-// D-36: the panel leaves nothing behind. Catches a root left mounted in the page after `dispose()`.
+// The panel leaves nothing behind. Catches a root left mounted in the page after `dispose()`.
 test("dispose() takes the panel out of the page", async () => {
   await withPage(async (page) => {
     const game = await wiredPanel(page, gameWithRule(), "programs");

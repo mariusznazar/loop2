@@ -18,7 +18,7 @@ A positive control runs a whole night and asserts that `rsync` got exactly the f
 so an empty finding above is the script's, not the stand-in's.
 
 Does NOT cover: that the real `age` encrypts, which rests on age-file-encryption; a key that reads
-well but is a wrong one; `age` run on the owner's computer at a restore. The stand-ins prove the
+well but is a wrong one; `age` run on the operator's computer at a restore. The stand-ins prove the
 script's reaction to each answer, not what a real tool does (D-235). A real run of the script with
 the real `age` is the human's H2.
 

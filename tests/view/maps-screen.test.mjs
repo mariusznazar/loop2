@@ -743,7 +743,7 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
 // D-251: the rehearsal mark stands under „Wejdź” at a solved map when the clipped take exceeds the chest.
 test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the list of maps marks it as not predicting the earning loop when the chest lacks that equipment"
+  // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
   await withPage(async (page) => {
     const plan = { take: [{ item: "stick", count: 3 }], bring: [] };

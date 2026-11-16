@@ -399,8 +399,6 @@ test("a button whose open state is set on the DOM form is the same element as th
   });
 });
 
-// The tab (pytania 2 and 2c): the button selected in its group, kept as the same element with
-// `aria-pressed`, with the class `tab` beside `selected`.
 test("a tab selected in its group is the same element in both forms", async () => {
   // decision: D-265 "Until its last screen in the browser's DOM APIs moves to React, a shared control that a React screen uses has two forms in `src/browser/view/controls/`, a React component and a DOM function, drawing one tree of DOM elements with the same classes and attributes"
   // decision: D-276 "A tab keeps the HTML element, `aria-pressed` and keyboard of the button selected in its group"

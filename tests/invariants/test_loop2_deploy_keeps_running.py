@@ -126,25 +126,25 @@ class StopBeforeTheNewContainerKeepsTheRunningOne(unittest.TestCase):
 
     def test_stop_at_the_memory_reading(self):
         # invariant: loop2-deploy-keeps-running
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         support.write_bytes(self.fixture.meminfo, MEMINFO_512_MIB)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_unreadable_memory(self):
         # invariant: loop2-deploy-keeps-running
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         support.write_bytes(self.fixture.meminfo, b"MemTotal:        4456448 kB\n")
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_the_disk_reading(self):
         # invariant: loop2-deploy-keeps-running
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         self.fixture.answer("df", stdout=DF_1_GIB)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 
     def test_stop_at_unreadable_disk(self):
         # invariant: loop2-deploy-keeps-running
-        # decision: D-17 "It builds only while the host's available memory and free disk stay above thresholds the repository sets"
+        # decision: D-17 "It builds only while the host's available memory and free disk stay at or above thresholds the repository sets"
         self.fixture.answer("df", exit_code=1)
         self.assert_stopped_and_kept(self.run_with_passing_answers(), 5)
 

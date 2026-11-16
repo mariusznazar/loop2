@@ -1,4 +1,4 @@
-// The camp of Siedziba as data for drawing (D-272): which characters stand in it, how many the widest band
+// The camp of Siedziba as data for drawing (D-389): which characters stand in it, how many the widest band
 // holds, and what the fire and the chest are. What a window of another width shows, and how the pictures
 // move, are the browser check's (D-88): nothing here computes a layout.
 import assert from "node:assert/strict";

@@ -265,7 +265,8 @@ test("without a map run there is no line", () => {
   assert.equal(tileLine(newGame(), "1,1"), null);
 });
 
-// D-70: the campfire's state stands in the table alone.
+// The line holds the stock of the tile alone, since D-70 puts the campfire's minutes left in the row of
+// the list of revealed tiles.
 test("the line of a tile with a burning campfire gives its stock and nothing of the fire", () => {
   // decision: D-19 "The drawing of the game map is a picture, not a control: its only interaction is hovering, which links a tile with its row in the list of revealed tiles, and the numbers of stock stand in that list and in the line under the drawing, which shows the hovered tile or else the character's tile"
   const [burning] = fireRun(63);

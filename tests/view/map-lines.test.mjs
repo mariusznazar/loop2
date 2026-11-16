@@ -75,7 +75,7 @@ test("the heading names the map, with the solved mark and the opener's name from
 
 // D-327: the grid, the entrance, the step and the minutes without fire with the temperature.
 // Catches a grid with its sides swapped, the entrance word the wrong way round, a note on the step
-// the data gives, and a minutes-without-fire line where the map does not cool the body.
+// the data gives, and wrong minutes without fire.
 test("the terrain lines give the grid, the entrance, the step and the minutes without fire", () => {
   // decision: D-327 "The card of a map follows the card of the predecessor game"
   assert.deepEqual(terrainLines(forest), [

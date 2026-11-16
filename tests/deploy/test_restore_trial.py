@@ -1,6 +1,6 @@
 """The launcher of the restore trial, `scripts/restore-trial.mjs` (D-234).
 
-The owner runs the launcher once on his computer, on a decrypted backup of the database and an
+The operator runs the launcher once on his computer, on a decrypted backup of the database and an
 image built from the same commit. It starts one container from the image on fresh volumes holding
 that file, logs in as the test account through the server's own HTTP port, reads the saved game
 state, prints a verdict and removes what it made.
@@ -15,7 +15,7 @@ taken by the backup command), and runs the launcher on that file for a right pas
 one, an absent marker and an interruption. Where no daemon answers, the run is skipped and says
 what stays unchecked.
 
-Does NOT cover: a backup fetched from Strych or decrypted with `age` (the owner does both before
+Does NOT cover: a backup fetched from Strych or decrypted with `age` (the operator does both before
 the launcher); a database of an older or later schema than the image's; a database of the size of
 a real one; building a new server or restoring over a live volume.
 """
@@ -206,22 +206,22 @@ class EndOfAPassingTrial(unittest.TestCase):
         self.assertEqual(set(self.commands_called()) & {"ps", "volume ls"}, {"ps", "volume ls"})
 
     def test_a_daemon_gone_at_the_cleanup_is_exit_4_naming_what_was_made(self):
-        # decision: D-234 "A checked restore is a trial on the owner's computer, which the owner repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
+        # decision: D-234 "A checked restore is a trial on the operator's computer, which the operator repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
         result = self.finish(fails=self.EVERY_REMOVAL + self.EVERY_LISTING)
         self.assert_exit_4_naming(result, ["data", "secrets", "setup", "app"])
 
     def test_a_listing_that_failed_shows_nothing_gone_though_each_removal_exited_0(self):
-        # decision: D-234 "A checked restore is a trial on the owner's computer, which the owner repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
+        # decision: D-234 "A checked restore is a trial on the operator's computer, which the operator repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
         result = self.finish(fails=self.EVERY_LISTING)
         self.assert_exit_4_naming(result, ["data", "secrets", "setup", "app"])
 
     def test_a_removal_that_failed_shows_nothing_gone_though_the_listings_are_empty(self):
-        # decision: D-234 "A checked restore is a trial on the owner's computer, which the owner repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
+        # decision: D-234 "A checked restore is a trial on the operator's computer, which the operator repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
         result = self.finish(fails=self.EVERY_REMOVAL, actsFirst=True)
         self.assert_exit_4_naming(result, ["data", "secrets", "setup", "app"])
 
     def test_a_volume_docker_still_lists_is_named_and_the_container_it_removed_is_not(self):
-        # decision: D-234 "A checked restore is a trial on the owner's computer, which the owner repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
+        # decision: D-234 "A checked restore is a trial on the operator's computer, which the operator repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
         result = self.finish(fails=["volume rm"])
         self.assert_exit_4_naming(result, ["data", "secrets"])
 
@@ -370,7 +370,7 @@ class RunOnARealBackup(unittest.TestCase):
 
     def test_pass_fail_on_wrong_password_fail_on_absent_marker_and_interruption(self):
         # decision: D-228 "A completed, consistent backup of the account and save database is stored outside the game server host, so the accounts and saved game states can be restored"
-        # decision: D-234 "A checked restore is a trial on the owner's computer, which the owner repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
+        # decision: D-234 "A checked restore is a trial on the operator's computer, which the operator repeats every month and after each change of the database's schema version or of the saved game's version: a backup fetched from its destination and decrypted, the same commit run on it, a login with a test account, the saved game state seen back, and the backup removed from the computer"
         docker_gate.require_daemon(self, "whether the launcher restores a backup, judges it and "
                                          "removes its container and volumes stays unchecked")
         tag = "loop2-restore-trial-check:" + uuid.uuid4().hex[:12]

@@ -289,8 +289,8 @@ test("the rules that never fired are the rules of the copy whose count is absent
 });
 
 // Catches a share of time with a wrong threshold, a sixth piece or a missing „reszta”, a kind not joined
-// into „W drodze”, „Czeka” or „Walka”, and a bar drawn where no minute was counted (D-93 gives the
-// percentages whole). Hand-derived: 30/85 is 35 %, 20/85 is 24 %, 8/85 is 9 %, 2/85 is 2 %.
+// into „W drodze”, „Czeka” or „Walka”, and a bar drawn where no minute was counted (D-368 gives the
+// shares of time in percentages). Hand-derived: 30/85 is 35 %, 20/85 is 24 %, 8/85 is 9 %, 2/85 is 2 %.
 test("the shares of time join the walk kinds, wait and fight, keep at most five pieces of at least 8 %, and the rest in reszta", () => {
   // decision: D-368 "Each section of why stands only where it has content"
   assert.deepEqual(

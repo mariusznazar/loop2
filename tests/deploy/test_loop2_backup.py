@@ -14,7 +14,7 @@ import unittest
 import backup_script_support as support
 
 SENTINEL_LOGIN = "sentinel-login-3f9a"
-# The notice as the owner settled it, on 2026-10-31 through the cycle's orchestrator.
+# The notice as the operator settled it, on 2026-10-31 through the cycle's orchestrator.
 NOTICE_BYTES = b"Kopia bazy loop2 nie uda\xc5\x82a si\xc4\x99.\n"
 # Options of rsync that delete on the receiving side, or leave a broken file in place of the older
 # backup (rsync manual, options summary, the commit D-230 cites).
@@ -114,9 +114,9 @@ class WhatEachToolIsHanded(WithFixture):
             result)
 
     def test_pusher_gets_the_polish_notice_as_these_bytes(self):
-        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed"
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed"
         # The break: the script saved in another encoding, or a locale that rewrites the text. The
-        # expected bytes are the owner's text in UTF-8, by hand: l with stroke is C5 82, e with
+        # expected bytes are the operator's text in UTF-8, by hand: l with stroke is C5 82, e with
         # ogonek is C4 99. The subject goes into a URL path, so it is ASCII.
         fixture = self.fixture()
         fixture.answer("rsync", exit_code=12)
@@ -141,7 +141,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertEqual(set(names) & (IN_PLACE | LISTING), set(), result)
 
     def test_rsync_is_called_once_with_one_file_to_one_computed_name_and_no_login(self):
-        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the operator's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
         # decision: D-228 "A completed, consistent backup of the account and save database is stored outside the game server host"
         # decision: D-228 "Mikrus Strych is the destination"
         # decision: D-230 "The seven are the weekday files `loop2-accounts-<1..7>.sqlite.age`, one for each day of the week by the UTC date of the run"
@@ -186,7 +186,7 @@ class WhatEachToolIsHanded(WithFixture):
                 self.assertEqual(result.code, 9, result)
 
     def test_the_host_key_options_stand(self):
-        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the operator's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server"
         # decision: D-238 "The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus Strych, giving on the command line batch mode, strict host-key checking and `/etc/loop2/strych-known-hosts` as its one known-hosts file, and those options win over any SSH configuration for those options"
         fixture = self.fixture()
         result = fixture.run()
@@ -201,7 +201,7 @@ class WhatEachToolIsHanded(WithFixture):
         self.assertNotIn("User", options, result)
 
     def test_the_constants_name_the_design_s_own_files(self):
-        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the owner's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server; runtime credentials live outside the checkout in `/etc/loop2/cloudflared-token` for the tunnel, `/etc/loop2/session-secrets` for session signing, `/etc/loop2/smtp-password` for the mail service and `/etc/loop2/backup-encryption-key`"
+        # decision: D-13 "Automation secrets and server access values — its name, SSH port, SSH user and IPv6 address — stay outside the repository in the repository's GitHub secrets and the operator's private note, and the login on Mikrus Strych stays outside it in that note and in root's SSH configuration on the server; runtime credentials live outside the checkout in `/etc/loop2/cloudflared-token` for the tunnel, `/etc/loop2/session-secrets` for session signing, `/etc/loop2/smtp-password` for the mail service and `/etc/loop2/backup-encryption-key`"
         # decision: D-232 "A backup of the account and save database is encrypted on the game server's host before it leaves it, by `age` in the backup script's pipe, with the identity file `/etc/loop2/backup-encryption-key`"
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end"
         # decision: D-238 "The backup script sends the encrypted backup by `rsync` over `ssh` into the home directory on Mikrus Strych, giving on the command line batch mode, strict host-key checking and `/etc/loop2/strych-known-hosts` as its one known-hosts file"
@@ -247,7 +247,7 @@ class WhatTheLogHolds(WithFixture):
 
     def test_the_marker_of_the_database_reaches_nothing_but_age(self):
         # decision: D-232 "The plain database exists on the host only in that pipe"
-        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed, with no player's data"
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed, with no player's data"
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
         fixture = self.fixture()
         for arrange in (lambda _fixture: None,
@@ -264,7 +264,7 @@ class WhatTheLogHolds(WithFixture):
             self.assertNotIn(support.PLAIN_MARKER.encode(), result.sent or b"", result)
 
     def test_a_refused_login_reaches_no_file_and_the_log_keeps_stage_code_and_size(self):
-        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the owner receives a message whose fixed subject and text say only that the backup failed, with no player's data, no tool's output"
+        # decision: D-233 "At any failed end of a night's backup the backup script, outside the game container, calls `pusher` once, and the operator receives a message whose fixed subject and text say only that the backup failed, with no player's data, no tool's output"
         # decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data and no access value, so the error text of `ssh` and `rsync` reaches no file"
         fixture = self.fixture()
         text = f"{SENTINEL_LOGIN}@strych.mikr.us: Permission denied (publickey).\n".encode()

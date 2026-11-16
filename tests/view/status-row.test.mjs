@@ -242,7 +242,7 @@ test("the text for the first chill names its action and its condition with the u
 // exploration revealed.
 test("the text for the first finished exploration names the tree Eksploracja beside the actions and items it revealed", () => {
   // decision: D-122 "A band in the role `discovery` above the program names what was discovered"
-  // decision: D-195 "The band of a discovery names the tree beside the action, as „Odkryto: Zbierz, drzewo umiejętności Zbieranie.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one"
+  // decision: D-195 "The band of a discovery names the tree beside the action, as „Odkryto: Zbierz, drzewo umiejętności Zbieranie małych przedmiotów.”, followed by the sentence naming newly discovered conditions when the same game minute reveals one"
   assert.equal(
     discoveryText({
       ...EXPLORED_REVEALED,
@@ -344,7 +344,7 @@ test("on Las — głębiej a requirement that is met reads its own numbers while
   );
 });
 
-// D-135: the bar shows the streak as it stands, which a death of cold or hunger has set to zero.
+// D-133: the bar shows the streak as it stands, which a death of cold or hunger has set to zero.
 test("the words after a death of cold show the streak at zero", () => {
   assert.deepEqual(
     requirementsOf("forest", { streak: 0 }).map(requirementText),

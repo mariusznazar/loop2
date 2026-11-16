@@ -177,7 +177,7 @@ the old game's state and installed-script mismatches are also logged.
 - **Session keys:** the file `/etc/loop2/session-secrets` holds a JSON array of keys, newest
   first, owner root, group 1000, mode 0440, outside the checkout. Compose mounts it read-only
   only into `app`. The human creates it before the first deployment of an accounts commit and
-  rotates it; a copy stays in the owner's private note. Sequences: "Session signing keys" in
+  rotates it; a copy stays in the operator's private note. Sequences: "Session signing keys" in
   `references/setup_and_secrets.md`. A missing or invalid file stops the application before it
   listens: the deployment ends with exit 8.
 - **Database:** the volume `loop2_accounts` is created by the deployment itself and mounted
@@ -214,7 +214,7 @@ password-reset message, through Outsider's SMTP server on port
 and the login are plain values of the `app` service in `compose.yaml`; the password is not an
 environment value: it lies in `/etc/loop2/smtp-password` (owner root, group 1000, mode 0440,
 outside the checkout, one line of UTF-8 without a trailing newline), which Compose mounts
-read-only into `app` alone as `/run/secrets/loop2_smtp_password`. A copy stays in the owner's
+read-only into `app` alone as `/run/secrets/loop2_smtp_password`. A copy stays in the operator's
 private note. The agent reads the file's metadata only and never its content.
 
 - **Rotation is the human's:** replace the file and the private copy, then recreate the
@@ -291,7 +291,7 @@ its JSON object after the service's name and Docker's time. The file holds the g
 those weeks, with `accountId` values, and the human's `account-block` and `account-previous-save` lines: it is the retention
 of that data (D-252), and its lines are reported selected and redacted like other service logs.
 
-**The three ways the owner learns the game failed.**
+**The three ways the operator learns the game failed.**
 
 1. **The watcher** (`loop2-watch`, root, cron every five minutes). It reads state and health of
    both containers, the fresh failure lines of the game container's log and the last lines of the
@@ -319,7 +319,7 @@ of that data (D-252), and its lines are reported selected and redacted like othe
 2. **The scheduled check of the public address** (`.github/workflows/check-address.yml`). The
    workflow asks for a run every five minutes, at minutes that are not the top of the hour; in a
    run, GitHub Actions opens the public address, up to six attempts 20 seconds apart, and the
-   run fails unless one answers 200. GitHub then notifies the owner of the failed run. It sees
+   run fails unless one answers 200. GitHub then notifies the operator of the failed run. It sees
    what the watcher cannot: a server that is off, a fallen tunnel, a Cloudflare fault. The five
    minutes are what the schedule asks for, not the rhythm GitHub gives: the start times of the
    scheduled runs (the `gh run list` form that "Agent or human" allows)
