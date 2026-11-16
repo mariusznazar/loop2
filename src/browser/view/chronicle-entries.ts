@@ -264,7 +264,7 @@ export function copyChangeTexts(
         !sameData(was.rule.action, is.rule.action))
     )
       texts.push(
-        `Zmieniono regułę ${is.number}: ${sentence(was.rule)} → ${sentence(is.rule)}`,
+        `Zmieniono regułę ${is.number}: „${sentence(was.rule)}” na „${sentence(is.rule)}”`,
       );
   }
   const rulesMoved = movedRules(rulesBefore, rulesAfter, move);
