@@ -529,7 +529,7 @@ czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 
 - **Decision:** none
 - **Invariant:** none
-- **Good:** Imię postaci z samych liter, dłuższe od wiersza drużyny w Siedzibie, łamie się w tym wierszu i nie wychodzi poza niego.
+- **Good:** Imię postaci z samych liter, dłuższe od wiersza drużyny w Siedzibie, łamie się w tym wierszu i nie wychodzi poza niego; tak samo nazwa programu na liście Programy i adres konta w menu „Konto”.
 - **Bad:** Długie imię bez spacji wypycha wiersz poza obszar ekranu albo jest ucięte, albo przewijane tylko dlatego, że nie ma w nim spacji.
 
 Tekst, który wpisał gracz, taki jak imię postaci albo nazwa, może nie mieć
@@ -537,6 +537,19 @@ spacji, więc wiersz, który go pokazuje, łamie go w swoim obrębie, a nie
 przepuszcza poza siebie, nie ucina i nie przewija. Reguła dotyczy każdego
 wiersza z takim tekstem, także nowego. Powód: wpis bez spacji nie ma gdzie się
 złamać sam, więc bez tej reguły długie imię wypycha wiersz poza ekran.
+
+Takim tekstem są imię postaci, nazwa programu, nazwa grupy reguł i adres
+konta, wszędzie tam, gdzie widok je pokazuje: w wierszu drużyny w Siedzibie, w
+„Kto idzie” na Mapach, w nagłówku ekranu przejścia i nagłówku ekranu Postać,
+na liście Programy, w nagłówku programu i grupy reguł, w menu „Konto” i na
+liście kont, a także w zdaniu, które taką nazwę albo taki adres wymienia
+(pas odkrycia, wiersz o kopii programu, pytanie „Zakończ”, raport z
+nieobecności, ostrzeżenie przy wciąganiu programów). Wyjątek: lista programów
+jako natywne pole wyboru (`select`, „Program:” przy postaci na Mapach i na
+ekranie przejścia oraz lista w panelu programów) ma szerokość swojej najdłuższej
+opcji, więc długa nazwa je poszerza, a reguła jej nie obejmuje; jak taka lista
+ma się zachować (ucięcie wielokropkiem albo ograniczenie szerokości), nie jest
+tu rozstrzygnięte.
 
 ### Focus does not fall to the page
 
@@ -695,7 +708,7 @@ Mapy, a w oknie węższym niż 720 px jeden pod drugim.
 
 ### Program editor
 
-- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310
+- **Decision:** D-288 · D-289 · D-291 · D-292 · D-293 · D-93 · D-57 · D-279 · D-39 · D-40 · D-43 · D-308 · D-309 · D-310
 - **Invariant:** none
 - **Good:** Wiersz reguły z warunkiem w `text-secondary`, czynnością w `text-strong` i licznikiem „Wykonano 3×” w `text-label`; linia upuszczenia w kolorze napisu „tu wyląduje”; wiersz reguły, która wygrywa teraz, na `rule-winning` z paskiem w `positive` po lewej, a reguła, która nie może ruszyć, z paskiem w `warning` i powodem „tu nie leży mech” w `warning`.
 - **Bad:** Czynność w wierszu w `text-secondary`, nowa barwa dla wiersza pod kursorem albo linia upuszczenia w `selected` obok napisu w `text-strong`; `highlight` pod kursorem na wierszu reguły, która wygrywa teraz; pasek stanu w kolorze tekstu obok; znaki stanu przy programie zapisanym.
@@ -710,7 +723,9 @@ oraz pasek stanu o grubości `--bar-width`, opisane niżej.
   `text-label`; ikona czynności stoi przy czynności i jest rysowana maską w
   kolorze tekstu obok (D-291, D-43). Wiersz otwarty stoi na tle `highlight`,
   a wiersz pod kursorem też, o ile nie ma tła stanu, z tekstem w ich własnych
-  rolach (reguła Every background with its text).
+  rolach (reguła Every background with its text). Liczba z ułamkiem w zdaniu
+  reguły stoi z przecinkiem dziesiętnym, jak temperatura w wierszu ciała
+  (D-57): „Temperatura poniżej 36,5 °C”.
 - Znaki stanu (D-308, D-309, D-310) stoją tylko przy kopii przejścia, w
   przejściu ręcznym i na ekranie po jego końcu, nigdy przy programie
   zapisanym, na ekranie Programy ani w pętli zarobkowej. Wiersz reguły, która
@@ -774,7 +789,10 @@ w stylu warstwy: żaden kolor nie jest składany z liczb w kodzie (D-43). Jak `t
 stoi w pełnym złocie i jak wraca po utracie passy, mówi D-316; długość powrotu stoi w regule powrotu
 w `src/browser/run-screen.css`. Utrata passy w toku przejścia daje warstwie nowy element, który startuje od
 odcienia, jaki stał, a animacja CSS prowadzi `--tint` do nowej wartości; pod ustawieniem ograniczenia
-ruchu odcień pokazuje od razu swój koniec. W pauzie gracza i przy odkryciu odcień stoi, a powrót po
+ruchu odcień pokazuje od razu swój koniec. Powrót, który gracz przerwał wyjściem z ekranu przejścia
+(przeglądarka anuluje wtedy animacje ukrytego ekranu), kończy się tak, jak kończy go koniec animacji:
+warstwa stoi na odcieniu, do którego szła, i po powrocie na ekran nie gra od początku (D-316, D-317).
+W pauzie gracza i przy odkryciu odcień stoi, a powrót po
 utracie passy w tym czasie zaczyna się dopiero, gdy scena rusza dalej. Przy śmierci, rozwiązaniu, na
 starcie przejścia, po „Restart” i po wczytaniu odcień stoi od razu tam, gdzie stawia go passa albo
 rozwiązanie. Odcień i szron leżą w scenie, więc filtr pauzy szarzy je razem z nią, a po rozwiązaniu
@@ -826,7 +844,9 @@ raz przez wszystkie swoje klatki; scena pamięta poprzedni odczyt stanu gry i zd
 kolej przychodzi przy zatrzymaniu, tego z odczytu, który niesie kilka końców zbierania, i tego z odczytu,
 w którym skończyła się też czynność biorąca sztuki z plecaka. Efekt zaczęty stawia przy miejscu, w którym
 mag stoi albo do którego idzie w poprzednim odczycie; kończy się i stoi razem ze sceną przy zatrzymaniu,
-a nowy zajmuje jego miejsce (D-367).
+a nowy zajmuje jego miejsce (D-367). Efekt, który gracz przerwał wyjściem z ekranu przejścia, a którego
+animację przeglądarka anuluje, kończy się jak przy końcu animacji i po powrocie na ekran nie gra od
+początku, bo zaległy efekt przepada (D-367, D-317).
 
 Wilk (D-316, D-148, D-271) stoi w scenie przez minuty starcia, obok maga, tuż za jego sylwetką,
 z odstępem z danych sceny: po prawej, a gdy mag stoi przy prawym brzegu i prawa strona wyszłaby poza
@@ -847,7 +867,9 @@ Szamotanina trwa tyle co starcie i efektem nie jest. Wynik starcia to efekt zwyk
 który niesie koniec starcia: pokonany wilk pada w czterech klatkach śmierci i leży, aż efekt się skończy,
 a potem go nie ma; wilk, który odchodzi, odbiega w pięciu klatkach biegu za prawy brzeg kadru; po śmierci
 maga w walce wilk stoi nieruchomo obok niego w klatce stania, a po rozwiązaniu mapy w trakcie starcia stoi
-nieruchomo tam, gdzie stał. Zaległy efekt przepada i wilka po prostu nie ma. Bieg wilka, szamotanina i jej
+nieruchomo tam, gdzie stał. Zaległy efekt przepada i wilka po prostu nie ma; tak samo bieg wilka i wynik
+starcia, które gracz przerwał wyjściem z ekranu przejścia, kończą się z anulowaną animacją i po powrocie
+nie grają od początku. Bieg wilka, szamotanina i jej
 wynik nie rozjaśniają ani nie przyciemniają całego obszaru sceny (D-317, D-42): zmienia się najwyżej klatka
 wilka i kłąb kurzu, część kadru dużo mniejsza od progu błysku.
 
@@ -871,7 +893,8 @@ na ekran, po odświeżeniu strony, po wczytaniu zapisu — i scena pod systemowy
 ruchu pokazują od razu ostatni obraz, bez ruchu. Odczyt tego, że chwila właśnie nastała, bierze się ze
 zdarzeń wywołania symulacji (D-04), nie ze stanu gry; ostatnia animacja efektu mówi scenie, że efekt
 się skończył, a scena schowana w czasie efektu, której przeglądarka animacje anuluje, stoi na ostatnim
-obrazie. Okno końca przejścia czeka na koniec efektu śmierci albo rozwiązania i otwiera się od razu
+obrazie; anulowanie mówi scenie o końcu tak samo jak ostatnia animacja, jak przy efekcie zwykłego
+zdarzenia i powrocie odcienia wyżej. Okno końca przejścia czeka na koniec efektu śmierci albo rozwiązania i otwiera się od razu
 tam, gdzie scena pokazuje ostatni obraz od razu (D-311). Żaden efekt nie rozjaśnia ani nie przyciemnia
 na chwilę całego obszaru sceny (D-317, D-42): efekty są małe albo, jak chłodna warstwa, mieszają się
 trybem `color`, który zostawia jasność obrazu.
@@ -959,7 +982,7 @@ w pliku tokenów, a kod kroniki w `src/browser/view/tabs-area.tsx`.
 
 ### The end-of-run window
 
-- **Decision:** D-368 · D-311 · D-322 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
+- **Decision:** D-368 · D-311 · D-322 · D-173 · D-132 · D-122 · D-313 · D-185 · D-216 · D-188 · D-208 · D-323 · D-44 · D-45 · D-275 · D-276 · D-285 · D-370 · D-39 · D-40 · D-43 · D-46 · D-47 · D-279
 - **Invariant:** none
 - **Good:** Okno po śmierci z tytułem „Mag zamarzł” w `text-strong` na `panel`, nad nim pasek menu i wiersz ostrzeżeń, pod nim przyciski „Restart”, „Zakończ” i „Otwarte: …” stojące w polu widzenia, gdy sekcje się przewijają; Escape zamyka okno, a nagłówek ekranu ma wtedy „Koniec przejścia”.
 - **Bad:** Okno przykrywające pasek menu; okno z zasłoną za sobą; przycisk zrobiony w oknie osobnym `<button>` albo z czcionką Geist Mono; pasek czasu w roli, której nie ma w tabeli Roles; Escape czytany na dokumencie.
@@ -995,7 +1018,7 @@ Jak się zamyka i otwiera:
 
 - „✕” i Escape zamykają okno i odsłaniają ekran; fokus idzie wtedy na
   „Koniec przejścia” w nagłówku ekranu. Escape czyta korzeń okna, nigdy
-  dokument (D-285).
+  dokument (D-370).
 - „Koniec przejścia” w nagłówku ekranu otwiera okno znowu. Stoi przed „Restart”,
   póki okno jest zamknięte po końcu przejścia; gdy okno stoi, nagłówek jest
   ukryty razem z ekranem (D-311, D-368).
