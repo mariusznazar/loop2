@@ -16,6 +16,8 @@ To run the game on this computer or operate it in a real browser, read `.claude/
 
 Every test of this repository runs with `npm test`.
 
+Claude Code sessions started in the repository root get a warning at start, from the hook in `.claude/settings.json`, when `.the-way` stands on another commit than the pinned one or is not initialized; the rule to stop work on a mismatch stays in force.
+
 <!-- the-way:begin -->
 # Pinned the-way process
 
