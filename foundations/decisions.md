@@ -1249,8 +1249,8 @@ jsdom and happy-dom, and failed on that screen's hand-made model. A ready-made i
 calls left as they are, which the tests need, because when the choice was made the hand-made model
 took the first part of the account screen's tests, and most of the cases there read the inside of
 the model directly, fired events through its own `.fire` or walked the whole page; the cases that walk the page also
-walk what the page builds by hand, the header, the main block and the panel of a card taken down, so
-what stands in for the model has to carry those too. Other tests
+walk what is built by hand outside React, the header, the main block, the hosts of the roots and the
+panel of a card taken down, so what stands in for the model has to carry those too. Other tests
 had stand-ins of their own for the document, among them those that draw the section of credits, and
 only the files of screens built with React leave theirs. Each rule of the harness answers what
 such an imitation leaves out: with the window installed after React loads a controlled field's
