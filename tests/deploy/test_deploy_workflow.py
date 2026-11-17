@@ -13,10 +13,13 @@ SECRETS = {"DEPLOY_HOST", "DEPLOY_PORT", "DEPLOY_USER", "DEPLOY_SSH_KEY", "DEPLO
 ALLOWED_HOSTS = {"loop2.mariusznazar.com", "kantarion.bieda.it", "github.com"}
 
 
-def code_lines():
+def workflow_text():
     with open(WORKFLOW, encoding="utf-8", newline="") as handle:
-        text = handle.read()
-    return [re.sub(r"(^|\s)#.*$", "", line) for line in text.splitlines()]
+        return handle.read()
+
+
+def code_lines():
+    return [re.sub(r"(^|\s)#.*$", "", line) for line in workflow_text().splitlines()]
 
 
 def code():
@@ -42,6 +45,29 @@ def ssh_options(call):
         if match:
             options.setdefault(match.group(1).lower(), match.group(2).strip().lower())
     return options
+
+
+def script_expressions(text):
+    """The lines of the workflow `text` that hold `${{` inside the script of a `run:` key: the value
+    of the key and every line indented deeper than the key itself, whether the key opens a step
+    (`- run:`) or not, and whether its script is a block, on one line or continued on the next
+    lines. The lines are read whole, a comment mark included: GitHub fills in an expression in the
+    text of a script before the shell reads any comment, so a value written after `#` reaches it."""
+    found = []
+    in_run, indent = False, 0
+    for line in text.splitlines():
+        key = re.match(r"^(\s*(?:-\s+)?)run:(.*)$", line)
+        if key:
+            in_run, indent = True, len(key.group(1))
+            if "${{" in key.group(2):
+                found.append(line.strip())
+            continue
+        if in_run:
+            if line.strip() and len(line) - len(line.lstrip()) <= indent:
+                in_run = False
+            elif "${{" in line:
+                found.append(line.strip())
+    return found
 
 
 class DeployWorkflow(unittest.TestCase):
@@ -103,23 +129,22 @@ class DeployWorkflow(unittest.TestCase):
             self.assertRegex(line, r"^\s+[A-Z_][A-Z0-9_]*:\s*\$\{\{\s*github\.sha\s*\}\}\s*$")
         text = code()
         self.assertRegex(text, r'ssh\b[^\n]*"\$\{?DEPLOY_SHA\}?"')
-        # no expression of any kind inside the run scripts: the value of the key `run:` and every
-        # line indented deeper than the key itself, whether the key opens a step (`- run:`) or not,
-        # and whether its script is a block, on one line or continued on the next lines
-        in_run, indent = False, 0
-        for line in lines:
-            stripped = line.strip()
-            key = re.match(r"^(\s*(?:-\s+)?)run:(.*)$", line)
-            if key:
-                in_run, indent = True, len(key.group(1))
-                if "${{" in key.group(2):
-                    self.fail(f"expression inside a run script: {stripped}")
-                continue
-            if in_run:
-                if stripped and len(line) - len(line.lstrip()) <= indent:
-                    in_run = False
-                elif "${{" in line:
-                    self.fail(f"expression inside a run script: {stripped}")
+        # no expression of any kind inside the run scripts, whole lines, comments included
+        self.assertEqual(script_expressions(workflow_text()), [])
+
+    def test_an_expression_after_a_comment_mark_in_a_script_is_refused(self):
+        # invariant: deploy-workflow-input
+        # The real workflow with one outside value written after a comment mark in a script: on
+        # the end of a command line, and as a line that is only a comment inside the script block.
+        text = workflow_text()
+        self.assertEqual(script_expressions(text), [], "the control, the file as it stands")
+        command = "          umask 077\n"
+        self.assertEqual(text.count(command), 1)
+        expression = "${{ secrets.DEPLOY_HOST }}"
+        after_command = text.replace(command, f"          umask 077 # {expression}\n")
+        comment_line = text.replace(command, f"{command}          # {expression}\n")
+        self.assertEqual(script_expressions(after_command), [f"umask 077 # {expression}"])
+        self.assertEqual(script_expressions(comment_line), [f"# {expression}"])
 
     def test_server_failure_fails_the_run(self):
         text = code()
