@@ -7,6 +7,13 @@ the first such test starts Docker Desktop and waits for a daemon to answer, at m
 `START_LIMIT` seconds; Docker Desktop stays running afterwards, whatever came of it. Where none
 answers and there is no Docker Desktop to start, the test is skipped at once.
 
+A daemon answers when it answers `docker system df` itself. Docker Desktop in Resource Saver
+stops the virtual machine of its daemon and answers some commands, `docker version` among them,
+from a cache, so their answer says nothing of the daemon; the gate's question goes to the daemon,
+starts the machine and returns once the daemon runs. Docker Desktop may rewrite the context file
+of the `docker` command when its daemon starts, and a `docker` command that reads the file at
+that moment fails; with the start inside the gate's question, no command of the test runs then.
+
 A start that did not finish in the limit is written to a state file named by the environment
 variable `LOOP2_DOCKER_RUN_STATE`. `scripts/test.py` gives one file to a whole run (`shared_state`),
 and the processes the run starts, one for each directory of Python tests, inherit the variable, so
@@ -38,7 +45,7 @@ import tempfile
 import time
 
 START_LIMIT = 180        # seconds the first test that needs Docker waits for a daemon to answer
-ANSWER_LIMIT = 30        # seconds for one `docker version` to answer
+ANSWER_LIMIT = 30        # seconds for one question to the daemon to answer
 START_COMMAND_LIMIT = 60  # seconds for `docker desktop start` itself to return
 POLL_INTERVAL = 1        # seconds between two asks of the daemon while waiting
 
@@ -72,12 +79,15 @@ def docker_command():
 
 
 def daemon_answers(timeout=ANSWER_LIMIT):
-    """True when `docker version` names a server version. Only an answer of the daemon counts."""
+    """True when the daemon answers `docker system df`. Only an answer of the daemon counts:
+    Docker Desktop answers `docker version` from a cache while it has stopped the virtual machine
+    of its daemon for Resource Saver, and `docker system df` it hands to the daemon, starting the
+    machine and holding the question until the daemon answers it."""
     docker = docker_command()
     if docker is None:
         return False
     try:
-        result = subprocess.run([docker, "version", "--format", "{{.Server.Version}}"],
+        result = subprocess.run([docker, "system", "df"],
                                 stdin=subprocess.DEVNULL, capture_output=True, timeout=timeout)
     except (OSError, subprocess.TimeoutExpired):
         return False
