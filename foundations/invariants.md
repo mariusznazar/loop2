@@ -609,7 +609,7 @@ The StrykerJS configuration lists every `tests/sim/*.test.mjs` file except `rule
 
 Anyone can create a player account and begin playing without operator approval.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-96 · D-202
 - **Part:** account-server · browser-view
@@ -619,7 +619,7 @@ Anyone can create a player account and begin playing without operator approval.
 
 Player accounts sign in with an email address and password.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
@@ -629,7 +629,7 @@ Player accounts sign in with an email address and password.
 
 A player can start playing after registration before confirming their email address.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
@@ -679,7 +679,7 @@ The browser carries a random session identifier in a loop2 host-scoped, Secure a
 
 The deployed account server uses `express-session` with a project-owned Store backed by `node:sqlite` for player sessions, not its default `MemoryStore`.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** express-session-store-contract · node-sqlite-database
 - **Derives from:** D-107
 - **Part:** account-server · build-tools · deployment
@@ -689,7 +689,7 @@ The deployed account server uses `express-session` with a project-owned Store ba
 
 Replacing the application container preserves the SQLite database of player accounts and saved game states.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** docker-volume-lifecycle · docker-compose-down-volumes · docker-volume-prune-scope · docker-system-prune-volumes
 - **Derives from:** D-17 · D-205
 - **Part:** account-server · deployment
@@ -709,7 +709,7 @@ The account and save server accesses its SQLite database through Node.js's built
 
 The browser loads the built game and sends account and save requests to relative `/api/` paths at the same public HTTPS origin.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** fetch-same-origin-credentials
 - **Derives from:** D-108
 - **Part:** browser-view · account-server · deployment
@@ -1299,7 +1299,7 @@ A file git tracks points to a place the author keeps outside the repository only
 
 The game's credits hold, for every pack of pictures under `assets/sprites/` whose licence asks for a credit, a line that names what the pack is for, its title, its author, its page with a link, its licence with a link and how the files of the game differ from its source.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
 - **Derives from:** D-271
 - **Part:** browser-view
