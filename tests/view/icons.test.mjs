@@ -347,6 +347,7 @@ test("each line of the section holds the icon's title, author, game-icons.net, C
   });
 });
 
+// invariant: sprite-credits
 test("the section's last two lines credit the packs of the dust and of the wolf: what each is for, its title, author, page and licence, and that the files were changed, with its page and its licence linked", () => {
   // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
   const items = itemsOf(sectionMarkup()).slice(NAMED.length);
@@ -369,6 +370,90 @@ test("the section's last two lines credit the packs of the dust and of the wolf:
       ],
     );
   });
+});
+
+// --- the packs of the pictures in assets/sprites: each file has its pack, each pack that asks, its line --
+
+const SPRITES = fileURLToPath(
+  new URL("../../assets/sprites/", import.meta.url),
+);
+
+/**
+ * The three packs the scene's pictures come from (D-271) and whether the licence of each asks for a
+ * credit: Pixel Crawler asks for none (environment fact pixel-crawler-terms), the other two are under
+ * CC BY 3.0 (lpc-wolf-licence, smoke-fire-particle-licence).
+ */
+const SPRITE_PACKS = {
+  "Pixel Crawler": { asksForCredit: false },
+  "[LPC] Wolf Animation": { asksForCredit: true },
+  "Smoke & Fire Animated Particle [16x16]": { asksForCredit: true },
+};
+
+/**
+ * The pack each PNG file directly in assets/sprites/ comes from. A new file is added here with the pack
+ * it was made from, which is how the credits come to be asked about it.
+ */
+const PACK_OF_SPRITE = {
+  "berry-bush.png": "Pixel Crawler",
+  "camp-clearing.png": "Pixel Crawler",
+  "chest.png": "Pixel Crawler",
+  "dust.png": "Smoke & Fire Animated Particle [16x16]",
+  "fire-small.png": "Pixel Crawler",
+  "fire.png": "Pixel Crawler",
+  "forest-scene.png": "Pixel Crawler",
+  "login-backdrop.png": "Pixel Crawler",
+  "mage-bend.png": "Pixel Crawler",
+  "mage-death.png": "Pixel Crawler",
+  "mage-idle.png": "Pixel Crawler",
+  "mage-run.png": "Pixel Crawler",
+  "moss.png": "Pixel Crawler",
+  "sticks.png": "Pixel Crawler",
+  "wolf-bite.png": "[LPC] Wolf Animation",
+  "wolf-death.png": "[LPC] Wolf Animation",
+  "wolf-idle.png": "[LPC] Wolf Animation",
+  "wolf-run.png": "[LPC] Wolf Animation",
+};
+
+const spriteFiles = readdirSync(SPRITES, { withFileTypes: true })
+  .filter((entry) => entry.isFile() && /\.png$/i.test(entry.name))
+  .map((entry) => entry.name)
+  .sort();
+
+// invariant: sprite-credits
+test("each PNG file directly in assets/sprites is assigned to one of the three packs, and a file with no assignment fails naming it", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
+  assert.ok(spriteFiles.length > 0, "no sprite files found");
+  assert.deepEqual(
+    spriteFiles.filter((name) => !Object.hasOwn(PACK_OF_SPRITE, name)),
+    [],
+    "files of assets/sprites with no pack assigned in PACK_OF_SPRITE",
+  );
+  for (const [name, pack] of Object.entries(PACK_OF_SPRITE))
+    assert.ok(Object.hasOwn(SPRITE_PACKS, pack), `${name}: pack ${pack}`);
+});
+
+// invariant: sprite-credits
+test("each pack with a file in assets/sprites whose licence asks for a credit has a line among the credits of the section, and a pack without one fails by name", () => {
+  // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
+  // Precondition: both credited packs have files, so the check below has something to ask about.
+  const packsInUse = new Set(
+    spriteFiles.map((name) => PACK_OF_SPRITE[name]).filter(Boolean),
+  );
+  assert.ok(packsInUse.has("[LPC] Wolf Animation"));
+  assert.ok(packsInUse.has("Smoke & Fire Animated Particle [16x16]"));
+  // React writes the ampersand of a title as an entity, as markup does.
+  const lines = itemsOf(sectionMarkup()).map((item) =>
+    textOfMarkup(item).replaceAll("&amp;", "&"),
+  );
+  assert.deepEqual(
+    [...packsInUse].filter(
+      (pack) =>
+        SPRITE_PACKS[pack].asksForCredit &&
+        !lines.some((line) => line.includes(`„${pack}”`)),
+    ),
+    [],
+    "packs whose licence asks for a credit with no line among the credits of the section",
+  );
 });
 
 test("the section links each icon's page and the licence, each opening in a new tab without opener or referrer", () => {

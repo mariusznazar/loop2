@@ -853,6 +853,8 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-argon2-password-hash
+    // invariant: player-self-registration
+    // invariant: player-password-login
     // decision: D-98 "A player password has from 12 through 128 Unicode code points of any kind, without a digit or uppercase-letter requirement, and its content is preserved without trimming or normalization"
     // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase"
     // decision: D-106 "Its cost parameters are set explicitly"
@@ -2264,6 +2266,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     // invariant: account-message-limits
+    // invariant: email-verification-nonblocking
     // decision: D-105 "Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message"
     // decision: D-155 "A link of an email confirmation message works for 24 hours"
     // decision: D-155 "Recording a new link for an account, which comes before its message is handed to the mail service"
@@ -3967,6 +3970,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-save-isolation
+    // invariant: email-verification-nonblocking
     // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
     // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
     // decision: D-07 "The server holds the players' accounts and each player's saved game state, and computes nothing of the game"

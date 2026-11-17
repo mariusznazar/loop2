@@ -19,14 +19,17 @@ Reading of the sentence:
 - a thing of the world: a tile, or a resource lying on one; its kind: the identifier of a resource
   as the data files give it — `stick`, `berry`, `moss`, `fiber`, written out below;
 - a number or a position of its own: an index, a coordinate or a number given to one tile or one
-  thing. A whole number a condition compares a stock with names no thing: the `value` of a
-  `hereBelow` condition, the one kind of condition that compares a stock today, written out in
-  COMPARES_STOCK below. Read from the held program's JSON, a thing is named by a number or a
-  position where:
+  thing. A number a condition compares a quantity with names no thing: the `value` of a
+  `hereBelow` condition (a stock on the tile), of a `temperatureBelow` condition (the character's
+  temperature) and of an `itemBelow` condition (the pieces of an item in the backpack), the kinds of
+  condition that the programs of this check hold, written out in COMPARES_QUANTITY below. An item
+  of an `itemBelow` condition is named by its kind, like a resource: the identifier of an item as
+  the data files give it, written out below, which is that of a resource. Read from the held
+  program's JSON, a thing is named by a number or a position where:
   - a number stands outside that `value` or the structural metadata below (a coordinate pair,
-    an index, a tile's number, a resource given by its index);
+    an index, a tile's number, a resource or an item given by its index);
   - a string outside a group name holds a digit (such as `1,1` or `(1, 1)`);
-  - a `resource` field holds anything but one of the identifiers written out.
+  - a `resource` or an `item` field holds anything but one of the identifiers written out.
   Structural metadata of a grouped program (D-90) is not a world reference: positive integer
   `nextGroupId` and `nextRuleId` at the program root, `id` on a direct group or its direct rule,
   and the group's string `name`. Only these exact locations are exempt; condition/action
@@ -38,19 +41,22 @@ Reading of the sentence:
 
 Offers, each made outside a map run and during a map run of Las (`forest`) of a character
 created in a new game, of the archetype `elementalMage`, sent at the real time T, after the program
-BASE: the valid programs in LEGIT; and
+BASE: the valid programs in LEGIT, among them programs holding the conditions `temperatureBelow`
+and `itemBelow`, on rules and on groups, with the lowest and the highest number each takes; and
 programs in NAMING, each of which names a tile or a resource by a number or a position — a
 `walkTo` with a coordinate pair, a tile's number, a column and row, an index of a tile, a number
-of its own, a resource given by its index or as a tile's label; a `hereBelow` with a coordinate
-pair or a tile's number; a rule and a program carrying a position of their own.
+of its own, a resource given by its index or as a tile's label; a `hereBelow`, a `temperatureBelow`
+or an `itemBelow` with a coordinate pair or a tile's number; an `itemBelow` with an item given by
+its index or as a tile's label; a rule and a program carrying a position of their own.
 
 Controls, so the check can fail: every program of LEGIT is taken in and held as offered (the
 offers reach the program the simulation holds); and the reading flags made-up held programs
 holding, in turn, a coordinate pair, a tile's number, a column and row, a resource given by its
-index, a tile's label as text, and a number at a rule's level, while a held program with
-`hereBelow` values from 0 to 50 passes. Hand-written grouped programs with identity metadata,
-numbered group names and group conditions also pass; numbers hidden in action ids, rule tiles,
-coordinates, resource labels or unexpected metadata containers still fail.
+index, a tile's label as text, an item given by its index or as a tile's label, and a number at a
+rule's level, while a held program with `hereBelow` values from 0 to 50, `temperatureBelow` values
+from 30 to 37 and `itemBelow` values from 0 to 50 passes. Hand-written grouped programs with
+identity metadata, numbered group names and group conditions also pass; numbers hidden in action
+ids, rule tiles, coordinates, resource labels or unexpected metadata containers still fail.
 
 Does NOT cover: programs held by anything other than the simulation (the program editor's draft);
 a position written in words.
@@ -72,8 +78,11 @@ GAME_MODULE = "dist/browser/sim/game.js"
 SENT = {"mapId": "forest", "characterId": 1}
 T = 1760000000000
 RESOURCE_IDS = ("stick", "berry", "moss", "fiber")
-# The kinds of condition whose `value` is a whole number compared with a stock.
-COMPARES_STOCK = ("hereBelow",)
+# The identifiers of the items of the data (`items.ts`), which are those of the resources.
+ITEM_IDS = ("stick", "berry", "moss", "fiber")
+# The kinds of condition whose `value` is a number compared with a quantity: a stock on the tile,
+# the character's temperature, the pieces of an item in the backpack.
+COMPARES_QUANTITY = ("hereBelow", "temperatureBelow", "itemBelow")
 ADVANCE = 30
 
 ALWAYS = {"kind": "always"}
@@ -91,6 +100,30 @@ def below(resource, value, **extra):
     return dict({"kind": "hereBelow", "resource": resource, "value": value}, **extra)
 
 
+def colder_than(value, **extra):
+    return dict({"kind": "temperatureBelow", "value": value}, **extra)
+
+
+def stock_below(item, value, **extra):
+    return dict({"kind": "itemBelow", "item": item, "value": value}, **extra)
+
+
+def program_from_groups(groups):
+    """A program of the (condition, rules) groups given, numbered as `program_from_rules` numbers
+    one group: groups from 1, rules from 1 over all groups."""
+    rule_id = 0
+    built = []
+    for index, (condition, rules) in enumerate(groups):
+        identified = []
+        for each in rules:
+            rule_id += 1
+            identified.append({**each, "id": rule_id})
+        built.append({"id": index + 1, "name": f"Group {index + 1}", "condition": condition,
+                      "rules": identified})
+    return {"groups": built, "tripPlan": {"take": [], "bring": []},
+            "nextGroupId": len(groups) + 1, "nextRuleId": rule_id + 1}
+
+
 BASE = program_from_rules([rule(ALWAYS, {"kind": "wander"})])
 
 LEGIT = (
@@ -98,6 +131,14 @@ LEGIT = (
     program_from_rules([rule(below("berry", 0), walk("moss")), rule(below("fiber", 50), walk("berry")),
                rule(below("stick", 7), {"kind": "wander"}), rule(ALWAYS, walk("fiber"))]),
     program_from_rules([]),
+    program_from_rules([rule(colder_than(36.5), walk("moss")), rule(colder_than(30), {"kind": "explore"}),
+                        rule(colder_than(37), {"kind": "wander"})]),
+    program_from_rules([rule(stock_below("berry", 8), walk("berry")),
+                        rule(stock_below("stick", 0), {"kind": "explore"}),
+                        rule(stock_below("fiber", 50), walk("fiber")),
+                        rule(stock_below("moss", 3), {"kind": "wander"})]),
+    program_from_groups([(colder_than(35.5), [rule(ALWAYS, walk("stick"))]),
+                         (stock_below("moss", 5), [rule(below("berry", 2), walk("berry"))])]),
 )
 
 NAMING = (
@@ -117,6 +158,22 @@ NAMING = (
                                                          {"kind": "explore"})])),
     ("hereBelow with a tile's number", program_from_rules([rule(below("fiber", 3, tile=2),
                                                        {"kind": "wander"})])),
+    ("temperatureBelow with a coordinate pair", program_from_rules([rule(
+        colder_than(36.5, at={"q": 0, "r": 1}), {"kind": "explore"})])),
+    ("temperatureBelow with a tile's number", program_from_rules([rule(
+        colder_than(33.5, tile=4), {"kind": "wander"})])),
+    ("itemBelow with a coordinate pair", program_from_rules([rule(
+        stock_below("stick", 3, at={"q": 2, "r": 1}), {"kind": "explore"})])),
+    ("itemBelow with a tile's number", program_from_rules([rule(
+        stock_below("berry", 3, tile=2), {"kind": "wander"})])),
+    ("itemBelow with an item by its index", program_from_rules([rule(
+        stock_below(0, 3), {"kind": "explore"})])),
+    ("itemBelow with an item as a tile's label", program_from_rules([rule(
+        stock_below("(1, 1)", 3), {"kind": "explore"})])),
+    ("a group under temperatureBelow with a position", program_from_groups([(
+        colder_than(36.5, target={"col": 1, "row": 2}), [rule(ALWAYS, walk("stick"))])])),
+    ("a group under itemBelow with a tile's number", program_from_groups([(
+        stock_below("moss", 5, tile=1), [rule(ALWAYS, walk("stick"))])])),
     ("a rule with a position", program_from_rules([dict(rule(ALWAYS, walk("stick")),
                                                at={"q": 1, "r": 0})])),
     ("a program with a position", {**program_from_rules([rule(ALWAYS, walk("stick"))]), "target": {"q": 3, "r": 1}}),
@@ -214,6 +271,8 @@ def naming(program):
                 found.append(f"{path}: the text {value!r} holds a number")
             elif path.endswith(".resource") and value not in RESOURCE_IDS:
                 found.append(f"{path}: {value!r} is no resource identifier")
+            elif path.endswith(".item") and value not in ITEM_IDS:
+                found.append(f"{path}: {value!r} is no item identifier")
             return
         if isinstance(value, list):
             for index, item in enumerate(value):
@@ -230,11 +289,11 @@ def naming(program):
                 if position == "group" and name == "name" and isinstance(item, str):
                     continue
                 compares = (position == "condition" and name == "value"
-                            and value.get("kind") in COMPARES_STOCK)
+                            and value.get("kind") in COMPARES_QUANTITY)
                 if compares and isinstance(item, (int, float)):
                     continue
-                if name == "resource" and not isinstance(item, str):
-                    found.append(f"{path}.resource: {json.dumps(item)} is no resource identifier")
+                if name in ("resource", "item") and not isinstance(item, str):
+                    found.append(f"{path}.{name}: {json.dumps(item)} is no {name} identifier")
                     continue
                 visit(item, f"{path}.{name}", children.get((position, name)))
             return
@@ -328,6 +387,13 @@ class ProgramWorldReference(unittest.TestCase):
         self.assertEqual(naming({"rules": [rule(below("stick", 0), walk("moss")),
                                            rule(below("berry", 50), walk("fiber")),
                                            rule(ALWAYS, {"kind": "explore"})]}), [])
+        self.assertEqual(naming({"rules": [rule(colder_than(30), walk("moss")),
+                                           rule(colder_than(36.5), walk("fiber")),
+                                           rule(colder_than(37), {"kind": "explore"})]}), [])
+        self.assertEqual(naming({"rules": [rule(stock_below("stick", 0), walk("moss")),
+                                           rule(stock_below("berry", 8), walk("fiber")),
+                                           rule(stock_below("fiber", 50), {"kind": "explore"})]}),
+                         [])
         held = {
             "a coordinate pair": {"rules": [rule(ALWAYS, walk("stick", at={"q": 1, "r": 1}))]},
             "a tile's number": {"rules": [rule(ALWAYS, walk("stick", tile=5))]},
@@ -337,8 +403,18 @@ class ProgramWorldReference(unittest.TestCase):
             "a number at a rule's level": {"rules": [dict(rule(ALWAYS, walk("moss")), tile=3)]},
             "a compared number on a position": {"rules": [rule(
                 below("stick", 3, at={"q": 0, "r": 0}), walk("moss"))]},
-            "a value of a condition that compares no stock": {"rules": [rule(
+            "a value of a condition that compares no quantity": {"rules": [rule(
                 {"kind": "always", "value": 4}, walk("moss"))]},
+            "a temperature on a position": {"rules": [rule(
+                colder_than(36.5, at={"q": 0, "r": 0}), walk("moss"))]},
+            "a temperature on a tile's number": {"rules": [rule(
+                colder_than(36.5, tile=3), walk("moss"))]},
+            "an item stock on a position": {"rules": [rule(
+                stock_below("stick", 3, at={"q": 0, "r": 0}), walk("moss"))]},
+            "an item by its index": {"rules": [rule(stock_below(0, 3), walk("moss"))]},
+            "an item as a tile's label": {"rules": [rule(stock_below("(1, 1)", 3), walk("moss"))]},
+            "an item that is no identifier": {"rules": [rule(
+                stock_below("tile", 3), walk("moss"))]},
         }
         action_id = copying.deepcopy(BASE)
         program_rules(action_id)[0]["action"]["id"] = 7

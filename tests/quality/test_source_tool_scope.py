@@ -1,7 +1,11 @@
 """Invariant tests: ESLint, Prettier and the LF rules of `.gitattributes` reach every TypeScript and
-JavaScript file of the parts the scope of D-29 and D-32 names, according to the part map.
+JavaScript file of the five parts D-29 and D-32 both name, `SCOPE_PARTS`, according to the part
+map. The scope of ESLint is wider than the other two: besides the files of those parts it holds
+every script file under three directories of agent-workflow, which D-29 names,
+`ESLINT_DIRECTORIES`.
 
-The files come from the part map (`file_owners` of `loop2_invariant_support.py`). Each tool is asked
+The files come from the part map (`file_owners` of `loop2_invariant_support.py`), and those of the
+three directories from their paths. Each tool is asked
 what it does with them: ESLint for the rules it gives each file, which the test compares with the
 sets @eslint/js and typescript-eslint publish; Prettier which of a tree of made-up files it checks
 with the patterns of `test_quality_invariants.py`; git which line ending each file gets. None of
@@ -24,6 +28,10 @@ from test_quality_invariants import PRETTIER_FLAGS, PRETTIER_PATTERNS
 
 SCOPE_PARTS = ("browser-view", "simulation", "account-server", "build-tools", "deployment")
 SCRIPT_SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
+# The directories of agent-workflow whose script files D-29 puts in the scope of ESLint besides the
+# files of SCOPE_PARTS, as plain path prefixes.
+ESLINT_DIRECTORIES = (".claude/hooks/", ".claude/skills/loop2-play/",
+                      ".agents/skills/loop2-play/")
 # Unformatted by Prettier's default options, and valid in every language of SCRIPT_SUFFIXES.
 UNFORMATTED = "let   unformatted   =   1\n"
 # What Prettier prints about a pattern that matches no file; the made-up tree holds no HTML or CSS.
@@ -36,6 +44,15 @@ def scope_files():
     owners = support.file_owners(support.ROOT, listed)
     return sorted(path for path in listed
                   if path.endswith(SCRIPT_SUFFIXES) and owners[path] in SCOPE_PARTS)
+
+
+def eslint_directory_files():
+    """The script files, from each of ESLINT_DIRECTORIES to the paths git tracks or would track
+    under it."""
+    listed = support.listed_files(support.ROOT)
+    return {directory: sorted(path for path in listed
+                              if path.startswith(directory) and path.endswith(SCRIPT_SUFFIXES))
+            for directory in ESLINT_DIRECTORIES}
 
 
 def unmet_rules(expected, received):
@@ -78,7 +95,10 @@ class SourceToolScope(unittest.TestCase):
         # invariant: eslint-source-rules
         # decision: D-28 "The general coding quality checks cover all code, tests included"
         # data: eslint.config.mjs
-        paths = scope_files()
+        by_directory = eslint_directory_files()
+        empty = [directory for directory, files in by_directory.items() if not files]
+        self.assertEqual(empty, [], "no script file under these directories of agent-workflow")
+        paths = sorted(set(scope_files()).union(*by_directory.values()))
         self.assertTrue(paths, "no TypeScript or JavaScript file found in the scope")
         result = subprocess.run(["node", "tests/quality/eslint-rule-sets.mjs"], cwd=support.ROOT,
                                 input=json.dumps(paths), capture_output=True, text=True,

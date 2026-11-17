@@ -84,9 +84,21 @@ class DaemonGap(unittest.TestCase):
         self.assertLess(waited, 20)
         self.assertEqual(len(docker.starts()), 1)
 
+    def test_a_version_that_docker_desktops_cache_answers_is_no_answer_of_the_daemon(self):
+        # Docker Desktop in Resource Saver stops the virtual machine of its daemon and answers
+        # `docker version` from a cache, so the version names a server that is not running; the
+        # first command of the test then starts the machine, while Docker Desktop may rewrite the
+        # context file that the commands then running read.
+        # Breaking it: ask the daemon `docker version` again, and the gate gives no gap at once,
+        # the stand-in's daemon never having answered.
+        docker = DockerStandIn(self, cached_version=True)
+        self.use(docker, limit="2")
+        self.assertIsNotNone(docker_gate.daemon_gap())
+        self.assertEqual(len(docker.starts()), 1)
+
     def test_a_daemon_that_hangs_instead_of_refusing_is_waited_for_within_the_limit_alone(self):
         # decision: D-390 "A test of the gate that needs a Docker daemon, finding none answering on a computer that has Docker Desktop, starts Docker Desktop and waits until a daemon answers"
-        # A daemon that neither answers nor refuses holds every ask of `docker version` until
+        # A daemon that neither answers nor refuses holds every ask of `docker system df` until
         # the ask's own time limit; the real `docker` is not hung for the test, the ask is
         # cut at the limit it was given, as the helper's own limit cuts it.
         docker = DockerStandIn(self)
@@ -94,15 +106,15 @@ class DaemonGap(unittest.TestCase):
         run = subprocess.run
         asked = []
 
-        def hang_on_version(command, *arguments, **options):
-            if command[1:2] != ["version"]:
+        def hang_on_the_question(command, *arguments, **options):
+            if command[1:3] != ["system", "df"]:
                 return run(command, *arguments, **options)
             asked.append(options["timeout"])
             time.sleep(options["timeout"])
             raise subprocess.TimeoutExpired(command, options["timeout"])
 
         began = time.monotonic()
-        with mock.patch.object(subprocess, "run", hang_on_version):
+        with mock.patch.object(subprocess, "run", hang_on_the_question):
             gap = docker_gate.daemon_gap()
         waited = time.monotonic() - began
         self.assertIsNotNone(gap)

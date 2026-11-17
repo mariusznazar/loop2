@@ -15,7 +15,6 @@ const { savedGame } = await load("saved-game.js");
 
 const CHARACTER_ID = 1;
 const BRANCH = "patrol";
-const POINTS = 3; // practice of its skill that pays the branch's cost; see BRANCHES
 
 let state = createCharacter(newGame(), "Agent").state;
 

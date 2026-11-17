@@ -235,6 +235,7 @@ test("„Zapisz jako nowy program” adds the copy's content at the end of the l
   assert.equal(state.lastUsedPrograms[1], 5);
 });
 
+// invariant: copy-save
 test("„Zapisz jako nowy program” is no switch: the streak, the beaten attacks, the counts and the entered-with program stay", () => {
   // decision: D-93 "The count starts from zero at the start of each manual map run, a map run restart included, at a switch of the character to another program, and when the program rule's condition or action changes; it survives reordering the rule, moving it to another rule group, changing its group's condition or name, and a save of the copy"
   const before = withOthers(editedAndRunning());

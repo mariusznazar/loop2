@@ -2590,6 +2590,37 @@ test("the wolf runs in from the right edge at the reading whose events carry the
   });
 });
 
+// D-322, D-316. Catches a wolf that loses its run in at the player's pause within the 300 ms of the run,
+// so that it jumps to its place where the pause should hold it on its way, and one whose run is gone
+// after „Wznów” or does not end with its own animation: the run stays on the wolf's element through the
+// pause and after it, and only the end of the run's animation ends it.
+test("a pause and a resumption within the 300 ms of the wolf's run in keep the run, and only the end of its animation ends it", async () => {
+  // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
+  // decision: D-322 "While the player's pause holds a map run, the scene is greyed"
+  await withPage(async (page) => {
+    const { draw, scene } = await mounted(
+      page,
+      withRun(sent(), { current: WAITING }),
+    );
+    await draw(inCombat(), [ATTACK]);
+    const wolf = one(scene(), ".scene-creature");
+    assert.ok(wolf.hasAttribute("data-entering"), "precondition: it runs in");
+
+    await draw({ ...inCombat(), paused: true }, []);
+    assert.equal(scene().getAttribute("data-standing"), "paused");
+    assert.equal(one(scene(), ".scene-creature"), wolf, "the same element");
+    assert.ok(wolf.hasAttribute("data-entering"), "the run is held, not over");
+
+    await draw({ ...inCombat(), paused: false }, []);
+    assert.equal(scene().getAttribute("data-standing"), "going");
+    assert.equal(one(scene(), ".scene-creature"), wolf, "the same element");
+    assert.ok(wolf.hasAttribute("data-entering"), "the run goes on");
+
+    await inAct(() => endAnimation(wolf));
+    assert.equal(wolf.hasAttribute("data-entering"), false, "over at its end");
+  });
+});
+
 // D-322. Catches a wolf that runs in at the stop of the first attack, where time stands still, and a
 // scuffle that moves at a stop.
 test("at the stop at a discovery the wolf stands beside the mage with no run in, and every stop holds its frames and the cloud's", async () => {

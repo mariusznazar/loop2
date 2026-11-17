@@ -6,12 +6,12 @@
 // place, the sentence of an empty list and the window the list draws and grows on a scroll; under
 // „Teren” the table of revealed tiles. The chronicle is built and fed here as the game view feeds it,
 // with events written out by hand where the case is about words, so each case states the words it
-// expects (D-73). Real events, the look and scrolling are checked in the browser (D-88). Every
-// comparison is of plain data or of a handful of words (D-268).
+// expects (D-73). Which rows React draws again is read through the hook of React's developer tools,
+// with no change of the product. Real events, the look and scrolling are checked in the browser
+// (D-88). Every comparison is of plain data or of a handful of words (D-268).
 import { assert, fire, inAct, press, withPage } from "./page-document.mjs";
 import { test } from "node:test";
 import { createElement } from "react";
-import { createRoot } from "react-dom/client";
 import {
   createCharacter,
   end,
@@ -22,6 +22,19 @@ import {
 import { createChronicle } from "../../dist/browser/view/chronicle.js";
 import { TabsArea } from "../../dist/browser/view/tabs-area.js";
 import { withEdgeSolved } from "../sim/understanding-fixture.mjs";
+
+// The hook of React's developer tools: react-dom looks for it once, when it loads, and then hands it
+// every commit, so react-dom is loaded only after the hook stands. A case that watches the commits
+// sets `onCommit`.
+let onCommit = null;
+globalThis.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+  supportsFiber: true,
+  inject: () => 1,
+  onCommitFiberRoot(rendererId, root) {
+    onCommit?.(root);
+  },
+};
+const { createRoot } = await import("react-dom/client");
 
 const SENT = { mapId: "forest", characterId: 1 };
 const REAL_MS = 1760000000003;
@@ -643,5 +656,94 @@ test("a draw with nothing changed reads no window again, and a recorded entry re
     assert.equal(reads, afterFirst, "draws with nothing changed");
     await record(chronicle, state, [started(5, { kind: "explore" })]);
     assert.equal(reads, afterFirst + 1, "one entry recorded, one read");
+  });
+});
+
+/** The flag React sets on a component whose function ran in a render; its developer tools read it. */
+const PERFORMED_WORK = 1;
+
+/** The component of each row of the chronicle in a committed tree of React, by the row's element. */
+function rowComponents(root) {
+  const rows = new Map();
+  const waiting = [root.current];
+  while (waiting.length > 0) {
+    const fiber = waiting.pop();
+    if (fiber === null) continue;
+    if (fiber.stateNode?.classList?.contains("chronicle-row"))
+      rows.set(fiber.stateNode, fiber.return);
+    waiting.push(fiber.child, fiber.sibling);
+  }
+  return rows;
+}
+
+/**
+ * Watches React's commits from the next one on. `drawn(container)` gives the minutes of the rows of
+ * the chronicle drawn since its last call, in the order they stand. A row is drawn in a commit where
+ * its element is new, or where React rendered its component again: React copies each component its
+ * render reaches and leaves a part it skips as it was, and marks a copy whose function ran.
+ */
+function watchRows() {
+  let last = new Map();
+  const drawn = new Set();
+  onCommit = (root) => {
+    const rows = rowComponents(root);
+    for (const [element, row] of rows) {
+      const before = last.get(element);
+      if (
+        before === undefined ||
+        (before !== row && (row.flags & PERFORMED_WORK) !== 0)
+      )
+        drawn.add(element);
+    }
+    last = rows;
+  };
+  return (container) => {
+    const minutes = byClass(container, "chronicle-row")
+      .filter((row) => drawn.has(row))
+      .map((row) => row.querySelector(".chronicle-minute").textContent);
+    drawn.clear();
+    return minutes;
+  };
+}
+
+// D-382. Catches the rows already drawn drawn again when an entry is recorded above them, which
+// draws every row of a grown window again at each entry. That the watch sees a row drawn again is
+// shown first on the paragraph's row, whose encounter changes.
+test("an entry recorded above the rows drawn draws its own row alone", async () => {
+  // decision: D-382 "A draw in which neither the chronicle, nor the filter, nor the window, nor the last encounter changed draws no row again, and a row already drawn is not drawn again when an entry is added above it"
+  await withPage(async ({ document }) => {
+    const { chronicle, state } = sentChronicle();
+    const fighting = {
+      ...state,
+      run: { ...state.run, lastCombat: WOLF_BEFORE },
+    };
+    await record(chronicle, fighting, [started(200, { kind: "explore" })]);
+    await record(chronicle, fighting, [
+      { kind: "attacked", minute: 212, creature: "wolf" },
+    ]);
+    const drawn = watchRows();
+    try {
+      const { container, show } = await draw(document, chronicle, fighting);
+      assert.deepEqual(
+        drawn(container),
+        ["212", "200", "0"],
+        "precondition: the watch sees the rows drawn first",
+      );
+      await show({ ...state, run: { ...state.run, lastCombat: WOLF_AFTER } });
+      assert.ok(
+        drawn(container).includes("212"),
+        "precondition: the watch sees the paragraph's row drawn again, its encounter changed",
+      );
+
+      await record(chronicle, fighting, [started(230, { kind: "eat" })]);
+      assert.deepEqual(
+        rowsOf(container).map((row) => row.minute),
+        ["230", "212", "200", "0"],
+        "the entry stands above the rows drawn",
+      );
+      assert.deepEqual(drawn(container), ["230"], "the new row alone drawn");
+    } finally {
+      onCommit = null;
+    }
   });
 });

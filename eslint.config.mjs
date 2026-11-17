@@ -12,6 +12,17 @@ const sourceFiles = directories.map(
   (directory) => `${directory}/**/*.${extensions}`,
 );
 sourceFiles.push("eslint.config.mjs", "prettier.config.mjs");
+// The script files of agent-workflow that D-29 reaches by directory: the session-start hook and
+// both copies of the play skill's scripts. They join neither the TypeScript patterns nor the programs.
+const scriptDirectories = [
+  ".claude/hooks",
+  ".claude/skills/loop2-play",
+  ".agents/skills/loop2-play",
+];
+const scriptFiles = scriptDirectories.map(
+  (directory) => `${directory}/**/*.${extensions}`,
+);
+sourceFiles.push(...scriptFiles);
 const typescriptFiles = directories.map(
   (directory) => `${directory}/**/*.${typedExtensions}`,
 );
@@ -92,6 +103,7 @@ export default [
       `scripts/**/*.${extensions}`,
       `tests/**/*.${extensions}`,
       "*.config.mjs",
+      ...scriptFiles,
     ],
     languageOptions: { globals: globals.node },
   },

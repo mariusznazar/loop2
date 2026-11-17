@@ -807,6 +807,12 @@ The page of the pack [LPC] Wolf Animation on OpenGameArt gives William.Thompsonj
 
 - **Source:** https://docs.docker.com/reference/cli/docker/desktop/start/ (archived: https://web.archive.org/web/20261101133739/https://docs.docker.com/reference/cli/docker/desktop/start/, 2026-11-01) § Description — "Start Docker Desktop" · § Options, `--detach` — "Do not synchronously wait for the requested operation to complete."; read 2026-11-13
 
+## docker-desktop-resource-saver
+
+Docker Desktop's Resource Saver mode stops the Docker Desktop Linux VM when no containers are running for a period of time, on Windows with WSL pausing the Docker Engine instead, and Docker Desktop can serve Docker commands that don't run containers, such as listing container images or volumes, without waking the Linux VM.
+
+- **Source:** https://docs.docker.com/desktop/use-desktop/resource-saver/ (archived: https://web.archive.org/web/20261113210303/https://docs.docker.com/desktop/use-desktop/resource-saver/, 2026-11-13) § the opening paragraph — "Resource Saver mode significantly reduces Docker Desktop's CPU and memory utilization on the host by 2 GBs or more, by automatically stopping the Docker Desktop Linux VM when no containers are running for a period of time." · § Configure Resource Saver — "Docker commands that don't run containers, for example listing container images or volumes, don't necessarily trigger an exit from Resource Saver mode as Docker Desktop can serve such commands without unnecessarily waking up the Linux VM." · § Resource Saver mode on Windows — "Instead of stopping the WSL VM, it only pauses the Docker Engine inside the docker-desktop WSL distribution."; read 2026-11-17
+
 ## loop2-deploy-dump-to-deployed-time
 
 In the deploy log of the test server's host, the `dump:` line and the `deployed` line of each of ten consecutive deployments, the first of which ended at 2026-11-12T18:04:30Z and the last at 2026-11-14T05:26:05Z, carry times 9 to 11 seconds apart.
@@ -932,6 +938,24 @@ A command hook of the event `SessionStart` of Claude Code surfaces a message to 
 A command hook of Claude Code given `args` starts `command`, resolved as an executable on `PATH`, directly with no shell and with the path placeholder `${CLAUDE_PROJECT_DIR}`, the project root where the session started, substituted into `command` and into each element of `args`, and `node` with a script path in `args` works on every platform.
 
 - **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § Exec form and shell form — "Exec form runs when args is present. Claude Code resolves command as an executable on PATH and spawns it directly with args as the argument vector. There is no shell, so each args element is one argument exactly as written, and path placeholders like ${CLAUDE_PLUGIN_ROOT} are substituted into command and into each args element as plain strings." · "Both forms support the same path placeholders, and both export them as the environment variables CLAUDE_PROJECT_DIR, CLAUDE_PLUGIN_ROOT, and CLAUDE_PLUGIN_DATA on the spawned process, so a script can read process.env.CLAUDE_PLUGIN_ROOT regardless of how it was launched." · "The node plus script-path pattern works on every platform because node.exe is a real binary." · § Reference scripts by path — "${CLAUDE_PROJECT_DIR}: the project root where the session started."; read 2026-11-16
+
+## express-session-id-generator
+
+Express-session 1.19.0, given no `genid` option, gives each session it generates, a regenerated session included, the identifier that the synchronous function of uid-safe returns for the length 24.
+
+- **Source:** https://registry.npmjs.org/express-session/-/express-session-1.19.0.tgz § package/index.js, uid — "var uid = require('uid-safe').sync" · § session, generateId — "var generateId = opts.genid || generateSessionId" · § store.generate — "req.sessionID = generateId(req);" · § generateSessionId — "return uid(24);" · § package/session/store.js, Store.prototype.regenerate — "self.generate(req);"; read 2026-11-17
+
+## uid-safe-sync-id
+
+Uid-safe 2.1.5's synchronous function returns, for a length, a text made from the bytes that the synchronous function of random-bytes gives for that length.
+
+- **Source:** https://registry.npmjs.org/uid-safe/-/uid-safe-2.1.5.tgz § package/index.js, randomBytes — "var randomBytes = require('random-bytes')" · § uidSync — "return toString(randomBytes.sync(length))" · § toString — "return buf.toString('base64')"; read 2026-11-17
+
+## random-bytes-sync-source
+
+Random-bytes 1.0.0's synchronous function returns the bytes that the function `randomBytes` of the module `crypto` gives for the size asked, and throws an error when that function throws at every try.
+
+- **Source:** https://registry.npmjs.org/random-bytes/-/random-bytes-1.0.0.tgz § package/index.js, crypto — "var crypto = require('crypto')" · § randomBytesSync — "for (var i = 0; i < generateAttempts; i++) {" · "return crypto.randomBytes(size)" · "throw err"; read 2026-11-17
 
 ## Withdrawn identifiers
 

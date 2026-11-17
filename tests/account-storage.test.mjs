@@ -320,7 +320,6 @@ async function olderDatabaseFixture(t, sql, version) {
 }
 
 // invariant: account-database-schema
-// invariant: account-schema-lifecycle
 // A database may still be at version 1 when version 6 arrives, so it moves
 // through steps 2, 3, 4, 5 and 6 in one opening.
 test("a version-1 database opens as version 6 with every account and session intact, no account blocked, no address confirmed and no account privileged", async (t) => {
@@ -448,7 +447,6 @@ function storedLinkCount(raw) {
 }
 
 // invariant: account-database-schema
-// invariant: account-schema-lifecycle
 test("a version-2 database opens as version 6 with every account, blocked state and session intact, no address confirmed and no account privileged", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
@@ -593,7 +591,6 @@ function storedVersionThreeRows(raw) {
 }
 
 // invariant: account-database-schema
-// invariant: account-schema-lifecycle
 test("a version-3 database opens as version 6 with every row and value kept, no saved game state and no previous save", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
@@ -678,7 +675,6 @@ const versionFourDatabase = `${versionThreeDatabase}
 `;
 
 // invariant: account-database-schema
-// invariant: account-schema-lifecycle
 test("a version-4 database opens as version 6 with every row kept, every account unprivileged and no previous save", async (t) => {
   const { path, raw, track } = await olderDatabaseFixture(
     t,
@@ -718,7 +714,7 @@ test("a version-4 database opens as version 6 with every row kept, every account
   });
 });
 
-// invariant: account-schema-lifecycle
+// invariant: account-database-schema
 test("a failing step 5 leaves a version-4 database at version 4 with its rows, columns and tables unchanged", async (t) => {
   // A table of the new name already there makes step 5 fail after it has added
   // the privilege column, which the rollback has to take away again.
@@ -790,7 +786,6 @@ const versionFiveAccounts = [
 ];
 
 // invariant: account-database-schema
-// invariant: account-schema-lifecycle
 test("a version-5 database opens as version 6 with every row and value kept and every account a player", async (t) => {
   // decision: D-112 "Accounts have an opaque random primary identifier, uniquely normalized email, encoded password hash, creation time, blocked state, the time their email address was confirmed, unset until it is, the previous-save privilege, off until the operator grants it, and the role, `player` or `owner`, which the step to version 6 adds to the accounts of the database with the value `player` for every account it holds"
   // decision: D-410 "Every account has a role, `player` or `owner`, stored with the account in the account database; a new account has the role `player`, and an account of either role signs in on the same card, plays and keeps its own saved game state."
@@ -881,7 +876,7 @@ test("a version-5 database opens as version 6 with every row and value kept and 
   ]);
 });
 
-// invariant: account-schema-lifecycle
+// invariant: account-database-schema
 test("a failing step 6 leaves a version-5 database at version 5 with its rows, columns and tables unchanged", async (t) => {
   // A column of the new name already there makes step 6 fail after the
   // transaction has begun, so the database has to be left as it was. Step 6 is
@@ -943,7 +938,7 @@ test("a failing step 6 leaves a version-5 database at version 5 with its rows, c
   );
 });
 
-// invariant: account-schema-lifecycle
+// invariant: account-database-schema
 test("a step 6 that fails after step 5 has run rolls step 5 back too, and leaves a version-4 database as it was", async (t) => {
   // Step 6 is one statement, so a failure of it alone cannot tell a rollback from a step that
   // changed nothing. In a version-4 database step 5 runs first, adds the privilege column and
@@ -1089,7 +1084,7 @@ test("a failing step 4 leaves a version-3 database at version 3 with its rows an
   ]);
 });
 
-// invariant: account-schema-lifecycle
+// invariant: account-database-schema
 test("a failing step 4 also takes back step 3 on a version-2 database, which stays at version 2 unchanged", async (t) => {
   // Steps 3 and 4 run in one transaction, so step 3's column and table must
   // go again when step 4 fails after them.

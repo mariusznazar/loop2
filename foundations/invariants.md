@@ -407,12 +407,12 @@ whatever their amounts, at every game minute, whatever programs they run under.
 
 ## eslint-source-rules
 
-Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
+Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, and every JavaScript file under `.claude/hooks/`, `.claude/skills/loop2-play/` and `.agents/skills/loop2-play/`, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
 
 - **Method:** test
 - **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Derives from:** D-29
-- **Part:** browser-view · simulation · account-server · build-tools · deployment
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Violated:** no
 
 ## ruff-source-rules
@@ -609,7 +609,7 @@ The StrykerJS configuration lists every `tests/sim/*.test.mjs` file except `rule
 
 Anyone can create a player account and begin playing without operator approval.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-96 · D-202
 - **Part:** account-server · browser-view
@@ -619,7 +619,7 @@ Anyone can create a player account and begin playing without operator approval.
 
 Player accounts sign in with an email address and password.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
@@ -629,7 +629,7 @@ Player accounts sign in with an email address and password.
 
 A player can start playing after registration before confirming their email address.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** none
 - **Derives from:** D-96 · D-152
 - **Part:** account-server · browser-view
@@ -670,7 +670,7 @@ Password hashing and verification share a gate that admits at most two active na
 The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie.
 
 - **Method:** test
-- **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
+- **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security · express-session-id-generator · uid-safe-sync-id · random-bytes-sync-source
 - **Derives from:** D-101 · D-138
 - **Part:** account-server · browser-view · deployment
 - **Violated:** no
@@ -679,7 +679,7 @@ The browser carries a random session identifier in a loop2 host-scoped, Secure a
 
 The deployed account server uses `express-session` with a project-owned Store backed by `node:sqlite` for player sessions, not its default `MemoryStore`.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** express-session-store-contract · node-sqlite-database
 - **Derives from:** D-107
 - **Part:** account-server · build-tools · deployment
@@ -689,7 +689,7 @@ The deployed account server uses `express-session` with a project-owned Store ba
 
 Replacing the application container preserves the SQLite database of player accounts and saved game states.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** docker-volume-lifecycle · docker-compose-down-volumes · docker-volume-prune-scope · docker-system-prune-volumes
 - **Derives from:** D-17 · D-205
 - **Part:** account-server · deployment
@@ -709,7 +709,7 @@ The account and save server accesses its SQLite database through Node.js's built
 
 The browser loads the built game and sends account and save requests to relative `/api/` paths at the same public HTTPS origin.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** fetch-same-origin-credentials
 - **Derives from:** D-108
 - **Part:** browser-view · account-server · deployment
@@ -765,19 +765,9 @@ Production startup without all valid account settings and every startup with par
 - **Part:** account-server · deployment · build-tools
 - **Violated:** no
 
-## account-schema-lifecycle
-
-Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts with the previous-save privilege of each, sessions, saved game states and previous saves, and refuses a newer unknown schema before readiness.
-
-- **Method:** test
-- **Rests on:** node-sqlite-database
-- **Derives from:** D-112
-- **Part:** account-server · deployment
-- **Violated:** no
-
 ## account-database-schema
 
-Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, saved game state and previous save and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
+Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, emailed link, saved game state and previous save and their values kept, preserves them on reopen, and refuses an unknown newer schema before readiness without changing its version or records.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -1299,7 +1289,7 @@ A file git tracks points to a place the author keeps outside the repository only
 
 The game's credits hold, for every pack of pictures under `assets/sprites/` whose licence asks for a credit, a line that names what the pack is for, its title, its author, its page with a link, its licence with a link and how the files of the game differ from its source.
 
-- **Method:** review
+- **Method:** test
 - **Rests on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy
 - **Derives from:** D-271
 - **Part:** browser-view
@@ -1423,3 +1413,4 @@ The deployment workflow gives the script of its deployment step every value from
 | guidelines-reference-current | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | eslint-configuration-rules | withdrawn: no cheap test checks that `eslint.config.mjs` keeps to D-29, so the linter's rule names no invariant for it; the review of each change to that configuration compares it with D-29 | none |
 | account-save-backup | withdrawn: the sentence is about the state of the backups on the server, which no commit of the product makes true or false and no review of a change compares with a file; that state stands as the environment fact `loop2-backup-log-nightly-sends`, read with its command and date, and D-228 rests on that fact | none |
+| account-schema-lifecycle | withdrawn: merged into `account-database-schema`, which took in its clauses (a new schema initialized in a transaction, an older known one moved to the current version in one transaction keeping its rows and values, an unknown newer one refused before readiness) after the two sentences had come to say the same about one rule of D-112 | account-database-schema |

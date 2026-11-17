@@ -34,10 +34,13 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 - **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
-Wzorce plików `eslint.config.mjs` obejmują każdy plik TS/JS części z zakresu
-D-29. Tego pilnuje test `tests/quality/test_source_tool_scope.py`: plik, który
-nie dostaje zestawów reguł, zatrzymuje bramkę, więc nowy katalog z kodem dopisz
-do konfiguracji w tej samej zmianie.
+Wzorce plików `eslint.config.mjs` obejmują każdy plik TS/JS pięciu części, które
+D-29 wymienia, i każdy plik JavaScript z trzech katalogów agent-workflow, które
+D-29 nazywa. Nowy plik w jednym z tych trzech katalogów obejmują bez zmiany
+konfiguracji; nowy skrypt gdzie indziej w agent-workflow nie. Tego pilnuje test
+`tests/quality/test_source_tool_scope.py`: plik, który nie dostaje zestawów
+reguł, zatrzymuje bramkę, więc nowy katalog z kodem dopisz do konfiguracji
+w tej samej zmianie.
 
 Test `shellcheck-source-rules` wymienia skrypty po nazwie: nowy skrypt Bash
 dopisz do listy w `tests/quality/test_quality_invariants.py`. Dyrektywa

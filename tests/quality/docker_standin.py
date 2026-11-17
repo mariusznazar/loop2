@@ -1,8 +1,9 @@
 """A stand-in `docker` command for the tests of the gate's Docker start.
 
 The stand-in stands first on PATH, keeps every call it gets in a log, and answers the three
-questions the gate asks of the real `docker`: whether a daemon answers `version`, whether the
-Docker Desktop plugin knows `desktop`, and what `desktop start` does. It never starts or stops
+questions the gate asks of the real `docker`: whether a daemon answers `system df`, whether the
+Docker Desktop plugin knows `desktop`, and what `desktop start` does. It answers `version` too,
+as the daemon does or, where asked to, as Docker Desktop's cache does. It never starts or stops
 anything of this computer, so what it proves is the gate's reaction, not a real start.
 """
 
@@ -33,14 +34,18 @@ def answer(arguments, state):
             return 1, "", ""
         state["started"] = True
         return 0, "", ""
-    if arguments[:1] == ["version"]:
+    if arguments[:1] == ["version"] and state["cached_version"]:
+        return 0, "99.0.0\\n", ""
+    if arguments[:1] == ["version"] or arguments[:2] == ["system", "df"]:
         if state["started"]:
             state["polls"] += 1
         rise = state["rise_after_polls"]
         if state["answers"] or (state["started"] and rise is not None
                                 and state["polls"] > rise):
             state["answers"] = True
-            return 0, "99.0.0\\n", ""
+            if arguments[:1] == ["version"]:
+                return 0, "99.0.0\\n", ""
+            return 0, "TYPE TOTAL ACTIVE SIZE RECLAIMABLE\\nImages 0 0 0B 0B\\n", ""
         return 1, "", "error during connect: the daemon is not running\\n"
     return 2, "", ""
 
@@ -84,17 +89,20 @@ sys.exit(code)
 
 class DockerStandIn:
     """`answers`: a daemon answers from the start. `plugin`: the Docker Desktop plugin exists.
-    `rise_after_polls`: after `desktop start`, the daemon answers from the call of `version`
-    that follows that many calls of it; None, never."""
+    `rise_after_polls`: after `desktop start`, the daemon answers from the question to it
+    (`system df` or `version`) that follows that many such questions; None, never.
+    `cached_version`: `version` names a server version whatever the daemon does, as Docker
+    Desktop answers it from its cache while the virtual machine of its daemon is stopped."""
 
-    def __init__(self, case, answers=False, plugin=True, rise_after_polls=None):
+    def __init__(self, case, answers=False, plugin=True, rise_after_polls=None,
+                 cached_version=False):
         temporary = tempfile.TemporaryDirectory(prefix="loop2-docker-standin-")
         case.addCleanup(temporary.cleanup)
         self.folder = Path(temporary.name)
         (self.folder / "standin_docker.py").write_text(PROGRAM, encoding="utf-8")
         (self.folder / "state.json").write_text(json.dumps({
             "answers": answers, "plugin": plugin, "rise_after_polls": rise_after_polls,
-            "started": False, "polls": 0}), encoding="utf-8")
+            "cached_version": cached_version, "started": False, "polls": 0}), encoding="utf-8")
         python = sys.executable
         if sys.platform == "win32":
             (self.folder / "docker.cmd").write_text(
