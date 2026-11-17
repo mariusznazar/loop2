@@ -3837,7 +3837,7 @@ and two open tabs refuse each other (D-209); a button „Zapisz” — a player 
 click, and a new button with its states; the same moments with a save every 30 game minutes while a
 map run passes instead of every 30 real seconds — the same as every 30 real seconds at 1×, but at
 16× a request every less than 2 real seconds, up to 16 saves of about 9.8 KB each, about 157 KB
-together, in the half minute of Las, measured as D-208 measures a save, by the product's own
+together, in each half real minute at 16×, which is 480 game minutes, measured as D-208 measures a save, by the product's own
 measurement, whose record is not open to a reader of the repository, while closing the tab takes at
 most 30 game minutes at every pace.
 
