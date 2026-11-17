@@ -953,8 +953,7 @@ test("an exception before the request of the save before logout leaves reports i
         assert.deepEqual(await report, { kind: "failed" }, name);
         assert.equal(sentenceOf(saver), LOGOUT_FAILED, name);
 
-        // „Wyloguj” works again: the next save before logout is a request of its own, and the
-        // retries under that sentence go on.
+        // „Wyloguj” works again: the next save before logout is a request of its own.
         flaw.broken = false;
         const again = saver.saveBeforeLogout();
         assert.equal(held.sent.length, 1, `${name}: the logout's save is sent`);

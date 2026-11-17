@@ -11,13 +11,14 @@ is never written) and driven through its public functions in `dist/browser/sim/g
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send`, `passRealTime`, `setPaused`, `setPace`, `restart` and `end`, each returning
 `{state, events}`. After every input the script records the map run's game minute, whether the
-game is paused, the pace (`pace`), the real time carried over (`realMsCarry`) and whether the game
-holds a discovery (`discovery` not null). The new game of each sent character is one whose
-Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+game is paused, the pace (`pace`), the real time carried over (`realMsCarry`), whether the game
+holds a discovery (`discovery` not null), whether the map run has completed (`completion` not
+null) and whether the character is dead (`death` not null). The new game of each sent character is
+one whose Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
 `program_fixture.py` gives it, so that the rules of the program stay what the check drives and no
-game minute discovers anything; the discovery scenarios alone start from the new game `newGame()`
-gives, which knows only the condition „Zawsze” and the action „Eksploruj”, with Skraj lasu solved
-so that Las can be sent to, and its program of one empty group.
+game minute discovers anything; the discovery and death scenarios alone start from the new game
+`newGame()` gives, which knows only the condition „Zawsze” and the action „Eksploruj”, with Skraj
+lasu solved so that Las can be sent to, and its program of one empty group.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
