@@ -560,6 +560,18 @@ panel, wiersz albo przycisk, który po kliknięciu znika — ekran oddaje fokus
 elementowi, który stoi w jego miejscu albo najbliżej niego, nigdy stronie. Powód:
 fokus na stronie każe graczowi klawiatury przechodzić ekran od początku.
 
+### The menu bar stays in sight when the screen of a map run opens
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Po „Wejdź” na ekranie Mapy i po „Wróć do przejścia” na pasku menu ekran przejścia otwiera się z paskiem menu w polu widzenia, a fokus klawiatury stoi na tym ekranie.
+- **Bad:** Fokus przeniesiony na ekran przejścia przewija stronę, tak że pasek menu wychodzi nad górną krawędź okna.
+
+Gdy otwiera się ekran przejścia, pasek menu stoi w polu widzenia: przeniesienie
+fokusu klawiatury na ten ekran nie przewija strony. Powód: strona przewinięta
+przy wejściu chowa pasek menu nad krawędzią okna, a z nim drogę do innych
+ekranów.
+
 ### Menu bar, the menu „Konto” and the list of programs
 
 - **Decision:** D-280 · D-330 · D-331 · D-281 · D-277 · D-276 · D-275 · D-285 · D-157 · D-97 · D-208 · D-262 · D-44 · D-40 · D-39 · D-43 · D-47 · D-410 · D-411
