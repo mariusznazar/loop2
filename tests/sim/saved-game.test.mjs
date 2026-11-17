@@ -2351,6 +2351,29 @@ test("two characters of one number are refused as shape, the rest of the documen
 });
 
 // invariant: save-version
+// A character whose number is not below the character counter, the rest of the document sound: its
+// number is 2 and the next character number is 2, and no record names character 2; with the next
+// number 3 the same character loads.
+test("a character whose number is the next character number is refused as shape, the rest of the document sound", () => {
+  const withSecondCharacter = (nextCharacterId) =>
+    changed((document) => {
+      document.game.team.characters.push({
+        ...structuredClone(document.game.team.characters[0]),
+        id: 2,
+        name: "Ewa",
+      });
+      document.game.nextCharacterId = nextCharacterId;
+    }, HEADQUARTERS);
+  // Precondition: with a next number above its own, the second character is sound.
+  assert.equal(loadSavedGame(withSecondCharacter(3)).ok, true);
+  assertRefused(
+    "a character numbered as the next character number",
+    withSecondCharacter(2),
+    "shape",
+  );
+});
+
+// invariant: save-version
 // A program whose number is not below the program counter, the rest of the document sound: its
 // number is 2 and the next program number is 2, and no record names program 2.
 test("a program whose number is not below the next program number is refused as shape", () => {
