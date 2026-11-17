@@ -137,6 +137,7 @@ const registeredJson =
   '{"id":"u1","email":"a@x.pl","emailConfirmed":false,"previousSaveAllowed":false,"confirmationMessage":"sent"}';
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("each call sends its documented method, relative path and JSON body", async () => {
   // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   respond = (request, response) => {
@@ -210,6 +211,7 @@ test("each call sends its documented method, relative path and JSON body", async
 });
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("a redirect is not followed, so nothing is sent to its target", async () => {
   const target = `http://127.0.0.1:${elsewhere.address().port}/api/session`;
   respond = (_request, response) =>
@@ -666,6 +668,7 @@ function submissionOfBytes(bytes) {
 
 // invariant: saved-state-http-exchange
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("loadSavedGame sends a bodiless GET on the relative saved-game path and the save call a JSON PUT of exactly version, basedOn and game", async () => {
   // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
   // decision: D-07 "The browser computes the whole game — the map runs, the earning loops and the catch-up — and sends the saved game state to the server"
@@ -701,6 +704,7 @@ test("loadSavedGame sends a bodiless GET on the relative saved-game path and the
 });
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("a redirect of the saved-game routes is not followed, so nothing is sent to its target", async () => {
   const target = `http://127.0.0.1:${elsewhere.address().port}/api/saved-game`;
   respond = (_request, response) =>
@@ -960,6 +964,7 @@ test("a save body over 65 536 bytes is never sent and comes back too large", asy
 // Previous save routes (D-400, D-401, D-402).
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("loadPreviousSavedGame sends a bodiless GET to the relative previous-save path, and resetSavedGame a JSON POST of the empty object to the reset path", async () => {
   // decision: D-402 "After the confirmation the page sends no save of its own and sends `POST /api/saved-game-reset`"
   respond = (request, response) =>
@@ -984,6 +989,7 @@ test("loadPreviousSavedGame sends a bodiless GET to the relative previous-save p
 });
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("a redirect of the previous-save routes is not followed, so nothing is sent to its target", async () => {
   const target = `http://127.0.0.1:${elsewhere.address().port}/api/saved-game-reset`;
   respond = (_request, response) =>
@@ -1211,6 +1217,7 @@ const reportedWords = {
 
 // invariant: browser-failure-report
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 test("reportBrowserFailure posts the three words as one JSON POST to the report path, with no keepalive, same-origin credentials and no redirect", async () => {
   // decision: D-356 "A GitHub Actions workflow whose schedule asks for a run every five minutes, and which GitHub starts at gaps of hours — from about 3.5 to about 8.5 hours between neighbouring runs in the reading of 2026-11-14, the cause not established — opens the game's public address and fails unless the address answers with status 200, so that GitHub notifies the operator of the failed run, a notice that with the server or the tunnel down may come only after hours, while the page in the browser, besides its line in the console, sends the kind, the code and the place of an error that no code handled to a route of the game's server"
   respond = (_request, response) => response.writeHead(204).end();
@@ -1416,6 +1423,7 @@ test("the role of an account is owner only for the exact word owner, and any oth
 });
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 // invariant: account-client-outcomes
 test("listAccounts sends a bodiless GET to the owner list path and gives each entry with its four fields, an empty list included", async () => {
   // decision: D-411 "The screen of the list of accounts, at `#/konta` for an account with the owner role (D-281), shows every account sorted by its email address, and for each account its address, its blocked state, its previous-save privilege and its role"
@@ -1538,6 +1546,7 @@ test("listAccounts turns a refusal into a refusal with its known code, and a dea
 });
 
 // invariant: account-client-requests
+// invariant: loop2-shared-public-origin
 // invariant: account-client-outcomes
 test("each operation posts the address alone as JSON to its owner route and gives the outcome word the server answers", async () => {
   // decision: D-411 "Each account has four buttons: „Zablokuj” and „Odblokuj”, which block and unblock it as D-137 gives, and „Nadaj uprawnienie do poprzedniego zapisu” and „Odbierz uprawnienie do poprzedniego zapisu”, which grant and revoke the privilege as D-400 gives; an account with the owner role has no „Zablokuj”."
