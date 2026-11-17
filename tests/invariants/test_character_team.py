@@ -14,13 +14,13 @@ modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so that the
 program stay what the check drives.
 
 Reading of the sentence:
-- a character: an entry of a team's list of characters, and the character a map run carries,
-  which names a character by its `id` — the map run the player sends a character to and the map
-  run of each earning loop, the loop standing under that id as well;
+- a character: an entry of a team's list of characters, the character a map run carries, which
+  names a character by its `id` — the map run the player sends a character to and the map run of
+  each earning loop — and the character number each earning loop stands under;
 - a team: the game state's one team, `team`, with its list `characters`;
 - belongs to exactly one team: each id of a team's list stands once in the lists of all teams
-  taken together, and the id of the map run's character, and of each earning loop's, stands once
-  in them, the loop standing under the id its map run carries.
+  taken together, and the id of the map run's character, of each earning loop's and the number
+  each earning loop stands under stand once in them.
 
 Scenario (written out below): a new game, three characters created, two of them under the same
 name and one typed with white space around it, a send of the second character to the map Las
@@ -40,8 +40,8 @@ stood, while a send of a character of the team is taken; a send of another id th
 would give a map run whose character belongs to no team. Starts of an earning loop for such ids
 must each be refused with the very state, while the start for a character of the team is taken.
 Documents of a game with a map run and a loop, each altered so that a loop or the map run names a
-character no team holds, a loop stands under another id than the one its map run carries, the id of
-a map run's character is a string or absent, or two entries of the team's list bear one id, must
+character no team holds, the id of a map run's character is a string or absent, or two entries of
+the team's list bear one id, must
 each be refused by the load, leaving the game state as it stood, while the document unaltered is
 loaded. The reading must flag made-up states of the same kinds. The scenarios must create more
 than one character, two of them sharing a name, and send two different characters, so the compared
@@ -133,8 +133,6 @@ ALTERED_DOCUMENTS = [
     ("a loop under a character no team holds", [change(["game", "loops", "1"], rename="9")]),
     ("a loop's map run carrying a character no team holds",
      [change(["game", "loops", "1", "run", "character", "id"], set=9)]),
-    ("a loop's map run carrying another character of the team",
-     [change(["game", "loops", "1", "run", "character", "id"], set=3)]),
     ("a loop's map run carrying a character id written as a string",
      [change(["game", "loops", "1", "run", "character", "id"], set="1")]),
     ("a loop's map run carrying no character id",
@@ -270,9 +268,11 @@ def membership_errors(index, record):
             found.append(f"step {index} ({record['step']}): the character {carried!r} of the map "
                          f"run of the earning loop {key} stands {ids.count(carried)} times in the "
                          "lists of the teams")
-        if key != str(carried):
-            found.append(f"step {index} ({record['step']}): the earning loop {key} carries the "
-                         f"character {carried!r}")
+        numbers = [str(i) for i in ids]
+        if numbers.count(key) != 1:
+            found.append(f"step {index} ({record['step']}): the earning loop stands under the "
+                         f"character {key}, which stands {numbers.count(key)} times in the lists "
+                         "of the teams")
     return found
 
 
@@ -385,8 +385,8 @@ class CharacterTeam(unittest.TestCase):
         self.assertEqual(membership_errors(0, record([1, 2], {"character": {"id": 2}}, {"1": loop(1)})), [])
         self.assertTrue(membership_errors(0, record([1, 2], None, {"1": loop(9)})),
                         "a loop whose map run carries no character of the team goes unseen")
-        self.assertTrue(membership_errors(0, record([1, 2], None, {"2": loop(1)})),
-                        "a loop under another id than its map run carries goes unseen")
+        self.assertTrue(membership_errors(0, record([1, 2], None, {"9": loop(1)})),
+                        "a loop under a character no team holds goes unseen")
         self.assertTrue(membership_errors(0, record([1, 2], None, {"1": loop("1")})),
                         "a loop whose map run carries the id as a string goes unseen")
         self.assertTrue(membership_errors(0, record([1, 1], None, {"1": loop(1)})),
