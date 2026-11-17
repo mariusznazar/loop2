@@ -5259,15 +5259,15 @@ until „Wznów”.
 *Rationale:* solving a map is a puzzle the player may fast-forward, while earning is income and goes
 by the clock of the world, so the control of the pace reaches only the map runs the player starts: at
 one game minute per real second, the pace at which the predecessor game, loop, runs at 1× (its
-balance data gives one game minute per real second at the multiplier 1×), each attempt at the 480
-game minutes of Las takes eight real minutes, and at 16× half a real minute. Fast-forwarding is a
+balance data gives one game minute per real second at the multiplier 1×), the 480
+game minutes of Las, the whole of the shortest map run that solves it, take eight real minutes, and at 16× half a real minute. Fast-forwarding is a
 faster pace of the same game minutes, which pass one after another in sight, so the player still
 watches the program act. The paces stand as five buttons beside the pause, the chosen one marked as
 any chosen button of a group; the paces between 1× and 16× are a proposal, not taken from the
 predecessor game. A pause holds a map run without ending it, and it stays an act of its own, so a
 pace picked in a pause leaves the map run standing. Accepted with it: at 16× the screen moves on
 about three game minutes (3.2) at each refresh, which the clock makes every 200 ms; real time passes in a hidden browser tab too, so a map run at 16× left
-in a hidden tab passes the whole of Las unseen, its end included; a player who picks a pace in a
+in a hidden tab passes 480 game minutes of Las unseen in half a real minute, the whole of the shortest map run that solves it; a player who picks a pace in a
 pause sees nothing move until „Wznów”.
 *Rejected:* the same pace with no pause; a jump of a map run to its result, and a way back to an
 earlier game minute — the player would no longer watch the program act; picking a pace in a pause
