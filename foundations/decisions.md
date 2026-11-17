@@ -64,14 +64,14 @@ return the next game state together with the events it produced, and real time e
 simulation only as an argument. The browser view draws the game only from the game state, the
 game's content data, the moment of the browser's clock, which it reads and passes to the
 simulation, the address of the page for the screen it shows (D-281), the system's setting for
-reduced motion for the scene (D-317), the saver's sentence for the row of saving (D-207, D-407),
+reduced motion for the scene (D-317), the saver's sentence for the row of saving (D-208, D-407),
 and, for the scene and the chronicle, its previous reading of the game state and the events the
 simulation returned, for the chronicle also the player's acts on the copy with the copy before each
 act and after it (D-348), and for the scene the place the browser gives for the mage while it walks,
 and from the memories of the page, none of them in the game state or the save: the folding of rule
 groups (D-294), the chronicle with the tab and the filter the player picks over it (D-339, D-346,
 D-383), the question „Zapisać, odrzucić, wrócić?” (D-324), whether the end-of-run window is open
-(D-371), the pull of the previous save and the reset control of Programy (D-401, D-402) and, for
+(D-371), the pull of the previous save and the reset control of Programy, which draw their buttons from the previous-save privilege the page keeps from the account's answer (D-400, D-401, D-402) and, for
 what one screen alone shows, the state of that screen's own component (D-407); it changes
 the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
@@ -3751,7 +3751,7 @@ data change, which they did every evening when this was decided.
 ### D-207 — When does the game save the game state on the server?
 
 The game saves the game state on the server by itself right after each change of it the player
-makes — an edit of a program or of the copy, an act on the list of programs, creating a character,
+makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character,
 sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of
 the report, a pause and a pace — right after a manual map run ends in a completion or in the
 character's death, right after a reading of the clock or a catch-up whose result ended map runs of
