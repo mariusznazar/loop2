@@ -66,7 +66,8 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import HELD_PROGRAMS_JS, KNOWING_GAME_JS, program_from_rules, program_rules
+from program_fixture import (HELD_PROGRAMS_JS, KNOWING_GAME_JS, SAVED_DOCUMENT_JS,
+                             program_from_rules, program_rules)
 
 GAME_MODULE = "dist/browser/sim/game.js"
 BUILT_DATA = "dist/browser/sim/data"
@@ -139,16 +140,14 @@ UNLISTED_ACTION_KINDS = ("collect", "gatherAll", "Gather", "rest", "walkToTile",
 # Fields a listed kind takes, given to an unlisted one in the second offer of each kind.
 PLAUSIBLE_FIELDS = {"resource": "stick", "value": 3}
 
-DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + r"""
+DRIVER = KNOWING_GAME_JS + HELD_PROGRAMS_JS + SAVED_DOCUMENT_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const [gamePath, dataPath, offersPath, outPath] = process.argv.slice(2);
-const sibling = (name) => import(pathToFileURL(join(dirname(gamePath), name)).href);
 const game = await import(pathToFileURL(gamePath).href);
-const loop = await sibling('loop.js');
-const saved = await sibling('saved-game.js');
+const loop = await siblingModule(gamePath, 'loop.js');
+const saved = await siblingModule(gamePath, 'saved-game.js');
 const { CONDITIONS } = await import(pathToFileURL(dataPath + '/conditions.js').href);
 const { ACTIONS } = await import(pathToFileURL(dataPath + '/actions.js').href);
 const { base, sent, looped, realMs, offers, loads } = JSON.parse(readFileSync(offersPath, 'utf8'));
@@ -180,9 +179,7 @@ for (const { where, program } of offers) {
   }
 }
 
-// The saved document of the game of each place, stamped with a save time and made JSON text.
-const documentOf = async (where) =>
-  copy(saved.savedGame(game.withSaveTime(await gameOf(where), realMs)));
+const documentOf = async (where) => savedDocument(game, saved, await gameOf(where), realMs);
 const documents = {
   list: await documentOf('outside'), copy: await documentOf('run'),
   base: await documentOf('run'), loop: await documentOf('loop'),

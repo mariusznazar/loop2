@@ -58,7 +58,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import KNOWING_GAME_JS, program_from_rules
+from program_fixture import KNOWING_GAME_JS, SAVED_DOCUMENT_JS, program_from_rules
 
 GAME_MODULE = "dist/browser/sim/game.js"
 T = 1760000000000
@@ -152,21 +152,17 @@ LOAD_CONTROL_STEPS = (
     + [["reload", T + 1000]]
 )
 
-DRIVER = KNOWING_GAME_JS + r"""
+DRIVER = KNOWING_GAME_JS + SAVED_DOCUMENT_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const [gamePath, stepsPath, outPath] = process.argv.slice(2);
-const sibling = (name) => import(pathToFileURL(join(dirname(gamePath), name)).href);
 const game = await import(pathToFileURL(gamePath).href);
-const loop = await sibling('loop.js');
-const saved = await sibling('saved-game.js');
+const loop = await siblingModule(gamePath, 'loop.js');
+const saved = await siblingModule(gamePath, 'saved-game.js');
 const steps = JSON.parse(readFileSync(stepsPath, 'utf8'));
 
-// The document of `state` stamped with the save time `nowMs`, as the JSON text it becomes.
-const documentOf = (state, nowMs) =>
-  JSON.parse(JSON.stringify(saved.savedGame(game.withSaveTime(state, nowMs))));
+const documentOf = (state, nowMs) => savedDocument(game, saved, state, nowMs);
 
 // One alteration of a document: a value set, a key renamed or a key removed.
 function alter(document, { path, set, rename, remove }) {

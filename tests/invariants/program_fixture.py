@@ -68,3 +68,19 @@ function heldPrograms(state) {
   return state.run ? [...programs, state.run.copy.program] : programs;
 }
 """
+
+
+# Source text of JavaScript functions for the Node drivers to embed: `siblingModule` imports the
+# built module of the given name beside `game.js`, whose path it is passed; `savedDocument` is the
+# saved document of a game state stamped with a save time, as the JSON text it becomes, made by
+# `withSaveTime` of `game.js` and `savedGame` of `saved-game.js`, the two modules it is passed.
+SAVED_DOCUMENT_JS = """
+async function siblingModule(gamePath, name) {
+  const { dirname, join } = await import('node:path');
+  const { pathToFileURL } = await import('node:url');
+  return import(pathToFileURL(join(dirname(gamePath), name)).href);
+}
+function savedDocument(game, saved, state, nowMs) {
+  return JSON.parse(JSON.stringify(saved.savedGame(game.withSaveTime(state, nowMs))));
+}
+"""
