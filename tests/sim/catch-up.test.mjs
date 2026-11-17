@@ -40,6 +40,13 @@ const RENEWAL_MS = 28_800_000;
 const S = 1_760_000_800_000;
 const COLD_DEATH_MINUTE = 243;
 const FOREST = { mapId: "forest", characterId: 1 };
+const FOREST_DEEP = { mapId: "forestDeep", characterId: 1 };
+/**
+ * A state of the attack generator whose next draw is below the 0.01 chance of the wolf of Las —
+ * głębiej, so that the attack comes in the first minute the map allows it: game minute 181
+ * (`tests/sim/encounters.test.mjs`).
+ */
+const WOLF_DRAW = 35;
 const HEALTHY = { temperature: 37, satiety: 100, health: 100 };
 /** One game minute from a death of cold: chilled, with health the next minute takes away. */
 const DYING = { temperature: 30, satiety: 100, health: 0.1 };
@@ -47,6 +54,11 @@ const EXPLORE = { kind: "explore" };
 
 const entry = (item, count) => ({ item, count });
 const EMPTY = programFromRules();
+/** Explores, and in a combat, where only a combat verb can be carried out, kicks. */
+const WOLF_PROGRAM = programFromRules(
+  { condition: { kind: "always" }, action: EXPLORE },
+  { condition: { kind: "always" }, action: { kind: "kick" } },
+);
 
 /** `program` with the trip plan given. */
 function withTrip(program, take, bring) {
@@ -142,6 +154,32 @@ function shortBy(state, id, minutes, backpack = {}, practice = {}) {
 /** The map run of the character `id` one game minute from a death of cold. */
 function dyingNext(state, id) {
   return changingRun(state, id, { body: { ...DYING } });
+}
+
+/**
+ * The game with the loop of Ala alone started on Las — głębiej, the map of the wolf, and saved at
+ * `S`, her map run in game minute 180 with `body`, an exploration under way and the attack generator
+ * at `WOLF_DRAW`: the attack comes in the next game minute.
+ */
+function wolfNext(body = HEALTHY) {
+  const solved = {
+    ...game(),
+    solvedMaps: ["forestEdge", "forest", "forestDeep"],
+  };
+  const started = withSaveTime(startLoop(solved, FOREST_DEEP, S).state, S);
+  const prepared = changingRun(started, 1, {
+    minute: 180,
+    attackRandom: WOLF_DRAW,
+    body: { ...body },
+    streak: 180,
+    current: {
+      activity: { kind: "rule", ruleId: 1, action: EXPLORE },
+      startMinute: 175,
+      endMinute: 195,
+      stepTo: null,
+    },
+  });
+  return withProgram(prepared, 1, WOLF_PROGRAM);
 }
 
 /** The state with the team's resurrection not ready until the real moment `readyAtMs`. */
@@ -459,6 +497,37 @@ test("a character whose chest and resurrection no other loop reaches ends the ca
   const done = catchUp(completing, S + MIN).state;
   assert.equal(done.loops[1].completed, 1);
   assert.deepEqual(done.team.chest.pieces, { moss: 45, stick: 4 });
+});
+
+// invariant: catch-up-state
+// D-240: a relation, so no value comes from today's run.
+test("a character whose map run meets a wolf's attack ends the catch-up as the open game does, with the combat under way at the end of the span, resolved in it and ending in a covered death", () => {
+  // decision: D-140 "A creature acts by pairs of condition and action kept in its data, of the same form as program rules, and an attack interrupts the action under way, which is lost"
+  // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
+  // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
+  const state = wolfNext();
+  // Preconditions: the wolf attacks in game minute 181 and the combat is resolved in minute 186.
+  const underWay = openGame(state, S, 3).state.loops[1].run;
+  assert.equal(underWay.activeCombat?.attackMinute, 181);
+  const resolved = openGame(state, S, 20).state.loops[1].run;
+  assert.equal(resolved.activeCombat, null);
+  assert.equal(resolved.lastCombat?.attackMinute, 181);
+  assert.notEqual(resolved.lastCombat?.result ?? null, null);
+  assertRelation(state, 3, "the combat under way");
+  assertRelation(state, 20, "the combat resolved");
+  // The character's health low enough for the combat to end in its death, which the resurrection covers.
+  const dying = wolfNext({ ...HEALTHY, health: 30 });
+  const opened = openGame(dying, S, 20).state;
+  assert.equal(
+    opened.loops[1].runNumber,
+    2,
+    "precondition: the first map run died",
+  );
+  assert.equal(ala(opened).generation, 1);
+  assertRelation(dying, 20, "a death in the combat");
+  assert.deepEqual(catchUp(dying, S + 20 * MIN).state.awayReport, [
+    line(1, { minutes: 20, resurrectionUsed: true }),
+  ]);
 });
 
 // invariant: loop-run-knowledge
