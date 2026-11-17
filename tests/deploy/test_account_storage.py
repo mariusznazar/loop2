@@ -1,4 +1,5 @@
-"""Accounts and sessions outlive the replacement of the loop2 container (D-17, D-112).
+"""Accounts, sessions and saved game states outlive the replacement of the loop2 container
+(D-17, D-112, D-205).
 
 The deployment replaces the application container and keeps its named volume `loop2_accounts`
 mounted at `/app/data`. This test builds the image from the working tree, starts its normal
@@ -7,9 +8,10 @@ read-only session secret under 512 MiB, and checks as node that the fresh volume
 The database path and the volume's mount point are those `compose.yaml` gives the `app`
 service, so a deployment that would keep the database outside its volume loses it here.
 Through the running server's own HTTP port, from inside the container, it creates an account
-with a synthetic address and password and reads it with the session cookie it got. It then
-removes that container, starts a new one from the same image on the same two volumes, and checks
-that the session cookie still names the account and that the password still signs in.
+with a synthetic address and password, reads it with the session cookie it got and saves one
+game state for it. It then removes that container, starts a new one from the same image on the
+same two volumes, and checks that the session cookie still names the account and reads the
+saved game state as it was saved, and that the password still signs in.
 
 The requests carry the headers Cloudflare's tunnel gives every request (D-110) and the public
 origin, as the browser's would. The synthetic password and the cookie reach the container only
@@ -17,10 +19,7 @@ through the probe's standard input and are never printed.
 
 Where no Docker daemon answers, the test is skipped and says what stays unchecked.
 
-Does NOT cover: saved game states, which the product stores in the same database but this test
-neither writes nor reads, so for account-save-durable-storage (method test) it shows the
-database file that holds them surviving the replacement through an account and its session, and
-no saved game state; the Compose stack and the deployment command (the test runs the image with
+Does NOT cover: the Compose stack and the deployment command (the test runs the image with
 equivalent settings); a rollback to older code; the server's image.
 """
 
@@ -43,9 +42,11 @@ SERVE_WAIT = 60         # seconds for a started container to answer GET /
 ORIGIN = "https://loop2.mariusznazar.com"
 EMAIL = "replacement-check@example.com"
 COOKIE = "__Host-loop2.sid"
+SAVED_GAME = {"version": 3, "game": {"replacementCheck": "kept", "minute": 42}}
 
 # Run inside the container by its own Node.js: one request to the server, its status, JSON body
-# and the session cookie it sets, if any.
+# and the session cookie it sets, if any. Without a method the request is a POST with a body
+# and a GET without one.
 REQUEST_PROBE = r"""
 const spec = JSON.parse(SPEC);
 const headers = { "x-forwarded-proto": "https", "cf-connecting-ip": "192.0.2.10" };
@@ -55,7 +56,7 @@ if (spec.body) {
   headers["content-type"] = "application/json";
 }
 fetch("http://127.0.0.1:" + process.env.LOOP2_LISTEN_PORT + spec.path, {
-  method: spec.body ? "POST" : "GET", headers, redirect: "manual",
+  method: spec.method ?? (spec.body ? "POST" : "GET"), headers, redirect: "manual",
   body: spec.body ? JSON.stringify(spec.body) : undefined,
   signal: AbortSignal.timeout(20000),
 }).then(async (response) => {
@@ -98,8 +99,8 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         # invariant: account-save-durable-storage
         # decision: D-17 "The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000"
         # decision: D-205 "The account and save server stores player accounts and each player's complete saved game state in a SQLite database file on persistent local storage outside the replaceable application container layer"
-        docker_gate.require_daemon(self, "whether accounts and sessions outlive a container "
-                                         "replacement stays unchecked")
+        docker_gate.require_daemon(self, "whether accounts, sessions and saved game states "
+                                         "outlive a container replacement stays unchecked")
         suffix = uuid.uuid4().hex[:12]
         tag = "loop2-account-storage-check:" + suffix
         self.addCleanup(docker_run, "image", "rm", "-f", tag)
@@ -128,6 +129,9 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         self.assertIsNotNone(cookie, "registration set no session cookie")
         before = self.request(first, "/api/account", cookie=cookie)
         self.assertEqual((before["status"], before["body"]), (200, account))
+        saved = self.request(first, "/api/saved-game", method="PUT", cookie=cookie,
+                             body={**SAVED_GAME, "basedOn": 0})
+        self.assertEqual((saved["status"], saved["body"]), (200, {"revision": 1}))
 
         code, output = docker_run("rm", "--force", first)
         self.assertEqual(code, 0, output)
@@ -141,6 +145,10 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
         after = self.request(second, "/api/account", cookie=cookie)
         self.assertEqual((after["status"], after["body"]), (200, account),
                          "the session of the replaced container no longer names its account")
+        kept = self.request(second, "/api/saved-game", cookie=cookie)
+        self.assertEqual((kept["status"], kept["body"]),
+                         (200, {"save": {**SAVED_GAME, "revision": 1}}),
+                         "the saved game state did not outlive the replacement")
         signed_in = self.request(second, "/api/session",
                                  body={"email": EMAIL, "password": password})
         self.assertEqual((signed_in["status"], signed_in["body"]), (200, account),
@@ -149,8 +157,9 @@ class AccountsSurviveContainerReplacement(unittest.TestCase):
             "email": EMAIL, "password": password, "passwordConfirmation": password})
         self.assertEqual(again["status"], 409, "the address could be registered a second time")
 
-    def request(self, name, path, body=None, cookie=None):
-        spec = {"path": path, "body": body, "cookie": cookie, "origin": ORIGIN, "name": COOKIE}
+    def request(self, name, path, body=None, cookie=None, method=None):
+        spec = {"path": path, "body": body, "cookie": cookie, "origin": ORIGIN, "name": COOKIE,
+                "method": method}
         script = REQUEST_PROBE.replace("SPEC", json.dumps(json.dumps(spec)), 1)
         result = subprocess.run([docker(), "exec", "-i", name, "node", "-"],
                                 input=script.encode("utf-8"), capture_output=True,
