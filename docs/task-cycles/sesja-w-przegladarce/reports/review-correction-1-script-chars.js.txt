@@ -1,8 +1,0 @@
-async (page) => {
-  for (const name of ["Ala", "Bea", "Cyd", "Dor", "Eda", "Fel", "Gaj", "Hel", "Iga", "Jur", "Kaj"]) {
-    await page.getByRole("textbox", { name: "Imię nowej postaci" }).fill(name);
-    await page.getByRole("button", { name: "Załóż", exact: true }).click();
-    await page.waitForTimeout(150);
-  }
-  return "ok";
-}

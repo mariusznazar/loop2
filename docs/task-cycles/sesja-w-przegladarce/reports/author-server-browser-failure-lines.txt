@@ -1,4 +1,0 @@
-{"failure":"browser","kind":"TypeError","code":"none","place":"view/last-resort.installLastResort","accountId":"2651b86f-0964-4c7d-9189-de053090ab66"}
-{"failure":"browser","kind":"RangeError","code":"none","place":"view/last-resort.installLastResort","accountId":"2651b86f-0964-4c7d-9189-de053090ab66"}
-{"failure":"browser","kind":"TypeError","code":"none","place":"view/last-resort.installLastResort","accountId":"2651b86f-0964-4c7d-9189-de053090ab66"}
-{"failure":"browser","kind":"TypeError","code":"none","place":"view/account-card.createAccountCard"}
