@@ -1395,6 +1395,16 @@ On the map Skraj lasu, a program of 21 rules in 5 groups that its test names, wr
 - **Part:** simulation
 - **Violated:** no
 
+## page-address-fragment
+
+The fragment of the page's address opens only a screen that D-281 names or the nearest existing one, and the token of an emailed link in that fragment goes unchanged into the body of its own one request and nowhere else, the server being the one that judges it.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-281 · D-156 · D-224
+- **Part:** browser-view
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

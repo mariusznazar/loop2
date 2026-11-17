@@ -26,6 +26,9 @@ The part draws the game's screens in the browser, sends the browser's requests t
 - **Trust boundary:** assets/icons/**
   assets/fonts/**
   assets/sprites/**
+  src/browser/view/screen-address.ts
+  src/browser/view/email-confirmation.ts
+  src/browser/view/password-reset.ts
 
 ## simulation
 

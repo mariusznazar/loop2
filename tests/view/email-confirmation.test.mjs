@@ -30,6 +30,7 @@ const NO_CONNECTION = {
 };
 
 test("the fragment's token is read, and a fragment without one yields none", () => {
+  // invariant: page-address-fragment
   const cases = [
     ["a fragment with a token", `#confirm-email=${TOKEN}`, TOKEN],
     ["no fragment", "", null],
@@ -39,6 +40,7 @@ test("the fragment's token is read, and a fragment without one yields none", () 
     // Malformed: the key is there, so the server judges the token and refuses it.
     ["the key with an empty token", "#confirm-email=", ""],
     ["a token that is not of the token's form", "#confirm-email=a b", "a b"],
+    ["a percent-encoded token", "#confirm-email=%41%2B", "%41%2B"],
     ["the key not at the start", `#x&confirm-email=${TOKEN}`, null],
     ["the key in another case", `#Confirm-Email=${TOKEN}`, null],
   ];
@@ -138,6 +140,7 @@ test("an address without a token sends nothing and is left as it is", async () =
 });
 
 test("a definitive answer, confirmed or the link refused, sends the token once and clears the fragment", async () => {
+  // invariant: page-address-fragment
   // decision: D-156 "The game page the link opens sends the token to the account server"
   for (const [name, result, text] of [
     ["confirmed", { ok: true, value: null }, "Adres e-mail potwierdzony."],

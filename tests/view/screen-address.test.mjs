@@ -102,6 +102,7 @@ const NO_SCREEN_FRAGMENTS = [
 
 for (const [name, fragment] of NO_SCREEN_FRAGMENTS) {
   test(`a fragment with ${name} reads as no screen`, () => {
+    // invariant: page-address-fragment
     // decision: D-281 "An address names a screen in the fragment after `#`"
     // decision: D-281 "The fragments of emailed links (D-156, D-224) stand apart from these, and after them the page opens Siedziba"
     // decision: D-332 "In `#/mapy/{map}`, {map} is the identifier of the map in the game's data as it stands"
@@ -187,6 +188,7 @@ test("every screen writes the address that reads back to it", () => {
 });
 
 test("a map run screen with no map run of its character gives the character's screen", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "run", characterId: 1 }, explicitGame(), false),
@@ -207,6 +209,7 @@ test("a map run screen of a character with a map run stays the map run screen", 
 });
 
 test("a map run screen of a character with no map run, but with another's, gives the character's screen", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen(
@@ -219,6 +222,7 @@ test("a map run screen of a character with no map run, but with another's, gives
 });
 
 test("a map run screen of a number no character carries gives Siedziba", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen(
@@ -231,6 +235,7 @@ test("a map run screen of a number no character carries gives Siedziba", () => {
 });
 
 test("a character screen of a number no character carries gives Siedziba", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "character", characterId: 9 }, explicitGame(), false),
@@ -247,6 +252,7 @@ test("a character screen of a character of the team stays", () => {
 });
 
 test("a program screen of a number no program carries gives Programy", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(
     resolveScreen({ kind: "program", programId: 2 }, explicitGame(), false),
@@ -263,6 +269,7 @@ test("a program screen of a program of the player stays", () => {
 });
 
 test("no screen named gives Siedziba", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   assert.deepEqual(resolveScreen(null, explicitGame(), false), HEADQUARTERS);
 });
@@ -286,6 +293,7 @@ test("Wiedza stays, for a player and for an account with the owner role", () => 
 });
 
 test("a map off the list of open maps gives Siedziba: a map whose opening map is not solved", () => {
+  // invariant: page-address-fragment
   // decision: D-281 "An address names a screen in the fragment after `#`"
   for (const mapId of ["forest", "forestDeep"]) {
     assert.deepEqual(
@@ -343,6 +351,7 @@ test("an owner's address of the list of accounts opens the list at a reload", ()
 // decision: D-281 "`#/konta` names the screen of the list of accounts (D-411) for an account with the owner role; for any other account it leads to no existing screen, falls under „any other” and opens Siedziba."
 // Catches a player's address of the list that opens the list, instead of Siedziba as any unknown
 // address does.
+// invariant: page-address-fragment
 test("a player's address of the list of accounts opens Siedziba", () => {
   assert.deepEqual(
     resolveScreen(readScreenAddress("#/konta"), explicitGame(), false),
