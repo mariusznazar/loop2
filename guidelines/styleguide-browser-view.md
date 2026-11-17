@@ -541,13 +541,12 @@ wiersza z takim tekstem, także nowego. Powód: wpis bez spacji nie ma gdzie si�
 złamać sam, więc bez tej reguły długie imię wypycha wiersz poza ekran.
 
 Dotyczy to także zdania, które taką nazwę albo taki adres wymienia. Wyjątek:
-lista wyboru (`select`), także lista „Program:” na ekranie Mapy i na ekranie
-przejścia, nie łamie nazwy, tylko ją ucina. Lista jest najwyżej tak szeroka jak
-wiersz, w którym stoi, więc najdłuższa opcja nie poszerza strony; nazwa
-wybranej pozycji, dłuższa od listy, kończy się wielokropkiem, a pełna nazwa
-stoi w rozwiniętych opcjach. Wygląd listy stoi w jednym miejscu,
-`src/browser/styles.css` (D-265), więc tak samo zachowuje się każda lista
-wyboru gry.
+lista wyboru (`select`) nie łamie nazwy, tylko ją ucina, bo natywne pole wyboru
+nie łamie tekstu. Lista nie jest szersza od wiersza, w którym stoi, a wiersz
+z listą nie jest szerszy od swojej kolumny: w kolumnie flex, która nie
+rozciąga swoich elementów, wiersz dostaje `max-width: 100%`. Nazwa wybranej
+pozycji, dłuższa od listy, kończy się wielokropkiem, a pełna nazwa stoi
+w rozwiniętych opcjach.
 
 ### Focus does not fall to the page
 
