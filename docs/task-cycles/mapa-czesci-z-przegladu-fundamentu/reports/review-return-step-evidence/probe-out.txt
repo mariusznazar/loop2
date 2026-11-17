@@ -1,9 +1,0 @@
-baseline: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-bundled -4o first, value no: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-non-call ssh line first (command -v): test_ssh_is_strict_and_batch=FAIL, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-non-call echo with yes, call with no first: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-call with space-form no first (control): test_ssh_is_strict_and_batch=FAIL, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-secret expression in a '- run: |' step: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-deploy step as '- run: |' with an event expression: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass
-secret expression in a 'run: >' block: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=FAIL, test_one_ssh_call=pass
-secret expression in an inline run: test_ssh_is_strict_and_batch=pass, test_sha_reaches_the_script_only_through_env=pass, test_one_ssh_call=pass

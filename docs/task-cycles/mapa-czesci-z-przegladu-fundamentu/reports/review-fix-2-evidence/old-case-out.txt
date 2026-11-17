@@ -1,4 +1,0 @@
-C7 old sha case=pass
-C8 old sha case=pass
-C9 old sha case=FAIL
-H4 old sha case=pass
