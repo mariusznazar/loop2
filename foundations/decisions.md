@@ -3814,8 +3814,8 @@ A save whose code throws before its request leaves, and a save whose client's pr
   tried again at the next moment of saving, its sentence on that line until a save succeeds, also
   before a logout and after a pull of a previous save's programs; a save whose code throws before
   its request leaves, or whose client's promise is rejected, showing the sentence of a failed save,
-  retried at that rhythm, sendable again after it, and its error left unhandled for D-323. An agent
-  compares a change with the part no test holds:
+  retried after the first wait of that rhythm, 5 real seconds, sendable again after it, and its
+  error left unhandled for D-323. An agent compares a change with the part no test holds:
   - complies: a successful save that changes nothing elsewhere on the screen; the sentence of a save
     refused as too large in `warning`; any number of earning loops started, the limits of a save
     staying 64 KiB in the browser and on the server
