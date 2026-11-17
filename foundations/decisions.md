@@ -5421,7 +5421,7 @@ the next until the player changes it, and a stop at a discovery is the same paus
 whatever treats a pause treats both the same. Accepted with it: a stop at a discovery cannot be told
 apart in the game state from the player's pause, which is why the pace stays through it too; a player who ended a map run at 16×
 starts the next one at 16× and can miss its start; with the browser tab hidden, a mage sent then
-passes the whole of Las unseen in half a real minute.
+passes 480 game minutes of a map run of Las, the whole of the shortest one that solves it, unseen in half a real minute.
 *Rejected:* each map run, a map run restart included, starting again at 1× — the player would pick
 the pace anew for each attempt.
 
@@ -5450,7 +5450,7 @@ control, so the styleguide needs no new control for it. At 1× the 480 game minu
 minutes and at 16× 30 real seconds. Accepted with it: at 16× the screen jumps 3.2 game minutes at
 each refresh, which comes every 200 ms; the paces 2×, 4× and 8× are not taken from the predecessor
 game, loop; and the time of a hidden browser tab counts, so at 16× a player who leaves the tab for
-30 seconds lets a whole map run of Las, to its completion or its death, pass unseen.
+30 seconds lets 480 game minutes of a map run of Las, the whole of the shortest one that solves it, pass unseen.
 *Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own.
 
 ### D-131 — Which changes of the program a map run carries out reset its solving progress?
