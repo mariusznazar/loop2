@@ -454,7 +454,7 @@ test("an untouched game sends nothing at the 30-second check or at hiding, and s
 });
 
 test("a passing map run is saved at the 30-second check and at hiding, and a hiding during a request in flight sends nothing more", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
   // decision: D-207 "The 30-second rhythm and the hidden page send the game state only where it changed since the save last sent, or where the save last sent failed, the save time of a document being no change of it; the browser has at most one save request in flight"
   await onPage(async () => {
     const held = heldClient();
@@ -481,7 +481,7 @@ test("a passing map run is saved at the 30-second check and at hiding, and a hid
 // D-207. Catches a rhythm that sends every 30 seconds for loops alone, which the player left on
 // overnight, and a hidden page or an act that no longer sends.
 test("the 30-second check is silent while no manual map run passes, though the state changes at every reading; hiding and an act still send", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
   const cases = [
     ["no manual map run", withCharacter()],
     ["a paused manual map run", setPaused(passing(), true).state],
@@ -855,7 +855,7 @@ async function takingRejections(body) {
 const BROKEN = new TypeError("the saving code broke");
 
 /**
- * The ways the saving code fails before the request leaves: each has `breaks(), mend()` over a saver
+ * The ways the saving code fails before the request leaves: each has `extra` or `client` over a saver
  * whose first attempt is broken and whose next ones are whole.
  */
 const BREAKS = {

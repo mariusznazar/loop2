@@ -1570,6 +1570,7 @@ test("a row reads as a sentence: the condition with its number and target, then 
 // Catches a number with a fraction that the sentence writes with a dot, as JavaScript prints it, where
 // the body row of the same screen writes „36,5 °C”, with a decimal comma. The row, the group's header
 // and the end-of-run window and the chronicle that read them all take the sentence from these functions.
+// decision: D-57 "A character's warmth is its body temperature in degrees Celsius, counted with tenths and written with a decimal comma, as „36,5 °C”."
 test("a number with a fraction stands in the sentence of a rule and of a group with a decimal comma, a whole one without it", () => {
   const chilly = { kind: "temperatureBelow", value: 36.5 };
   assert.equal(conditionSentence(chilly), "Temperatura poniżej 36,5 °C");

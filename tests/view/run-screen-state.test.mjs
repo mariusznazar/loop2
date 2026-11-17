@@ -63,7 +63,7 @@ function screenOf(state, { reduced = false } = {}) {
 // Catches a window that stands over a screen the player is not on, or one that does not stand over
 // the screen of an ended map run that the player comes to.
 test("a game built on an ended map run opens the window, which stands once the player is on the screen, and it opens again at each entering after „✕”", () => {
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "The window scrolls in itself while its buttons"
   // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const { screen } = screenOf(ended(going()));
@@ -142,7 +142,7 @@ test("leaving the screen ends the wait for the effect, and the window stands at 
 // the question.
 test("the question closes the window, which stays closed after „Wróć”", () => {
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const { screen } = screenOf(renamed(ended(going())));
   screen.entered();

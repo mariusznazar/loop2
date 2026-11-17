@@ -19,9 +19,10 @@ Reading of the sentence:
 - „Zapisz jako nowy program”: `saveCopyAsNewProgram` with the name „Nocna”, after the same edits;
 - the content of the copy: `state.run.copy.program`, read as JSON before and after the save;
 - the map run's streak: `state.run.streak`;
-- is no switch: the streak is the one thing a switch sets to zero, so a save that left the streak
-  is none; the copy's program number is checked besides: it stays program 1 for the save into the
-  program and becomes the new program's number for the save as a new program;
+- is no switch: a switch sets the streak, the beaten attacks and the rule counts to zero, so a save
+  that left them as they were is none; the copy's program number is checked besides: it stays
+  program 1 for the save into the program and becomes the new program's number for the save as a
+  new program;
 - in a map run that runs and in one that is paused by `setPaused`; the pause stays as it was.
 
 Controls, so the check can fail: in the same scenario `switchProgram` to program 2, made by

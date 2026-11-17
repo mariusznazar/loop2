@@ -1990,6 +1990,7 @@ function cancelWithin(element) {
 test("an effect or a return of the tint cut by leaving the screen is over as its animation's end makes it, and a scene shown again does not play it", async () => {
   // decision: D-317 "An effect of an ordinary event is a short sign of one event"
   // decision: D-316 "A loss of the streak while the map run goes on takes the tint back to the cool one"
+  // decision: D-367 "Any other reading starts none, so that an effect overdue when its turn comes, one at a stop or in a reading that carries several ends, is dropped; an effect already running finishes, standing still while the scene does, unless the map run is left, the scene is hidden"
   await withPage(async (page) => {
     const afterTheCombat = async (outcome) => {
       const read = await mounted(page, inCombat());
@@ -2889,8 +2890,10 @@ test("a reading that carries the attack together with the end of a gathering sho
 });
 
 // D-322, D-316. Catches a wolf frozen part of the way through its run in where the mage dies or the map run is
-// solved within the 300 ms of the run, as at 16×, where the combat is decided 312 ms after the attack: the run
-// is then overdue, the scene stands still for good and the wolf stands beside the mage.
+// solved within the 300 ms of the run: the view reads the game every 200 ms, so the reading that shows the
+// combat decided, 312.5 ms after the attack at 16×, can come 200 ms after the reading that showed the attack,
+// and a completion can come in any earlier minute of the combat. The run is then overdue, the scene stands
+// still for good and the wolf stands beside the mage.
 test("a death or a completion in the 300 ms of the run in leaves the wolf standing beside the mage, not held on its way", async () => {
   // decision: D-316 "What attacks the character stands beside the mage through the minutes of the combat"
   await withPage(async (page) => {

@@ -39,7 +39,7 @@ game's running instance.
 ## test server
 
 The test server is the server on Mikrus where loop2 runs for its players while the game is still
-being built, and where player accounts are served once the game has them.
+being built, and where player accounts are served.
 
 - **Not:** none
 
@@ -94,7 +94,7 @@ The headquarters is the screen Siedziba, which shows the player's team with its 
 
 A character is at the camp when it is in no manual map run, going, paused or ended and waiting for „Restart” or „Zakończ”, and in no earning loop.
 
-- **Not:** the screen Siedziba — headquarters · the picture band at the top of that screen with the characters drawn in it, of which it holds only the first that fit — `campDrawing`
+- **Not:** the picture band at the top of the headquarters with the characters drawn in it, of which it holds only the first that fit — `campDrawing`
 
 ## unit test
 
@@ -122,7 +122,7 @@ An archetype is the kind of character that sets its predispositions.
 
 ## Understanding
 
-The Understanding is the record of the game's actions, items, conditions, creatures and branches that the player has
+The Understanding is the record of the game's actions, items, conditions, creatures and character skill trees, each with all its branches (D-195), that the player has
 discovered, together with the condition „Zawsze” and the action „Eksploruj”, which it holds from the start of a new game.
 
 - **Not:** none
@@ -173,7 +173,7 @@ A beaten attack is an attack in which the creature reaches zero health in combat
 
 ## combat turn
 
-A combat turn is an exchange in which each side has one action, ending early when either side dies before the other side’s response.
+A combat turn is an exchange in which each side has at most one action, the character none when it finds no feasible combat rule (D-146), ending early when either side dies before the other side’s response.
 
 - **Not:** none
 
@@ -250,6 +250,12 @@ The loop clock is the date, kept by the browser view apart from the game state, 
 
 - **Not:** none
 
+## reading
+
+A reading is one pass of the browser view in which it reads the browser's clock, passes the real time elapsed to the simulation where game time runs, and draws the screen from the game state it then holds, the previous reading being the pass before it.
+
+- **Not:** a command's output that an environment fact's Source quotes — the third form of `Source` in `.the-way/elements/environment-facts/template.md`
+
 ## secondary action
 
 A secondary action is an action of the browser view that opens or leaves a state of a form and
@@ -259,9 +265,9 @@ stands under that form, a button drawn as underlined text without a frame.
 
 ## chronicle
 
-The chronicle is the record a manual map run keeps for the player to read, each entry with its game minute.
+The chronicle is the record the page keeps of a manual map run for the player to read, each entry with its game minute.
 
-- **Not:** the events a function of the simulation returns, which a screen reads as they pass and which no map run keeps — "events"
+- **Not:** the events a function of the simulation returns, which a screen reads as they pass and which nothing keeps — "events"
 
 ## previous save
 

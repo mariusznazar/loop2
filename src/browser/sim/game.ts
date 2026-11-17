@@ -366,7 +366,7 @@ export function newGame(): GameState {
  * copy's program and base stay. The running activity is left as it is, and the copy takes effect
  * when the character next picks a program rule. Where the copy checked differs from the copy before
  * it — groups and rules in order with their identities, conditions and actions, and the identity
- * counters — the streak and defeated-attack count of a map run not ended, in death or a completion,
+ * counters — the streak and count of beaten attacks of a map run not ended, in death or a completion,
  * become 0, paused or not, a streak that stood above zero being returned as one event of its loss; a
  * copy handed back as it stands leaves both.
  *

@@ -380,8 +380,9 @@ const SPRITES = fileURLToPath(
 
 /**
  * The three packs the scene's pictures come from (D-271) and whether the licence of each asks for a
- * credit: Pixel Crawler asks for none (environment fact pixel-crawler-terms), the other two are under
- * CC BY 3.0 (lpc-wolf-licence, smoke-fire-particle-licence).
+ * credit: Pixel Crawler asks for none but of a project with a saxophone solo, which the game has not
+ * (environment fact pixel-crawler-terms), the other two are under CC BY 3.0 (lpc-wolf-licence,
+ * smoke-fire-particle-licence).
  */
 const SPRITE_PACKS = {
   "Pixel Crawler": { asksForCredit: false },
@@ -419,8 +420,39 @@ const spriteFiles = readdirSync(SPRITES, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 
+/**
+ * The pack of each sprite file as the list of the sprite files in README.md names it: point 2 of the
+ * list ("First run") has one sentence for each pack, and a file named in a sentence comes from the pack
+ * that sentence is about.
+ */
+function packOfSpriteInReadme() {
+  const readme = readFileSync(
+    fileURLToPath(new URL("../../README.md", import.meta.url)),
+    "utf8",
+  );
+  const point = readme.match(/^2\. The graphics in `assets\/sprites\/`.*$/m);
+  assert.ok(
+    point,
+    "README.md has no point 2 on the graphics in assets/sprites",
+  );
+  const packs = {};
+  for (const sentence of point[0].split(
+    /(?=The second pack is |The third is )/,
+  )) {
+    const named = Object.keys(SPRITE_PACKS).filter((pack) =>
+      sentence.includes(pack),
+    );
+    assert.equal(named.length, 1, `packs named in: ${sentence.slice(0, 60)}`);
+    for (const [, name] of sentence.matchAll(
+      /`assets\/sprites\/([^`/]+\.png)`/g,
+    ))
+      packs[name] = named[0];
+  }
+  return packs;
+}
+
 // invariant: sprite-credits
-test("each PNG file directly in assets/sprites is assigned to one of the three packs, and a file with no assignment fails naming it", () => {
+test("each PNG file directly in assets/sprites is assigned to one of the three packs, a file with no assignment fails naming it, and README.md names for each file the pack assigned to it", () => {
   // decision: D-271 "A sprite file holds pixels alone, the game credits each pack whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0"
   assert.ok(spriteFiles.length > 0, "no sprite files found");
   assert.deepEqual(
@@ -430,6 +462,11 @@ test("each PNG file directly in assets/sprites is assigned to one of the three p
   );
   for (const [name, pack] of Object.entries(PACK_OF_SPRITE))
     assert.ok(Object.hasOwn(SPRITE_PACKS, pack), `${name}: pack ${pack}`);
+  assert.deepEqual(
+    packOfSpriteInReadme(),
+    PACK_OF_SPRITE,
+    "the pack each sprite file has in the list of README.md, against PACK_OF_SPRITE",
+  );
 });
 
 // invariant: sprite-credits

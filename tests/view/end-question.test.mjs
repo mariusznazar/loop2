@@ -256,7 +256,7 @@ async function drawn(state) {
 // button (D-44: it loses the copy's changes) or „Zapisz” and „Wróć” drawn as destructive, and an
 // answer wired to the act of another.
 test("the question reads „Zapisać, odrzucić, wrócić?” and offers „Zapisz”, „Odrzuć” and „Wróć” in that order, only „Odrzuć” a destructive button, each asking its own act", async () => {
-  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   await withPage(async () => {
     const view = await drawn(renamed(paused()));
@@ -344,7 +344,7 @@ test("the line of D-172 stands under the sentence only while the copy's program 
 test("„Zakończ” with unsaved changes asks at every moment of the map run, leaves the map run where it is and stops the one that goes on", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-324 "While the question „Zapisać, odrzucić, wrócić?” of D-173 stands, the map run is paused as „Pauza” pauses it"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   const moments = [
     ["going on", () => renamed(going()), true, false],

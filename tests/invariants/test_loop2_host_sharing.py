@@ -394,7 +394,7 @@ class DeployScriptActsOnLoop2Alone(unittest.TestCase):
 
     def test_every_docker_command_is_one_a_deployment_may_run(self):
         # invariant: loop2-host-sharing
-        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
+        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, logs and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         problems = [f"line {number}: docker {' '.join(words)}: {p}"
                     for number, words in self.docker for p in docker_problems(words)]
         self.assertEqual(problems, [], f"{DEPLOY_SCRIPT} runs a Docker command, option or object "

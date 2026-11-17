@@ -41,9 +41,12 @@
   color: var(--text-strong);
 }
 
-/* A line about the copy: something that will be lost or replaced, in `warning` (D-39). */
-/* The line names the program, a name typed by the player: it breaks inside its row
- * (styleguide rule "A name typed by the player breaks in its row"). `min-width: 0` lets the item of the row shrink below its longest word. */
+/*
+ * A line about the copy, in `warning` (D-39): the changes of the copy not yet saved, or the changes of
+ * its program that the copy lacks. The second line names the program, a name typed by the player, so it
+ * breaks inside its row (styleguide rule "A name typed by the player breaks in its row"); `min-width: 0`
+ * lets it, an item of the row `.copy-save`, shrink below its longest word.
+ */
 .copy-line {
   min-width: 0;
   overflow-wrap: anywhere;

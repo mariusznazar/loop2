@@ -1,5 +1,5 @@
 /**
- * The camp at the top of Siedziba (D-389, D-272, D-43, D-04): a band over the screen's panel, the width of the
+ * The picture band at the top of Siedziba (D-389, D-272, D-43, D-04): a band over the screen's panel, the width of the
  * content and the height of its picture at twice its pixels, with the campfire in the middle, the chest
  * to the right of it and, to its left, the characters at the camp, in the order of creation
  * and away from the fire. Its files, sizes and places come from `campDrawing`, the view names none. A
@@ -16,7 +16,7 @@
  * leaves them on the first frame under the system's setting for reduced motion (D-316, D-317). The fire
  * stands for no campfire of the game state; it always burns.
  *
- * The camp is a picture: no element of it takes the keyboard or a click, it is hidden from assistive
+ * The picture band is a picture: no element of it takes the keyboard or a click, it is hidden from assistive
  * technology and no text or sign stands on it (D-272, D-321, D-44). The names in „Drużyna” under it lead
  * to the screen Postać (D-280). Nothing runs when the module is imported.
  */
@@ -67,7 +67,7 @@ function Member({
   );
 }
 
-/** The camp of the game state: the characters at the camp, the fire and the chest, over the clearing. */
+/** The picture band of the game state: the characters at the camp, the fire and the chest, over the clearing. */
 export function Camp({ state }: { state: GameState }) {
   const camp = campDrawing(state);
   const { background, fire, chest, members, gap, lift } = camp;

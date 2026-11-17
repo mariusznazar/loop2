@@ -32,7 +32,7 @@ The part draws the game's screens in the browser, sends the browser's requests t
 
 ## simulation
 
-The part computes the game: the game state, the map run, the character's program and the passing of game time, from the game's data.
+The part computes the game: the game state, the map run, the character's program and the passing of game time, from the game's data, and holds the game's data, the pictures of its scene and the words that name the game included.
 
 - **Files:** src/browser/sim/**
   tests/sim/**
@@ -89,7 +89,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, checks the simulation's types under a configuration of their own, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the owner's computer, starts the game on the developer's machine over HTTPS with a database made for that start, builds and serves the browser view's kitchen-sink page on the developer's machine, and starts Docker Desktop, where it is installed, for a test of the test gate that needs a Docker daemon when none answers.
+The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, checks the simulation's types under a configuration of their own, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the operator's computer, starts the game on the developer's machine over HTTPS with a database made for that start, builds and serves the browser view's kitchen-sink page on the developer's machine, and starts Docker Desktop, where it is installed, for a test of the test gate that needs a Docker daemon when none answers.
 
 - **Files:** /package.json
   /package-lock.json
@@ -118,7 +118,7 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   tests/invariants/test_local_start_access.py
   tests/password-measurement.test.mjs
 - **Depends on:** browser-view · simulation · account-server · product-foundation
-- **Trust boundary:** package-lock.json
+- **Trust boundary:** /package-lock.json
   scripts/audit_dependencies.py
   scripts/kitchen-sink.mjs
   scripts/local-start.mjs
@@ -152,12 +152,12 @@ The part holds the product's foundation.
 
 ## deployment
 
-The part builds the application into the loop2 container, deploys a commit of the repository to the
+The part builds the application into the loop2 container and the image of the Cloudflare tunnel in front of it, deploys a commit of the repository to the
 test server, appending the log of the containers it replaces to a file on the host, and holds the
 nightly backup script and its schedule, which a human installs on the host and which encrypt the
 database backup and send it off the server; it also holds the logrotate file of that log file, the
 failure watcher with its schedule, and the scheduled check of the public address, the watcher and
-the check both telling the owner when the running game fails and the watcher also telling the owner
+the check both telling the operator when the running game fails and the watcher also telling the operator
 when the log of the nightly backup shows no recent successful send of a backup.
 
 - **Files:** Dockerfile

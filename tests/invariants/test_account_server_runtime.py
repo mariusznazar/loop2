@@ -1,5 +1,5 @@
 """Invariant account-server-runtime: The account and save server's TypeScript source and
-deployment use Node.js major version 24.
+its container image use Node.js major version 24.
 
 Covers, in the working tree being checked:
 - package.json `engines.node`, and the root entry of package-lock.json, admit Node.js 24 and no

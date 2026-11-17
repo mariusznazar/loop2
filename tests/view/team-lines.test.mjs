@@ -156,7 +156,7 @@ test("a clock set back lengthens the time left: the moment an hour earlier reads
 });
 
 test("the label of a generation is „pokolenie {n}” from 2 up and nothing at 1", () => {
-  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
+  // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   assert.equal(generationLabel(1), null);
   assert.equal(generationLabel(2), "pokolenie 2");
   assert.equal(generationLabel(13), "pokolenie 13");

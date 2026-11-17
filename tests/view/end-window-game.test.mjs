@@ -407,7 +407,7 @@ async function withReducedMotion(reduced, body) {
 // under it, and the death's title missing.
 test("the window opens once the scene's effect of the death has ended, while the player is on the screen, and covers the header and the three areas", async () => {
   // decision: D-62 "After a character's death the screen stays on the state of the game minute of death and time stands still for that map run, the end-of-run window D-368 gives opens of itself over the screen, its header included and the menu bar not, and the player has „Restart”, which starts the map run again with the same seed from game minute zero, and „Zakończ”, which returns to the screen D-53 gives, in the window and, with the window closed, in the header"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-311 "It opens of itself at the end of the map run once the scene's effect of the death or the completion has played"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
@@ -448,7 +448,7 @@ test("the window opens once the scene's effect of the death has ended, while the
 test("the window opens at a completion too, titled by the completion text, with the way to the map it opened", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
   // decision: D-132 "„Pauza” and the pace buttons are gone, and the player has „Restart” and „Zakończ” as after a character's death, and, after a completion of a map that opens another, „Otwarte: {mapa} →” in the window, the way to the map it opened (D-53, D-173)"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-368 "The window scrolls in itself while its buttons"
   await onPage(async (page) => {
@@ -576,7 +576,7 @@ test("a scene hidden while its effect runs tells the game view, and the window s
 // window that stays closed after the player closed it and left, and one that stays open under
 // another screen's address.
 test("the window opens again at every entering of the screen of an ended map run: after a link of the menu bar and back, and after the browser's back", async () => {
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "The window scrolls in itself while its buttons"
   // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   await onPage(async (page) => {
@@ -726,7 +726,7 @@ test("„Ostatnie minuty” are the last entries of the chronicle up to the entr
 // przejścia” that does not open the window again.
 test("„✕” and Escape close the window and uncover the screen, the header holds „Koniec przejścia” before „Restart” with the focus on it, and it opens the window again", async () => {
   // decision: D-311 "The header holds the character's name, the map's name, the clock"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "The window scrolls in itself while its buttons"
   // decision: D-370 "The window takes the focus when it opens"
   // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
@@ -864,7 +864,7 @@ test("„Zakończ” of the window with no unsaved changes ends the map run at o
 test("„Zakończ” of the window with unsaved changes closes the window and asks in the panel of the copy; „Wróć” leaves the window closed and „Koniec przejścia” opens it", async () => {
   // decision: D-173 "„Zakończ” and „Otwarte: {mapa} →”, a button of the end-of-run window (D-368), with no unsaved changes of the copy end the map run at once, and with unsaved changes — „Zakończ” at any moment of a map run — they ask „Zapisać, odrzucić, wrócić?” in a band of the program panel just above the heading of the copy"
   // decision: D-173 "„Zapisz” saves the copy as „Zapisz w programie” does, replacing the changes its program holds that the copy lacks, or, where its program was deleted, as a new program under the first free name with no name field, and ends the map run; „Odrzuć” ends it with no save; „Wróć” closes the question and leaves the map run as it was"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-371 "Whether the end-of-run window (D-368) is open is a memory of the page"
   // decision: D-371 "„Koniec przejścia” stands in the header before „Restart”"
   await onPage(async ({ root }) => {
@@ -1083,7 +1083,7 @@ test("the window stands in no game state and no saved document: closing and open
 // for a bring plan that takes nothing.
 test("a reload of the screen of an ended map run opens the window with its longest streak and the line of what the end gave or cost read from the loaded state, after a death and after a completion", async () => {
   // decision: D-135 "A manual map run keeps the longest streak it reached, and the end-of-run window (D-368) shows it against the map's condition, as „najdłuższa passa {longest}/{required}” with its bar in the form of the bar of the solving condition in the header (D-133)"
-  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
@@ -1160,7 +1160,7 @@ async function costLinesAfterReload(document, root) {
 // a first completion, that is missing after a load, stands where the resurrection was found ready, or
 // stands with the line of a resurrection used.
 test("a reload of the screen of an ended map run holds the line of a death with no practice and of a renewal at a first completion, and no renewal line where the resurrection was ready", async () => {
-  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
+  // decision: D-185 "After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”"
   // decision: D-216 "After a character's death, in the section of the end-of-run window (D-368) saying what it cost, until „Restart” or „Zakończ” and after a load too, a line stands: „Wskrzeszenie zużyte: wprawa z tego przejścia przepada, wcześniejsza i wykupione stopnie zostają"
   // decision: D-216 "After the first completion of a map that made a used-up resurrection ready, in the section saying what the end gave, below the line of D-185, until „Restart” or „Zakończ” and after a load too, the line „Wskrzeszenie odnowione: pierwsze rozwiązanie tej mapy.” stands in `text-secondary`; a completion that finds the resurrection ready shows none"
   // decision: D-212 "A manual map run of a loaded saved game state that goes on comes back at the game minute of the save, paused, with the pace of the save, and the player resumes it with „Wznów”; one that ended in a completion or in the character's death comes back with its screen after its end, with „Restart”, „Zakończ” and the copy open to editing as D-62, D-132 and D-173 give, and with the end-of-run window (D-368) open again, holding all it held but „Ostatnie minuty”, which stand only where the chronicle holds the entries (D-339)"

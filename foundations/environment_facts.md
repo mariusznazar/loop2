@@ -289,7 +289,7 @@ A Node.js `net` server told to listen on port 0 gets from the operating system a
 
 Cloudflare Tunnel connects an origin to Cloudflare through an outbound encrypted connection without an inbound public port.
 
-- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/tunnel/index.mdx § Overview — "Cloudflare Tunnel connects your infrastructure to Cloudflare through an outbound-only, post-quantum encrypted connection." · § Overview — "No open inbound ports."; read 2026-10-26
+- **Source:** https://raw.githubusercontent.com/cloudflare/cloudflare-docs/1603d9d13a2889c5792a287f2452440594fac225/src/content/docs/tunnel/index.mdx § introduction, before the heading "How it works" — "Cloudflare Tunnel connects your infrastructure to Cloudflare through an outbound-only, post-quantum encrypted connection." · "No open inbound ports."; read 2026-11-17
 
 ## cloudflare-tunnel-token-file
 
@@ -313,7 +313,7 @@ Cloudflared 2026.10.4's readiness endpoint returns HTTP 200 only when at least o
 
 Compose mounts a service's short-syntax secret read-only under `/run/secrets/`, and file-backed secrets retain host permissions because Compose does not implement their uid, gid and mode remapping.
 
-- **Source:** https://raw.githubusercontent.com/compose-spec/compose-spec/3a4a6995e4a971f6173dff9130cb3e38e6738651/container_spec.md § secrets, Short syntax — "mounts it as read-only to /run/secrets/<secret_name>" · § secrets, Long syntax, Note — "The uid, gid, and mode attributes are not implemented in Docker Compose"; read 2026-10-26
+- **Source:** https://raw.githubusercontent.com/compose-spec/compose-spec/3a4a6995e4a971f6173dff9130cb3e38e6738651/container_spec.md § secrets, Short syntax — "mounts it as read-only to /run/secrets/<secret_name>" · § secrets, Long syntax, Note — "The uid, gid, and mode attributes are not implemented in Docker Compose when the secret source of the secret is a file, as bind-mount used under the hood doesn't allow uid remapping."; read 2026-11-17
 
 ## mikrus-tunnel-outbound-tcp
 
@@ -349,7 +349,7 @@ Argon2 0.45.1 documents Node.js 22 or newer as its supported runtime and publish
 
 OWASP recommends Argon2id for password storage and experimentation on the application's actual servers to select a work factor.
 
-- **Source:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/3c07d4aa45a33ffc6a68408621064942358dee61/cheatsheets/Password_Storage_Cheat_Sheet.md § Recommendations — "Use Argon2id" · § Using Work Factors — "Determining the optimal work factor will require experimentation on the specific server(s) used by the application."; read 2026-10-26
+- **Source:** https://raw.githubusercontent.com/OWASP/CheatSheetSeries/3c07d4aa45a33ffc6a68408621064942358dee61/cheatsheets/Password_Storage_Cheat_Sheet.md § Introduction, the summary of recommendations — "Use Argon2id" · § Using Work Factors — "Determining the optimal work factor will require experimentation on the specific server(s) used by the application."; read 2026-11-17
 
 ## express-session-store-contract
 
@@ -365,7 +365,7 @@ Express-session 1.19.0 signs the session cookie with the first configured secret
 
 ## node-sqlite-database
 
-Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, an option that opens the database in read-only mode and fails when the database does not exist, parameterizable prepared statements, explicit connection closing and an asynchronous `backup()` function that transmits a positive number of pages in each batch, 100 by default, that calls an optional `progress` callback after each backup step with the remaining and the total pages, and that restarts on mutations from other connections.
+Node.js 24, as its 24.21.0 documentation says, exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, an option that opens the database in read-only mode and fails when the database does not exist, parameterizable prepared statements, explicit connection closing and an asynchronous `backup()` function that transmits a positive number of pages in each batch, 100 by default, that calls an optional `progress` callback after each backup step with the remaining and the total pages, and that restarts on mutations from other connections.
 
 - **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § new DatabaseSync, readOnly — "If true, the database is opened in read-only mode." · "If the database does not exist, opening it will fail." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection." · § sqlite.backup(sourceDb, path[, options]) — "A promise that fulfills with the total number of backed-up pages upon completion, or rejects if an error occurs." · "Positive number of pages to be transmitted in each batch of the backup. Default: 100." · "An optional callback function that will be called after each backup step." · "with remainingPages and totalPages properties, describing the current progress of the backup operation." · "This method makes a database backup." · "However, mutations from other connections will cause the backup process to restart."; read 2026-11-17
 
@@ -443,7 +443,7 @@ Mikrus Outsider documents mailboxes for a user-owned domain configured with an M
 
 ## nodemailer-require-tls
 
-Nodemailer 10.2.1's SMTP connection with `requireTLS` set overrides `ignoreTLS` and `opportunisticTLS`, sends STARTTLS after EHLO whether or not the server announces it, and fails with an error instead of going on in plain text when EHLO fails, when the server refuses STARTTLS or when the TLS upgrade fails.
+Nodemailer 10.2.1's SMTP connection with `requireTLS` set overrides `ignoreTLS` and `opportunisticTLS`, sends STARTTLS after EHLO, on a connection not already secure, whether or not the server announces it, and fails with an error instead of going on in plain text when EHLO fails, when the server refuses STARTTLS or when the TLS upgrade fails.
 
 - **Source:** https://registry.npmjs.org/nodemailer/-/nodemailer-10.2.1.tgz § package/dist/cjs/smtp-connection/index.js, SMTPConnection options — "**requireTLS** - forces the client to use STARTTLS, takes precedence over ignoreTLS and opportunisticTLS" · § SMTPConnection constructor — "if (this.options.requireTLS && (this.options.ignoreTLS || this.options.opportunisticTLS)) {" · § _actionEHLO — "this._onError(new Error('EHLO failed but HELO does not support required STARTTLS. response=' + str), 'ECONNECTION', str, 'EHLO');" · "if (!this.secure && !this.options.ignoreTLS && (/[ -]STARTTLS\b/im.test(str) || this.options.requireTLS)) {" · § _actionSTARTTLS — "this._onError(new Error('Error upgrading connection with STARTTLS'), 'ETLS', str, 'STARTTLS');" · "this._onError(new Error('Error initiating TLS - ' + (err.message || err)), 'ETLS', false, 'STARTTLS');"; read 2026-10-29
 
@@ -473,9 +473,9 @@ A document's `visibilitychange` event fires with the visibility state `hidden` w
 
 ## express-session-end-of-request
 
-Express-session 1.19.0 with `resave` false, at the end of a request, calls the Store's `touch` for a session it loaded from the request's cookie and whose data, the cookie apart, did not change, and does not call the Store's `set` for that session.
+Express-session 1.19.0 with `resave` false, at the end of a request, calls the Store's `touch`, when the Store implements it, for a session it loaded from the request's cookie and whose data, the cookie apart, did not change, and does not call the Store's `set` for that session.
 
-- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § inflate — "if (!resaveSession) {" · "savedHash = originalHash" · § isSaved — "return originalId === sess.id && savedHash === hash(sess);" · § shouldSave — ": !isSaved(req.session)" · § shouldTouch — "return cookieId === req.sessionID && !shouldSave(req);" · § res.end — "store.touch(req.sessionID, req.session, function ontouch(err) {" · § hash — "if (this === sess && key === 'cookie') {"; read 2026-10-30
+- **Source:** https://raw.githubusercontent.com/expressjs/session/c10b2a383841766899f6dcf53c8aff8c7fd3d2e7/index.js § inflate — "if (!resaveSession) {" · "savedHash = originalHash" · § isSaved — "return originalId === sess.id && savedHash === hash(sess);" · § shouldSave — ": !isSaved(req.session)" · § shouldTouch — "return cookieId === req.sessionID && !shouldSave(req);" · § session — "var storeImplementsTouch = typeof store.touch === 'function';" · § res.end — "} else if (storeImplementsTouch && shouldTouch(req)) {" · "store.touch(req.sessionID, req.session, function ontouch(err) {" · § hash — "if (this === sess && key === 'cookie') {"; read 2026-11-17
 
 ## express-session-regenerated-session-saved-again
 
@@ -533,7 +533,7 @@ In OpenSSH portable 8.9p1, `ssh` with `KnownHostsCommand` set obtains host keys 
 
 ## node-uncaught-default-print
 
-Node.js 24.21.0, with no handler for an uncaught exception, prints its stack trace to standard error, the trace's first line holding the error's class name and message, and exits with code 1.
+Node.js 24, as its 24.21.0 documentation says, with no handler for an uncaught exception, prints its stack trace to standard error, the trace's first line holding the error's class name and message, and exits with code 1.
 
 - **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/process.md § Event: 'uncaughtException' — "By default, Node.js handles such exceptions by printing the stack trace to `stderr` and exiting with code 1" · https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/errors.md § error.stack — "The first line is formatted as `<error class name>: <error message>`"; read 2026-11-02
 
@@ -581,7 +581,7 @@ Git for Windows comes with OpenSSL.
 
 ## node-assert-failure-inspect
 
-Node.js 24.17.0, while it builds the error of a failing comparison of `node:assert`, writes the compared values out by `inspect` with `customInspect: false`, `depth: 1000` and `getters: true`.
+Node.js 24, as its 24.17.0 source says, while it builds the error of a failing comparison of `node:assert`, writes the compared values out by `inspect` with `customInspect: false`, `depth: 1000` and `getters: true`.
 
 - **Source:** https://raw.githubusercontent.com/nodejs/node/v24.17.0/lib/internal/assert/assertion_error.js § inspectValue — "return inspect(val, {" · "customInspect: false," · "depth: 1000," · "getters: true," · § createErrDiff — "const inspectedActual = inspectValue(actual);" · § AssertionError — "super(createErrDiff(actual, expected, operator, message, diff));"; read 2026-11-02
 
@@ -647,15 +647,15 @@ Node.js's module `node:worker_threads` gives threads that execute JavaScript in 
 
 ## npm-lock-peer-dependencies
 
-npm copies the `peerDependencies` of a package's `package.json` into that package's entry of `package-lock.json`.
+npm copies the `peerDependencies` of a package's `package.json` into that package's entry of `package-lock.json` only where the field is not empty.
 
-- **Source:** https://raw.githubusercontent.com/npm/cli/v12.2.1/workspaces/arborist/lib/shrinkwrap.js § pkgMetaKeys — "const pkgMetaKeys = [" · "'peerDependencies'," · § metaFromNode — "for (const key of pkgMetaKeys) {" · "const val = metaFieldFromPkg(node.package, key)" · "meta[key.replace(/^_/, '')] = val"; read 2026-11-02
+- **Source:** https://raw.githubusercontent.com/npm/cli/v12.2.1/workspaces/arborist/lib/shrinkwrap.js § pkgMetaKeys — "const pkgMetaKeys = [" · "'peerDependencies'," · § metaFromNode — "for (const key of pkgMetaKeys) {" · "const val = metaFieldFromPkg(node.package, key)" · "if (val) {" · "meta[key.replace(/^_/, '')] = val" · § metaFieldFromPkg — "// skip empty objects and falsey values" · "if (typeof val !== 'object' || Object.keys(val).length) {"; read 2026-11-17
 
 ## pixel-crawler-terms
 
-The terms of the Pixel Crawler pack ask for no credit, allow its arts to be altered and used in commercial products, and forbid selling them as a final product.
+The terms of the Pixel Crawler pack ask for no credit except where the project has a saxophone solo, allow its arts to be altered and used in commercial products, and forbid selling them as a final product.
 
-- **Source:** https://anokolisa.itch.io/free-pixel-art-asset-pack-topdown-tileset-rpg-16x16-sprites (archived: https://web.archive.org/web/20261016154500/https://anokolisa.itch.io/free-pixel-art-asset-pack-topdown-tileset-rpg-16x16-sprites, 2026-10-16) § the link "Terms", which opens the document https://drive.google.com/file/d/17y1gjuwVirE8V79WcTL9tgTUtMu6R1je/view?usp=sharing, points 1, 2, 3 and 4 — "It is not necessary to credit the author for any use of the arts, but if it is done it is appreciated." · "The arts present can be altered in any shape, color or pattern" · "These arts cannot be sold as a final product, only the author can sell the assets" · "You can use these assets in creating commercial products, study or any other project where they are functional" · the closing line — "These terms apply to all works available for sale or distribution by anokolisa"; read 2026-11-12
+- **Source:** https://anokolisa.itch.io/free-pixel-art-asset-pack-topdown-tileset-rpg-16x16-sprites (archived: https://web.archive.org/web/20261016154500/https://anokolisa.itch.io/free-pixel-art-asset-pack-topdown-tileset-rpg-16x16-sprites, 2026-10-16) § the link "Terms", which opens the document https://drive.google.com/file/d/17y1gjuwVirE8V79WcTL9tgTUtMu6R1je/view?usp=sharing, points 1, 2, 3, 4 and 5 — "It is not necessary to credit the author for any use of the arts, but if it is done it is appreciated." · "The arts present can be altered in any shape, color or pattern" · "These arts cannot be sold as a final product, only the author can sell the assets" · "You can use these assets in creating commercial products, study or any other project where they are functional" · "If at any point in your project, there is a saxophone solo, the name of the author must be credited" · the closing line — "These terms apply to all works available for sale or distribution by anokolisa"; read 2026-11-17
 
 ## html-exception-reporting
 
@@ -743,13 +743,13 @@ GitHub charges nothing for the use of standard GitHub-hosted runners in public r
 
 ## docker-compose-down-volumes
 
-By default `docker compose down` removes the containers of the Compose file's services and the networks it defines and no volume, and with `--volumes` it also removes the named volumes declared in the Compose file's `volumes` section and the anonymous volumes attached to containers, but never a volume defined as external.
+By default `docker compose down` removes the containers of the Compose file's services, the networks it defines and the default network, and no volume, and with `--volumes` it also removes the named volumes declared in the Compose file's `volumes` section and the anonymous volumes attached to containers, but never a volume defined as external.
 
-- **Source:** https://raw.githubusercontent.com/docker/compose/9c60fe67df0763c81f2276fd4163ee5354d70b09/docs/reference/compose_down.md § Description — "By default, the only things removed are:" · "Containers for services defined in the Compose file." · "Networks defined in the networks section of the Compose file." · "Networks and volumes defined as external are never removed." · § Options, -v, --volumes — "Remove named volumes declared in the "volumes" section of the Compose file and anonymous volumes attached to containers"; read 2026-11-09
+- **Source:** https://raw.githubusercontent.com/docker/compose/9c60fe67df0763c81f2276fd4163ee5354d70b09/docs/reference/compose_down.md § Description — "By default, the only things removed are:" · "Containers for services defined in the Compose file." · "Networks defined in the networks section of the Compose file." · "The default network, if one is used." · "Networks and volumes defined as external are never removed." · § Options, -v, --volumes — "Remove named volumes declared in the "volumes" section of the Compose file and anonymous volumes attached to containers"; read 2026-11-17
 
 ## docker-volume-prune-scope
 
-The documentation of `docker volume prune` says that it removes the local volumes that no container references, by default only the anonymous ones and with `--all` the named ones too, while its example output of the command without that option lists a named volume among those deleted.
+The documentation of `docker volume prune` says that it removes the local volumes that no container references, by default only the anonymous ones and with `--all` the named ones too, while its example output of the command without that option lists a volume called `my-named-vol` among those deleted.
 
 - **Source:** https://raw.githubusercontent.com/docker/cli/ce1223035ac3ab8922717092e63a184cf67b493d/docs/reference/commandline/volume_prune.md § Description — "Remove all unused local volumes. Unused local volumes are those which are not referenced by any containers. By default, it only removes anonymous volumes." · § Examples — "WARNING! This will remove anonymous local volumes not used by at least one container." · "Deleted Volumes: 07c7bdf3e34ab76d921894c2b834f073721fccfbbcba792aa7648e3a7a664c2e my-named-vol" · § Filtering (--all, -a) — "Use the --all flag to prune both unused anonymous and named volumes."; read 2026-11-09
 
@@ -781,7 +781,7 @@ Playwright CLI 0.1.22 takes as the workspace of a call the first directory that 
 
 Playwright CLI 0.1.22 keeps the sessions of each workspace apart from those of every other workspace.
 
-- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "hash.update(workspaceDir || import_package.packageRoot);" · "const workspaceDirHash = hash.digest("hex").substring(0, 16);" · "daemonProfilesDir: daemonProfilesDir(workspaceDirHash),"; read 2026-11-11 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-11
+- **Source:** https://unpkg.com/playwright-core@1.64.0-alpha-1790635538000/lib/tools/cli-client/registry.js § createClientInfo — "hash.update(workspaceDir || import_package.packageRoot);" · “const workspaceDirHash = hash.digest("hex").substring(0, 16);” · "daemonProfilesDir: daemonProfilesDir(workspaceDirHash)," · § clientKey — "return clientInfo.workspaceDir || clientInfo.workspaceDirHash;" · § loadEntry — “const entry = await Registry._loadSessionEntry(clientInfo.daemonProfilesDir, sessionName + ".session");” · "const key = clientKey(clientInfo);"; read 2026-11-17 · https://unpkg.com/@playwright/cli@0.1.22/package.json § dependencies — ""playwright-core": "1.64.0-alpha-1790635538000""; read 2026-11-17
 
 ## screenshots-repository-readers
 

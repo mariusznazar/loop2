@@ -1,15 +1,15 @@
 /*
- * The stylesheet of the screen Siedziba (D-421): the camp at the top, the sections „Drużyna” and
+ * The stylesheet of the screen Siedziba (D-421): the picture band at the top, the sections „Drużyna” and
  * „Skrzynka”, the team and the chest, the report on earning loops and the creation of a character.
- * The folded credits at its foot stand in credits.css. The frames of the camp's characters and fire
- * (`.camp-member img`, `.camp-fire img`) are animated by a rule that stands whole in styles.css, beside
+ * The folded credits at its foot stand in credits.css. The frames of the characters and the fire of the
+ * picture band (`.camp-member img`, `.camp-fire img`) are animated by a rule that stands whole in styles.css, beside
  * the frames of the scene's sprites, because one selector list holds both. The page links this file
  * after styles.css, and it reads each value of appearance from the design tokens of tokens.css by
  * var(--…).
  */
 
 /*
- * The camp at the top of Siedziba (D-272, D-349): a band over the screen's panel, the width of the content
+ * The picture band at the top of Siedziba (D-272, D-349): it lies over the screen's panel, the width of the content
  * with the height of its picture at twice its pixels, which TypeScript gives. The clearing is as wide as
  * the widest content and lies centred behind the rest, so a narrower band crops it at the sides with the
  * campfire in the middle and never scales it down. Under the clearing in the middle stands the fire, to
@@ -20,7 +20,7 @@
  * creation, as many as fit. Every size and every gap is a number of pixels of the picture times
  * `PICTURE_PIXEL`, which TypeScript puts in the elements' styles, so the stylesheet holds none. A
  * character's frame is wider than its cell and the cell's overflow is the frame's transparent edges.
- * The camp is a picture and takes no click; its motion is the rule for the frames in styles.css.
+ * The picture band is a picture and takes no click; its motion is the rule for the frames in styles.css.
  */
 .camp {
   position: relative;

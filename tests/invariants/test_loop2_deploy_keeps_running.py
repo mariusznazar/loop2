@@ -1,5 +1,5 @@
 """Invariant loop2-deploy-keeps-running: A deployment that stops before it starts the new
-container — at its input, the commit, the lock, the reading of memory and disk, the fetch, the
+containers — at its input, the commit, the lock, the reading of memory and disk, the fetch, the
 checkout, the type check or the build — leaves the running loop2 containers in service.
 
 The check drives the repository's script `deploy/loop2-deploy` as a black box through the seam of

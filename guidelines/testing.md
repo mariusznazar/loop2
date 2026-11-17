@@ -14,9 +14,9 @@ wybór jednego pliku działa przez to samo `npm test`.
 D-422 jest odstępstwem tylko w sprawie jednego przypadku `tests/http.test.mjs`,
 który sprawdza wywołanie `destroy` na odpowiedzi; każdy inny test zachowuje
 regułę szablonu o sprawdzaniu wywołania.
-D-82 jest odstępstwem w dwóch sprawach: komentarza, który nazywa źródło wartości,
-i oceny człowieka, która jest źródłem oczekiwania dopiero wtedy, gdy trzyma ją
-decyzja fundamentu; pozostałe źródła oczekiwania zostają takie, jak daje je szablon.
+D-82 jest odstępstwem w jednej sprawie: komentarza, który nazywa źródło wartości;
+ocena człowieka, którą szablon wskazywał komentarzem, wchodzi przez decyzję
+fundamentu, a pozostałe źródła oczekiwania zostają takie, jak daje je szablon.
 
 ## Levels
 
@@ -341,9 +341,9 @@ do `scripts/test.py`, który w pełnym przebiegu przekazuje Node wzorce, nie pli
 Pythonowy runner
 the-way znajduje katalogi mające śledzony przez git i obecny plik `test_*.py`,
 a następnie uruchamia w nich odkrywanie testów unittest. Nowy plik Pythona
-jest objęty bramką dopiero po potwierdzeniu jego wykonania; szczególnie nowy
-katalog potrzebuje śledzonego pliku. Sama nazwa ani obecność na dysku nie
-jest dowodem wykonania.
+biegnie w bramce, gdy git go śledzi, także w nowym katalogu; plik jeszcze
+nieśledzony nie biegnie, więc sama nazwa ani obecność na dysku nie jest
+dowodem wykonania.
 
 `npm test -- <plik testu>` przyjmuje dokładnie jeden istniejący plik:
 `*.test.mjs` uruchamia po zbudowaniu gry, a `test_*.py` bez budowania.

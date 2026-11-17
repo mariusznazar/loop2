@@ -181,7 +181,7 @@ test("the folded section „Autorzy grafiki” stands last on the screen, whatev
 test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character"
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
-  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
+  // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   await withPage(async (page) => {
     const state = withCharacter(teamOf(), 2, { generation: 2 });
     await mount(page, propsOf(state));
@@ -286,7 +286,7 @@ test("the resurrection line follows the clock's moment in the very same element,
 // reach the page's `stop` with the character's number, and the line of a stop missing after it (D-244,
 // D-245).
 test("a running loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped loop shows its line instead", async () => {
-  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
@@ -500,7 +500,7 @@ const waiting = (practice, runPractice = {}) => ({
 // Catches the practice of the loop and the map run going on not both in the line, a button on a
 // line with nothing waiting and a button that does not carry the name of its character.
 test("practice waiting at a loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
-  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive`"
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive`"
   // decision: D-39 "`positive` also stands as the text of the button „Odbierz”, which pays the practice waiting at an earning loop, at rest and under the pointer"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
@@ -685,9 +685,9 @@ test("the field keeps its element, its text and its focus, and the button its fo
   });
 });
 
-// --- the camp --------------------------------------------------------------------------------
+// --- the picture band ------------------------------------------------------------------------
 
-/** The elements of the characters the camp draws. */
+/** The elements of the characters the picture band draws. */
 const campMembers = (root) => all(root, ".camp .camp-member");
 
 /** `state` with its character `id` sent into a map run, going. */
@@ -697,9 +697,9 @@ const sentInto = (state, id) =>
 // Catches the band standing inside the screen's panel (narrower than the content, with its padding), under
 // the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the
 // text of the screen is the text of its panel, so the band adds none.
-test("the camp stands over the panel of the screen, the heading under it, and adds no text", async () => {
-  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
-  // decision: D-389 "The camp moves as the scene does"
+test("the picture band stands over the panel of the screen, the heading under it, and adds no text", async () => {
+  // decision: D-389 "The picture band at the top of Siedziba stands across the content"
+  // decision: D-389 "The picture band moves as the scene does"
   // decision: D-272 "A picture of the game stands behind the login card"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(teamOf(2)));
@@ -718,11 +718,11 @@ test("the camp stands over the panel of the screen, the heading under it, and ad
   });
 });
 
-// Catches the camp made a control: a link, a button or a field in it, a stop in the keyboard's order, a name
+// Catches the picture band made a control: a link, a button or a field in it, a stop in the keyboard's order, a name
 // for a reader, or a picture a reader would announce (D-389): the screen's names in „Drużyna” lead
-// to the character (D-280), the camp leads nowhere.
-test("the camp is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
-  // decision: D-389 "The camp moves as the scene does"
+// to the character (D-280), the picture band leads nowhere.
+test("the picture band is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
+  // decision: D-389 "The picture band moves as the scene does"
   await withPage(async (page) => {
     const { screen, calls } = await mount(page, propsOf(teamOf(3)));
     const camp = page.root.querySelector(".camp");
@@ -754,11 +754,11 @@ test("the camp is a picture: nothing in it takes the keyboard or a click, and it
   });
 });
 
-// Catches a camp drawn at the size of its picture, or at a fraction of twice it, where the pixels of the
+// Catches a picture band drawn at the size of its picture, or at a fraction of twice it, where the pixels of the
 // picture would come out unequal and shake in motion (D-349): the band is 96 px high, its clearing 672 × 48
 // pixels of picture drawn at 1344 × 96, the fire of 32 × 32 at 64 × 64, a character's cell 32 wide at 64.
-test("the camp is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
-  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
+test("the picture band is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
+  // decision: D-389 "The picture band at the top of Siedziba stands across the content"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
     const camp = page.root.querySelector(".camp");
@@ -777,10 +777,10 @@ test("the camp is drawn at twice the pixels of its pictures, in a band 96 px hig
   });
 });
 
-// Catches a screen that does not read the manual map run, which the camp needs: with it the picture would
+// Catches a screen that does not read the manual map run, which the picture band needs: with it the picture would
 // change only at a change of the team or of a loop, and not at „Wejdź” and „Zakończ”. Every change of the
-// four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the camp at once, and „Drużyna” still lists all.
-test("the camp follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
+// four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the picture band at once, and „Drużyna” still lists all.
+test("the picture band follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
   // decision: D-389 "The characters that stand in it are those"
   await withPage(async (page) => {
     const state = teamOf(3);
@@ -802,7 +802,7 @@ test("the camp follows the manual map run and the earning loops, and „Drużyna
       "the character that stays is the same element",
     );
 
-    // The run goes on: a game minute changes nothing the camp shows.
+    // The run goes on: a game minute changes nothing the picture band shows.
     await inAct(() =>
       screen.update(
         propsOf({
@@ -847,7 +847,7 @@ test("nothing on the screen sends a character or leads to the screen Mapy", asyn
         .sort(),
       ["Zamknij", "Zatrzymaj: Ola", "Załóż"],
     );
-    // The links of the folded section of credits lead to game-icons.net, not to a screen of the game.
+    // The links of the folded section of credits lead outside the game, not to a screen of the game.
     assert.deepEqual(
       all(page.root, ".headquarters > :not(details) a").map((link) =>
         link.getAttribute("href"),

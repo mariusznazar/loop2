@@ -480,7 +480,7 @@ test("a team with no character reads the sentence under the heading of „Kto id
 test("the characters stand in the order of their creation, each with its lines from the top", async () => {
   // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
+  // decision: D-170 "The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map"
   // decision: D-180 "The card of a map shows what of the plan enters"
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
@@ -557,7 +557,7 @@ test("a resurrection not ready reads the time left in danger at each character a
 // the character and the program picked.
 test("the list „Program:” shows the program of the row in the order of the player's list and a change hands the page the pick", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
-  // decision: D-170 "The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map"
+  // decision: D-170 "The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map"
   // decision: D-170 "The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list"
   await withPage(async (page) => {
     const state = createProgram(teamOf("Ala", "Bob")).state;
@@ -780,7 +780,7 @@ test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solve
 // D-243, D-244: a character in an earning loop shows its line with „Zatrzymaj”, which acts, and
 // both sending buttons stand inactive; the line of a stopped loop does not stand here (D-245).
 test("a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands", async () => {
-  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"

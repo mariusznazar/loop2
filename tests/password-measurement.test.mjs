@@ -379,7 +379,9 @@ test("the launcher fails each run that breaks one bound and still removes its co
     "killed for lack of memory": { oomKilled: true },
     restarted: { restartCount: 1 },
     "nonzero exit": { exitCode: 1 },
-    "the deployment's limit instead of 80% of it": { memory: deploymentLimit },
+    "the container's memory limit instead of 80% of it": {
+      memory: deploymentLimit,
+    },
     "another limit seen in the cgroup": { result: otherLimit },
     "one hit of the limit": { result: limitHit },
     "no count of limit hits": { result: uncounted },

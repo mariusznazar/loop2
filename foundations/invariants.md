@@ -4,7 +4,7 @@ An invariant whose method is `test` is checked by a test of this repository; in 
 
 ## account-server-runtime
 
-The account and save server's TypeScript source and deployment use Node.js major version 24.
+The account and save server's TypeScript source and its container image use Node.js major version 24.
 
 - **Method:** test
 - **Rests on:** none
@@ -98,7 +98,7 @@ When the account and save server's listening address is already in use, the serv
 
 - **Method:** test
 - **Rests on:** none
-- **Derives from:** recovered from code — src/server/main.ts, the server's `error` handler, which prints the failure and sets exit code 1, while the readiness line is printed only on `listening`; tests/startup.test.mjs, the test "exits with an error instead of reporting ready when its listening port is occupied"
+- **Derives from:** D-111
 - **Part:** account-server · build-tools
 - **Violated:** no
 
@@ -353,7 +353,7 @@ The loop2 container built from the repository serves each SVG icon file directly
 
 ## terrain-drawing-numbers
 
-The drawing of the game map shows no number of the stock a tile holds.
+The drawing of the game map (the terrain drawing, not the scene) shows no number of the stock a tile holds.
 
 - **Method:** test
 - **Rests on:** none
@@ -647,7 +647,7 @@ The account server stores an encoded Argon2id hash made by the `argon2` package 
 
 ## player-argon2-deployment-check
 
-The deployed loop2 container image has passed, after warmup, at least 20 hashes and 20 verifications with the configured Argon2id cost settings two at a time, a correct and a wrong password check and the refusal of a third concurrent operation in a container limited, without swap, to at most 80% of its 512 MiB deployment limit, which did not restart and whose cgroup counted no hit of that limit and no out-of-memory kill.
+The deployed loop2 container image has passed, after warmup, at least 20 hashes and 20 verifications with the configured Argon2id cost settings two at a time, a correct and a wrong password check and the refusal of a third concurrent operation in a container limited, without swap, to at most 80% of the 512 MiB memory limit `compose.yaml` gives the application container, which did not restart and whose cgroup counted no hit of that limit and no out-of-memory kill.
 
 - **Method:** review
 - **Rests on:** cgroup-memory-accounting
@@ -667,7 +667,7 @@ Password hashing and verification share a gate that admits at most two active na
 
 ## player-opaque-session-cookie
 
-The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie.
+The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie whose name starts with the `__Host-` prefix.
 
 - **Method:** test
 - **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security · express-session-id-generator · uid-safe-sync-id · random-bytes-sync-source
@@ -907,7 +907,7 @@ An emailed link stopped when its account was blocked confirms nothing and sets n
 
 ## account-message-limits
 
-The account server hands no account message to the mail service once 30 account messages in total, or three for the same email address, have been sent or attempted within the last hour, also across a restart of the server.
+The account server hands no account message to the mail service once 30 account messages in total, or three for the same account, have been sent or attempted within the last hour, also across a restart of the server.
 
 - **Method:** test
 - **Rests on:** none
@@ -977,7 +977,7 @@ Death, ending or restarting an unfinished map run, or stopping the earning loop 
 
 ## trip-plan-progress
 
-Editing or discarding changes to the copy's trip plan alone leaves the run's streak, defeated-attack count and program-rule firing counts as they stood.
+Editing or discarding changes to the copy's trip plan alone leaves the run's streak, count of beaten attacks and program-rule firing counts as they stood.
 
 - **Method:** test
 - **Rests on:** none
@@ -1067,7 +1067,7 @@ One death of a character is settled once: a further settling of that death and a
 
 ## password-reset-verified-email
 
-A password reset link is single-use and sent only to the account's previously confirmed email address.
+A password reset link is sent only to the account's previously confirmed email address.
 
 - **Method:** test
 - **Rests on:** none
@@ -1157,7 +1157,7 @@ A character's death in the k-th game minute of the catch-up is settled at the re
 
 ## loop-run-knowledge
 
-A map run of an earning loop currently leaves the Understanding and the player's programs as it found them.
+A map run of an earning loop leaves the Understanding and the player's programs as it found them.
 
 - **Method:** test
 - **Rests on:** none
@@ -1197,7 +1197,7 @@ Every file the build copies from `assets/sprites/` is a PNG image.
 
 ## loop2-container-sprites
 
-The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing, the camp's drawing or the picture behind the login card asks for.
+The loop2 container built from the repository serves, at the path `/sprites/<file name>` and with the same bytes as that file in `assets/sprites/`, every file the scene's drawing, the picture band's drawing or the picture behind the login card asks for.
 
 - **Method:** test
 - **Rests on:** none
@@ -1287,7 +1287,7 @@ A file git tracks points to a place the author keeps outside the repository only
 
 ## sprite-credits
 
-The game's credits hold, for every pack of pictures under `assets/sprites/` whose licence asks for a credit, a line that names what the pack is for, its title, its author, its page with a link, its licence with a link and how the files of the game differ from its source.
+The game's credits hold, for every pack of pictures under `assets/sprites/` whose licence asks for a credit, a line that names what the pack is for, its title, its author, its page with a link, its licence with a link and how the files of the game differ from its source, the pack of each file being the one the list of the sprite files in `README.md` names.
 
 - **Method:** test
 - **Rests on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit · cc-by-3-licence-copy

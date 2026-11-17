@@ -36,7 +36,7 @@ export type ScenePropSpot = SceneSpot & { mageFaces: "right" | "left" };
 
 /**
  * The size of one pixel of a picture of the game on the screen, in CSS pixels: every picture is drawn at
- * twice its size, the scene's 336 × 152 forest as 672 × 304 and the camp's 672 × 48 clearing as 1344 × 96,
+ * twice its size, the scene's 336 × 152 forest as 672 × 304 and the picture band's 672 × 48 clearing as 1344 × 96,
  * so that every pixel stays equal in size and nothing shakes in motion (D-349).
  */
 export const PICTURE_PIXEL = 2;
@@ -305,7 +305,7 @@ export const SCENE_PROPS = {
 } as const satisfies Partial<Record<ResourceId, ScenePropSpot>>;
 
 /**
- * The camp at the top of Siedziba, in the pixels of its picture: a band of one picture, the snow
+ * The picture band at the top of Siedziba, in the pixels of its picture: one picture, the snow
  * clearing, with the campfire in the middle of it, the chest to the right of the fire and, to its left,
  * the characters at the camp, standing in a row away from the fire in the order of creation
  * (D-54). The clearing is the pack Pixel Crawler's snow ground composed with its pines and saplings,
@@ -314,7 +314,7 @@ export const SCENE_PROPS = {
  * picture, the rectangle 26 × 21 at 179, 75 of the pack's sheet of interior props with every pixel moved
  * unchanged, the same at every count of what it holds (D-271). The fire is
  * the burning fire of the scene (`SCENE_FIRE`), always burning, and a character stands in its idle sheet
- * (`SCENE_MAGES`), so the camp names no archetype of its own.
+ * (`SCENE_MAGES`), so the picture band names no archetype of its own.
  *
  * A character takes `cell` pixels of the row, its frame reaching beyond the cell on both sides, where the
  * frame is transparent. The row, the fire and the chest are `gap` pixels apart. `lift` is how far above

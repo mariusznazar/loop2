@@ -43,7 +43,7 @@ pass this project's documentation filter.
 
 ### D-03 — How is the browser view built?
 
-The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, and no other UI framework stands in its code or its runtime dependencies.
+The browser view is built in TypeScript with React, its screens written as `.tsx` components that draw from the game state, except a screen D-265 leaves in the browser's DOM APIs until a task moves it, and no other UI framework stands in its code or its runtime dependencies.
 
 - **Scope:** browser-view, build-tools
 - **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
@@ -64,14 +64,14 @@ return the next game state together with the events it produced, and real time e
 simulation only as an argument. The browser view draws the game only from the game state, the
 game's content data, the moment of the browser's clock, which it reads and passes to the
 simulation, the address of the page for the screen it shows (D-281), the system's setting for
-reduced motion for the scene (D-317), the saver's sentence for the row of saving (D-207, D-407),
+reduced motion for the scene (D-317), the saver's sentence for the row of saving (D-208, D-407),
 and, for the scene and the chronicle, its previous reading of the game state and the events the
 simulation returned, for the chronicle also the player's acts on the copy with the copy before each
 act and after it (D-348), and for the scene the place the browser gives for the mage while it walks,
 and from the memories of the page, none of them in the game state or the save: the folding of rule
 groups (D-294), the chronicle with the tab and the filter the player picks over it (D-339, D-346,
 D-383), the question „Zapisać, odrzucić, wrócić?” (D-324), whether the end-of-run window is open
-(D-371), the pull of the previous save and the reset control of Programy (D-401, D-402) and, for
+(D-371), the pull of the previous save and the reset control of Programy, which draw their buttons from the previous-save privilege the page keeps from the account's answer (D-400, D-401, D-402) and, for
 what one screen alone shows, the state of that screen's own component (D-407); it changes
 the game state only through functions of the simulation, to which it passes
 the player's choices, the passing of real time and a saved game state the browser downloaded from
@@ -430,7 +430,7 @@ The coding guidelines loop2 adopts, the exemplar files of each kind of code, the
 
 ### D-28 — Which coding-guideline discipline does loop2 adopt?
 
-Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for building, deployment, entry points, HTML and CSS; session, saved-game and mail exemplars are selected with their first implementations, and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding quality checks cover all code, tests included, while testing rules and exemplars by level stand in `guidelines/testing.md`, together with the explicit-time example from `tests/sim/time.test.mjs`, which is no additional exemplar.
+Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for building, deployment, entry points, HTML and CSS; the session, saved-game and mail exemplars were selected with their first implementations (D-115, D-213, D-162), and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding quality checks cover all code, tests included, while testing rules and exemplars by level stand in `guidelines/testing.md`, together with the explicit-time example from `tests/sim/time.test.mjs`, which is no additional exemplar.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
@@ -947,22 +947,22 @@ The expectation of a test comes from the loop2 foundation — its decisions, inv
 
 ### D-83 — Where are tests written and how do they enter the gate?
 
-Tests keep Node and Python, their existing directories, and the names `*.test.mjs` and `test_*.py`. Every `*.test.mjs` file under `tests/` is selected by `npm test`, and a new `test_*.py` file is counted as covered by the gate only after its execution there is verified.
+Tests keep Node and Python, their existing directories, and the names `*.test.mjs` and `test_*.py`. Every `*.test.mjs` file under `tests/` is selected by `npm test`, and the gate's runner, `.the-way/gate/run_tests.py`, runs each directory that holds a `test_*.py` file git tracks, so a new `test_*.py` file runs once git tracks it.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** invariants: node-test-selection. An agent compares a change with the part no invariant holds:
-  - complies: a new Node test named `*.test.mjs` in an existing directory of tests; a new `test_*.py` file counted as covered once a run of the gate shows it executed
-  - violates: a new test named `*.spec.mjs` or written for another test runner; a new `test_*.py` file in a new directory counted as covered by its name alone, with no run of the gate showing it executed
+  - complies: a new Node test named `*.test.mjs` in an existing directory of tests; a new `test_*.py` file that git tracks, in an existing or a new directory, which the gate's runner runs with the others of its directory
+  - violates: a new test named `*.spec.mjs` or written for another test runner; a new `test_*.py` file that git does not track, counted as covered by the gate because it stands on the disk
 - **Origin:** none
 
-*Rationale:* Keeping the conventions avoids moving tests without changing their protection, while explicit inclusion checks prevent a new file being silently omitted. The command that runs the Node tests selects only some of the test directories, so a file placed elsewhere would silently not run. Cost: the current rules of finding files have to be watched, and one small test guards the inclusion; a migration would unify the layout, but it would need moves and coverage checks with no change in the behaviour of the game.
+*Rationale:* Keeping the conventions avoids moving tests without changing their protection, while for Node an explicit inclusion check prevents a new file being silently omitted, and for Python the runner of the gate finds each directory by the files git tracks, so no list of directories is kept by hand. The command that runs the Node tests selects only some of the test directories, so a file placed elsewhere would silently not run. Cost: the current rules of finding files have to be watched, one small test guards the inclusion of the Node files, and a Python test file that git does not track yet does not run; a migration would unify the layout, but it would need moves and coverage checks with no change in the behaviour of the game.
 *Rejected:* Migrating the tools and directories for uniformity — requires movement and coverage checks without a change to game behaviour; inclusion by review alone — depends on a reviewer noticing an omitted file.
 
 ### D-84 — Which real mechanisms do new or changed tests exercise?
 
-A new or changed simulation test supplies explicit state, elapsed time and seed and uses the real game random generator without waiting for game minutes on the computer. A test of file or HTTP failure uses real temporary files or a real local server, waits for a readiness event or condition with a time limit and error handling, and cleans up its files, servers and processes even after failure; polling a condition is allowed, and controlled responses test reactions to forced failures without proving the replaced operation. The HTTP helper in `tests/http.test.mjs` takes these waiting and cleanup rules when that helper changes.
+A new or changed simulation test supplies explicit state, elapsed time and seed and uses the real game random generator without waiting for game minutes on the computer. A test of file or HTTP failure uses real temporary files or a real local server, waits for a readiness event or condition with a time limit and error handling, and cleans up its files, servers and processes even after failure; polling a condition is allowed, and controlled responses test reactions to forced failures without proving the replaced operation. The HTTP helper in `tests/http.test.mjs` keeps these waiting and cleanup rules.
 
 - **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
@@ -972,7 +972,7 @@ A new or changed simulation test supplies explicit state, elapsed time and seed 
   - violates: a simulation test that waits for game minutes on the computer's clock or replaces the game's random generator; a test of a file or HTTP failure on a substitute presented as proof of the replaced operation; a test that sleeps a fixed span as proof of readiness, or leaves a file, server or process behind after a failure; a change of the HTTP helper that keeps a wait with no time limit
 - **Origin:** none
 
-*Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps. A seed is a number that fixes a repeatable sequence of draws; the repeatability it gives does not replace an independent expectation. The recipe uses D-04 and D-22 and no new library. A controlled response in place of a dependency serves to check the reaction to a forced error and is no proof that the replaced operation works; substituted responses alone are easier to control, but may hide damage to the real connection. A test waits for a specific signal or condition, with a limit of time and handling of an error, and does not assume that the passing of a fixed pause means readiness; checking a condition periodically is allowed. A fixed pause is simpler, but on a slower computer it may be too short, and on a faster one it wastes time; real waiting for game minutes is simpler to write, but it slows the test and ties its result to the moment of its running. The rules fix no concrete limits and do not order the existing helpers rebuilt in the work of adopting the guidelines: when they were adopted, the HTTP helper limited idleness, not the whole request, and the wait for the server to start had no limit, so the rules left the helper to take them at its next change.
+*Rationale:* Real mechanisms reveal failures that their substitutes hide, while explicit time and readiness keep a run independent of computer speed; preparation and cleanup cost more than fixed sleeps. A seed is a number that fixes a repeatable sequence of draws; the repeatability it gives does not replace an independent expectation. The recipe uses D-04 and D-22 and no new library. A controlled response in place of a dependency serves to check the reaction to a forced error and is no proof that the replaced operation works; substituted responses alone are easier to control, but may hide damage to the real connection. A test waits for a specific signal or condition, with a limit of time and handling of an error, and does not assume that the passing of a fixed pause means readiness; checking a condition periodically is allowed. A fixed pause is simpler, but on a slower computer it may be too short, and on a faster one it wastes time; real waiting for game minutes is simpler to write, but it slows the test and ties its result to the moment of its running. The rules fix no concrete limits, and the HTTP helper keeps the ones they give.
 *Rejected:* A substitute for the mechanism whose failure is being tested — cannot demonstrate that failure; waiting real minutes for the passing of game time — simpler to write, but slows the test and ties its result to the moment of its running; sleeping a fixed span as proof of readiness — depends on machine speed, too short on a slower computer and a waste of time on a faster one.
 
 ### D-85 — Which cases are the exemplars of the test levels?
@@ -987,7 +987,7 @@ The unit exemplar is the case "the count of a hand-made backpack is the pieces o
   - violates: `guidelines/testing.md` naming another case, the whole file of an exemplar or its helpers as the exemplar of a level; one of the three cases renamed or removed while the guidelines still name it as an exemplar
 - **Origin:** none
 
-*Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection. The unit exemplar states the content of the backpack in the test and expects the sums 15, 7 and 0; the requirement of counting pieces together comes from D-64 and the expectations from arithmetic, with no call of a product function on the expected side. Its gain is a model of readable data and an independent result. The integration exemplar sends real requests that try to leave the public directory and checks the refusal and the absence of the files' content; its gain is a model of checking the visible effect of a real request instead of a call of a function. The selection does not approve the whole file of that case or its helpers as a model of limits and cleanup: when the case was chosen, the HTTP helper limited idleness, not the whole operation, and the wait for listening had no limit; the expected refusal and its invariant are settled by D-86, and the choice adds no repair of the helpers to any work. The smoke exemplar checks a normal start, forces an occupied port and requires an error without a report of readiness, then checks the normal start again; its gain is the control that the refusal comes from the forced problem and not from an application that does not start at all, and it rests on the invariant account-server-occupied-address. It is a model of the control of a start and a refusal, not proof of the full handling of HTTP, the working of the container or the game. The selection takes existing cases, without rewriting tests; cost: an example needs upkeep with the guidelines, and its limits must not be stretched to a whole file.
+*Rationale:* Selected cases show useful patterns without treating every neighbouring case or helper as approved practice; their limits remain part of the selection. The unit exemplar states the content of the backpack in the test and expects the sums 15, 7 and 0; the requirement of counting pieces together comes from D-64 and the expectations from arithmetic, with no call of a product function on the expected side. Its gain is a model of readable data and an independent result. The integration exemplar sends real requests that try to leave the public directory and checks the refusal and the absence of the files' content; its gain is a model of checking the visible effect of a real request instead of a call of a function. The selection does not approve the whole file of that case or its helpers as a model of limits and cleanup; the expected refusal and its invariant are settled by D-86, and the choice adds no repair of the helpers to any work. The smoke exemplar checks a normal start, forces an occupied port and requires an error without a report of readiness, then checks the normal start again; its gain is the control that the refusal comes from the forced problem and not from an application that does not start at all, and it rests on the invariant account-server-occupied-address. It is a model of the control of a start and a refusal, not proof of the full handling of HTTP, the working of the container or the game. The selection takes existing cases, without rewriting tests; cost: an example needs upkeep with the guidelines, and its limits must not be stretched to a whole file.
 *Rejected:* New examples covering every rule at once — a new exemplar would show the whole set of rules in one place, but it adds test work and more tests to adopting the guidelines; rules without examples — leave later authors no concrete model and make the rules harder to apply.
 
 ### D-87 — When are whole-screen pixel comparisons used?
@@ -1056,7 +1056,7 @@ How the full gate runs its stages, Docker and the test tools, what the local sta
 
 ### D-49 — Which port does a loop2 test give the server it starts?
 
-Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port. The one exception is a single test file of the default address, which starts the server with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set in one case for each startup account-server-default-address names, wholly unconfigured outside production and fully configured with valid settings. A test giving `LOOP2_LISTEN_PORT` a value the server is to reject before it listens, and a server started inside a container a test runs, fall outside this rule.
+Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port. The one exception is a single test file of the default address, which starts the server with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set in one case for each startup `account-server-default-address` names, wholly unconfigured outside production and fully configured with valid settings. A test giving `LOOP2_LISTEN_PORT` a value the server is to reject before it listens, and a server started inside a container a test runs, fall outside this rule.
 
 - **Scope:** account-server, build-tools, deployment, test-helpers
 - **Based on:** node-listen-port-zero
@@ -1159,7 +1159,7 @@ lost at each new version, and the dearest to change later, though it alone check
 through the tunnel; the test server itself — it rests on how D-12 reads, which does not speak of the
 game through a public address, and it brings real mail at registration and limits on messages, the
 agent's data beside the operator's and saves lost as the operator's are, a loss accepted for the operator
-alone, and the operator has a save without these states; playing from a new game with no prepared data alone — time and tokens at each check, and
+alone, and the operator's save then held none of these states; playing from a new game with no prepared data alone — time and tokens at each check, and
 every state after a solved map needs a tuned program that the repository lacks; a service worker
 answering from inside the page — a new dependency, a file served by the application and a change of
 the page's start, and the gaps of swapping the answer; a library for assembling states — an addition
@@ -1566,8 +1566,8 @@ The agent that shows a screenshot pushes it itself to the repository `mariusznaz
   - violates: an instruction that has the agent hand the screenshot to the human to upload; a push to the repository with an account or a token written into a file of loop2 or into a request
 - **Origin:** none
 
-*Rationale:* in an earlier request of loop2 the agent committed its screenshots itself, and a hand-over to the human would put a step of the human into every cycle that shows a screen. D-12 sets what the agent may do on the server, and the repository for screenshots is no part of the server. Price taken, a hypothesis: the push is made with the human's own account, whose rights reach beyond that repository.
-*Rejected:* unknown
+*Rationale:* in an earlier request of loop2 the agent committed its screenshots itself. D-12 sets what the agent may do on the server, and the repository for screenshots is no part of the server. Price taken, a hypothesis: the push is made with the human's own account, whose rights reach beyond that repository.
+*Rejected:* a hand-over of the screenshot to the human to upload — it would put a step of the human into every cycle that shows a screen.
 
 ### D-420 — From which session may an agent use Playwright MCP?
 
@@ -1790,7 +1790,7 @@ source would stop.
 
 ### D-17 — How does loop2 share the Mikrus host with other workloads?
 
-A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes; it removes or replaces nothing of another workload. It builds only while the host's available memory and free disk stay at or above thresholds the repository sets, and each loop2 container runs under its own memory limit. The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000 and the database preserved across application-container replacement and code rollback.
+A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, logs and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes; it removes or replaces nothing of another workload. It builds only while the host's available memory and free disk stay at or above thresholds the repository sets, and each loop2 container runs under its own memory limit. The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000 and the database preserved across application-container replacement and code rollback.
 
 - **Scope:** deployment
 - **Based on:** mikrus-host-docker-workloads · mikrus-host-swap · docker-volume-lifecycle · loop2-deploy-resource-gate-lines · loop2-deploy-stage-exit-lines
@@ -1894,8 +1894,8 @@ itself, and writes in the console, as plain text, one line of the kind, the code
 handler, never the error's message or stack, the same line once until the page is reloaded. A script
 run by hand or by the test gate that touches none of those data meets the rule on the last resort
 through the default print of Node.js or Python, which writes what nothing handled, and
-`account-database-check`, `measure-passwords`, `deploy/loop2-backup` and `scripts/restore-trial.mjs`
-already have a last-resort handling of their own, which the sentences of this decision above ask no more of, though
+`account-database-check`, `src/server/measure-passwords.ts`, `deploy/loop2-watch`,
+`deploy/loop2-backup` and `scripts/restore-trial.mjs` already have a last-resort handling of their own, which the sentences of this decision above ask no more of, though
 the last two touch those data and write no kind or code.
 
 - **Scope:** browser-view · account-server · build-tools · deployment
@@ -1909,7 +1909,7 @@ the last two touch those data and write no kind or code.
   when its report fails; the command that stops the local start, which touches no account data,
   ending on what nothing handled with Node's default print. An agent compares a change with the
   part no test holds:
-  - complies: a script of the test gate that touches no account data ending on an uncaught error with the default print of Node.js or Python; `account-database-check`, `measure-passwords`, `deploy/loop2-backup` and `scripts/restore-trial.mjs` keeping the last-resort handling they have
+  - complies: a script of the test gate that touches no account data ending on an uncaught error with the default print of Node.js or Python; `account-database-check`, `src/server/measure-passwords.ts`, `deploy/loop2-watch`, `deploy/loop2-backup` and `scripts/restore-trial.mjs` keeping the last-resort handling they have
   - violates: a handler of its own added to a script that touches no account data; a script that touches no account data catching what nothing handled and ending with nothing of it written
 - **Origin:** none
 
@@ -1982,7 +1982,7 @@ page (D-339), so it adds nothing to a save, which is not sent above 64 KiB (D-20
 earning loops a save can stand at that limit (D-208). Risks
 taken, each a hypothesis: the sentence may show with no fault or blink; logs of the console kept on
 disk may hold a real password-reset token; an agent may learn to ignore a console in which the
-browser writes ordinary refusals; a tab left overnight may slow down under a growing chronicle.
+browser writes ordinary refusals; a tab left overnight may slow down under a growing chronicle, though D-382 bounds the rows drawn, so the risk is left to the memory the chronicle takes.
 *Rejected:* Sentry — an outside service and data in a foreign cloud, in the United States or the
 European Union as chosen once and for all, part of the account's data staying in the United States,
 free only within a small plan and paid beyond it; it collects everything unless set otherwise, and
@@ -2067,7 +2067,7 @@ Just before a deployment replaces the containers of the game, it appends the who
   - violates: the whole output of `account-block`, of `account-previous-save` or of `account-role`, addresses included, appended to the file; an agent that appends to, edits or rotates the file, or reads it whole with no bound
 - **Origin:** none
 
-*Rationale:* the log of a container goes with the container, and every deployment recreates both services, so without a copy a failure from before the last deployment leaves no trace for the agent that investigates it. Appending the log to a file on the host just before the replacement keeps it, costs nothing and depends on nothing about the server that this repository does not carry, except two things read once on the server on 2026-11-14, that `logrotate` has a daily schedule there (its timer is enabled with `OnCalendar=daily` and a daily cron entry exists; that is a schedule, not an observed run) and that its Compose is version v2.35.1, and the `local` driver and the rotation give both the running container's log and every copy an upper bound. The lines of `account-block`, of `account-previous-save` and of `account-role` go to the file because each command runs by `docker exec` and its lines reach only the terminal of whoever typed it; only their JSON lines go, since their other sentences may carry the email address of an account, which an agent reading a file that lives for weeks must not meet. The numbers of the rotation are chosen bounds, not measured needs; on 2026-11-14 the server holds the file and one rotated copy of it and no older generation. A failed append does not stop the deployment, since a full disk or a broken file would otherwise block the very deployment that repairs the game. Lacks of the option chosen: the copy covers only containers that a deployment through the installed deploy script replaces, and a container removed another way loses its log as before; the lines of the few seconds between the copy and the stop of the old container are lost; the record lies in two places, the running container in Docker's log and earlier generations in the file; a human installs the rotation configuration, creates the file with the owner of the deployment account and reinstalls the deploy script at every change of it; the lines of failures and events, with account identifiers, and the lines of `account-block`, of `account-previous-save` and of `account-role` live for weeks in a file that an agent reads, where they lived until the next deployment before; there is no search by query and no view in a browser, which Loki with Grafana would give. Risks taken, each a hypothesis: after a rotation the file may get root as its owner, or `logrotate` may refuse to rotate without a user to rotate as, and the copies then vanish silently; the compressed older generations are invisible to `tail` and `grep`; a human may append the whole output of `account-block`, of `account-previous-save` or of `account-role` once, addresses included; a container that crashes in a loop may swell the file to gigabytes before a rotation, stop deployments and take the disk of the old game and of foundryvtt; without a reinstalled deploy script there is no copy, and a rollback to an older commit lifts the bound of the `local` driver; the `accountId` and Node's default print with a stack at an error before the last-resort handler may live for weeks in the file an agent reads.
+*Rationale:* the log of a container goes with the container, and every deployment recreates both services, so without a copy a failure from before the last deployment leaves no trace for the agent that investigates it. Appending the log to a file on the host just before the replacement keeps it, costs nothing and depends on nothing about the server that this repository does not carry, except the file and its owner, which a human creates, and two things read once on the server on 2026-11-14, that `logrotate` has a daily schedule there (its timer is enabled with `OnCalendar=daily` and a daily cron entry exists; that is a schedule, not an observed run) and that its Compose is version v2.35.1, and the `local` driver and the rotation give both the running container's log and every copy an upper bound. The lines of `account-block`, of `account-previous-save` and of `account-role` go to the file because each command runs by `docker exec` and its lines reach only the terminal of whoever typed it; only their JSON lines go, since their other sentences may carry the email address of an account, which an agent reading a file that lives for weeks must not meet. The numbers of the rotation are chosen bounds, not measured needs; on 2026-11-14 the server holds the file and one rotated copy of it and no older generation. A failed append does not stop the deployment, since a full disk or a broken file would otherwise block the very deployment that repairs the game. Lacks of the option chosen: the copy covers only containers that a deployment through the installed deploy script replaces, and a container removed another way loses its log as before; the lines of the few seconds between the copy and the stop of the old container are lost; the record lies in two places, the running container in Docker's log and earlier generations in the file; a human installs the rotation configuration, creates the file with the owner of the deployment account and reinstalls the deploy script at every change of it; the lines of failures and events, with account identifiers, and the lines of `account-block`, of `account-previous-save` and of `account-role` live for weeks in a file that an agent reads, where they lived until the next deployment before; there is no search by query and no view in a browser, which Loki with Grafana would give. Risks taken, each a hypothesis: after a rotation the file may get root as its owner, or `logrotate` may refuse to rotate without a user to rotate as, and the copies then vanish silently; the compressed older generations are invisible to `tail` and `grep`; a human may append the whole output of `account-block`, of `account-previous-save` or of `account-role` once, addresses included; a container that crashes in a loop may swell the file to gigabytes before a rotation, stop deployments and take the disk of the old game and of foundryvtt; without a reinstalled deploy script there is no copy, and a rollback to an older commit lifts the bound of the `local` driver; the `accountId` and Node's default print with a stack at an error before the last-resort handler may live for weeks in the file an agent reads.
 *Rejected:* the default driver of Docker as it is — nothing to build, but the log dies at every deployment and grows without a bound unless the server's Docker setting says otherwise; the `local` driver with rotation alone — a few lines, but the log still lives only until the next deployment; the `journald` driver — a few lines and it survives a deployment, but nobody knows whether the server's journal is persistent or the driver works in an unprivileged LXC, the journal is shared with the whole server, so an agent would read the game's lines out of it only through a filter that is an agreement, and the Mikrus wiki's advice to vacuum it deletes the game's record too; the `syslog` driver — a few lines, about five weeks in the syslog shared with the whole server, read by an agent through the same kind of filter, and nobody knows whether `rsyslog` runs or the driver works in the LXC; the default driver set in the configuration of Docker's daemon — a change of the whole server and a restart of Docker, which stops the old game and foundryvtt too, and it covers only new containers; Grafana Cloud Logs — free for 14 days up to 50 GB a month, but the players' data at a foreign company, a plugin that can hang the shared Docker daemon or Alloy with root rights, a new secret (a change of D-13) and an agent's token outside D-12; Better Stack — free for 3 days, with the same costs as Grafana Cloud, with Vector running with root rights and an MCP server without a read-only mode; a Grafana Loki of its own on the server — a record without end until retention is set, and a service, its data and its updates on a shared server with memory nobody knows, which in the loop2 project breaks the invariant loop2-host-sharing, so it would stand outside the project, installed by a human.
 
 ### D-356 — How does the operator learn that the running game failed?
@@ -2082,7 +2082,7 @@ A watcher script on the server, outside the game container, run by cron every fe
   - violates: a deployment or a workflow that installs or changes the watcher or its schedule on the server; the step of the scheduled check given `continue-on-error`, so that a probe that fails leaves no failed run for GitHub to notify
 - **Origin:** none
 
-*Rationale:* each of the three ways leaves a hole that another covers. The watcher sees a process that fell and rose, a failure the server handled and, from the log of the backup, a night without a successful send, none of which a check of the address sees, and it costs nothing, with a script that a human installs. The scheduled check of the address also sees a server that is off, a fallen tunnel and a Cloudflare fault, with no new account, no secret and no change on the server, but it speaks at the pace at which GitHub starts its scheduled runs, which in the reading of 2026-11-14 is hours, not the five minutes the schedule asks for; the shortest interval GitHub allows is one thing, the interval it gives is another. The report from the browser covers a failure in the player's browser without a foreign service, at the price of code in two parts and a new public route. Failures of the server and of the player's browser are both to be covered, the server weighing more only where covering the browser would strongly narrow the choice; the report from the browser narrows nothing on the side of the server and costs no money. The one `LIMITED` line is kept although D-353 leaves the expected refusals without a line: it records no refused request of a player but that reports were dropped, and without it a flood past the limit would look like a quiet hour. Lacks of the option chosen: when the server and GitHub lie down together, or the schedule is disabled after 60 days without a commit, the operator gets nothing and the silence looks like „działa”; when `flock` does not work on the server, each run of the watcher ends with success and a line in its own log, and the operator gets nothing (on the test server `flock` works: in the watcher's log read on 2026-11-14 the lines for a held deployment lock name `flock exit 1` and no other status); the page does not say whether GitHub sends an email for a failed run by default, so the operator checks it in their own settings (the operator gave this result on 2026-11-14: a manual run of the check with `force_failure` of 2026-11-09 09:45 UTC, run 42595890225, with „Forced failure requested” in its log, brought the mail „[mariusznazar/loop2] Run failed: Check the public address - main (2fe922c)” to his inbox on 2026-11-09 at 10:46 Polish time; the line `cron` of the workflow file was last changed by his own commit `fc493baa` of 2026-11-09, so the notices of scheduled runs go to the right account; the result is about a run started by hand); the limits of `push.mikr.us` are unknown, so the watcher throttles itself and may stay silent about a second failure of the same kind; the new public route accepts reports from anyone, so false reports reach the log and the watcher; an error in the browser while the server or the network is down does not reach the server; there is code in two parts and a script on the server that a human installs. Risks taken, each a hypothesis: a watcher that read Docker's events would raise a false alarm after every merge or lose a fall during the backup; a watcher run as root would create a lock file and block deployments from the account that is not root, or, hung, would stop deployments and the backup; the buffer of 256 events would fill with health checks and a fall would vanish before it is read; failure lines from the moment before a deployment would reach only the copy of the log in the file and not be reported; a watcher running as root on a server shared with other projects is covered by no invariant test; the loss of the file with the time of the last run would flood the operator with messages, and the throttling of `push.mikr.us` would swallow the notice of the backup of D-233 too; the test gate would refuse a new workflow file, since it counts every file in the folder of workflows as a route of deployment; the notifications of GitHub set to „Don't notify”, or sent to another account, would give a silence taken for „działa”; during a longer outage a mail at every scheduled run would teach the operator to ignore them, which at the gaps GitHub gives is a few a day and not the hundreds a schedule of five minutes would make; a check that hits a deployment or Cloudflare's block of bots would raise a false alarm, and a real failure would bring two messages by two channels; a report sent with `keepalive` or `sendBeacon` would eat the browser's quota and the player would lose the save at „Wyloguj”; false reports from many addresses would use the watcher's budget of messages, cover a real failure of the server and swell the file of the copied log; arbitrary text from a report, such as an email address or someone else's `accountId`, would land in a log that lives for weeks; an error repeated at every tick would send several reports a second and break „the same line once” of D-253; the route would either fall out on the guards of state-changing requests or be the only one without a check of the origin.
+*Rationale:* each of the three ways leaves a hole that another covers. The watcher sees a process that fell and rose, a failure the server handled and, from the log of the backup, a night without a successful send, none of which a check of the address sees, and it costs nothing, with a script that a human installs. The scheduled check of the address also sees a server that is off, a fallen tunnel and a Cloudflare fault, with no new account, no secret and no change on the server, but it speaks at the pace at which GitHub starts its scheduled runs, which in the reading of 2026-11-14 is hours, not the five minutes the schedule asks for; the shortest interval GitHub allows is one thing, the interval it gives is another. The report from the browser covers a failure in the player's browser without a foreign service, at the price of code in two parts and a new public route. Failures of the server and of the player's browser are both to be covered, the server weighing more only where covering the browser would strongly narrow the choice; the report from the browser narrows nothing on the side of the server and costs no money. The one `LIMITED` line is kept although D-353 leaves the expected refusals without a line: it records no refused request of a player but that reports were dropped, and without it a flood past the limit would leave the same thirty lines as a flood of thirty. Lacks of the option chosen: when the server and GitHub lie down together, or the schedule is disabled after 60 days without a commit, the operator gets nothing and the silence looks like „działa”; when `flock` does not work on the server, each run of the watcher ends with success and a line in its own log, and the operator gets nothing (on the test server `flock` works: in the watcher's log read on 2026-11-14 the lines for a held deployment lock name `flock exit 1` and no other status); the page does not say whether GitHub sends an email for a failed run by default, so the operator checks it in their own settings (the operator gave this result on 2026-11-14: a manual run of the check with `force_failure` of 2026-11-09 09:45 UTC, run 42595890225, with „Forced failure requested” in its log, brought the mail „[mariusznazar/loop2] Run failed: Check the public address - main (2fe922c)” to his inbox on 2026-11-09 at 10:46 Polish time; the line `cron` of the workflow file was last changed by his own commit `fc493baa` of 2026-11-09, so the notices of scheduled runs go to the right account; the result is about a run started by hand); the limits of `push.mikr.us` are unknown, so the watcher throttles itself and may stay silent about a second failure of the same kind; the new public route accepts reports from anyone, so false reports reach the log and the watcher; an error in the browser while the server or the network is down does not reach the server; there is code in two parts and a script on the server that a human installs. Risks taken, each a hypothesis: a watcher that read Docker's events would raise a false alarm after every merge or lose a fall during the backup; a watcher run as root would create a lock file and block deployments from the account that is not root, or, hung, would stop deployments and the backup; the buffer of 256 events would fill with health checks and a fall would vanish before it is read; failure lines from the moment before a deployment would reach only the copy of the log in the file and not be reported; a watcher running as root on a server shared with other projects is covered by no invariant test; the loss of the file with the time of the last run would flood the operator with messages, and the throttling of `push.mikr.us` would swallow the notice of the backup of D-233 too; the notifications of GitHub set to „Don't notify”, or sent to another account, would give a silence taken for „działa”; during a longer outage a mail at every scheduled run would teach the operator to ignore them, which at the gaps GitHub gives is a few a day and not the hundreds a schedule of five minutes would make; a check that hits a deployment or Cloudflare's block of bots would raise a false alarm, and a real failure would bring two messages by two channels; a report sent with `keepalive` or `sendBeacon` would eat the browser's quota and the player would lose the save at „Wyloguj”; false reports from many addresses would use the watcher's budget of messages, cover a real failure of the server and swell the file of the copied log; arbitrary text from a report, such as an email address or someone else's `accountId`, would land in a log that lives for weeks; an error repeated at every tick would send several reports a second and break „the same line once” of D-253; the route would either fall out on the guards of state-changing requests or be the only one without a check of the origin.
 *Rejected:* a conscious absence, „for now nothing” — free, but from the first outside player the operator learns of a failure from the player or not at all; an absence with a written review before the public opening of accounts — free, but the review blocks nothing and until its date the silence stays; the watcher alone, without checking the address and without the browser — a server that is off, a dead cron and a dead `push.mikr.us` give a silence that looks like „all works”, and the browser is heard only from the player; the watcher with an outside „signal of life” (Healthchecks.io, Better Stack) — it also catches a server that is off, but it brings a new account in a foreign service and a secret on the server, which D-233 already rejected; a service that checks the address (Better Stack, UptimeRobot, Uptime Kuma of its own) — only a game that is unreachable, with an account in a foreign service, and Uptime Kuma on the same server does not see the server turned off; an alert of Cloudflare on the state of the tunnel — free with Zero Trust Free, but it does not see a dead game behind a live connector; Health Checks of Cloudflare — it catches the origin's answers, but needs the Pro plan or higher; Sentry — server and browser, with an availability monitor for an unreachable game, free from 0 to 5 thousand errors and then $29 a month, with data in a foreign cloud and collection and `beforeSend` to set so that no text or stack leaves (D-252, D-253); GlitchTip, hosted or of its own — server and browser, hosted free from 0 to 1000 events and then $15 a month, of its own a service, PostgreSQL, a copy of the database and at least 256 MB of memory on a server without swap, outside the loop2 project; Bugsink — as GlitchTip, with an SDK compatible with Sentry, its price list unread (404); an alarm in an outside store of logs — exists only with the choice of Grafana Cloud, Better Stack or a Loki of its own for the game's log, which was not made; for a `flock` that does not work, a message of a new kind, „the watcher does not work” — without a lock of its own the messages cannot be limited safely and a mail every five minutes is to be feared, and it is a medium amount of code and tests; for a `flock` that does not work, an exit of the watcher with an error — the schedule has its mail turned off, so nobody sees it, and the effect is the same as that of the way chosen.
 
 ## Database backup and restore
@@ -2173,8 +2173,8 @@ command in the running `loop2` container, takes the finished backup from that co
 output through `docker exec` and sends the file itself, so there is no third Compose service and no
 timer in the game server, and the key to Mikrus Strych never enters the game container. That command
 opens only an existing database file, needs its one fixed word `--to-standard-output`, without which
-it refuses before it opens the database and prints nothing to standard output, and is run only by a
-human or the installed backup script. The script holds the deployment's lock,
+it refuses before it opens the database and prints nothing to standard output, and is run only by
+the installed backup script, which its schedule or a human starts. The script holds the deployment's lock,
 `/run/loop2-deploy.lock`, with the deployment's wait of 900 seconds, while the command and the
 encryption run and releases it before sending, and each deployment compares the installed script and
 the installed schedule with their sources at the deployed commit and only warns when they differ,
@@ -2195,7 +2195,7 @@ installing or reinstalling them being a human's change.
   backup script and schedule with their sources at the deployed commit and warning, never refusing,
   when they differ, cannot be read or have no source. An agent compares a change with the part no
   test holds:
-  - complies: a backup script installed by a human at `/usr/local/bin/loop2-backup`, with its schedule under `/etc/cron.d/` by a file name with no dot; the backup command run only by a human or by the installed backup script
+  - complies: a backup script installed by a human at `/usr/local/bin/loop2-backup`, with its schedule under `/etc/cron.d/` by a file name with no dot; the backup command run only by the installed backup script, which its schedule or a human starts
   - violates: a timer in the server's process that makes or sends a backup; a deployment that installs or reinstalls the script or the schedule; a schedule installed under a file name with a dot; a skill instruction in which an agent runs the command, through the `mikrus` MCP server or otherwise
 - **Origin:** none
 
@@ -2240,8 +2240,10 @@ word, who has already asked for the output.
 
 A backup of the account and save database is encrypted on the game server's host before it leaves
 it, by `age` in the backup script's pipe, with the identity file `/etc/loop2/backup-encryption-key`
-of D-13 used as a symmetric key. The plain database exists on the host only in that pipe, and the
-backup is not compressed.
+of D-13 used as a symmetric key. Outside the container's writable layer of D-231, the plain database exists
+on the host only in that pipe; a run whose command cannot remove its temporary copy, or that a
+signal kills, leaves that plain copy in the container's `/tmp` until the next deployment replaces
+the container, one copy for each such run, and the backup is not compressed.
 
 - **Scope:** deployment, agent-workflow
 - **Based on:** age-file-encryption
@@ -2253,7 +2255,7 @@ backup is not compressed.
   argument of a tool and no file sent. An agent compares a change with the part no invariant and no
   test holds:
   - complies: the backup command's stream piped straight into `age`, whose output is the only file the script writes
-  - violates: a plain database file written anywhere on the host's disk on its way to the encryption, such as a copy fetched by `docker cp` before `age` reads it; the backup encrypted inside the game container, with the key handed into it
+  - violates: a plain database file written by the script on the host's disk on its way to the encryption, such as a copy fetched by `docker cp` before `age` reads it; the backup encrypted inside the game container, with the key handed into it
 - **Origin:** none
 
 *Rationale:* a leak from Strych reveals no player's address. The price is one more secret and one
@@ -2421,7 +2423,7 @@ depends on the service.
 
 The backup command of D-231 makes a database backup through `backup()` of `node:sqlite`, on the
 connection it opens, whole in one step, by a `rate` that is a positive whole number above any page
-count the database can reach.
+count a database of this server can reach.
 
 - **Scope:** account-server
 - **Based on:** sqlite-online-backup · node-sqlite-database · sqlite-wal-concurrency
@@ -2561,7 +2563,7 @@ Five failed logins for one normalized email address within a rolling 15-minute w
 
 ### D-103 — Where are attempt counters kept and how is password work bounded?
 
-Attempt histories live in bounded process memory, with at most 10,000 live email keys and 10,000 live IP keys, fixed-size digests for email keys and threshold-bounded histories; restart or deployment clears them. Expired entries release capacity, live restrictions are not evicted to admit another key, and full capacity refuses work. One bounded gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account, with a concurrency cap selected by measurement within the container memory budget and slots released only when the actual operation completes.
+Attempt histories live in bounded process memory, with at most 10,000 live email keys and 10,000 live IP keys, fixed-size digests for email keys and threshold-bounded histories; restart or deployment clears them. Expired entries release capacity, live restrictions are not evicted to admit another key, and full capacity refuses work. One bounded admission gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account, with a concurrency cap selected by measurement within the container memory budget and slots released only when the actual operation completes.
 
 - **Scope:** account-server, deployment
 - **Based on:** none
@@ -2592,7 +2594,8 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
   stored or moved; a stored game text of at most 65 536 bytes counted after re-serializing, a larger
   one refused with nothing stored, and neither the table of saved game states nor that of previous
   saves holding a text over 65 536 bytes; every route the application answers with a method other
-  than GET and HEAD listed by a case that checks these guards on it.
+  than GET and HEAD found on the list of guarded routes that the case of these guards holds, a
+  route off that list failing the case, as does a route on it that the application lacks.
 - **Origin:** none
 
 *Rationale:* An explicit expected origin and JSON boundary constrain state changes made with a browser cookie; clients that omit the origin are refused, and valid-looking content still needs field checks. The save route takes a whole saved game state, which grows with what later work adds to the game state, so it takes a limit of its own, while the other routes keep the small one their bodies need; at the full stored limit a thousand accounts take about 65 MB in each copy of the database, and the place for copies of the database holds about three such copies, so with that many players it would have to hold fewer copies or move; the previous save adds a second such document per player, which doubles those figures at the full limit.
@@ -2709,7 +2712,7 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 - **Scope:** account-server, deployment, build-tools
 - **Based on:** session-secret-rotation
 - **Relations:** derives from D-13 · derives from D-107 · derives from D-153
-- **Verification:** invariants: account-server-default-address · account-startup-configuration.
+- **Verification:** invariants: account-server-default-address · account-server-occupied-address · account-startup-configuration.
   tests: wholly unconfigured non-production answering every known account route with JSON 503; the
   configured origin, the signing file, the sender, the SMTP host, port and login and the password
   file each refused in its invalid forms, a byte-order mark followed by a password accepted with the
@@ -3045,7 +3048,7 @@ a switch — one click removes „Gra została zaktualizowana. Odśwież stronę
 
 ### D-262 — What stands on the screen of the login card, and where do the waiting screens stand?
 
-Nothing stands on the screen of the login card but the card, not even the header. The waiting
+Nothing stands on the screen of the login card but the card over the picture of D-272, not even the header. The waiting
 screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and
 the moment after a sign-in that succeeded — stand outside the card, with the header, for a
 signed-in player too. When React takes the card down after an exception no code of the game
@@ -3113,8 +3116,8 @@ nothing above them.
 *Rationale:* a card in the exact middle grows both ways, so whatever stands above a change moves
 with it, and a second click on the credits or on the switch misses. At a window of 1280 × 800 the
 title of the credits moved by 96 px when they unfolded and the tabs by 8 px when the state changed,
-with the card in the middle; with the top edge fixed neither moves, and the card with its credits
-unfolded ends at 682 px. Accepted with it: on a tall window the card stands clearly above the middle.
+with the card in the middle; with the top edge fixed neither moves. Accepted with it: on a tall
+window the card stands clearly above the middle.
 *Rejected:* leaving the card in the middle — the credits and the switch jump whenever the card
 grows; unfolding the credits outside the card — a new HTML element with its own background, while
 the jumps of the switch and of the form stay.
@@ -3138,7 +3141,7 @@ How account email is sent and limited, how emailed links confirm an address or r
 
 ### D-105 — How is sending account email limited?
 
-The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
+The account server sends at most 30 account messages per hour in total and at most three per email address per hour (per account, whose address never changes, D-159). Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
 
 - **Scope:** account-server
 - **Based on:** none
@@ -3307,7 +3310,7 @@ Every account message the account server sends or attempts counts against the li
 - **Verification:** invariants: account-message-limits.
 - **Origin:** none
 
-*Rationale:* a message handed to the mail service may have been delivered even when its answer is a failure or never comes, and D-105 says at most; counting in the database keeps the hourly limits true across a deployment within the hour. A player whose three sendings failed waits up to an hour, and the count reads at most a day of messages.
+*Rationale:* a message handed to the mail service may have been delivered even when its answer is a failure or never comes, and D-105 says at most; counting in the database keeps the hourly limits true across a deployment within the hour. A player whose three sendings failed waits up to an hour, and the table holds at most about a day of messages, and the count reads the last hour of them.
 *Rejected:* counters in process memory like the attempt limits of D-103 — a restart or deployment within the hour clears them and lets up to 30 more messages through; a separate record of counters — a second record of what the recorded links already hold; counting only messages the mail service accepted — a lost answer goes uncounted, and a player could ask a failing mail service again without bound.
 
 ### D-162 — Which file is the exemplar for mail sending?
@@ -3748,7 +3751,7 @@ data change, which they did every evening when this was decided.
 ### D-207 — When does the game save the game state on the server?
 
 The game saves the game state on the server by itself right after each change of it the player
-makes — an edit of a program or of the copy, an act on the list of programs, creating a character,
+makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character,
 sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of
 the report, a pause and a pace — right after a manual map run ends in a completion or in the
 character's death, right after a reading of the clock or a catch-up whose result ended map runs of
@@ -4178,7 +4181,7 @@ component of that sentence reads too.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-44 · derives from D-03
+- **Relations:** derives from D-44 · narrows D-03
 - **Verification:** tests: the React forms of the button in each of its kinds, the text field, the
   password field, the sentence under a form, the pick cell, the select list and the number field
   drawing the tag, classes, attributes and text the screens rely on, and answering a click, a typed
@@ -4317,7 +4320,7 @@ writes it. The name of a
 character on its card on Siedziba leads to the screen Postać of that character, on which the menu
 bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on
 the screen of a map run the menu bar marks no item. A player reaches a first map run from Siedziba in
-at most three clicks: the choice of a map, the map's row and „Wejdź”.
+at most three clicks: the item „Mapy” of the menu bar, the map's row and „Wejdź”.
 
 An account with the owner role (D-410) has one more screen, the list of accounts (D-411), of the same content width, which is no item of the bar: the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela” to `#/konta` (D-281). The items of the bar and the bar itself are the same for a player and for an account with the owner role, and the menu „Konto” of a player holds no such link.
 
@@ -4626,13 +4629,13 @@ The counter „{n} poznanych rzeczy” counts the actions, items and creatures t
 
 ### D-421 — Which stylesheets does the browser view have, and what does each hold?
 
-`src/browser/styles.css` stays the shared stylesheet of the game, the game's stylesheet of D-47 and D-265 that keeps the one `:focus-visible` rule: it holds the base rules, that rule, the menu bar, the rows of sentences, the shared controls and the rules of what the kitchen-sink page draws besides the controls — the drawing of the map (`terrain-drawing`), the table of tiles (`tile-list`), the form (`form`) and the block of the account menu (`account-menu-block`). It holds also the common layout of the screens — the place of the screens (`.app-main`, `.screen`, `.screen-area`) and the columns of Programy, Mapy and Wiedza with their `@media` — and each rule that the elements of several screens need, that cannot be divided without changing its text and that belongs to no part with a stylesheet of its own, as the rules of the credits that name the login card and Siedziba belong to `credits.css`: a rule whose selector list names classes of more than one screen, or the rule of a sentence that several screens draw, which today are, besides those columns, the sentence `trip-warning` and the animation of the frames of the sprites of the scene and of the camp. Each screen and every other part that several screens use has a stylesheet of its own, a `.css` file directly in `src/browser/`, which a `<link>` of its own in `src/browser/index.html` gives to the player and which the build copies as it copies the other files of that kind, with no change of the build; the kitchen-sink page links the file of design tokens, `src/browser/styles.css` and its own stylesheet alone.
+`src/browser/styles.css` stays the shared stylesheet of the game, the game's stylesheet of D-47 and D-265 that keeps the one `:focus-visible` rule: it holds the base rules, that rule, the menu bar, the rows of sentences, the shared controls and the rules of what the kitchen-sink page draws besides the controls — the drawing of the map (`terrain-drawing`), the table of tiles (`tile-list`), the form (`form`) and the block of the account menu (`account-menu-block`). It holds also the common layout of the screens — the place of the screens (`.app-main`, `.screen`, `.screen-area`) and the columns of Programy, Mapy and Wiedza with their `@media` — and each rule that the elements of several screens need, that cannot be divided without changing its text and that belongs to no part with a stylesheet of its own, as the rules of the credits that name the login card and Siedziba belong to `credits.css`: a rule whose selector list names classes of more than one screen, or the rule of a sentence that several screens draw, which today are, besides those columns, the sentence `trip-warning` and the animation of the frames of the sprites of the scene and of the picture band. Each screen and every other part that several screens use has a stylesheet of its own, a `.css` file directly in `src/browser/`, which a `<link>` of its own in `src/browser/index.html` gives to the player and which the build copies as it copies the other files of that kind, with no change of the build; the kitchen-sink page links the file of design tokens, `src/browser/styles.css` and its own stylesheet alone.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-47 · derives from D-265
 - **Verification:** an agent compares a change with the decision:
-  - complies: the rules of the program panel, which the screens Programy and Przejście use, in a stylesheet of their own directly in `src/browser/` with a `<link>` of its own in `src/browser/index.html`; the rules of a screen in the stylesheet of that screen; the look of a shared control in `src/browser/styles.css`; the kitchen-sink page linking the file of design tokens, `src/browser/styles.css` and its own stylesheet and no stylesheet of a screen; the animation of the frames of the sprites of the scene and of the camp of Siedziba, one rule whose selector list names classes of Przejście and of Siedziba and which no part with a stylesheet of its own holds, with its keyframes in `src/browser/styles.css`; the rules of the folded credits that name the login card and Siedziba in `src/browser/credits.css`, the stylesheet of that part
+  - complies: the rules of the program panel, which the screens Programy and Przejście use, in a stylesheet of their own directly in `src/browser/` with a `<link>` of its own in `src/browser/index.html`; the rules of a screen in the stylesheet of that screen; the look of a shared control in `src/browser/styles.css`; the kitchen-sink page linking the file of design tokens, `src/browser/styles.css` and its own stylesheet and no stylesheet of a screen; the animation of the frames of the sprites of the scene and of the picture band of Siedziba, one rule whose selector list names classes of Przejście and of Siedziba and which no part with a stylesheet of its own holds, with its keyframes in `src/browser/styles.css`; the rules of the folded credits that name the login card and Siedziba in `src/browser/credits.css`, the stylesheet of that part
   - violates: the rules of a screen written into `src/browser/styles.css` or into the stylesheet of another screen; a rule that the elements of two screens need, written into the stylesheet of one of them, so that the other screen reads a file of the first; a stylesheet of a screen kept in a subdirectory of `src/browser/`, or a step added to the build for it; a stylesheet of a screen that the kitchen-sink page links; a second `:focus-visible` rule, or an `outline` set, in the stylesheet of a screen
 - **Origin:** none
 
@@ -4788,7 +4791,7 @@ In the files of the part browser-view other than its file of design tokens, a va
 
 ### D-44 — Which controls do the screens of the browser view build on?
 
-The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39). A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”, as the button „Wciągnij programy z poprzedniego zapisu” reads „Wciąganie…” while its pull waits (D-401). A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
+The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive` at rest and under the pointer (D-39). A control awaiting a server response is disabled with text in `text-disabled`, „Zacznij od zera” while its reset waits for the server among them; the button that sends a form then reads „Logowanie…”, „Zakładanie konta…”, „Wysyłanie…” or „Ustawianie…” for the corresponding form — „Zaloguj się”, „Załóż konto”, „Nie pamiętam hasła” or „Ustaw nowe hasło” — and that form's fields are disabled, and the button „Wyślij ponownie” then reads „Wysyłanie…”, as the button „Wciągnij programy z poprzedniego zapisu” reads „Wciąganie…” while its pull waits (D-401). A form's server refusal and loss of connection appear as one sentence below the form in `warning`, the answer to a request for a password-reset link (D-222) appears in that place in `text`, with a bar on its left in its own colour (D-279) and never in `positive`, and the kitchen-sink page shows the waiting and refusal states of every form, „Nie pamiętam hasła” and „Ustaw nowe hasło” included, and the form „Nie pamiętam hasła” with that answer.
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -4818,7 +4821,7 @@ The kitchen-sink page of the browser view is built from `src/browser/kitchen-sin
 
 ### D-46 — Which fonts does the browser view use, and where do they come from?
 
-The fonts of the browser view are Geist and Geist Mono, whose web-font files and licence file are taken from a release of github.com/vercel/geist-font into `assets/fonts/`, outside the directory the account and save server serves, and copied into that directory when the application is built. The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono and every other text in Geist.
+The fonts of the browser view are Geist and Geist Mono, whose web-font files and licence file are taken from a release of github.com/vercel/geist-font into `assets/fonts/`, outside the directory the account and save server serves, and copied into that directory when the application is built. The game loads fonts only from those files, never from another server, and sets the chronicle, its entries in the end-of-run window included, and the clock of the map run in Geist Mono and every other text in Geist.
 
 - **Scope:** browser-view, build-tools, deployment
 - **Based on:** geist-licence · npm package `geist` 1.8.2, its peer dependencies (https://registry.npmjs.org/geist/1.8.2 § peerDependencies — "{"next":">=13.2.0"}"; read 2026-10-23)
@@ -4867,7 +4870,7 @@ The scene's pictures and the picture of the game behind the login card are sprit
 Pixel Crawler and LPC Wolf, and the dust of a miss and the cloud of a scuffle are sprites of the
 pack Smoke & Fire Animated Particle [16x16] recoloured to the scene's colours, all kept in
 `assets/sprites/` outside the directory the account and save server serves and copied into it when
-the application is built. The pictures of the camp at the top of Siedziba, its clearing, fire, chest
+the application is built. The pictures in the picture band at the top of Siedziba, its clearing, fire, chest
 and characters, are sprites of the pack Pixel Crawler kept there in the same way, and the chest is
 one still picture whatever it holds. A sprite file holds pixels alone, the game credits each pack
 whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, and
@@ -4882,20 +4885,21 @@ frost by at least 3:1 against the snow it lies on.
 - **Based on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit
 - **Relations:** none
 - **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
-  the files of the smaller flame, of the mage's death, of the wolf and of the camp's clearing and
-  chest holding pixels alone; the chest of the camp one still picture, the same empty and full; the
+  the files of the smaller flame, of the mage's death, of the wolf and of the clearing and
+  chest of the picture band holding pixels alone; the chest of the picture band one still picture, the same empty and full; the
   credit line of the pack LPC Wolf naming its licence CC BY 3.0; every picture file of the sprites
-  assigned to the pack it comes from, and every such pack whose licence asks for a credit having a
-  line among the game's credits; the frost's thickness in whole
+  having an assignment to a pack in the table of its test, which does not judge whether the
+  assignment is right, and every pack that table assigns a file to, where its licence asks for a
+  credit, having a line among the game's credits; the frost's thickness in whole
   pixels of the scene, its pixel a part of the frame's width and height, and the specks of a
   completion whole pixels of the scene on its grid, rising by whole pixels over the open snow alone;
   the frost's outline standing out by at least 3:1 from the snow measured under every tint. For where
   the pictures come from, the sprite files no test reads and the colours CSS draws in, an agent
   compares a change with the part no invariant and no test holds:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
-    PNG file with no chunk but its pixels'; the clearing of the camp composed from the pack's snow
+    PNG file with no chunk but its pixels'; the clearing of the picture band composed from the pack's snow
     ground and trees, and its chest cut from the pack's sheet with every pixel moved unchanged, the
-    camp's characters and fire the files of the scene's mage and fire; the character of the scene
+    band's characters and fire the files of the scene's mage and fire; the character of the scene
     drawn from a sprite file made from the pack's mage; the cloud of dust a sprite file made from the
     smoke of Smoke & Fire Animated Particle [16x16] in browns the scene holds, which the cloud of a
     scuffle is too; the wolf a set of sprite files made from the side views of the pack LPC Wolf,
@@ -4911,7 +4915,7 @@ frost by at least 3:1 against the snow it lies on.
     ground it stands on; the hooded figure of loop as the character of the scene; a mage, a creature
     or a prop drawn by CSS as a shape; a frost or a speck in a colour no picture of a pack holds; a
     speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour
-    no choice of the human gave; a chest of the camp drawn from an icon file as a mask
+    no choice of the human gave; a chest of the picture band drawn from an icon file as a mask
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
@@ -4925,7 +4929,7 @@ and dying: the clothed characters of the pack have no pose of gathering. Kept ap
 server serves, as the icons and
 the fonts are, a picture reaches the player only through the build; it comes from outside the
 product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
-credit and allow its arts to be altered, so a picture made from them may be dimmed, composed and cut
+credit of a game with no saxophone solo and allow its arts to be altered, so a picture made from them may be dimmed, composed and cut
 down by hand.
 The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
 the pack Smoke & Fire Animated Particle holds a ready cloud in a flat style without outline, like the
@@ -4941,12 +4945,12 @@ on the snow weakly by its brightness. Accepted with it: credits for the pack of 
 bending mage made by hand or, where hand work comes out weak, generated for those few frames, a
 smaller flame cut down by hand from the frames of the pack's fire, pixel work whose look is judged
 only once it is made, and colours of the specks and of the frost that enter the game's palette with a
-source in the pixel of a named picture of a pack. The camp at the top of Siedziba needs no pack beyond the one
+source in the pixel of a named picture of a pack. The picture band at the top of Siedziba needs no pack beyond the one
 the scene stands on: Pixel Crawler holds a chest with fittings in the same style, so the chest is cut out of its
 sheet as the trees were, the clearing is composed of the same pictures as the forest, and the pack asks for no
-credit, so the game's credits stay as they are. The chest is one picture because how much it holds is said by
+credit of a game with no saxophone solo, so the game's credits stay as they are. The chest is one picture because how much it holds is said by
 the heading of the chest's section, not by the picture; accepted with it: one more cut from the pack's sheet.
-*Rejected:* for the chest of the camp: an icon of game-icons.net drawn by a mask, as the icons over the mage's
+*Rejected:* for the chest of the picture band: an icon of game-icons.net drawn by a mask, as the icons over the mage's
 head are — a smooth drawing beside pixels, the reason this decision gives for refusing shapes the browser draws in
 the scene, and a new row in the game's credits; for the licence of the wolf: CC BY 4.0 — nothing the game needs beyond 3.0, its terms
 would have to be read and written down as a new fact, and two different Creative Commons licences would
@@ -4958,8 +4962,7 @@ tools name as their main problem, and the pixels need correcting by hand; any ot
 wider choice, but another palette and scale, new licences and more credits; for the dust of a miss:
 the smoke of Pixel Crawler — it cannot be seen on the
 ground; particles of single pixels in a brown that stands out from the ground — barely visible; a
-cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only at
-the request; any shape CSS draws in the scene in a colour of a token — smooth shapes of CSS beside
+cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only once it is made; any shape CSS draws in the scene in a colour of a token — smooth shapes of CSS beside
 pixels break the one pixel style; CSS drawing only the layers and the plaque, with the specks taken
 from the packs — the missing specks would have to be made from the pixels of another sheet; to wait
 with the scene until the packs of effects and the tools for pixel scenes are explored — the work on
@@ -4973,7 +4976,7 @@ scene, and text stands on a solid background, never on a picture.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
-- **Verification:** tests: the scene of a map run and the camp at the top of Siedziba, the camp over
+- **Verification:** tests: the scene of a map run and the picture band at the top of Siedziba, the band over
   the screen's panel and its heading, each a picture with no text in it. For the login card, text
   laid over a picture from outside it and the screens with no picture, an agent compares a change
   with the part no invariant and no test holds:
@@ -5842,7 +5845,7 @@ The characters of the team stand on its list in the order they were created.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** tests: the characters standing in the order of their creation on the team's
-  list in the game state, on Siedziba, in „Kto idzie” of the card of a map and in the camp of
+  list in the game state, on Siedziba, in „Kto idzie” of the card of a map and in the picture band of
   Siedziba.
 - **Origin:** none
 
@@ -5883,7 +5886,7 @@ from the generators of a map run.
 
 ### D-57 — In what unit does a character's warmth stand?
 
-A character's warmth is its body temperature in degrees Celsius, counted with tenths.
+A character's warmth is its body temperature in degrees Celsius, counted with tenths and written with a decimal comma, as „36,5 °C”.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -6080,14 +6083,14 @@ The card and the screen of a character, and that character in the section „Kto
 
 ### D-218 — How does the headquarters show a character's generation number?
 
-The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in
-`text-secondary`.
+The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from
+generation number 2 up, in `text-secondary`.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-40 · derives from D-190
-- **Verification:** tests: „pokolenie {n}” beside the name of a character on Siedziba from
-  generation number 2 up, and no label at generation 1. For the role of the label, an agent
+- **Verification:** tests: „pokolenie {n}” beside the name of a character on Siedziba and on the
+  screen Postać from generation number 2 up, and no label at generation 1. For the role of the label, an agent
   compares a change with the part no test holds:
   - complies: „pokolenie 2” beside a name on Siedziba in `text-secondary`, as the archetype beside
     it
@@ -6138,7 +6141,7 @@ A new character has generation number 1 and brings no resurrection of its own; a
 The resurrection is the account's, one for all the characters (D-190), so a character made later does
 not bring a ready one, and a new game starts with the resurrection ready, as the first character of
 the tests of loop did. Accepted with it: behaviours of those tests that nobody chose knowingly come in too.
-*Rejected:* the tests of loop taken as material; a ready resurrection for each new character — a
+*Rejected:* the tests of loop taken only as material, from which each behaviour would be chosen anew; a ready resurrection for each new character — a
 character made for one risky try would escape the stake of death.
 
 ### D-221 — When is a character's death settled?
@@ -6353,7 +6356,7 @@ A campfire shows on the drawing of the game map as an icon on its tile, one icon
   drawing.
 - **Origin:** none
 
-*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list. A campfire crafted and not yet lit is extinguished, which a new player does not expect, so the drawing tells the player that too. The extinguished campfire's icon, like the other icons of the map, holds its colour in its file, and the scene of a map run already tells an extinguished campfire from a burning one, by the same picture without colour and motion.
+*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list. A campfire crafted and not yet lit is extinguished, which a new player does not expect, so the drawing tells the player that too. Both icons are drawn as masks in `text-strong`, like the other icons of the map (D-43), so the two states differ by shape, and the scene of a map run already tells an extinguished campfire from a burning one, by the same picture without colour and motion.
 *Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further; one icon for both states — the drawing alone does not tell a burning campfire from an extinguished one.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
@@ -6396,7 +6399,7 @@ scene's data. An extinguished campfire stays as D-316 gives it.
     the 20 minutes named in the code of the browser view
 - **Origin:** none
 
-*Rationale:* 20 minutes is what one stick adds to a burning fire, so a smaller flame says to feed the
+*Rationale:* 20 minutes is what one stick adds to a burning fire without the branch „Oszczędne dorzucanie” (D-379), so a smaller flame says to feed the
 fire before it goes out, and the sprite of the full flame and that of the smaller one change at one
 moment with nothing between. The smaller flame is the full one cut down by hand, because the pack
 holds no smaller flame of the same fire on the same stones, and a fraction of the scale would give a
@@ -7135,7 +7138,7 @@ at once what the program editor offers and what the simulation lets the characte
 learn; knowledge kept per character would make the opening chain a tutorial played again with
 every character, and would die with the character. An encounter counts for the player, not for the character, a consequence accepted knowingly: if one character saw a wolf, the conditions about health are discovered for all, so of the two locks on a discovery only one works, the predisposition. One computation serves both the editor and the
 simulation: a program moved between characters cannot get round it, and the editor never offers
-what the character will not carry out. The discovery of a branch is a fact of the world and stays with the player, while the character skill goes with the character that paid for it: a fresh character cannot carry out „Obchód” or „Zawierucha”, for which it has not paid with a single execution. A branch of another character's tree reads „nie dla tej postaci” and not a promise „wykup ją”, because that character has no way to reach it.
+what the character will not carry out. The discovery of a branch is a fact of the world and stays with the player, while the character skill goes with the character that paid for it: a fresh character cannot carry out „Obchód”, for which it has not paid with a single execution.
 *Rejected:* the Understanding saved with each character — a new character would go through the whole chain of discoveries from the start, which with characters not limited in number is a tutorial played for the fifth time, and the knowledge would die with the character; a filter in the editor alone — a program
 moved between characters gets round it; a filter in the simulation alone — the editor offers what
 never runs, and the player learns of it from an empty run; a bought branch open to every character — one character's tree becomes everyone's.
@@ -7824,13 +7827,13 @@ A program rule whose condition holds and whose action the game's check refuses n
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
-- **Relations:** derives from D-308 · derives from D-310
+- **Relations:** derives from D-308 · derives from D-309 · derives from D-310
 - **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
   - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
   - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
 
-*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
+*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — here, and those of combat, „tylko w walce” and „trwa walka”, in D-309, so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
 *Rejected:* the reasons written by the author of the work itself and judged only when the work is merged; a table with corrections of chosen rows.
 
 ## Programs: ownership, names and the copy
@@ -7954,7 +7957,7 @@ The program of a new game is named „Program”, and a new program „Program 2
 
 ### D-170 — Where does the player pick the program a character enters a map with, and which one stands there first?
 
-The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map. The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
+The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map. The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -8084,7 +8087,7 @@ Where the program the program panel shows is gone from the player's list, or the
     showing „Program 3” because it stood next to it
 - **Origin:** none
 
-*Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
+*Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last fallback of the order D-170 gives the list „Program:”. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
 *Rejected:* unknown.
 
 ## Trip plan, chest and items
@@ -8223,12 +8226,12 @@ The headquarters shows the chest section heading as „Skrzynka {pieces}/{cap}�
 
 ### D-185 — Where does the player read what completion deposited?
 
-After completion the line „Do skrzynki: {item} {count}, …” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”.
+After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzynki nic nie trafiło.” in `text-secondary` stands in the section of the end-of-run window (D-368) saying what the end gave, until „Restart” or „Zakończ”.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-179 · derives from D-368
-- **Verification:** tests: after a completion the line „Do skrzynki: {item} {count}, …”, or „Do
+- **Verification:** tests: after a completion the line „Do skrzynki: {item} {count}, ….”, or „Do
   skrzynki nic nie trafiło.” for an empty transfer, in `text-secondary`, as the transfer stood at
   the completion whatever later edits of the copy, in the section of the end-of-run window saying
   what the end gave, after a reload of the screen too. For how long the line stands, an agent
@@ -8298,7 +8301,7 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 
 ### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment (D-251).
 
 - **Scope:** simulation
 - **Based on:** none
@@ -8315,7 +8318,7 @@ A manual map run that first solves its map pays practice and loot once per map f
   solved map where that cut equipment is more than the chest holds.
 - **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the card of the map shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark under „Wejdź” on the card of the map shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
 *Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it; „Odbierz” paying completed map runs alone — after eight hours there is usually nothing to take.
 
 ### D-307 — What does the line of an empty trip plan say?
@@ -9457,8 +9460,8 @@ a narrow column.
 ### D-310 — How does a program rule that cannot start name its reason?
 
 A program rule whose condition holds and whose action cannot be carried out names one reason: when
-there are several, the one of combat comes first, then the world and the backpack, and the nature
-energy last. The reason names the thing refused as the game writes it, in lower case and without a dot
+there are several, the one of combat comes first, then the world and the backpack, then the nature
+energy, and a branch the character did not buy after them. The reason names the thing refused as the game writes it, in lower case and without a dot
 before the name, such as „tu nie leży mech”, „brakuje 4 × patyk”, „brak opału: patyk” and „brak energii
 natury: 7 z 10”, and the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed
 cell of the rule panel, or „jeszcze nieodkryte: {name}”.
@@ -9525,12 +9528,12 @@ The rule panel shows beside an action what it costs, read from the game's data, 
 - **Verification:** tests: the price in brackets in the name of each action cell of the pick, a greyed one and one the rule holds outside the pick included, and in the value shown for the action field beside the time of one execution; no price in the row of a rule; the pieces before the nature energy, each name in the form its count takes, the forms of every resource's name in the data and „energia natury” in its three forms; „1 jagoda” for eating, the first food of the data; no price for an action that uses up nothing; during a map run the price of the character of the map run, „10 energii natury” for „Zapal — ognisko” with „Czysty płomień”, and outside one the data's.
 - **Origin:** none
 
-*Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. In a trial of 2026-10-31 an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule does not grow, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, while the game departs from the old loop's solutions only where the result is better, never worse (D-311); the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
+*Rationale:* the four verbs of a campfire stand side by side, and a player who sees no price learns it only after the fact, so a rule that waits for a missing stick looks like a fault. In a trial of 2026-10-31 an agent playing in the role of a new player had the four verbs „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” side by side with no price anywhere: it counted that a campfire takes 6 sticks only when they left the backpack, counted the price of lighting from the screen, did not know how many sticks were needed or how the two lightings differ, and did not know that nature energy is a fuel; with 3 sticks in the backpack both rules of the campfire stayed at „0×” and the game did not say what was missing. The price stands where the action is picked, as the time does; the row of a rule does not grow, and a rule that waits for a stick is explained there by its reason (D-310). A price read as a sentence, as the row of a rule is (D-288), with the names of things in the form their count takes and the energy by its full name, as the reason does (D-310), is the form of the example „Wytwórz — ognisko (6 patyków)” that the binding sentence gives, and every new thing will need those forms; the price stands in the same text as the name, so it needs no new role of the style guide. The price follows the character of the map run, so it tells the truth about what leaves the backpack and agrees with the reason at the rule. Accepted with it: reading a program, the player sees no prices without opening the panel, which is poorer in that row than the old loop, while the game departs from the old loop's solutions only where the result is better, never worse; the same rule shows another price on two screens; and an action that takes any piece of a use shows the first item of that use even when the backpack holds another, which is exact while the data marks one item for each use.
 *Rejected:* the price in the row of a rule as well, hidden where the reason says what is missing, as in the old loop — a longer row, which more often wraps to two lines; the price with a „×” sign, „(6 × patyk)”, as the reason at a rule is written — it needs no new data, but it reads as a list, not as a sentence; the price always from the data, „(2 patyki, 10 energii natury)” on every screen — one price and simpler code, but the panel would name sticks that lighting will not take from a character with „Czysty płomień”
 
 ## Screen Mapy and Siedziba
 
-What the screen Mapy shows of maps and characters, and the camp at the top of Siedziba.
+What the screen Mapy shows of maps and characters, and the picture band at the top of Siedziba.
 
 ### D-53 — Where does the player send a character from, and where do the buttons that end a map run lead?
 
@@ -9749,9 +9752,9 @@ The numbers of the card of a map that follow a rule of the game are computed by 
 *Rationale:* the player reads on the card what a map asks, and the numbers come out of the rules of the game, the cooling of the body and the spacing of attacks, which stand in the simulation. Counted there once, the card follows a change of balance by itself. Accepted with it: the simulation holds functions that only the card uses, and a usual step that is the step most maps give changes when a map with another step arrives, the notes beside the steps moving with it.
 *Rejected:* the view counting the numbers — the cooling of the body and the spacing of attacks would be written twice and drift apart at the next change of balance; a value „usual step” in the balance data — a number no settled source gives; a constant of the view — a number of the game's content outside its data.
 
-### D-389 — What does the camp at the top of Siedziba show, and how does it stand and move?
+### D-389 — What does the picture band at the top of Siedziba show, and how does it stand and move?
 
-The camp at the top of Siedziba is a band across the content, about 96 px high, under the row of
+The picture band at the top of Siedziba stands across the content, about 96 px high, under the row of
 warnings below the menu bar and over the heading „Siedziba”, drawn at twice the pixels of its picture:
 a snow clearing in full light and with no tint, composed of the pictures of the pack Pixel Crawler from
 which the forest of the scene is composed, with a burning campfire in the middle, the chest and the
@@ -9760,8 +9763,8 @@ campfire and never scales it down. The characters that stand in it are those at 
 character being at the camp where it is neither in a manual map run, going, paused or ended and
 waiting for „Restart” or „Zakończ”, nor in an earning loop: the first of them in the order of
 creation that the band holds at the width of the window, the rest standing in the picture nowhere
-while the section „Drużyna” lists them all, and a camp with none shows the fire and the chest
-alone. The camp moves as the scene does, the fire in the frames of its flame and
+while the section „Drużyna” lists them all, and a picture band with none at the camp shows the fire and the chest
+alone. The picture band moves as the scene does, the fire in the frames of its flame and
 each character in the frames of its idle sheet, at the scene's fixed beat with no loop of drawing, and
 stands still under the system's setting for reduced motion; its campfire burns always and is no campfire
 of the game state; and it is a picture, not a control, taking no click and no key, hidden from readers of
@@ -9774,37 +9777,37 @@ the screen, with no text on it or over it.
   the heading „Siedziba” under it, 96 px high, its clearing, a picture of 672 × 48, drawn at twice its
   pixels; the characters that stand in it, those neither in a manual map run, going, paused or ended,
   nor in an earning loop, in the order of creation, as many as the widest band holds, „Drużyna” listing
-  them all, and the fire and the chest alone where none is at the camp, the camp following at once
+  them all, and the fire and the chest alone where none is at the camp, the band following at once
   every change of the map run and of the earning loops; the fire in the frames of its burning flame
-  whatever campfire the game state holds, and each character in the frames of its idle sheet; the camp
+  whatever campfire the game state holds, and each character in the frames of its idle sheet; the band
   a picture, with no control, no stop for the keyboard, no response to a click and no text, hidden from
   readers of the screen. For where the band stands under the menu bar, its clearing, the place of its
   fire, its cropping and its motion, an agent compares a change with the part no invariant and no test
   holds:
-  - complies: the camp under the row of warnings below the menu bar, with the sentence of the page above
+  - complies: the picture band under the row of warnings below the menu bar, with the sentence of the page above
     the screen still above it; the clearing in full light with no tint, composed of the pictures the
     forest of the scene is composed of; the fire in the middle at every width of the window; in a window
     400 px wide the clearing cropped at the sides around the fire and as many whole characters as the
     band holds; the frames of the fire and of the characters changing at the scene's beat by CSS and
     standing still under the setting for reduced motion
-  - violates: the camp over the row of warnings; the clearing scaled down in a narrow window; a character
-    cut in half at the edge of the band; a loop of drawing that moves the camp; a camp that moves under
+  - violates: the picture band over the row of warnings; the clearing scaled down in a narrow window; a character
+    cut in half at the edge of the band; a loop of drawing that moves the band; a picture band that moves under
     the setting for reduced motion
 - **Origin:** none
 
-*Rationale:* without it Siedziba is a page of text that looks like a form, and a picture of the camp at its
+*Rationale:* without it Siedziba is a page of text that looks like a form, and a picture band at its
 top gives the game a place to be seen where nothing is to be read; the band stands over the screen's panel,
 outside its text, so the contrast of the text and the order in which the screen is read stay as they
 are (D-272). The picture says what the text under it does not: a character in a manual map run is a
-thing Siedziba otherwise says nowhere, since „Drużyna” speaks of earning loops alone, so the camp shows
+thing Siedziba otherwise says nowhere, since „Drużyna” speaks of earning loops alone, so the picture band shows
 the characters that are at the fire and the screen is drawn again at every change of the map run. A team
 has no limit of characters and the content is at most 1344 px wide, so the band holds as many whole
 characters from the first as fit and the list under it holds all. The band crops the clearing at the
 sides because a pixel picture at a fractional scale has unequal pixels and shakes in motion, as the
 scene's would (D-349). The fire and the characters move at the beat of the scene so that Siedziba is not a
 still page, by CSS alone and standing still where the system asks for less motion; only small parts of the
-band change, so nothing flashes (D-317); the camp has no campfire of the game state to follow, so its fire
-always burns. The camp is a picture so that no new kind of control joins the shared ones (D-44), and the
+band change, so nothing flashes (D-317); the band has no campfire of the game state to follow, so its fire
+always burns. The band is a picture so that no new kind of control joins the shared ones (D-44), and the
 way to a character stays its name in „Drużyna” (D-280). Accepted with it: the heading „Siedziba” stands
 lower by the height of the band; one more picture to compose; the number of characters in the picture
 follows the width of the window; motion beside the text of Siedziba; no shortcut from the picture to a
@@ -9818,7 +9821,7 @@ on the map, a character in an earning loop sits at the fire though the line unde
 picture has no meaning; every character, those away drawn differently, dimmed — a new look whose meaning
 nothing settles, and grey means stopped time and death in the game (D-322), so a dimmed character would read
 as dead; every character, always, closer and closer until they overlap — a crowd in which a mage hides a
-mage; a camp that stands still, one frame of the fire and one of each character — a dead picture on the
+mage; a picture band that stands still, one frame of the fire and one of each character — a dead picture on the
 screen that is to stop looking like a form; a click on a character that opens its screen Postać — a new kind
 of control outside the shared ones (D-44): a picture as a link, with focus, a name for readers and a look
 under the pointer, and, where not every character stands in the picture, a link for some of them alone.
@@ -9960,9 +9963,9 @@ top, the scene, „Teraz” and „Potem”, the body row
 with the minutes each need lasts, with the backpack and the lines below them, the drawing of the map
 and the line of a tile under it. The header holds the character's
 name, the map's name, the clock, a bar of the solving condition with its numbers (D-133), „Pauza” or
-„Wznów”, the pace, „Restart”, the warning of a cut trip plan and „Zakończ”, and after the end of the
-map run „Koniec przejścia”, which opens the end-of-run window. After a character's death or a
-completion that window (D-368) stands over this screen, its header included, under the menu bar and
+„Wznów”, the pace, and after the end of the
+map run „Koniec przejścia”, which opens the end-of-run window, „Restart”, the warning of a cut trip plan and „Zakończ”. After a character's death or a
+completion that window (D-368) stands in place of this screen, its header included (D-370), under the menu bar and
 the row of warnings below it, and holds the lines of the end (D-185, D-216), which the world area
 does not; „✕” in it and Escape pressed in it (D-370) close it and uncover the screen, it opens again at every entry on the screen of an ended map run, and it closes when the question „Zapisać, odrzucić, wrócić?” of D-173 stands. It opens of itself at the end of the map run once the scene's effect of the death or the completion has played, so that the effect is seen, and at once where the scene shows the last image of that effect at once (D-322): at an entry on the screen, after a reload or a load, and under the system's setting for reduced motion.
 
@@ -9975,8 +9978,8 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   group opening in the program right under its row; the world from the top: the scene, „Teraz” and
   „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; the
   header holding the character's name, the map's name, the clock, the bar of the solving condition,
-  „Pauza” or „Wznów”, the paces, „Restart”, the warning of a cut trip plan after it and „Zakończ”,
-  and after the end „Koniec przejścia”, which opens the window; the window over the screen after a
+  „Pauza” or „Wznów”, the paces, and after the end „Koniec przejścia”, which opens the window,
+  „Restart”, the warning of a cut trip plan after it and „Zakończ”; the window in place of the screen after a
   death and a completion, the header and the areas hidden under it, the lines of the end standing in
   it and not in the world area, „✕” and Escape closing it and uncovering the screen, the window
   opening again at every entry and closing when the question stands; the window opening once the
@@ -10364,7 +10367,7 @@ When a manual map run ends in a character's death or a completion, the end-of-ru
     the end gave or cost; the buttons scrolling away with the sections
 - **Origin:** none
 
-*Rationale:* a lost map run teaches only when the game says why it was lost — without it the player guesses, in the stretch from the fifth to the thirtieth minute of play that a review of the game found the hardest — and a solved map reads as a win when its reward comes first. One line of the end, below „Teraz” and „Potem” in the world area, does not say how near the map run came to the map's condition, what happened in the last minutes, which rules did not fire or where the time went. The player's main complaint is that the player does not know why rules did not fire, and the window names the rules that never did. The sections, their rows and the buttons come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse: there the end was a window over the whole screen with the header, with a title of the cause, a bar of the longest streak, a sentence accounting for the map run, the sections „Ostatnie minuty”, „Nie zadziałały ani razu”, „Na co poszedł czas” and „Wyprawa i teren”, buttons fixed at the bottom, „Otwarte: {mapa} →” after a win, and „✕” that closed the window and uncovered the program with its final counters. The old Loop's „Ostatnie minuty” took the last four entries of its journal, ending with the death, and it had no section for a fight. „Czeka” stands for waiting because it is the word the game uses for waiting in „Teraz” and in the chronicle, and there is no line „odłożyła” because the line „Do skrzynki” says the same (D-185). The end holds much to read, and a window gives it room, at the cost of hiding the screen it covers. A window over the screen puts the end where nothing that stood there before has to move, and the menu bar with the row of warnings stays above it, so a failed save (D-208) and a broken game (D-323) are seen while it stands. Its buttons stand fixed because they are the way on: in the old Loop the end stood under an open rule editor, so after a death with a rule open it started more than half way down the window and its buttons fell under the lower edge. „Restart” and „Zakończ” stand in the window and in the header as before, and the window covers the header, so one set of them shows at a time. „✕” with the button of the header let the player read the scene and the program with its counters that the window explains; the window opens again at every entry, so the explanation is not lost by leaving or by a reload. After a load everything but „Ostatnie minuty” comes back from the game state (D-212). Accepted with it: the window hides the scene while it stands; it does not cover the whole page as the end of the old Loop does; the keyboard, Escape and the return to the window are to build; a few new fields of the state of the map run and a bump of the version of the save (D-369); in „Ostatnie minuty” an attack does not stand among the other entries, though its paragraph gives the game minute of the attack; and after a load that section does not stand at all, since the chronicle then holds only that paragraph (D-339).
+*Rationale:* a lost map run teaches only when the game says why it was lost — without it the player guesses, in the stretch from the fifth to the thirtieth minute of play that a review of the game found the hardest — and a solved map reads as a win when its reward comes first. One line of the end, below „Teraz” and „Potem” in the world area, does not say how near the map run came to the map's condition, what happened in the last minutes, which rules did not fire or where the time went. The player's main complaint is that the player does not know why rules did not fire, and the window names the rules that never did. The sections, their rows and the buttons come from the end of the old Loop, the starting point and the minimum of the views, which the new game leaves only where the result is better, never worse: there the end was a window over the whole screen with the header, with a title of the cause, a bar of the longest streak, a sentence accounting for the map run, the sections „Ostatnie minuty”, „Nie zadziałały ani razu”, „Na co poszedł czas” and „Wyprawa i teren”, buttons fixed at the bottom, „Otwarte: {mapa} →” after a win, and „✕” that closed the window and uncovered the program with its final counters. The old Loop's „Ostatnie minuty” took the last four entries of its journal, ending with the death, and it had no section for a fight. „Czeka” stands for waiting because it is the word the game uses for waiting in „Teraz” and in the chronicle, and there is no line „odłożyła” because the line „Do skrzynki” says the same (D-185). The end holds much to read, and a window gives it room, at the cost of hiding the screen it covers. A window over the screen puts the end where nothing that stood there before has to move, and the menu bar with the row of warnings stays above it, so a failed save (D-208) and a broken game (D-323) are seen while it stands. Its buttons stand fixed because they are the way on: in the old Loop the end stood under an open rule editor, so after a death with a rule open it started more than half way down the window and its buttons fell under the lower edge. „Restart” and „Zakończ” stand in the window and in the header as before, and the window covers the header, so one set of them shows at a time. „✕” with the button of the header let the player read the scene and the program with its counters that the window explains; the window opens again at every entry, so the explanation is not lost by leaving or by a reload. After a load everything but „Ostatnie minuty” comes back from the game state (D-212). Accepted with it: the window hides the scene while it stands; it does not cover the whole page as the end of the old Loop does; a few new fields of the state of the map run and a bump of the version of the save (D-369); in „Ostatnie minuty” an attack does not stand among the other entries, though its paragraph gives the game minute of the attack; and after a load that section does not stand at all, since the chronicle then holds only that paragraph (D-339).
 *Rejected:* one line above the terrain and the buttons „Restart” and „Zakończ” — a defeat teaches nothing and a win opens with „Do skrzynki nic nie trafiło”; the end at the top of the program column, above the band of a discovery, with its own scrolling — the program moves down by the height of the end, the rules that did not fire are read above the program, not beside it, and in one column the end stands under the whole world, in a place D-311 rejects; the same place from the width at which the screen has two columns and above the world in one column — in a narrow window the scene and the effect of a solving stand under the end, and the layout has one more place; in the left column under „Teraz” and „Potem” — in a low window only the top of the end shows and the buttons fall under the lower edge, and the body row, the backpack, the drawing of the map and the tabs move down, close to the place D-311 rejects; a third tab „Koniec” in the area under the world — in a low window it stands under the lower edge, it changes what D-311 rejects, and the chronicle hides behind the tab when the player reads what happened; the end in the place of the scene — it hides the scene, in which the solving is shown; the window covering the menu bar too — to go to another screen the player must first close the window, and neither a failed save (D-208) nor a broken game (D-323) is seen while it stands; „Restart” and „Zakończ” only in the end and none in the header after it — the buttons change their place at the moment of the end; the same buttons in both places at once, the header and a second set at the bottom of the end — two „Restart” and two „Zakończ” on one screen, and more to build and check; only the header's buttons, with the end offering only the way to the opened map — „Otwarte: …” stands apart from „Restart” and „Zakończ”, a departure from the old Loop; a table with exceptions of the rows of loop's end, with other wording in them — each changed row is new wording; the paragraph of the last encounter counted among the entries of „Ostatnie minuty” and in a section of its own as well — the same paragraph twice in the window; the paragraph in „Ostatnie minuty” where it is among the last entries and in a section of its own only where it is not — two cases to build and check, the section sometimes there and sometimes not.
 
 ### D-369 — What does a manual map run keep of itself for the end-of-run window, and how does a load read it?
@@ -10598,8 +10601,8 @@ win.
 Each change of the copy a map run carries out gives an entry of the chronicle in the role
 `player-change`, an entry about a program rule naming its number and its sentence at the moment of
 the change and one about a rule group its name: „Dodano regułę 2.3: Zawsze → Wędruj”, „Usunięto
-regułę 1.2: …”, „Zmieniono regułę 2.1: „…” na „…””, „Przesunięto regułę 2.1 na 1.3: …”, the same
-for rule groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany
+regułę 1.2: …”, „Zmieniono regułę 2.1: „…” na „…””, „Przesunięto regułę 2.1 na 1.3: …”, and for
+rule groups „Dodano grupę „Ogień””, „Usunięto grupę „…””, „Zmieniono grupę „…”” and „Przesunięto grupę „…””, with no numbers, „Zmieniono plan wyprawy”, „Porzucono zmiany
 kopii”, „Zapisano kopię w programie „…””, „Zapisano kopię jako nowy program „…”” and „Przełączono
 postać na program „…””. Such entries are given after the end of the map run too, until „Restart” or
 „Zakończ”, at the game minute of the end, and an edit of a saved program, which changes no map run,
@@ -10969,9 +10972,12 @@ which blow falls. A cloud that hides both would hide the figures for the whole c
 the cloud would picture a single blow and bring the flashes D-317 watches. The creature that is
 defeated, that departs, or that stays after the mage's death says in the picture how the combat
 ended, and nothing beyond it remains. The creature stands on the side of the mage where its frame lies
-inside the picture, which at every place the mage stands at but the right edge is the right. At 16× the
-combat is decided 312 ms after the attack, so a death can come within the 300 ms of the run, and a scene
-that then stands still for good would hold the creature on its way; it stands beside the mage instead. Accepted with it: at the right edge the creature runs in past
+inside the picture, which at every place the mage stands at but the right edge is the right. The view
+reads the game every 200 ms, so the reading that shows a combat decided, 312.5 ms after the attack at
+16×, can come 200 ms after the reading that showed the attack, and a completion can come in any
+earlier minute of the combat; a death or a completion can thus fall within the 300 ms of the run, and a
+scene that then stands still for good would hold the creature on its way; it stands beside the mage
+instead. Accepted with it: at the right edge the creature runs in past
 the mage to its left; a mage that falls toward the middle of the frame can lie over the nose of the
 wolf that stands there.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
@@ -10996,8 +11002,8 @@ to the cool tint in one frame — the
 whole scene jumps at each loss; a return of up to 300 ms as an effect of an ordinary event — an
 effect on the whole scene against D-317; a return in 1 s; the
 tint at once cool at „Wznów” after a loss in the pause — the loss passes without a picture; a creature
-that stands at once beside the mage as in loop, with no run in — it does not meet the scope of the
-project, which says the wolf runs in; a cloud of the scuffle that covers both — at 1× neither the
+that stands at once beside the mage as in loop, with no run in — the player would not see where the
+creature came from; a cloud of the scuffle that covers both — at 1× neither the
 wolf nor the mage would be seen for five seconds; a cloud with flashes of the blows — a flash pictures
 a single blow, which a scuffle does not, and adds the risk of flashes that D-317 watches; a defeated
 wolf lying in its last frame until the next attack or the end of the map run — a dead wolf would lie
@@ -11068,7 +11074,7 @@ mage without a movement for the rest of a gathering that lasts ten seconds at 1�
 wolf is an effect, since a combat lasts about 625 ms at 8× and 312 ms at 16×, so that a run of 640 ms
 would come after the combat it begins. Effects of different parts of the scene, such as the flight of an
 icon and the run of the wolf, play together where one reading carries both events, since a game minute
-can end a gathering and bring an attack. One whose turn has passed would show
+can end a gathering and bring an attack. An effect whose turn has passed would show
 something that is no longer so; that happens when the player steps down from 16× or returns to a tab
 left in the background, where the simulation gets a large stretch of time at once, and loop did the
 same. The
@@ -11089,7 +11095,7 @@ about 625 ms and 312 ms; a classification made anew for each kind of effect — 
 another, and the decision would gather the exceptions one by one; under the system's setting for
 reduced motion no effect of an ordinary event at all, the wolf standing at once beside the mage and
 the outcome of a combat not shown by an effect — the fewest stimuli, but a player with the setting
-would read the outcome of a gathering and of a combat only from the numbers and from „Teraz”
+would read the outcome of a gathering and of a combat only from the numbers and from „Teraz”.
 
 ### D-318 — Where does the mage go for each action?
 
@@ -11228,7 +11234,7 @@ alone — it says what the grey and „Wznów” already say.
 
 ### D-322 — What does the scene show while time stands still?
 
-While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. At the stop at a discovery that the first attack makes, the creature already stands beside the mage, with no run in, and the scuffle begins at „Wznów”. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
+While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. At the stop at a discovery that the first attack makes, the creature already stands beside the mage, with no run in, and the scuffle begins at „Wznów”. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, shows the last image of the effect at once (D-317, D-319). A scene under the system's setting for reduced motion shows the last image at once too (D-317).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -11258,8 +11264,8 @@ While the player's pause holds a map run, the scene is greyed with `grayscale(1)
     for reduced motion that plays the fall of the mage
 - **Origin:** none
 
-*Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
-avoided on purpose. The grey, the one loop gave a paused scene, says that the game stands still, and
+*Rationale:* a scene that moves while game time stands still would contradict the pause, so only the
+effect of a moment moves, once and for less than three seconds. The grey, the one loop gave a paused scene, says that the game stands still, and
 a stop at a discovery stays in colour so that the moment of the reward is not dimmed. After a death
 the grey mage tells the end from a pause, and a completion shows in the scene as a stop does. The effect of each of the three moments plays once and the scene then stands on its last image, so the player who looks sees the moment arrive and the player who comes back to the screen, reloads or loads sees where it ended up, as the mage stands at once at its place (D-319), and no reload repeats a reward or kills the mage a second time. The plaques put what was discovered into the scene, where the band over the program names
 all of it, and take the badge's solid `panel` so that no icon stands straight on the trees (D-320);
@@ -11343,7 +11349,7 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it; the flight of an icon and the cloud of dust whose animation the browser cancels because the scene is hidden over at once, and not played from their start when the scene is drawn again.
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it; the flight of an icon and the cloud of dust, whose animation the browser cancels because the scene is hidden, are over at once, and not played from their start when the scene is drawn again.
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.

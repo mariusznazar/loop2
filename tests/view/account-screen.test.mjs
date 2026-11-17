@@ -2263,7 +2263,7 @@ function hidePage() {
 // D-207, D-212. The save loaded was made a minute before the clock's date. Catches a game that does not catch up after the load, and a
 // catch-up that ended a run and is not saved at once, or saved once per run end.
 test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   // decision: D-07 "The browser computes the whole game — the map runs, the earning loops and the catch-up — and sends the saved game state to the server"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
@@ -2290,7 +2290,7 @@ test("a loaded game catches its loop up once, and a catch-up that ended a map ru
 // D-207: saving after any caught-up minute would make each reload send, and two open tabs refuse
 // each other (D-209).
 test("a catch-up that ended no map run sends nothing until the page hides, and the document then holds it caught up once", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"
   // decision: D-240 "The catch-up takes place when the player returns and advances the missed game minutes, taking the characters one at a time, each to the end, in the order of the player's list of characters"
   // decision: D-247 "It runs on its own after each load of a game state, the unsaved game state kept in the page's memory (D-211) included: after a sign-in, after a reload of the page, after a save lost to another browser's (D-209) and after a sign-in to the same account with that unsaved game state"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
@@ -2674,7 +2674,7 @@ test("the document kept for the same account holds the moment of its reading and
 // D-207's list of acts. Catches an act of the player whose change is left to the next
 // 30-second check or to the hidden page, and an act that changes nothing sending a save.
 test("each act of the player that changes the game state is saved at once, and one that changes nothing sends nothing", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
   // decision: D-248 "The save time comes from the browser's clock and lies in the game state: a saved document carries the moment it was saved, written on its way to the document, and the game state the browser view holds stays the value it was"
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
@@ -2797,7 +2797,7 @@ function alaLoopingOlaFree() {
 // buttons disabled for the whole team (or by the one map run, as before) when only the character in
 // the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
 test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
-  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the eight shared controls of `src/browser/view/controls/` — the button, the destructive button, the button selected in its group, the secondary action (D-275), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
+  // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
   // decision: D-200 "The player buys a branch rank with „Kup” on the screen Postać outside a manual map run, one that has ended counting as a map run until „Restart” or „Zakończ”, at a character in an earning loop too, and the rank acts from that character's next map run, the next map run of that earning loop included, while the map run going on keeps the skills of its start"
@@ -2967,7 +2967,7 @@ test("the name in a character's row is a link to its screen Postać, which then 
 // the „Zatrzymaj” that now stands in the button's place; the loop line must stand at once with the
 // buttons of the character shut.
 test("„Puść w pętlę” puts the character into a loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
   // decision: D-243 "At a character in an earning loop „Wejdź” and „Puść w pętlę” are inactive, and the player stops the earning loop first"
@@ -3199,7 +3199,7 @@ function lastMinute() {
 // D-207, D-221. Catches a death left unsaved until the next 30-second check, and a death
 // saved unsettled, which the next load would refuse.
 test("a game minute that ends the map run in a death is saved at once, settled", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death"
   // decision: D-221 "Whoever passes game time gives the result to that function at once, with a moment of the browser's clock, so the game state the browser view holds, draws and saves holds a settled death"
   await onPage(async ({ root }) => {
     const saved = Object.getOwnPropertyDescriptor(globalThis, "performance");
@@ -3256,7 +3256,7 @@ function renewing(at, left) {
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
   // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
-  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
+  // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   await onPage(async ({ root }) => {
     const T = 1_760_000_000_000;
@@ -3851,7 +3851,7 @@ test("a state with an empty report shows no section", async () => {
 // Catches a „Zamknij” that closes one line, one that is not saved, and one that leaves focus on the
 // page body once the button is gone (D-42).
 test("„Zamknij” closes the whole section at once, saves, and focus stays on the screen", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report"
   // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   await onPage(async ({ root }) => {
     const { view, held } = await viewOf(reported());
@@ -3879,7 +3879,7 @@ test("„Zamknij” closes the whole section at once, saves, and focus stays on 
 // and its map run going on stay, and the line stays with its minutes while the part about practice
 // and the button are gone.
 test("„Odbierz” pays the practice waiting, saves at once, leaves the loop and the line, and the button goes", async () => {
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await onPage(async ({ root }) => {
@@ -4464,7 +4464,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
 // the program its list shows. A click on a link is the address changing, which the case makes with
 // `follow` on the address the link itself holds.
 test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu and „Wejdź” to the screen of the map run in three clicks", async () => {
-  // decision: D-280 "A player reaches a first map run from Siedziba in at most three clicks: the choice of a map, the map's row and „Wejdź”"
+  // decision: D-280 "A player reaches a first map run from Siedziba in at most three clicks: the item „Mapy” of the menu bar, the map's row and „Wejdź”"
   // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
@@ -4527,7 +4527,7 @@ test("a player with one character, who has picked nothing, goes from Siedziba th
 test("leaving the screen of a map run that goes on pauses it as „Pauza” does and saves at once; a return resumes nothing, and leaving a paused or an ended map run saves nothing", async () => {
   // decision: D-283 "Leaving the screen of a manual map run pauses it as „Pauza” does"
   // decision: D-284 "A return to the screen of a manual map run that waits in a pause leaves it in that pause until the player presses „Wznów”, whether or not it went on before the player left"
-  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
+  // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace"
   await withStillClock(async () => {
     await onPage(async ({ root }) => {
       const held = heldClient();
@@ -5379,7 +5379,7 @@ const waitingText = (root) =>
 // header. D-27, D-262: catches a footer, whatever it holds, standing at the page's body on a waiting
 // screen or over the game.
 test("the card stands alone in the page's body, and the screens before and after it keep the header and have no footer", async () => {
-  // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
+  // decision: D-262 "Nothing stands on the screen of the login card but the card over the picture of D-272, not even the header."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba"
   await onPage(async ({ root }) => {
@@ -5470,7 +5470,7 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
 // D-96, D-225, D-262, D-381 (on what closes a card). Catches a card left
 // standing over a waiting screen, or under it the page still hidden.
 test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
-  // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
+  // decision: D-262 "Nothing stands on the screen of the login card but the card over the picture of D-272, not even the header."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
   // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {

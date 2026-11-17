@@ -125,7 +125,7 @@ def start_application(test, tag, name, data_volume, secret_volume, database_path
 def wait_until_ready(test, name):
     """Return once the server in the container has printed its readiness line; fail where the
     container stops first or the line does not come within READY_WAIT seconds."""
-    # decision: D-112 "The account server opens one application-owned SQLite connection before readiness"
+    # The server opens its database before its readiness line, so this wait follows the opening (D-112).
     deadline = time.monotonic() + READY_WAIT
     while True:
         code, running = run("inspect", "--format", "{{.State.Running}}", name)
