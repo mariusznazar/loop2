@@ -88,7 +88,7 @@ left, whether it has burnt out or has not been lit yet.
 
 The headquarters is the screen Siedziba, which shows the player's team with its characters and its chest.
 
-- **Not:** none
+- **Not:** the place where a character stands that is in neither a manual map run nor an earning loop — "at the camp"
 
 ## unit test
 
