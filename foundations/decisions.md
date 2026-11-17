@@ -47,7 +47,7 @@ The browser view is built in TypeScript with React, its screens written as `.tsx
 
 - **Scope:** browser-view, build-tools
 - **Based on:** Stack Overflow Developer Survey 2025, Technology, Web frameworks and technologies, All Respondents, "React 44.7%" (https://survey.stackoverflow.co/2025/technology, read 2026-11-02) · React documentation, React Versions, "When a new major is released, we archive the docs for the previous version as `x.react.dev`." (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/versions.md, read 2026-11-02) · React documentation, Versioning policy, Breaking changes, "Breaking changes are inconvenient for everyone, so we try to minimize the number of major releases" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/community/versioning-policy.md, read 2026-11-02) · React documentation, Using TypeScript, "you can get full React Web support by adding `@types/react` and `@types/react-dom` to your project" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/learn/typescript.md, read 2026-11-02) · React 19 Upgrade Guide, UMD builds removed, "Starting with React 19, React will no longer produce UMD builds" (https://raw.githubusercontent.com/reactjs/react.dev/0821e7d9428a6c58c922765b891bbffba9ed6249/src/content/blog/2024/04/25/react-19-upgrade-guide.md, read 2026-11-02)
-- **Relations:** derives from D-04 · narrowed by D-265
+- **Relations:** derives from D-04
 - **Verification:** invariants: browser-view-framework. tests: the browser view's source held in TypeScript files alone, with no file of another code or template language. An agent compares a change with the part no invariant and no test holds:
   - complies: a new screen of the browser view written as a React component in a `.tsx` file, drawing what it shows from the game state it is given
   - violates: a new screen of the browser view written as a `.ts` module that builds its elements with `document.createElement`; a screen component that draws from a copy of the game state it keeps and changes by itself
@@ -4181,7 +4181,7 @@ component of that sentence reads too.
 
 - **Scope:** browser-view
 - **Based on:** none
-- **Relations:** derives from D-44 · derives from D-03
+- **Relations:** derives from D-44 · narrows D-03
 - **Verification:** tests: the React forms of the button in each of its kinds, the text field, the
   password field, the sentence under a form, the pick cell, the select list and the number field
   drawing the tag, classes, attributes and text the screens rely on, and answering a click, a typed
