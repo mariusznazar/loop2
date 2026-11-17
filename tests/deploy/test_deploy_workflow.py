@@ -3,6 +3,7 @@ read as text, not parsed as YAML. No real run is possible before the merge."""
 
 import os
 import re
+import shlex
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,6 +21,27 @@ def code_lines():
 
 def code():
     return re.sub(r"\\\n\s*", " ", "\n".join(code_lines()))
+
+
+def ssh_options(call):
+    """The first value of each option the `ssh` call sets with `-o`, in every form `ssh` takes:
+    `-o K=V`, `-o "K V"` and `-oK=V`. `ssh` uses the first value it obtains for an option."""
+    words = shlex.split(call)
+    options = {}
+    index = 0
+    while index < len(words):
+        word = words[index]
+        if word == "-o" and index + 1 < len(words):
+            setting, index = words[index + 1], index + 2
+        elif word.startswith("-o") and len(word) > 2:
+            setting, index = word[2:], index + 1
+        else:
+            index += 1
+            continue
+        match = re.match(r"\s*([^=\s]+)\s*(?:=|\s)\s*(.*)$", setting)
+        if match:
+            options.setdefault(match.group(1).lower(), match.group(2).strip().lower())
+    return options
 
 
 class DeployWorkflow(unittest.TestCase):
@@ -58,8 +80,11 @@ class DeployWorkflow(unittest.TestCase):
     def test_ssh_is_strict_and_batch(self):
         # invariant: deploy-workflow-input
         text = code()
-        self.assertIn("StrictHostKeyChecking=yes", text)
-        self.assertIn("BatchMode=yes", text)
+        call = re.search(r"(?<![\w./-])ssh\s[^\n]*", text)
+        self.assertIsNotNone(call, "no ssh call")
+        options = ssh_options(call.group(0))
+        self.assertEqual(options.get("stricthostkeychecking"), "yes")
+        self.assertEqual(options.get("batchmode"), "yes")
         self.assertNotRegex(text, r"StrictHostKeyChecking=(?!yes)")
 
     def test_key_file_is_private_to_the_runner(self):
