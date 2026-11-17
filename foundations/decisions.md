@@ -2591,7 +2591,8 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
   added, naming an account or of another type, and a reset body with any field, refused with nothing
   stored or moved; a stored game text of at most 65 536 bytes counted after re-serializing, a larger
   one refused with nothing stored, and neither the table of saved game states nor that of previous
-  saves holding a text over 65 536 bytes.
+  saves holding a text over 65 536 bytes; every route the application answers with a method other
+  than GET and HEAD listed by a case that checks these guards on it.
 - **Origin:** none
 
 *Rationale:* An explicit expected origin and JSON boundary constrain state changes made with a browser cookie; clients that omit the origin are refused, and valid-looking content still needs field checks. The save route takes a whole saved game state, which grows with what later work adds to the game state, so it takes a limit of its own, while the other routes keep the small one their bodies need; at the full stored limit a thousand accounts take about 65 MB in each copy of the database, and the place for copies of the database holds about three such copies, so with that many players it would have to hold fewer copies or move; the previous save adds a second such document per player, which doubles those figures at the full limit.
@@ -3681,8 +3682,8 @@ layer.
 - **Relations:** derives from D-07
 - **Verification:** invariants: account-save-sqlite-store · account-save-durable-storage. tests: an
   account written through the server's database code kept in the SQLite file across reopening; an
-  account and its session outliving the replacement of the application container, on the volume and
-  at the database path `compose.yaml` gives.
+  account, its session and its saved game state outliving the replacement of the application
+  container, on the volume and at the database path `compose.yaml` gives.
 - **Origin:** none
 
 *Rationale:* SQLite lets the one account and save server hold accounts and whole saved game states
@@ -4883,7 +4884,9 @@ frost by at least 3:1 against the snow it lies on.
 - **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
   the files of the smaller flame, of the mage's death, of the wolf and of the camp's clearing and
   chest holding pixels alone; the chest of the camp one still picture, the same empty and full; the
-  credit line of the pack LPC Wolf naming its licence CC BY 3.0; the frost's thickness in whole
+  credit line of the pack LPC Wolf naming its licence CC BY 3.0; every picture file of the sprites
+  assigned to the pack it comes from, and every such pack whose licence asks for a credit having a
+  line among the game's credits; the frost's thickness in whole
   pixels of the scene, its pixel a part of the frame's width and height, and the specks of a
   completion whole pixels of the scene on its grid, rising by whole pixels over the open snow alone;
   the frost's outline standing out by at least 3:1 from the snow measured under every tint. For where
