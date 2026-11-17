@@ -271,6 +271,9 @@ What the undoing does to access:
   the block deleted (D-137). Step 8 blocks it again.
 - A restore from before an unblock brings back the account blocked, and its holder cannot sign in
   until it is unblocked again. Step 8 unblocks it again.
+- A restore from before a change of the owner role (D-410) or of the previous-save privilege
+  (D-400) brings back the role or the privilege as the backup had it: an account that lost it has
+  it again, and one that was given it since is without it. Step 8 gives or takes it again.
 - A restore signs nobody out of what the backup holds. No step ends all sessions, because the old
   password would let the person sign in again.
 
@@ -513,46 +516,61 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    place after a restore on a new one ("With no server" says so); the second is made in every case.
    - **The accounts the log names (D-360).** The game writes a line with the number of the
      account, never its address, for each password reset (`"event":"password-set"`), block
-     (`"event":"account-blocked"`) and unblock (`"event":"account-unblocked"`), and the log of the
-     containers a deployment replaced lies in `/var/log/loop2-app.log` and its generations
-     (D-355). The log of the running container holds nothing from before the restore, so it is not
-     searched. Read the log after step 6, whose deployment appended the log of the stopped
-     container to the file just before it replaced that container. First look for a deployment
-     since the backup whose dump failed, by a bounded fixed-string search of the deploy log:
+     (`"event":"account-blocked"`), unblock (`"event":"account-unblocked"`), owner role given
+     (`"event":"account-owner-granted"`) or taken (`"event":"account-owner-revoked"`) and
+     previous-save privilege granted (`"event":"account-previous-save-granted"`) or revoked
+     (`"event":"account-previous-save-revoked"`), and the log of the containers a deployment
+     replaced lies in `/var/log/loop2-app.log` and its generations (D-355). The log of the running
+     container holds nothing from before the restore, so it is not searched. Read the log after
+     step 6, whose deployment appended the log of the stopped container to the file just before it
+     replaced that container. Run these in bash. Every search below keeps the newest lines: a
+     count that cuts the output cuts it at the old end, never at the end near the restore. First
+     look for the deployments since the backup, and among them those whose dump failed, by a
+     fixed-string search of the deploy log:
 
      ```sh
-     grep -F -m 50 'warning: the dump of the log of both loop2 services' /var/log/loop2-deploy.log
+     grep -F -e 'loop2-deploy: start: commit' -e 'loop2-deploy: dump:' -e 'warning: the dump of the log of both loop2 services' /var/log/loop2-deploy.log | tail -n 100
      ```
 
-     Each line printed begins with its UTC time. A line later than the time of the backup (below)
-     belongs to a deployment, step 6's included, that went on after a failed dump and so kept
-     nothing of the log of the container it replaced: the period of that container, from the
-     deployment before it to that deployment, is unknown, and the log names none of the accounts
-     reset, blocked or unblocked then. Write each such period down and treat it as the second part
-     does. Then search the file and its generations by fixed strings, bounded per file (`-m`
-     limits each file's matches; a name that does not exist gives `No such file`, which is no
-     failure):
+     Each line printed begins with its UTC time. If the first line printed is later than the
+     time of the backup (below), the output was cut inside the period: run it again with a larger
+     number after `tail -n`. A `warning:` line later than the time of the backup belongs to a
+     deployment, step 6's included, that went on after a failed dump and so kept nothing of the log
+     of the container it replaced. The period of that container is unknown, and the log names none
+     of the accounts changed then. It begins at the start of the previous deployment that replaced
+     the containers: the `start:` line above the previous `dump:` or `warning:` line in the same
+     printout (a `start:` line with neither of the two after it belongs to a run that stopped
+     before replacing anything and does not count), or the previous header
+     `loop2-deploy | previous commit` in the dump, found with
+     `grep -F -- 'loop2-deploy |' /var/log/loop2-app.log.1 /var/log/loop2-app.log | tail -n 20`.
+     It ends at that warning's deployment. Write each such period down and treat it as the second
+     part does. Then search the file and its generations by fixed strings, oldest generation first
+     so that the output ends with the newest lines, and keep the last 500 of them (a name that
+     does not exist gives `No such file`, which is no failure):
 
      ```sh
-     grep -F -m 500 -e '"event":"password-set"' -e '"event":"account-blocked"' -e '"event":"account-unblocked"' /var/log/loop2-app.log /var/log/loop2-app.log.1
-     zgrep -F -m 500 -e '"event":"password-set"' -e '"event":"account-blocked"' -e '"event":"account-unblocked"' /var/log/loop2-app.log.2.gz /var/log/loop2-app.log.3.gz /var/log/loop2-app.log.4.gz
+     events=(-e '"event":"password-set"' -e '"event":"account-blocked"' -e '"event":"account-unblocked"' -e '"event":"account-owner-granted"' -e '"event":"account-owner-revoked"' -e '"event":"account-previous-save-granted"' -e '"event":"account-previous-save-revoked"')
+     { zgrep -F "${events[@]}" /var/log/loop2-app.log.4.gz /var/log/loop2-app.log.3.gz /var/log/loop2-app.log.2.gz; grep -F "${events[@]}" /var/log/loop2-app.log.1 /var/log/loop2-app.log; } | tail -n 500
      ```
 
-     A line of the game has Docker's time in front of its JSON, and a line the human's `account-block`
-     run appended has its UTC time first. Take the lines whose time is later than the time of
-     the backup and earlier than step 6 (the application was stopped from step 3, so nothing newer
-     than that stands under the header of the deployment of step 6). The time of the backup is the
-     time of the `start` line, in `/var/log/loop2-backup.log` (UTC like the other logs), of the
-     run whose `made:` line names the weekday file, is followed by `end: sent` and whose time
-     agrees with the file's time of step 1 (the `made:` line itself stands after the copy was
-     taken, and a night whose send failed has one for a file that Strych does not hold); where the
-     log holds none, the file's time of step 1, read against the server's clock (`date`). When in
-     doubt take the earlier time: a line repeated for nothing costs a repeated reset or block, a
-     line missed leaves an account as the backup had it. For each account take its `password-set`
-     lines as one reset, and of its `account-blocked` and `account-unblocked` lines only the latest
-     by its time, not by its place in the output: the file is printed before its older copy `.1`,
-     and a line of the human's `account-block` run is written when the command runs, before the
-     lines of the container for the same period, which come with the next deployment.
+     The same rule holds here: if the first line printed is later than the time of the backup, run
+     it again with a larger number after `tail -n`. A line of the game has Docker's time in front
+     of its JSON, and a line the human's `account-block`, `account-previous-save` or
+     `account-role` run appended has its UTC time first. Take the lines whose time is later than
+     the time of the backup and earlier than step 6 (the application was stopped from step 3, so
+     nothing newer than that stands under the header of the deployment of step 6). The time of the
+     backup is the time of the `start` line, in `/var/log/loop2-backup.log` (UTC like the other
+     logs), of the run whose `made:` line names the weekday file, is followed by `end: sent` and
+     whose time agrees with the file's time of step 1 (the `made:` line itself stands after the
+     copy was taken, and a night whose send failed has one for a file that Strych does not hold);
+     where the log holds none, the file's time of step 1, read against the server's clock
+     (`date`). When in doubt take the earlier time: a line repeated for nothing costs a repeated
+     reset or change, a line missed leaves an account as the backup had it. For each account take
+     its `password-set` lines as one reset, and, of each of its three pairs, the block and unblock
+     lines, the role lines and the privilege lines, only the latest by its time, not by its place
+     in the output: the file is printed after its older copy `.1`, but a line of the human's
+     `account-block` run is written when the command runs, before the lines of the container for
+     the same period, which come with the next deployment.
 
      Read the addresses of those accounts from the restored database with one command that only
      reads, run in the game container. It opens the database read-only and prints each number
@@ -566,18 +584,26 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
      Put the numbers in place of `<number>`. The addresses stay on that screen and out of notes,
      requests, logs and chat. Then, for each account: with a `password-set` line, tell its holder
      to reset the password again with „Nie pamiętam hasła” on the login card, because the old
-     password works again; where the latest of its two kinds of line is `account-blocked`, block it
-     again, and where it is `account-unblocked`, unblock it again (the commands in "Blocking a
-     player account" in `SKILL.md`, which the owner panel does as well). A block or an unblock
-     made with the plain command, with no line written to the file, is not in the log: the
-     second part covers it.
+     password works again; where the latest block line is `account-blocked`, block it again, and
+     where it is `account-unblocked`, unblock it again (the commands in "Blocking a player
+     account"); where the latest role line is `account-owner-granted`, give it the owner role
+     again, and where it is `account-owner-revoked`, take the role again (the command in "The
+     owner role", with `owner` or `player`); where the latest privilege line is
+     `account-previous-save-granted`, grant the privilege again, and where it is
+     `account-previous-save-revoked`, revoke it again (the commands in "The previous-save
+     privilege", which the owner panel does as well). A change made with the plain command, with
+     no line written to the file, is not in the log: the second part covers it.
    - **What the human knows.** Whoever is known to have reset a password since the backup, and is
      not among those the log named, resets it again with „Nie pamiętam hasła” on the login card,
      because the old password works again; on a new server, with no log, that is the operator's own
      account and whoever the operator knows of. Block again each account that is known to have been
      blocked since the backup (the command in "Blocking a player account" in `SKILL.md`), because the
      restore brought it back unblocked, and unblock again each account known to have been unblocked
-     since, because the restore brought it back blocked.
+     since, because the restore brought it back blocked. Likewise give or take again the owner role
+     of each account known to have been given or deprived of it since, and grant or revoke again
+     the previous-save privilege of each account known to have been given or deprived of it since
+     ("The owner role" and "The previous-save privilege" in `SKILL.md`), because the restore
+     brought each back as the backup had it.
 
 The way back, when step 7 fails and the database from before the restore is wanted: stop `app`
 (`docker compose -p loop2 stop app` from `/srv/loop2`), remove the restored `accounts.sqlite` and
