@@ -102,7 +102,7 @@
   color: var(--text-label);
 }
 
-/* The report on earning loops (D-246): the lines in `text`, a loop that stopped in `danger`, a full chest in `warning` (D-39). */
+/* The report on earning loops (D-246): the lines in `text`, an earning loop that stopped in `danger`, a full chest in `warning` (D-39). */
 .away-report-list {
   list-style: none;
   margin: 0 0 var(--space-s);
@@ -193,7 +193,7 @@
   color: var(--text);
 }
 
-/* The line after a loop's stop, on a row of its own in `text-secondary` (D-245). */
+/* The line after an earning loop's stop, on a row of its own in `text-secondary` (D-245). */
 .team-member-stopped {
   flex-basis: 100%;
   margin: 0;

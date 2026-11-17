@@ -20,7 +20,7 @@ import type {
 
 /** The title while the report holds a line of a return (D-246). */
 export const AWAY_TITLE = "Gdy cię nie było";
-/** The title while the report holds only loops that stopped in the open game (D-246). */
+/** The title while the report holds only earning loops that stopped in the open game (D-246). */
 export const STOPPED_TITLE = "Pętle, które stanęły";
 /** The sentence under the lines while the chest is full, in `warning`. */
 export const CHEST_FULL_TEXT = "Skrzynka jest pełna.";
@@ -88,7 +88,7 @@ function goingText(
 }
 
 /**
- * The lines of the report as drawn: the loops that stopped first, in `danger`, then the others, in
+ * The lines of the report as drawn: the earning loops that stopped first, in `danger`, then the others, in
  * `text`, each group in the team's order, a character's lines in the order of the report. Names
  * come from the team and the data; the practice of a line that went on is read from the earning
  * loop of its character as it stands now, and `takeFor` names that character where some waits.

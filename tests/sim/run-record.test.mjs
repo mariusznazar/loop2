@@ -394,7 +394,7 @@ test("a map run of an earning loop keeps none of the record", () => {
     REAL_MS,
   );
   const { run } = looping.state.loops[1];
-  assert.equal(run.mapId, "forest", "precondition: the loop started");
+  assert.equal(run.mapId, "forest", "precondition: the earning loop started");
   for (const key of ["longestStreak", "minutesByAction", "enteredWith"])
     assert.equal(Object.hasOwn(run, key), false, key);
 });

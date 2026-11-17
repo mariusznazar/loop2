@@ -165,7 +165,7 @@ function prefersReducedMotion(): boolean {
  * each change, with the bar's „Wróć do przejścia” where a map run waits outside its screen.
  *
  * Every act of the player whose result changed the state, every game minute that ends the map run
- * in a death or a completion and every result in which a loop's map run ended is a moment of saving
+ * in a death or a completion and every result in which an earning loop's map run ended is a moment of saving
  * (D-207). Each reading of the clock rewrites the resurrection lines of the screen that shows
  * (D-217). The clock catches up the earning loops of a loaded state as the last step of building
  * (D-247). After `halt()` the store replaces the state no more (D-323). Nothing here runs when the

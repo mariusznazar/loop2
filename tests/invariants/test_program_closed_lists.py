@@ -9,7 +9,7 @@ and `loadSavedGame` of `saved-game.js`. The program the check reads after `setPr
 it edits (`heldProgram` in `HELD_PROGRAMS_JS` of `program_fixture.py`): the copy of the map run
 during a map run, outside a map run the program of the player's list the team goes with (D-164;
 the copy is the program the map run carries out). During an earning loop that is the program of the
-list as well, and the program the loop carries (`loops[1].program`) is read too.
+list as well, and the program the earning loop carries (`loops[1].program`) is read too.
 The new game of each game with a map run or an earning loop is one whose Understanding holds
 everything the built data modules list, as `KNOWING_GAME_JS` in `program_fixture.py` gives it, so
 that the rules of the program stay what the check drives.
@@ -40,7 +40,7 @@ Reading of the sentence:
 Every offer of `setProgram` is made three times: outside a map run, during a map run of Las
 (`forest`) of a character created in a new game, of the archetype `elementalMage`, sent at the
 real time T, and during an earning loop of that character on Skraj lasu (`forestEdge`), put into the
-loop at T; there `setProgram` refuses as it does elsewhere, and the program the loop carries does not
+earning loop at T; there `setProgram` refuses as it does elsewhere, and the program the earning loop carries does not
 become the offered one. The unlisted kind stands
 in rule 1 of three, between two valid rules, and on a group between valid groups, once bare and
 once with the fields a listed kind takes (`resource`, `value`), so that a reader that guesses a

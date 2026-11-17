@@ -164,7 +164,7 @@ test("the label of a generation is „pokolenie {n}” from 2 up and nothing at 
 
 // D-244. Catches a number of the line read from the wrong place (the run's number for the
 // minute, the completed runs for the run's number) and a map name written into the view.
-test("the line of a character in a loop names the map, the run, its minute and the runs completed", () => {
+test("the line of a character in an earning loop names the map, the run, its minute and the runs completed", () => {
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   assert.equal(
     loopLine({

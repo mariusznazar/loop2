@@ -95,7 +95,7 @@ test("the title is „Pętle, które stanęły” only while every line is a sto
   );
 });
 
-test("a loop that stopped in a catch-up reads „po {m} min” in danger, the name and the generation from the data", () => {
+test("an earning loop that stopped in a catch-up reads „po {m} min” in danger, the name and the generation from the data", () => {
   // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   // decision: D-246 "Teraz to pokolenie {n}.”"
   assert.deepEqual(entriesOf([stoppedAway(2, 7, 4)]), [
@@ -107,7 +107,7 @@ test("a loop that stopped in a catch-up reads „po {m} min” in danger, the na
   ]);
 });
 
-test("a loop that stopped in the open game reads without minutes, in danger", () => {
+test("an earning loop that stopped in the open game reads without minutes, in danger", () => {
   // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   // decision: D-246 "Teraz to pokolenie {n}.”"
   assert.deepEqual(entriesOf([stoppedOpen(3, 2)]), [
@@ -149,8 +149,8 @@ test("another line reads minutes, then the chest's signed changes, then the prac
 });
 
 // D-246, D-189: the practice waiting is all of it, the map run going on included, and it is read
-// from the loop of the line's own character, not from the line.
-test("the practice waiting adds the loop's and the map run's, and is read from the loop of the line's own character", () => {
+// from the earning loop of the line's own character, not from the line.
+test("the practice waiting adds the earning loop's and the map run's, and is read from the earning loop of the line's own character", () => {
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   const entries = entriesOf([away({ minutes: 5 }), line(2, { minutes: 7 })], {
@@ -171,8 +171,8 @@ test("the practice waiting adds the loop's and the map run's, and is read from t
 });
 
 // D-246: with what is empty left out, so a line with nothing waiting reads as before and has no
-// „Odbierz”, a line with no loop too.
-test("a line whose loop holds no practice, or that has no loop, reads without the practice and with no „Odbierz”", () => {
+// „Odbierz”, a line with no earning loop too.
+test("a line whose earning loop holds no practice, or that has no earning loop, reads without the practice and with no „Odbierz”", () => {
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   for (const waiting of [{ 1: {} }, {}, { 2: { loop: { eating: 3 } } }]) {
@@ -182,8 +182,8 @@ test("a line whose loop holds no practice, or that has no loop, reads without th
   }
 });
 
-// D-246: a loop a death stopped has no loop and its practice went with the death.
-test("a line of a loop a death stopped names no practice and has no „Odbierz”, whatever another loop of the character holds", () => {
+// D-246: an earning loop a death stopped has no earning loop and its practice went with the death.
+test("a line of an earning loop a death stopped names no practice and has no „Odbierz”, whatever another earning loop of the character holds", () => {
   // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   const [entry] = entriesOf([stoppedAway(1, 3, 2)], {
@@ -231,7 +231,7 @@ test("a resurrection used in the catch-up adds „ · wskrzeszenie zużyte” at
   );
 });
 
-// Catches the order of the data (loops stopped last) or of the lines' arrival replacing the order
+// Catches the order of the data (earning loops stopped last) or of the lines' arrival replacing the order
 // the section promises: stopped lines first, then the others, each in the team's order.
 test("stopped lines come first and the others after them, each group in the team's order", () => {
   // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"

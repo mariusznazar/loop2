@@ -1,7 +1,7 @@
 /**
  * The screen Postać (D-199, D-217, D-244, D-245, D-287): one character with its name, its generation,
  * its archetype, its resurrection line, the line of its earning loop with „Zatrzymaj” or the line of
- * a stopped loop, and the section „Umiejętności” once a tree is known. The page holds the screen
+ * a stopped earning loop, and the section „Umiejętności” once a tree is known. The page holds the screen
  * behind one boundary, `createCharacterScreen` (D-36): an element of its own for the page to place,
  * a first render that is synchronous, `update(props)` and `dispose()`. The page calls them from an
  * event handler or the continuation of an answer, never from render or an effect. The two acts of
@@ -63,7 +63,7 @@ type CharacterViewProps = Omit<CharacterScreenOptions, "props"> & {
   props: CharacterScreenProps;
 };
 
-/** The screen: one character, its loop or its stop, and its skills once a tree is known. */
+/** The screen: one character, its earning loop or its stop, and its skills once a tree is known. */
 function CharacterView({ onBuy, onStop, props }: CharacterViewProps) {
   const { state, nowMs, characterId } = props;
   const name = useRef<HTMLHeadingElement>(null);

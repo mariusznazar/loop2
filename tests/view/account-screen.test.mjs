@@ -2262,7 +2262,7 @@ function hidePage() {
 
 // D-207, D-212. The save loaded was made a minute before the clock's date. Catches a game that does not catch up after the load, and a
 // catch-up that ended a run and is not saved at once, or saved once per run end.
-test("a loaded game catches its loop up once, and a catch-up that ended a map run of the loop is saved at once", async () => {
+test("a loaded game catches its earning loop up once, and a catch-up that ended a map run of the earning loop is saved at once", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   // decision: D-07 "The browser computes the whole game — the map runs, the earning loops and the catch-up — and sends the saved game state to the server"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
@@ -2568,7 +2568,7 @@ const ACTS = [
       ).state,
   },
   {
-    // Siedziba keeps the line of a loop with its „Zatrzymaj”.
+    // Siedziba keeps the line of an earning loop with its „Zatrzymaj”.
     name: "„Zatrzymaj” in Siedziba",
     start: () => loopingAla(false),
     act: (root) => fire(buttonNamed(root, "Zatrzymaj"), "click"),
@@ -2786,17 +2786,17 @@ async function viewOf(state, address = fakeAddress()) {
   return { view, held };
 }
 
-/** Ala, the first character, and Ola, the second, with the forest solved and Ala in a loop in it. */
+/** Ala, the first character, and Ola, the second, with the forest solved and Ala in an earning loop in it. */
 function alaLoopingOlaFree() {
   const solved = { ...eatingPoint(), solvedMaps: ["forestEdge", "forest"] };
   const team = createCharacter(solved, "Ola").state;
   return startLoop(team, { mapId: "forest", characterId: 1 }, 5).state;
 }
 
-// Catches a row that draws the loop line and „Zatrzymaj” for every character or for none, and
+// Catches a row that draws the earning loop line and „Zatrzymaj” for every character or for none, and
 // buttons disabled for the whole team (or by the one map run, as before) when only the character in
-// the loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
-test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
+// the earning loop must be shut out; „Kup” and the program list must stay active (D-200, D-170).
+test("a character in an earning loop shows its line and „Zatrzymaj” in Siedziba and in „Kto idzie”; its „Wejdź” and „Puść w pętlę” are disabled, another character's are not, and „Kup” and the program list stay active", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
@@ -2820,7 +2820,7 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
     assert.ok(!shown(byClass(ola, "team-member-loop")[0]));
     assert.ok(!shown(buttonNamed(ola, "Zatrzymaj")));
     // Siedziba sends nobody: no list of programs and no button of sending in a row (D-329, D-330).
-    // A character in no loop has no „Zatrzymaj” at all.
+    // A character in no earning loop has no „Zatrzymaj” at all.
     for (const [row, buttons] of [
       [ala, ["Zatrzymaj"]],
       [ola, []],
@@ -2868,7 +2868,7 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
         .disabled,
       false,
     );
-    // The map not yet solved has no loop button at all.
+    // The map not yet solved has no earning loop button at all.
     await follow(address, "#/mapy/forestDeep");
     assert.equal(
       all(whoOf(root, "Ola")).filter((element) =>
@@ -2881,7 +2881,7 @@ test("a character in a loop shows its line and „Zatrzymaj” in Siedziba and i
       false,
     );
     await inAct(() => view.dispose());
-    // „Kup” is not on Siedziba; the character in the loop buys on its screen Postać (D-200).
+    // „Kup” is not on Siedziba; the character in the earning loop buys on its screen Postać (D-200).
     const character = await viewOf(
       alaLoopingOlaFree(),
       fakeAddress("#/postac/1"),
@@ -2964,9 +2964,9 @@ test("the name in a character's row is a link to its screen Postać, which then 
 
 // D-329. Catches a click on „Puść w pętlę” that leaves the character as it was, that opens a
 // map run or leads away from the screen Mapy, that is not saved, or that does not move the focus to
-// the „Zatrzymaj” that now stands in the button's place; the loop line must stand at once with the
+// the „Zatrzymaj” that now stands in the button's place; the earning loop line must stand at once with the
 // buttons of the character shut.
-test("„Puść w pętlę” puts the character into a loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
+test("„Puść w pętlę” puts the character into an earning loop at once and the player stays on the screen Mapy, where the character shows it", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   // decision: D-243 "The player starts an earning loop with „Puść w pętlę”, which stands at each character in the section „Kto idzie” of the card of each solved map, beside „Wejdź”, takes the program of that character's list „Program:” and acts at once on the click"
@@ -3004,8 +3004,8 @@ test("„Puść w pętlę” puts the character into a loop at once and the play
   });
 });
 
-// Catches a stop that asks first, one that leaves the line of the loop or none of the stop, and one
-// that shows practice the loop did not gather (D-245).
+// Catches a stop that asks first, one that leaves the line of the earning loop or none of the stop, and one
+// that shows practice the earning loop did not gather (D-245).
 test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” with the practice paid, or the bare words, until the next start", async () => {
   // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
@@ -3060,7 +3060,7 @@ test("„Zatrzymaj” stops at once and the row shows „Pętla zatrzymana” wi
 
 // Catches a line lost on a load: the entry lives in the game state, so a game built from a state
 // holding it shows the line, in that character's row alone (D-245).
-test("a game built from a state with a stopped loop shows the line of the stop in that character's row", async () => {
+test("a game built from a state with a stopped earning loop shows the line of the stop in that character's row", async () => {
   // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   await onPage(async ({ root }) => {
     const base = alaLoopingOlaFree();
@@ -3125,7 +3125,7 @@ test("a change of the chest redraws the chest alone: the rows of Siedziba and th
 
 // D-251. Catches a mark in the wrong place, a mark at a map not yet solved,
 // and a mark that ignores the chest.
-test("the mark of a rehearsal the loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
+test("the mark of a rehearsal the earning loop cannot repeat stands under „Wejdź” of a solved map, and only where the chest lacks what the list takes", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
@@ -3730,10 +3730,10 @@ const reportSection = (root) => {
   return section;
 };
 
-/** Ala and Ola with a report: Ala's loop went on for 5 minutes, Ola's stopped in the catch-up. */
+/** Ala and Ola with a report: Ala's earning loop went on for 5 minutes, Ola's stopped in the catch-up. */
 function reported(rest = {}) {
   const made = createCharacter(withCharacter(), "Ola").state;
-  // Ola's loop stopped in a death that gave her generation 2, as the report's stop says.
+  // Ola's earning loop stopped in a death that gave her generation 2, as the report's stop says.
   const base = {
     ...made,
     team: {
@@ -3875,10 +3875,10 @@ test("„Zamknij” closes the whole section at once, saves, and focus stays on 
   });
 });
 
-// D-207, D-189, D-246: „Odbierz” pays the practice waiting at once and the game saves it, the loop
+// D-207, D-189, D-246: „Odbierz” pays the practice waiting at once and the game saves it, the earning loop
 // and its map run going on stay, and the line stays with its minutes while the part about practice
 // and the button are gone.
-test("„Odbierz” pays the practice waiting, saves at once, leaves the loop and the line, and the button goes", async () => {
+test("„Odbierz” pays the practice waiting, saves at once, leaves the earning loop and the line, and the button goes", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"

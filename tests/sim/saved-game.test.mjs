@@ -62,7 +62,7 @@ import { newKnowingGame, withEdgeSolved } from "./understanding-fixture.mjs";
 // campfire, a burning item, a combat record, a copy whose program was deleted, a discovery held and
 // counts beside the copy's rules; trip lists in programs, the copy changed from its frozen bring
 // plan, a chest, known trees, practice of the map run and of its combat, and ranks bought; an
-// earning loop with an activity going on; a stopped loop that gathered practice; and report lines
+// earning loop with an activity going on; a stopped earning loop that gathered practice; and report lines
 // open, stopped away and stopped in the open game. `HEADQUARTERS` below holds the counts beside a
 // program of the list, which a game state holds only outside a map run, and an earning loop in a
 // combat going on, with no manual map run. Its map run is written paused, so the load's pause
@@ -562,8 +562,8 @@ const loopOf = (id) => ({
 });
 
 /**
- * The document of version 3: version 2 with Ewa, who stopped a loop at generation 3, Ola's earning
- * loop, Ewa's stopped loop, a report of each kind of line and the moment of the save. Its map run has
+ * The document of version 3: version 2 with Ewa, who stopped an earning loop at generation 3, Ola's earning
+ * loop, Ewa's stopped earning loop, a report of each kind of line and the moment of the save. Its map run has
  * no record; the game refuses the document as another version.
  */
 const DOCUMENT_V3 = {
@@ -2056,8 +2056,8 @@ const CRAFTED = {
     (olaLoop(document).practice.kicking = 0),
   "an earning loop's practice fractional": (document) =>
     (olaLoop(document).practice.exploration = 2.5),
-  // The practice waiting at a loop is what „Odbierz” pays, so no value that could pay more than the
-  // loop gathered is admitted: a negative one, one beyond the safe integers, one as text.
+  // The practice waiting at an earning loop is what „Odbierz” pays, so no value that could pay more than the
+  // earning loop gathered is admitted: a negative one, one beyond the safe integers, one as text.
   "an earning loop's practice below 0": (document) =>
     (olaLoop(document).practice.exploration = -1),
   "an earning loop's practice beyond the safe integers": (document) =>
@@ -2078,33 +2078,36 @@ const CRAFTED = {
   ) => (olaLoop(document).run.practice = { swimming: 1 }),
   "an earning loop's practice by the key __proto__": (document) =>
     (olaLoop(document).practice = JSON.parse('{"__proto__":1}')),
-  // The stopped loops (D-245, D-241): a character of the team, with no earning loop and not the
+  // The stopped earning loops (D-245, D-241): a character of the team, with no earning loop and not the
   // character of the manual map run; a value by `practice`.
-  "the game without its stopped loops": (document) =>
+  "the game without its stopped earning loops": (document) =>
     delete document.game.stoppedLoops,
-  "stopped loops of none": (document) => (document.game.stoppedLoops = null),
-  "stopped loops as a list": (document) => (document.game.stoppedLoops = []),
-  "a stopped loop by a key with a leading zero": (document) =>
+  "stopped earning loops of none": (document) =>
+    (document.game.stoppedLoops = null),
+  "stopped earning loops as a list": (document) =>
+    (document.game.stoppedLoops = []),
+  "a stopped earning loop by a key with a leading zero": (document) =>
     (document.game.stoppedLoops = { "03": {} }),
-  "a stopped loop by the key 0": (document) =>
+  "a stopped earning loop by the key 0": (document) =>
     (document.game.stoppedLoops = { 0: {} }),
-  "a stopped loop by the key __proto__": (document) =>
+  "a stopped earning loop by the key __proto__": (document) =>
     (document.game.stoppedLoops = JSON.parse('{"__proto__":{}}')),
-  "a stopped loop of a character not in the team": (document) =>
+  "a stopped earning loop of a character not in the team": (document) =>
     (document.game.stoppedLoops = { 9: {} }),
-  "a stopped loop of a character with an earning loop": (document) =>
+  "a stopped earning loop of a character with an earning loop": (document) =>
     (document.game.stoppedLoops = { 2: {} }),
-  "a stopped loop of the character of the manual map run": (document) =>
+  "a stopped earning loop of the character of the manual map run": (document) =>
     (document.game.stoppedLoops = { 1: {} }),
-  "a stopped loop of none": (document) =>
+  "a stopped earning loop of none": (document) =>
     (document.game.stoppedLoops = { 3: null }),
-  "a stopped loop as a number": (document) =>
+  "a stopped earning loop as a number": (document) =>
     (document.game.stoppedLoops = { 3: 9 }),
-  "a stopped loop's practice of a skill absent from the data": (document) =>
-    (document.game.stoppedLoops[3].swimming = 1),
-  "a stopped loop's practice at 0": (document) =>
+  "a stopped earning loop's practice of a skill absent from the data": (
+    document,
+  ) => (document.game.stoppedLoops[3].swimming = 1),
+  "a stopped earning loop's practice at 0": (document) =>
     (document.game.stoppedLoops[3].kicking = 0),
-  "a stopped loop's practice fractional": (document) =>
+  "a stopped earning loop's practice fractional": (document) =>
     (document.game.stoppedLoops[3].exploration = 2.5),
   // The report (D-246): a list of lines with exactly their keys.
   "the game without its report": (document) => delete document.game.awayReport,
@@ -2562,8 +2565,8 @@ test("an error of the code in the load is no refusal: it leaves the load as the 
 });
 
 // D-386. Catches a condition set one step too strict, each edge being a value the game
-// writes: a clock at zero or below it, a loop's first run, a stop with nothing gathered, a stop in
-// the open game with no minutes, a second loop of a character whose first stopped.
+// writes: a clock at zero or below it, an earning loop's first run, a stop with nothing gathered, a stop in
+// the open game with no minutes, a second earning loop of a character whose first stopped.
 test("a document at the edges of what the earning loops, the report and the save time admit loads", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-386 "A moment of real time that the game state stores, the save time and the moment the account's resurrection is ready, is a safe integer of milliseconds of any sign, which the load takes without comparing it with any clock; the function that stamps a save time, the function that settles a death and the function that settles the first completion of a map refuse a moment that is no safe integer with a RangeError, and the last two read no moment where there is nothing to settle"
@@ -2577,7 +2580,7 @@ test("a document at the edges of what the earning loops, the report and the save
       olaLoop(document).completed = 0;
       olaLoop(document).practice = {};
     },
-    "a stopped loop that gathered nothing": (document) =>
+    "a stopped earning loop that gathered nothing": (document) =>
       (document.game.stoppedLoops[3] = {}),
     "an open line of one minute": (document) =>
       (openLine(document).minutes = 1),
@@ -2589,15 +2592,14 @@ test("a document at the edges of what the earning loops, the report and the save
     "a stop at generation 2 of a character gone on to generation 3": (
       document,
     ) => (stoppedLine(document).stop.generation = 2),
-    "a line of a stopped loop beside the open line of a later loop": (
-      document,
-    ) => {
-      document.game.team.characters[1].generation = 2;
-      document.game.awayReport.push({
-        ...openLine(document),
-        stop: { generation: 2, away: false },
-      });
-    },
+    "a line of a stopped earning loop beside the open line of a later earning loop":
+      (document) => {
+        document.game.team.characters[1].generation = 2;
+        document.game.awayReport.push({
+          ...openLine(document),
+          stop: { generation: 2, away: false },
+        });
+      },
     "open lines of two characters": (document) =>
       document.game.awayReport.push({ ...openLine(document), characterId: 3 }),
   };
@@ -2611,7 +2613,7 @@ test("a document at the edges of what the earning loops, the report and the save
   }
 });
 
-test("the load shares none of the earning loops, the stopped loops or the report with the document", () => {
+test("the load shares none of the earning loops, the stopped earning loops or the report with the document", () => {
   const passed = structuredClone(DOCUMENT);
   const { state } = loadSavedGame(passed);
   olaLoop(passed).run.tiles[0].stock.stick = 1;
@@ -2623,9 +2625,9 @@ test("the load shares none of the earning loops, the stopped loops or the report
   assert.deepEqual(state, DOCUMENT.game);
 });
 
-// D-241, D-246, D-248: a game from no save holds no earning loop, no stopped loop, no report and no
+// D-241, D-246, D-248: a game from no save holds no earning loop, no stopped earning loop, no report and no
 // save time.
-test("a new game holds no earning loop, no stopped loop, no report and no save time", () => {
+test("a new game holds no earning loop, no stopped earning loop, no report and no save time", () => {
   // decision: D-248 "A game that came from no save holds none, and a game from a save holds the moment of that save"
   const state = newGame();
   assert.deepEqual(state.loops, {});

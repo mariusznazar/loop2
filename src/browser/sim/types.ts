@@ -362,8 +362,8 @@ export type RunRecord = Pick<
  * map run, which always goes on, since the function that reaches its end deals with that end at
  * once, the number of that map run from 1, the map runs completed, and the practice gathered from
  * them since the player last took it with „Odbierz” (D-189), which empties it together with the
- * practice of the map run going on, so what the loop and that map run hold is exactly what waits to
- * be paid. Each map run binds its lists anew from `program`, so the loop keeps no copy of a manual
+ * practice of the map run going on, so what the earning loop and that map run hold is exactly what waits to
+ * be paid. Each map run binds its lists anew from `program`, so the earning loop keeps no copy of a manual
  * map run and no link to the player's programs.
  */
 export type EarningLoop = {
@@ -382,8 +382,8 @@ export type LoopStop = { generation: number; away: boolean };
 
 /**
  * A line of the report on earning loops (D-246): what one earning loop of one character did. It
- * closes at its stop, so a later loop of that character opens a line of its own. The practice
- * waiting at the loop is no part of the line: the view reads it from the loop whenever it draws.
+ * closes at its stop, so a later earning loop of that character opens a line of its own. The practice
+ * waiting at the earning loop is no part of the line: the view reads it from the earning loop whenever it draws.
  */
 export type AwayReportLine = {
   characterId: CharacterId;
@@ -477,7 +477,7 @@ export type GameState = {
    * (D-241); go over them by the team's list, never by this record. None in a new game.
    */
   loops: Partial<Record<CharacterId, EarningLoop>>;
-  /** The practice paid at the stop, by character, until its next send or loop start (D-245). */
+  /** The practice paid at the stop, by character, until its next send or earning loop start (D-245). */
   stoppedLoops: Partial<Record<CharacterId, Practice>>;
   /** The report the player reads and closes (D-246); it lies here, so it survives a reload. */
   awayReport: AwayReportLine[];

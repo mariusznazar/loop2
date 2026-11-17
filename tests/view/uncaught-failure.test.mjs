@@ -304,7 +304,7 @@ function loopingAla() {
   const whole = advanceLoopRun(started, 1, 100_000);
   assert.ok(
     mapRunEnded(whole.state.loops[1].run),
-    "precondition: the run of the loop ends",
+    "precondition: the run of the earning loop ends",
   );
   return advanceLoopRun(started, 1, whole.passed - 1).state;
 }

@@ -56,7 +56,7 @@ export function entersLine(
 }
 
 /**
- * The mark beside „Puść w pętlę” when the program's bring list is empty: the loop earns nothing for
+ * The mark beside „Puść w pętlę” when the program's bring list is empty: the earning loop earns nothing for
  * the chest (D-326); null where the list holds an item. Pure.
  */
 export function emptyLoopMark(plan: TripPlan): string | null {

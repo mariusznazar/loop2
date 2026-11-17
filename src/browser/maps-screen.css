@@ -5,7 +5,7 @@
  * styles.css, and it reads each value of appearance from the design tokens of tokens.css by var(--…).
  */
 
-/* The mark of a rehearsal the loop cannot repeat, under „Wejdź”, in `warning` as the line of D-188 (D-251). */
+/* The mark of a rehearsal the earning loop cannot repeat, under „Wejdź”, in `warning` as the line of D-188 (D-251). */
 .rehearsal-mark {
   flex-basis: 100%;
   margin: 0;
@@ -124,7 +124,7 @@
  * The section „Kto idzie” under the card (D-329): its name in `text-label` and, at each character,
  * the lines from the top. A divider tells one character from the next and the section from the card
  * (D-40). The name is a name, so `text-strong`; the resurrection line is `text-secondary`, in
- * `danger` when not ready (D-217); the loop's line is `text` (D-244); „Wejdzie: …” is
+ * `danger` when not ready (D-217); the earning loop's line is `text` (D-244); „Wejdzie: …” is
  * `text-secondary`; the sentence of a waiting map run is `text-secondary` as in Siedziba (D-287);
  * the clipped-plan line and the rehearsal mark are the `warning` lines `trip-warning` and
  * `rehearsal-mark` draw (D-188, D-251).
