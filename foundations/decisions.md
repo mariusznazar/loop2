@@ -8231,7 +8231,7 @@ After completion the line „Do skrzynki: {item} {count}, ….” or „Do skrzy
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-122 · derives from D-179 · derives from D-368
-- **Verification:** tests: after a completion the line „Do skrzynki: {item} {count}, …”, or „Do
+- **Verification:** tests: after a completion the line „Do skrzynki: {item} {count}, ….”, or „Do
   skrzynki nic nie trafiło.” for an empty transfer, in `text-secondary`, as the transfer stood at
   the completion whatever later edits of the copy, in the section of the end-of-run window saying
   what the end gave, after a reload of the screen too. For how long the line stands, an agent
@@ -9978,8 +9978,8 @@ does not; „✕” in it and Escape pressed in it (D-370) close it and uncover 
   group opening in the program right under its row; the world from the top: the scene, „Teraz” and
   „Potem”, the body row, the lines below it, the drawing of the map and the line of a tile; the
   header holding the character's name, the map's name, the clock, the bar of the solving condition,
-  „Pauza” or „Wznów”, the paces, „Restart”, the warning of a cut trip plan after it and „Zakończ”,
-  and after the end „Koniec przejścia”, which opens the window; the window over the screen after a
+  „Pauza” or „Wznów”, the paces, and after the end „Koniec przejścia”, which opens the window,
+  „Restart”, the warning of a cut trip plan after it and „Zakończ”; the window in place of the screen after a
   death and a completion, the header and the areas hidden under it, the lines of the end standing in
   it and not in the world area, „✕” and Escape closing it and uncovering the screen, the window
   opening again at every entry and closing when the question stands; the window opening once the
