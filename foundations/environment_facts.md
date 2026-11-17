@@ -933,12 +933,6 @@ A command hook of Claude Code given `args` starts `command`, resolved as an exec
 
 - **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § Exec form and shell form — "Exec form runs when args is present. Claude Code resolves command as an executable on PATH and spawns it directly with args as the argument vector. There is no shell, so each args element is one argument exactly as written, and path placeholders like ${CLAUDE_PLUGIN_ROOT} are substituted into command and into each args element as plain strings." · "Both forms support the same path placeholders, and both export them as the environment variables CLAUDE_PROJECT_DIR, CLAUDE_PLUGIN_ROOT, and CLAUDE_PLUGIN_DATA on the spawned process, so a script can read process.env.CLAUDE_PLUGIN_ROOT regardless of how it was launched." · "The node plus script-path pattern works on every platform because node.exe is a real binary." · § Reference scripts by path — "${CLAUDE_PROJECT_DIR}: the project root where the session started."; read 2026-11-16
 
-## git-path-patterns
-
-Git matches a path pattern of an attributes file by the rules of `.gitignore` patterns, except that a negative pattern is forbidden and a pattern that matches a directory does not match the paths inside it.
-
-- **Source:** https://git-scm.com/docs/gitattributes/2.55.0 § DESCRIPTION — "The rules by which the pattern matches paths are the same as in .gitignore files (see gitignore[5]), with a few exceptions:" · § DESCRIPTION — "negative patterns are forbidden" · § DESCRIPTION — "patterns that match a directory do not recursively match paths inside that directory (so using the trailing-slash path/ syntax is pointless in an attributes file; use path/** instead)"; read 2026-11-16
-
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
@@ -955,3 +949,4 @@ Git matches a path pattern of an attributes file by the rules of `.gitignore` pa
 | playwright-mcp-persistent-profile | withdrawn: no decision is based on it and no invariant rests on it | playwright-mcp-default-profile-sharing |
 | playwright-cli-workspace-directory | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-workspace-lookup |
 | playwright-cli-sessions-per-workspace | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-session-separation |
+| git-path-patterns | withdrawn: no decision is based on it and no invariant rests on it | none |

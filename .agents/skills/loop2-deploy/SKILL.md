@@ -205,6 +205,10 @@ the log lie, how to read the log, install, change the encryption key and restore
   every address and password hash to standard output.
 - **Unknown:** no source says whether the Strych key can be replaced.
 - A restore is a separate path, not a rollback (D-15), and undoes everything after the backup.
+  After a restore over the server's database the human finds the password resets, blocks and
+  unblocks since the backup in the game's log and repeats them, reading the addresses with a
+  command that only reads (D-360, step 8 in `references/backup_and_restore.md`); an agent never
+  runs that command.
 
 ## Account mail
 

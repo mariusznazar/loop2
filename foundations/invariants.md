@@ -937,7 +937,7 @@ The Compose file of loop2 gives the `app` service, for the messages it sends to 
 
 ## account-email-nodemailer-starttls
 
-The account server submits player email confirmation and password-reset messages to Mikrus Outsider with Nodemailer 10 only when the SMTP connection has upgraded to TLS.
+The account server submits player email confirmation and password-reset messages to Mikrus Outsider only when the SMTP connection has upgraded to TLS.
 
 - **Method:** test
 - **Rests on:** none
@@ -1240,7 +1240,7 @@ After an error that no code of the game handled, the game state held in the page
 No file of a part imports a file of another part, unless the *Depends on* of the importing file's part names the other part, the importing file stands under `tests/` and the imported file belongs to the part `test-helpers`, or an invariant "the part `<X>` does not depend on `<Y>`" reading `Violated: yes` says that the part `<X>` of the importing file depends on the part `<Y>` of the imported file today.
 
 - **Method:** test
-- **Rests on:** git-path-patterns
+- **Rests on:** none
 - **Derives from:** D-351
 - **Part:** every
 - **Violated:** no
@@ -1287,11 +1287,11 @@ No file git tracks contains an absolute path on a disk or, in a Markdown file, a
 
 ## tracked-file-private-names
 
-A file git tracks points to a place the author keeps outside the repository only by naming the entry `projects`, `tasks` or `task-rules` under `loop2` in the locations file `~/.the-way/locations.json`, and names no note, no folder of notes, no path on the author's disk and no file of the private repository of the old loop game.
+A file git tracks points to a place the author keeps outside the repository only by naming the entry `projects`, `tasks` or `task-rules` under `loop2` in the locations file `~/.the-way/locations.json` or by referring to the owner's private note of secrets (D-13) without that note's name and path, and names no note, no folder of notes, no path on the author's disk and no file of the private repository of the old loop game.
 
 - **Method:** review
 - **Rests on:** none
-- **Derives from:** D-362
+- **Derives from:** D-362 · D-13
 - **Part:** every
 - **Violated:** no
 
