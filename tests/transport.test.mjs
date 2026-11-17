@@ -1374,7 +1374,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: account-mutation-request-guards
-    // decision: D-104 "every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected"
+    // decision: D-104 "The session cookie uses SameSite=Strict, and every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected"
     // Fault: a state-changing route added to the application and left off
     // every guard case, which then guards it by nothing.
     const f = await fixture(t);
