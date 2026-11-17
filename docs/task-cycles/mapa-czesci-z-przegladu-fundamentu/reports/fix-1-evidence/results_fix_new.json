@@ -1,0 +1,50 @@
+{
+ "R0 no change": {
+  "case_exit": 0,
+  "case_tail": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+  "whole_exit": 0,
+  "restored_case_exit": 0
+ },
+ "R1 -o \"StrictHostKeyChecking no\" before the =yes": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 86, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"stricthostkeychecking\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'no' != 'yes'\n- no\n+ yes\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R1b -oStrictHostKeyChecking=no before the =yes": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 86, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"stricthostkeychecking\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'no' != 'yes'\n- no\n+ yes\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R1c -o StrictHostKeyChecking=no before the =yes": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 86, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"stricthostkeychecking\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'no' != 'yes'\n- no\n+ yes\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R1d strictHostKeyChecking=Accept-New (other case of the name) before the =yes": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 86, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"stricthostkeychecking\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'accept-new' != 'yes'\n- accept-new\n+ yes\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R2 BatchMode=no before BatchMode=yes": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 87, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"batchmode\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'no' != 'yes'\n- no\n+ yes\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R3 both options off the ssh call, written into an echo of the probe step": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 86, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"stricthostkeychecking\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: None != 'yes'\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R6 StrictHostKeyChecking removed from the ssh call": {
+  "case_exit": 1,
+  "case_tail": "F\n======================================================================\nFAIL: test_ssh_is_strict_and_batch (tests.deploy.test_deploy_workflow.DeployWorkflow.test_ssh_is_strict_and_batch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \".runs/author/wt/tests/deploy/test_deploy_workflow.py", line 86, in test_ssh_is_strict_and_batch\n    self.assertEqual(options.get(\"stricthostkeychecking\"), \"yes\")\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: None != 'yes'\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ }
+}

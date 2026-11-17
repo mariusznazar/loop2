@@ -1,0 +1,50 @@
+{
+ "R0 no change": {
+  "case_exit": 0,
+  "case_tail": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+  "whole_exit": 0,
+  "restored_case_exit": 0
+ },
+ "R1 -o \"StrictHostKeyChecking no\" before the =yes": {
+  "case_exit": 0,
+  "case_tail": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+  "whole_exit": 0,
+  "restored_case_exit": 0
+ },
+ "R1b -oStrictHostKeyChecking=no before the =yes": {
+  "case_exit": 1,
+  "case_tail": "code\" = \"200\" ] && return 0 ;;\\n                api-error)\\n                  case \"$code\" in\\n                    4??|5??) case \"$type\" in application/json*|*+json*) return 0 ;; esac ;;\\n                  esac ;;\\n                any) case \"$code\" in 2??|3??|4??) return 0 ;; esac ;;\\n              esac\\n              echo \"attempt $attempt: $url answered \\'$code\\' (\\'$type\\')\"\\n              sleep 6\\n            done\\n            echo \"::error::Probe failed for $url (expected: $expected, last answer: \\'$code\\')\"\\n            return 1\\n          }\\n          failed=0\\n          probe \"$LOOP2_PUBLIC_URL\" 200 || failed=1\\n          probe \"${LOOP2_PUBLIC_URL}api/unknown-path-probe\" api-error || failed=1\\n          probe \"$OLD_GAME_URL\" any || failed=1\\n          exit \"$failed\"'\n\n----------------------------------------------------------------------\nRan 1 test in 0.008s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R1c -o StrictHostKeyChecking=no before the =yes": {
+  "case_exit": 1,
+  "case_tail": "code\" = \"200\" ] && return 0 ;;\\n                api-error)\\n                  case \"$code\" in\\n                    4??|5??) case \"$type\" in application/json*|*+json*) return 0 ;; esac ;;\\n                  esac ;;\\n                any) case \"$code\" in 2??|3??|4??) return 0 ;; esac ;;\\n              esac\\n              echo \"attempt $attempt: $url answered \\'$code\\' (\\'$type\\')\"\\n              sleep 6\\n            done\\n            echo \"::error::Probe failed for $url (expected: $expected, last answer: \\'$code\\')\"\\n            return 1\\n          }\\n          failed=0\\n          probe \"$LOOP2_PUBLIC_URL\" 200 || failed=1\\n          probe \"${LOOP2_PUBLIC_URL}api/unknown-path-probe\" api-error || failed=1\\n          probe \"$OLD_GAME_URL\" any || failed=1\\n          exit \"$failed\"'\n\n----------------------------------------------------------------------\nRan 1 test in 0.011s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ },
+ "R1d strictHostKeyChecking=Accept-New (other case of the name) before the =yes": {
+  "case_exit": 0,
+  "case_tail": ".\n----------------------------------------------------------------------\nRan 1 test in 0.010s\n\nOK\n",
+  "whole_exit": 0,
+  "restored_case_exit": 0
+ },
+ "R2 BatchMode=no before BatchMode=yes": {
+  "case_exit": 0,
+  "case_tail": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+  "whole_exit": 0,
+  "restored_case_exit": 0
+ },
+ "R3 both options off the ssh call, written into an echo of the probe step": {
+  "case_exit": 0,
+  "case_tail": ".\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nOK\n",
+  "whole_exit": 0,
+  "restored_case_exit": 0
+ },
+ "R6 StrictHostKeyChecking removed from the ssh call": {
+  "case_exit": 1,
+  "case_tail": "code\" = \"200\" ] && return 0 ;;\\n                api-error)\\n                  case \"$code\" in\\n                    4??|5??) case \"$type\" in application/json*|*+json*) return 0 ;; esac ;;\\n                  esac ;;\\n                any) case \"$code\" in 2??|3??|4??) return 0 ;; esac ;;\\n              esac\\n              echo \"attempt $attempt: $url answered \\'$code\\' (\\'$type\\')\"\\n              sleep 6\\n            done\\n            echo \"::error::Probe failed for $url (expected: $expected, last answer: \\'$code\\')\"\\n            return 1\\n          }\\n          failed=0\\n          probe \"$LOOP2_PUBLIC_URL\" 200 || failed=1\\n          probe \"${LOOP2_PUBLIC_URL}api/unknown-path-probe\" api-error || failed=1\\n          probe \"$OLD_GAME_URL\" any || failed=1\\n          exit \"$failed\"'\n\n----------------------------------------------------------------------\nRan 1 test in 0.010s\n\nFAILED (failures=1)\n",
+  "whole_exit": 1,
+  "restored_case_exit": 0
+ }
+}
