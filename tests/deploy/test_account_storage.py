@@ -18,10 +18,10 @@ through the probe's standard input and are never printed.
 Where no Docker daemon answers, the test is skipped and says what stays unchecked.
 
 Does NOT cover: saved game states, which the product stores in the same database but this test
-neither writes nor reads; account-save-durable-storage (method review) was cleared by the human's
-redeployment check on the test server, in which a saved game state came back after the
-application container was replaced; the Compose stack and the deployment command (the test runs
-the image with equivalent settings); a rollback to older code; the server's image.
+neither writes nor reads, so for account-save-durable-storage (method test) it shows the
+database file that holds them surviving the replacement through an account and its session, and
+no saved game state; the Compose stack and the deployment command (the test runs the image with
+equivalent settings); a rollback to older code; the server's image.
 """
 
 import json
@@ -95,7 +95,7 @@ def docker_run(*arguments, timeout=COMMAND_TIMEOUT):
 class AccountsSurviveContainerReplacement(unittest.TestCase):
 
     def test_replaced_container_keeps_accounts_and_sessions(self):
-        # invariant: account-schema-lifecycle
+        # invariant: account-save-durable-storage
         # decision: D-17 "The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000"
         # decision: D-205 "The account and save server stores player accounts and each player's complete saved game state in a SQLite database file on persistent local storage outside the replaceable application container layer"
         docker_gate.require_daemon(self, "whether accounts and sessions outlive a container "

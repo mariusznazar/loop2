@@ -535,7 +535,7 @@ test(
   "configured startup refuses unknown schema and unavailable database before readiness",
   { timeout: 20000 },
   async (t) => {
-    // invariant: account-schema-lifecycle
+    // invariant: account-database-schema
     // decision: D-111 "The configured origin is HTTPS without credentials, non-root path, query or fragment; the signing file is at most 16 KiB of UTF-8 JSON containing a nonempty array of distinct base64url strings, each encoding exactly 32 random bytes with the newest first; the sender is one address of printable ASCII with exactly one `@` and no whitespace or address delimiter, the SMTP host at most 253 characters of labels of ASCII letters, digits and hyphens joined by dots, the port a decimal integer from 1 to 65535, the login text of at most 254 characters without whitespace or control character, and the password file a regular file of at most 1 KiB of UTF-8 that decodes to a password with no control character that is nonempty once every U+FEFF is taken out, so an empty file, a file of byte-order marks and nothing else and a trailing newline are refused while a byte-order mark followed by other characters is accepted with the mark dropped by the decoder, read once; unreadable or invalid settings report their setting or path rather than contents"
     const f = await configurationFixture(t);
     const future = new DatabaseSync(f.environment.LOOP2_DATABASE_PATH);
