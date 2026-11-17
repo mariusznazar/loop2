@@ -24,8 +24,11 @@ Covers:
   character created, a send,
   240 game minutes with a program whose only rule is to wander, then a program mixing every action
   of the closed list (gathering, which draws from the gathering generator, included), a restart,
-  an end and a second send, no map run going past game minute 240; no input may raise and no
-  replaced function may be called;
+  an end and a second send, no map run going past game minute 240; then a second run, on Las —
+  głębiej, whose wolf attacks within 250 game minutes of the map run, with a program that
+  explores and kicks, through the attack and the combat to its end; no input may raise and no
+  replaced function may be called, and the second run must have met the attack and the end of
+  its combat;
 - control: two sends with different real times give different wandering paths over the same 200
   game minutes, and a send repeated with the same real time gives the same path, so the draws
   depend on the seed's generator; likewise, with the program mixing every action, the gathering
@@ -45,7 +48,7 @@ import tempfile
 import unittest
 
 import loop2_invariant_support as support
-from program_fixture import KNOWING_GAME_JS, program_from_rules
+from program_fixture import KNOWING_GAME_JS, program_from_rules, program_rules
 
 SOURCE_DIRECTORY = "src/browser/sim/"
 GENERATOR_FILE = "src/browser/sim/random.ts"
@@ -285,6 +288,18 @@ LONG_RUN = (
 )
 LONG_RUN_MINUTES_BEFORE_RESTART = 240
 
+# The map run of the wolf: the map Las — głębiej, which Las, solved, opens, sent to at this real
+# time, on which the first attack of the wolf comes in game minute 240 of the map run, from the
+# draws of the attack generator seeded by the map run. The program is the mixed one with a rule
+# that kicks at its end: a combat verb is carried out in a combat only, and only a combat verb is.
+DEEP = {"mapId": "forestDeep", "characterId": 1}
+T_WOLF = 1760000000026
+WOLF_MIXED = program_from_rules(program_rules(MIXED) + [rule(ALWAYS, {"kind": "kick"})])
+WOLF_RUN = [
+    ["newGame"], CREATE, ["setProgram", WOLF_MIXED], ["solveMaps", ["forest"]],
+    ["send", DEEP, T_WOLF], ["advanceMinutes", 250],
+]
+
 
 def path_steps(real_ms, program=WANDER_ONLY):
     return ([["newGame"], CREATE, ["setProgram", program], ["send", SENT, real_ms]]
@@ -374,6 +389,8 @@ try {
   for (const [name, ...args] of steps) {
     if (name === 'newGame') {
       state = await newKnowingGame(game, join(simDirectory, 'game.js'));
+    } else if (name === 'solveMaps') {
+      state = { ...state, solvedMaps: [...state.solvedMaps, ...args[0]] };
     } else {
       state = game[name](state, ...args).state;
     }
@@ -381,7 +398,8 @@ try {
     result.records.push({ step: name, minute: run ? run.minute : null,
                           at: run ? run.character.at : null,
                           backpack: run ? run.character.backpack : null,
-                          gatherRandom: run ? run.gatherRandom : null });
+                          gatherRandom: run ? run.gatherRandom : null,
+                          lastCombat: run ? run.lastCombat : null });
   }
 } catch (error) {
   result.error = String(error && error.stack || error);
@@ -474,6 +492,16 @@ class SimulationRandomness(unittest.TestCase):
         self.assertGreaterEqual(result["records"][restart_at - 1]["minute"],
                                 LONG_RUN_MINUTES_BEFORE_RESTART,
                                 "the run did not cover the minutes it is meant to")
+
+    def test_run_with_a_wolf_attack_calls_no_other_source_of_random_numbers(self):
+        # invariant: simulation-randomness
+        result = drive(support.built_copy(), WOLF_RUN)
+        self.assert_clean_run(result)
+        self.assertEqual(len(result["records"]), len(WOLF_RUN))
+        combat = result["records"][-1]["lastCombat"]
+        self.assertIsNotNone(combat, "the map run met no attack of the wolf, so the draws of the "
+                                     "attack and of the combat were not driven")
+        self.assertIsNotNone(combat["result"], "the combat of the attack did not come to its end")
 
     def test_control_draws_follow_the_seed(self):
         # invariant: simulation-randomness
