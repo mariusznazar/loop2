@@ -354,10 +354,15 @@ test("a STARTTLS upgrade to a certificate not trusted for the host completes not
 test("a server that stops answering yields failed within the shortened deadline and loses the connection", async (t) => {
   // decision: D-162 "Mail sending composes account messages and submits each to the mail service, independently of HTTP and the database, within a bounded time, and reports a failure as its result rather than as an error thrown to its caller"
   const smtp = await smtpServer(t, { holdData: true });
-  // Each phase of the library may wait 5 s; the deadline cuts the send at 300 ms.
+  // Each phase of the library may wait 5 s; the deadline cuts the send at 1.5 s.
+  // The deadline runs from the start of the send and must outlast the way to the
+  // held answer: smtp-server greets 100 ms after it accepts, and a busy computer
+  // slows the client and the server, which share this process. The way took
+  // 130 ms on an idle computer and up to 750 ms with four spinning processes per
+  // CPU, where 300 ms cut the send before the server held anything.
   const mailer = new SmtpMailer(
     settings(smtp.port),
-    trusting(localCertificate, { deadline: 300 }),
+    trusting(localCertificate, { deadline: 1500 }),
   );
   const started = Date.now();
 
