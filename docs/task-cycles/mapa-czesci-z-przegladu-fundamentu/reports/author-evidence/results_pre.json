@@ -1,0 +1,50 @@
+{
+ "E2": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read, and a fragment without one yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E6": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 0,
+   "failed": []
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "P2": {
+  "file": "src/browser/view/password-reset.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read as it stands, and any other fragment yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "P4": {
+  "file": "src/browser/view/password-reset.ts",
+  "broken": {
+   "exit": 0,
+   "failed": []
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ }
+}

@@ -1,0 +1,10 @@
+deploy-step-run-first-event-expression sha-case-exit=1
+folded-block-secret sha-case-exit=1
+folded-strip-block-run-first-secret sha-case-exit=1
+honest-as-it-stands sha-case-exit=0
+honest-run-first-no-expression sha-case-exit=0
+inline-run-first-key-secret sha-case-exit=1
+inline-run-secret sha-case-exit=1
+new-step-run-first-secret sha-case-exit=1
+plain-scalar-continuation-secret sha-case-exit=1
+strip-block-secret sha-case-exit=1

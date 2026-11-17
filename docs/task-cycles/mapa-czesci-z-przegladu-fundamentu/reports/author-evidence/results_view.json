@@ -1,0 +1,291 @@
+{
+ "S1": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a fragment with an upper-case address reads as no screen"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S2": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a fragment with a map address with a hyphen in place of the identifier reads as no screen",
+    "a fragment with a map address with a Polish name of the map reads as no screen",
+    "a fragment with a map address with a capital letter reads as no screen",
+    "a fragment with a map address with a percent-encoded identifier reads as no screen",
+    "a fragment with a map address with a fragment after the identifier reads as no screen",
+    "a fragment with a map address with a hash after the identifier reads as no screen",
+    "a fragment with a map address naming a prototype property reads as no screen",
+    "a fragment with a map address naming an inherited property reads as no screen",
+    "a fragment with a map address with a trailing slash reads as no screen"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S3": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a fragment with the fragment of an emailed confirmation reads as no screen"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S3b": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a fragment with the fragment of a password-reset link reads as no screen"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S4": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a character screen of a number no character carries gives Siedziba"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S5": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a player's address of the list of accounts opens Siedziba"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S6": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a map off the list of open maps gives Siedziba: a map whose opening map is not solved"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S7": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a program screen of a number no program carries gives Programy"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S8": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a map run screen with no map run of its character gives the character's screen",
+    "a map run screen of a character with no map run, but with another's, gives the character's screen",
+    "a map run screen of a number no character carries gives Siedziba"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S9": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "no screen named gives Siedziba"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "S10": {
+  "file": "src/browser/view/screen-address.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a fragment with a percent-encoded number reads as no screen",
+    "a fragment with a map address with a percent-encoded identifier reads as no screen"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E1": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read, and a fragment without one yields none",
+    "a definitive answer, confirmed or the link refused, sends the token once and clears the fragment",
+    "a lost connection or a server error keeps the fragment, so a reload tries again"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E2": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read, and a fragment without one yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E6": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read, and a fragment without one yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E3": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a definitive answer, confirmed or the link refused, sends the token once and clears the fragment",
+    "a lost connection or a server error keeps the fragment, so a reload tries again"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E4": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a definitive answer, confirmed or the link refused, sends the token once and clears the fragment",
+    "a lost connection or a server error keeps the fragment, so a reload tries again"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "E5": {
+  "file": "src/browser/view/email-confirmation.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "a definitive answer, confirmed or the link refused, sends the token once and clears the fragment",
+    "a lost connection or a server error keeps the fragment, so a reload tries again"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "P1": {
+  "file": "src/browser/view/password-reset.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read as it stands, and any other fragment yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "P2": {
+  "file": "src/browser/view/password-reset.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read as it stands, and any other fragment yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "P3": {
+  "file": "src/browser/view/password-reset.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read as it stands, and any other fragment yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ },
+ "P4": {
+  "file": "src/browser/view/password-reset.ts",
+  "broken": {
+   "exit": 1,
+   "failed": [
+    "the fragment's token is read as it stands, and any other fragment yields none"
+   ]
+  },
+  "restored": {
+   "exit": 0,
+   "failed": []
+  }
+ }
+}
