@@ -1,0 +1,23 @@
+the modules of the global install of the Playwright command line\playwright-core\lib\tools\cli-client\session.js:172
+    const rejectWithPid = (reject, message) => reject(Object.assign(new Error(`Daemon pid=${child.pid}: ${message}`), { daemonPid: child.pid }));
+                                                                    ^
+
+Error: Daemon pid=32712: Daemon process exited with code 1
+Error: Browser "firefox" is not installed; expected executable at the user's Playwright browser directory\firefox-1553\firefox\firefox.exe. Run `playwright-cli install-browser firefox` to install
+    at throwIfExecutableMissing (the modules of the global install of the Playwright command line\playwright-core\lib\coreBundle.js:75542:9)
+    at the modules of the global install of the Playwright command line\playwright-core\lib\coreBundle.js:75406:5
+    at async createIsolatedBrowser (the modules of the global install of the Playwright command line\playwright-core\lib\coreBundle.js:75400:19)
+    at async createBrowser (the modules of the global install of the Playwright command line\playwright-core\lib\coreBundle.js:75364:15)
+    at async createBrowserWithInfo (the modules of the global install of the Playwright command line\playwright-core\lib\coreBundle.js:75346:16)
+    at async _Command.<anonymous> (the modules of the global install of the Playwright command line\playwright-core\lib\coreBundle.js:76379:76)
+    at async _Command.parseAsync (the modules of the global install of the Playwright command line\playwright-core\lib\utilsBundle.js:54135:5)
+
+    at rejectWithPid (the modules of the global install of the Playwright command line\playwright-core\lib\tools\cli-client\session.js:172:69)
+    at ChildProcess.<anonymous> (the modules of the global install of the Playwright command line\playwright-core\lib\tools\cli-client\session.js:182:11)
+    at ChildProcess.emit (node:events:509:28)
+    at maybeClose (node:internal/child_process:1124:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:306:5) {
+  daemonPid: 32712
+}
+
+Node.js v24.17.0

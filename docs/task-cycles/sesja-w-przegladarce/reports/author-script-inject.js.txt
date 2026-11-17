@@ -1,0 +1,25 @@
+// Installs, in the open page, an observer of the sentences under the menu bar and a broken
+// JSON.stringify for the body of a save, so the save client's promise rejects before its request
+// leaves. Nothing of it stays after a reload.
+async (page) => page.evaluate(() => {
+  const t0 = performance.now();
+  window.__log = [];
+  const seen = new Set();
+  const look = () => {
+    for (const s of ["Nie udało się zapisać postępu. Gra spróbuje ponownie.", "Coś w grze się zepsuło — odśwież stronę.", "Nie udało się zapisać postępu. Spróbuj wylogować się ponownie."]) {
+      const els = [...document.querySelectorAll("header *, main *, body > *")].filter((e) => e.childElementCount === 0 && e.textContent.trim() === s && e.offsetParent);
+      if (els.length && !seen.has(s)) { seen.add(s); window.__log.push({ s, ms: Math.round(performance.now() - t0), count: els.length }); }
+    }
+  };
+  new MutationObserver(look).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true });
+  const original = JSON.stringify;
+  window.__saves = 0;
+  JSON.stringify = function (value, ...rest) {
+    if (value && typeof value === "object" && "basedOn" in value && "game" in value) {
+      window.__saves += 1;
+      throw new TypeError("injected before the request leaves");
+    }
+    return original.call(this, value, ...rest);
+  };
+  return "installed";
+})

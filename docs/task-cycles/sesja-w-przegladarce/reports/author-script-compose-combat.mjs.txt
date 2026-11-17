@@ -1,0 +1,80 @@
+// Working copy of the cycle. From the saved game the browser holds (Las solved by a program written
+// in the editor), sends "Agent" to "Las — głębiej" with its program and passes game minutes one by
+// one with the simulation's own functions until the wolf attacks, then writes the saved document a
+// few minutes before that attack. Usage:
+//   node compose-combat.mjs SAVE.json OUT.json [minutesBefore] [seedMs]
+import { pathToFileURL } from "node:url";
+import { join } from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
+
+const sim = join(process.cwd(), "dist", "browser", "sim");
+const load = (name) => import(pathToFileURL(join(sim, name)).href);
+const { send, advanceMinutes, withSaveTime } = await load("game.js");
+const { savedGame, loadSavedGame } = await load("saved-game.js");
+
+const [, , input, output, beforeText = "3", seedText = "1000"] = process.argv;
+const doc = JSON.parse(readFileSync(input, "utf8"));
+const loaded = loadSavedGame({ version: doc.version, game: doc.game });
+if (!loaded.ok) throw new Error("load refused");
+const r = (id, condition, action) => ({ id, condition, action });
+const deep = {
+  groups: [
+    {
+      id: 1,
+      name: "Program",
+      condition: { kind: "always" },
+      rules: [
+        r(1, { kind: "temperatureBelow", value: 36.3 }, { kind: "lightCampfire" }),
+        r(2, { kind: "satietyBelow", value: 70 }, { kind: "eat" }),
+        r(3, { kind: "itemBelow", item: "berry", value: 1 }, { kind: "gather", resource: "berry" }),
+        r(4, { kind: "itemBelow", item: "berry", value: 1 }, { kind: "walkTo", resource: "berry" }),
+        r(5, { kind: "awayFromCampfire" }, { kind: "walkToCampfire" }),
+        r(6, { kind: "always" }, { kind: "craftCampfire" }),
+        r(7, { kind: "itemBelow", item: "stick", value: 4 }, { kind: "gather", resource: "stick" }),
+        r(8, { kind: "itemBelow", item: "berry", value: 4 }, { kind: "gather", resource: "berry" }),
+        r(9, { kind: "itemBelow", item: "stick", value: 8 }, { kind: "gather", resource: "stick" }),
+        r(10, { kind: "always" }, { kind: "explore" }),
+      ],
+    },
+  ],
+  nextGroupId: 2,
+  nextRuleId: 11,
+  tripPlan: { take: [], bring: [] },
+};
+const base = loaded.state;
+const withDeep = {
+  ...base,
+  programs: [...base.programs, { id: base.nextProgramId, name: "Głębiej", program: deep }],
+  nextProgramId: base.nextProgramId + 1,
+};
+let state = send(withDeep, { mapId: "forestDeep", characterId: 1, programId: base.nextProgramId }, Number(seedText)).state;
+
+const history = [state];
+let attackMinute = null;
+for (let minute = 0; minute < 2000; minute += 1) {
+  const result = advanceMinutes(state, 1);
+  state = result.state;
+  history.push(state);
+  if (state.run.death || state.run.completed) break;
+  if (result.events.some((event) => event.kind === "attacked")) {
+    attackMinute = state.run.minute;
+    break;
+  }
+}
+const run = state.run;
+process.stderr.write(`copy ${run.copy.programId} rules ${run.copy.program.groups[0].rules.length} counts ${JSON.stringify(state.ruleCounts)} backpack ${JSON.stringify(run.character.backpack)} tiles ${run.tiles.filter(t=>t.revealed).length}
+`);
+process.stderr.write(
+  `attack at ${attackMinute}; health ${run.body.health.toFixed(1)}, temp ${run.body.temperature.toFixed(2)}, ` +
+    `streak ${run.streak}, death ${JSON.stringify(run.death ?? null)}\n`,
+);
+let pick = history[Math.max(0, history.length - 1 - Number(beforeText))];
+// A field edit, named in the report: the body's health and satiety set by hand where HEALTH is given.
+if (process.env.HEALTH) {
+  const body = { ...pick.run.body, health: Number(process.env.HEALTH), satiety: 90 };
+  pick = { ...pick, run: { ...pick.run, body } };
+}
+const saved = savedGame(withSaveTime(pick, Date.now()));
+const check = loadSavedGame(JSON.parse(JSON.stringify(saved)));
+process.stderr.write(`saved at minute ${pick.run.minute}, load ${check.ok}\n`);
+writeFileSync(output, JSON.stringify(saved));
