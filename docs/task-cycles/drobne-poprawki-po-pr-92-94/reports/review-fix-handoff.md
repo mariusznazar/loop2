@@ -1,9 +1,0 @@
-# Handoff to the reviewer — review of the fix, task `drobne-poprawki-po-pr-92-94`
-
-You are resumed, as the same reviewer, to review the fix of your review of the whole change, with `review-change` (`.the-way/task-cycle/review/SKILL.md`). Read-only; the full gate is the orchestrator's. Worktree root the root of the task's worktree.
-
-- Range of the fix: from your reviewed head `9a778cdbbdb54edcce17e752cc37bbbb8fdc53a5` to `a203324ddefffcd393a1b4eb2f6a819c727a2622` (6 commits, 5 files).
-- Findings the fix answers: `reports/whole-review-findings.md` (the blocking I1 and Minor M1–M8, cut from your report in your words).
-- The author's fix report: `reports/author-fix-report.md`; its choices are the orchestrator's (recorded as autonomous choices), listed in `reports/author-fix-handoff.md`: D-153 states the operator's report and the log without "created that day", without „external mailbox” as established and without the narrative of the record; M7 keeps the task's numbers and says „each half real minute at 16×, which is 480 game minutes”; M8 is left unchanged on purpose (the allowed list of the skill is the operator's agreement; the request carries the matter to the human); O1 and O2 are outside the task and not fixed.
-- Judge, once: whether each of I1 and M1–M7 is closed by the fix, and whether the fix brings a new finding. Only a new Critical or Important finding fails this review; a Minor one does not block and goes to the request's list. Findings in your form (anchor `file:line`, full wording, expanded reason).
-- Write your report to `.runs/task-cycles/drobne-poprawki-po-pr-92-94/reports/review-fix-report.md`; first line `PASS <sha>` or `FAIL <sha>`. Your directory for working copies: `.runs/review-fix/`; the working-copies rule is as in your first handoff (`reports/review-whole-handoff.md`, last paragraph): remove your copies and state in the report that you did.
