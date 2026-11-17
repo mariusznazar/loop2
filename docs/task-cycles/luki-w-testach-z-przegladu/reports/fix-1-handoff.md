@@ -1,0 +1,29 @@
+# Handoff — the fix of the review of the whole change (fix round 1)
+
+You fix the findings of the review of the whole change of a plan for the task cycle `implement-task`. Another agent reviews your fix with `review-change`.
+
+## Delegation and place
+
+- The human who asked for this cycle has delegated intermediate choices to the orchestrator. Never treat an answer as the human's approval. Ask no human; send a question to the orchestrator in your report with the status `questions`, and a missing fact or permission with `blocked`.
+- Worktree (work only from its root): `the repository's root`, branch `task/luki-w-testach-z-przegladu`. **The reviewed head, where your range starts: `f742a3fb7bb321c586ccc2777882a7456739b115`.** Pinned the-way: `.the-way` at `bfb2e109735b5fff98802b8be0ff3c43c799262a`. The worktree has `node_modules` and `.runs/quality-venv` (ruff, shellcheck).
+- Method: `.the-way/task-cycle/change/SKILL.md` (`make-change`); your variant is **"the fix of a review's findings"**. Read the `SKILL.md` whole, and a file it names only when its step comes (among them the file it names for a fix). You have no skill tool: a skill a file names by its name alone is the `SKILL.md` whose frontmatter `name:` is that name, read as a file under `.the-way`. Where you write a foundation entry (see finding M-4), read `.the-way/task-cycle/skill/foundation_step.md` whole, and the `SKILL.md` of the element it names for that entry, as it gives.
+- Class of model: the strongest the human allows (Opus; never `fable`), because the finding spans the plan's *Foundation entries* and slice 1.
+- The findings: `reports/review-whole-findings.md` (in `.runs/task-cycles/luki-w-testach-z-przegladu/`), cut from the review's report in the reviewer's words: one blocking finding (I-1, Important) and nine Minor findings (M-1 … M-9), all within the task. Fix the blocking finding and each Minor finding except M-6: the orchestrator gives M-6 (a rewording of D-49) to the return step, which also words the clarification of D-49 the cycle owes. Where a finding names a remedy as recommended, take it; where you hold a finding wrong or a remedy unwise, answer with evidence in your report rather than make the change. For M-3 the reviewer says "a follow-up for the human to weigh": the cycle fixes Minor findings within the task, so make the change (`disableReverseLookup: true` on the test's server) and show the cases of the file that use that server pass, or say with evidence why not.
+- The frozen task, whole: `.runs/task-cycles/luki-w-testach-z-przegladu/task.md` (To do 11 asks for the citation I-1 concerns; read it with the other items your fixes touch). The plan: `.runs/task-cycles/luki-w-testach-z-przegladu/plan.md` (slice 1, and *Foundation entries*, for I-1). The review's full report, for the evidence behind each finding: `.runs/task-cycles/luki-w-testach-z-przegladu/reports/review-whole-report.md`. Executor 1's report holds its concern about I-1 and how it showed the case failing with the database path moved: `.runs/task-cycles/luki-w-testach-z-przegladu/reports/executor-1-report.md`.
+- For I-1 the case needs a Docker daemon (`scripts/docker_gate.py`; where none answers, the run is reported not run). Before you start containers, `docker ps -a`; leave Docker Desktop running and answering when you return, and remove every container, volume and image your runs made. Do not start load processes.
+- Class of changes: the Minor findings are small each; each is a commit or one commit for related ones, messages in English in the form of the existing ones (`git log -8 --format=%s`). The fix of I-1 is a commit of its own.
+- You never run the product's gate (`npm.cmd test` without a file, `python -B .the-way/task-cycle/gate_times.py`): it is the orchestrator's alone. The focused checks of what you change you run, each with its command and exit code in your report; run `python -B .the-way/elements/common/foundation_check.py` before you commit where you change a citation comment or a foundation file, and put its command and exit code in the report; a quotation after `decision:` must be a passage that begins a sentence of the decision's text, word for word.
+- Commits: `git add` by path, never `-A` or `.`; commit in your fix's range; leave the worktree clean (`git status --short` empty) when you return. Where you change a file temporarily to see a test fail, restore it byte for byte (`git diff` empty) before you commit, and say so.
+- Report path: `.runs/task-cycles/luki-w-testach-z-przegladu/reports/fix-1-report.md`. Your directory for working copies: `.runs/fix-1/`.
+
+An agent of the cycle that makes a working copy to check something — a worktree of a commit, a
+clone, a script, a screenshot, a prepared input of a test — makes it in a directory of its own
+directly under the ignored `.runs/` of the task's worktree, the directory its handoff names; never
+in the system's temporary directory, in the scratch directory of a session or in the main checkout
+of the repository.
+
+(Remove each copy before you return, with `git worktree remove --force` then `git worktree prune` for a worktree, and state in the report where each stood and that it was removed.)
+
+## Return
+
+As the method's section on returning gives: the status (`done`, `done with concerns`, `questions`, `returned`, `reserved` or `blocked`), your commits, a one-line check result naming what failed or did not run, and the report path. The report answers each finding by its number (fixed in which commit, or held wrong with evidence, or left for the return step: M-6), holds each check with its command and exit code, the own-work check as the method gives it, each reach beyond this handoff, each working copy, and ends with **Unread material:** (what this handoff names that you did not read whole, with what you read, or `none`) and **Searches not found or unclear:** (each thing you looked for and did not find, or `none`).

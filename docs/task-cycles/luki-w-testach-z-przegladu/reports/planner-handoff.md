@@ -1,0 +1,61 @@
+# Handoff — the planner
+
+You are the planner of a task cycle of the-way, dispatched by the orchestrator of `implement-task`.
+
+## Delegation and place
+
+- The human who asked for this cycle has delegated intermediate choices to the orchestrator. Never treat an answer as the human's approval. Ask no human; send questions back to the orchestrator in your report.
+- Worktree (work only from its root): `the repository's root`, branch `task/luki-w-testach-z-przegladu`, base commit `0b23580bb4f643dfb52c66a7d6a27b1b8d60a5b1` (merge of PR #149 on `main`).
+- Pinned the-way: `.the-way` in the worktree, commit `bfb2e109735b5fff98802b8be0ff3c43c799262a`; its gitlink matches. Never use another copy.
+- Method: `.the-way/task-cycle/plan/SKILL.md` (`plan-task`). Read it whole; read a file it names only when the step that names it comes. You have no skill tool: a skill a file names by its name alone is the `SKILL.md` whose frontmatter `name:` is that name, read as a file under `.the-way`.
+- Stage and boundary: you write `plan.md` and `plan-size.md` and your report, and return before any slice is made. You write no code, no test, no foundation entry; you change no tracked file.
+- Plan path: `.runs/task-cycles/luki-w-testach-z-przegladu/plan.md`. Size report: `.runs/task-cycles/luki-w-testach-z-przegladu/plan-size.md`. Report path: `.runs/task-cycles/luki-w-testach-z-przegladu/reports/planner-report.md`.
+- Your directory for working copies: `.runs/planner/` (the ignored `.runs/` of the worktree).
+
+An agent of the cycle that makes a working copy to check something — a worktree of a commit, a
+clone, a script, a screenshot, a prepared input of a test — makes it in a directory of its own
+directly under the ignored `.runs/` of the task's worktree, the directory its handoff names; never
+in the system's temporary directory, in the scratch directory of a session or in the main checkout
+of the repository. The screenshot that a screenshot tool, such as the Playwright server, saves by
+itself under its session's directory is moved into the agent's directory and the original removed,
+except a screenshot that is shown to the human: that one goes where `task-cycle/change/ui_check.md`
+says, to the place the product's foundation settles for screenshots, and into the agent's directory
+only where no such place is settled. The files that a product's own tools and tests make by
+themselves are no working copy of the agent and stay outside this rule. Before the agent returns,
+each time it returns, it removes its copy — a worktree with `git worktree remove --force`, then
+`git worktree prune` — keeps in `reports/` beside its report what the report needs, and states in
+the report where each copy stood and that it was removed. Where a removal fails, the agent finishes
+all the same and names in the report the remainder, with its full path and the reason it stayed.
+
+## The task and the answers of step 4
+
+- Frozen task, whole: `.runs/task-cycles/luki-w-testach-z-przegladu/task.md` (status `ready for cycle`, independent task; 17 items of *To do*, one acceptance criterion, ten answered questions, three rows of *Settlements to record*, no questions carried to the cycle, no human action).
+- Two questions at start: *trust boundary* — yes (tests for, and possible repairs beside, `src/browser/sim/saved-game.ts`, `src/server/**`, `assets/sprites/**`, `deploy/**`, `compose.yaml`); *irreversible operation* — no. Mark each slice's *Risk* by the part map's list of trust boundaries; a slice that changes only tests and markers whose files are no boundary file is `none`.
+- Open design choice: none was found by the orchestrator. If you find one while reading the code, return `returned` as section 2 of your method says.
+- Reserved choice: none.
+- Route: planning, because the change spans all seven parts and item 7 alone is six separate diagnoses.
+
+## What the orchestrator asks of the plan beyond the method
+
+1. **Every item of *To do* (1-17), the acceptance criterion and the three settlement rows must be covered.** Cut along what a reviewer can judge alone — by part, by test file and by kind of work, not by item number. Items 1-6 and 8-10 and 15 are tests or markers; item 7 is six diagnoses, each with its own repair of the test or of the script where its cause lies; items 11, 12, 14 are foundation entries; item 16 changes `eslint.config.mjs` and possibly the files it newly covers; item 17 is one row of `guidelines/testing.md`.
+2. **Foundation entries.** List in *Foundation entries* every entry the task writes or changes: the departure for the `destroy` test (settlement 1: D-73 and `guidelines/testing.md`, plus the item 6 row of the recipe), the change of the method of `sprite-credits` to `test` (settlement 2), the environment fact of item 14 with its source citation and its *Rests on* link from `player-opaque-session-cookie` (settlement 3), the method and marker changes of the invariants of items 8-12 (`account-schema-lifecycle` withdrawn into *Withdrawn identifiers*, `account-database-schema` reworded, D-112's *Verification* without `account-schema-lifecycle`, the invariants that change method to `test`). `foundations/invariants.md` is one file: only one agent may write it at a time, so keep its changes in the *Foundation entries* stage or in slices that depend on each other, never in two slices that could run in either order. Slices that write tests and markers need those entries to exist first, or say in *Depends on* which slice writes the entry the marker cites.
+3. **The agents never run the gate.** `npm.cmd test` and `python -B .the-way/task-cycle/gate_times.py ...` are the orchestrator's alone. Name focused checks per slice (`python -B scripts/test.py <file>` for Python tests, `node --test <file>` or the repository's own way for a Node test — read `guidelines/testing.md` for the exact commands, and the first lines of `package.json` and `scripts/test.py`). The foundation check (`python -B .the-way/elements/common/foundation_check.py`) and the check of the instruction files (`python -B .the-way/instruction-files/check_instructions.py`) are focused checks that a slice changing the foundation or `guidelines/**` runs.
+4. **Item 7 and the acceptance criterion.** Each of the six tests gets its own diagnosis. The cause is *established*, not guessed: the plan names, per test, the repeat runs the executor makes (the acceptance criterion asks at least 30 separate runs of the test and, where the cause is not reproduced, 3 full gate runs under load). The executor makes the 30 separate runs as focused checks; **the 3 full gate runs are the orchestrator's** and happen after the slices are made — say in your report which tests may still need them, but do not plan a slice that runs the gate. A test whose cause cannot be reproduced stays unchanged and its slice's report says what was tried; the orchestrator writes the request's line for its next occurrence. Where a repair lies in a script or in product code outside tests (`deploy/**`, `src/server/**`, `scripts/**`, `compose.yaml`), mark the slice's *Risk* as a trust boundary. A test that depends on Docker may be run by the executor only where the guidelines or `scripts/` give a way; where Docker does not answer on this computer, the executor reports the check as not run.
+5. **Item 13** needs the Git-for-Windows bash on this computer (`the Git for Windows installation\bin\bash.exe`); the executor runs the six tests with it and writes the result — command, exit code, tests run and result — into its report, which the orchestrator copies into the cycle record; a failure is repaired in the slice.
+6. **Models.** The orchestrator runs on Sonnet 5.5. The strongest model the human allows is Opus: a slice marked `strongest` is dispatched with `model: opus`. Never write `fable`. Tests that must be shown to fail on a break (items 1-5, 8-10, 15) need an executor that can break the code deliberately and restore it exactly; set the *Model* per slice with its reason as the method says.
+7. **Size rule** (WAY-365): read the rule of size of `guidelines/coding.md` and its decision, and where a slice would add to a function or file over the threshold, begin with a moving slice as your method says.
+8. Several test files are large; the plan names for each slice the ranges the executor reads, found again by the name of the test case, not by line (the task's line numbers come from an older commit).
+
+## What to read
+
+Read whole: the frozen task; `.the-way/task-cycle/plan/SKILL.md`; `AGENTS.md` of the worktree; `guidelines/coding.md`; `guidelines/testing.md` (70 KB — it is the main source of the rules every slice's tests must follow); `foundations/part_map.md`; `foundations/glossary.md`.
+
+Foundation entries to read whole, by identifier, in `foundations/decisions.md` (find them by their heading `### D-NN`): D-73 and the decisions it lists as departures (D-74, D-75, D-76, D-77, D-78, D-79, D-82, D-163, D-235, D-273), D-382, D-112, D-271, and the questions of the section *Testing discipline* and *The gate, test tools and the local start* (headings only, opening whole each whose question bears on the slice). The orchestrator wrote an index of 169 decisions of the touched parts and sections at `.runs/orchestrator/index.md` (about 150 KB): use it as a locator for binding sentences and *Scope*, never read it whole. Invariants: read by identifier in `foundations/invariants.md`, each whole, every invariant the task names in items 5, 8-12, 14 and 15, and every invariant that a test you will assign a slice for already cites. Environment facts: `foundations/environment_facts.md` by search for the facts the invariants of items 11 and 14 rest on.
+
+Guidelines of the parts touched, by `product-guidelines/reading.md` (`.the-way/product-guidelines/reading.md`): the kind files of `guidelines/coding-<kind>.md` whose row of the index of `guidelines/coding.md` matches the files a slice changes. `guidelines/styleguide-browser-view.md` (93 KB) is read only where a slice changes a file of the part `browser-view` — tests of `tests/view/**` count; say in your report which slices need it.
+
+The code and the tests to read: `tests/transport.test.mjs`, `tests/http.test.mjs`, `tests/account-mail.test.mjs`, `tests/sim/*.test.mjs` named by the task, `tests/view/**` where the chronicle row and the pause of the wolf are tested, `tests/invariants/*` named by the task, `tests/deploy/*` named by the task, `eslint.config.mjs`, `.claude/hooks/**`, `.claude/skills/loop2-play/**`, `assets/sprites/` (list only), `tests/view/icons.test.mjs`. Read to cut slices, not to design code.
+
+## Return
+
+Return as section 5 of your method says: the status, the plan's path, a one-line check result naming what failed or was not run, and the report's path. The report ends with **Unread material:** and **Searches not found or unclear:** (each `none` where so), and names every reach beyond this handoff, every guideline found missing or uncertain, the relation of your order to the styleguide's example of the order of work (only if you read it), and each working copy.
