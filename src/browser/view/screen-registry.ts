@@ -189,14 +189,19 @@ export function createScreenRegistry(
     return living.get(entryOf(current))?.instance.element ?? null;
   }
 
+  /**
+   * The focus moves to the screen without scrolling the page: a screen taller than the window would
+   * otherwise be scrolled to its top edge, past the menu bar above it, which stays in sight.
+   */
   function focusShown(): void {
-    shownElement()?.focus();
+    shownElement()?.focus({ preventScroll: true });
   }
 
   /**
    * Moves keyboard focus to the screen that shows where it stands nowhere useful: on the body — the
    * link followed left the bar, or the browser's button moved nothing — or on a screen of the game
-   * that is hidden now, so the keyboard goes on from the screen the player sees.
+   * that is hidden now, so the keyboard goes on from the screen the player sees. The page does not
+   * scroll, as at `focusShown`.
    */
   function focusIfLost(): void {
     const active = document.activeElement;
@@ -205,7 +210,7 @@ export function createScreenRegistry(
       active === null ||
       active === document.body ||
       (element.contains(active) && shown?.contains(active) !== true);
-    if (lost) shown?.focus();
+    if (lost) shown?.focus({ preventScroll: true });
   }
 
   const port: ScreenPort = {

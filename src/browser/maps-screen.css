@@ -202,6 +202,14 @@
   align-items: flex-start;
 }
 
+/*
+ * The row „Program:” is no wider than its character's column, so the select list in it takes at most
+ * that width and cuts a long name of a program, as styles.css draws it, in place of widening the page.
+ */
+.maps-who-program {
+  max-width: 100%;
+}
+
 .maps-who-loop-line {
   margin: 0;
   color: var(--text);

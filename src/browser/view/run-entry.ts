@@ -235,6 +235,8 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
         screenState,
       );
       if (port.current().kind === "run") screenState.entered();
+      /** Whether the player is on this screen: set when it is placed, cleared when it is left. */
+      let here = false;
 
       return {
         element: runScreen.element,
@@ -248,12 +250,17 @@ export function createRunEntry(options: RunEntryOptions): ScreenEntry {
               take(setPaused(state, true));
           });
           screenState.left();
+          here = false;
         },
         // The window opens at every entering of the screen of an ended map run (D-368), which
         // the state of the screen holds and the screen reads, so that the window takes the focus
-        // on a screen that is there to take it.
+        // on a screen that is there to take it. At each entering the page goes to its top, so the
+        // menu bar stands in sight above the screen, whatever the screen left was scrolled to.
         placed(screen) {
-          if (screen.kind === "run") screenState.entered();
+          if (screen.kind !== "run") return;
+          if (!here) document.documentElement.scrollTop = 0;
+          here = true;
+          screenState.entered();
         },
         // Przejście, its program panel included, is given the state's map run while the state holds
         // one (D-281); without one it keeps what it showed, hidden, until the next send.

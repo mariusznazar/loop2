@@ -541,10 +541,12 @@ wiersza z takim tekstem, także nowego. Powód: wpis bez spacji nie ma gdzie si�
 złamać sam, więc bez tej reguły długie imię wypycha wiersz poza ekran.
 
 Dotyczy to także zdania, które taką nazwę albo taki adres wymienia. Wyjątek:
-lista programów jako natywne pole wyboru (`select`) ma szerokość swojej
-najdłuższej opcji, więc długa nazwa ją poszerza, a reguła jej nie obejmuje; jak
-taka lista ma się zachować (ucięcie wielokropkiem albo ograniczenie szerokości),
-nie jest tu rozstrzygnięte.
+lista wyboru (`select`) nie łamie nazwy, tylko ją ucina, bo natywne pole wyboru
+nie łamie tekstu. Lista nie jest szersza od wiersza, w którym stoi, a wiersz
+z listą nie jest szerszy od swojej kolumny: w kolumnie flex, która nie
+rozciąga swoich elementów, wiersz dostaje `max-width: 100%`. Nazwa wybranej
+pozycji, dłuższa od listy, kończy się wielokropkiem, a pełna nazwa stoi
+w rozwiniętych opcjach.
 
 ### Focus does not fall to the page
 
@@ -557,6 +559,18 @@ Gdy element, który trzyma fokus, znika z ekranu — zamknięta karta, zamknięt
 panel, wiersz albo przycisk, który po kliknięciu znika — ekran oddaje fokus
 elementowi, który stoi w jego miejscu albo najbliżej niego, nigdy stronie. Powód:
 fokus na stronie każe graczowi klawiatury przechodzić ekran od początku.
+
+### The menu bar stays in sight when the screen of a map run opens
+
+- **Decision:** none
+- **Invariant:** none
+- **Good:** Po „Wejdź” na ekranie Mapy i po „Wróć do przejścia” na pasku menu ekran przejścia otwiera się z paskiem menu w polu widzenia, a fokus klawiatury stoi na tym ekranie.
+- **Bad:** Fokus przeniesiony na ekran przejścia przewija stronę, tak że pasek menu wychodzi nad górną krawędź okna.
+
+Gdy otwiera się ekran przejścia, pasek menu stoi w polu widzenia: przeniesienie
+fokusu klawiatury na ten ekran nie przewija strony. Powód: strona przewinięta
+przy wejściu chowa pasek menu nad krawędzią okna, a z nim drogę do innych
+ekranów.
 
 ### Menu bar, the menu „Konto” and the list of programs
 
