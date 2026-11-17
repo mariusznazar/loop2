@@ -5207,7 +5207,7 @@ a change of D-40.
 The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311, D-349, D-370 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
 
 - **Scope:** browser-view, agent-workflow
-- **Based on:** none
+- **Based on:** playwright-firefox-webkit-releases
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a check of a change in Chromium at a page area of 1280 × 720 px; a change that keeps the content of Siedziba as wide as a window 1000 px wide, as D-280 gives it
@@ -5215,7 +5215,7 @@ The game works in the current releases of Chrome, Edge and Firefox on a computer
 - **Origin:** none
 
 *Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request; the decisions that already define the look of a narrower or a lower window bind what the game does there, so what is left unfixed is only what no decision defines. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions.
-*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and it is not known whether the tool installs with Firefox on this computer (it did not install with WebKit); no entry — every remark about Safari and about a narrow window stays without a measure.
+*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and the Firefox release installed for Playwright on this computer is older than the one Playwright CLI expects, so Firefox would need an installation first; no entry — every remark about Safari and about a narrow window stays without a measure.
 
 ## Maps: their content, time and solving
 

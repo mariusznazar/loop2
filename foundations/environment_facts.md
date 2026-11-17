@@ -957,6 +957,13 @@ Random-bytes 1.0.0's synchronous function returns the bytes that the function `r
 
 - **Source:** https://registry.npmjs.org/random-bytes/-/random-bytes-1.0.0.tgz § package/index.js, crypto — "var crypto = require('crypto')" · § randomBytesSync — "for (var i = 0; i < generateAttempts; i++) {" · "return crypto.randomBytes(size)" · "throw err"; read 2026-11-17
 
+## playwright-firefox-webkit-releases
+
+The Firefox and WebKit releases that Playwright holds on the author's computer, 1532 and 2311, are older than the releases, 1553 and 2368, that Playwright CLI 0.1.22 expects.
+
+- **Source:** reading: `(Get-ChildItem "$env:LOCALAPPDATA\ms-playwright" -Directory | Where-Object Name -Match '^(firefox|webkit)-').Name
+(Get-Content "$(npm root -g)\@playwright\cli\node_modules\playwright-core\browsers.json" -Raw | ConvertFrom-Json).browsers | Where-Object name -In 'firefox','webkit' | ForEach-Object { "$($_.name) $($_.revision)" }` on the author's computer, in Windows PowerShell 5.1.26100.9818, with npm 11.13.0 and Playwright CLI 0.1.22, as `playwright-cli --version` prints it, whose playwright-core is 1.64.0-alpha-1790635538000 — "firefox-1532" · "webkit-2311" · "firefox 1553" · "webkit 2368"; run 2026-11-17
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
