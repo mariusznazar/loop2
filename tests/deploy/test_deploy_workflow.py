@@ -103,12 +103,17 @@ class DeployWorkflow(unittest.TestCase):
             self.assertRegex(line, r"^\s+[A-Z_][A-Z0-9_]*:\s*\$\{\{\s*github\.sha\s*\}\}\s*$")
         text = code()
         self.assertRegex(text, r'ssh\b[^\n]*"\$\{?DEPLOY_SHA\}?"')
-        # no expression of any kind inside the run scripts
+        # no expression of any kind inside the run scripts: the value of the key `run:` and every
+        # line indented deeper than the key itself, whether the key opens a step (`- run:`) or not,
+        # and whether its script is a block, on one line or continued on the next lines
         in_run, indent = False, 0
         for line in lines:
             stripped = line.strip()
-            if re.match(r"^\s*run:\s*[|>]", line):
-                in_run, indent = True, len(line) - len(line.lstrip())
+            key = re.match(r"^(\s*(?:-\s+)?)run:(.*)$", line)
+            if key:
+                in_run, indent = True, len(key.group(1))
+                if "${{" in key.group(2):
+                    self.fail(f"expression inside a run script: {stripped}")
                 continue
             if in_run:
                 if stripped and len(line) - len(line.lstrip()) <= indent:
