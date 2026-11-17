@@ -307,7 +307,7 @@ export const SCENE_PROPS = {
 /**
  * The camp at the top of Siedziba, in the pixels of its picture: a band of one picture, the snow
  * clearing, with the campfire in the middle of it, the chest to the right of the fire and, to its left,
- * the characters that are in Siedziba, standing in a row away from the fire in the order of creation
+ * the characters at the camp, standing in a row away from the fire in the order of creation
  * (D-54). The clearing is the pack Pixel Crawler's snow ground composed with its pines and saplings,
  * as the forest of the scene is (D-314), in full light and with no tint (D-315), and as wide as the
  * widest content, 1344 px at twice its pixels: a narrower band shows its middle. The chest is one still

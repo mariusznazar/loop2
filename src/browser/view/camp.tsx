@@ -1,7 +1,7 @@
 /**
  * The camp at the top of Siedziba (D-389, D-272, D-43, D-04): a band over the screen's panel, the width of the
  * content and the height of its picture at twice its pixels, with the campfire in the middle, the chest
- * to the right of it and, to its left, the characters that are in Siedziba, in the order of creation
+ * to the right of it and, to its left, the characters at the camp, in the order of creation
  * and away from the fire. Its files, sizes and places come from `campDrawing`, the view names none. A
  * size is the picture's pixels at `PICTURE_PIXEL` times each; the stylesheet holds no length of a sprite.
  *
@@ -67,7 +67,7 @@ function Member({
   );
 }
 
-/** The camp of the game state: the characters in Siedziba, the fire and the chest, over the clearing. */
+/** The camp of the game state: the characters at the camp, the fire and the chest, over the clearing. */
 export function Camp({ state }: { state: GameState }) {
   const camp = campDrawing(state);
   const { background, fire, chest, members, gap, lift } = camp;
