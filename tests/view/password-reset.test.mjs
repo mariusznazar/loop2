@@ -17,6 +17,7 @@ const refusal = (status, code, message) => ({
 });
 
 test("the fragment's token is read as it stands, and any other fragment yields none", () => {
+  // invariant: page-address-fragment
   // decision: D-224 "The game page reads the token from the fragment of its address and sends it only with the form „Ustaw nowe hasło”, in a request meeting D-104."
   const cases = [
     ["a fragment with a token", `#reset-password=${TOKEN}`, TOKEN],
@@ -26,6 +27,7 @@ test("the fragment's token is read as it stands, and any other fragment yields n
     // Malformed: the key is there, so the server judges the token and refuses it.
     ["the key with an empty token", "#reset-password=", ""],
     ["a token not of the token's form", "#reset-password=a b", "a b"],
+    ["a percent-encoded token", "#reset-password=%41%2B", "%41%2B"],
     ["a second equals sign stays in the token", "#reset-password=a=b", "a=b"],
     ["the confirmation fragment", `#confirm-email=${TOKEN}`, null],
     ["the key not at the start", `#x&reset-password=${TOKEN}`, null],

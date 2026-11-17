@@ -26,6 +26,9 @@ The part draws the game's screens in the browser, sends the browser's requests t
 - **Trust boundary:** assets/icons/**
   assets/fonts/**
   assets/sprites/**
+  src/browser/view/screen-address.ts
+  src/browser/view/email-confirmation.ts
+  src/browser/view/password-reset.ts
 
 ## simulation
 
@@ -81,7 +84,7 @@ The part is the account and save server: it serves the built game, handles the H
   tests/invariants/test_loop2_one_serving_process.py
   tests/invariants/test_account_server_occupied_address.py
   tests/invariants/test_account_server_default_address.py
-- **Depends on:** browser-view · simulation · build-tools
+- **Depends on:** browser-view · build-tools
 - **Trust boundary:** src/server/**
 
 ## build-tools
@@ -103,8 +106,8 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   requirements-quality.in
   requirements-quality.txt
   .gitignore
+  .gitattributes
   README.md
-  tests/invariants/account_container_support.py
   tests/invariants/test_account_server_runtime.py
   tests/invariants/test_account_server_typecheck.py
   tests/invariants/test_application_build_output.py
@@ -122,7 +125,7 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
 
 ## agent-workflow
 
-The part directs and records the work performed on this repository, and holds the workflow of GitHub Actions that runs the one command of tests on every pull request into `main`, on Linux.
+The part directs and records the work performed on this repository, and holds the workflow of GitHub Actions that runs the one command of tests on every pull request into `main`, on Linux. It also holds the skill to play the game, which composes the game state it plays from functions of the simulation; that is why it may depend on the simulation.
 
 - **Files:** AGENTS.md
   CLAUDE.md
@@ -136,7 +139,7 @@ The part directs and records the work performed on this repository, and holds th
   guidelines/**
   src/browser/AGENTS.md
   .github/workflows/tests.yml
-- **Depends on:** product-foundation · deployment · build-tools
+- **Depends on:** product-foundation · deployment · build-tools · simulation
 - **Trust boundary:** .github/workflows/tests.yml
 
 ## product-foundation
@@ -160,11 +163,11 @@ when the log of the nightly backup shows no recent successful send of a backup.
 - **Files:** Dockerfile
   .dockerignore
   compose.yaml
-  .gitattributes
   .github/workflows/deploy.yml
   .github/workflows/check-address.yml
   deploy/**
   tests/deploy/**
+  tests/invariants/account_container_support.py
   tests/invariants/test_loop2_container_isolation.py
   tests/invariants/test_loop2_distinct_address.py
   tests/invariants/test_loop2_one_serving_process_container.py
@@ -179,6 +182,10 @@ when the log of the nightly backup shows no recent successful send of a backup.
   tests/invariants/test_account_save_backup_failure_notice.py
 - **Depends on:** browser-view · account-server · build-tools
 - **Trust boundary:** deploy/**
+  compose.yaml
+  .github/workflows/deploy.yml
+  Dockerfile
+  deploy/cloudflared.Dockerfile
 
 ## test-helpers
 

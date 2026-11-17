@@ -3217,7 +3217,7 @@ The link of a confirmation message is the configured public origin followed by `
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · samesite-strict-cookie · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-29
 - **Relations:** derives from D-152 · derives from D-104
-- **Verification:** invariants: email-confirmation-link. tests: the link of the message as the
+- **Verification:** invariants: email-confirmation-link · page-address-fragment. tests: the link of the message as the
   configured public origin, `/#confirm-email=` and 43 base64url characters alone on its line; the
   page sending the token before it checks the session, saying „Potwierdzanie adresu…” meanwhile,
   then „Adres e-mail potwierdzony.” in `positive` or „Odnośnik jest nieważny albo wygasł.” in
@@ -3428,7 +3428,7 @@ address and sends it only with the form „Ustaw nowe hasło”, in a request me
 - **Scope:** account-server, browser-view
 - **Based on:** uri-fragment-in-requests · https://raw.githubusercontent.com/OWASP/CheatSheetSeries/995524d4a18e64672c80c8e13869d29ef850bd43/cheatsheets/Email_Validation_and_Verification_Cheat_Sheet.md § Logging and Monitoring, Recommendations — "Never log verification, reset, or authentication tokens or full verification/reset URLs"; read 2026-10-30
 - **Relations:** derives from D-104 · derives from D-152 · derives from D-156
-- **Verification:** tests: the link of a password-reset message as the configured public origin,
+- **Verification:** invariants: page-address-fragment. tests: the link of a password-reset message as the configured public origin,
   `/#reset-password=` and 43 base64url characters, the account database holding the SHA-256 digest
   of its token; the page reading the token from the fragment, sending nothing when the form shows
   and the token with both passwords in the JSON body of a `POST` when the form is sent. An agent
@@ -4375,7 +4375,7 @@ apart from these, and after them the page opens Siedziba.
 - **Scope:** browser-view
 - **Based on:** uri-fragment-in-requests
 - **Relations:** derives from D-280
-- **Verification:** tests: the eight addresses in the fragment after `#`, each read as its screen,
+- **Verification:** invariants: page-address-fragment. tests: the eight addresses in the fragment after `#`, each read as its screen,
   written by it and opened at a reload, a program's and a map's by their number and identifier; the
   page writing and following them in the fragment; an address that leads to no existing screen
   opening the nearest one, a map run with none the screen Postać of its character, a program with

@@ -1395,6 +1395,26 @@ On the map Skraj lasu, a program of 21 rules in 5 groups that its test names, wr
 - **Part:** simulation
 - **Violated:** no
 
+## page-address-fragment
+
+The fragment of the page's address opens only a screen that D-281 names or the nearest existing one, and the token of an emailed link in that fragment goes unchanged into the body of the request of its own link and nowhere else, the server being the one that judges it.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-281 · D-156 · D-224
+- **Part:** browser-view
+- **Violated:** no
+
+## deploy-workflow-input
+
+The deployment workflow gives the script of its deployment step every value from outside the repository only as an environment variable, and the script's one SSH call sets strict host-key checking on its command line.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** recovered from code — `.github/workflows/deploy.yml`, the step "Deploy the commit on the server": its `env:` mapping is the one place where the secrets and `github.sha` stand, and its one `ssh` call carries `StrictHostKeyChecking=yes` on its command line
+- **Part:** deployment
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
