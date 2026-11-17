@@ -3792,8 +3792,8 @@ as refused as too large (D-208).
 - **Origin:** none
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
-seconds of a manual map run — 30 game minutes at 1×, up to 480 at 16×, a whole map run of Las from the
-sending of the character — at the cost of a request every 30 real seconds per player while a manual
+seconds of a manual map run — 30 game minutes at 1×, up to 480 at 16×, as many as the shortest map run
+that solves Las lasts, from the sending of the character — at the cost of a request every 30 real seconds per player while a manual
 map run passes. An earning loop takes no rhythm: a tab closed with its last save lost computes the
 game minutes since the save before by the catch-up, the same course at one earning loop, so earning
 loops save at the player's acts, after the ends of their map runs and at the hidden page; starting
@@ -3815,16 +3815,18 @@ player at a short fault of the server loses the last change; saving only at the 
 completion and a death, with no save while a manual
 map run passes — fewer requests, but the catch-up does not recompute a manual map run, so closing the
 tab in the middle of one takes it back to the sending
-of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
-minute at 16×; the 30-second rhythm for earning loops too — a tab left open for a day sends about 2880
+of the character, so the loss is as long as the map run: for the 480 game minutes of the shortest map
+run that solves Las, 8 real minutes at 1× and half a real minute at 16×, and more for a longer one; the 30-second rhythm for earning loops too — a tab left open for a day sends about 2880
 saves, which at one earning loop protect nothing, since the catch-up computes the same course;
 a save at each map run a catch-up ended — it sends what the last one sends; no save after a catch-up
 — map runs that ended stay unsaved; a save after any game minute of a catch-up — each reload sends,
 and two open tabs refuse each other (D-209); a button „Zapisz” — a player who forgets to click loses everything since the last
 click, and a new button with its states; the same moments with a save every 30 game minutes while a
 map run passes instead of every 30 real seconds — the same as every 30 real seconds at 1×, but at
-16× a request every less than 2 real seconds, 16 saves of about 80 KB together in the half minute of
-Las, while closing the tab takes at most 30 game minutes at every pace.
+16× a request every less than 2 real seconds, up to 16 saves of about 9.8 KB each, about 157 KB
+together, in the half minute of Las, measured as D-208 measures a save, by the product's own
+measurement, whose record is not open to a reader of the repository, while closing the tab takes at
+most 30 game minutes at every pace.
 
 ### D-208 — What does the player see of saving the game state?
 
