@@ -4948,7 +4948,7 @@ only once it is made, and colours of the specks and of the frost that enter the 
 source in the pixel of a named picture of a pack. The picture band at the top of Siedziba needs no pack beyond the one
 the scene stands on: Pixel Crawler holds a chest with fittings in the same style, so the chest is cut out of its
 sheet as the trees were, the clearing is composed of the same pictures as the forest, and the pack asks for no
-credit, so the game's credits stay as they are. The chest is one picture because how much it holds is said by
+credit of a game with no saxophone solo, so the game's credits stay as they are. The chest is one picture because how much it holds is said by
 the heading of the chest's section, not by the picture; accepted with it: one more cut from the pack's sheet.
 *Rejected:* for the chest of the picture band: an icon of game-icons.net drawn by a mask, as the icons over the mage's
 head are — a smooth drawing beside pixels, the reason this decision gives for refusing shapes the browser draws in

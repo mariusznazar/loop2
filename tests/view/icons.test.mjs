@@ -380,8 +380,9 @@ const SPRITES = fileURLToPath(
 
 /**
  * The three packs the scene's pictures come from (D-271) and whether the licence of each asks for a
- * credit: Pixel Crawler asks for none (environment fact pixel-crawler-terms), the other two are under
- * CC BY 3.0 (lpc-wolf-licence, smoke-fire-particle-licence).
+ * credit: Pixel Crawler asks for none but of a project with a saxophone solo, which the game has not
+ * (environment fact pixel-crawler-terms), the other two are under CC BY 3.0 (lpc-wolf-licence,
+ * smoke-fire-particle-licence).
  */
 const SPRITE_PACKS = {
   "Pixel Crawler": { asksForCredit: false },
