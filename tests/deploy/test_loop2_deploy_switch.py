@@ -89,7 +89,7 @@ class Success(DeploySwitchTestCase):
         # decision: D-10 "Deployment pins the official connector image by version and digest, uses HTTP/2 over IPv4, and waits for both application health and an active connector connection before reporting success"
         # decision: D-14 "loop2's containers, the application's and the connector's, are Docker containers"
         # decision: D-15 "No earlier image is kept"
-        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
+        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, logs and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         result = self.deploy()
         self.assertEqual(result.code, 0, result)
         compose_file = support.shell_path(self.fixture.checkout) + "/compose.yaml"
@@ -245,7 +245,7 @@ class NeverInTheOutputOrTheCommands(DeploySwitchTestCase):
 
     def test_no_down_no_other_project_no_unfiltered_prune(self):
         # decision: D-08 "The existing loop container remains untouched"
-        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, log and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
+        # decision: D-17 "A deployment of loop2 changes nothing on the host but loop2's own checkout, application and connector images and containers, its named database volume `loop2_accounts`, logs and lock, and the build cache and base images its builds add to the shared Docker store, which it never prunes"
         compose_file = support.shell_path(self.fixture.checkout)
         for result in self.runs():
             for call in result.calls["docker"]:
