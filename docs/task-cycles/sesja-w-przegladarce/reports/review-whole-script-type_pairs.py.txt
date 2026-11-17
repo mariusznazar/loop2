@@ -1,0 +1,24 @@
+import ast
+import re
+import sys
+
+src, out = sys.argv[1], sys.argv[2]
+rows = []
+with open(src, encoding="utf-8") as h:
+    next(h)
+    for line in h:
+        a, b, props = ast.literal_eval(line.strip())
+        la = re.split(r"[\s>+~]+", a.strip())[-1]
+        lb = re.split(r"[\s>+~]+", b.strip())[-1]
+        ta = re.match(r"^[a-z][a-z0-9]*", la)
+        tb = re.match(r"^[a-z][a-z0-9]*", lb)
+        ca = set(re.findall(r"\.([\w-]+)", la))
+        cb = set(re.findall(r"\.([\w-]+)", lb))
+        if ca & cb:
+            continue
+        if (ta and tb and ta.group(0) == tb.group(0)) or (not ca and not cb):
+            rows.append((a, b, props))
+with open(out, "w", encoding="utf-8", newline="\n") as h:
+    for r in rows:
+        h.write(f"{r}\n")
+print(len(rows))

@@ -1,0 +1,42 @@
+// A working copy of the cycle: a new game with one character, "Agent", whose Understanding holds
+// what Skraj lasu shows (sticks, berries, the campfire, lighting, the chill) and the wolf, and no
+// program rule. Prints the saved document. Run in the repository's root after `npm run build`.
+import { pathToFileURL } from "node:url";
+import { join } from "node:path";
+
+const sim = join(process.cwd(), "dist", "browser", "sim");
+const load = (name) => import(pathToFileURL(join(sim, name)).href);
+const { newGame, createCharacter, send, withSaveTime } = await load("game.js");
+const { discover } = await load("understanding.js");
+const { savedGame, loadSavedGame } = await load("saved-game.js");
+
+let state = createCharacter(newGame(), "Agent").state;
+const run = send(state, { mapId: "forestEdge", characterId: 1 }, 0).state.run;
+const hold = (item) => ({ ...run.character.backpack, [item]: 1 });
+function finished(kind, resource) {
+  const action =
+    kind === "gather" ? { kind, resource } : kind === "craft" ? { kind: "craftCampfire" } : { kind };
+  return { kind: "activityFinished", minute: 1, activity: { kind: "rule", ruleId: 1, action } };
+}
+const tiles = run.tiles
+  .filter((tile) => Object.keys(tile.stock).length > 0)
+  .map((tile) => ({ kind: "tileRevealed", minute: 1, at: tile.at }));
+const steps = [
+  [[], { ...run, body: { ...run.body, temperature: -50 } }],
+  [[{ kind: "attacked", minute: 1, creature: "wolf" }], run],
+  [[finished("explore"), ...tiles], run],
+  [[finished("gather", "stick")], { ...run, character: { ...run.character, backpack: hold("stick") } }],
+  [[finished("gather", "berry")], { ...run, character: { ...run.character, backpack: hold("berry") } }],
+  [[finished("craft")], { ...run, campfires: [...run.campfires, { at: { col: 1, row: 1 }, minutesLeft: 0 }] }],
+  [[finished("lightCampfire")], { ...run, practice: { ...run.practice, flameSpell: 1 } }],
+];
+let understanding = state.understanding;
+for (const [events, after] of steps)
+  understanding = discover(understanding, run, after, events)?.understanding ?? understanding;
+state = { ...state, understanding };
+
+const saved = savedGame(withSaveTime(state, Date.now()));
+const check = loadSavedGame(JSON.parse(JSON.stringify(saved)));
+process.stderr.write(`load: ${check.kind ?? Object.keys(check).join(",")}\n`);
+process.stderr.write(`actions: ${understanding.actions.join(",")}\nconditions: ${understanding.conditions.join(",")}\n`);
+process.stdout.write(`${JSON.stringify(saved)}\n`);

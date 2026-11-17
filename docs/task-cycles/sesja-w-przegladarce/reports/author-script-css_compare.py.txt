@@ -1,0 +1,105 @@
+"""Working copy: compares the rules of the game's stylesheets before and after the split of PR #145.
+
+Reads each commit's stylesheets in the order src/browser/index.html links them (by git show), drops
+comments, splits them into rules with their @media or @keyframes context, and compares the multisets
+of (context, selector, declarations). Writes the result to the file named as its last argument.
+"""
+
+import re
+import subprocess
+import sys
+from collections import Counter
+
+
+def show(commit, path):
+    return subprocess.run(
+        ["git", "show", f"{commit}:{path}"], capture_output=True, text=True, encoding="utf-8", check=True
+    ).stdout
+
+
+def sheets(commit):
+    html = show(commit, "src/browser/index.html")
+    names = re.findall(r'<link[^>]+href="/([^"]+\.css)"', html)
+    return [(n, show(commit, f"src/browser/{n}")) for n in names]
+
+
+def rules(text):
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    out = []
+
+    def walk(body, context):
+        i = 0
+        while i < len(body):
+            j = body.find("{", i)
+            if j < 0:
+                break
+            head = " ".join(body[i:j].split())
+            depth, k = 1, j + 1
+            while depth:
+                depth += {"{": 1, "}": -1}.get(body[k], 0)
+                k += 1
+            inner = body[j + 1 : k - 1]
+            if head.startswith("@media") or head.startswith("@keyframes") or head.startswith("@supports"):
+                walk(inner, context + (head,))
+            else:
+                decls = tuple(sorted(" ".join(d.split()) for d in inner.split(";") if d.strip()))
+                for selector in head.split(","):
+                    out.append((context, " ".join(selector.split()), decls))
+            i = k
+
+    walk(text, ())
+    return out
+
+
+def collect(commit):
+    every = []
+    for name, text in sheets(commit):
+        every.extend(rules(text))
+    return every
+
+
+before_commit, after_commit, output = sys.argv[1], sys.argv[2], sys.argv[3]
+before, after = collect(before_commit), collect(after_commit)
+cb, ca = Counter(before), Counter(after)
+lines = [
+    f"before {before_commit}: sheets {[n for n, _ in sheets(before_commit)]}, rules {len(before)}",
+    f"after {after_commit}: sheets {[n for n, _ in sheets(after_commit)]}, rules {len(after)}",
+    f"only before: {sum((cb - ca).values())}",
+    f"only after: {sum((ca - cb).values())}",
+]
+for item in (cb - ca).elements():
+    lines.append(f"- {item}")
+for item in (ca - cb).elements():
+    lines.append(f"+ {item}")
+order_before = [r[:2] for r in before]
+order_after = [r[:2] for r in after]
+moved = 0
+pos_a = {}
+for idx, key in enumerate(order_after):
+    pos_a.setdefault(key, idx)
+seq = [pos_a.get(k) for k in order_before if k in pos_a]
+moved = sum(1 for a, b in zip(seq, seq[1:]) if b < a)
+lines.append(f"places where the order of two neighbouring rules is reversed: {moved}")
+with open(output, "w", encoding="utf-8", newline="\n") as handle:
+    handle.write("\n".join(lines) + "\n")
+print(len(lines))
+
+# Pairs whose order the split reversed and that set the same property: only these can change the look.
+first_a = {}
+for idx, r in enumerate(after):
+    first_a.setdefault(r, idx)
+props = lambda r: {d.split(":")[0].strip() for d in r[2]}
+pairs = []
+uniq = list(dict.fromkeys(before))
+for i, r1 in enumerate(uniq):
+    for r2 in uniq[i + 1 :]:
+        if first_a[r2] < first_a[r1] and r1[0] == r2[0]:
+            shared = props(r1) & props(r2)
+            last = lambda sel: set(re.findall(r"\.([\w-]+)", re.split(r"[\s>+~]+", sel.strip())[-1]))
+            if shared and (last(r1[1]) & last(r2[1])):
+                pairs.append((r1[1], r2[1], sorted(shared)))
+with open(output, "a", encoding="utf-8", newline="\n") as handle:
+    handle.write(f"reversed pairs that set a same property, in the same context, whose last compound shares a class: {len(pairs)}\n")
+    for p in pairs:
+        handle.write(f"  {p}\n")
+print(len(pairs))

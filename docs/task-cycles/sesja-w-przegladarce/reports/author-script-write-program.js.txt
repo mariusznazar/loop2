@@ -1,0 +1,41 @@
+// Working copy: drives the game's program editor through its own controls, one rule at a time,
+// as a player would click: first „Usuń” on every rule of the program shown, then each rule below
+// through „+ reguła” and the rule panel. Body for `playwright-cli run-code`.
+async (page) => {
+  const rules = [
+    { cond: "Z dala od — ognisko", action: "Idź — ognisko" },
+    { cond: "Temperatura poniżej", num: "35.8", action: "Zapal — ognisko" },
+    { cond: "Sytość poniżej", num: "60", action: "Zjedz — jagoda" },
+    { cond: "Zawsze", action: "Wytwórz — ognisko" },
+    { cond: "Zapas poniżej", num: "1", condTarget: "Jagoda", action: "Zbierz", actTarget: "Jagoda" },
+    { cond: "Zapas poniżej", num: "8", condTarget: "Patyk", action: "Zbierz", actTarget: "Patyk" },
+    { cond: "Zapas poniżej", num: "3", condTarget: "Jagoda", action: "Zbierz", actTarget: "Jagoda" },
+    { cond: "Zawsze", action: "Eksploruj" },
+  ];
+  const editor = page.locator(".program-panel:visible").first();
+  for (;;) {
+    const remove = editor.locator(".rule-list-row").getByRole("button", { name: "Usuń" });
+    if ((await remove.count()) === 0) break;
+    await remove.first().click();
+  }
+  const log = [];
+  const panel = () => editor.getByRole("region", { name: /^Reguła/ }).last();
+  const cell = (name) =>
+    panel().getByRole("button", { name: new RegExp(`^${name}( |$|\\()`) }).first();
+  for (const rule of rules) {
+    await editor.getByRole("button", { name: "+ reguła" }).last().click();
+    await cell(rule.cond).click();
+    if (rule.num !== undefined) {
+      const field = panel().getByRole("spinbutton", { name: "Liczba" });
+      await field.fill(rule.num);
+      await field.press("Enter");
+    }
+    if (rule.condTarget) await cell(rule.condTarget).click();
+    await cell(rule.action).click();
+    if (rule.actTarget) await cell(rule.actTarget).click();
+    log.push(await panel().getByRole("heading").first().textContent());
+    await panel().getByRole("button", { name: "Zamknij panel" }).click();
+  }
+  const rows = await editor.locator(".rule-list-row").allInnerTexts();
+  return { log, rows: rows.map((r) => r.replace(/\s+/g, " ")) };
+}

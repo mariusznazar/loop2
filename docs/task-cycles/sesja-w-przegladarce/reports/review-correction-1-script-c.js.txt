@@ -1,0 +1,21 @@
+async (page) => {
+  const m = () => page.evaluate(() => {
+    const a = document.activeElement;
+    return { y: Math.round(scrollY), bar: Math.round(document.querySelector("header").getBoundingClientRect().top), h: document.documentElement.scrollHeight, hash: location.hash, focus: a ? a.tagName.toLowerCase() + "." + [...a.classList].join(".") : null };
+  });
+  const btn = (re) => page.evaluate((src) => { const r = new RegExp(src); const b = [...document.querySelectorAll(".run-screen button")].find((x) => r.test(x.textContent.trim()) && x.offsetParent !== null); if (!b) return "none"; b.click(); return b.textContent.trim(); }, re);
+  const out = [];
+  await page.evaluate(() => window.scrollTo(0, 9999));
+  await page.waitForTimeout(3000);
+  out.push(["run scrolled, 3 s of play", await m()]);
+  out.push(["click", await btn("^Pauza$")]);
+  await page.waitForTimeout(500);
+  out.push(["paused", await m()]);
+  out.push(["click", await btn("^Wznów$")]);
+  await page.waitForTimeout(1500);
+  out.push(["resumed", await m()]);
+  out.push(["click", await btn("^Zakończ$")]);
+  await page.waitForTimeout(600);
+  out.push(["after Zakończ (no unsaved changes)", await m()]);
+  return JSON.stringify(out);
+}
