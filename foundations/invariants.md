@@ -407,12 +407,12 @@ whatever their amounts, at every game minute, whatever programs they run under.
 
 ## eslint-source-rules
 
-Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
+Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, and every JavaScript file under `.claude/hooks/`, `.claude/skills/loop2-play/` and `.agents/skills/loop2-play/`, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
 
 - **Method:** test
 - **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Derives from:** D-29
-- **Part:** browser-view · simulation · account-server · build-tools · deployment
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
 - **Violated:** no
 
 ## ruff-source-rules
