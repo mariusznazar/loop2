@@ -517,13 +517,21 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
      containers a deployment replaced lies in `/var/log/loop2-app.log` and its generations
      (D-355). The log of the running container holds nothing from before the restore, so it is not
      searched. Read the log after step 6, whose deployment appended the log of the stopped
-     container to the file just before it replaced that container. First
-     `tail -n 20 /var/log/loop2-deploy.log`: a line `warning:` about the dump of that deployment
-     means the lines of the stopped container are lost, and its period, from the deployment before
-     it, is unknown: the log names none of the accounts reset, blocked or unblocked then, so write
-     that down and treat that period as the second part does. Then search the file and its generations by fixed strings, bounded
-     per file (`-m` limits each file's matches; a name that does not exist gives `No such file`,
-     which is no failure):
+     container to the file just before it replaced that container. First look for a deployment
+     since the backup whose dump failed, by a bounded fixed-string search of the deploy log:
+
+     ```sh
+     grep -F -m 50 'warning: the dump of the log of both loop2 services' /var/log/loop2-deploy.log
+     ```
+
+     Each line printed begins with its UTC time. A line later than the time of the backup (below)
+     belongs to a deployment, step 6's included, that went on after a failed dump and so kept
+     nothing of the log of the container it replaced: the period of that container, from the
+     deployment before it to that deployment, is unknown, and the log names none of the accounts
+     reset, blocked or unblocked then. Write each such period down and treat it as the second part
+     does. Then search the file and its generations by fixed strings, bounded per file (`-m`
+     limits each file's matches; a name that does not exist gives `No such file`, which is no
+     failure):
 
      ```sh
      grep -F -m 500 -e '"event":"password-set"' -e '"event":"account-blocked"' -e '"event":"account-unblocked"' /var/log/loop2-app.log /var/log/loop2-app.log.1
@@ -534,12 +542,17 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
      run appended has its UTC time first. Take the lines whose time is later than the time of
      the backup and earlier than step 6 (the application was stopped from step 3, so nothing newer
      than that stands under the header of the deployment of step 6). The time of the backup is the
-     time of the `made:` line of its weekday file in `/var/log/loop2-backup.log`, in UTC like the
-     log; where the log holds none, the file's time of step 1, read against the server's clock
-     (`date`). When in doubt take the earlier time: a line repeated for nothing costs a repeated
-     reset or block, a line missed leaves an account as the backup had it. For each account take
-     its `password-set` lines as one reset, and of its `account-blocked` and `account-unblocked`
-     lines only the last one.
+     time of the `start` line, in `/var/log/loop2-backup.log` (UTC like the other logs), of the
+     run whose `made:` line names the weekday file, is followed by `end: sent` and whose time
+     agrees with the file's time of step 1 (the `made:` line itself stands after the copy was
+     taken, and a night whose send failed has one for a file that Strych does not hold); where the
+     log holds none, the file's time of step 1, read against the server's clock (`date`). When in
+     doubt take the earlier time: a line repeated for nothing costs a repeated reset or block, a
+     line missed leaves an account as the backup had it. For each account take its `password-set`
+     lines as one reset, and of its `account-blocked` and `account-unblocked` lines only the latest
+     by its time, not by its place in the output: the file is printed before its older copy `.1`,
+     and a line of the human's `account-block` run is written when the command runs, before the
+     lines of the container for the same period, which come with the next deployment.
 
      Read the addresses of those accounts from the restored database with one command that only
      reads, run in the game container. It opens the database read-only and prints each number
@@ -553,7 +566,7 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
      Put the numbers in place of `<number>`. The addresses stay on that screen and out of notes,
      requests, logs and chat. Then, for each account: with a `password-set` line, tell its holder
      to reset the password again with „Nie pamiętam hasła” on the login card, because the old
-     password works again; where the last of its two kinds of line is `account-blocked`, block it
+     password works again; where the latest of its two kinds of line is `account-blocked`, block it
      again, and where it is `account-unblocked`, unblock it again (the commands in "Blocking a
      player account" in `SKILL.md`, which the owner panel does as well). A block or an unblock
      made with the plain command, with no line written to the file, is not in the log: the
