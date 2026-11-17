@@ -1056,7 +1056,7 @@ How the full gate runs its stages, Docker and the test tools, what the local sta
 
 ### D-49 — Which port does a loop2 test give the server it starts?
 
-Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port. The one exception is a single test file of the default address, which starts the server with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set in one case for each startup account-server-default-address names, wholly unconfigured outside production and fully configured with valid settings. A test giving `LOOP2_LISTEN_PORT` a value the server is to reject before it listens, and a server started inside a container a test runs, fall outside this rule.
+Every start of the loop2 server process by a loop2 test on the machine that runs the tests gives the server, in `LOOP2_LISTEN_PORT`, a port the system names free at that start, never a fixed port. The one exception is a single test file of the default address, which starts the server with neither `LOOP2_LISTEN_HOST` nor `LOOP2_LISTEN_PORT` set in one case for each startup `account-server-default-address` names, wholly unconfigured outside production and fully configured with valid settings. A test giving `LOOP2_LISTEN_PORT` a value the server is to reject before it listens, and a server started inside a container a test runs, fall outside this rule.
 
 - **Scope:** account-server, build-tools, deployment, test-helpers
 - **Based on:** node-listen-port-zero
@@ -2594,7 +2594,8 @@ The session cookie uses SameSite=Strict, and every state-changing route requires
   stored or moved; a stored game text of at most 65 536 bytes counted after re-serializing, a larger
   one refused with nothing stored, and neither the table of saved game states nor that of previous
   saves holding a text over 65 536 bytes; every route the application answers with a method other
-  than GET and HEAD listed by a case that checks these guards on it.
+  than GET and HEAD found on the list of guarded routes that the case of these guards holds, a
+  route off that list failing the case, as does a route on it that the application lacks.
 - **Origin:** none
 
 *Rationale:* An explicit expected origin and JSON boundary constrain state changes made with a browser cookie; clients that omit the origin are refused, and valid-looking content still needs field checks. The save route takes a whole saved game state, which grows with what later work adds to the game state, so it takes a limit of its own, while the other routes keep the small one their bodies need; at the full stored limit a thousand accounts take about 65 MB in each copy of the database, and the place for copies of the database holds about three such copies, so with that many players it would have to hold fewer copies or move; the previous save adds a second such document per player, which doubles those figures at the full limit.
@@ -4887,8 +4888,9 @@ frost by at least 3:1 against the snow it lies on.
   the files of the smaller flame, of the mage's death, of the wolf and of the camp's clearing and
   chest holding pixels alone; the chest of the camp one still picture, the same empty and full; the
   credit line of the pack LPC Wolf naming its licence CC BY 3.0; every picture file of the sprites
-  assigned to the pack it comes from, and every such pack whose licence asks for a credit having a
-  line among the game's credits; the frost's thickness in whole
+  having an assignment to a pack in the table of its test, which does not judge whether the
+  assignment is right, and every pack that table assigns a file to, where its licence asks for a
+  credit, having a line among the game's credits; the frost's thickness in whole
   pixels of the scene, its pixel a part of the frame's width and height, and the specks of a
   completion whole pixels of the scene on its grid, rising by whole pixels over the open snow alone;
   the frost's outline standing out by at least 3:1 from the snow measured under every tint. For where
@@ -4960,8 +4962,7 @@ tools name as their main problem, and the pixels need correcting by hand; any ot
 wider choice, but another palette and scale, new licences and more credits; for the dust of a miss:
 the smoke of Pixel Crawler — it cannot be seen on the
 ground; particles of single pixels in a brown that stands out from the ground — barely visible; a
-cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only at
-the request; any shape CSS draws in the scene in a colour of a token — smooth shapes of CSS beside
+cloud drawn by hand from the pixels of Pixel Crawler — hand pixel work whose look is judged only once it is made; any shape CSS draws in the scene in a colour of a token — smooth shapes of CSS beside
 pixels break the one pixel style; CSS drawing only the layers and the plaque, with the specks taken
 from the packs — the missing specks would have to be made from the pixels of another sheet; to wait
 with the scene until the packs of effects and the tools for pixel scenes are explored — the work on

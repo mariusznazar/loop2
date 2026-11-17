@@ -95,7 +95,7 @@ def docker_run(*arguments, timeout=COMMAND_TIMEOUT):
 
 class AccountsSurviveContainerReplacement(unittest.TestCase):
 
-    def test_replaced_container_keeps_accounts_and_sessions(self):
+    def test_replaced_container_keeps_accounts_sessions_and_saved_game_states(self):
         # invariant: account-save-durable-storage
         # decision: D-17 "The tunnel token, session signing and SMTP password files are provisioned by the human outside the checkout and mounted read-only only to their respective consumers under D-13, while the application alone mounts `loop2_accounts` at `/app/data` for `/app/data/accounts.sqlite`, with its initial directory owned by uid/gid 1000"
         # decision: D-205 "The account and save server stores player accounts and each player's complete saved game state in a SQLite database file on persistent local storage outside the replaceable application container layer"
