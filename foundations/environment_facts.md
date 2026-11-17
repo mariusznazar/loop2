@@ -365,9 +365,9 @@ Express-session 1.19.0 signs the session cookie with the first configured secret
 
 ## node-sqlite-database
 
-Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, parameterizable prepared statements, explicit connection closing and an asynchronous `backup()` function that transmits a positive number of pages in each batch, 100 by default, that calls an optional `progress` callback after each backup step with the remaining and the total pages, and that restarts on mutations from other connections.
+Node.js 24.21.0 exposes SQLite through the built-in node:sqlite module with synchronous DatabaseSync operations, a busy timeout, an option that opens the database in read-only mode and fails when the database does not exist, parameterizable prepared statements, explicit connection closing and an asynchronous `backup()` function that transmits a positive number of pages in each batch, 100 by default, that calls an optional `progress` callback after each backup step with the remaining and the total pages, and that restarts on mutations from other connections.
 
-- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection." · § sqlite.backup(sourceDb, path[, options]) — "A promise that fulfills with the total number of backed-up pages upon completion, or rejects if an error occurs." · "Positive number of pages to be transmitted in each batch of the backup. Default: 100." · "An optional callback function that will be called after each backup step." · "with remainingPages and totalPages properties, describing the current progress of the backup operation." · "This method makes a database backup." · "However, mutations from other connections will cause the backup process to restart."; read 2026-10-31
+- **Source:** https://raw.githubusercontent.com/nodejs/node/955266bfdd854cd280dffd47548673914484e4c0/doc/api/sqlite.md § Class: DatabaseSync — "All APIs exposed by this class execute synchronously." · § new DatabaseSync, timeout — "The busy timeout in milliseconds." · § new DatabaseSync, readOnly — "If true, the database is opened in read-only mode." · "If the database does not exist, opening it will fail." · § Class: StatementSync — "Prepared statements are parameterizable" · § database.close — "Closes the database connection." · § sqlite.backup(sourceDb, path[, options]) — "A promise that fulfills with the total number of backed-up pages upon completion, or rejects if an error occurs." · "Positive number of pages to be transmitted in each batch of the backup. Default: 100." · "An optional callback function that will be called after each backup step." · "with remainingPages and totalPages properties, describing the current progress of the backup operation." · "This method makes a database backup." · "However, mutations from other connections will cause the backup process to restart."; read 2026-11-17
 
 ## fetch-same-origin-credentials
 
@@ -933,12 +933,6 @@ A command hook of Claude Code given `args` starts `command`, resolved as an exec
 
 - **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § Exec form and shell form — "Exec form runs when args is present. Claude Code resolves command as an executable on PATH and spawns it directly with args as the argument vector. There is no shell, so each args element is one argument exactly as written, and path placeholders like ${CLAUDE_PLUGIN_ROOT} are substituted into command and into each args element as plain strings." · "Both forms support the same path placeholders, and both export them as the environment variables CLAUDE_PROJECT_DIR, CLAUDE_PLUGIN_ROOT, and CLAUDE_PLUGIN_DATA on the spawned process, so a script can read process.env.CLAUDE_PLUGIN_ROOT regardless of how it was launched." · "The node plus script-path pattern works on every platform because node.exe is a real binary." · § Reference scripts by path — "${CLAUDE_PROJECT_DIR}: the project root where the session started."; read 2026-11-16
 
-## git-path-patterns
-
-Git matches a path pattern of an attributes file by the rules of `.gitignore` patterns, except that a negative pattern is forbidden and a pattern that matches a directory does not match the paths inside it.
-
-- **Source:** https://git-scm.com/docs/gitattributes/2.55.0 § DESCRIPTION — "The rules by which the pattern matches paths are the same as in .gitignore files (see gitignore[5]), with a few exceptions:" · § DESCRIPTION — "negative patterns are forbidden" · § DESCRIPTION — "patterns that match a directory do not recursively match paths inside that directory (so using the trailing-slash path/ syntax is pointless in an attributes file; use path/** instead)"; read 2026-11-16
-
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
@@ -955,3 +949,4 @@ Git matches a path pattern of an attributes file by the rules of `.gitignore` pa
 | playwright-mcp-persistent-profile | withdrawn: no decision is based on it and no invariant rests on it | playwright-mcp-default-profile-sharing |
 | playwright-cli-workspace-directory | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-workspace-lookup |
 | playwright-cli-sessions-per-workspace | withdrawn: no decision is based on it and no invariant rests on it | playwright-cli-session-separation |
+| git-path-patterns | withdrawn: no decision is based on it and no invariant rests on it | none |

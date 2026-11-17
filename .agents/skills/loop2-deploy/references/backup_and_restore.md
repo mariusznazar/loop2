@@ -134,8 +134,9 @@ script with `bash -n`, then `install` (see "Installing a script from an exact co
 7. Install `/usr/local/bin/loop2-backup` from `deploy/loop2-backup` at the commit, root 0755.
    Check with `cmp`.
 8. In the test account on the public game, give a character or a program a name to recognise,
-   wait for the automatic save, then reload the page: the name is back. Write the name down; it
-   is the marker of the restore trial. Do this before any run whose backup the trial may use.
+   wait for the automatic save, then reload the page: the name is back. Write the name down with
+   the day and hour it was saved; it is the marker of the restore trial and of step 7 of
+   "Restoring over the server's database". Do this before any run whose backup the trial may use.
 9. Run `/usr/local/bin/loop2-backup` by hand as root, then again. The log shows success twice
    with the same weekday file; the second run shows that Strych accepts a file over an older
    one.
@@ -265,9 +266,14 @@ What the undoing does to access:
 - A restore from before a password reset brings back the old password, and the sessions the reset
   ended (D-138) are valid again. Whoever knows the old password can sign in, and a reset made to
   cut someone off from an account no longer does. Step 8 of "Restoring over the server's
-  database" has the owner of such an account reset it again.
+  database" finds such resets in the game's log and has the holder of each account reset it again.
 - A restore from before a block brings back the account unblocked, together with the sessions
   the block deleted (D-137). Step 8 blocks it again.
+- A restore from before an unblock brings back the account blocked, and its holder cannot sign in
+  until it is unblocked again. Step 8 unblocks it again.
+- A restore from before a change of the owner role (D-410) or of the previous-save privilege
+  (D-400) brings back the role or the privilege as the backup had it: an account that lost it has
+  it again, and one that was given it since is without it. Step 8 gives or takes it again.
 - A restore signs nobody out of what the backup holds. No step ends all sessions, because the old
   password would let the person sign in again.
 
@@ -295,7 +301,7 @@ not recognized).
 A change of `SAVED_GAME_VERSION` erases the marker from the test account's saved game state: the
 game discards a saved game state of another version and starts a new game (D-96). Before the next
 trial, give a new marker as in step 8 of "Installing and reinstalling", let the game save it, write
-it down, and take the backup for the trial from a night after that.
+it down with its day and hour, and take the backup for the trial from a night after that.
 
 1. Make a private folder and enter it, and work in it to the end:
 
@@ -397,7 +403,9 @@ Not tried: the way back, a second attempt after a failed one, the old key of ste
 `-wal` and `-shm` in step 4, a password reset or a block redone in step 8, `rsync` exit 23, a
 backup of a newer schema than the running code, the `( umask 077; … )` subshells of step 2, of
 step 2 for the old key, and of the secrets file in step 3 of "With no server", and the path "With
-no server". These paths stay untried as an accepted cost (D-234).
+no server". Also never run on the server: the search of the game's log and the command that reads
+the addresses in step 8, and the two cases of step 7 about the marker. These paths stay untried as
+an accepted cost (D-234).
 
 The private directory of step 1 is `/root/loop2-restore`. It lies outside `/srv/loop2` on purpose:
 the deployment of step 6 runs `git clean -ffdx` in `/srv/loop2` and would erase anything left
@@ -492,19 +500,110 @@ deploys. If a deployment started anyway, wait for its `deployed` or failure line
    fails with exit 8.
 7. Check: the deployment ends with `deployed`, the public page loads, the test account logs in
    and its marker is there. The marker is the name given to a character or a program in the test
-   account in step 8 of "Installing and reinstalling" and written down last. If it was not
-   written down, log in and check that the test account holds a saved game state the operator
-   recognises from before the backup's time. Only when the check passes, remove the whole
-   directory: `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go
-   the way back below.
+   account in step 8 of "Installing and reinstalling" and written down last before the time of the
+   backup being restored, not the one written down last: a marker saved after that time is not in
+   the backup. If none was written down before that time, log in and check that the test account
+   holds a saved game state the operator recognises from before the backup's time. One case passes
+   with no marker: a backup made before the last change of `SAVED_GAME_VERSION` (see "Restoring")
+   holds saves of the earlier version, which the game discards. The check passes when, after the
+   login, the game starts a new game and shows its own warning „Zapis pochodził z innej wersji gry
+   i nie dał się wczytać. Zaczynasz od nowa.” above it; the missing marker is then no reason to go
+   the way back. Only when the check passes, remove the whole directory:
+   `rm -r /root/loop2-restore`, the same day. If the check fails, do not remove it; go the way
+   back below.
 8. Write down what was lost: everything after the backup's time. Then undo what the restore
-   gave back to people:
-   - Whoever is known to have reset a password since the backup resets it again with „Nie
-     pamiętam hasła” on the login card, because the old password works again; today that is
-     the operator's own account. This instruction has no way to find the other accounts, so it
-     names none.
-   - Block again each account that was blocked since the backup (the command in "Blocking a
-     player account" in `SKILL.md`), because the restore brought it back unblocked.
+   gave back to people, in two parts. The first needs the game's log of this server and has no
+   place after a restore on a new one ("With no server" says so); the second is made in every case.
+   - **The accounts the log names (D-360).** The game writes a line with the number of the
+     account, never its address, for each password reset (`"event":"password-set"`), block
+     (`"event":"account-blocked"`), unblock (`"event":"account-unblocked"`), owner role given
+     (`"event":"account-owner-granted"`) or taken (`"event":"account-owner-revoked"`) and
+     previous-save privilege granted (`"event":"account-previous-save-granted"`) or revoked
+     (`"event":"account-previous-save-revoked"`), and the log of the containers a deployment
+     replaced lies in `/var/log/loop2-app.log` and its generations (D-355). The log of the running
+     container holds nothing from before the restore, so it is not searched. Read the log after
+     step 6, whose deployment appended the log of the stopped container to the file just before it
+     replaced that container. Run these in bash. Every search below keeps the newest lines: a
+     count that cuts the output cuts it at the old end, never at the end near the restore. First
+     look for the deployments since the backup, and among them those whose dump failed, by a
+     fixed-string search of the deploy log:
+
+     ```sh
+     grep -F -e 'loop2-deploy: start: commit' -e 'loop2-deploy: dump:' -e 'warning: the dump of the log of both loop2 services' /var/log/loop2-deploy.log | tail -n 100
+     ```
+
+     Each line printed begins with its UTC time. If the first line printed is later than the
+     time of the backup (below), the output was cut inside the period: run it again with a larger
+     number after `tail -n`. A `warning:` line later than the time of the backup belongs to a
+     deployment, step 6's included, that went on after a failed dump and so kept nothing of the log
+     of the container it replaced. The period of that container is unknown, and the log names none
+     of the accounts changed then. It begins at the start of the previous deployment that replaced
+     the containers: the `start:` line above the previous `dump:` or `warning:` line in the same
+     printout (a `start:` line with neither of the two after it belongs to a run that stopped
+     before replacing anything and does not count), or the previous header
+     `loop2-deploy | previous commit` in the dump, found with
+     `grep -F -- 'loop2-deploy |' /var/log/loop2-app.log.1 /var/log/loop2-app.log | tail -n 20`.
+     It ends at that warning's deployment. Write each such period down and treat it as the second
+     part does. Then search the file and its generations by fixed strings, oldest generation first
+     so that the output ends with the newest lines, and keep the last 500 of them (a name that
+     does not exist gives `No such file`, which is no failure):
+
+     ```sh
+     events=(-e '"event":"password-set"' -e '"event":"account-blocked"' -e '"event":"account-unblocked"' -e '"event":"account-owner-granted"' -e '"event":"account-owner-revoked"' -e '"event":"account-previous-save-granted"' -e '"event":"account-previous-save-revoked"')
+     { zgrep -F "${events[@]}" /var/log/loop2-app.log.4.gz /var/log/loop2-app.log.3.gz /var/log/loop2-app.log.2.gz; grep -F "${events[@]}" /var/log/loop2-app.log.1 /var/log/loop2-app.log; } | tail -n 500
+     ```
+
+     The same rule holds here: if the first line printed is later than the time of the backup, run
+     it again with a larger number after `tail -n`. A line of the game has Docker's time in front
+     of its JSON, and a line the human's `account-block`, `account-previous-save` or
+     `account-role` run appended has its UTC time first. Take the lines whose time is later than
+     the time of the backup and earlier than step 6 (the application was stopped from step 3, so
+     nothing newer than that stands under the header of the deployment of step 6). The time of the
+     backup is the time of the `start` line, in `/var/log/loop2-backup.log` (UTC like the other
+     logs), of the run whose `made:` line names the weekday file, is followed by `end: sent` and
+     whose time agrees with the file's time of step 1 (the `made:` line itself stands after the
+     copy was taken, and a night whose send failed has one for a file that Strych does not hold);
+     where the log holds none, the file's time of step 1, read against the server's clock
+     (`date`). When in doubt take the earlier time: a line repeated for nothing costs a repeated
+     reset or change, a line missed leaves an account as the backup had it. For each account take
+     its `password-set` lines as one reset, and, of each of its three pairs, the block and unblock
+     lines, the role lines and the privilege lines, only the latest by its time, not by its place
+     in the output: the file is printed after its older copy `.1`, but a line of the human's
+     `account-block` run is written when the command runs, before the lines of the container for
+     the same period, which come with the next deployment.
+
+     Read the addresses of those accounts from the restored database with one command that only
+     reads, run in the game container. It opens the database read-only and prints each number
+     with its address, or `no account` when the account was made after the backup and went with it
+     (nothing is repeated for it):
+
+     ```sh
+     timeout 15 docker exec loop2 node -e 'const { DatabaseSync } = require("node:sqlite"); const db = new DatabaseSync(process.env.LOOP2_DATABASE_PATH, { readOnly: true }); const find = db.prepare("SELECT email FROM accounts WHERE id = ?"); for (const id of process.argv.slice(1)) { const row = find.get(id); console.log(id + " " + (row ? row.email : "no account")); } db.close();' -- <number> <number>
+     ```
+
+     Put the numbers in place of `<number>`. The addresses stay on that screen and out of notes,
+     requests, logs and chat. Then, for each account: with a `password-set` line, tell its holder
+     to reset the password again with „Nie pamiętam hasła” on the login card, because the old
+     password works again; where the latest block line is `account-blocked`, block it again, and
+     where it is `account-unblocked`, unblock it again (the commands in "Blocking a player
+     account"); where the latest role line is `account-owner-granted`, give it the owner role
+     again, and where it is `account-owner-revoked`, take the role again (the command in "The
+     owner role", with `owner` or `player`); where the latest privilege line is
+     `account-previous-save-granted`, grant the privilege again, and where it is
+     `account-previous-save-revoked`, revoke it again (the commands in "The previous-save
+     privilege", which the owner panel does as well). A change made with the plain command, with
+     no line written to the file, is not in the log: the second part covers it.
+   - **What the human knows.** Whoever is known to have reset a password since the backup, and is
+     not among those the log named, resets it again with „Nie pamiętam hasła” on the login card,
+     because the old password works again; on a new server, with no log, that is the operator's own
+     account and whoever the operator knows of. Block again each account that is known to have been
+     blocked since the backup (the command in "Blocking a player account" in `SKILL.md`), because the
+     restore brought it back unblocked, and unblock again each account known to have been unblocked
+     since, because the restore brought it back blocked. Likewise give or take again the owner role
+     of each account known to have been given or deprived of it since, and grant or revoke again
+     the previous-save privilege of each account known to have been given or deprived of it since
+     ("The owner role" and "The previous-save privilege" in `SKILL.md`), because the restore
+     brought each back as the backup had it.
 
 The way back, when step 7 fails and the database from before the restore is wanted: stop `app`
 (`docker compose -p loop2 stop app` from `/srv/loop2`), remove the restored `accounts.sqlite` and
@@ -564,5 +663,7 @@ in this order:
 7. Fill root's SSH configuration entry and the known-hosts file (steps 5 and 6 of "Installing and
    reinstalling").
 8. Deploy a commit that knows the backup's schema (`loop2-deploy <sha>`), so the volume exists.
-9. Restore: steps 1 to 8 of "Restoring over the server's database".
+9. Restore: steps 1 to 8 of "Restoring over the server's database", except the first part of
+   step 8, the search of the game's log, which has no place here: the new host holds no log of
+   the game before the restore. Only the second part of step 8, what the human knows, is made.
 10. Install the backup script and schedule again: steps 7 to 12 of "Installing and reinstalling".
