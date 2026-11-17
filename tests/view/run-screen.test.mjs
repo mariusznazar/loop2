@@ -859,7 +859,7 @@ function coveredState(screen) {
 // that stays covered after the state takes the window away.
 test("while the state of the screen shows the window, the screen of an ended map run draws it and hides the header and the three areas; once it does not, the screen shows them again", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async (page) => {
@@ -915,7 +915,7 @@ test("what the window covers stays in the tree and keeps its state: the tab pick
 // and a focus left on nothing: it goes to „Koniec przejścia” in the header, which the closing shows.
 test("„✕” asks the game view to close the window and the focus goes to „Koniec przejścia” in the header; „Koniec przejścia” asks to open it", async () => {
   // decision: D-407 "The game state lives in a store outside React and the state of the screen Przejście, which is the question „Zapisać, odrzucić, wrócić?” and the end-of-run window, in a module of its own outside React"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "The window scrolls in itself while its buttons"
   // decision: D-370 "The window takes the focus when it opens"
   await withPage(async (page) => {

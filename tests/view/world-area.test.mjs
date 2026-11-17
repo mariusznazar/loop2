@@ -207,7 +207,7 @@ test("the world area stands from the top: the scene, Teraz, Potem, the body row,
   // decision: D-334 "Under the scene of the screen of a map run the row „Teraz”"
   // decision: D-335 "Under „Teraz” the row „Potem” holds the word „Potem”, the icon and the action of the program rule that wins now"
   // decision: D-311 "The world holds, from the top, the scene, „Teraz” and „Potem”, the body row"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   await withPage(async ({ document }) => {
     // Going on, on a solved map: the solved line, the practice and the preview of the bring plan.
     const going = withRun(solvedSent(), {

@@ -334,7 +334,7 @@ test("„Koniec przejścia” stands before „Restart” only in an ended map r
 // hidden while the window is closed or while the map run goes on.
 test("the header is hidden while the window stands over an ended map run, and shown otherwise", async () => {
   // decision: D-132 "After a completion the screen stays on the state of the game minute of the completion and time stands still for that map run, and „Teraz” reads the map's completion text, in Las „Las rozwiązany” and in Las — głębiej „Las — głębiej rozwiązany”, in the role `positive`, the clock in the header standing at that game minute, such as „Minuta 480”, and the end-of-run window (D-368) opens of itself over the screen, its header included and the menu bar not, under the same completion text as its title, in the role `positive`"
-  // decision: D-311 "After a character's death or a completion that window (D-368) stands over this screen"
+  // decision: D-311 "After a character's death or a completion that window (D-368) stands in place of this screen"
   // decision: D-368 "When a manual map run ends in a character's death or a completion, the end-of-run window opens of itself over the screen of the map run"
   // decision: D-370 "While the end-of-run window (D-368) stands, the header and the three areas of the screen of a map run are not shown"
   await withPage(async ({ document }) => {
@@ -435,7 +435,7 @@ function addStylesheet(document) {
 // custom property, so the case reads which token the rule of the clock lands on, through the real
 // stylesheet.
 test("the clock stands in the mono face of the stylesheet, with tabular figures", async () => {
-  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono"
+  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle, its entries in the end-of-run window included, and the clock of the map run in Geist Mono"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const { container } = await draw(document, sent());
@@ -629,7 +629,7 @@ test("after a completion the bar stands, met, at the minute of the completion", 
 // the solving condition do not; tabular figures keep them from jittering in Geist too. Catches the
 // mono face set on the bar's words.
 test("the words of the bar of the solving condition are not in the mono face of the clock, and keep tabular figures", async () => {
-  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle and the clock of the map run in Geist Mono and every other text in Geist"
+  // decision: D-46 "The game loads fonts only from those files, never from another server, and sets the chronicle, its entries in the end-of-run window included, and the clock of the map run in Geist Mono and every other text in Geist"
   await withPage(async ({ document, window }) => {
     addStylesheet(document);
     const { container } = await draw(document, sent());
