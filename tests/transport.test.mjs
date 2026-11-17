@@ -214,6 +214,19 @@ function captureLog(t) {
 const browserLines = (logged) =>
   logged.filter((line) => line.startsWith('{"failure":"browser"'));
 
+// The eight POST routes of the case "refused state-changing requests change no
+// account or session and do no password work", in the order of its routes.
+const guardedAccountPaths = [
+  "/api/accounts",
+  "/api/session",
+  "/api/logout",
+  "/api/email-confirmation",
+  "/api/email-confirmation-message",
+  "/api/password-reset-message",
+  "/api/password-reset",
+  "/api/browser-failure",
+];
+
 test(
   "transport refuses ambiguous proxy metadata before loading live sessions",
   { timeout: 20000 },
@@ -604,6 +617,11 @@ test(
       ],
       ["/api/browser-failure", browserReport],
     ];
+    assert.deepEqual(
+      routes.map(([path]) => path),
+      guardedAccountPaths,
+      "precondition: the routes of this case are those the check of the route table lists",
+    );
     const json = (value) => () => JSON.stringify(value);
     const variants = (fields) => [
       ["missing origin", { Origin: undefined }, null, 403],
@@ -904,6 +922,7 @@ test(
 // The save route is a state-changing route with its own body limit, 64 KiB
 // (D-104); the eight others keep 16 KiB.
 const savedGame = "/api/saved-game";
+const savedGameReset = "/api/saved-game-reset";
 
 test(
   "refused requests to the save route change no saved game state, and its body limit is 64 KiB where the others keep 16 KiB",
@@ -1035,16 +1054,7 @@ test(
     });
     assert.equal(accepted.status, 200, "a 20 KiB save is within its limit");
     assert.deepEqual(JSON.parse(accepted.body), { revision: 2 });
-    for (const path of [
-      "/api/accounts",
-      "/api/session",
-      "/api/logout",
-      "/api/email-confirmation",
-      "/api/email-confirmation-message",
-      "/api/password-reset-message",
-      "/api/password-reset",
-      "/api/browser-failure",
-    ]) {
+    for (const path of guardedAccountPaths) {
       const response = await f.send(path, {
         method: "POST",
         headers: valid,
@@ -1256,7 +1266,7 @@ test(
     });
     const before = state();
     assert.equal(before.saved.length, 1, "precondition");
-    const reset = "/api/saved-game-reset";
+    const reset = savedGameReset;
     const variants = [
       ["missing origin", { Origin: undefined }, "{}", 403],
       ["foreign origin", { Origin: "https://evil.example" }, "{}", 403],
@@ -1321,5 +1331,79 @@ test(
     assert.equal(control.body, "");
     assert.deepEqual(state().saved, [], "the current save moved");
     assert.deepEqual(state().previous, before.saved, "to the previous slot");
+  },
+);
+
+// Every route the application answers with a method other than GET and HEAD,
+// as "METHOD path", read from the route table of the application. A route that
+// answers every method on a path that another route serves by a method is the
+// preliminary check of that path and is no route of its own.
+function stateChangingRoutes(app) {
+  const found = [];
+  const walk = (stack) => {
+    for (const layer of stack) {
+      if (layer.route) {
+        for (const path of [layer.route.path].flat())
+          for (const method of Object.keys(layer.route.methods))
+            found.push([
+              method === "_all" ? "ALL" : method.toUpperCase(),
+              path,
+            ]);
+      } else if (layer.handle?.stack) walk(layer.handle.stack);
+    }
+  };
+  walk(app.router.stack);
+  const served = new Set(
+    found.filter(([method]) => method !== "ALL").map(([, path]) => path),
+  );
+  return [
+    ...new Set(
+      found
+        .filter(([method, path]) =>
+          method === "ALL"
+            ? !served.has(path)
+            : !["GET", "HEAD"].includes(method),
+        )
+        .map(([method, path]) => `${method} ${path}`),
+    ),
+  ].sort();
+}
+
+test(
+  "every route the application answers with a method other than GET and HEAD is a route a guard case lists",
+  { timeout: 20000 },
+  async (t) => {
+    // invariant: account-mutation-request-guards
+    // decision: D-104 "every state-changing route requires exactly the configured serialized HTTPS Origin and an application/json body with at most 64 KiB for the save route `PUT /api/saved-game` and at most 16 KiB for every other route, the reset route `POST /api/saved-game-reset` included, optional charset allowed and compressed inflation rejected"
+    // Fault: a state-changing route added to the application and left off
+    // every guard case, which then guards it by nothing.
+    const f = await fixture(t);
+    // The guard cases of this file: the eight POST routes of "refused
+    // state-changing requests change no account or session and do no password
+    // work", and the save route and the reset route, each of its own case. The
+    // four POST routes of the owner panel are guarded by the case of
+    // tests/owner-routes.test.mjs about a foreign Origin and a body that is no JSON.
+    const listed = [
+      ...guardedAccountPaths.map((path) => `POST ${path}`),
+      `PUT ${savedGame}`,
+      `POST ${savedGameReset}`,
+      "POST /api/owner/block",
+      "POST /api/owner/unblock",
+      "POST /api/owner/grant-previous-save",
+      "POST /api/owner/revoke-previous-save",
+    ].sort();
+    const routes = stateChangingRoutes(
+      createApp({ ...f.runtime, mailer: f.mailer }),
+    );
+    assert.deepEqual(
+      routes.filter((route) => !listed.includes(route)),
+      [],
+      "a state-changing route no guard case lists",
+    );
+    assert.deepEqual(
+      listed.filter((route) => !routes.includes(route)),
+      [],
+      "a route the guard cases list that the application does not have",
+    );
   },
 );
