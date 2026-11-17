@@ -743,8 +743,8 @@ export function passRealTime(state: GameState, realMs: number): GameResult {
  * rest of the minute has taken effect, the event `mapRunCompleted` follows the minute's other
  * events, no program rule is picked and the map is added to the solved maps; the completion pays
  * practice and deposits the bring list only for a run not marked `solvedMapRun`, and a death pays
- * nothing; where that minute is
- * also a discovery's, the game holds the discovery and is not paused. A map run that has ended
+ * nothing; where the minute of a completion or of a death is
+ * also a discovery's, the game holds the discovery and is not paused (D-122). A map run that has ended
  * changes nothing. A death stays unsettled here: this function knows no real time, and whoever
  * passes it game time then calls `settleDeath`, as a saved document holding a death unsettled is
  * refused at the load; the renewal of the team's resurrection at the first completion of a map is
@@ -870,7 +870,7 @@ export function advanceMinutes(state: GameState, minutes: number): GameResult {
   return {
     state: {
       ...current,
-      ...(revealed && { discovery: revealed, paused: !completed }),
+      ...(revealed && { discovery: revealed, paused: !mapRunEnded(run) }),
       ...(completed &&
         !current.solvedMaps.includes(run.mapId) && {
           solvedMaps: [...current.solvedMaps, run.mapId],
