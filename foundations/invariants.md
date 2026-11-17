@@ -670,7 +670,7 @@ Password hashing and verification share a gate that admits at most two active na
 The browser carries a random session identifier in a loop2 host-scoped, Secure and HttpOnly cookie.
 
 - **Method:** test
-- **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security
+- **Rests on:** express-session-cookie-lifecycle · session-secret-rotation · session-proxy-security · express-session-id-generator · uid-safe-sync-id · random-bytes-sync-source
 - **Derives from:** D-101 · D-138
 - **Part:** account-server · browser-view · deployment
 - **Violated:** no

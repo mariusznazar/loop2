@@ -933,6 +933,24 @@ A command hook of Claude Code given `args` starts `command`, resolved as an exec
 
 - **Source:** https://code.claude.com/docs/en/hooks (archived: https://web.archive.org/web/20261113161817/https://code.claude.com/docs/en/hooks, 2026-11-13) § Exec form and shell form — "Exec form runs when args is present. Claude Code resolves command as an executable on PATH and spawns it directly with args as the argument vector. There is no shell, so each args element is one argument exactly as written, and path placeholders like ${CLAUDE_PLUGIN_ROOT} are substituted into command and into each args element as plain strings." · "Both forms support the same path placeholders, and both export them as the environment variables CLAUDE_PROJECT_DIR, CLAUDE_PLUGIN_ROOT, and CLAUDE_PLUGIN_DATA on the spawned process, so a script can read process.env.CLAUDE_PLUGIN_ROOT regardless of how it was launched." · "The node plus script-path pattern works on every platform because node.exe is a real binary." · § Reference scripts by path — "${CLAUDE_PROJECT_DIR}: the project root where the session started."; read 2026-11-16
 
+## express-session-id-generator
+
+Express-session 1.19.0, given no `genid` option, gives each session it generates, a regenerated session included, the identifier that the synchronous function of uid-safe returns for the length 24.
+
+- **Source:** https://registry.npmjs.org/express-session/-/express-session-1.19.0.tgz § package/index.js, uid — "var uid = require('uid-safe').sync" · § session, generateId — "var generateId = opts.genid || generateSessionId" · § store.generate — "req.sessionID = generateId(req);" · § generateSessionId — "return uid(24);" · § package/session/store.js, Store.prototype.regenerate — "self.generate(req);"; read 2026-11-17
+
+## uid-safe-sync-id
+
+Uid-safe 2.1.5's synchronous function returns, for a length, a text made from the bytes that the synchronous function of random-bytes gives for that length.
+
+- **Source:** https://registry.npmjs.org/uid-safe/-/uid-safe-2.1.5.tgz § package/index.js, randomBytes — "var randomBytes = require('random-bytes')" · § uidSync — "return toString(randomBytes.sync(length))" · § toString — "return buf.toString('base64')"; read 2026-11-17
+
+## random-bytes-sync-source
+
+Random-bytes 1.0.0's synchronous function returns the bytes that the function `randomBytes` of the module `crypto` gives for the size asked, and throws an error when that function throws at every try.
+
+- **Source:** https://registry.npmjs.org/random-bytes/-/random-bytes-1.0.0.tgz § package/index.js, crypto — "var crypto = require('crypto')" · § randomBytesSync — "for (var i = 0; i < generateAttempts; i++) {" · "return crypto.randomBytes(size)" · "throw err"; read 2026-11-17
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |
