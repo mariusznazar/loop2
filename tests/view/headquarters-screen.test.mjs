@@ -251,7 +251,7 @@ test("the chest heading reads the pieces and the capacity, its lines follow the 
   });
 });
 
-// --- time, loops -----------------------------------------------------------------------------
+// --- time, earning loops -----------------------------------------------------------------------------
 
 // Catches a resurrection line drawn once and left, a line that loses `danger` late or early, and a
 // line rebuilt as a new element at every reading, which would drop what stands on it (D-217).
@@ -282,10 +282,10 @@ test("the resurrection line follows the clock's moment in the very same element,
   });
 });
 
-// Catches a loop line and „Zatrzymaj” drawn at a character that has no loop, a button that does not
+// Catches an earning loop line and „Zatrzymaj” drawn at a character that has no earning loop, a button that does not
 // reach the page's `stop` with the character's number, and the line of a stop missing after it (D-244,
 // D-245).
-test("a running loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped loop shows its line instead", async () => {
+test("a running earning loop shows its line with „Zatrzymaj”, which asks the page to stop that character; a stopped earning loop shows its line instead", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
@@ -325,7 +325,7 @@ test("a running loop shows its line with „Zatrzymaj”, which asks the page to
 
 // Catches the focus left on the page once „Zatrzymaj” takes its button away: the keyboard would then
 // start the screen again from its top (styleguide, "Focus does not fall to the page").
-test("after „Zatrzymaj” the focus stands on the name of that character once its loop has stopped", async () => {
+test("after „Zatrzymaj” the focus stands on the name of that character once its earning loop has stopped", async () => {
   await withPage(async (page) => {
     const state = { ...teamOf(2), loops: { 2: LOOP } };
     let screen = null;
@@ -333,7 +333,7 @@ test("after „Zatrzymaj” the focus stands on the name of that character once 
       screen = createHeadquarters({
         controls: {
           create: () => {},
-          // The page stops the loop and gives the screen the state at once.
+          // The page stops the earning loop and gives the screen the state at once.
           stop: (characterId) =>
             screen.update(
               propsOf({
@@ -383,7 +383,7 @@ const reported = () => ({
 
 // Catches the section drawn below „Drużyna”, the stopped line not first, `danger` missing or on the
 // wrong line, and the title of a return missing (D-246).
-test("a report stands above „Drużyna”, titled „Gdy cię nie było”, the loop that stopped first and in danger", async () => {
+test("a report stands above „Drużyna”, titled „Gdy cię nie było”, the earning loop that stopped first and in danger", async () => {
   // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   await withPage(async (page) => {
@@ -497,9 +497,9 @@ const waiting = (practice, runPractice = {}) => ({
   awayReport: [reportLine(1, { minutes: 5 }), reportLine(2, { minutes: 3 })],
 });
 
-// Catches the practice of the loop and the map run going on not both in the line, a button on a
+// Catches the practice of the earning loop and the map run going on not both in the line, a button on a
 // line with nothing waiting and a button that does not carry the name of its character.
-test("practice waiting at a loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
+test("practice waiting at an earning loop reads in its line with „Odbierz” in `positive` beside it, and a line with none waiting has no button", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons, neutral until the pointer or the focus reaches them and then in `danger`, and „Odbierz”, which pays the practice waiting at an earning loop, is the plain button with its text in `positive`"
   // decision: D-39 "`positive` also stands as the text of the button „Odbierz”, which pays the practice waiting at an earning loop, at rest and under the pointer"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
@@ -578,9 +578,9 @@ test("„Odbierz” hands the page its character; once nothing waits the button 
   });
 });
 
-// Catches practice that is back after a redraw with the loop gathering more (D-246): the button
-// returns at the next change of the loop.
-test("the part about practice and „Odbierz” come back when the loop gathers more", async () => {
+// Catches practice that is back after a redraw with the earning loop gathering more (D-246): the button
+// returns at the next change of the earning loop.
+test("the part about practice and „Odbierz” come back when the earning loop gathers more", async () => {
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   await withPage(async (page) => {
     const { screen } = await mount(page, propsOf(waiting({})));
@@ -594,8 +594,8 @@ test("the part about practice and „Odbierz” come back when the loop gathers 
   });
 });
 
-// D-246: a line of a loop a death stopped has no practice waiting, so it has no button either.
-test("a line of a loop a death stopped has no „Odbierz”", async () => {
+// D-246: a line of an earning loop a death stopped has no practice waiting, so it has no button either.
+test("a line of an earning loop a death stopped has no „Odbierz”", async () => {
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
   await withPage(async (page) => {
     const state = {
@@ -778,7 +778,7 @@ test("the picture band is drawn at twice the pixels of its pictures, in a band 9
 });
 
 // Catches a screen that does not read the manual map run, which the picture band needs: with it the picture would
-// change only at a change of the team or of a loop, and not at „Wejdź” and „Zakończ”. Every change of the
+// change only at a change of the team or of an earning loop, and not at „Wejdź” and „Zakończ”. Every change of the
 // four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the picture band at once, and „Drużyna” still lists all.
 test("the picture band follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
   // decision: D-389 "The characters that stand in it are those"
@@ -877,7 +877,7 @@ test("an update that changes nothing the screen shows draws nothing, so it needs
   await withPage(async (page) => {
     const state = teamOf(1);
     const { screen } = await mount(page, propsOf(state));
-    // A new state object of the same team, loops, report and moment: only a map run would differ.
+    // A new state object of the same team, earning loops, report and moment: only a map run would differ.
     screen.update(propsOf({ ...state, paused: !state.paused }, NOW + 1));
     screen.update(propsOf(state, NOW + 2));
   });

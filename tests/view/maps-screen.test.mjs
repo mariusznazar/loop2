@@ -695,7 +695,7 @@ test("„Wejdź” is the main button at each map, „Puść w pętlę” the pl
     assert.equal(
       buttonLabelled(page.root, "Puść w pętlę: Ala, mapa Las"),
       undefined,
-      "a map not yet solved has no loop",
+      "a map not yet solved has no earning loop",
     );
     await press(enter);
     const programId = unsolved.programs[0].id;
@@ -737,14 +737,14 @@ test("an empty list „Wynieś” puts „Pętla nic nie zarobi do skrzynki” b
       ),
     );
     assert.equal(page.root.querySelector(".maps-who-empty-loop"), null);
-    // At a map not yet solved there is no loop, so there is no mark either.
+    // At a map not yet solved there is no earning loop, so there is no mark either.
     await inAct(() => screen.update(propsOf(teamOf("Ala"), "forest")));
     assert.equal(page.root.querySelector(".maps-who-empty-loop"), null);
   });
 });
 
 // D-251: the rehearsal mark stands under „Wejdź” at a solved map when the clipped take exceeds the chest.
-test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
+test("a rehearsal the earning loop cannot repeat is marked under „Wejdź” at a solved map alone", async () => {
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
   // decision: D-189 "A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment"
   // decision: D-251 "At a solved map, at a character in the section „Kto idzie”, when an item of the take list of its program, clipped by carrying capacity and the map's entry cap, exceeds the stock in the chest, „Próba weźmie zapas, którego nie ma w skrzynce — pętla zarobkowa go nie dostanie.” stands under „Wejdź” in the role `warning`"
@@ -778,7 +778,7 @@ test("a rehearsal the loop cannot repeat is marked under „Wejdź” at a solve
 });
 
 // D-243, D-244: a character in an earning loop shows its line with „Zatrzymaj”, which acts, and
-// both sending buttons stand inactive; the line of a stopped loop does not stand here (D-245).
+// both sending buttons stand inactive; the line of a stopped earning loop does not stand here (D-245).
 test("a character in an earning loop shows its line and „Zatrzymaj”, its sending buttons stand inactive, and no stopped-loop line stands", async () => {
   // decision: D-44 "The screens of the browser view build every button, select list, number field, text field and cell of a pick from the shared controls of `src/browser/view/controls/` — the button in its kinds (the plain button, the destructive button, the button selected in its group, the secondary action (D-275), the tab (D-276), the main look outside a form (D-274) and the button in `positive`), the select list, the number field, the text field and the pick cell — and the buttons „Zakończ”, „Usuń”, „Restart”, „Porzuć zmiany”, „Przełącz postać na ten program”, „Zatrzymaj” and „Zacznij od zera” (D-402), and „Odrzuć” of the question „Zapisać, odrzucić, wrócić?” (D-173), are destructive buttons"
   // decision: D-329 "At each character in the section „Kto idzie” stand, from the top, the name as a link to the screen Postać"
@@ -813,7 +813,7 @@ test("a character in an earning loop shows its line and „Zatrzymaj”, its sen
       buttonLabelled(ala, "Puść w pętlę: Ala, mapa Las").disabled,
       true,
     );
-    // Bob is not in a loop: his buttons act and no loop line stands at him.
+    // Bob is not in an earning loop: his buttons act and no earning loop line stands at him.
     assert.equal(bob.querySelector(".maps-who-loop"), null);
     assert.equal(buttonLabelled(bob, "Wejdź: Bob, mapa Las").disabled, false);
     assert.equal(
@@ -848,12 +848,12 @@ test("a manual map run going on, waiting and ended keeps „Wejdź” inactive a
       assert.equal(
         buttonLabelled(page.root, "Puść w pętlę: Ala, mapa Las").disabled,
         true,
-        "the loop of the run's character is inactive",
+        "the earning loop of the run's character is inactive",
       );
       assert.equal(
         buttonLabelled(page.root, "Puść w pętlę: Bob, mapa Las").disabled,
         false,
-        "another character can still start its loop",
+        "another character can still start its earning loop",
       );
       assert.deepEqual(texts(page.root, ".maps-who-run-note"), [
         RUN_SENTENCE,
@@ -889,7 +889,7 @@ test("after „Puść w pętlę” the focus goes to that character's „Zatrzym
     assert.equal(document.activeElement, loop);
     await press(loop);
     const stop = buttonLabelled(page.root, "Zatrzymaj: Ala");
-    assert.ok(stop, "„Zatrzymaj” stands once the loop runs");
+    assert.ok(stop, "„Zatrzymaj” stands once the earning loop runs");
     assert.equal(document.activeElement, stop);
     await press(stop);
     assert.equal(

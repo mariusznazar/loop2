@@ -1,6 +1,7 @@
-"""Invariant streak-program-change: A change of the program rules or rule groups of the copy a map
-run carries out, and every switch of the character to another program during the map run, to one
-holding the same rules included, sets the streak of that map run to zero, on every map.
+"""Invariant streak-program-change: A change, in a map run that has not ended, of the program rules
+or rule groups of the copy it carries out, and every switch of the character to another program
+during that map run, to one holding the same rules included, sets the streak of that map run to
+zero, on every map.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions by a Node script this check writes to a

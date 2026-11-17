@@ -478,7 +478,7 @@ test("a passing map run is saved at the 30-second check and at hiding, and a hid
   });
 });
 
-// D-207. Catches a rhythm that sends every 30 seconds for loops alone, which the player left on
+// D-207. Catches a rhythm that sends every 30 seconds for earning loops alone, which the player left on
 // overnight, and a hidden page or an act that no longer sends.
 test("the 30-second check is silent while no manual map run passes, though the state changes at every reading; hiding and an act still send", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result, every 30 real seconds while a manual map run passes, and once more when the page becomes hidden"

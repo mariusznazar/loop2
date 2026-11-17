@@ -128,8 +128,8 @@ export function createStateStore(options: StateStoreOptions): StateStore {
     );
     state = result.state;
     options.onTaken({ result, before, copyAct, endedRun });
-    // A game minute that ends the map run in a death or a completion, and a result in which a
-    // loop's map run ended, however many, is one moment of saving (D-207).
+    // A game minute that ends the map run in a death or a completion, and a result in which an
+    // earning loop's map run ended, however many, is one moment of saving (D-207).
     if (endedRun || loopEnded) saver.moment();
     return true;
   }
@@ -150,7 +150,7 @@ export function createStateStore(options: StateStoreOptions): StateStore {
       return state;
     },
     moment: () => clock.moment(),
-    // The rhythm of 30 seconds is the manual map run's; loops are saved at acts, ends and hiding.
+    // The rhythm of 30 seconds is the manual map run's; earning loops are saved at acts, ends and hiding.
     runPasses: () =>
       state.run !== null && !mapRunEnded(state.run) && !state.paused,
     state,

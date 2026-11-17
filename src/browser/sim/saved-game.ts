@@ -1098,7 +1098,7 @@ function characterKey(
 
 /**
  * The earning loop of `characterId`: its program by the program check, and a `MapRun` that is that
- * character's, goes on (D-241) and stands on a map among the solved maps, since no loop's map run
+ * character's, goes on (D-241) and stands on a map among the solved maps, since no earning loop's map run
  * adds to them. Completions stand below the number of the map run going on.
  */
 function earningLoop(
@@ -1146,7 +1146,7 @@ function earningLoops(
   return loops;
 }
 
-/** What each stopped loop paid, by character; such a character has no loop and no manual map run. */
+/** What each stopped earning loop paid, by character; such a character has no earning loop and no manual map run. */
 function stoppedLoops(
   value: unknown,
   records: Records,

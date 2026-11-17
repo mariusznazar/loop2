@@ -891,6 +891,12 @@ On 2026-11-14, the game's dump file `/var/log/loop2-app.log` on the test server'
 
 - **Source:** reading: `grep -F -m 50 -- 'link-issued' /var/log/loop2-app.log` on the test server's host, grep (GNU grep) 3.7, whose version `grep --version | head -1` prints on the same host — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:05.952126792Z {"event":"link-issued","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- 'message-sent' /var/log/loop2-app.log` — its whole output, with the account identifier replaced by `<account>`: "loop2 | 2026-11-13T23:03:06.406314841Z {"event":"message-sent","accountId":"<account>","linkPurpose":"password-reset"}" · and `grep -F -m 50 -- '"failure":"mail"' /var/log/loop2-app.log` — grep printed no line; run 2026-11-14
 
+## loop2-app-log-confirmation-mail-events
+
+On 2026-11-14 UTC the game's log files on the test server's host hold two lines of the event `link-issued` and two of the event `message-sent`, all four with `linkPurpose` `email-confirmation`, written at 12:16:32, 12:16:32, 15:09:24 and 15:09:25, each pair followed by a line of the event `email-confirmed`, at 12:25:28 and 15:09:59, and no line dated that day holds the text `"failure":"mail"`.
+
+- **Source:** reading: `events=(-e '"event":"link-issued"' -e '"event":"message-sent"' -e '"event":"email-confirmed"' -e '"failure":"mail"'); { zgrep -F -h "${events[@]}" /var/log/loop2-app.log.2.gz; grep -F -h "${events[@]}" /var/log/loop2-app.log.1 /var/log/loop2-app.log; } | grep -F '2026-11-14' | sed -E 's/.*(2026-11-14T[0-9:]{8}).*"event":"([a-z-]+)".*"linkPurpose":"([a-z-]+)".*/\1 \2 \3/;t;s/.*(2026-11-14T[0-9:]{8}).*"(event|failure)":"([a-z-]+)".*/\1 \3/'` on the test server's host, bash 5.1.16(1)-release, grep (GNU grep) 3.7, sed (GNU sed) 4.8 and gzip 1.10, whose `zgrep` ran, as `bash --version | head -1`, `grep --version | head -1`, `sed --version | head -1` and `zgrep --version | head -1` print them on the same host — its whole output, the lines that name an event of that day, with no account identifier in them: "2026-11-14T12:16:32 link-issued email-confirmation" · "2026-11-14T12:16:32 message-sent email-confirmation" · "2026-11-14T12:25:28 email-confirmed" · "2026-11-14T15:09:24 link-issued email-confirmation" · "2026-11-14T15:09:25 message-sent email-confirmation" · "2026-11-14T15:09:59 email-confirmed"; run 2026-11-17
+
 ## windows-file-lock-release-at-process-end
 
 On Windows, when a process terminates with a portion of a file locked, the operating system unlocks the locks, and the time it takes depends upon available system resources.
@@ -956,6 +962,13 @@ Uid-safe 2.1.5's synchronous function returns, for a length, a text made from th
 Random-bytes 1.0.0's synchronous function returns the bytes that the function `randomBytes` of the module `crypto` gives for the size asked, and throws an error when that function throws at every try.
 
 - **Source:** https://registry.npmjs.org/random-bytes/-/random-bytes-1.0.0.tgz § package/index.js, crypto — "var crypto = require('crypto')" · § randomBytesSync — "for (var i = 0; i < generateAttempts; i++) {" · "return crypto.randomBytes(size)" · "throw err"; read 2026-11-17
+
+## playwright-firefox-webkit-releases
+
+The Firefox and WebKit releases that Playwright holds on the author's computer, 1532 and 2311, are older than the releases, 1553 and 2368, that Playwright CLI 0.1.22 expects.
+
+- **Source:** reading: `(Get-ChildItem "$env:LOCALAPPDATA\ms-playwright" -Directory | Where-Object Name -Match '^(firefox|webkit)-').Name
+(Get-Content "$(npm root -g)\@playwright\cli\node_modules\playwright-core\browsers.json" -Raw | ConvertFrom-Json).browsers | Where-Object name -In 'firefox','webkit' | ForEach-Object { "$($_.name) $($_.revision)" }` on the author's computer, in Windows PowerShell 5.1.26100.9818, with npm 11.13.0 and Playwright CLI 0.1.22, as `playwright-cli --version` prints it, whose playwright-core is 1.64.0-alpha-1790635538000 — "firefox-1532" · "webkit-2311" · "firefox 1553" · "webkit 2368"; run 2026-11-17
 
 ## Withdrawn identifiers
 

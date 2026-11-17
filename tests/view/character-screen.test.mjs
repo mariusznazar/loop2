@@ -140,12 +140,12 @@ test("the resurrection line reads the time left in danger, shows the minutes bel
   });
 });
 
-test("a running loop shows its line with „Zatrzymaj”, which acts through onStop; a stopped loop shows its line in its place", async () => {
+test("a running earning loop shows its line with „Zatrzymaj”, which acts through onStop; a stopped earning loop shows its line in its place", async () => {
   // decision: D-244 "A running earning loop shows on the card and the screen of its character, and at that character in the section „Kto idzie” of the card of a map, as one line in the role `text`, „Pętla: {mapa} · przejście {n} · minuta {m} · domknięte {k}”, with the button „Zatrzymaj”"
   // decision: D-245 "„Zatrzymaj” is a destructive button that acts at once on the click: the items carried in the map run going on are lost, its loot stays out of the chest, the practice D-189 gives enters the character skills, and the character returns to its ordinary state"
   // decision: D-245 "On the character's card and screen, until the next send or start of that character and after a load of the saved game state too, stands in the role `text-secondary` „Pętla zatrzymana · wprawa: {umiejętność} +{n}, …”, or „Pętla zatrzymana” where the earning loop gathered no practice"
   await withPage(async (page) => {
-    // The line reads the map, the run number, the minute and the runs completed of the loop.
+    // The line reads the map, the run number, the minute and the runs completed of the earning loop.
     const loop = {
       runNumber: 3,
       completed: 2,
@@ -160,7 +160,7 @@ test("a running loop shows its line with „Zatrzymaj”, which acts through onS
       "Pętla: Las · przejście 3 · minuta 212 · domknięte 2",
     );
     const stop = buttonLabelled(page.root, "Zatrzymaj: Ala");
-    assert.ok(stop, "„Zatrzymaj” stands beside a running loop");
+    assert.ok(stop, "„Zatrzymaj” stands beside a running earning loop");
     await press(stop);
     assert.deepEqual(calls, [["stop"]]);
     await inAct(() =>
@@ -179,7 +179,7 @@ test("a running loop shows its line with „Zatrzymaj”, which acts through onS
 
 // Catches the focus left on the page once „Zatrzymaj” takes its button away: the keyboard would then
 // start the screen again from its top (styleguide, "Focus does not fall to the page").
-test("after „Zatrzymaj” the focus stands on the character's name once its loop has stopped", async () => {
+test("after „Zatrzymaj” the focus stands on the character's name once its earning loop has stopped", async () => {
   await withPage(async (page) => {
     const loop = {
       runNumber: 3,
@@ -190,7 +190,7 @@ test("after „Zatrzymaj” the focus stands on the character's name once its lo
     await inAct(() => {
       screen = createCharacterScreen({
         onBuy: () => {},
-        // The page stops the loop and gives the screen the state at once.
+        // The page stops the earning loop and gives the screen the state at once.
         onStop: () =>
           screen.update(
             propsOf(stateWith({}, { stoppedLoops: { [ID]: { eating: 4 } } })),

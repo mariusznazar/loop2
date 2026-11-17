@@ -99,7 +99,7 @@ export function loopLine(loop: EarningLoop): string {
 
 /**
  * The line of a character whose earning loop was stopped (D-245): „Pętla zatrzymana” and, where the
- * loop gathered practice, „ · wprawa: {skill} +{n}, …” in the order of the skills' data. Pure.
+ * earning loop gathered practice, „ · wprawa: {skill} +{n}, …” in the order of the skills' data. Pure.
  */
 export function stoppedLoopLine(practice: Practice): string {
   const gains = (Object.keys(SKILLS) as SkillId[])

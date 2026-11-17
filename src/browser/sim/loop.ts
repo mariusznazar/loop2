@@ -55,7 +55,7 @@ function withLoop(
 }
 
 /**
- * A map run of an earning loop at minute 0 (D-241, D-249): the program of the loop reduced to the
+ * A map run of an earning loop at minute 0 (D-241, D-249): the program of the earning loop reduced to the
  * repertoire of the run's skills, the skills and traits those of the team's `character` now, and the
  * equipment the take list takes from the chest as it stands, whether the map is solved or not. The
  * map run is not marked, and nothing is discovered, counted or reported by it.
@@ -91,11 +91,11 @@ function beginRun(
 /**
  * Puts the character `ids.characterId` into an earning loop on a solved map `ids.mapId`: the first
  * map run, seeded from the last seed and `realMs` as a send is, which becomes the last seed. The
- * loop carries the content of the program numbered `ids.programId`, or of the character's row where
+ * earning loop carries the content of the program numbered `ids.programId`, or of the character's row where
  * none is given, and nothing else of it. That program becomes the character's program used last and
  * the one with which a character last entered a map, the character's pick is cleared and its entry
  * of `stoppedLoops` goes. The rule counts and the program they stand beside stay as they were, and
- * no event leaves. A map unknown or not solved, a character the team does not list, one in a loop
+ * no event leaves. A map unknown or not solved, a character the team does not list, one in an earning loop
  * or in the manual map run, and a program not on the list are refused with the very state.
  */
 export function startLoop(
@@ -166,7 +166,7 @@ export function startLoop(
 }
 
 /**
- * The practice waiting at an earning loop (D-189): what the loop gathered from completions and
+ * The practice waiting at an earning loop (D-189): what the earning loop gathered from completions and
  * what the map run going on has gathered, both since the player last took it with „Odbierz”. A
  * map run that ended in death pays nothing. This is exactly what `takeLoopPractice` and `stopLoop`
  * pay.
@@ -179,10 +179,10 @@ export function waitingPractice(loop: EarningLoop): Practice {
 }
 
 /**
- * Stops the earning loop of a character at once (D-245): the practice waiting at the loop is paid
- * into the character's skills, the loop is dropped, and the sum paid is written into
+ * Stops the earning loop of a character at once (D-245): the practice waiting at the earning loop is paid
+ * into the character's skills, the earning loop is dropped, and the sum paid is written into
  * `stoppedLoops`, `{}` where none waited. The items the map run carries are lost and its loot does
- * not reach the chest. With no loop of that character, returns the very state.
+ * not reach the chest. With no earning loop of that character, returns the very state.
  */
 export function stopLoop(
   state: GameState,
@@ -212,8 +212,8 @@ export function stopLoop(
 /**
  * Takes the practice waiting at the earning loop of a character with „Odbierz” (D-189): all of
  * it, the map run going on included, is paid into the character's skills and the practice the
- * loop and that map run hold is emptied, so no later completion or stop pays it again. The map
- * run, the backpack, the loop and the chest stay as they were. With no loop of that character,
+ * earning loop and that map run hold is emptied, so no later completion or stop pays it again. The map
+ * run, the backpack, the earning loop and the chest stay as they were. With no earning loop of that character,
  * or no practice waiting, returns the very state.
  */
 export function takeLoopPractice(
@@ -244,7 +244,7 @@ export function takeLoopPractice(
  * end, the minute of the end included; `passed` is the minutes taken. Only game time passes: the
  * program is reduced to the repertoire of the run's skills as the Understanding stands now, nothing
  * is discovered, and an end is left as the minute found it, for `endLoopRun` to take (D-221). With
- * no loop, a map run already ended or no minutes, returns the very state and 0 passed. Throws a
+ * no earning loop, a map run already ended or no minutes, returns the very state and 0 passed. Throws a
  * RangeError on a `minutes` that is no whole number from 0 up.
  */
 export function advanceLoopRun(
@@ -285,7 +285,7 @@ export function advanceLoopRun(
   };
 }
 
-/** How the end of a loop's map run was dealt with. */
+/** How the end of an earning loop's map run was dealt with. */
 type EndKind = "none" | "completion" | "covered" | "noPractice" | "stopped";
 
 /** What `endLoopRun` does, and how the end was dealt with, `kind`. */
@@ -311,7 +311,7 @@ function takeEnd(
   let practice = loop.practice;
   let completed = loop.completed;
   if (run.death) {
-    // The practice gathered at the loop is what the death takes with the rest (D-190); the run that
+    // The practice gathered at the earning loop is what the death takes with the rest (D-190); the run that
     // died pays nothing, so it is no part of it.
     const settled = teamAfterDeath(
       team,
@@ -371,17 +371,17 @@ function takeEnd(
 }
 
 /**
- * Takes the end a character's loop run reached, at the real moment `nowMs`, and starts the next map
+ * Takes the end a character's earning loop run reached, at the real moment `nowMs`, and starts the next map
  * run at game minute 0 in the same step, with the seed `nextSeed` draws from the ended run's seed.
  * A completion deposits the loot of the frozen bring list into the chest, adds the run's practice
- * to the loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
+ * to the earning loop's (what „Odbierz” took earlier is no longer in the run), and counts it. A death is
  * settled at `nowMs` as a manual one is, by the team's one resurrection (`teamAfterDeath`): the
- * practice gathered at the loop counts as the character's practice. A character with no practice
- * leaves the resurrection as it was, ready or not, and the loop goes on; otherwise, with it ready it
- * is used up, the run pays nothing, the loop keeps what it gathered and goes on; without one the
- * character loses its practice and ranks and the loop is dropped with what it gathered. The carried
+ * practice gathered at the earning loop counts as the character's practice. A character with no practice
+ * leaves the resurrection as it was, ready or not, and the earning loop goes on; otherwise, with it ready it
+ * is used up, the run pays nothing, the earning loop keeps what it gathered and goes on; without one the
+ * character loses its practice and ranks and the earning loop is dropped with what it gathered. The carried
  * items go with the run and the chest stays as it stood. One `loopRunEnded` event follows for the end.
- * With no loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a
+ * With no earning loop or a map run that goes on, returns the very state without reading `nowMs`; otherwise a
  * `nowMs` that is no safe integer is a RangeError.
  */
 export function endLoopRun(
@@ -499,7 +499,7 @@ function chestChange(before: Chest, after: Chest): AwayReportLine["chest"] {
   return change;
 }
 
-/** A line closed by the stop of its loop. */
+/** A line closed by the stop of its earning loop. */
 function stoppedLine(
   line: AwayReportLine,
   generation: number,
@@ -510,9 +510,9 @@ function stoppedLine(
 
 /**
  * The open game's passing (D-242): the whole minutes from the loop clock `fromMs` to `nowMs`, one
- * after another, within each minute the characters with a loop in the team's order, each end dealt
- * with at the minute's own real moment (`fromMs` plus k minutes). A loop that stops writes its stop
- * into the report; a covered death and a completion write nothing. With no loop in the state the
+ * after another, within each minute the characters with an earning loop in the team's order, each end dealt
+ * with at the minute's own real moment (`fromMs` plus k minutes). An earning loop that stops writes its stop
+ * into the report; a covered death and a completion write nothing. With no earning loop in the state the
  * clock is set to `nowMs`; with no whole minute the very state is returned and the clock stays.
  */
 export function passLoops(
@@ -550,12 +550,12 @@ export function passLoops(
 /**
  * The catch-up (D-240, D-247): the whole minutes from the save time to `nowMs`, one character at a
  * time in the team's order, each through the whole span and the chest as the one before left it. It
- * reads neither the manual map run nor the pause, and a loop that stops does not stop the others.
+ * reads neither the manual map run nor the pause, and an earning loop that stops does not stop the others.
  * The team's one resurrection goes by the same order: the death of each character finds it as the
  * characters earlier on the list left it, even when they died later in real time (D-240).
  * Each character's turn is written into the report: its minutes, its own change of the chest, and
- * a covered death or a stop; the practice its loop gathered is read from the loop (D-246). With
- * no loop, no whole minute or no save time, the very state is returned.
+ * a covered death or a stop; the practice its earning loop gathered is read from the earning loop (D-246). With
+ * no earning loop, no whole minute or no save time, the very state is returned.
  */
 export function catchUp(state: GameState, nowMs: number): LoopPass {
   assertMoment("catchUp", nowMs);

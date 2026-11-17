@@ -73,7 +73,7 @@ function loopingPair() {
     const whole = advanceLoopRun(started.state, characterId, 100_000);
     assert.ok(
       mapRunEnded(whole.state.loops[characterId].run),
-      "precondition: the run of the loop ends",
+      "precondition: the run of the earning loop ends",
     );
     state = advanceLoopRun(started.state, characterId, whole.passed - 1).state;
   }
@@ -265,7 +265,7 @@ test("a reading that ends a manual map run is one moment of saving, and a readin
   });
 });
 
-// Catches one save for each loop's map run that a result ended, where D-207 gives one for the result.
+// Catches one save for each earning loop's map run that a result ended, where D-207 gives one for the result.
 test("a catch-up whose result ended the map runs of two earning loops is one moment of saving", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”, „Zatrzymaj”, „Odbierz”, buying a branch rank, „Restart”, „Zakończ”, „Zamknij” of the report, a pause and a pace — right after a manual map run ends in a completion or in the character's death, right after a reading of the clock or a catch-up whose result ended map runs of earning loops, with one save for that result"
   const state = withSaveTime(loopingPair(), CLOCK_MS - 60_000);
@@ -277,15 +277,15 @@ test("a catch-up whose result ended the map runs of two earning loops is one mom
       taken[0].result.events.filter((event) => event.kind === "loopRunEnded")
         .length,
       2,
-      "precondition: two map runs of loops ended",
+      "precondition: two map runs of earning loops ended",
     );
     assert.equal(sent.length, 1);
   });
 });
 
-// Catches a send or a loop start that is not a moment of saving. The clock's own flush before each is
+// Catches a send or an earning loop start that is not a moment of saving. The clock's own flush before each is
 // pinned by tests/view/clock.test.mjs.
-test("a send and a start of a loop are each one moment of saving", async () => {
+test("a send and a start of an earning loop are each one moment of saving", async () => {
   // decision: D-207 "The game saves the game state on the server by itself right after each change of it the player makes — among them an edit of a program or of the copy, an act on the list of programs, creating a character, sending one, „Puść w pętlę”"
   await onStore(idle(), async ({ store, sent }) => {
     store.send({ mapId: "forest", characterId: 1 });
@@ -300,7 +300,7 @@ test("a send and a start of a loop are each one moment of saving", async () => {
       await turns();
       assert.ok(
         Object.hasOwn(store.get().loops, 1),
-        "the character is in a loop",
+        "the character is in an earning loop",
       );
       assert.equal(sent.length, 1);
     },

@@ -59,7 +59,7 @@ export function campCapacity(): number {
 /**
  * Whether the character is at the camp: it is neither the character of the manual map run, going,
  * paused or ended and waiting for „Restart” or „Zakończ”, nor a character in an earning loop. A
- * character whose earning loop was stopped has no entry in the loops and is at the camp.
+ * character whose earning loop was stopped has no entry in the earning loops and is at the camp.
  */
 function atCamp(state: GameState, id: CharacterId): boolean {
   return state.run?.character.id !== id && state.loops[id] === undefined;

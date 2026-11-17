@@ -1,11 +1,11 @@
 // The time of earning loops: the open game passing them minute by minute, the catch-up after a load
 // passing the minutes away one character at a time, and the report the catch-up writes. The
 // expectations come from D-239 (a game minute of an earning loop is a real minute), D-240 (the
-// catch-up takes the characters one at a time), D-241 (the end of a loop's map run is dealt with at
+// catch-up takes the characters one at a time), D-241 (the end of an earning loop's map run is dealt with at
 // once), D-242 (the clock of an earning loop), D-246 (the report), D-247 (the minutes it computes)
 // and D-248 (the save time). The decisions name where the game departs
 // from its predecessor: no upper bound of the catch-up (D-247), one button for the whole report
-// and no minutes in a line of a loop that stopped in the open game (D-246). Where an expectation is
+// and no minutes in a line of an earning loop that stopped in the open game (D-246). Where an expectation is
 // a relation (the catch-up against the open game) no value comes from today's run; the rest are
 // written out by hand from the sentences of the invariants.
 import assert from "node:assert/strict";
@@ -97,7 +97,7 @@ function game(chest = {}) {
   };
 }
 
-/** The game with the loops of Ala and Ola started, Ola's first, and saved at `S`. */
+/** The game with the earning loops of Ala and Ola started, Ola's first, and saved at `S`. */
 function looping(chest = {}) {
   let state = startLoop(game(chest), { ...FOREST, characterId: 2 }, S).state;
   state = startLoop(state, FOREST, S).state;
@@ -117,7 +117,7 @@ function changing(state, id, change) {
   };
 }
 
-/** `state` with the loop of the character `id` changed by `change`. */
+/** `state` with the earning loop of the character `id` changed by `change`. */
 function changingLoop(state, id, change) {
   return {
     ...state,
@@ -125,7 +125,7 @@ function changingLoop(state, id, change) {
   };
 }
 
-/** `state` with the map run of the loop of the character `id` changed by `change`. */
+/** `state` with the map run of the earning loop of the character `id` changed by `change`. */
 function changingRun(state, id, change) {
   const loop = state.loops[id];
   return changingLoop(state, id, { run: { ...loop.run, ...change } });
@@ -157,7 +157,7 @@ function dyingNext(state, id) {
 }
 
 /**
- * The game with the loop of Ala alone started on Las — głębiej, the map of the wolf, and saved at
+ * The game with the earning loop of Ala alone started on Las — głębiej, the map of the wolf, and saved at
  * `S`, her map run in game minute 180 with `body`, an exploration under way and the attack generator
  * at `WOLF_DRAW`: the attack comes in the next game minute.
  */
@@ -205,7 +205,7 @@ function withoutPractice(state, id) {
   });
 }
 
-/** The game with the loop of Ala alone started and saved at `S`: Ola, in the team, has none. */
+/** The game with the earning loop of Ala alone started and saved at `S`: Ola, in the team, has none. */
 function aloneLooping(chest = {}) {
   return withSaveTime(startLoop(game(chest), FOREST, S).state, S);
 }
@@ -293,7 +293,7 @@ test("a moment that is no safe integer is a RangeError in the span, the open gam
 });
 
 // invariant: catch-up-minutes
-test("the catch-up passes a loop one game minute for each whole real minute from the save time, and the rest waits", () => {
+test("the catch-up passes an earning loop one game minute for each whole real minute from the save time, and the rest waits", () => {
   // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   const state = looping();
   const at90 = catchUp(state, S + 90_000);
@@ -340,7 +340,7 @@ test("a negative save time catches up as arithmetic gives it", () => {
   assert.equal(result.state.loops[1].run.minute, 2);
 });
 
-test("with no loop, a save time of null or no whole minute the catch-up returns the very state and a clock set to the reading", () => {
+test("with no earning loop, a save time of null or no whole minute the catch-up returns the very state and a clock set to the reading", () => {
   // decision: D-242 "Earning loops go by the browser's date, on one loop clock of the browser view: a date apart from the game state up to which their whole game minutes have been counted, each game minute as long as the balance data gives, and a reading before it passes zero game minutes and sets it to that reading"
   const fresh = withSaveTime(game(), S);
   const noLoop = catchUp(fresh, S + 50 * MIN);
@@ -357,7 +357,7 @@ test("with no loop, a save time of null or no whole minute the catch-up returns 
   assert.equal(
     open.clockMs,
     S + 5 * MIN,
-    "no loop: a first loop gets a whole first minute",
+    "no earning loop: a first earning loop gets a whole first minute",
   );
 });
 
@@ -377,7 +377,7 @@ test("the catch-up and the open game read neither the manual map run nor the pau
   // decision: D-239 "An earning loop goes only on a solved map, one game minute per real minute, and the speed control does not reach it, while a manual map run may be fast-forwarded"
   // decision: D-250 "A pause of a manual map run, its stop at a discovery and the screen after its end hold that map run, and the earning loops of other characters go on through them"
   const manual = send(game(), FOREST, S).state;
-  // Ola has a loop beside Ala's manual map run, which sits paused one minute in.
+  // Ola has an earning loop beside Ala's manual map run, which sits paused one minute in.
   let state = startLoop(manual, { ...FOREST, characterId: 2 }, S).state;
   state = advanceMinutes(state, 1).state;
   state = { ...state, paused: true, pace: 16 };
@@ -446,7 +446,7 @@ test("the moment of a death is the same in one call and in calls split at any mi
 
 /**
  * The open game minute by minute against the catch-up, over the same span: for the first character
- * the same character, loop and chest. No other character has a loop, so none reaches its chest or
+ * the same character, earning loop and chest. No other character has an earning loop, so none reaches its chest or
  * its resurrection, and the whole of the team agrees too.
  */
 function assertRelation(state, minutes, label) {
@@ -457,7 +457,7 @@ function assertRelation(state, minutes, label) {
   assert.deepEqual(
     open.state.loops[1],
     caught.state.loops[1],
-    `${label}: loop`,
+    `${label}: earning loop`,
   );
   assert.deepEqual(
     open.state.team.chest,
@@ -470,11 +470,11 @@ function assertRelation(state, minutes, label) {
 
 // invariant: catch-up-state
 // D-240: a relation, so no value comes from today's run.
-test("a character whose chest and resurrection no other loop reaches ends the catch-up as the open game does, through a covered death and an uncovered one", () => {
+test("a character whose chest and resurrection no other earning loop reaches ends the catch-up as the open game does, through a covered death and an uncovered one", () => {
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
   // It dies of cold in minute 243 and again 243 minutes later: the first death is covered, the
-  // second, before the renewal, takes the character and stops the loop.
+  // second, before the renewal, takes the character and stops the earning loop.
   assertRelation(aloneLooping({ stick: 3 }), 600, "covered then uncovered");
   assert.equal(
     catchUp(aloneLooping(), S + 600 * MIN).state.loops[1],
@@ -531,7 +531,7 @@ test("a character whose map run meets a wolf's attack ends the catch-up as the o
 });
 
 // invariant: loop-run-knowledge
-// D-249: a loop passes through a span in which a manual map run would discover, and the
+// D-249: an earning loop passes through a span in which a manual map run would discover, and the
 // Understanding and the programs stay.
 test("a catch-up across the first chill leaves the Understanding and the programs as they were", () => {
   // decision: D-249 "A map run of an earning loop discovers nothing: the Understanding and the program stay as they stand, game time goes on, and the game writes no program rule at a discovery, and the player discovers what the character met in a manual map run"
@@ -648,8 +648,8 @@ test("with room in the chest for one, the open game gives it to whoever complete
 // invariant: trip-transfer
 // invariant: trip-run-end
 // D-246: each character's own
-// change of the chest; the practice its loop gathered stands at the loop and in no line (D-189).
-test("each character's line holds its own change of the chest with no zero kept, and the practice stays at the loop", () => {
+// change of the chest; the practice its earning loop gathered stands at the earning loop and in no line (D-189).
+test("each character's line holds its own change of the chest with no zero kept, and the practice stays at the earning loop", () => {
   // decision: D-189 "Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-240 "Characters meet only at the borders of map runs and at the account's resurrection: an item reaches the chest when a map run completes, and the next map run takes what it finds there; when the chest has room for one character's loot only, the character earlier on the list takes it; the death of each character finds the resurrection as the characters earlier on the list left it, so with one resurrection for two deaths the character earlier on the list takes it, even when it died later in real time"
@@ -670,23 +670,23 @@ test("each character's line holds its own change of the chest with no zero kept,
     line(1, { minutes: 1, chest: { stick: 3 } }),
     line(2, { minutes: 1, chest: { stick: -2 } }),
   ]);
-  // What the loop waits to pay is the practice it held before and what the completion added.
+  // What the earning loop waits to pay is the practice it held before and what the completion added.
   assert.deepEqual(result.state.loops[1].practice, {
     eating: 3,
     smallItemGathering: 9,
     exploration: 1,
   });
-  assertLoadsBack(result.state, "a report of two continuing loops");
+  assertLoadsBack(result.state, "a report of two continuing earning loops");
 });
 
 // invariant: trip-run-end
-test("a covered death in the catch-up gives the loop its next map run with nothing back from the dead one, and marks the line", () => {
+test("a covered death in the catch-up gives the earning loop its next map run with nothing back from the dead one, and marks the line", () => {
   // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
   // decision: D-246 "Teraz to pokolenie {n}.”, then the others, in `text`, „{imię}: {m} min · skrzynka: {przedmiot} +{n}, {przedmiot} −{n} · wprawa do odebrania: {umiejętność} +{n}”, with „Odbierz” in `positive` where practice waits, with what is empty left out, with „ · wskrzeszenie zużyte” where a resurrection covered a death, under them „Skrzynka jest pełna.” in `warning` where the chest is full, {m} in both lines being the game minutes the catch-up passed"
-  // Ala's loop starts on a program that takes 2 sticks, so the chest holds 3 at the save.
+  // Ala's earning loop starts on a program that takes 2 sticks, so the chest holds 3 at the save.
   let taking = game({ stick: 5 });
   taking = setProgram(taking, withTrip(EMPTY, [entry("stick", 2)], [])).state;
   taking = withSaveTime(startLoop(taking, FOREST, S).state, S);
@@ -706,8 +706,8 @@ test("a covered death in the catch-up gives the loop its next map run with nothi
 });
 
 // invariant: catch-up-minutes
-// D-240, D-246: a loop a death stopped opens its line at any number of game minutes.
-test("a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the others go on", () => {
+// D-240, D-246: an earning loop a death stopped opens its line at any number of game minutes.
+test("an earning loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the others go on", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
@@ -735,10 +735,10 @@ test("a loop that stops in the catch-up writes its line with the minutes it work
     line(2, { minutes: 300 }),
   ]);
   assert.deepEqual(result.state.stoppedLoops, {}, "death pays nothing");
-  assertLoadsBack(result.state, "a loop stopped in a catch-up");
+  assertLoadsBack(result.state, "an earning loop stopped in a catch-up");
 });
 
-test("a loop that stops in the first minute of the catch-up opens the report at one minute", () => {
+test("an earning loop that stops in the first minute of the catch-up opens the report at one minute", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   const state = notReadyUntil(dyingNext(looping(), 1), S + 99 * MIN);
@@ -757,7 +757,7 @@ test("a catch-up with no whole minute writes no line", () => {
 });
 
 // D-246: a further return before „Zamknij” adds to the report.
-test("a further return adds to the line of a loop still going, and its chest changes add up with no zero kept", () => {
+test("a further return adds to the line of an earning loop still going, and its chest changes add up with no zero kept", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-246 "The practice waiting in a line is read from that character's earning loop whenever the section is drawn, so it always equals what „Odbierz” would pay at that moment, and after „Odbierz” it and the button are gone until the earning loop gathers more; the rest of the report lies in the game state, so it survives a reload, and a further return before „Zamknij” adds to it; the section shows from one whole game minute of the catch-up, and an earning loop a death stopped opens it at any number of game minutes"
   let state = looping({ stick: 1 });
@@ -787,7 +787,7 @@ test("a further return adds to the line of a loop still going, and its chest cha
   assertLoadsBack(result.state, "a report added to");
 });
 
-test("a later loop of a character whose line stopped opens a line of its own", () => {
+test("a later earning loop of a character whose line stopped opens a line of its own", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-246 "After being away the player reads a report in the section „Gdy cię nie było” of Siedziba, above „Drużyna”, one line for each character that had an earning loop, a later earning loop of a character whose earning loop a death stopped opening a line of its own, and one button „Zamknij” closes the whole section: first the earning loops a death stopped, in `danger`, „{imię}: pętla stanęła po {m} min — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   const stopped = line(2, {
@@ -809,7 +809,7 @@ test("a later loop of a character whose line stopped opens a line of its own", (
 });
 
 // D-246: the open game writes a stop into the same report and no minutes of its own.
-test("a loop that stops in the open game writes a line of 0 minutes, and a covered death or a completion writes nothing", () => {
+test("an earning loop that stops in the open game writes a line of 0 minutes, and a covered death or a completion writes nothing", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
   // decision: D-241 "In every game state the browser view holds or a saved game state admits, the map run of an earning loop is going on: the function that reaches its end deals with that end at once"
@@ -831,7 +831,7 @@ test("a loop that stops in the open game writes a line of 0 minutes, and a cover
   assert.equal(completed.state.loops[1].completed, 1);
 });
 
-test("a loop that stops in the open game closes the line of an earlier return, which then reads without minutes", () => {
+test("an earning loop that stops in the open game closes the line of an earlier return, which then reads without minutes", () => {
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-246 "An earning loop a death stops in the open game enters the same section as „{imię}: pętla stanęła — śmierć bez wskrzeszenia: postać straciła wprawę i wykupione stopnie"
   const earlier = line(1, {
@@ -897,7 +897,7 @@ function deepFreeze(value) {
 }
 
 // invariant: simulation-inputs
-// The pool of `tests/invariants/test_simulation_inputs.py` holds no state with a loop, so the
+// The pool of `tests/invariants/test_simulation_inputs.py` holds no state with an earning loop, so the
 // functions of the earning loop are given such states here, frozen.
 test("passLoops, catchUp and closeAwayReport write to nothing they are given, through a completion, a covered death and a stop", () => {
   const completing = withProgram(
@@ -928,7 +928,7 @@ test("passLoops, catchUp and closeAwayReport write to nothing they are given, th
 });
 
 /**
- * A loop of Ala that dies of cold in game minute 243, and one of Ola that dies in minute 1: in the
+ * An earning loop of Ala that dies of cold in game minute 243, and one of Ola that dies in minute 1: in the
  * real time of the span Ola dies first, in the order of the team's list Ala does.
  */
 function oneEarlyOneLate(chest = {}) {
@@ -982,7 +982,7 @@ test("in the open game the death earlier in time takes the shared resurrection, 
 
 // D-190: the death of a character with no practice leaves the resurrection for the next one.
 // invariant: resurrection-renewal
-test("a loop of a character with no practice dies on and on with no loss: the resurrection, the generation and the loop stay, and no line marks it", () => {
+test("an earning loop of a character with no practice dies on and on with no loss: the resurrection, the generation and the earning loop stay, and no line marks it", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   // decision: D-386 "The load of a saved game state admits every game state the game's own functions make, so the game never writes a saved game state that its own load discards"
   // decision: D-239 "Each map run of an earning loop is a map run of its own, followed at once by the next as long as the earning loop goes on"
@@ -990,7 +990,7 @@ test("a loop of a character with no practice dies on and on with no loss: the re
   const state = withoutPractice(looping(), 1);
   const caught = catchUp(state, S + 300 * MIN).state;
   assert.equal(ala(caught).generation, 1);
-  assert.ok(caught.loops[1], "the loop goes on");
+  assert.ok(caught.loops[1], "the earning loop goes on");
   assert.equal(caught.loops[1].runNumber, 2);
   assert.deepEqual(caught.awayReport[0], line(1, { minutes: 300 }));
   // Ola, with practice, dies in the same minute and finds the resurrection ready: it takes it.
@@ -1006,8 +1006,8 @@ test("a loop of a character with no practice dies on and on with no loss: the re
   assertLoadsBack(caught, "a death of a character with no practice");
 });
 
-// D-190: the practice gathered at the loop is practice the character has.
-test("a character with no practice in its skills but practice gathered at its loop is guarded by the resurrection, and loses it without one", () => {
+// D-190: the practice gathered at the earning loop is practice the character has.
+test("a character with no practice in its skills but practice gathered at its earning loop is guarded by the resurrection, and loses it without one", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   // decision: D-190 "The account has one resurrection, shared by all its characters: the death of a character with practice uses it up while it is ready, a death of a character with practice with none ready stops its earning loop, and it is renewed after a span of real time set in the balance data, eight hours to start, or at once by the first completion of a map the account has not solved yet, once for each map, a ready resurrection staying ready"
   const gathered = changingLoop(withoutPractice(aloneLooping(), 1), 1, {
@@ -1029,7 +1029,7 @@ test("a character with no practice in its skills but practice gathered at its lo
 });
 
 // D-190: only the practice a death takes counts, and the run that died pays nothing.
-test("the practice of the map run that dies is no practice gathered at the loop", () => {
+test("the practice of the map run that dies is no practice gathered at the earning loop", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"
   const dying = changingRun(
     dyingNext(withoutPractice(aloneLooping(), 1), 1),

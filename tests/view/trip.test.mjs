@@ -324,10 +324,10 @@ test("the enter line gives what a send takes, cut by the chest, the capacity and
   assert.equal(entersLine(take(), null, 15, MAPS.forest), "Wejdzie: nic");
 });
 
-// D-326: a program whose bring list is empty earns nothing for the chest, so the loop mark
+// D-326: a program whose bring list is empty earns nothing for the chest, so the earning loop mark
 // stands; a list with an item in it does not. Catches the mark on a non-empty list, and no mark on
 // an empty one.
-test("the loop mark stands when the bring list is empty, and only then", () => {
+test("the earning loop mark stands when the bring list is empty, and only then", () => {
   // decision: D-326 "Where the bring list of the program picked is empty"
   assert.equal(
     emptyLoopMark({ take: [entry("stick", 5)], bring: [] }),

@@ -43,12 +43,12 @@ test("a team with nobody at the camp: the picture band shows the fire and the ch
   assert.deepEqual(campDrawing(away).chest, empty.chest);
 });
 
-// Catches a picture band that draws the whole team (a character on a map or in a loop standing at the fire), one
+// Catches a picture band that draws the whole team (a character on a map or in an earning loop standing at the fire), one
 // that forgets one of the three ways a character is away, or one that reorders the characters (D-54).
 test("only the characters at the camp stand in the picture band, in the order of creation", () => {
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-389 "The characters that stand in it are those"
-  // 1 stays, 2 is in the manual map run, 3 in an earning loop, 4 had its loop stopped, 5 stays.
+  // 1 stays, 2 is in the manual map run, 3 in an earning loop, 4 had its earning loop stopped, 5 stays.
   const base = send(teamOf(5), { mapId: MAP, characterId: 2 }, NOW).state;
   const state = {
     ...base,

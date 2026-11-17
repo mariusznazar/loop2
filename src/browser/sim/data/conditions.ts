@@ -1,3 +1,4 @@
+import type { ItemId } from "./items.js";
 import type { Revelation } from "./revelations.js";
 
 export type ConditionDef = {
@@ -15,6 +16,12 @@ export type ConditionDef = {
   min?: number;
   max?: number;
   step?: number;
+  /**
+   * Present only for a condition that names an item of the backpack: the item a new condition starts
+   * with where the character knows it, beside its default number. Where it does not, the program
+   * editor takes the first item the character knows, in the order of the items' data.
+   */
+  defaultItem?: ItemId;
   /** The event that reveals the condition; absent for a condition known from the start of a new game. */
   revealedBy?: Revelation;
 };
@@ -90,6 +97,7 @@ export const CONDITIONS = {
     revealedBy: { kind: "explored" },
     unit: "szt.",
     defaultValue: 8,
+    defaultItem: "stick",
     min: 0,
     max: 50,
     step: 1,

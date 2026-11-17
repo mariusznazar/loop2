@@ -5,7 +5,7 @@
  * „Gdy cię nie było” or „Pętle, które stanęły” while it holds a line, with „Zamknij”; the section
  * „Drużyna” with its heading, at each character in the order of creation its name as a link to its
  * screen Postać, its generation „pokolenie {n}” from 2 up, its archetype, its resurrection line, the
- * line of its earning loop with „Zatrzymaj” or the line of a stopped loop, and the creation of a
+ * line of its earning loop with „Zatrzymaj” or the line of a stopped earning loop, and the creation of a
  * character; the section „Skrzynka {n}/{cap}” with the team's chest; and, last on the screen, the
  * folded section of credits of the game's icons „Autorzy grafiki” (D-27). The screen sends nobody and
  * leads to no map: a character is sent from the card of a map on the screen Mapy, which the bar's
@@ -106,7 +106,7 @@ type ReportProps = {
 
 /**
  * The section of the report on earning loops (D-246): its title, one line for each entry with the
- * loops that stopped in `danger` and „Odbierz” in `positive` at a line whose loop has practice
+ * earning loops that stopped in `danger` and „Odbierz” in `positive` at a line whose earning loop has practice
  * waiting, „Skrzynka jest pełna.” in `warning` where the chest is full, and one button „Zamknij”
  * that closes the whole report. The section stays in the page, hidden and empty, while the report
  * holds no line.

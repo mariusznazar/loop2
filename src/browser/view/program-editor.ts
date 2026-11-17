@@ -327,8 +327,9 @@ export function dropGroup(
 
 /**
  * A new condition of `kind`: a kind that takes a number starts with the data's default, one that
- * names a resource with the first of `resources`, „Zapas poniżej” with the first of `items`. Null
- * where there is nothing to name.
+ * names a resource with the first of `resources`, „Zapas poniżej” with the item the data names as
+ * its default where `items` holds it, otherwise with the first of `items`. Null where there is
+ * nothing to name.
  */
 function newCondition(
   kind: ConditionKind,
@@ -344,7 +345,8 @@ function newCondition(
       return resource === undefined ? null : { kind, resource, value };
     }
     case "itemBelow": {
-      const item = items[0];
+      const preferred = CONDITIONS.itemBelow.defaultItem;
+      const item = items.includes(preferred) ? preferred : items[0];
       return item === undefined ? null : { kind, item, value };
     }
     case "temperatureBelow":
@@ -389,8 +391,9 @@ function replaceCondition(
 
 /**
  * The condition switched to `kind` (null index selects the group), with the data's default number;
- * a condition that names a resource takes the first of `resources`, „Zapas poniżej” the first of
- * `items`. Null when the kind is already chosen or there is nothing to name.
+ * a condition that names a resource takes the first of `resources`, „Zapas poniżej” the item the
+ * data names as its default where `items` holds it, otherwise the first of `items`. Null when the
+ * kind is already chosen or there is nothing to name.
  */
 export function withConditionKind(
   program: Program,

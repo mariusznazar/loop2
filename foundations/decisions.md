@@ -806,6 +806,19 @@ The built-in secret scanning of GitHub, with push protection, is what looks for 
 *Rationale:* GitHub's secret scanning runs automatically and for free for a public repository, scans the whole Git history of the repository for secrets of the kinds it knows, and its push protection blocks a push in which it detects one, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no test of the repository checks that it is on.
 *Rejected:* a separate workflow with a scanner, such as gitleaks — a second CI file and a foreign tool fetched at every run, and a departure from the rule of the process the repository pins that no other checking command stands in CI beside the one command of tests; the scanner as a test of the one command of tests — a tool added to the local installation, repeating what GitHub already does over the whole history of the repository.
 
+### D-424 — Where does the environment of the pinned Python quality tools come from?
+
+Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions. Where the environment cannot be made, the test fails with the one message that says so, naming `.runs/quality-venv` and the command that installs it, and no check is skipped.
+
+- **Scope:** build-tools
+- **Based on:** none
+- **Relations:** derives from D-30 · derives from D-31
+- **Verification:** tests: an environment complete at the pinned versions left as it is with nothing installed; an environment half made, at another version than the pinned one, or with a tool that does not run, made again before the first check, and not taken for ready after an install that left it half made; a failed install ending in the one message that names `.runs/quality-venv` and the install command, the output of the failed command in it.
+- **Origin:** none
+
+*Rationale:* a fresh directory has no such environment, and the checks then end in errors of Ruff and ShellCheck that are not errors of the code and hide a real error of style among them; the test that needs the tools makes them, so that the environment stands whether the whole gate runs or only the file of that test. A half-made environment from an interrupted install is judged by the versions it holds and by whether each tool runs, so that it is made again and never taken for ready. Accepted with it: the first run in a fresh directory needs Python 3.9 or newer and the network for the install from the Python Package Index, with the hashes of the pinned file as its only guard, and a run beside another run in the same directory may find the environment half made by the other, or clear it while the other checks, so that one of them fails with an error of a tool rather than with the one message.
+*Rejected:* a step of the full gate before the tests — the environment would not be made where only the file of the quality test is run; a step of the install of npm packages — the build of the image runs that install too, and would make a Python environment in the image; skipping the checks that need the tools where the environment cannot be made — a check that did not run is no pass.
+
 ## Testing discipline
 
 The testing discipline loop2 adopts: the levels, shape and exemplars of tests, the mechanisms they exercise and the deliberate exclusions.
@@ -2063,7 +2076,7 @@ Just before a deployment replaces the containers of the game, it appends the who
 - **Based on:** docker-container-log-removal · docker-compose-recreate-removal · docker-local-log-driver-bound · logrotate-rotation-triggers · logrotate-rotation-count · mikrus-host-docker-compose-version · mikrus-host-logrotate-schedule · loop2-app-log-file-names · loop2-host-installed-copies-agree · https://docs.docker.com/engine/logging/configure/ — "Docker keeps the json-file logging driver (without log-rotation) as a default" · "Existing containers don't use the new logging configuration automatically"; read 2026-11-08 · https://docs.docker.com/engine/logging/drivers/json-file/ § max-size — "Defaults to -1 (unlimited)"; read 2026-11-08 · https://manpages.ubuntu.com/manpages/jammy/man5/journald.conf.5.html — "By default, only forwarding to syslog and wall is enabled"; read 2026-11-08 · https://grafana.com/pricing/ § Free — "14 day retention" · "Limited to 50 GB ingested per month"; read 2026-11-08 · https://grafana.com/docs/loki/latest/send-data/docker-driver/ § known issues — "the Docker daemon might wait forever if the container is stuck"; read 2026-11-08 · https://betterstack.com/pricing § Free Tier — "3 GB logs retained for 3 days"; read 2026-11-08 · https://grafana.com/docs/loki/latest/operations/storage/retention/ — "By default the `compactor.retention-enabled` flag is not set, so the logs sent to Loki live forever"; read 2026-11-08 · https://grafana.com/docs/loki/latest/setup/size/ — "This is only documented for microservices/distributed mode"; read 2026-11-08
 - **Relations:** derives from D-252 · derives from D-17 · derives from D-12
 - **Verification:** invariants: loop2-deploy-log-dump. tests: the append made after the build and before the new containers start, and by no deployment that stops before them, holding the whole log of the application and of the tunnel connector, with no `--tail`; both services of the Compose file on the `local` driver with no other logging option; one `logrotate` stanza for `/var/log/loop2-app.log`, weekly or sooner past 100 MiB, keeping four rotated files and naming no user. An agent compares a change with the part no invariant and no test holds:
-  - complies: an agent looking for a failure from before the last deployment with a `grep` of the file that limits its matches, through the `mikrus` MCP server; a human's run of `account-block`, of `account-previous-save` or of `account-role` that appends only its JSON lines to the file
+  - complies: an agent looking for a failure from before the last deployment with a `grep` of the file whose output is bounded, keeping the newest lines, through the `mikrus` MCP server; a human's run of `account-block`, of `account-previous-save` or of `account-role` that appends only its JSON lines to the file
   - violates: the whole output of `account-block`, of `account-previous-save` or of `account-role`, addresses included, appended to the file; an agent that appends to, edits or rotates the file, or reads it whole with no bound
 - **Origin:** none
 
@@ -3183,7 +3196,7 @@ Players register and sign in with an email address and password. They can start 
 The account server sends email confirmation and password-reset messages from an address under `mariusznazar.com` through the authenticated SMTP service of Mikrus Outsider available to the existing Mikrus account. Public self-service account recovery is enabled only after confirmation and password-reset messages sent from the intended container reach external inboxes in a real delivery test.
 
 - **Scope:** account-server, deployment
-- **Based on:** mikrus-outsider-mail · loop2-app-log-password-reset-mail-events · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
+- **Based on:** mikrus-outsider-mail · loop2-app-log-password-reset-mail-events · loop2-app-log-confirmation-mail-events · Mikrus Outsider mail setup, DKIM and DMARC (https://wiki.mikr.us/outsider/mail/, read 2026-10-04) · Cloudflare DNS record types, separate web and mail records (https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/, read 2026-10-04) · Resend domain verification and SMTP service (https://resend.com/docs/add-a-domain, read 2026-10-04; https://resend.com/docs/send-with-smtp, read 2026-10-04) · Brevo sender domain and Free-plan branding (https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email, read 2026-10-04; https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan, read 2026-10-04) · Cloudflare Email Sending pricing for arbitrary recipients (https://developers.cloudflare.com/email-service/platform/pricing/, read 2026-10-04)
 - **Relations:** derives from D-152
 - **Verification:** invariants: account-email-via-outsider. tests: a message handed to the SMTP server
   only after a login with the configured login and password. An agent compares the launch with the part no invariant and no test holds:
@@ -3191,7 +3204,7 @@ The account server sends email confirmation and password-reset messages from an 
   - violates: recovery is enabled after only SMTP connection or relay acceptance succeeds
 - **Origin:** none
 
-*Rationale:* Mariusz can use Outsider with his existing Mikrus account and owns `mariusznazar.com`; this keeps the game with the domain and provider he already has. Outsider still requires a mailbox, mail DNS records, credentials and monitoring. The website's DNS records do not need to be moved for mail-only use. Acceptance by an SMTP relay does not establish that an account holder can receive the link needed to recover access. The choice is to be looked at again if Outsider delivery from the intended container fails, its limits prevent account recovery, or the service stops being available on the current Mikrus plan. The delivery test has been run for the password-reset message only. The operator gave this result on 2026-11-14: he sent „Wyślij odnośnik” from the public address to the confirmed address of his account in an external mailbox, and the message „Ustaw nowe hasło w loop2” arrived; a first attempt with a wrongly typed address sent nothing, as the code does. The game's log for that request holds the events `link-issued` and `message-sent` with `linkPurpose` `password-reset` and no line `"failure":"mail"`, which shows that the application handed the message to the mail service without a failure and not that the message arrived; arrival is the operator's observation. For the confirmation message no test, no log line and no observation exists, so its delivery is unsettled, and the clause of *Verification* that names both message types is checked by no entry.
+*Rationale:* Mariusz can use Outsider with his existing Mikrus account and owns `mariusznazar.com`; this keeps the game with the domain and provider he already has. Outsider still requires a mailbox, mail DNS records, credentials and monitoring. The website's DNS records do not need to be moved for mail-only use. Acceptance by an SMTP relay does not establish that an account holder can receive the link needed to recover access. The choice is to be looked at again if Outsider delivery from the intended container fails, its limits prevent account recovery, or the service stops being available on the current Mikrus plan. The delivery test has been run for the password-reset message, and the operator has reported a check of the confirmation message. The operator gave the password-reset result on 2026-11-14: he sent „Wyślij odnośnik” from the public address to the confirmed address of his account in an external mailbox, and the message „Ustaw nowe hasło w loop2” arrived; a first attempt with a wrongly typed address sent nothing, as the code does. The game's log for that request holds the events `link-issued` and `message-sent` with `linkPurpose` `password-reset` and no line `"failure":"mail"`, which shows that the application handed the message to the mail service without a failure and not that the message arrived; arrival is the operator's observation. For the confirmation message the operator reported on 2026-11-14 that he had checked and received it and that its link worked; the words name no mailbox, hour, sender or route. The game's log of that day holds two pairs of the events `link-issued` and `message-sent` with `linkPurpose` `email-confirmation`, the event `email-confirmed` after each pair and no line `"failure":"mail"`, which shows that the application handed each message to the mail service without a failure and that each link was opened, not which pair was the operator's nor in which mailbox the message arrived; arrival is the operator's observation, as for the password-reset message. That the confirmation message reached an external inbox is established by no entry, and the clause of *Verification* that names both message types is checked by no test.
 *Rejected:* Resend or Brevo with the same domain — each adds a separate provider account to maintain, and Brevo Free brands the messages; Cloudflare Email Sending — adds a paid sending service for arbitrary recipients; no email delivery — would leave self-service password reset unusable.
 
 ### D-154 — How does the account server send email through Outsider?
@@ -3792,8 +3805,8 @@ as refused as too large (D-208).
 - **Origin:** none
 
 *Rationale:* the player saves nothing by hand, and a closed tab takes at most the last 30 real
-seconds of a manual map run — 30 game minutes at 1×, up to 480 at 16×, a whole map run of Las from the
-sending of the character — at the cost of a request every 30 real seconds per player while a manual
+seconds of a manual map run — 30 game minutes at 1×, up to 480 at 16×, as many as the shortest map run
+that solves Las lasts, from the sending of the character — at the cost of a request every 30 real seconds per player while a manual
 map run passes. An earning loop takes no rhythm: a tab closed with its last save lost computes the
 game minutes since the save before by the catch-up, the same course at one earning loop, so earning
 loops save at the player's acts, after the ends of their map runs and at the hidden page; starting
@@ -3815,16 +3828,18 @@ player at a short fault of the server loses the last change; saving only at the 
 completion and a death, with no save while a manual
 map run passes — fewer requests, but the catch-up does not recompute a manual map run, so closing the
 tab in the middle of one takes it back to the sending
-of the character: up to 8 real minutes at 1× (the whole 480 game minutes of Las), up to half a real
-minute at 16×; the 30-second rhythm for earning loops too — a tab left open for a day sends about 2880
+of the character, so the loss is as long as the map run: for the 480 game minutes of the shortest map
+run that solves Las, 8 real minutes at 1× and half a real minute at 16×, and more for a longer one; the 30-second rhythm for earning loops too — a tab left open for a day sends about 2880
 saves, which at one earning loop protect nothing, since the catch-up computes the same course;
 a save at each map run a catch-up ended — it sends what the last one sends; no save after a catch-up
 — map runs that ended stay unsaved; a save after any game minute of a catch-up — each reload sends,
 and two open tabs refuse each other (D-209); a button „Zapisz” — a player who forgets to click loses everything since the last
 click, and a new button with its states; the same moments with a save every 30 game minutes while a
 map run passes instead of every 30 real seconds — the same as every 30 real seconds at 1×, but at
-16× a request every less than 2 real seconds, 16 saves of about 80 KB together in the half minute of
-Las, while closing the tab takes at most 30 game minutes at every pace.
+16× a request every less than 2 real seconds, up to 16 saves of about 9.8 KB each, about 157 KB
+together, in each half real minute at 16×, which is 480 game minutes, measured as D-208 measures a save, by the product's own
+measurement, whose record is not open to a reader of the repository, while closing the tab takes at
+most 30 game minutes at every pace.
 
 ### D-208 — What does the player see of saving the game state?
 
@@ -5205,7 +5220,7 @@ a change of D-40.
 The game works in the current releases of Chrome, Edge and Firefox on a computer, and Safari is outside that set. The smallest window the game supports has a page area of 1280 × 720 px, the area of the page inside the browser's window, not the resolution of the screen. A decision that defines how the game looks in a narrower or a lower window — D-280, D-282, D-311, D-349, D-370 and D-389 — keeps its meaning there; a fault of the look in a window below the smallest, where no decision defines it, is not fixed.
 
 - **Scope:** browser-view, agent-workflow
-- **Based on:** none
+- **Based on:** playwright-firefox-webkit-releases
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
   - complies: a check of a change in Chromium at a page area of 1280 × 720 px; a change that keeps the content of Siedziba as wide as a window 1000 px wide, as D-280 gives it
@@ -5213,7 +5228,7 @@ The game works in the current releases of Chrome, Edge and Firefox on a computer
 - **Origin:** none
 
 *Rationale:* without a stated set of browsers and a smallest window, a remark about Safari or about a narrow or a low window cannot be told from a fault, and the question comes back in every request; the decisions that already define the look of a narrower or a lower window bind what the game does there, so what is left unfixed is only what no decision defines. The window is counted as the page area because that is how the checks of the game in a browser and the measurements of the layout count it, so a player whose screen is 1280 × 720 has a smaller page area and stands below the line. Accepted with it: the daily checks of an agent run in Chromium, and Firefox and Edge are checked by hand in a real browser in a session of its own, so a fault visible only in Firefox can pass between such sessions.
-*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and it is not known whether the tool installs with Firefox on this computer (it did not install with WebKit); no entry — every remark about Safari and about a narrow window stays without a measure.
+*Rejected:* the smallest window counted as the resolution of the screen, 1280 × 720 — the page area is then about 1280 × 600, and the measurements made so far would have to be counted again; Firefox added to the way an agent plays the game in a browser — the work grows, and the Firefox release installed for Playwright on this computer is older than the one Playwright CLI expects, so Firefox would need an installation first; no entry — every remark about Safari and about a narrow window stays without a measure.
 
 ## Maps: their content, time and solving
 
@@ -5244,15 +5259,15 @@ until „Wznów”.
 *Rationale:* solving a map is a puzzle the player may fast-forward, while earning is income and goes
 by the clock of the world, so the control of the pace reaches only the map runs the player starts: at
 one game minute per real second, the pace at which the predecessor game, loop, runs at 1× (its
-balance data gives one game minute per real second at the multiplier 1×), each attempt at the 480
-game minutes of Las takes eight real minutes, and at 16× half a real minute. Fast-forwarding is a
+balance data gives one game minute per real second at the multiplier 1×), the 480
+game minutes of Las, the whole of the shortest map run that solves it, take eight real minutes, and at 16× half a real minute. Fast-forwarding is a
 faster pace of the same game minutes, which pass one after another in sight, so the player still
 watches the program act. The paces stand as five buttons beside the pause, the chosen one marked as
 any chosen button of a group; the paces between 1× and 16× are a proposal, not taken from the
 predecessor game. A pause holds a map run without ending it, and it stays an act of its own, so a
 pace picked in a pause leaves the map run standing. Accepted with it: at 16× the screen moves on
 about three game minutes (3.2) at each refresh, which the clock makes every 200 ms; real time passes in a hidden browser tab too, so a map run at 16× left
-in a hidden tab passes the whole of Las unseen, its end included; a player who picks a pace in a
+in a hidden tab passes 480 game minutes of Las unseen in half a real minute, the whole of the shortest map run that solves it; a player who picks a pace in a
 pause sees nothing move until „Wznów”.
 *Rejected:* the same pace with no pause; a jump of a map run to its result, and a way back to an
 earlier game minute — the player would no longer watch the program act; picking a pace in a pause
@@ -5406,7 +5421,7 @@ the next until the player changes it, and a stop at a discovery is the same paus
 whatever treats a pause treats both the same. Accepted with it: a stop at a discovery cannot be told
 apart in the game state from the player's pause, which is why the pace stays through it too; a player who ended a map run at 16×
 starts the next one at 16× and can miss its start; with the browser tab hidden, a mage sent then
-passes the whole of Las unseen in half a real minute.
+passes 480 game minutes of a map run of Las, the whole of the shortest one that solves it, unseen in half a real minute.
 *Rejected:* each map run, a map run restart included, starting again at 1× — the player would pick
 the pace anew for each attempt.
 
@@ -5435,7 +5450,7 @@ control, so the styleguide needs no new control for it. At 1× the 480 game minu
 minutes and at 16× 30 real seconds. Accepted with it: at 16× the screen jumps 3.2 game minutes at
 each refresh, which comes every 200 ms; the paces 2×, 4× and 8× are not taken from the predecessor
 game, loop; and the time of a hidden browser tab counts, so at 16× a player who leaves the tab for
-30 seconds lets a whole map run of Las, to its completion or its death, pass unseen.
+30 seconds lets 480 game minutes of a map run of Las, the whole of the shortest one that solves it, pass unseen.
 *Rejected:* a pace control standing apart from „Pauza”, or one built from a control of its own.
 
 ### D-131 — Which changes of the program a map run carries out reset its solving progress?
@@ -6008,7 +6023,7 @@ A character's death takes what it carried and pays nothing of its map run; when 
   renewing nothing.
 - **Origin:** none
 
-*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice leaves every character without it until it is renewed. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would leave the whole team without the resurrection for the span of its renewal, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death without a resurrection ready takes it, so a new character that has gathered practice at its loop is guarded. The renewal at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map renews the resurrection at most once, and a ready resurrection gains nothing from it. Accepted with it: each new map gives the account one protection for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes it from the others; the catch-up gives it to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
+*Rationale:* Items carried are at risk on the attempt; items left with the team survive it. Without a cost death means nothing, and dying in the earning loop becomes the norm. The stake holds on every map run — in the earning loop as on a manual try at a hard map — so a night can be lost. Rebuilding goes through work: a new character sent to a solved map grows practice as a side effect, and better programs and a fuller chest shorten it each time. The resurrection is a valve, paid in real time, a currency the game already knows. A death in a manual map run of a solved map costs as any other, and the discoveries of that map run enter the Understanding as in any map run the player starts. A ready resurrection does not save the map run: the map run ends in death as it did, the character loses what it carried and the map run pays nothing; the resurrection guards against what death takes „also” — all practice, every rank bought and the rise of the generation number — and is used up in doing so. The practice gathered at an earning loop is lost with the rest when a death without a resurrection ready stops it. The resurrection is the account's, one for all the characters, so a new character made for one risky try does not escape the stake of death that the resurrection weighs: the death of any character with practice leaves every character without it until it is renewed. A character with no practice has nothing for a resurrection to guard, so its death uses none up and takes it nothing more; otherwise the first death of a new character, which is near certain on the first map, would leave the whole team without the resurrection for the span of its renewal, would give that character the generation number of a death that cost it nothing and would stop its earning loop. The practice gathered at the earning loop counts as the character's practice, since a death without a resurrection ready takes it, so a new character that has gathered practice at its earning loop is guarded. The renewal at a first completion comes for a success, not ahead of each map, which is why it is not the rejected resurrection per map: each map renews the resurrection at most once, and a ready resurrection gains nothing from it. Accepted with it: each new map gives the account one protection for its next try; the characters of a team no longer weigh a resurrection one by one, and the death of one takes it from the others; the catch-up gives it to the character earlier on the list (D-240); the game has no sweeping over many seeds, the place where a program could be lost at no cost, so the only try of a program before the earning loop may cost the character all its practice when its resurrection is not ready. A sweep over many seeds can help assess the risk on the seeds it checks, but no result of it promises that a program is safe on every seed. The reset is a penalty while a character that dies without a resurrection comes back with the same archetype, and that is enough, because without it death costs nothing; a later direction, not built, is a death that brings a character of other predispositions, the reset then being a new run and no penalty for the same one.
 *Rejected:* death without a cost; a stake in the earning loop only — one event would be two different deaths, everything risky would be done by hand and the stake would vanish where it matters most; a resurrection per map — ten solved maps would be ten free deaths; a resurrection of each character — a character made for one risky try would escape the stake of death; a resurrection as an item carried in the backpack — not made; a resurrection as an item in the chest — set aside, not refused for good: no chain of making could produce it, and it comes back when a chain appears that could; partial pay for a map run ending in death — a leaky program would earn as much as a tight one; a shared resurrection renewed by the span of real time alone — the player waits for the whole span even after a success; practice counted in the skills alone — a new character that has gathered practice at its earning loop through a night would lose with its death the practice the resurrection should guard; the death of a character with no practice changing everything but the use of a ready resurrection — a new character that lost nothing would read as generation 2, be told it lost all its practice and have its earning loop stopped.
 
 ### D-216 — Where does the player read what a death took and what a completion renewed?
@@ -6704,7 +6719,7 @@ cap.
   runs of an earning loop, an agent compares a change with the part no test holds:
   - complies: each map run of an earning loop starting with nature energy 100, whatever the map run
     before it ended with
-  - violates: a map run of an earning loop starting with the nature energy the loop's previous map
+  - violates: a map run of an earning loop starting with the nature energy the earning loop's previous map
     run ended with
 - **Origin:** none
 
@@ -8309,7 +8324,7 @@ A manual map run that first solves its map pays practice and loot once per map f
 - **Verification:** invariants: solved-map-manual-run · trip-transfer · trip-run-end · loop-practice-payment. tests: a manual
   map run that first solves its map paying practice to the character's skills and loot to the
   chest; a death paying no practice, on a manual map run and on a map run of an earning loop;
-  practice an earning loop earns gathered at the loop, at a completion too, and added to the
+  practice an earning loop earns gathered at the earning loop, at a completion too, and added to the
   character skills by „Odbierz”, all of it with the map run going on included, the map run, its
   backpack, the earning loop and the chest left as they were, and by the stop of the earning loop,
   the practice of the map run stopped before its completion included and that of a map run ended
@@ -8422,7 +8437,7 @@ on: the function that reaches its end deals with that end at once.
   map run, the count of its completions and the practice gathered since the last „Odbierz”, also as
   a saved game state admits them; an edit or a deletion of the program leaving the content an
   earning loop holds, in its later map runs too; the open game and the catch-up dealing with the end
-  of a loop's map run at once, the state the browser view holds after a reading or a load holding
+  of an earning loop's map run at once, the state the browser view holds after a reading or a load holding
   the next map run, and a load refusing an earning loop whose map run has ended.
 - **Origin:** none
 
@@ -8740,7 +8755,7 @@ discovers what the character met in a manual map run.
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** narrows D-118 · narrows D-121 · narrows D-143 · narrows D-198 · derives from D-239
-- **Verification:** invariants: loop-run-knowledge. tests: a loop's map run, passed on its own and in
+- **Verification:** invariants: loop-run-knowledge. tests: an earning loop's map run, passed on its own and in
   the catch-up, through the game minutes in which a manual map run discovers, its game time going on
   with no stop and no discovery, and the program content the earning loop holds gaining no rule. For
   the player discovering what a character met only in a manual map run, an agent compares a change
@@ -9154,6 +9169,20 @@ rule or a rule group.
 (D-308), and these marks would double it.
 *Rejected:* „⊘”, „N reguł nie zadziała” and an amber „0×”, as in loop — they double the state a
 program rule shows during a map run, which D-308 gives.
+
+### D-423 — Which item does the condition „Zapas poniżej” start with in the program editor?
+
+A new condition „Zapas poniżej” starts with the item the game's data names as its default, Patyk, beside its default number 8, where the character knows that item. Where the character does not know it, the condition starts with the first item the character knows, in the order of the game's data. An item put at any place of the game's data, the start included, leaves the item a new condition starts with as it was while the character knows Patyk.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-376
+- **Verification:** tests: the condition „Zapas poniżej” starting with Patyk wherever Patyk stands among
+  the items offered, and with the first item offered where Patyk is not among them.
+- **Origin:** none
+
+*Rationale:* which item the editor offered first followed the place of the items in the game's data, a place no decision of the game gives, so an item put at the start of the data would have changed what the player sees. The item stands in the condition's row of the data beside its number (D-376, D-18), where a change of the game's content is made by a change of data alone. Patyk keeps what the player sees, and it is the item the examples of the decisions give, „Zapas poniżej 8 · Patyk”. Accepted with it: the resource that „Tu leży mniej niż”, „Idź” and „Zbierz” start with stays the first in the order of the maps' lists, the order of the resources within a map being a choice of its data.
+*Rejected:* the order of the game's data left as the rule — nothing changes for the player, but the item a new condition starts with follows the place of an item in the data, which no decision of the game gives, and a test of the editor has to take the item by its place in the data; Jagoda as the explicit default item — the same cost as the way chosen, but the player sees the change, and the examples of the decisions give „Zapas poniżej 8 · Patyk”.
 
 ## Rule panel and the signs of a rule
 

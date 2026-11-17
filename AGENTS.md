@@ -16,7 +16,7 @@ To run the game on this computer or operate it in a real browser, read `.claude/
 
 Before adding or changing a picture or an effect of the scene, read `.claude/skills/loop2-scene-art/SKILL.md`.
 
-Every test of this repository runs with `npm test`.
+Every test of this repository runs with `npm test`. A fresh directory gets the environment of Ruff and ShellCheck, `.runs/quality-venv`, at the first run of the tests, from `requirements-quality.txt`; that needs Python 3.9 or newer and network access to the Python Package Index, and where it cannot be made the quality test fails with one message that says so.
 
 Claude Code sessions started in the repository root get a warning at start, from the hook in `.claude/settings.json`, when `.the-way` stands on another commit than the pinned one or is not initialized; the rule to stop work on a mismatch stays in force.
 
