@@ -3970,6 +3970,7 @@ test(
   { timeout: 20000 },
   async (t) => {
     // invariant: player-save-isolation
+    // invariant: email-verification-nonblocking
     // decision: D-204 "It loads its account's saved game state with `GET /api/saved-game`, whose success answers either that saved game state with the version of its shape and its revision or that the account has none, and replaces it with `PUT /api/saved-game`, whose body holds the version of the shape, the revision the browser last saw and the game"
     // decision: D-209 "The server gives each save of the game state it accepts a revision one higher than the one before, starting at 1"
     // decision: D-07 "The server holds the players' accounts and each player's saved game state, and computes nothing of the game"
