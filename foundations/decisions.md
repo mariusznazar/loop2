@@ -6356,7 +6356,7 @@ A campfire shows on the drawing of the game map as an icon on its tile, one icon
   drawing.
 - **Origin:** none
 
-*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list. A campfire crafted and not yet lit is extinguished, which a new player does not expect, so the drawing tells the player that too. The extinguished campfire's icon, like the other icons of the map, holds its colour in its file, and the scene of a map run already tells an extinguished campfire from a burning one, by the same picture without colour and motion.
+*Rationale:* The minutes of burning are a number, and the numbers of a tile stand in its row of the list, which hovering ties to the tile; the icon shows where a campfire stands, and the choice between two icons shows whether it burns, so the player reads the state of a fire from the drawing and not only from the list. A campfire crafted and not yet lit is extinguished, which a new player does not expect, so the drawing tells the player that too. Both icons are drawn as masks in `text-strong`, like the other icons of the map (D-43), so the two states differ by shape, and the scene of a map run already tells an extinguished campfire from a burning one, by the same picture without colour and motion.
 *Rejected:* the campfire's state and minutes shown on the drawing — a number would stand on the drawing, which creatures added to it later crowd further; one icon for both states — the drawing alone does not tell a burning campfire from an extinguished one.
 
 ### D-72 — Where does a character craft a campfire and light a stick?
@@ -10972,9 +10972,12 @@ which blow falls. A cloud that hides both would hide the figures for the whole c
 the cloud would picture a single blow and bring the flashes D-317 watches. The creature that is
 defeated, that departs, or that stays after the mage's death says in the picture how the combat
 ended, and nothing beyond it remains. The creature stands on the side of the mage where its frame lies
-inside the picture, which at every place the mage stands at but the right edge is the right. At 16× the
-combat is decided 312 ms after the attack, so a death can come within the 300 ms of the run, and a scene
-that then stands still for good would hold the creature on its way; it stands beside the mage instead. Accepted with it: at the right edge the creature runs in past
+inside the picture, which at every place the mage stands at but the right edge is the right. The view
+reads the game every 200 ms, so the reading that shows a combat decided, 312.5 ms after the attack at
+16×, can come 200 ms after the reading that showed the attack, and a completion can come in any
+earlier minute of the combat; a death or a completion can thus fall within the 300 ms of the run, and a
+scene that then stands still for good would hold the creature on its way; it stands beside the mage
+instead. Accepted with it: at the right edge the creature runs in past
 the mage to its left; a mage that falls toward the middle of the frame can lie over the nose of the
 wolf that stands there.
 *Rejected:* a graphics engine or a canvas with a loop of drawing — a few objects do not call for it;
@@ -10999,8 +11002,8 @@ to the cool tint in one frame — the
 whole scene jumps at each loss; a return of up to 300 ms as an effect of an ordinary event — an
 effect on the whole scene against D-317; a return in 1 s; the
 tint at once cool at „Wznów” after a loss in the pause — the loss passes without a picture; a creature
-that stands at once beside the mage as in loop, with no run in — it does not meet the scope of the
-project, which says the wolf runs in; a cloud of the scuffle that covers both — at 1× neither the
+that stands at once beside the mage as in loop, with no run in — the player would not see where the
+creature came from; a cloud of the scuffle that covers both — at 1× neither the
 wolf nor the mage would be seen for five seconds; a cloud with flashes of the blows — a flash pictures
 a single blow, which a scuffle does not, and adds the risk of flashes that D-317 watches; a defeated
 wolf lying in its last frame until the next attack or the end of the map run — a dead wolf would lie
@@ -11071,7 +11074,7 @@ mage without a movement for the rest of a gathering that lasts ten seconds at 1�
 wolf is an effect, since a combat lasts about 625 ms at 8× and 312 ms at 16×, so that a run of 640 ms
 would come after the combat it begins. Effects of different parts of the scene, such as the flight of an
 icon and the run of the wolf, play together where one reading carries both events, since a game minute
-can end a gathering and bring an attack. One whose turn has passed would show
+can end a gathering and bring an attack. An effect whose turn has passed would show
 something that is no longer so; that happens when the player steps down from 16× or returns to a tab
 left in the background, where the simulation gets a large stretch of time at once, and loop did the
 same. The
@@ -11092,7 +11095,7 @@ about 625 ms and 312 ms; a classification made anew for each kind of effect — 
 another, and the decision would gather the exceptions one by one; under the system's setting for
 reduced motion no effect of an ordinary event at all, the wolf standing at once beside the mage and
 the outcome of a combat not shown by an effect — the fewest stimuli, but a player with the setting
-would read the outcome of a gathering and of a combat only from the numbers and from „Teraz”
+would read the outcome of a gathering and of a combat only from the numbers and from „Teraz”.
 
 ### D-318 — Where does the mage go for each action?
 
@@ -11231,7 +11234,7 @@ alone — it says what the grey and „Wznów” already say.
 
 ### D-322 — What does the scene show while time stands still?
 
-While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. At the stop at a discovery that the first attack makes, the creature already stands beside the mage, with no run in, and the scuffle begins at „Wznów”. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, and a scene under the system's setting for reduced motion show the last image of the effect at once (D-317, D-319).
+While the player's pause holds a map run, the scene is greyed with `grayscale(1) brightness(0.5)` and all its motion, the fire and the mage together, stands still. In the three moments in which time stands still, a discovery, a death and a completion, the scene plays an effect once and then stands on its last image until the moment ends with „Wznów”, „Restart” or „Zakończ”, and nothing but the effect moves while it plays, the fire standing as at every stop, and the mage too at a discovery and a completion: at a discovery the scene keeps its colours (D-122) and the icon of each thing discovered that the game's data gives an icon, each icon once, comes out of the forest on a plaque on `panel` with a frame in `discovery`, like the badge over the mage's head (D-320), and stands over the clearing, „Wznów” cutting the effect short; after a death no badge stands over the head, the mage falls in the six frames of its death sheet, toward the middle of the frame so that it lies inside the picture, and lies grey with `grayscale(1) brightness(0.55)`, and after a death of cold a blue layer lies over the whole scene, above the tint of the light and under the frost (D-315), which after a death of hunger or in a fight stands nowhere; after a completion no badge stands there, the mage stands in colour and specks of light rise over the clearing and go out, over the full gold of the tint. At the stop at a discovery that the first attack makes, the creature already stands beside the mage, with no run in, and the scuffle begins at „Wznów”. Where the map run ends in the game minute of a discovery the scene shows the effect of the end alone, and a moment has just begun where the events of the simulation call that returned the state carry it (D-04), so a scene drawn again on the same moment, after a return to the screen, a reload or a load, shows the last image of the effect at once (D-319). A scene under the system's setting for reduced motion shows the last image at once too (D-317).
 
 - **Scope:** browser-view
 - **Based on:** none
@@ -11261,8 +11264,8 @@ While the player's pause holds a map run, the scene is greyed with `grayscale(1)
     for reduced motion that plays the fall of the mage
 - **Origin:** none
 
-*Rationale:* a scene that moves while game time stands still would contradict the pause, which loop
-avoided on purpose. The grey, the one loop gave a paused scene, says that the game stands still, and
+*Rationale:* a scene that moves while game time stands still would contradict the pause, so only the
+effect of a moment moves, once and for less than three seconds. The grey, the one loop gave a paused scene, says that the game stands still, and
 a stop at a discovery stays in colour so that the moment of the reward is not dimmed. After a death
 the grey mage tells the end from a pause, and a completion shows in the scene as a stop does. The effect of each of the three moments plays once and the scene then stands on its last image, so the player who looks sees the moment arrive and the player who comes back to the screen, reloads or loads sees where it ended up, as the mage stands at once at its place (D-319), and no reload repeats a reward or kills the mage a second time. The plaques put what was discovered into the scene, where the band over the program names
 all of it, and take the badge's solid `panel` so that no icon stands straight on the trees (D-320);
@@ -11346,7 +11349,7 @@ The scene shows an effect of the end of a gathering, D-365 or D-366, only in a r
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-04 · derives from D-317 · derives from D-365 · derives from D-366
-- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it; the flight of an icon and the cloud of dust whose animation the browser cancels because the scene is hidden over at once, and not played from their start when the scene is drawn again.
+- **Verification:** tests: an effect of the end of a gathering only in a reading drawn from a previous reading of the same map run, in which exactly one gathering ended and no action that takes pieces out of the backpack ended, and none at a first draw, as on an entry to the screen of the map run, where a map run started, with no end, with two ends or at a stop; the effect placed at the mage that gathered, though the next action walks elsewhere; an effect that runs standing still with the scene at the pause, gone when its animation ends, dropped where a map run starts and taken over by the next effect of a gathering, while the wolf's run in neither takes it nor is taken by it; the flight of an icon and the cloud of dust, whose animation the browser cancels because the scene is hidden, are over at once, and not played from their start when the scene is drawn again.
 - **Origin:** none
 
 *Rationale:* the scene has no event of a hit or a miss, so the backpack of the previous reading and the reading now tell the result, and that holds only where one gathering ended and nothing else took pieces out of the backpack. An effect of an ordinary event is a short sign of one event, so one whose turn has passed, at a stop or among several ends, would show something that is no longer so, and the effect belongs to the mage that gathered, so it stands where that mage stood or was walking to at the previous reading.
