@@ -1,0 +1,7 @@
+foundations/invariants.md:5: listed: `account-server-runtime` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/invariants/test_account_server_runtime.py): name it in the request, saying what the sentence now says
+foundations/invariants.md:354: listed: `terrain-drawing-numbers` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/invariants/test_terrain_drawing_numbers.py): name it in the request, saying what the sentence now says
+foundations/invariants.md:668: listed: `player-opaque-session-cookie` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/transport.test.mjs): name it in the request, saying what the sentence now says
+foundations/invariants.md:978: listed: `trip-plan-progress` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/sim/trip.test.mjs): name it in the request, saying what the sentence now says
+foundations/invariants.md:1158: listed: `loop-run-knowledge` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/sim/catch-up.test.mjs, tests/sim/loop.test.mjs): name it in the request, saying what the sentence now says
+foundations/invariants.md:1288: listed: `sprite-credits` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/view/icons.test.mjs): name it in the request, saying what the sentence now says
+0 errors
