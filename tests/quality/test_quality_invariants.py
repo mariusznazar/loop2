@@ -6,9 +6,9 @@ import sys
 import tempfile
 import unittest
 
+import quality_environment
+
 ROOT = Path(__file__).resolve().parents[2]
-WINDOWS = sys.platform == "win32"
-VENV = ROOT / ".runs/quality-venv" / ("Scripts" if WINDOWS else "bin")
 SCRIPT = "{ts,tsx,mts,cts,js,jsx,mjs,cjs}"
 WEB = "{ts,tsx,mts,cts,js,jsx,mjs,cjs,html,css}"
 # The D-32 scope, each pattern within one .gitattributes keeps at LF. A pattern matching no file
@@ -25,12 +25,22 @@ BASH_SCRIPTS = ["deploy/loop2-deploy", "deploy/loop2-backup", "deploy/loop2-watc
 
 def venv_tool(name):
     """The pinned tool README.md installs into `.runs/quality-venv`, on Windows or elsewhere."""
-    return VENV / (name + ".exe" if WINDOWS else name)
+    return quality_environment.venv_tool(ROOT, name)
 
 
 class QualityInvariants(unittest.TestCase):
     """A tool that reports a break or cannot run exits other than 0, and the test fails with
     its output; nothing is skipped."""
+
+    @classmethod
+    def setUpClass(cls):
+        # decision: D-424 "Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins"
+        # Absent or half made, the environment is made again; where that fails the whole class
+        # fails with the one message, and no check runs in place of it (D-424).
+        try:
+            quality_environment.ensure_quality_environment(ROOT)
+        except quality_environment.EnvironmentNotMade as error:
+            raise AssertionError(str(error)) from None
 
     def assert_passes(self, *command):
         result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,

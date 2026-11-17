@@ -806,6 +806,19 @@ The built-in secret scanning of GitHub, with push protection, is what looks for 
 *Rationale:* GitHub's secret scanning runs automatically and for free for a public repository, scans the whole Git history of the repository for secrets of the kinds it knows, and its push protection blocks a push in which it detects one, with no tool for the repository to keep and no run of CI that has to pass for it. A scanner of the repository's own would repeat that scan and bring a foreign tool into the repository. Accepted with it: the scan is a setting of the repository on GitHub that belongs to its owner, so no test of the repository checks that it is on.
 *Rejected:* a separate workflow with a scanner, such as gitleaks — a second CI file and a foreign tool fetched at every run, and a departure from the rule of the process the repository pins that no other checking command stands in CI beside the one command of tests; the scanner as a test of the one command of tests — a tool added to the local installation, repeating what GitHub already does over the whole history of the repository.
 
+### D-424 — Where does the environment of the pinned Python quality tools come from?
+
+Before its first check, the test of the quality checks makes the environment `.runs/quality-venv` of Ruff and ShellCheck whenever it is absent, half made or not at the versions `requirements-quality.txt` pins, by installing that file with `pip install --require-hashes`, and it makes nothing and fetches nothing where the environment is complete and at the pinned versions. Where the environment cannot be made, the test fails with the one message that says so, naming `.runs/quality-venv` and the command that installs it, and no check is skipped.
+
+- **Scope:** build-tools
+- **Based on:** none
+- **Relations:** derives from D-30 · derives from D-31
+- **Verification:** tests: an environment complete at the pinned versions left as it is with nothing installed; an environment half made, or at another version than the pinned one, made again before the first check, and not taken for ready after an install that left it half made; a failed install ending in the one message that names `.runs/quality-venv` and the install command, the output of the failed command in it.
+- **Origin:** none
+
+*Rationale:* a fresh directory has no such environment, and the checks then end in errors of Ruff and ShellCheck that are not errors of the code and hide a real error of style among them; the test that needs the tools makes them, so that the environment stands whether the whole gate runs or only the file of that test. A half-made environment from an interrupted install is judged by the versions it holds and by whether each tool runs, so that it is made again and never taken for ready. Accepted with it: the first run in a fresh directory needs Python 3.9 or newer and the network for the install from the Python Package Index, with the hashes of the pinned file as its only guard, and a run beside another run in the same directory may find the environment half made by the other.
+*Rejected:* a step of the full gate before the tests — the environment would not be made where only the file of the quality test is run; a step of the install of npm packages — the build of the image runs that install too, and would make a Python environment in the image; skipping the checks that need the tools where the environment cannot be made — a check that did not run is no pass.
+
 ## Testing discipline
 
 The testing discipline loop2 adopts: the levels, shape and exemplars of tests, the mechanisms they exercise and the deliberate exclusions.
