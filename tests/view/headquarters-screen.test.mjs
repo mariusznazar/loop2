@@ -685,9 +685,9 @@ test("the field keeps its element, its text and its focus, and the button its fo
   });
 });
 
-// --- the camp --------------------------------------------------------------------------------
+// --- the picture band ------------------------------------------------------------------------
 
-/** The elements of the characters the camp draws. */
+/** The elements of the characters the picture band draws. */
 const campMembers = (root) => all(root, ".camp .camp-member");
 
 /** `state` with its character `id` sent into a map run, going. */
@@ -697,7 +697,7 @@ const sentInto = (state, id) =>
 // Catches the band standing inside the screen's panel (narrower than the content, with its padding), under
 // the heading „Siedziba” instead of over it (D-272), or the sections under it changed by the band: the
 // text of the screen is the text of its panel, so the band adds none.
-test("the camp stands over the panel of the screen, the heading under it, and adds no text", async () => {
+test("the picture band stands over the panel of the screen, the heading under it, and adds no text", async () => {
   // decision: D-389 "The picture band at the top of Siedziba stands across the content"
   // decision: D-389 "The picture band moves as the scene does"
   // decision: D-272 "A picture of the game stands behind the login card"
@@ -718,10 +718,10 @@ test("the camp stands over the panel of the screen, the heading under it, and ad
   });
 });
 
-// Catches the camp made a control: a link, a button or a field in it, a stop in the keyboard's order, a name
+// Catches the picture band made a control: a link, a button or a field in it, a stop in the keyboard's order, a name
 // for a reader, or a picture a reader would announce (D-389): the screen's names in „Drużyna” lead
-// to the character (D-280), the camp leads nowhere.
-test("the camp is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
+// to the character (D-280), the picture band leads nowhere.
+test("the picture band is a picture: nothing in it takes the keyboard or a click, and it is hidden from readers", async () => {
   // decision: D-389 "The picture band moves as the scene does"
   await withPage(async (page) => {
     const { screen, calls } = await mount(page, propsOf(teamOf(3)));
@@ -754,10 +754,10 @@ test("the camp is a picture: nothing in it takes the keyboard or a click, and it
   });
 });
 
-// Catches a camp drawn at the size of its picture, or at a fraction of twice it, where the pixels of the
+// Catches a picture band drawn at the size of its picture, or at a fraction of twice it, where the pixels of the
 // picture would come out unequal and shake in motion (D-349): the band is 96 px high, its clearing 672 × 48
 // pixels of picture drawn at 1344 × 96, the fire of 32 × 32 at 64 × 64, a character's cell 32 wide at 64.
-test("the camp is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
+test("the picture band is drawn at twice the pixels of its pictures, in a band 96 px high", async () => {
   // decision: D-389 "The picture band at the top of Siedziba stands across the content"
   await withPage(async (page) => {
     await mount(page, propsOf(teamOf(1)));
@@ -777,10 +777,10 @@ test("the camp is drawn at twice the pixels of its pictures, in a band 96 px hig
   });
 });
 
-// Catches a screen that does not read the manual map run, which the camp needs: with it the picture would
+// Catches a screen that does not read the manual map run, which the picture band needs: with it the picture would
 // change only at a change of the team or of a loop, and not at „Wejdź” and „Zakończ”. Every change of the
-// four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the camp at once, and „Drużyna” still lists all.
-test("the camp follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
+// four — „Wejdź”, „Puść w pętlę”, „Zatrzymaj”, „Zakończ” — shows in the picture band at once, and „Drużyna” still lists all.
+test("the picture band follows the manual map run and the earning loops, and „Drużyna” lists every character all the while", async () => {
   // decision: D-389 "The characters that stand in it are those"
   await withPage(async (page) => {
     const state = teamOf(3);
@@ -802,7 +802,7 @@ test("the camp follows the manual map run and the earning loops, and „Drużyna
       "the character that stays is the same element",
     );
 
-    // The run goes on: a game minute changes nothing the camp shows.
+    // The run goes on: a game minute changes nothing the picture band shows.
     await inAct(() =>
       screen.update(
         propsOf({

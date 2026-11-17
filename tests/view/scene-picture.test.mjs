@@ -500,8 +500,8 @@ test("a completion stops the scene in colour", () => {
 });
 
 // invariant: loop2-container-sprites
-test("every file the scene's and the camp's data name stands directly in assets/sprites/ as a .png file", () => {
-  // What the camp's drawing asks for, as it asks: the address of each picture of a team of one at the camp.
+test("every file the scene's and the picture band's data name stands directly in assets/sprites/ as a .png file", () => {
+  // What the picture band's drawing asks for, as it asks: the address of each picture of a team of one at the camp.
   const camp = campDrawing(createCharacter(newGame(), "Ala").state);
   const asked = [
     camp.background,
@@ -1611,12 +1611,12 @@ test("the wolf's files hold pixels alone, in frames of 64 × 32 with the feet on
   assert.ok(last.width > last.height * 2, "the last frame lies");
 });
 
-// D-271, D-273, D-389. The camp's two files hold pixels alone and are the pictures of the data in size: the
+// D-271, D-273, D-389. The picture band's two files hold pixels alone and are the pictures of the data in size: the
 // clearing 672 × 48, which at twice its pixels is the widest content of 1344 px and a band of 96 px (D-280,
 // D-349, D-389), with no clear pixel, the chest only fully opaque or fully clear pixels (the pack's own).
 // Catches a file re-exported with a chunk that carries text or a colour profile, and a file of another size.
 // Where the pixels come from is not tested: they are the pack's own pixels, which only the source sheet shows.
-test("the camp's files hold pixels alone, in the size of the data", () => {
+test("the picture band's files hold pixels alone, in the size of the data", () => {
   // decision: D-271 "A sprite file holds pixels alone"
   // decision: D-389 "The picture band at the top of Siedziba stands across the content"
   const clearing = decodePng(CAMP.background.file);

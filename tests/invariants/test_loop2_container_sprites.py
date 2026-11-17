@@ -12,7 +12,7 @@ Reading of the sentence:
   the working tree whose name ends in `.png`; subdirectories and their files are not counted. The set
   must not be empty: an empty directory fails the check instead of passing it vacuously. That the
   drawings ask for exactly these files is not checked here; the case "every file the scene's and
-  the camp's data name stands directly in assets/sprites/ as a .png file" of
+  the picture band's data name stands directly in assets/sprites/ as a .png file" of
   `tests/view/scene-picture.test.mjs` ties the files the scene's and the picture band's drawings
   ask for to these files, and no case ties the picture behind the login card to them, which this
   check reads only as a file of the set;

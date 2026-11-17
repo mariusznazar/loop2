@@ -1,4 +1,4 @@
-// The camp of Siedziba as data for drawing (D-389): which characters stand in it, how many the widest band
+// The picture band of Siedziba as data for drawing (D-389): which characters stand in it, how many the widest band
 // holds, and what the fire and the chest are. What a window of another width shows, and how the pictures
 // move, are the browser check's (D-88): nothing here computes a layout.
 import assert from "node:assert/strict";
@@ -28,9 +28,9 @@ function teamOf(count) {
 
 const ids = (state) => campDrawing(state).members.map((member) => member.id);
 
-// Catches a camp drawn only where the team has someone at the camp (a team of none, as in a new game, would
-// draw no camp at all), or one that drops the fire or the chest with the characters.
-test("a team with nobody at the camp shows the fire and the chest alone", () => {
+// Catches a picture band drawn only where the team has someone at the camp (a team of none, as in a new game,
+// would draw no band at all), or one that drops the fire or the chest with the characters.
+test("a team with nobody at the camp: the picture band shows the fire and the chest alone", () => {
   // decision: D-389 "The characters that stand in it are those"
   const empty = campDrawing(newGame());
   assert.deepEqual(empty.members, []);
@@ -43,9 +43,9 @@ test("a team with nobody at the camp shows the fire and the chest alone", () => 
   assert.deepEqual(campDrawing(away).chest, empty.chest);
 });
 
-// Catches a camp that draws the whole team (a character on a map or in a loop standing at the fire), one
+// Catches a picture band that draws the whole team (a character on a map or in a loop standing at the fire), one
 // that forgets one of the three ways a character is away, or one that reorders the characters (D-54).
-test("only the characters at the camp stand in the camp, in the order of creation", () => {
+test("only the characters at the camp stand in the picture band, in the order of creation", () => {
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-389 "The characters that stand in it are those"
   // 1 stays, 2 is in the manual map run, 3 in an earning loop, 4 had its loop stopped, 5 stays.
@@ -78,7 +78,7 @@ test("the character of a manual map run is away while the run goes, is paused or
 
 // Catches a capacity that counts the fire's half or the gap wrong, which would draw a character no band holds
 // or leave a place at the widest band empty. 672 / 2 − 32 / 2 − 6 = 314 pixels of the row, 32 to a cell.
-test("the camp draws as many characters as the widest band holds, the first in the order of creation", () => {
+test("the picture band draws as many characters as the widest band holds, the first in the order of creation", () => {
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-389 "The characters that stand in it are those"
   assert.equal(campCapacity(), 9);
@@ -89,7 +89,7 @@ test("the camp draws as many characters as the widest band holds, the first in t
 });
 
 // Catches a chest drawn in another picture, or another frame, when it holds more (D-271, D-184): how much it
-// holds is told by the section „Skrzynka {n}/{cap}”, not by the camp.
+// holds is told by the section „Skrzynka {n}/{cap}”, not by the picture band.
 test("the chest is one still picture, the same empty and full", () => {
   // decision: D-271 "The pictures in the picture band at the top of Siedziba"
   const state = teamOf(1);
@@ -101,9 +101,9 @@ test("the chest is one still picture, the same empty and full", () => {
   assert.equal(campDrawing(state).chest.frames, 1);
 });
 
-// Catches a camp that has a fire of its own state, standing still or out: the fire of the camp burns in its
-// frames always, whatever a campfire of the game state is (D-316 draws that one in the scene).
-test("the fire of the camp is the burning fire in its frames, whatever the game state holds", () => {
+// Catches a picture band that has a fire of its own state, standing still or out: the fire of the picture band
+// burns in its frames always, whatever a campfire of the game state is (D-316 draws that one in the scene).
+test("the fire of the picture band is the burning fire in its frames, whatever the game state holds", () => {
   // decision: D-389 "The picture band moves as the scene does"
   const away = send(teamOf(1), { mapId: MAP, characterId: 1 }, NOW).state;
   const fire = campDrawing(away).fire;
@@ -111,7 +111,7 @@ test("the fire of the camp is the burning fire in its frames, whatever the game 
   assert.deepEqual(campDrawing(newGame()).fire, fire);
 });
 
-// Catches a character in a sheet of another pose or a size that is not the file's: the camp shows the idle
+// Catches a character in a sheet of another pose or a size that is not the file's: the picture band shows the idle
 // sheet, four frames of 64 × 64, with the figure in its lower half, which the files hold.
 test("a character stands in the idle sheet of its archetype", () => {
   // decision: D-389 "The picture band moves as the scene does"
