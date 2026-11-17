@@ -1982,7 +1982,7 @@ page (D-339), so it adds nothing to a save, which is not sent above 64 KiB (D-20
 earning loops a save can stand at that limit (D-208). Risks
 taken, each a hypothesis: the sentence may show with no fault or blink; logs of the console kept on
 disk may hold a real password-reset token; an agent may learn to ignore a console in which the
-browser writes ordinary refusals; a tab left overnight may slow down under a growing chronicle.
+browser writes ordinary refusals; a tab left overnight may slow down under a growing chronicle, though D-382 bounds the rows drawn, so the risk is left to the memory the chronicle takes.
 *Rejected:* Sentry — an outside service and data in a foreign cloud, in the United States or the
 European Union as chosen once and for all, part of the account's data staying in the United States,
 free only within a small plan and paid beyond it; it collects everything unless set otherwise, and
@@ -6399,7 +6399,7 @@ scene's data. An extinguished campfire stays as D-316 gives it.
     the 20 minutes named in the code of the browser view
 - **Origin:** none
 
-*Rationale:* 20 minutes is what one stick adds to a burning fire, so a smaller flame says to feed the
+*Rationale:* 20 minutes is what one stick adds to a burning fire without the branch „Oszczędne dorzucanie” (D-379), so a smaller flame says to feed the
 fire before it goes out, and the sprite of the full flame and that of the smaller one change at one
 moment with nothing between. The smaller flame is the full one cut down by hand, because the pack
 holds no smaller flame of the same fire on the same stones, and a fraction of the scale would give a
@@ -7138,7 +7138,7 @@ at once what the program editor offers and what the simulation lets the characte
 learn; knowledge kept per character would make the opening chain a tutorial played again with
 every character, and would die with the character. An encounter counts for the player, not for the character, a consequence accepted knowingly: if one character saw a wolf, the conditions about health are discovered for all, so of the two locks on a discovery only one works, the predisposition. One computation serves both the editor and the
 simulation: a program moved between characters cannot get round it, and the editor never offers
-what the character will not carry out. The discovery of a branch is a fact of the world and stays with the player, while the character skill goes with the character that paid for it: a fresh character cannot carry out „Obchód” or „Zawierucha”, for which it has not paid with a single execution. A branch of another character's tree reads „nie dla tej postaci” and not a promise „wykup ją”, because that character has no way to reach it.
+what the character will not carry out. The discovery of a branch is a fact of the world and stays with the player, while the character skill goes with the character that paid for it: a fresh character cannot carry out „Obchód”, for which it has not paid with a single execution.
 *Rejected:* the Understanding saved with each character — a new character would go through the whole chain of discoveries from the start, which with characters not limited in number is a tutorial played for the fifth time, and the knowledge would die with the character; a filter in the editor alone — a program
 moved between characters gets round it; a filter in the simulation alone — the editor offers what
 never runs, and the player learns of it from an empty run; a bought branch open to every character — one character's tree becomes everyone's.
@@ -7827,13 +7827,13 @@ A program rule whose condition holds and whose action the game's check refuses n
 
 - **Scope:** simulation · browser-view
 - **Based on:** none
-- **Relations:** derives from D-308 · derives from D-310
+- **Relations:** derives from D-308 · derives from D-309 · derives from D-310
 - **Verification:** tests: the reason of each refusal of „Eksploruj”, „Wędruj”, „Idź — {rzecz}”, „Idź — ognisko”, „Zbierz — {rzecz}” and „Obchód — {rzecz}” where the thing does not lie, „Zbierz — {rzecz}” with a full backpack, „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk” and „Zasil — ognisko” in the words of its row, {rzecz} in lower case; „brakuje {ile} × {rzecz}” for „Wytwórz — ognisko”, „Zapal — ognisko”, „Zapal — patyk”, „Zjedz — jagoda” and, in combat, „Uderz — patyk”; „brak energii natury: {ma} z {trzeba}” for „Zapal — patyk”; the reason named at its rule. For „Obchód” with a full backpack and „Zapal — ognisko” short of nature energy, an agent compares a change with the part no test holds:
   - complies: „Obchód — jagoda” on a tile that holds berries, with a full backpack, reading „plecak pełny”; „Zapal — ognisko” at an extinguished campfire with the sticks it needs and 7 nature energy reading „brak energii natury: 7 z 10”
   - violates: „Obchód — jagoda” with a full backpack reading „tu nie leży jagoda”; „Zapal — ognisko” short of nature energy reading another reason or none
 - **Origin:** none
 
-*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
+*Rationale:* the words of each refusal are fixed once, for every refusal of the game's check, in the form D-310 gives — the name of the thing in lower case, one reason at a time — here, and those of combat, „tylko w walce” and „trwa walka”, in D-309, so a later change names a refusal in the words it already has and no writer of an action's code finds its own. Accepted with it: every new action needs a reason of its own later.
 *Rejected:* the reasons written by the author of the work itself and judged only when the work is merged; a table with corrections of chosen rows.
 
 ## Programs: ownership, names and the copy
@@ -7957,7 +7957,7 @@ The program of a new game is named „Program”, and a new program „Program 2
 
 ### D-170 — Where does the player pick the program a character enters a map with, and which one stands there first?
 
-The player picks the program a character enters a map with on the select list „Program: {name}” at that character in the section „Kto idzie” of the card of a map. The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
+The player picks the program a character enters a map with on the select list beside the label „Program:”, whose options are the names of the player's programs, at that character in the section „Kto idzie” of the card of a map. The list shows the first program still on the player's list of these: the program picked for that character before it is sent, which stays with the character until it is sent; the program that character used last, the program it was switched to during a map run included; the program with which any character last entered a map; the first program of the player's list.
 
 - **Scope:** browser-view · simulation
 - **Based on:** none
@@ -8087,7 +8087,7 @@ Where the program the program panel shows is gone from the player's list, or the
     showing „Program 3” because it stood next to it
 - **Origin:** none
 
-*Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last of the programs D-170 offers to a character. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
+*Rationale:* the editor needs a program to edit, and the list always holds at least one (D-167), so the first program of the list is always there to show; it is also the last fallback of the order D-170 gives the list „Program:”. Accepted with it: a player who deletes a program from the middle of the list lands on the first one, not on the one beside it.
 *Rejected:* unknown.
 
 ## Trip plan, chest and items
@@ -8301,7 +8301,7 @@ On the card of a map, at a character, „Plan wyprawy wejdzie przycięty: mapa w
 
 ### D-189 — What pays, and what takes from the chest?
 
-A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment.
+A manual map run that first solves its map pays practice and loot once per map for the player, whichever character completes it; a manual run of a solved map pays nothing; an earning-loop run pays loot only on completion; a run that ends in death pays neither loot nor practice. Earned loot reaches the chest on completion; practice earned during an earning loop is gathered there and added to the character skills when the player takes it with „Odbierz”, which adds all of it, the map run going on included, and leaves the backpack and the earning loop as they are, and when the earning loop stops, including practice from a run stopped before its completion without death. A manual map run of a map already solved takes nothing from the chest: it takes its equipment from nowhere, cut only by the character's carrying capacity and the map's cap, and the card of the map marks it, under „Wejdź” at the character in „Kto idzie”, as not predicting the earning loop when the chest lacks that equipment (D-251).
 
 - **Scope:** simulation
 - **Based on:** none
@@ -8318,7 +8318,7 @@ A manual map run that first solves its map pays practice and loot once per map f
   solved map where that cut equipment is more than the chest holds.
 - **Origin:** none
 
-*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark on the card of the map shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
+*Rationale:* were every completion to pay, a fast-forwarded map run would give the same practice as hours of the earning loop, leaving the earning loop no reason to exist. Measured in the predecessor game, when every completion still paid: a crossing of the forest gave the same practice in 41 seconds at 16× as in 11 hours of the earning loop, about 960 times apart; the factor holds, since the earning loop spends a real minute on a game minute and the fastest pace passes sixteen game minutes in a real second (D-239, D-21). What does not pay takes nothing from the chest either, or tuning a program would eat the chest at every try; equipment from nowhere also lets a program be tried before its supplies are farmed, and the mark under „Wejdź” on the card of the map shows the one price of that. Loot leaves a map in the character's backpack, so a map run that did not complete brought nothing out; paying the earning loop's practice at its stop keeps the player fixing the program rather than waiting for a completion, since the map run in progress need not reach its completion for its practice to be paid. A return in the morning always pays: paying gathered practice without stopping keeps the player from choosing between a reward and the backpack of the map run going on. „Pays nothing” means neither practice nor loot, and „takes nothing” concerns the chest. What decides that a map run is a manual map run of a solved map is the state of the map when the map run starts, so a „Restart” after the completion that solved the map is already one: a restart is a map run the player starts, and the map is then solved. Any other start of a map run, a „Restart” included, binds the lists of the copy as it stands and takes from the chest what lies in it then. Accepted with it: practice taken is safe from a later death that a resurrection covers, and a death with none takes it with the rest of the character's practice (D-190).
 *Rejected:* paying only the first map run without an exception for the earning loop — the earning loop goes only on solved maps and would pay nothing; a trial cut by the chest's contents — it would forbid trying a program whose supplies are not there yet; adding the earning loop's practice at each completion — a stop in the middle of a map run would lose it; „Odbierz” paying completed map runs alone — after eight hours there is usually nothing to take.
 
 ### D-307 — What does the line of an empty trip plan say?
@@ -9460,8 +9460,8 @@ a narrow column.
 ### D-310 — How does a program rule that cannot start name its reason?
 
 A program rule whose condition holds and whose action cannot be carried out names one reason: when
-there are several, the one of combat comes first, then the world and the backpack, and the nature
-energy last. The reason names the thing refused as the game writes it, in lower case and without a dot
+there are several, the one of combat comes first, then the world and the backpack, then the nature
+energy, and a branch the character did not buy after them. The reason names the thing refused as the game writes it, in lower case and without a dot
 before the name, such as „tu nie leży mech”, „brakuje 4 × patyk”, „brak opału: patyk” and „brak energii
 natury: 7 z 10”, and the reason of a rule outside the repertoire is „gałąź niewykupiona”, as of a greyed
 cell of the rule panel, or „jeszcze nieodkryte: {name}”.
@@ -10601,8 +10601,8 @@ win.
 Each change of the copy a map run carries out gives an entry of the chronicle in the role
 `player-change`, an entry about a program rule naming its number and its sentence at the moment of
 the change and one about a rule group its name: „Dodano regułę 2.3: Zawsze → Wędruj”, „Usunięto
-regułę 1.2: …”, „Zmieniono regułę 2.1: „…” na „…””, „Przesunięto regułę 2.1 na 1.3: …”, the same
-for rule groups, such as „Dodano grupę „Ogień””, „Zmieniono plan wyprawy”, „Porzucono zmiany
+regułę 1.2: …”, „Zmieniono regułę 2.1: „…” na „…””, „Przesunięto regułę 2.1 na 1.3: …”, and for
+rule groups „Dodano grupę „Ogień””, „Usunięto grupę „…””, „Zmieniono grupę „…”” and „Przesunięto grupę „…””, with no numbers, „Zmieniono plan wyprawy”, „Porzucono zmiany
 kopii”, „Zapisano kopię w programie „…””, „Zapisano kopię jako nowy program „…”” and „Przełączono
 postać na program „…””. Such entries are given after the end of the map run too, until „Restart” or
 „Zakończ”, at the game minute of the end, and an edit of a saved program, which changes no map run,
