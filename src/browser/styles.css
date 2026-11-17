@@ -291,6 +291,18 @@ header .failure-line {
   padding: var(--space-2xs) var(--space-xs);
 }
 
+/*
+ * A select list is never wider than the row it stands in, so a long name of a program does not widen
+ * the page; the name shown, longer than the list, is cut with an ellipsis, and the opened options keep
+ * it whole (styleguide rule "A name typed by the player breaks in its row", its exception for the
+ * select list). A width with its maximum is a layout dimension, which D-43 leaves out.
+ */
+.select-list {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .button {
   padding: var(--space-2xs) var(--space-s);
   font-size: var(--font-size-detail);
