@@ -22,7 +22,7 @@ export type CampDrawing = {
   /** The chest, one still picture whatever it holds. */
   chest: SceneSprite;
   /**
-   * The characters that are in Siedziba, in the order of creation, no more than the widest band holds;
+   * The characters at the camp, in the order of creation, no more than the widest band holds;
    * a narrower band shows as many from the first as its row holds.
    */
   members: CampMember[];
@@ -57,18 +57,18 @@ export function campCapacity(): number {
 }
 
 /**
- * Whether the character stands in Siedziba: it is neither the character of the manual map run, going,
+ * Whether the character is at the camp: it is neither the character of the manual map run, going,
  * paused or ended and waiting for „Restart” or „Zakończ”, nor a character in an earning loop. A
- * character whose earning loop was stopped has no entry in the loops and stands in Siedziba.
+ * character whose earning loop was stopped has no entry in the loops and is at the camp.
  */
-function inSiedziba(state: GameState, id: CharacterId): boolean {
+function atCamp(state: GameState, id: CharacterId): boolean {
   return state.run?.character.id !== id && state.loops[id] === undefined;
 }
 
-/** The camp of the state: the characters of Siedziba in the order of creation (D-54), at most `campCapacity()`. */
+/** The camp of the state: the characters at the camp in the order of creation (D-54), at most `campCapacity()`. */
 export function campDrawing(state: GameState): CampDrawing {
   const members = state.team.characters
-    .filter((character) => inSiedziba(state, character.id))
+    .filter((character) => atCamp(state, character.id))
     .slice(0, campCapacity())
     .map((character) => ({
       id: character.id,

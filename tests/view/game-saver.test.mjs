@@ -829,6 +829,143 @@ test("a saver stopped as outdated reports so before logout without sending anyth
   });
 });
 
+// --- an exception before the request leaves --------------------------------------------------
+
+/**
+ * Runs `body` with the process's unhandled rejections taken by the test, as the last resort takes
+ * the window's `unhandledrejection` events (D-323), and returns the reasons it took. The runner's own
+ * handlers are put back after.
+ */
+async function takingRejections(body) {
+  const saved = process.listeners("unhandledRejection");
+  process.removeAllListeners("unhandledRejection");
+  const taken = [];
+  const take = (reason) => taken.push(reason);
+  process.on("unhandledRejection", take);
+  try {
+    await body();
+    await new Promise((resolve) => setImmediate(resolve));
+  } finally {
+    process.off("unhandledRejection", take);
+    for (const listener of saved) process.on("unhandledRejection", listener);
+  }
+  return taken;
+}
+
+const BROKEN = new TypeError("the saving code broke");
+
+/**
+ * The ways the saving code fails before the request leaves: each has `breaks(), mend()` over a saver
+ * whose first attempt is broken and whose next ones are whole.
+ */
+const BREAKS = {
+  "the read of the state throws": {
+    extra: (flaw) => ({
+      read: () => {
+        if (flaw.broken) throw BROKEN;
+        return flaw.game.read();
+      },
+    }),
+  },
+  "the clock's moment throws": {
+    extra: (flaw) => ({
+      moment: () => {
+        if (flaw.broken) throw BROKEN;
+        return flaw.game.momentMs;
+      },
+    }),
+  },
+  "the client throws before it answers": {
+    client: (flaw, inner) => ({
+      saveGame(submission) {
+        if (flaw.broken) throw BROKEN;
+        return inner.saveGame(submission);
+      },
+    }),
+  },
+  "the client's promise is rejected": {
+    client: (flaw, inner) => ({
+      saveGame(submission) {
+        if (flaw.broken) return Promise.reject(BROKEN);
+        return inner.saveGame(submission);
+      },
+    }),
+  },
+};
+
+/** A saver whose saving code is broken until the flaw is mended; the held client still answers. */
+function brokenSaverOf(how, game) {
+  const held = heldClient();
+  const flaw = { broken: true, game };
+  const client = how.client ? how.client(flaw, held.client) : held.client;
+  const page = saverOf({ ...held, client }, game, 3, how.extra?.(flaw) ?? {});
+  return { held, flaw, ...page };
+}
+
+// Catches a saver whose request-making stops at an exception: its flag of a request in flight stays
+// set, so nothing is ever sent again, and the player reads no sentence of a failed save. The error
+// must also stay unhandled, so that the last resort of the page takes it (D-323).
+test("an exception before the request leaves counts as a failed save: the sentence, the retries, and the error left to the last resort", async () => {
+  // decision: D-208 "When one fails, the header line under the menu bar shows „Nie udało się zapisać postępu. Gra spróbuje ponownie.” in `warning`, or, once the save before a logout has failed, the sentence D-97 gives for that failure, and the game retries the save after 5, 10 and 20 real seconds and then every 30 real seconds, each time with the game state of that moment and at once at a moment of saving of D-207, until a save succeeds and the sentence goes"
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it"
+  for (const [name, how] of Object.entries(BREAKS)) {
+    await onPage(async () => {
+      const game = gameOf(withCharacter());
+      const taken = await takingRejections(async () => {
+        const { held, flaw, saver } = brokenSaverOf(how, game);
+        saver.moment();
+        await settle();
+        assert.equal(sentenceOf(saver), RETRYING, name);
+        assert.equal(held.sent.length, 0, name);
+
+        // The retry waits 5 s, as after any failed save, and sends the state of its time.
+        flaw.broken = false;
+        mock.timers.tick(4_999);
+        assert.equal(held.sent.length, 0, `${name}: no retry before 5 s`);
+        game.act(setPace(game.state, 2));
+        mock.timers.tick(1);
+        assert.equal(held.sent.length, 1, `${name}: the retry at 5 s`);
+        assert.deepEqual(held.sent[0], submissionOf(game.state, 3), name);
+        await held.answer(SAVED(4));
+        assert.equal(sentenceOf(saver), null, name);
+
+        // The saver goes on: a moment sends at once.
+        saver.moment();
+        assert.equal(held.sent.length, 2, `${name}: a moment sends at once`);
+        saver.dispose();
+      });
+      assert.deepEqual(taken, [BROKEN], name);
+    });
+  }
+});
+
+// Catches the same flaw at the save before a logout: the promise of its report never settles, so
+// „Wyloguj” of the page stays on „Wylogowywanie…” for good (D-97).
+test("an exception before the request of the save before logout leaves reports it failed, asks to log out again, and leaves the error to the last resort", async () => {
+  // decision: D-97 "When that save fails for want of a connection or by an error of the server, logout does not happen and the game stays with „Nie udało się zapisać postępu. Spróbuj wylogować się ponownie.” in `warning`"
+  // decision: D-323 "After an error that no code of the game handled, an exception or a rejected promise, the game state held in the page changes no more until the page is reloaded, and saving goes on as D-207, D-208 and D-97 give it"
+  for (const [name, how] of Object.entries(BREAKS)) {
+    await onPage(async () => {
+      const game = gameOf(withCharacter());
+      const taken = await takingRejections(async () => {
+        const { held, flaw, saver } = brokenSaverOf(how, game);
+        const report = saver.saveBeforeLogout();
+        assert.deepEqual(await report, { kind: "failed" }, name);
+        assert.equal(sentenceOf(saver), LOGOUT_FAILED, name);
+
+        // „Wyloguj” works again: the next save before logout is a request of its own.
+        flaw.broken = false;
+        const again = saver.saveBeforeLogout();
+        assert.equal(held.sent.length, 1, `${name}: the logout's save is sent`);
+        await held.answer(SAVED(4));
+        assert.deepEqual(await again, { kind: "saved" }, name);
+        saver.dispose();
+      });
+      assert.deepEqual(taken, [BROKEN], name);
+    });
+  }
+});
+
 // --- dispose ---------------------------------------------------------------------------------
 
 test("a disposed saver leaves no timer or listener, sends nothing, and ignores an answer that comes after", async () => {

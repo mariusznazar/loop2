@@ -11,13 +11,14 @@ is never written) and driven through its public functions in `dist/browser/sim/g
 script this check writes to a temporary directory: `newGame`, `createCharacter`, `setProgram`,
 `send`, `passRealTime`, `setPaused`, `setPace`, `restart` and `end`, each returning
 `{state, events}`. After every input the script records the map run's game minute, whether the
-game is paused, the pace (`pace`), the real time carried over (`realMsCarry`) and whether the game
-holds a discovery (`discovery` not null). The new game of each sent character is one whose
-Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
+game is paused, the pace (`pace`), the real time carried over (`realMsCarry`), whether the game
+holds a discovery (`discovery` not null), whether the map run has completed (`completion` not
+null) and whether the character is dead (`death` not null). The new game of each sent character is
+one whose Understanding holds everything the built data modules list, as `KNOWING_GAME_JS` in
 `program_fixture.py` gives it, so that the rules of the program stay what the check drives and no
-game minute discovers anything; the discovery scenarios alone start from the new game `newGame()`
-gives, which knows only the condition „Zawsze” and the action „Eksploruj”, with Skraj lasu solved
-so that Las can be sent to, and its program of one empty group.
+game minute discovers anything; the discovery and death scenarios alone start from the new game
+`newGame()` gives, which knows only the condition „Zawsze” and the action „Eksploruj”, with Skraj
+lasu solved so that Las can be sent to, and its program of one empty group.
 
 Reading of the sentence:
 - a map run the player starts: one begun by `send`, and one begun anew by `restart`;
@@ -46,10 +47,16 @@ Reading of the sentence:
   carried over - also at 16x, where the same real time would carry it 16 game minutes on - and
   further real time passed moves it no further; the map run is brought to a streak of 479 at
   minute 0 by replacing that field of the map run in the game state (a patch step of the driver),
-  since no program of the scenarios completes within the minutes they pass;
+  since no program of the scenarios completes within the minutes they pass; so does a game minute
+  in which the character dies, here the one of the first chill, game minute 84 (D-121, D-122): the
+  map run ends there not paused, holding the discovery the minute revealed, with no real time
+  carried over - also at 16x - and further real time passed moves it no further; the character is
+  brought to a health of 0.3 at game minute 83 by replacing that field of its body in the game
+  state (a patch step of the driver), since nothing in the minutes the scenarios pass takes a
+  character's health that low before the first chill;
 - until it ends: the map runs below pass at most 212 game minutes, and none ends within them, other
-  than the completion scenario, which ends in its first game minute; a map run ended in the
-  character's death is the invariant `minute-span-split`'s.
+  than the completion scenario, which ends in its first game minute, and the death scenarios, which
+  end in game minute 84.
 
 The expected minute after each input is written out beside it below; each scaled value is the real
 time times the pace (62.5 ms at 16x is 1000).
@@ -59,14 +66,15 @@ real time that the paused inputs would have brought (minute 9 to 10, 70 and 71),
 game is paused is checked after each `setPaused`, so the paused part of the scenario is not
 vacuous; the same real time passed to a game that knows everything is not stopped by any game
 minute (minute 184, not paused, the part of a second carried over), so the stop of the
-discovery scenario is the discovery's; the same inputs of the pace scenario at the pace 1 would
+discovery scenario is the discovery's; the same inputs of the death scenario without the
+health patch stop the map run, paused, in game minute 84, so the end of the map run there is the
+death's; the same inputs of the pace scenario at the pace 1 would
 move the map run on by a sixteenth of the minutes, so that scenario is not vacuous; the same
 real time passed to a map run whose streak stands at 100 is not stopped (game minute 16, a carry of
 160), so the stop of the completion scenario is the completion's.
 
 Does NOT cover: real time passed with no map run; zero, negative or non-finite real time; inputs
-whose sum is not exact in binary floating point; the view's clock; real time passed to a map run
-ended in the character's death.
+whose sum is not exact in binary floating point; the view's clock.
 """
 
 import json
@@ -107,6 +115,11 @@ def pace(value):
 def patch_run(fields):
     """Replace fields of the map run in the game state: explicit state, not a public function."""
     return ["patchRun", fields]
+
+
+def patch_body(fields):
+    """Replace fields of the character's body in the game state: explicit state, likewise."""
+    return ["patchBody", fields]
 
 
 START = [["newGame"], CREATE, ["setProgram", PROGRAM], ["send", SENT, T]]
@@ -265,6 +278,36 @@ COMPLETION_CONTROL = (
     (passed(1010), 16, False, 160, False, 16, False),
 )
 
+# The death in the game minute of the first chill (D-121, D-122), on the new game that knows only
+# the start: 83 game minutes with 500 ms carried over, the body at health 0.3, and 1000 ms that
+# reach game minute 84, where the chill takes 0.35 of the health and the character dies. (input,
+# the map run's game minute after it, whether the game is paused after it, the real time carried
+# over after it, whether the game holds a discovery, the pace after it, whether the map run has
+# completed, whether the character is dead.) The discovery stays in the game state and the game
+# is not paused; the map run moves no further.
+DEATH_SCENARIO = (
+    (passed(83500), 83, False, 500, False, 1, False, False),
+    (patch_body({"health": 0.3}), 83, False, 500, False, 1, False, False),
+    (passed(1000), 84, False, 0, True, 1, False, True),
+    (passed(5000), 84, False, 0, True, 1, False, True),
+    (passed(60000), 84, False, 0, True, 1, False, True),
+)
+# The same at 16x: 5200 ms make 83 game minutes with 200 ms carried over, and 1000 ms more would
+# make 16 but end in game minute 84, which drops the carry and the rest.
+DEATH_PACE_SCENARIO = (
+    (pace(16), 0, False, 0, False, 16, False, False),
+    (passed(5200), 83, False, 200, False, 16, False, False),
+    (patch_body({"health": 0.3}), 83, False, 200, False, 16, False, False),
+    (passed(1000), 84, False, 0, True, 16, False, True),
+    (passed(1000), 84, False, 0, True, 16, False, True),
+)
+# The same inputs without the health patch: the first chill stops the map run, paused, alive.
+DEATH_CONTROL = (
+    (passed(83500), 83, False, 500, False, 1, False, False),
+    (passed(1000), 84, True, 0, True, 1, False, False),
+    (passed(5000), 84, True, 0, True, 1, False, False),
+)
+
 DRIVER = KNOWING_GAME_JS + r"""
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -278,10 +321,13 @@ for (const [name, ...args] of steps) {
   if (name === 'newGame') state = await newKnowingGame(game, gamePath);
   else if (name === 'newBareGame') state = { ...game.newGame(), solvedMaps: ['forestEdge'] };
   else if (name === 'patchRun') state = { ...state, run: { ...state.run, ...args[0] } };
-  else state = game[name](state, ...args).state;
+  else if (name === 'patchBody') {
+    state = { ...state, run: { ...state.run, body: { ...state.run.body, ...args[0] } } };
+  } else state = game[name](state, ...args).state;
   records.push({ step: name, minute: state.run ? state.run.minute : null, paused: state.paused,
                 carry: state.realMsCarry, discovery: state.discovery !== null, pace: state.pace,
-                completed: state.run ? state.run.completion !== null : false });
+                completed: state.run ? state.run.completion !== null : false,
+                dead: state.run ? state.run.death !== null : false });
 }
 writeFileSync(outPath, JSON.stringify(records));
 """
@@ -352,6 +398,9 @@ class PlayerMapRunPace(unittest.TestCase):
             if len(after) > 1:
                 self.assertEqual(record["completed"], after[1],
                                  f"completion after input {index}, {json.dumps(step)}")
+            if len(after) > 2:
+                self.assertEqual(record["dead"], after[2],
+                                 f"death after input {index}, {json.dumps(step)}")
             where = f"input {index}, {json.dumps(step)}"
             self.assertEqual(record["minute"], minute, f"game minute after {where}")
             self.assertEqual(record["paused"], paused, f"paused after {where}")
@@ -385,6 +434,18 @@ class PlayerMapRunPace(unittest.TestCase):
     def test_control_the_same_real_time_at_a_streak_of_100_is_not_stopped(self):
         # invariant: player-map-run-pace
         self.run_and_compare_discovery(START, COMPLETION_CONTROL)
+
+    def test_a_death_in_the_minute_of_a_discovery_ends_the_run_unpaused_and_keeps_the_discovery(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(BARE_START, DEATH_SCENARIO)
+
+    def test_a_death_in_the_minute_of_a_discovery_at_16x_drops_the_real_time_beyond_it(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(BARE_START, DEATH_PACE_SCENARIO)
+
+    def test_control_the_same_inputs_without_the_health_patch_stop_the_run_paused(self):
+        # invariant: player-map-run-pace
+        self.run_and_compare_discovery(BARE_START, DEATH_CONTROL)
 
 
 if __name__ == "__main__":

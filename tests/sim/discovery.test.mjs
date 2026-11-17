@@ -631,6 +631,19 @@ test("the first chill in the minute of death still reveals what the body step re
   assert.deepEqual(dead.state.understanding, CHILLED);
 });
 
+// Catches a map run ended in the character's death that stands in the pause of a discovery: the
+// end-of-run window takes the pause's place, so the game is not paused and still holds the discovery.
+test("a death in the minute of the first chill leaves the game not paused, holding what the minute revealed", () => {
+  // decision: D-122 "Where the map run ends in a completion or a character's death in the game minute of a discovery, the end-of-run window (D-368) takes the place of the pause and names that discovery in its part about what happened"
+  const state = prepared(START, () => ({
+    body: { temperature: 34.9, satiety: 100, health: 0.2 },
+  }));
+  const dead = advanceMinutes(state, 1).state;
+  assert.ok(dead.run.death, "precondition: the character died in that minute");
+  assert.equal(dead.paused, false);
+  assert.deepEqual(dead.discovery?.actions, CHILL_REVEALED.actions);
+});
+
 test("the Understanding stands after death, Restart and Zakończ, and stands for the next character sent", () => {
   // decision: D-119 "The Understanding belongs to the player and is one for all characters, and what any character discovers enters it for every character"
   // decision: D-123 "The game writes one such rule, „Zawsze → Eksploruj”, at the first chill, and only where the copy holds no rule with the action „Eksploruj”"

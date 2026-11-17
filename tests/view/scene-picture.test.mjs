@@ -501,7 +501,7 @@ test("a completion stops the scene in colour", () => {
 
 // invariant: loop2-container-sprites
 test("every file the scene's and the camp's data name stands directly in assets/sprites/ as a .png file", () => {
-  // What the camp's drawing asks for, as it asks: the address of each picture of a team of one in Siedziba.
+  // What the camp's drawing asks for, as it asks: the address of each picture of a team of one at the camp.
   const camp = campDrawing(createCharacter(newGame(), "Ala").state);
   const asked = [
     camp.background,
@@ -1283,7 +1283,7 @@ test("the specks of a completion rise over a part of the frame, on the scene's g
     for (const value of [x, y, rise, delay / 100])
       assert.ok(Number.isInteger(value), `${x},${y}: a whole number`);
     assert.ok(rise >= 1 && delay >= 0 && delay <= 900);
-    assert.ok(["ember", "bronze"].includes(shade));
+    assert.ok(["bright", "faint"].includes(shade));
     for (let row = y - rise; row <= y; row++)
       assert.ok(
         luminance(frame.pixels[row][x]) > 0.5,

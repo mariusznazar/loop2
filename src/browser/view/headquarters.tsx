@@ -1,7 +1,7 @@
 /**
  * The screen Siedziba (D-282, D-51, D-54, D-246, D-217, D-218, D-244, D-245, D-184, D-330, D-389): at
  * the top, over the screen's panel, the camp, a picture of the campfire, the chest and the characters
- * that are in Siedziba (`camp.tsx`); in the panel, under its heading the report on earning loops
+ * at the camp (`camp.tsx`); in the panel, under its heading the report on earning loops
  * „Gdy cię nie było” or „Pętle, które stanęły” while it holds a line, with „Zamknij”; the section
  * „Drużyna” with its heading, at each character in the order of creation its name as a link to its
  * screen Postać, its generation „pokolenie {n}” from 2 up, its archetype, its resurrection line, the

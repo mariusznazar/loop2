@@ -208,8 +208,8 @@ export const SCENE_FROST = {
   thickness: 16,
 } as const;
 
-/** The shade of a speck of light: the name of a colour of the scene's palette, which the stylesheet reads. */
-export type SceneSpeckShade = "ember" | "bronze";
+/** The shade of a speck of light, named by its role in the effect, `bright` or `faint`, which the stylesheet reads. */
+export type SceneSpeckShade = "bright" | "faint";
 
 /**
  * A speck of light after a completion (D-322): a square of one pixel of the scene that starts at `x`
@@ -245,30 +245,30 @@ export const SCENE_MOMENTS = {
     from: { left: { x: 120, y: 50 }, right: { x: 265, y: 50 } },
   },
   specks: [
-    { x: 104, y: 112, rise: 12, delay: 0, shade: "ember" },
-    { x: 110, y: 123, rise: 17, delay: 700, shade: "bronze" },
-    { x: 116, y: 134, rise: 22, delay: 400, shade: "ember" },
-    { x: 122, y: 122, rise: 22, delay: 100, shade: "bronze" },
-    { x: 128, y: 133, rise: 13, delay: 800, shade: "ember" },
-    { x: 134, y: 121, rise: 18, delay: 500, shade: "bronze" },
-    { x: 140, y: 132, rise: 23, delay: 200, shade: "ember" },
-    { x: 146, y: 120, rise: 20, delay: 900, shade: "bronze" },
-    { x: 152, y: 131, rise: 14, delay: 600, shade: "ember" },
-    { x: 158, y: 119, rise: 19, delay: 300, shade: "bronze" },
-    { x: 164, y: 130, rise: 24, delay: 0, shade: "ember" },
-    { x: 170, y: 118, rise: 18, delay: 700, shade: "bronze" },
-    { x: 176, y: 129, rise: 15, delay: 400, shade: "ember" },
-    { x: 182, y: 117, rise: 17, delay: 100, shade: "bronze" },
-    { x: 188, y: 128, rise: 25, delay: 800, shade: "ember" },
-    { x: 194, y: 116, rise: 16, delay: 500, shade: "bronze" },
-    { x: 200, y: 127, rise: 16, delay: 200, shade: "ember" },
-    { x: 206, y: 115, rise: 15, delay: 900, shade: "bronze" },
-    { x: 212, y: 126, rise: 26, delay: 600, shade: "ember" },
-    { x: 218, y: 114, rise: 12, delay: 300, shade: "bronze" },
-    { x: 224, y: 125, rise: 17, delay: 0, shade: "ember" },
-    { x: 230, y: 113, rise: 13, delay: 700, shade: "bronze" },
-    { x: 236, y: 124, rise: 24, delay: 400, shade: "ember" },
-    { x: 242, y: 112, rise: 12, delay: 100, shade: "bronze" },
+    { x: 104, y: 112, rise: 12, delay: 0, shade: "bright" },
+    { x: 110, y: 123, rise: 17, delay: 700, shade: "faint" },
+    { x: 116, y: 134, rise: 22, delay: 400, shade: "bright" },
+    { x: 122, y: 122, rise: 22, delay: 100, shade: "faint" },
+    { x: 128, y: 133, rise: 13, delay: 800, shade: "bright" },
+    { x: 134, y: 121, rise: 18, delay: 500, shade: "faint" },
+    { x: 140, y: 132, rise: 23, delay: 200, shade: "bright" },
+    { x: 146, y: 120, rise: 20, delay: 900, shade: "faint" },
+    { x: 152, y: 131, rise: 14, delay: 600, shade: "bright" },
+    { x: 158, y: 119, rise: 19, delay: 300, shade: "faint" },
+    { x: 164, y: 130, rise: 24, delay: 0, shade: "bright" },
+    { x: 170, y: 118, rise: 18, delay: 700, shade: "faint" },
+    { x: 176, y: 129, rise: 15, delay: 400, shade: "bright" },
+    { x: 182, y: 117, rise: 17, delay: 100, shade: "faint" },
+    { x: 188, y: 128, rise: 25, delay: 800, shade: "bright" },
+    { x: 194, y: 116, rise: 16, delay: 500, shade: "faint" },
+    { x: 200, y: 127, rise: 16, delay: 200, shade: "bright" },
+    { x: 206, y: 115, rise: 15, delay: 900, shade: "faint" },
+    { x: 212, y: 126, rise: 26, delay: 600, shade: "bright" },
+    { x: 218, y: 114, rise: 12, delay: 300, shade: "faint" },
+    { x: 224, y: 125, rise: 17, delay: 0, shade: "bright" },
+    { x: 230, y: 113, rise: 13, delay: 700, shade: "faint" },
+    { x: 236, y: 124, rise: 24, delay: 400, shade: "bright" },
+    { x: 242, y: 112, rise: 12, delay: 100, shade: "faint" },
   ],
 } as const satisfies {
   discovery: {
@@ -307,7 +307,7 @@ export const SCENE_PROPS = {
 /**
  * The camp at the top of Siedziba, in the pixels of its picture: a band of one picture, the snow
  * clearing, with the campfire in the middle of it, the chest to the right of the fire and, to its left,
- * the characters that are in Siedziba, standing in a row away from the fire in the order of creation
+ * the characters at the camp, standing in a row away from the fire in the order of creation
  * (D-54). The clearing is the pack Pixel Crawler's snow ground composed with its pines and saplings,
  * as the forest of the scene is (D-314), in full light and with no tint (D-315), and as wide as the
  * widest content, 1344 px at twice its pixels: a narrower band shows its middle. The chest is one still

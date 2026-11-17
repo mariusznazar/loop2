@@ -2302,7 +2302,7 @@ test("the specks of a completion stand only while the effect plays, over the tin
     const first = specks[0];
     near(first.style.left, (104 / 336) * 100, "left");
     near(first.style.top, (112 / 152) * 100, "top");
-    assert.equal(first.getAttribute("data-shade"), "ember");
+    assert.equal(first.getAttribute("data-shade"), "bright");
     assert.equal(first.style.getPropertyValue("--rise"), "12");
     assert.equal(first.style.getPropertyValue("--delay"), "0");
     assert.doesNotMatch(

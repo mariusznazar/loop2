@@ -28,9 +28,9 @@ function teamOf(count) {
 
 const ids = (state) => campDrawing(state).members.map((member) => member.id);
 
-// Catches a camp drawn only where the team has someone in Siedziba (a team of none, as in a new game, would
+// Catches a camp drawn only where the team has someone at the camp (a team of none, as in a new game, would
 // draw no camp at all), or one that drops the fire or the chest with the characters.
-test("a team with nobody in Siedziba shows the fire and the chest alone", () => {
+test("a team with nobody at the camp shows the fire and the chest alone", () => {
   // decision: D-389 "The characters that stand in it are those"
   const empty = campDrawing(newGame());
   assert.deepEqual(empty.members, []);
@@ -45,7 +45,7 @@ test("a team with nobody in Siedziba shows the fire and the chest alone", () => 
 
 // Catches a camp that draws the whole team (a character on a map or in a loop standing at the fire), one
 // that forgets one of the three ways a character is away, or one that reorders the characters (D-54).
-test("only the characters in Siedziba stand in the camp, in the order of creation", () => {
+test("only the characters at the camp stand in the camp, in the order of creation", () => {
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
   // decision: D-389 "The characters that stand in it are those"
   // 1 stays, 2 is in the manual map run, 3 in an earning loop, 4 had its loop stopped, 5 stays.
@@ -60,7 +60,7 @@ test("only the characters in Siedziba stand in the camp, in the order of creatio
 });
 
 // Catches a manual map run that is read only while it goes: a paused run and one that has ended and waits for
-// „Restart” or „Zakończ” are still the run of that character, so it is not in Siedziba.
+// „Restart” or „Zakończ” are still the run of that character, so it is not at the camp.
 test("the character of a manual map run is away while the run goes, is paused or has ended", () => {
   // decision: D-389 "The characters that stand in it are those"
   const going = send(teamOf(2), { mapId: MAP, characterId: 1 }, NOW).state;

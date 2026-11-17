@@ -6,7 +6,10 @@
  * hidden page, that sends only a changed state or the state of a save that failed, and then takes
  * the place of the planned retry, so that one request waits at a time (D-207, D-208); each document
  * holding the clock's moment as its save time, which changes no state (D-248); and the sentence of what the player sees of saving, which it gives as a value and a way
- * to hear of its changes, so that it builds no element. It is created with the game and disposed
+ * to hear of its changes, so that it builds no element. An exception of its own code before the
+ * request leaves, and a rejection of the client's promise, count as a failed save, for the
+ * sentence, the retries and the save before a logout, and the error is left unhandled for the
+ * last resort of the page (D-208, D-97, D-323). It is created with the game and disposed
  * with it; nothing here runs when the module is imported.
  */
 import type { AccountClient, SaveOutcome } from "../account-api.js";
@@ -27,6 +30,9 @@ const LOGOUT_FAILED =
 const CHECK_MS = 30_000;
 /** The waits before each retry after a failed save; the last one repeats (D-208). */
 const RETRY_MS = [5_000, 10_000, 20_000, 30_000] as const;
+
+/** What `answered` is given: the outcome of a request, or a failure with no request answered. */
+type Answer = SaveOutcome | { readonly kind: "failed" };
 
 export type GameSaverOptions = {
   /** The account client, whose save sends its request with `keepalive`. */
@@ -148,13 +154,34 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     cancelRetry();
     pending = false;
     inFlight = true;
-    const state = read();
-    // The state read stays the baseline: only its document holds the save time (D-248).
-    baseline = state;
-    const stamped = withSaveTime(state, options.moment());
-    void client
-      .saveGame({ ...savedGame(stamped), basedOn: revision })
-      .then((outcome) => answered(outcome, forLogout));
+    let request: Promise<SaveOutcome>;
+    try {
+      const state = read();
+      // The state read stays the baseline: only its document holds the save time (D-248).
+      baseline = state;
+      const stamped = withSaveTime(state, options.moment());
+      request = client.saveGame({ ...savedGame(stamped), basedOn: revision });
+    } catch (error) {
+      notSent(error, forLogout);
+      return;
+    }
+    void request.then(
+      (outcome) => answered(outcome, forLogout),
+      (error: unknown) => notSent(error, forLogout),
+    );
+  };
+
+  /**
+   * The saving code threw, or the client's promise was rejected, instead of answering: that is a
+   * failed save for the player and for the retries, and for a logout waiting for it (D-208, D-97).
+   * The error itself is not handled here: it is rejected on, with no handler, to reach the last
+   * resort of the page (D-323).
+   */
+  const notSent = (error: unknown, forLogout: boolean): void => {
+    answered({ kind: "failed" }, forLogout);
+    void Promise.resolve().then(() => {
+      throw error;
+    });
   };
 
   const finishLogout = (save: LogoutSave): void => {
@@ -178,7 +205,7 @@ export function createGameSaver(options: GameSaverOptions): GameSaver {
     else options.onSignedOut();
   };
 
-  const answered = (outcome: SaveOutcome, forLogout: boolean): void => {
+  const answered = (outcome: Answer, forLogout: boolean): void => {
     if (disposed) return;
     inFlight = false;
     if (outcome.kind === "conflict" || outcome.kind === "outdated") {

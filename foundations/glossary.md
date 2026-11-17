@@ -88,7 +88,13 @@ left, whether it has burnt out or has not been lit yet.
 
 The headquarters is the screen Siedziba, which shows the player's team with its characters and its chest.
 
-- **Not:** none
+- **Not:** the place where a character stands — at the camp
+
+## at the camp
+
+A character is at the camp when it is in no manual map run, going, paused or ended and waiting for „Restart” or „Zakończ”, and in no earning loop.
+
+- **Not:** the screen Siedziba — headquarters · the picture band at the top of that screen with the characters drawn in it, of which it holds only the first that fit — `campDrawing`
 
 ## unit test
 

@@ -1117,12 +1117,12 @@
   visibility: hidden;
 }
 
-.scene-speck[data-shade="ember"] {
-  background: var(--scene-speck-ember);
+.scene-speck[data-shade="bright"] {
+  background: var(--scene-speck-bright);
 }
 
-.scene-speck[data-shade="bronze"] {
-  background: var(--scene-speck-bronze);
+.scene-speck[data-shade="faint"] {
+  background: var(--scene-speck-faint);
 }
 
 /*

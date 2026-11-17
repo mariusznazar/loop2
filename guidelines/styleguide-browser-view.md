@@ -936,14 +936,14 @@ design token”).
 
 - **Decision:** D-389 · D-272 · D-271 · D-314 · D-315 · D-316 · D-317 · D-321 · D-349 · D-286 · D-280 · D-42 · D-43
 - **Invariant:** none
-- **Good:** Pas obozu między wierszem ostrzeżeń a nagłówkiem „Siedziba”, z ogniskiem pośrodku, skrzynką i postaciami, które są w Siedzibie, obok niego; w wąskim oknie polana przycięta po bokach wokół ogniska; pod ograniczeniem ruchu klatki stoją.
+- **Good:** Pas obozu między wierszem ostrzeżeń a nagłówkiem „Siedziba”, z ogniskiem pośrodku, skrzynką i postaciami, które są w obozie, obok niego; w wąskim oknie polana przycięta po bokach wokół ogniska; pod ograniczeniem ruchu klatki stoją.
 - **Bad:** Tekst, przycisk albo reakcja na kliknięcie na obozie; obóz zmniejszony w wąskim oknie; postać przejścia ręcznego albo pętli zarobkowej przy ognisku; postać ucięta w połowie brzegiem pasa; ognisko obozu wygaszone razem z ogniskiem ze stanu gry; błysk całego pasa.
 
 Rysuj obóz jako obraz u góry ekranu Siedziba: pas na całą szerokość treści, w wysokości swojego obrazka w
 dwukrotności pikseli, pod wierszem ostrzeżeń pod paskiem menu i nad nagłówkiem „Siedziba”, nad panelem
 ekranu, nie w nim; zdanie strony stoi nad pasem (D-286). Tłem jest polana z obrazków paczki w pełnym świetle,
 bez odcienia. Na niej stoją ognisko, które zawsze płonie i nie zależy od ogniska ze stanu gry, skrzynka jako
-jeden nieruchomy obrazek i postacie w pozie bezczynności: tylko te, które są w Siedzibie, w kolejności
+jeden nieruchomy obrazek i postacie w pozie bezczynności: tylko te, które są w obozie, w kolejności
 założenia, tyle całych, ile mieści pas. W wąskim oknie przycinaj polanę po bokach wokół ogniska i nie
 zmniejszaj jej; sekcja „Drużyna” pod pasem wymienia wszystkie postacie. Poruszaj ogień i postacie z CSS, w
 stałym takcie klatek sceny, bez pętli rysowania, a pod ograniczeniem ruchu zostaw klatki w miejscu. Nie daj
