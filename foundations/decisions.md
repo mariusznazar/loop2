@@ -4629,13 +4629,13 @@ The counter „{n} poznanych rzeczy” counts the actions, items and creatures t
 
 ### D-421 — Which stylesheets does the browser view have, and what does each hold?
 
-`src/browser/styles.css` stays the shared stylesheet of the game, the game's stylesheet of D-47 and D-265 that keeps the one `:focus-visible` rule: it holds the base rules, that rule, the menu bar, the rows of sentences, the shared controls and the rules of what the kitchen-sink page draws besides the controls — the drawing of the map (`terrain-drawing`), the table of tiles (`tile-list`), the form (`form`) and the block of the account menu (`account-menu-block`). It holds also the common layout of the screens — the place of the screens (`.app-main`, `.screen`, `.screen-area`) and the columns of Programy, Mapy and Wiedza with their `@media` — and each rule that the elements of several screens need, that cannot be divided without changing its text and that belongs to no part with a stylesheet of its own, as the rules of the credits that name the login card and Siedziba belong to `credits.css`: a rule whose selector list names classes of more than one screen, or the rule of a sentence that several screens draw, which today are, besides those columns, the sentence `trip-warning` and the animation of the frames of the sprites of the scene and of the camp. Each screen and every other part that several screens use has a stylesheet of its own, a `.css` file directly in `src/browser/`, which a `<link>` of its own in `src/browser/index.html` gives to the player and which the build copies as it copies the other files of that kind, with no change of the build; the kitchen-sink page links the file of design tokens, `src/browser/styles.css` and its own stylesheet alone.
+`src/browser/styles.css` stays the shared stylesheet of the game, the game's stylesheet of D-47 and D-265 that keeps the one `:focus-visible` rule: it holds the base rules, that rule, the menu bar, the rows of sentences, the shared controls and the rules of what the kitchen-sink page draws besides the controls — the drawing of the map (`terrain-drawing`), the table of tiles (`tile-list`), the form (`form`) and the block of the account menu (`account-menu-block`). It holds also the common layout of the screens — the place of the screens (`.app-main`, `.screen`, `.screen-area`) and the columns of Programy, Mapy and Wiedza with their `@media` — and each rule that the elements of several screens need, that cannot be divided without changing its text and that belongs to no part with a stylesheet of its own, as the rules of the credits that name the login card and Siedziba belong to `credits.css`: a rule whose selector list names classes of more than one screen, or the rule of a sentence that several screens draw, which today are, besides those columns, the sentence `trip-warning` and the animation of the frames of the sprites of the scene and of the picture band. Each screen and every other part that several screens use has a stylesheet of its own, a `.css` file directly in `src/browser/`, which a `<link>` of its own in `src/browser/index.html` gives to the player and which the build copies as it copies the other files of that kind, with no change of the build; the kitchen-sink page links the file of design tokens, `src/browser/styles.css` and its own stylesheet alone.
 
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-28 · derives from D-47 · derives from D-265
 - **Verification:** an agent compares a change with the decision:
-  - complies: the rules of the program panel, which the screens Programy and Przejście use, in a stylesheet of their own directly in `src/browser/` with a `<link>` of its own in `src/browser/index.html`; the rules of a screen in the stylesheet of that screen; the look of a shared control in `src/browser/styles.css`; the kitchen-sink page linking the file of design tokens, `src/browser/styles.css` and its own stylesheet and no stylesheet of a screen; the animation of the frames of the sprites of the scene and of the camp of Siedziba, one rule whose selector list names classes of Przejście and of Siedziba and which no part with a stylesheet of its own holds, with its keyframes in `src/browser/styles.css`; the rules of the folded credits that name the login card and Siedziba in `src/browser/credits.css`, the stylesheet of that part
+  - complies: the rules of the program panel, which the screens Programy and Przejście use, in a stylesheet of their own directly in `src/browser/` with a `<link>` of its own in `src/browser/index.html`; the rules of a screen in the stylesheet of that screen; the look of a shared control in `src/browser/styles.css`; the kitchen-sink page linking the file of design tokens, `src/browser/styles.css` and its own stylesheet and no stylesheet of a screen; the animation of the frames of the sprites of the scene and of the picture band of Siedziba, one rule whose selector list names classes of Przejście and of Siedziba and which no part with a stylesheet of its own holds, with its keyframes in `src/browser/styles.css`; the rules of the folded credits that name the login card and Siedziba in `src/browser/credits.css`, the stylesheet of that part
   - violates: the rules of a screen written into `src/browser/styles.css` or into the stylesheet of another screen; a rule that the elements of two screens need, written into the stylesheet of one of them, so that the other screen reads a file of the first; a stylesheet of a screen kept in a subdirectory of `src/browser/`, or a step added to the build for it; a stylesheet of a screen that the kitchen-sink page links; a second `:focus-visible` rule, or an `outline` set, in the stylesheet of a screen
 - **Origin:** none
 
@@ -4870,7 +4870,7 @@ The scene's pictures and the picture of the game behind the login card are sprit
 Pixel Crawler and LPC Wolf, and the dust of a miss and the cloud of a scuffle are sprites of the
 pack Smoke & Fire Animated Particle [16x16] recoloured to the scene's colours, all kept in
 `assets/sprites/` outside the directory the account and save server serves and copied into it when
-the application is built. The pictures of the camp at the top of Siedziba, its clearing, fire, chest
+the application is built. The pictures in the picture band at the top of Siedziba, its clearing, fire, chest
 and characters, are sprites of the pack Pixel Crawler kept there in the same way, and the chest is
 one still picture whatever it holds. A sprite file holds pixels alone, the game credits each pack
 whose licence asks for a credit, the game takes the pack LPC Wolf under its licence CC BY 3.0, and
@@ -4885,8 +4885,8 @@ frost by at least 3:1 against the snow it lies on.
 - **Based on:** pixel-crawler-terms · lpc-wolf-licence · smoke-fire-particle-licence · cc-by-3-adaptation-credit
 - **Relations:** none
 - **Verification:** invariants: sprite-file-content · loop2-container-sprites · sprite-credits. tests:
-  the files of the smaller flame, of the mage's death, of the wolf and of the camp's clearing and
-  chest holding pixels alone; the chest of the camp one still picture, the same empty and full; the
+  the files of the smaller flame, of the mage's death, of the wolf and of the clearing and
+  chest of the picture band holding pixels alone; the chest of the picture band one still picture, the same empty and full; the
   credit line of the pack LPC Wolf naming its licence CC BY 3.0; every picture file of the sprites
   having an assignment to a pack in the table of its test, which does not judge whether the
   assignment is right, and every pack that table assigns a file to, where its licence asks for a
@@ -4897,9 +4897,9 @@ frost by at least 3:1 against the snow it lies on.
   the pictures come from, the sprite files no test reads and the colours CSS draws in, an agent
   compares a change with the part no invariant and no test holds:
   - complies: a picture composed from the pack's trees, fire and mage kept in `assets/sprites/` as a
-    PNG file with no chunk but its pixels'; the clearing of the camp composed from the pack's snow
+    PNG file with no chunk but its pixels'; the clearing of the picture band composed from the pack's snow
     ground and trees, and its chest cut from the pack's sheet with every pixel moved unchanged, the
-    camp's characters and fire the files of the scene's mage and fire; the character of the scene
+    band's characters and fire the files of the scene's mage and fire; the character of the scene
     drawn from a sprite file made from the pack's mage; the cloud of dust a sprite file made from the
     smoke of Smoke & Fire Animated Particle [16x16] in browns the scene holds, which the cloud of a
     scuffle is too; the wolf a set of sprite files made from the side views of the pack LPC Wolf,
@@ -4915,7 +4915,7 @@ frost by at least 3:1 against the snow it lies on.
     ground it stands on; the hooded figure of loop as the character of the scene; a mage, a creature
     or a prop drawn by CSS as a shape; a frost or a speck in a colour no picture of a pack holds; a
     speck in a colour that does not stand out from the snow it rises over; a cold layer whose colour
-    no choice of the human gave; a chest of the camp drawn from an icon file as a mask
+    no choice of the human gave; a chest of the picture band drawn from an icon file as a mask
 - **Origin:** none
 
 *Rationale:* the packs of loop keep one style and known terms, and Pixel Crawler holds the mage,
@@ -4945,12 +4945,12 @@ on the snow weakly by its brightness. Accepted with it: credits for the pack of 
 bending mage made by hand or, where hand work comes out weak, generated for those few frames, a
 smaller flame cut down by hand from the frames of the pack's fire, pixel work whose look is judged
 only once it is made, and colours of the specks and of the frost that enter the game's palette with a
-source in the pixel of a named picture of a pack. The camp at the top of Siedziba needs no pack beyond the one
+source in the pixel of a named picture of a pack. The picture band at the top of Siedziba needs no pack beyond the one
 the scene stands on: Pixel Crawler holds a chest with fittings in the same style, so the chest is cut out of its
 sheet as the trees were, the clearing is composed of the same pictures as the forest, and the pack asks for no
 credit, so the game's credits stay as they are. The chest is one picture because how much it holds is said by
 the heading of the chest's section, not by the picture; accepted with it: one more cut from the pack's sheet.
-*Rejected:* for the chest of the camp: an icon of game-icons.net drawn by a mask, as the icons over the mage's
+*Rejected:* for the chest of the picture band: an icon of game-icons.net drawn by a mask, as the icons over the mage's
 head are — a smooth drawing beside pixels, the reason this decision gives for refusing shapes the browser draws in
 the scene, and a new row in the game's credits; for the licence of the wolf: CC BY 4.0 — nothing the game needs beyond 3.0, its terms
 would have to be read and written down as a new fact, and two different Creative Commons licences would
@@ -4976,7 +4976,7 @@ scene, and text stands on a solid background, never on a picture.
 - **Scope:** browser-view
 - **Based on:** none
 - **Relations:** derives from D-96
-- **Verification:** tests: the scene of a map run and the camp at the top of Siedziba, the camp over
+- **Verification:** tests: the scene of a map run and the picture band at the top of Siedziba, the band over
   the screen's panel and its heading, each a picture with no text in it. For the login card, text
   laid over a picture from outside it and the screens with no picture, an agent compares a change
   with the part no invariant and no test holds:
@@ -5845,7 +5845,7 @@ The characters of the team stand on its list in the order they were created.
 - **Based on:** none
 - **Relations:** none
 - **Verification:** tests: the characters standing in the order of their creation on the team's
-  list in the game state, on Siedziba, in „Kto idzie” of the card of a map and in the camp of
+  list in the game state, on Siedziba, in „Kto idzie” of the card of a map and in the picture band of
   Siedziba.
 - **Origin:** none
 
@@ -9533,7 +9533,7 @@ The rule panel shows beside an action what it costs, read from the game's data, 
 
 ## Screen Mapy and Siedziba
 
-What the screen Mapy shows of maps and characters, and the camp at the top of Siedziba.
+What the screen Mapy shows of maps and characters, and the picture band at the top of Siedziba.
 
 ### D-53 — Where does the player send a character from, and where do the buttons that end a map run lead?
 
@@ -9752,9 +9752,9 @@ The numbers of the card of a map that follow a rule of the game are computed by 
 *Rationale:* the player reads on the card what a map asks, and the numbers come out of the rules of the game, the cooling of the body and the spacing of attacks, which stand in the simulation. Counted there once, the card follows a change of balance by itself. Accepted with it: the simulation holds functions that only the card uses, and a usual step that is the step most maps give changes when a map with another step arrives, the notes beside the steps moving with it.
 *Rejected:* the view counting the numbers — the cooling of the body and the spacing of attacks would be written twice and drift apart at the next change of balance; a value „usual step” in the balance data — a number no settled source gives; a constant of the view — a number of the game's content outside its data.
 
-### D-389 — What does the camp at the top of Siedziba show, and how does it stand and move?
+### D-389 — What does the picture band at the top of Siedziba show, and how does it stand and move?
 
-The camp at the top of Siedziba is a band across the content, about 96 px high, under the row of
+The picture band at the top of Siedziba stands across the content, about 96 px high, under the row of
 warnings below the menu bar and over the heading „Siedziba”, drawn at twice the pixels of its picture:
 a snow clearing in full light and with no tint, composed of the pictures of the pack Pixel Crawler from
 which the forest of the scene is composed, with a burning campfire in the middle, the chest and the
@@ -9763,8 +9763,8 @@ campfire and never scales it down. The characters that stand in it are those at 
 character being at the camp where it is neither in a manual map run, going, paused or ended and
 waiting for „Restart” or „Zakończ”, nor in an earning loop: the first of them in the order of
 creation that the band holds at the width of the window, the rest standing in the picture nowhere
-while the section „Drużyna” lists them all, and a camp with none shows the fire and the chest
-alone. The camp moves as the scene does, the fire in the frames of its flame and
+while the section „Drużyna” lists them all, and a picture band with none at the camp shows the fire and the chest
+alone. The picture band moves as the scene does, the fire in the frames of its flame and
 each character in the frames of its idle sheet, at the scene's fixed beat with no loop of drawing, and
 stands still under the system's setting for reduced motion; its campfire burns always and is no campfire
 of the game state; and it is a picture, not a control, taking no click and no key, hidden from readers of
@@ -9777,37 +9777,37 @@ the screen, with no text on it or over it.
   the heading „Siedziba” under it, 96 px high, its clearing, a picture of 672 × 48, drawn at twice its
   pixels; the characters that stand in it, those neither in a manual map run, going, paused or ended,
   nor in an earning loop, in the order of creation, as many as the widest band holds, „Drużyna” listing
-  them all, and the fire and the chest alone where none is at the camp, the camp following at once
+  them all, and the fire and the chest alone where none is at the camp, the band following at once
   every change of the map run and of the earning loops; the fire in the frames of its burning flame
-  whatever campfire the game state holds, and each character in the frames of its idle sheet; the camp
+  whatever campfire the game state holds, and each character in the frames of its idle sheet; the band
   a picture, with no control, no stop for the keyboard, no response to a click and no text, hidden from
   readers of the screen. For where the band stands under the menu bar, its clearing, the place of its
   fire, its cropping and its motion, an agent compares a change with the part no invariant and no test
   holds:
-  - complies: the camp under the row of warnings below the menu bar, with the sentence of the page above
+  - complies: the picture band under the row of warnings below the menu bar, with the sentence of the page above
     the screen still above it; the clearing in full light with no tint, composed of the pictures the
     forest of the scene is composed of; the fire in the middle at every width of the window; in a window
     400 px wide the clearing cropped at the sides around the fire and as many whole characters as the
     band holds; the frames of the fire and of the characters changing at the scene's beat by CSS and
     standing still under the setting for reduced motion
-  - violates: the camp over the row of warnings; the clearing scaled down in a narrow window; a character
-    cut in half at the edge of the band; a loop of drawing that moves the camp; a camp that moves under
+  - violates: the picture band over the row of warnings; the clearing scaled down in a narrow window; a character
+    cut in half at the edge of the band; a loop of drawing that moves the band; a picture band that moves under
     the setting for reduced motion
 - **Origin:** none
 
-*Rationale:* without it Siedziba is a page of text that looks like a form, and a picture of the camp at its
+*Rationale:* without it Siedziba is a page of text that looks like a form, and a picture band at its
 top gives the game a place to be seen where nothing is to be read; the band stands over the screen's panel,
 outside its text, so the contrast of the text and the order in which the screen is read stay as they
 are (D-272). The picture says what the text under it does not: a character in a manual map run is a
-thing Siedziba otherwise says nowhere, since „Drużyna” speaks of earning loops alone, so the camp shows
+thing Siedziba otherwise says nowhere, since „Drużyna” speaks of earning loops alone, so the picture band shows
 the characters that are at the fire and the screen is drawn again at every change of the map run. A team
 has no limit of characters and the content is at most 1344 px wide, so the band holds as many whole
 characters from the first as fit and the list under it holds all. The band crops the clearing at the
 sides because a pixel picture at a fractional scale has unequal pixels and shakes in motion, as the
 scene's would (D-349). The fire and the characters move at the beat of the scene so that Siedziba is not a
 still page, by CSS alone and standing still where the system asks for less motion; only small parts of the
-band change, so nothing flashes (D-317); the camp has no campfire of the game state to follow, so its fire
-always burns. The camp is a picture so that no new kind of control joins the shared ones (D-44), and the
+band change, so nothing flashes (D-317); the band has no campfire of the game state to follow, so its fire
+always burns. The band is a picture so that no new kind of control joins the shared ones (D-44), and the
 way to a character stays its name in „Drużyna” (D-280). Accepted with it: the heading „Siedziba” stands
 lower by the height of the band; one more picture to compose; the number of characters in the picture
 follows the width of the window; motion beside the text of Siedziba; no shortcut from the picture to a
@@ -9821,7 +9821,7 @@ on the map, a character in an earning loop sits at the fire though the line unde
 picture has no meaning; every character, those away drawn differently, dimmed — a new look whose meaning
 nothing settles, and grey means stopped time and death in the game (D-322), so a dimmed character would read
 as dead; every character, always, closer and closer until they overlap — a crowd in which a mage hides a
-mage; a camp that stands still, one frame of the fire and one of each character — a dead picture on the
+mage; a picture band that stands still, one frame of the fire and one of each character — a dead picture on the
 screen that is to stop looking like a form; a click on a character that opens its screen Postać — a new kind
 of control outside the shared ones (D-44): a picture as a link, with focus, a name for readers and a look
 under the pointer, and, where not every character stands in the picture, a link for some of them alone.

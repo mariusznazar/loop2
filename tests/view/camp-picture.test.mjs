@@ -91,7 +91,7 @@ test("the camp draws as many characters as the widest band holds, the first in t
 // Catches a chest drawn in another picture, or another frame, when it holds more (D-271, D-184): how much it
 // holds is told by the section „Skrzynka {n}/{cap}”, not by the camp.
 test("the chest is one still picture, the same empty and full", () => {
-  // decision: D-271 "The pictures of the camp at the top of Siedziba"
+  // decision: D-271 "The pictures in the picture band at the top of Siedziba"
   const state = teamOf(1);
   const full = {
     ...state,
@@ -104,7 +104,7 @@ test("the chest is one still picture, the same empty and full", () => {
 // Catches a camp that has a fire of its own state, standing still or out: the fire of the camp burns in its
 // frames always, whatever a campfire of the game state is (D-316 draws that one in the scene).
 test("the fire of the camp is the burning fire in its frames, whatever the game state holds", () => {
-  // decision: D-389 "The camp moves as the scene does"
+  // decision: D-389 "The picture band moves as the scene does"
   const away = send(teamOf(1), { mapId: MAP, characterId: 1 }, NOW).state;
   const fire = campDrawing(away).fire;
   assert.equal(fire.frames, 4);
@@ -114,7 +114,7 @@ test("the fire of the camp is the burning fire in its frames, whatever the game 
 // Catches a character in a sheet of another pose or a size that is not the file's: the camp shows the idle
 // sheet, four frames of 64 × 64, with the figure in its lower half, which the files hold.
 test("a character stands in the idle sheet of its archetype", () => {
-  // decision: D-389 "The camp moves as the scene does"
+  // decision: D-389 "The picture band moves as the scene does"
   const [member] = campDrawing(teamOf(1)).members;
   assert.deepEqual(member.idle, {
     href: "/sprites/mage-idle.png",

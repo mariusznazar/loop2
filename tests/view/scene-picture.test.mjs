@@ -1618,7 +1618,7 @@ test("the wolf's files hold pixels alone, in frames of 64 × 32 with the feet on
 // Where the pixels come from is not tested: they are the pack's own pixels, which only the source sheet shows.
 test("the camp's files hold pixels alone, in the size of the data", () => {
   // decision: D-271 "A sprite file holds pixels alone"
-  // decision: D-389 "The camp at the top of Siedziba is a band across the content"
+  // decision: D-389 "The picture band at the top of Siedziba stands across the content"
   const clearing = decodePng(CAMP.background.file);
   const chest = decodePng(CAMP.chest.file);
   for (const [name, image] of [
