@@ -78,9 +78,10 @@ files or requests. The MCP has full rights, so the following limits are an agree
   it shows that `logrotate` is scheduled every day, not that a run happened). The server has the
   entry of cron as well, `ls /etc/cron.daily/logrotate` (expects the path back). Also `ls -1 /var/log/loop2-app.log*`,
   which lists the names of the dump and its rotated copies only, never their content.
-- Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -m 50 -- '<fixed string>'` of
-  `/var/log/loop2-app.log` and of its newest rotated file `/var/log/loop2-app.log.1`; `zgrep -F -m 50`
-  of the older compressed ones (`/var/log/loop2-app.log.2.gz` to `.4.gz`); a bounded `tail -n 100` of
+- Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -- '<fixed string>' <files> | tail -n 50`
+  of `/var/log/loop2-app.log.1` and `/var/log/loop2-app.log`, in that order, so that the 50 lines kept are the
+  newest; `zgrep -F -- '<fixed string>' <files> | tail -n 50` of the older compressed ones
+  (`/var/log/loop2-app.log.4.gz`, `.3.gz`, `.2.gz`, in that order); a bounded `tail -n 100` of
   `/var/log/loop2-watch.log`; `stat -c '%y' /var/lib/loop2-watch/state`, the age of the watcher's
   state file and never its content; `stat -c '%U %G %a' /var/log/loop2-app.log`;
   `docker inspect --type container --format '{{.HostConfig.LogConfig.Type}}' loop2` (expects
@@ -274,7 +275,8 @@ private note. The agent reads the file's metadata only and never its content.
   header line, `<UTC time> loop2-deploy | previous commit <sha>, new commit <sha>`, and then the
   whole log of both services as Compose prints it, with Docker's timestamps. The lines under a
   header are those of the containers of its previous commit. Find the generations with
-  `grep -n -F -m 20 -- 'loop2-deploy |' /var/log/loop2-app.log`.
+  `grep -n -F -- 'loop2-deploy |' /var/log/loop2-app.log | tail -n 20`, which keeps the newest
+  generations.
 - **The `account-block`, `account-previous-save` and `account-role` lines**, which the human
   appends to the same file with the commands in "Blocking a player account", "The previous-save
   privilege" and "The owner role". The events of the owner panel need no such step: they are written
@@ -288,9 +290,15 @@ host restart and a rollback to an older commit, as long as the installed deploy 
 that has the dump. It misses a container removed any other way than by that script, and the few
 seconds between the copy and the stop of the old container.
 
-**How an agent reads it.** Bounded, and by a fixed string: for a failure from before the last
-deployment, `grep -F -m 50 -- '"failure":"' /var/log/loop2-app.log /var/log/loop2-app.log.1`
-(`-m` limits each file), then `zgrep -F -m 50` on the older ones. A line of the game begins with
+**How an agent reads it.** Bounded, by a fixed string, and keeping the newest lines: a count that
+cuts the output cuts it at the old end, so the oldest file comes first and `tail` keeps the end.
+For a failure from before the last deployment,
+`grep -F -- '"failure":"' /var/log/loop2-app.log.1 /var/log/loop2-app.log | tail -n 50`, then, on
+the older ones,
+`zgrep -F -- '"failure":"' /var/log/loop2-app.log.4.gz /var/log/loop2-app.log.3.gz /var/log/loop2-app.log.2.gz | tail -n 50`
+(a name that does not exist gives `No such file`, which is no failure; where the first printed
+line is later than the failure sought, run the command again with a larger number after
+`tail -n`). A line of the game begins with
 its JSON object after the service's name and Docker's time. The file holds the game's lines for
 those weeks, with `accountId` values, and the human's `account-block` and `account-previous-save` lines: it is the retention
 of that data (D-252), and its lines are reported selected and redacted like other service logs.
@@ -309,9 +317,9 @@ of that data (D-252), and its lines are reported selected and redacted like othe
    | `loop2_gra_nie_dziala` | a container is missing, not running or restarting, or Docker cannot be read | state and health under "Seeing deployments", the deploy log |
    | `loop2_usluga_niezdrowa` | a health check reads `unhealthy` | the same, then bounded service logs |
    | `loop2_ponowny_start` | a container has the same id and a new start time | bounded service logs of that container |
-   | `loop2_awarie_serwera` | failure lines of the server in the log of `loop2` | `grep -F -m 50 -- '"failure":"'` in the service logs, then the dump |
+   | `loop2_awarie_serwera` | failure lines of the server in the log of `loop2` | a fixed-string search for `"failure":"` in the service logs, then the dump, the newest 50 lines, as "How an agent reads it" gives |
    | `loop2_brak_kopii_bazy` | the log of the nightly backup holds no successful send from the last 26 hours | the last `end: sent` line of the bounded tail of `/var/log/loop2-backup.log` and the stage lines after it, as in "The log" of `references/backup_and_restore.md`; a schedule that did not start shows as a night with no line, see "Database backups" above |
-   | `loop2_awarie_przegladarek` | failure lines the browsers reported (`"failure":"browser"`) | `grep -F -m 50 -- '"failure":"browser"'` in the same places |
+   | `loop2_awarie_przegladarek` | failure lines the browsers reported (`"failure":"browser"`) | the same search for `"failure":"browser"` in the same places |
 
    At most one message per kind in six hours, the backup kind at most once in 24 hours, and six in all
    in 24 hours; a held message is
