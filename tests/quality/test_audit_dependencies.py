@@ -45,6 +45,7 @@ class DependencyAudit(unittest.TestCase):
                               cwd=self.root, capture_output=True, check=False).returncode
 
     def test_audits_only_a_lockfile_changed_from_the_fork_point(self):
+        # invariant: dependency-audit-refusal
         # decision: D-33 "The dependency audit passes without a network request where `package-lock.json` equals its version at {fork-point}"
         # decision: D-79 "Tests of the audit use controlled responses to force errors, and an unreadable real response fails the audit"
         self.assertEqual(self.audit(), 0)
