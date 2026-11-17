@@ -927,7 +927,7 @@ bez koloru i bez ruchu, a stoi tylko wtedy, gdy stoi na kafelku postaci (D-316).
 Lista wartości tego przewodnika ich nie nazywa (zob. „No value in place of a
 design token”).
 
-### The camp of Siedziba
+### The picture band of Siedziba
 
 - **Decision:** D-389 · D-272 · D-271 · D-314 · D-315 · D-316 · D-317 · D-321 · D-349 · D-286 · D-280 · D-42 · D-43
 - **Invariant:** none

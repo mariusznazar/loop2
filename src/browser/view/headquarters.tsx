@@ -1,6 +1,6 @@
 /**
  * The screen Siedziba (D-282, D-51, D-54, D-246, D-217, D-218, D-244, D-245, D-184, D-330, D-389): at
- * the top, over the screen's panel, the camp, a picture of the campfire, the chest and the characters
+ * the top, over the screen's panel, the picture band, a picture of the campfire, the chest and the characters
  * at the camp (`camp.tsx`); in the panel, under its heading the report on earning loops
  * „Gdy cię nie było” or „Pętle, które stanęły” while it holds a line, with „Zamknij”; the section
  * „Drużyna” with its heading, at each character in the order of creation its name as a link to its
@@ -273,7 +273,7 @@ function CharacterCreation({ onCreate }: { onCreate: (name: string) => void }) {
 }
 
 /**
- * The screen: the camp over the panel, and in the panel the report, the team with the creation of a
+ * The screen: the picture band over the panel, and in the panel the report, the team with the creation of a
  * character, the chest, and the folded section of credits last.
  */
 function HeadquartersView({

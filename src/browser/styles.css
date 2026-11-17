@@ -8,7 +8,7 @@
  * part with a stylesheet of its own: the columns of the screens Programy, Mapy and Wiedza with their
  * @media, one selector list of three screens; the sentence `trip-warning`, which the screens
  * Przejście and Mapy both draw; and the rule that runs the frames of the sprites of the scene and of
- * the camp of Siedziba, with the keyframes `scene-frames`. The rules of the credits that name the
+ * the picture band of Siedziba, with the keyframes `scene-frames`. The rules of the credits that name the
  * login card and Siedziba belong to the part credits.css.
  * The rules of each other screen and part stand in the stylesheet of that screen or part, which the
  * page links after this one; Programy, Mapy and Wiedza have a stylesheet of their own too, and the
@@ -659,17 +659,17 @@ header .failure-line {
 }
 
 /*
- * The frames of the sprites of the scene and of the camp of Siedziba (D-316, D-319, D-317), from CSS at a
+ * The frames of the sprites of the scene and of the picture band of Siedziba (D-316, D-319, D-317), from CSS at a
  * beat apart from the pace, and only where the system's setting asks for no less motion; under that
  * setting the frames stand on the first. The rule names the classes of two screens, the mage's sheets and
- * the burning fire of Przejście and the camp's characters and fire of Siedziba, so it stands whole here
+ * the burning fire of Przejście and the characters and the fire of the picture band of Siedziba, so it stands whole here
  * by the exception of D-421, with the keyframes it uses, and the rules of run-screen.css that run other
  * frames name the same keyframes.
  *
  * The frames of the mage's sheets and of the burning fire change every 160 ms: the picture of all frames
  * moves its own width in as many steps as it holds frames, one frame a step. An extinguished fire and
- * the props, one frame each, stand still. The camp's fire and the idle sheet of each character in it run
- * at this beat too, always, since the camp's fire has no state; its chest is one frame.
+ * the props, one frame each, stand still. The fire of the picture band and the idle sheet of each character
+ * in it run at this beat too, always, since its fire has no state; its chest is one frame.
  */
 @media (prefers-reduced-motion: no-preference) {
   .scene-mage-sprite img,

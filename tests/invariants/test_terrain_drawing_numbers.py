@@ -1,5 +1,5 @@
-"""Invariant terrain-drawing-numbers: The drawing of the game map shows no number of the stock a
-tile holds.
+"""Invariant terrain-drawing-numbers: The drawing of the game map (the terrain drawing, not
+the scene) shows no number of the stock a tile holds.
 
 The application is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written). A Node script this check writes to a temporary directory takes React's

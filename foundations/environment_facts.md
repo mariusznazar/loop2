@@ -743,7 +743,7 @@ GitHub charges nothing for the use of standard GitHub-hosted runners in public r
 
 ## docker-compose-down-volumes
 
-By default `docker compose down` removes the containers of the Compose file's services and the networks it defines and no volume, and with `--volumes` it also removes the named volumes declared in the Compose file's `volumes` section and the anonymous volumes attached to containers, but never a volume defined as external.
+By default `docker compose down` removes the containers of the Compose file's services, the networks it defines and the default network, and no volume, and with `--volumes` it also removes the named volumes declared in the Compose file's `volumes` section and the anonymous volumes attached to containers, but never a volume defined as external.
 
 - **Source:** https://raw.githubusercontent.com/docker/compose/9c60fe67df0763c81f2276fd4163ee5354d70b09/docs/reference/compose_down.md § Description — "By default, the only things removed are:" · "Containers for services defined in the Compose file." · "Networks defined in the networks section of the Compose file." · "The default network, if one is used." · "Networks and volumes defined as external are never removed." · § Options, -v, --volumes — "Remove named volumes declared in the "volumes" section of the Compose file and anonymous volumes attached to containers"; read 2026-11-17
 

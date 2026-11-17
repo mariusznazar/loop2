@@ -4,15 +4,15 @@ import type { ArchetypeId } from "../sim/data/archetypes.js";
 import type { CharacterId, GameState } from "../sim/types.js";
 import type { SceneSprite } from "./scene-picture.js";
 
-/** A character standing in the camp: its number, for the element's key, and the sheet it stands in. */
+/** A character drawn in the picture band: its number, for the element's key, and the sheet it stands in. */
 export type CampMember = {
   id: CharacterId;
   idle: SceneSprite;
 };
 
 /**
- * The camp of Siedziba as plain data for drawing (D-389): pure, no DOM, no URL built from a name. Every
- * size is in the pixels of the camp's pictures; the view draws them at `PICTURE_PIXEL` times that.
+ * The picture band of Siedziba as plain data for drawing (D-389): pure, no DOM, no URL built from a name. Every
+ * size is in the pixels of the band's pictures; the view draws them at `PICTURE_PIXEL` times that.
  */
 export type CampDrawing = {
   /** The clearing, as wide as the widest content; a narrower band shows its middle. */
@@ -65,7 +65,7 @@ function atCamp(state: GameState, id: CharacterId): boolean {
   return state.run?.character.id !== id && state.loops[id] === undefined;
 }
 
-/** The camp of the state: the characters at the camp in the order of creation (D-54), at most `campCapacity()`. */
+/** The picture band of the state: the characters at the camp in the order of creation (D-54), at most `campCapacity()`. */
 export function campDrawing(state: GameState): CampDrawing {
   const members = state.team.characters
     .filter((character) => atCamp(state, character.id))
