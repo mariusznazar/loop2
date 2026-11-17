@@ -765,19 +765,9 @@ Production startup without all valid account settings and every startup with par
 - **Part:** account-server · deployment · build-tools
 - **Violated:** no
 
-## account-schema-lifecycle
-
-Opening the account database initializes a new schema transactionally, moves an existing older known schema to the current version in one transaction keeping its accounts with the previous-save privilege of each, sessions, saved game states and previous saves, and refuses a newer unknown schema before readiness.
-
-- **Method:** test
-- **Rests on:** node-sqlite-database
-- **Derives from:** D-112
-- **Part:** account-server · deployment
-- **Violated:** no
-
 ## account-database-schema
 
-Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, saved game state and previous save and their values kept, preserves them on reopen, and rejects an unknown newer schema without changing its version or records.
+Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, emailed link, saved game state and previous save and their values kept, preserves them on reopen, and refuses an unknown newer schema before readiness without changing its version or records.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
@@ -1423,3 +1413,4 @@ The deployment workflow gives the script of its deployment step every value from
 | guidelines-reference-current | withdrawn: the-way no longer holds a script that checks the form of a product's guidelines; the review of a change compares them with the templates, and `.the-way/elements/common/foundation_check.py` reports a decision, an invariant or a part they name that the foundation does not hold | none |
 | eslint-configuration-rules | withdrawn: no cheap test checks that `eslint.config.mjs` keeps to D-29, so the linter's rule names no invariant for it; the review of each change to that configuration compares it with D-29 | none |
 | account-save-backup | withdrawn: the sentence is about the state of the backups on the server, which no commit of the product makes true or false and no review of a change compares with a file; that state stands as the environment fact `loop2-backup-log-nightly-sends`, read with its command and date, and D-228 rests on that fact | none |
+| account-schema-lifecycle | withdrawn: merged into `account-database-schema`, which took in its clauses (a new schema initialized in a transaction, an older known one moved to the current version in one transaction keeping its rows and values, an unknown newer one refused before readiness) after the two sentences had come to say the same about one rule of D-112 | account-database-schema |
