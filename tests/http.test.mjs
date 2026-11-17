@@ -1080,7 +1080,7 @@ test(
     // decision: D-99 "The account server normalizes email with ECMAScript trim and lowercase, stores the normalized address uniquely, and accepts its form when exactly one `@` has nonempty text on both sides"
     // decision: D-99 "It imposes no dot, DNS or ASCII restriction"
     // decision: D-100 "A credential login with an unknown address or a wrong password shows „Nieprawidłowy adres e-mail lub hasło.” without distinguishing the two"
-    // decision: D-103 "One bounded gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account"
+    // decision: D-103 "One bounded admission gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account"
     // D-99, D-104: explicit field and type checks, no coercion; bad lengths
     // and shapes keep the generic login message without Argon2.
     const f = await accountFixture(t);

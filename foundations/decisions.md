@@ -2561,7 +2561,7 @@ Five failed logins for one normalized email address within a rolling 15-minute w
 
 ### D-103 — Where are attempt counters kept and how is password work bounded?
 
-Attempt histories live in bounded process memory, with at most 10,000 live email keys and 10,000 live IP keys, fixed-size digests for email keys and threshold-bounded histories; restart or deployment clears them. Expired entries release capacity, live restrictions are not evicted to admit another key, and full capacity refuses work. One bounded gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account, with a concurrency cap selected by measurement within the container memory budget and slots released only when the actual operation completes.
+Attempt histories live in bounded process memory, with at most 10,000 live email keys and 10,000 live IP keys, fixed-size digests for email keys and threshold-bounded histories; restart or deployment clears them. Expired entries release capacity, live restrictions are not evicted to admit another key, and full capacity refuses work. One bounded admission gate without a waiting queue covers password hashing and verification, including dummy verification for an unknown account, with a concurrency cap selected by measurement within the container memory budget and slots released only when the actual operation completes.
 
 - **Scope:** account-server, deployment
 - **Based on:** none
@@ -2709,7 +2709,7 @@ Production requires valid `LOOP2_DATABASE_PATH`, `LOOP2_SESSION_SECRET_FILE`, `L
 - **Scope:** account-server, deployment, build-tools
 - **Based on:** session-secret-rotation
 - **Relations:** derives from D-13 · derives from D-107 · derives from D-153
-- **Verification:** invariants: account-server-default-address · account-startup-configuration.
+- **Verification:** invariants: account-server-default-address · account-server-occupied-address · account-startup-configuration.
   tests: wholly unconfigured non-production answering every known account route with JSON 503; the
   configured origin, the signing file, the sender, the SMTP host, port and login and the password
   file each refused in its invalid forms, a byte-order mark followed by a password accepted with the
@@ -3138,7 +3138,7 @@ How account email is sent and limited, how emailed links confirm an address or r
 
 ### D-105 — How is sending account email limited?
 
-The account server sends at most 30 account messages per hour in total and at most three per email address per hour. Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
+The account server sends at most 30 account messages per hour in total and at most three per email address per hour (per account, whose address never changes, D-159). Above either limit no message is sent and the player is told to try later, by the sentence of D-157 for a confirmation message and, for a password-reset message, by the ending of the one answer of D-222, „Gdy wiadomość nie przyjdzie, spróbuj ponownie później.”; no monthly sending cap applies.
 
 - **Scope:** account-server
 - **Based on:** none
@@ -3307,7 +3307,7 @@ Every account message the account server sends or attempts counts against the li
 - **Verification:** invariants: account-message-limits.
 - **Origin:** none
 
-*Rationale:* a message handed to the mail service may have been delivered even when its answer is a failure or never comes, and D-105 says at most; counting in the database keeps the hourly limits true across a deployment within the hour. A player whose three sendings failed waits up to an hour, and the count reads at most a day of messages.
+*Rationale:* a message handed to the mail service may have been delivered even when its answer is a failure or never comes, and D-105 says at most; counting in the database keeps the hourly limits true across a deployment within the hour. A player whose three sendings failed waits up to an hour, and the table holds at most about a day of messages, and the count reads the last hour of them.
 *Rejected:* counters in process memory like the attempt limits of D-103 — a restart or deployment within the hour clears them and lets up to 30 more messages through; a separate record of counters — a second record of what the recorded links already hold; counting only messages the mail service accepted — a lost answer goes uncounted, and a player could ask a failing mail service again without bound.
 
 ### D-162 — Which file is the exemplar for mail sending?
