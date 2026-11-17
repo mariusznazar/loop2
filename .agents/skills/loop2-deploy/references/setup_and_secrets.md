@@ -422,7 +422,7 @@ container on the server.
      differs, the running container is not the request head: stop and report. If git refuses
      the checkout as root with `dubious ownership`, `cat /srv/loop2/.git/HEAD` prints the same
      commit, because the deployment leaves the checkout detached at it.
-   - `--memory 512m` is the deployment's memory limit. The launcher runs the measurement under
+   - `--memory 512m` is the container's memory limit. The launcher runs the measurement under
      80% of it, rounded down to whole MiB: 409 MiB, 428867584 bytes.
 3. Read the result. The number `echo $?` printed is the measurement's exit code, and the last
    line of the file is its verdict.

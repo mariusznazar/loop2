@@ -254,7 +254,7 @@ The loop clock is the date, kept by the browser view apart from the game state, 
 
 A reading is one pass of the browser view in which it reads the browser's clock, passes the real time elapsed to the simulation where game time runs, and draws the screen from the game state it then holds, the previous reading being the pass before it.
 
-- **Not:** a command's output that an environment fact's Source quotes — "reading:"
+- **Not:** a command's output that an environment fact's Source quotes — the third form of `Source` in `.the-way/elements/environment-facts/template.md`
 
 ## secondary action
 

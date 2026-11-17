@@ -6,7 +6,7 @@ description: Ready scripts and an order of steps for the pictures of the game's 
 # loop2-scene-art
 
 Scripts and an order of steps for a task that adds or changes a picture or an effect of the scene:
-the scene of a map run, the camp at the top of Siedziba, the picture behind the login card. The
+the scene of a map run, the picture band at the top of Siedziba, the picture behind the login card. The
 scripts read and write PNG with Node.js alone, so there is nothing to install. Run every command
 below in the repository's root.
 
