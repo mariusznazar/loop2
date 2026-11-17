@@ -182,6 +182,10 @@ when the log of the nightly backup shows no recent successful send of a backup.
   tests/invariants/test_account_save_backup_failure_notice.py
 - **Depends on:** browser-view · account-server · build-tools
 - **Trust boundary:** deploy/**
+  compose.yaml
+  .github/workflows/deploy.yml
+  Dockerfile
+  deploy/cloudflared.Dockerfile
 
 ## test-helpers
 

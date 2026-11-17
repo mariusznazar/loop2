@@ -1405,6 +1405,16 @@ The fragment of the page's address opens only a screen that D-281 names or the n
 - **Part:** browser-view
 - **Violated:** no
 
+## deploy-workflow-input
+
+The deployment workflow gives the script of its deployment step every value from outside the repository only as an environment variable of that step, and the script's one SSH call sets strict host-key checking and batch mode on its command line.
+
+- **Method:** test
+- **Rests on:** openssh-strict-host-key-checking · openssh-option-order
+- **Derives from:** recovered from code — `.github/workflows/deploy.yml`, the step "Deploy the commit on the server": its `env:` mapping is the one place where the secrets and `github.sha` stand, and its one `ssh` call carries `StrictHostKeyChecking=yes` and `BatchMode=yes` on its command line
+- **Part:** deployment
+- **Violated:** no
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

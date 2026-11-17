@@ -56,6 +56,7 @@ class DeployWorkflow(unittest.TestCase):
         self.assertEqual(used, SECRETS)
 
     def test_ssh_is_strict_and_batch(self):
+        # invariant: deploy-workflow-input
         text = code()
         self.assertIn("StrictHostKeyChecking=yes", text)
         self.assertIn("BatchMode=yes", text)
@@ -67,6 +68,7 @@ class DeployWorkflow(unittest.TestCase):
         self.assertRegex(text, r"umask 077|chmod 600|install -m 600")
 
     def test_sha_reaches_the_script_only_through_env(self):
+        # invariant: deploy-workflow-input
         # decision: D-09 "A push to the deploy branch starts an automation that tells the server to build the game and its account server from that commit"
         lines = code_lines()
         # github.sha appears only on an env mapping line, never inside a run script
