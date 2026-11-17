@@ -5,16 +5,22 @@ host-path bind mount. No credential is passed in arguments, environment or outpu
 synthetic SMTP password lies in a file of the secret volume, and only its path is passed.
 `start_production_container` starts one container on fresh volumes; a test replacing the
 container calls its three steps itself and starts the next container on the same volumes.
+`start_application` returns once the server has printed its readiness line, so no probe opens
+the database beside the server before the server has opened it.
 """
 
 import json
 import os
+import re
 import shutil
 import subprocess
+import time
 import uuid
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 COMMAND_TIMEOUT = 120
+READY_WAIT = 60  # seconds for the started server to print its readiness line
+READY_LINE = re.compile(r"(?m)^Loop: http://")
 DATABASE_PATH = "/app/data/accounts.sqlite"
 DATA_DESTINATION = "/app/data"
 SMTP_PASSWORD_FILE = "/run/secrets/loop2_smtp_password"
@@ -94,7 +100,8 @@ def create_account_volumes(test, tag):
 
 def start_application(test, tag, name, data_volume, secret_volume, database_path=DATABASE_PATH,
                       data_destination=DATA_DESTINATION):
-    """Start the image's normal command with explicit production settings on the given volumes.
+    """Start the image's normal command with explicit production settings on the given volumes,
+    and wait until the server is ready.
 
     The database path and the data volume's mount point default to those of compose.yaml; a test
     reading them from compose.yaml passes what it read."""
@@ -112,6 +119,27 @@ def start_application(test, tag, name, data_volume, secret_volume, database_path
                        "-e", "LOOP2_SMTP_USER=sender@mail.example.test",
                        "-e", f"LOOP2_SMTP_PASSWORD_FILE={SMTP_PASSWORD_FILE}", tag)
     test.assertEqual(code, 0, f"production container start failed: {output}")
+    wait_until_ready(test, name)
+
+
+def wait_until_ready(test, name):
+    """Return once the server in the container has printed its readiness line; fail where the
+    container stops first or the line does not come within READY_WAIT seconds."""
+    # decision: D-112 "The account server opens one application-owned SQLite connection before readiness"
+    deadline = time.monotonic() + READY_WAIT
+    while True:
+        code, running = run("inspect", "--format", "{{.State.Running}}", name)
+        test.assertEqual(code, 0, running)
+        # The log is read after the state, so a stopped container's log is whole.
+        code, logs = run("logs", name)
+        test.assertEqual(code, 0, logs)
+        if READY_LINE.search(logs):
+            return
+        test.assertEqual(running.strip(), "true",
+                         f"the container stopped before the server's readiness line:\n{logs}")
+        test.assertLess(time.monotonic(), deadline,
+                        f"no readiness line from the server within {READY_WAIT} s:\n{logs}")
+        time.sleep(0.25)
 
 
 def start_production_container(test, tag, name):
