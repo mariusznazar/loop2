@@ -1,11 +1,11 @@
 // Runs the password measurement of a built loop2 image in a disposable container
-// and judges it against the deployment's memory limit.
+// and judges it against the container's memory limit.
 //
 //   node scripts/measure-passwords.mjs --image <image id> --commit <40-hex commit> --memory 512m
 //
-// --memory is the deployment's limit. The container runs under 80% of it, rounded
+// --memory is the container's memory limit. The container runs under 80% of it, rounded
 // down to whole MiB, and passes only if the kernel never counted a hit of that
-// limit or an OOM kill: then its memory stayed below 80% of the deployment's limit.
+// limit or an OOM kill: then its memory stayed below 80% of the container's memory limit.
 // Built-in modules only, so the server's own Node.js 20 runs it too.
 //
 // The docker commands go to the daemon the docker CLI is set to (DOCKER_HOST or
@@ -20,7 +20,7 @@ import { pathToFileURL } from "node:url";
 
 // compose.yaml gives the application service mem_limit: 512m.
 export const DEPLOYMENT_MEMORY_LIMIT = 512 * 1024 * 1024;
-// Memory must stay below this share of the deployment's limit (invariant
+// Memory must stay below this share of the container's memory limit (invariant
 // player-argon2-deployment-check).
 export const BUDGET_FRACTION = 0.8;
 export const MEASURED_PER_KIND = 20;
@@ -44,7 +44,7 @@ export function parseMemory(text) {
     throw new UsageError("--memory must be at least 8m");
   if (bytes > DEPLOYMENT_MEMORY_LIMIT)
     throw new UsageError(
-      "--memory may not exceed the deployment's limit of 512m",
+      "--memory may not exceed the container's memory limit of 512m",
     );
   return bytes;
 }
