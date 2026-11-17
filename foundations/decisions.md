@@ -9157,6 +9157,20 @@ rule or a rule group.
 *Rejected:* „⊘”, „N reguł nie zadziała” and an amber „0×”, as in loop — they double the state a
 program rule shows during a map run, which D-308 gives.
 
+### D-423 — Which item does the condition „Zapas poniżej” start with in the program editor?
+
+A new condition „Zapas poniżej” starts with the item the game's data names as its default, Patyk, beside its default number 8, where the character knows that item. Where the character does not know it, the condition starts with the first item the character knows, in the order of the game's data. An item put at any place of the game's data, the start included, leaves the item a new condition starts with as it was while the character knows Patyk.
+
+- **Scope:** simulation · browser-view
+- **Based on:** none
+- **Relations:** derives from D-18 · derives from D-376
+- **Verification:** tests: the condition „Zapas poniżej” starting with Patyk wherever Patyk stands among
+  the items offered, and with the first item offered where Patyk is not among them.
+- **Origin:** none
+
+*Rationale:* which item the editor offered first followed the place of the items in the game's data, a place no decision of the game gives, so an item put at the start of the data would have changed what the player sees. The item stands in the condition's row of the data beside its number (D-376, D-18), where a change of the game's content is made by a change of data alone. Patyk keeps what the player sees, and it is the item the examples of the decisions give, „Zapas poniżej 8 · Patyk”. Accepted with it: the resource that „Tu leży mniej niż”, „Idź” and „Zbierz” start with stays the first in the order of the maps' lists, the order of the resources within a map being a choice of its data.
+*Rejected:* the order of the game's data left as the rule — nothing changes for the player, but the item a new condition starts with follows the place of an item in the data, which no decision of the game gives, and a test of the editor has to take the item by its place in the data; Jagoda as the explicit default item — the same cost as the way chosen, but the player sees the change, and the examples of the decisions give „Zapas poniżej 8 · Patyk”.
+
 ## Rule panel and the signs of a rule
 
 The rule panel that takes the player through a rule, and the state and signs a program rule shows.

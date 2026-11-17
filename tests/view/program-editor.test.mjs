@@ -473,7 +473,7 @@ test("switching the condition to „Tu leży mniej niż” takes the map's first
   );
 });
 
-test("switching the condition to a new kind puts in the kind's default number, and the first item for „Zapas poniżej”", () => {
+test("switching the condition to a new kind puts in the kind's default number, and Patyk for „Zapas poniżej”", () => {
   // decision: D-376 "A condition that takes a number accepts it from a minimum to a maximum, both included, on a step counted from the minimum, and holds while the value it reads is below the number and not at it"
   const switched = (kind) =>
     withConditionKind(THREE, 1, 0, kind, LAS, ITEMS_LISTED).groups[0].rules[0]
@@ -488,7 +488,7 @@ test("switching the condition to a new kind puts in the kind's default number, a
   });
   assert.deepEqual(switched("itemBelow"), {
     kind: "itemBelow",
-    item: ITEMS_LISTED[0],
+    item: "stick",
     value: 8,
   });
   assert.deepEqual(switched("campfireLeftBelow"), {
@@ -766,7 +766,7 @@ test("target lists follow the Understanding's items: resources of the shown map 
   assert.deepEqual(offeredItems(onlyCampfire), []);
 });
 
-test("a condition switching to „Zapas poniżej” takes the first of the offered items; with none offered nothing is committed", () => {
+test("a condition switching to „Zapas poniżej” takes the first of the offered items where Patyk is not among them; with none offered nothing is committed", () => {
   assert.deepEqual(
     withConditionKind(THREE, 1, 0, "itemBelow", LAS, ["moss", "fiber"])
       .groups[0].rules[0].condition,
@@ -778,6 +778,20 @@ test("a condition switching to „Zapas poniżej” takes the first of the offer
       .rules[0].condition,
     { kind: "temperatureBelow", value: 36.5 },
   );
+});
+
+test("„Zapas poniżej” starts with Patyk wherever Patyk stands among the offered items, and with the first offered item where Patyk is not offered", () => {
+  // decision: D-423 "A new condition „Zapas poniżej” starts with the item the game's data names as its default, Patyk, beside its default number 8, where the character knows that item"
+  const startedWith = (items) =>
+    withConditionKind(THREE, 1, 0, "itemBelow", LAS, items).groups[0].rules[0]
+      .condition.item;
+  assert.equal(startedWith(["stick", "berry", "moss", "fiber"]), "stick");
+  // An item that stands before Patyk in the data's order takes nothing from it.
+  assert.equal(startedWith(["fiber", "stick", "berry"]), "stick");
+  assert.equal(startedWith(["moss", "berry", "stick"]), "stick");
+  // Without Patyk the first offered item is taken, whichever it is.
+  assert.equal(startedWith(["berry", "moss"]), "berry");
+  assert.equal(startedWith(["fiber", "moss"]), "fiber");
 });
 
 test("every program the editor builds passes setProgram, before sending and during a run", () => {
