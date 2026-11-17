@@ -1,7 +1,8 @@
 """Invariant tests: ESLint, Prettier and the LF rules of `.gitattributes` reach every TypeScript and
-JavaScript file of the parts the scope of D-29 and D-32 names, according to the part map. The scope
-of ESLint is wider than the other two: besides the files of those parts it holds every script file
-under three directories of agent-workflow, which D-29 names, `ESLINT_DIRECTORIES`.
+JavaScript file of the five parts D-29 and D-32 both name, `SCOPE_PARTS`, according to the part
+map. The scope of ESLint is wider than the other two: besides the files of those parts it holds
+every script file under three directories of agent-workflow, which D-29 names,
+`ESLINT_DIRECTORIES`.
 
 The files come from the part map (`file_owners` of `loop2_invariant_support.py`), and those of the
 three directories from their paths. Each tool is asked
