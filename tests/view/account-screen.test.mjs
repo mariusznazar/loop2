@@ -3256,7 +3256,7 @@ function renewing(at, left) {
 test("a clock tick rewrites the resurrection line of the headquarters at the clock's moment, writes a line only when it changed, and saves nothing", async () => {
   // decision: D-217 "The card and the screen of a character, and that character in the section „Kto idzie” of the card of a map, show, from its creation, „Wskrzeszenie drużyny gotowe” in `text-secondary`, and while the resurrection is not ready „Wskrzeszenie drużyny za {g} godz. {m} min czasu realnego — śmierć zabierze wprawę i wykupione stopnie” in `danger`, the time reading „za {m} min czasu realnego” below one hour"
   // decision: D-217 "The minutes are rounded up to a whole minute before the split into hours and minutes"
-  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
+  // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   // decision: D-219 "The browser's clock counts the renewal of a resurrection, so the renewal runs in real time at every pace of a map run and while the game is closed"
   await onPage(async ({ root }) => {
     const T = 1_760_000_000_000;
@@ -4464,7 +4464,7 @@ test("a send leads to the screen of the map run and „Zakończ” to the screen
 // the program its list shows. A click on a link is the address changing, which the case makes with
 // `follow` on the address the link itself holds.
 test("a player with one character, who has picked nothing, goes from Siedziba through „Mapy”, the row of Skraj lasu and „Wejdź” to the screen of the map run in three clicks", async () => {
-  // decision: D-280 "A player reaches a first map run from Siedziba in at most three clicks: the choice of a map, the map's row and „Wejdź”"
+  // decision: D-280 "A player reaches a first map run from Siedziba in at most three clicks: the item „Mapy” of the menu bar, the map's row and „Wejdź”"
   // decision: D-325 "The screen Mapy holds on the left the list of the maps open to the player"
   // decision: D-329 "„Wejdź” opens the screen of the map run and „Puść w pętlę” leaves the player on the card"
   // decision: D-330 "The first of the three clicks from Siedziba to a first map run (D-280) is the item „Mapy” of the menu bar"
@@ -5379,7 +5379,7 @@ const waitingText = (root) =>
 // header. D-27, D-262: catches a footer, whatever it holds, standing at the page's body on a waiting
 // screen or over the game.
 test("the card stands alone in the page's body, and the screens before and after it keep the header and have no footer", async () => {
-  // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
+  // decision: D-262 "Nothing stands on the screen of the login card but the card over the picture of D-272, not even the header."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
   // decision: D-27 "A section of credits, folded and opened with one click, stands on the login card and at the bottom of Siedziba"
   await onPage(async ({ root }) => {
@@ -5470,7 +5470,7 @@ test("the header holds the menu bar: the game's name alone on every waiting scre
 // D-96, D-225, D-262, D-381 (on what closes a card). Catches a card left
 // standing over a waiting screen, or under it the page still hidden.
 test("the card of a reset link stands alone at once, and each way out of it shows the page again", async () => {
-  // decision: D-262 "Nothing stands on the screen of the login card but the card, not even the header."
+  // decision: D-262 "Nothing stands on the screen of the login card but the card over the picture of D-272, not even the header."
   // decision: D-262 "The waiting screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and the moment after a sign-in that succeeded — stand outside the card, with the header, for a signed-in player too."
   // decision: D-381 "The card takes no focus when it opens — the page moves focus to it only after a confirmed logout, after a logout the server answers with no session, after a password was set, after an emailed link the server refused and after „Anuluj” of the form „Ustaw nowe hasło” — and the card closes from its own handlers of an answer and of a click, never while it is being drawn."
   await onPage(async ({ root }) => {

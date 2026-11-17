@@ -3048,7 +3048,7 @@ a switch — one click removes „Gra została zaktualizowana. Odśwież stronę
 
 ### D-262 — What stands on the screen of the login card, and where do the waiting screens stand?
 
-Nothing stands on the screen of the login card but the card, not even the header. The waiting
+Nothing stands on the screen of the login card but the card over the picture of D-272, not even the header. The waiting
 screens — „Sprawdzanie logowania…”, „Potwierdzanie adresu…”, the warning with „Spróbuj ponownie” and
 the moment after a sign-in that succeeded — stand outside the card, with the header, for a
 signed-in player too. When React takes the card down after an exception no code of the game
@@ -3116,8 +3116,8 @@ nothing above them.
 *Rationale:* a card in the exact middle grows both ways, so whatever stands above a change moves
 with it, and a second click on the credits or on the switch misses. At a window of 1280 × 800 the
 title of the credits moved by 96 px when they unfolded and the tabs by 8 px when the state changed,
-with the card in the middle; with the top edge fixed neither moves, and the card with its credits
-unfolded ends at 682 px. Accepted with it: on a tall window the card stands clearly above the middle.
+with the card in the middle; with the top edge fixed neither moves. Accepted with it: on a tall
+window the card stands clearly above the middle.
 *Rejected:* leaving the card in the middle — the credits and the switch jump whenever the card
 grows; unfolding the credits outside the card — a new HTML element with its own background, while
 the jumps of the switch and of the form stay.
@@ -4320,7 +4320,7 @@ writes it. The name of a
 character on its card on Siedziba leads to the screen Postać of that character, on which the menu
 bar marks Siedziba, on the screen Mapy under each of its addresses the menu bar marks Mapy, and on
 the screen of a map run the menu bar marks no item. A player reaches a first map run from Siedziba in
-at most three clicks: the choice of a map, the map's row and „Wejdź”.
+at most three clicks: the item „Mapy” of the menu bar, the map's row and „Wejdź”.
 
 An account with the owner role (D-410) has one more screen, the list of accounts (D-411), of the same content width, which is no item of the bar: the menu „Konto” of such an account holds, after the address and before its buttons, the link „Panel właściciela” to `#/konta` (D-281). The items of the bar and the bar itself are the same for a player and for an account with the owner role, and the menu „Konto” of a player holds no such link.
 
@@ -5886,7 +5886,7 @@ from the generators of a map run.
 
 ### D-57 — In what unit does a character's warmth stand?
 
-A character's warmth is its body temperature in degrees Celsius, counted with tenths.
+A character's warmth is its body temperature in degrees Celsius, counted with tenths and written with a decimal comma, as „36,5 °C”.
 
 - **Scope:** simulation, browser-view
 - **Based on:** none
@@ -6083,8 +6083,8 @@ The card and the screen of a character, and that character in the section „Kto
 
 ### D-218 — How does the headquarters show a character's generation number?
 
-The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in
-`text-secondary`.
+The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from
+generation number 2 up, in `text-secondary`.
 
 - **Scope:** browser-view
 - **Based on:** none

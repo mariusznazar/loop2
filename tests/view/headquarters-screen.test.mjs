@@ -181,7 +181,7 @@ test("the folded section „Autorzy grafiki” stands last on the screen, whatev
 test("each character stands in the order of creation with its name as a link to its screen Postać, its generation from 2 up and its archetype", async () => {
   // decision: D-280 "The name of a character on its card on Siedziba leads to the screen Postać of that character"
   // decision: D-54 "The characters of the team stand on its list in the order they were created"
-  // decision: D-218 "The headquarters shows „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
+  // decision: D-218 "The headquarters and the screen Postać show „pokolenie {n}” beside a character's name from generation number 2 up, in `text-secondary`"
   await withPage(async (page) => {
     const state = withCharacter(teamOf(), 2, { generation: 2 });
     await mount(page, propsOf(state));
@@ -847,7 +847,7 @@ test("nothing on the screen sends a character or leads to the screen Mapy", asyn
         .sort(),
       ["Zamknij", "Zatrzymaj: Ola", "Załóż"],
     );
-    // The links of the folded section of credits lead to game-icons.net, not to a screen of the game.
+    // The links of the folded section of credits lead outside the game, not to a screen of the game.
     assert.deepEqual(
       all(page.root, ".headquarters > :not(details) a").map((link) =>
         link.getAttribute("href"),
