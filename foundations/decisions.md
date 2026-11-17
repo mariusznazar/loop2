@@ -4929,7 +4929,7 @@ and dying: the clothed characters of the pack have no pose of gathering. Kept ap
 server serves, as the icons and
 the fonts are, a picture reaches the player only through the build; it comes from outside the
 product, and holding pixels alone it cannot act in the player's page. The pack's terms ask for no
-credit and allow its arts to be altered, so a picture made from them may be dimmed, composed and cut
+credit of a game with no saxophone solo and allow its arts to be altered, so a picture made from them may be dimmed, composed and cut
 down by hand.
 The smoke of the pack Pixel Crawler is about as light as the ground and cannot be seen on it, and
 the pack Smoke & Fire Animated Particle holds a ready cloud in a flat style without outline, like the
