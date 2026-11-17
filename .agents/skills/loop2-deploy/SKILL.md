@@ -81,7 +81,9 @@ files or requests. The MCP has full rights, so the following limits are an agree
 - Allowed, the failure record: a bounded `tail -n 200` or a `grep -F -- '<fixed string>' <files> | tail -n 50`
   of `/var/log/loop2-app.log.1` and `/var/log/loop2-app.log`, in that order, so that the 50 lines kept are the
   newest; `zgrep -F -- '<fixed string>' <files> | tail -n 50` of the older compressed ones
-  (`/var/log/loop2-app.log.4.gz`, `.3.gz`, `.2.gz`, in that order); a bounded `tail -n 100` of
+  (`/var/log/loop2-app.log.4.gz`, `.3.gz`, `.2.gz`, in that order); each `tail -n 50` with a larger
+  number where the first line printed is later than the failure sought, as "How an agent reads it"
+  gives; a bounded `tail -n 100` of
   `/var/log/loop2-watch.log`; `stat -c '%y' /var/lib/loop2-watch/state`, the age of the watcher's
   state file and never its content; `stat -c '%U %G %a' /var/log/loop2-app.log`;
   `docker inspect --type container --format '{{.HostConfig.LogConfig.Type}}' loop2` (expects
