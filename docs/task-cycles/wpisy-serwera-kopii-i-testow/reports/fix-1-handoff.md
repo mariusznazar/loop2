@@ -1,0 +1,12 @@
+# Handoff: the fix of the review's findings (round 1)
+
+You are the one author, resumed, and you fix the findings of the review of the whole change.
+
+- Method: `.the-way/task-cycle/change/SKILL.md`, variant "the fix of a review's findings". Read the part for that variant (and a file it names when its step comes).
+- Findings file: `.runs/task-cycles/wpisy-serwera-kopii-i-testow/reports/fix-1-findings.md`. It holds the four blocking findings I1 to I4 of the review `FAIL a2c3729be6d927e39357f9e8d10877349199ccb8` and, after them, its five Minor findings M1 to M5, all within the task and all to be fixed in this round, cut word for word from `reports/review-whole-report.md`. The orchestrator moves no finding from one kind to another; the grade is the reviewer's.
+- The range of your fix runs from the reviewed head `a2c3729be6d927e39357f9e8d10877349199ccb8`. Work in the same worktree and branch (`task/wpisy-serwera-kopii-i-testow`), your directory for working copies is `.runs/author/` as before, with the same rule for working copies.
+- Fix each finding as it asks, or answer it with evidence in your report where you hold it wrong (name the file and line that show it). Where a fix of one finding changes the wording another finding concerns (I3 and I4 and M3 all touch the new step of step 8; I4 touches the *Rationale* of D-360; M4 touches the binding sentence of D-360), keep the entries and the step consistent with each other, and keep the two skill copies byte-identical.
+- Keep the answers the orchestrator gave at start: placement of the step inside step 8 after step 6, the three markers, no search of the log of the running container (the reviewer confirmed the claim).
+- Run again the checks the fixes affect, each with its command and exit code in the report: `python -B .the-way/elements/common/foundation_check.py`, `python -B .the-way/instruction-files/check_instructions.py`, `python -B -m unittest tests.agent_workflow.test_loop2_deploy_skill`, `diff -r .claude/skills/loop2-deploy .agents/skills/loop2-deploy`, and any test that quotes a binding sentence you change. Do not run `npm test`.
+- Commit by path with an English message in the repository's form; do not commit under `.runs/`.
+- Report: `.runs/task-cycles/wpisy-serwera-kopii-i-testow/reports/fix-1-report.md`, with the status line first, and the sections the method gives, including **Unread material**, **Searches not found or unclear**, the own-work check and the working copies.
