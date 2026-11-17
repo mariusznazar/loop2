@@ -193,7 +193,7 @@ z jego testem.
 
 ### States of shared controls
 
-- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411
+- **Decision:** D-38 · D-44 · D-265 · D-173 · D-97 · D-222 · D-274 · D-275 · D-276 · D-279 · D-285 · D-288 · D-289 · D-291 · D-39 · D-40 · D-43 · D-47 · D-401 · D-402 · D-411 · D-323
 - **Invariant:** none
 - **Good:** Pole liczby z błędnym wpisem pokazuje ramkę i komunikat pod polem w `warning`; główny przycisk formularza czekającego na serwer jest wyłączony i pokazuje „Logowanie…”, a przycisk „Wyślij ponownie” czekający na serwer — „Wysyłanie…”; zdanie po prośbie o odnośnik stoi pod formularzem w `text` z belką po lewej w kolorze tego zdania.
 - **Bad:** Lista wyboru bez pozycji, która na stronie wszystkich stanów nie ma ani próbki stanu pustego, ani powodu, że stan nie dotyczy.
@@ -237,7 +237,9 @@ stanów:
 
 Pole hasła to pole tekstowe z ukrytym wpisem (przeglądarka maskuje znaki)
 i ma te same stany co ono. Pole z widoczną etykietą stawia jej tekst nad polem
-w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning` (formularz „Nie pamiętam hasła” po prośbie — zdanie w `text` z belką), a przycisk,
+w `text-label`. Formularz stawia pod swoim przyciskiem jedno zdanie w `warning` (formularz „Nie pamiętam hasła” po prośbie — zdanie w `text` z belką); po błędzie,
+którego nie obsłużył żaden kod gry, karta logowania ma pod formularzem drugie
+zdanie w `warning`, „Coś w grze się zepsuło — odśwież stronę.” (D-323). Przycisk,
 który go wysyła, jest przyciskiem zatwierdzającym i ma główny wygląd (D-274).
 
 Każda wspólna kontrolka ma jedną postać, komponent Reacta (D-265). Pole
@@ -388,9 +390,9 @@ przez tyle linii, ile da jej Prettier. Zaraz po tym `;`, w tej samej linii,
 stoi komentarz zaczynający się od `Source:` z niepustą treścią. Reguła
 `@font-face` ma tylko deskryptory `font-family`, `src` i `font-weight`.
 
-Źródło wartości ustalone z Mariuszem dla loop2, z dwoma rodzajami dołożonymi
-później: grubością belki i linii zakładki (2026-11-02) oraz wyglądem sceny
-(2026-11-11):
+Źródło wartości ustalone z Mariuszem dla loop2, z trzema rodzajami dołożonymi
+później: grubością belki i linii zakładki (2026-11-02), wyglądem sceny
+(2026-11-11) oraz kolorami trzech chwil sceny (2026-11-12):
 
 - dla wartości wziętej z gry loop — działająca gra loop pod
   https://kantarion.bieda.it/, odczytana 2026-10-20 z wyrenderowanej strony,
@@ -532,24 +534,17 @@ czyta kolor każdej takiej ramki i belki wobec tekstu, przy którym stoi.
 - **Good:** Imię postaci z samych liter, dłuższe od wiersza drużyny w Siedzibie, łamie się w tym wierszu i nie wychodzi poza niego; tak samo nazwa programu na liście Programy i adres konta w menu „Konto”.
 - **Bad:** Długie imię bez spacji wypycha wiersz poza obszar ekranu albo jest ucięte, albo przewijane tylko dlatego, że nie ma w nim spacji.
 
-Tekst, który wpisał gracz, taki jak imię postaci albo nazwa, może nie mieć
-spacji, więc wiersz, który go pokazuje, łamie go w swoim obrębie, a nie
+Tekst, który wpisał gracz, taki jak imię postaci, nazwa albo adres konta, może
+nie mieć spacji, więc wiersz, który go pokazuje, łamie go w swoim obrębie, a nie
 przepuszcza poza siebie, nie ucina i nie przewija. Reguła dotyczy każdego
 wiersza z takim tekstem, także nowego. Powód: wpis bez spacji nie ma gdzie się
 złamać sam, więc bez tej reguły długie imię wypycha wiersz poza ekran.
 
-Takim tekstem są imię postaci, nazwa programu, nazwa grupy reguł i adres
-konta, wszędzie tam, gdzie widok je pokazuje: w wierszu drużyny w Siedzibie, w
-„Kto idzie” na Mapach, w nagłówku ekranu przejścia i nagłówku ekranu Postać,
-na liście Programy, w nagłówku programu i grupy reguł, w menu „Konto” i na
-liście kont, a także w zdaniu, które taką nazwę albo taki adres wymienia
-(pas odkrycia, wiersz o kopii programu, pytanie „Zakończ”, raport z
-nieobecności, ostrzeżenie przy wciąganiu programów). Wyjątek: lista programów
-jako natywne pole wyboru (`select`, „Program:” przy postaci na Mapach i na
-ekranie przejścia oraz lista w panelu programów) ma szerokość swojej najdłuższej
-opcji, więc długa nazwa je poszerza, a reguła jej nie obejmuje; jak taka lista
-ma się zachować (ucięcie wielokropkiem albo ograniczenie szerokości), nie jest
-tu rozstrzygnięte.
+Dotyczy to także zdania, które taką nazwę albo taki adres wymienia. Wyjątek:
+lista programów jako natywne pole wyboru (`select`) ma szerokość swojej
+najdłuższej opcji, więc długa nazwa ją poszerza, a reguła jej nie obejmuje; jak
+taka lista ma się zachować (ucięcie wielokropkiem albo ograniczenie szerokości),
+nie jest tu rozstrzygnięte.
 
 ### Focus does not fall to the page
 
