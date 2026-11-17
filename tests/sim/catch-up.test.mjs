@@ -636,6 +636,7 @@ test("a covered death in the catch-up gives the loop its next map run with nothi
   assertLoadsBack(result.state, "a covered death in a catch-up");
 });
 
+// invariant: catch-up-minutes
 // D-240, D-246: a loop a death stopped opens its line at any number of game minutes.
 test("a loop that stops in the catch-up writes its line with the minutes it worked and the generation, and the others go on", () => {
   // decision: D-190 "A character's death takes what it carried and pays nothing of its map run; when no resurrection is ready, it also takes all the character's practice, the practice gathered at its earning loop included, and every rank of branch it bought, and the character's generation number grows by one, its archetype unchanged, except that the death of a character with no practice yet — none in any skill, no rank of branch bought and none gathered at its earning loop — takes nothing besides what it carried, leaves the generation number as it was, uses up no resurrection, ready or not, and does not stop its earning loop"

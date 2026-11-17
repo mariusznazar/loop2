@@ -51,6 +51,7 @@ function prepared(program = KICK) {
   };
 }
 
+// invariant: action-in-progress
 test("an eligible attack interrupts a long exploration before it finishes", () => {
   // decision: D-20 "An attack interrupts the character's action still in progress, and that action is lost"
   // decision: D-71 "Outside combat a game minute takes effect in this order"
@@ -718,7 +719,7 @@ test("M+5 counts the second defeated attack before checking both map requirement
   assert.equal(result.state.run.lastCombat.result.outcome, "creatureDefeated");
 });
 
-// Invariant minute-span-split: compare the whole state and the ordered event
+// Compare the whole state and the ordered event
 // prefix at every chunk boundary against single minutes, through discovery or
 // an ending minute. No state field is normalized. Real-time chunks are whole
 // seconds, so their carry is also directly comparable. advanceMinutes ignores
@@ -788,6 +789,7 @@ const COMBAT_SPLITS = [
   },
 ];
 
+// invariant: minute-span-split
 for (const scenario of COMBAT_SPLITS) {
   test(`combat time splitting preserves every state and ordered event: ${scenario.name}`, () => {
     // decision: D-141 "An encounter is scheduled for five game minutes after its attack minute M, with its turns resolved together in M+5 using the program as it stands then, unless the map run completes earlier as D-71 gives, and the player reads their record afterwards"

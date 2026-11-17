@@ -212,7 +212,8 @@ test("combat checks group conditions in order against post-strike health", () =>
   assert.equal(result.ruleStarts[22], undefined);
 });
 
-// Invariant program-rule-pick: a false group must be skipped, while a true
+// invariant: program-rule-pick
+// A false group must be skipped, while a true
 // earlier group wins. The first bite leaves 100 - 7 = 93 health.
 // Sources: D-23, D-144.
 test("combat skips a false first group and selects it when its condition holds", () => {
@@ -252,7 +253,8 @@ test("combat skips a false first group and selects it when its condition holds",
   }
 });
 
-// Invariant program-rule-pick: a false rule passes to the next rule within the
+// invariant: program-rule-pick
+// A false rule passes to the next rule within the
 // same group. The wolf still has 24 health before the character's first action.
 // Sources: D-23, D-144.
 test("combat skips a false first rule and selects it when its condition holds", () => {
