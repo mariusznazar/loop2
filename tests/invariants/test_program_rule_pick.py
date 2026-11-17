@@ -1,6 +1,11 @@
-"""Invariant program-rule-pick: In each free game minute of a map run, the character starts to
-carry out the first feasible rule whose condition holds, in the first group whose condition holds
-and offers such a rule. Empty and infeasible groups pass on; no qualifying group means waiting.
+"""Invariant program-rule-pick: In each free game minute of a map run and immediately before the
+character's action in each combat turn, the character starts to carry out the first program rule
+whose condition and action, with the target of each, lie in the character's repertoire, whose
+condition holds and whose action the character can carry out then, taking rule groups in order and
+the program rules within each in order, passing over a group whose condition or its target lies
+outside the character's repertoire, whose condition does not hold or which holds no such program
+rule, carries out no program rule where no group offers one, and leaves every program rule and group
+it passes over in the program.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/browser/sim/game.js` by a Node
@@ -70,8 +75,9 @@ The grouped scenario skips a false outer condition, an empty group and an infeas
 then skips a false rule and chooses rule id 74 before a later feasible rule and group. Stable
 identities deliberately differ from positions. The original long scenarios use one always group.
 
-Does NOT cover: conditions "fewer than N here" with N above 0; maps, archetypes and programs other
-than those above; real time as the way minutes pass.
+Does NOT cover: the choice immediately before the character's action in each combat turn, the
+invariant's other clause; conditions "fewer than N here" with N above 0; maps, archetypes and
+programs other than those above; real time as the way minutes pass.
 """
 
 import copy as copying

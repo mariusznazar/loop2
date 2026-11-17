@@ -1,6 +1,6 @@
 """Invariant action-in-progress: The character's action in progress lasts its full duration
-unless its map run ends first, even where the program changes or the condition of another program
-rule comes to hold before it ends.
+unless its map run ends first or an attack interrupts it, even where the program changes or the
+condition of another program rule comes to hold before it ends.
 
 The simulation is built by `npm run build` in a temporary copy of the working tree (the real tree
 is never written) and driven through its public functions in `dist/browser/sim/game.js` by a Node
@@ -46,8 +46,9 @@ Controls, so the check can fail — the same send with:
 - PA_HOLDS kept through minute 25: at minute 25 the character wanders again by rule 0, so the
   exploration at minute 25 is PC's choice, visible as a difference.
 
-Does NOT cover: other actions, durations, maps or programs; a change made at the minute an action
-ends; real time (`passRealTime`) as the way minutes pass.
+Does NOT cover: an attack interrupting the action, the invariant's other exception; other actions,
+durations, maps or programs; a change made at the minute an action ends; real time (`passRealTime`)
+as the way minutes pass.
 """
 
 import json
