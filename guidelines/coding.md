@@ -246,6 +246,29 @@ zasady z D-252 wchodzi w zmianie, która ją wnosi; agent dodaje ją sam, także
 identyfikator rzeczy. Pozycja wskazująca na osobę, także numer, który produkt
 nadaje użytkownikowi, wchodzi tylko za zgodą człowieka, jako nowe znaczenie.
 
+### Size of a function and a file
+
+- **Decision:** D-425
+- **Invariant:** function-and-file-size
+- **Good:** Zmiana sprowadza funkcję pod próg, przenosząc jej część do osobnej funkcji albo pliku, a przebieg reguły niczego o niej nie zgłasza.
+- **Bad:** Zmiana dopisuje wiersze do funkcji albo pliku, które stoją już nad progiem, albo dopisuje wyjątek bez zmiany decyzji.
+
+Progi i wyjątki stoją w D-425 i tu się ich nie powtarza. Test `tests/quality/test_function_and_file_size.py` uruchamia
+`tests/quality/eslint-size-rules.mjs`, przebieg ESLint z samymi dwiema regułami
+rozmiaru, osobny od przebiegu na `eslint.config.mjs` z `### Linter`, i gdy
+oblewa, wymienia każdą funkcję i każdy plik nad progiem z miejscem i rozmiarem.
+Dopóki jakiś kod stoi nad progiem, niezmiennik jest oznaczony jako naruszony,
+a ten test jest oczekiwaną porażką; zmiana, która ostatni taki kod sprowadza
+pod próg, zdejmuje oznaczenie. Konfiguracja tego przebiegu wymienia wyjątki
+z decyzji i żadnych innych: nowy wyjątek albo wyższy próg to zaakceptowana przez
+człowieka zmiana D-425. Kod, którego zmiana nie sprowadzi pod próg bez szkody,
+zmiana zgłasza człowiekowi jako propozycję wyjątku i sama go nie wpisuje.
+Zmiana, która dopisuje do funkcji lub pliku stojącego już nad progiem, zaczyna
+się od przeniesienia ich części bez zmiany zachowania, przy przechodzących
+testach, które to zachowanie pokrywają; dopiero potem dopisuje własny kod.
+Przegląd każdej zmiany plików części z niezmiennika pilnuje, by oczyszczony plik
+ani nowy plik nie przekroczył progu ponownie.
+
 ## Examples
 
 ### PLW1510
@@ -333,3 +356,5 @@ Wzorzec zapisu gry wskazuje rodzaj `saved-game`, a wzorzec poczty rodzaj
 - `tests/quality/test_quality_invariants.py`
 - `tests/quality/test_source_tool_scope.py`
 - `tests/quality/eslint-rule-sets.mjs`
+- `tests/quality/eslint-size-rules.mjs`
+- `tests/quality/test_function_and_file_size.py`

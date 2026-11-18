@@ -14,7 +14,7 @@
  * `RulePanelView`. Nothing runs when the module is imported.
  */
 import { useLayoutEffect, useRef, useState } from "react";
-import type { FocusEvent, KeyboardEvent } from "react";
+import type { FocusEvent, KeyboardEvent, RefObject } from "react";
 import { ACTIONS } from "../sim/data/actions.js";
 import { CONDITIONS, type ConditionDef } from "../sim/data/conditions.js";
 import { conditionNumber } from "../sim/program.js";
@@ -191,6 +191,282 @@ function cellsOf(grid: HTMLElement | null): HTMLElement[] {
     : [...grid.querySelectorAll<HTMLElement>(".pick-cell")];
 }
 
+/** The rule or group a change addresses: its group, its place in the group (null for the group's own condition) and its condition. */
+type RuleTarget = {
+  groupId: GroupId;
+  index: number | null;
+  condition: Condition | undefined;
+};
+
+/** The program after `value` is picked in `field` of `target`; null where it changes nothing. */
+function changedProgram(
+  state: GameState,
+  program: Program,
+  target: RuleTarget,
+  field: RuleField,
+  value: string,
+): Program | null {
+  const { groupId, index, condition } = target;
+  switch (field) {
+    case "condition":
+      return withConditionKind(
+        program,
+        groupId,
+        index,
+        value as Condition["kind"],
+        offeredResources(state),
+        offeredItems(state),
+      );
+    case "conditionTarget":
+      return condition?.kind === "hereBelow"
+        ? withConditionResource(program, groupId, index, value as ResourceId)
+        : withConditionItem(program, groupId, index, value as ItemId);
+    case "action":
+      return index === null
+        ? null
+        : withActionKind(
+            program,
+            groupId,
+            index,
+            value as Action["kind"],
+            offeredResources(state),
+          );
+    case "actionTarget":
+      return index === null
+        ? null
+        : withActionResource(program, groupId, index, value as ResourceId);
+    case "number":
+      return null;
+  }
+}
+
+/** The fields of the rule or group `index` of `groupId` in `next`, the program a change made. */
+function fieldsOf(
+  next: Program,
+  groupId: GroupId,
+  index: number | null,
+): RuleField[] {
+  const nextGroup = next.groups.find((each) => each.id === groupId);
+  if (index === null)
+    return nextGroup === undefined ? [] : conditionFields(nextGroup.condition);
+  const nextRule = nextGroup?.rules[index];
+  return nextRule === undefined ? [] : ruleFields(nextRule);
+}
+
+/** The field of a rule group's name; the name typed waits in `name` until the field loses the focus or Enter is pressed. */
+function GroupNameField({
+  groupName,
+  name,
+  setName,
+  commitName,
+  moveTo,
+}: {
+  groupName: string;
+  name: string | null;
+  setName: (name: string | null) => void;
+  commitName: () => void;
+  moveTo: (field: RuleField) => void;
+}) {
+  return (
+    <div className="rule-panel-field">
+      <span className="rule-panel-label">Nazwa grupy</span>
+      <span
+        className="rule-panel-name"
+        onFocus={() => {
+          if (name === null) setName(groupName);
+        }}
+        onBlur={commitName}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          commitName();
+          moveTo("condition");
+        }}
+      >
+        <ReactTextField
+          label="Nazwa grupy"
+          value={name ?? groupName}
+          onChange={(event) => setName(event.target.value)}
+        />
+      </span>
+    </div>
+  );
+}
+
+/**
+ * The grid of pick cells of the open field. The keys move the cursor among the cells and Enter picks
+ * a cell that is not greyed; the cell `tabbable` is the only one in the order of Tab.
+ */
+function PickGrid({
+  state,
+  field,
+  sections,
+  cursor,
+  tabbable,
+  gridRef,
+  onCursor,
+  onChoose,
+}: {
+  state: GameState;
+  field: RuleField;
+  sections: FieldPick;
+  cursor: number | null;
+  tabbable: number;
+  gridRef: RefObject<HTMLDivElement | null>;
+  onCursor: (at: number | null) => void;
+  onChoose: (value: string) => void;
+}) {
+  const flat = sections.flatMap((section) => section.cells);
+
+  function gridKey(event: KeyboardEvent<HTMLDivElement>): void {
+    const cells = cellsOf(gridRef.current);
+    const at = cells.indexOf(event.target as HTMLElement);
+    if (at < 0) return;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const cell = flat[at];
+      if (cell !== undefined && !cell.greyed) onChoose(cell.value);
+      return;
+    }
+    if (!event.key.startsWith("Arrow")) return;
+    event.preventDefault();
+    const to = cellAfterKey(
+      sections.map((section) => section.cells.length),
+      columnsOf(field),
+      at,
+      event.key,
+    );
+    onCursor(to);
+    cells[to]?.focus();
+  }
+
+  function gridFocus(event: FocusEvent<HTMLDivElement>): void {
+    const at = cellsOf(gridRef.current).indexOf(event.target);
+    if (at >= 0 && at !== cursor) onCursor(at);
+  }
+
+  let cellsBefore = 0;
+  return (
+    <div
+      // The sections of the conditions bear no names, so a line parts them (D-290).
+      className={
+        field === "condition" ? "rule-panel-pick parted" : "rule-panel-pick"
+      }
+      role="group"
+      aria-label={FIELD_LABELS[field]}
+      ref={gridRef}
+      onKeyDown={gridKey}
+      onFocus={gridFocus}
+    >
+      {sections.map((section, at) => (
+        <div className="rule-panel-section" key={section.name ?? at}>
+          {section.name === null ? null : (
+            <h4 className="rule-panel-section-name">{section.name}</h4>
+          )}
+          <div
+            className={
+              columnsOf(field) === 2
+                ? "rule-panel-cells two-columns"
+                : "rule-panel-cells"
+            }
+          >
+            {section.cells.map((cell) => {
+              // The cells of the grid are counted through all its sections, as `flat` counts them.
+              const index = cellsBefore;
+              cellsBefore += 1;
+              const time =
+                field === "action"
+                  ? actionTime(state, cell.value as Action["kind"])
+                  : null;
+              return (
+                <div className="rule-panel-cell" key={cell.value}>
+                  <ReactPickCell
+                    text={cell.label}
+                    icon={
+                      field === "action"
+                        ? ACTIONS[cell.value as Action["kind"]].icon
+                        : undefined
+                    }
+                    chosen={cell.chosen}
+                    greyed={cell.greyed}
+                    reason={cell.reason}
+                    onPick={() => onChoose(cell.value)}
+                    // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid.
+                    tabIndex={index === tabbable ? 0 : -1}
+                  />
+                  {time === null ? null : (
+                    <span className="rule-panel-time">{time}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The number field of a condition, with the unit of its kind beside it. Enter commits the number as
+ * the field reads it and moves on to `after`, also where the number stays as it was.
+ */
+function NumberRow({
+  label,
+  condition,
+  active,
+  after,
+  moveTo,
+  onCommit,
+  inputRef,
+}: {
+  label: string;
+  condition: Condition;
+  active: RuleField;
+  after: RuleField | null;
+  moveTo: (field: RuleField) => void;
+  onCommit: (value: number) => void;
+  inputRef: RefObject<HTMLInputElement | null>;
+}) {
+  const number = conditionNumber(condition.kind);
+  if (number === null || !("value" in condition)) return null;
+  // The unit comes from the condition's data, beside the field and not in the field itself.
+  const def: ConditionDef = CONDITIONS[condition.kind];
+  return (
+    <div className="rule-panel-field">
+      <span className="rule-panel-label">{label}</span>
+      <span className="rule-panel-value">
+        <span
+          className="rule-panel-number"
+          onFocus={() => {
+            if (active !== "number") moveTo("number");
+          }}
+          onKeyDown={(event) => {
+            // The field commits a changed number on Enter itself; the panel then moves on. The key press
+            // is consumed here: the focus goes to a cell of the next pick during this event, and a browser
+            // would otherwise deliver the same Enter to that cell and pick it.
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            if (after !== null) moveTo(after);
+          }}
+        >
+          <ReactNumberField
+            label={label}
+            number={number}
+            value={condition.value}
+            rule={(text, held) => readNumberField(text, held, number)}
+            onCommit={onCommit}
+            inputRef={inputRef}
+          />
+        </span>
+        {def.unit === undefined ? null : (
+          <span className="rule-panel-unit">{def.unit}</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 type RulePanelViewProps = RulePanelHandlers & RulePanelProps;
 
 /** The rule panel of the rule or group `open` names; nothing where none is open or it is gone. */
@@ -298,56 +574,19 @@ export function RulePanelView({
     setShown({ key: openKey, active, cursor: at });
   }
 
-  /** The program after `value` is picked in `field`; null where it changes nothing. */
-  function changed(field: RuleField, value: string): Program | null {
-    switch (field) {
-      case "condition":
-        return withConditionKind(
-          program,
-          groupId,
-          index,
-          value as Condition["kind"],
-          offeredResources(state),
-          offeredItems(state),
-        );
-      case "conditionTarget":
-        return condition?.kind === "hereBelow"
-          ? withConditionResource(program, groupId, index, value as ResourceId)
-          : withConditionItem(program, groupId, index, value as ItemId);
-      case "action":
-        return index === null
-          ? null
-          : withActionKind(
-              program,
-              groupId,
-              index,
-              value as Action["kind"],
-              offeredResources(state),
-            );
-      case "actionTarget":
-        return index === null
-          ? null
-          : withActionResource(program, groupId, index, value as ResourceId);
-      case "number":
-        return null;
-    }
-  }
-
-  /** The fields of the rule or group in `next`, the program a change made. */
-  function fieldsIn(next: Program): RuleField[] {
-    const nextGroup = next.groups.find((each) => each.id === groupId);
-    if (index === null)
-      return nextGroup === undefined
-        ? []
-        : conditionFields(nextGroup.condition);
-    const nextRule = nextGroup?.rules[index];
-    return nextRule === undefined ? [] : ruleFields(nextRule);
-  }
-
   /** A pick in `field`: the change goes to the page, and the panel moves to the next field. */
   function choose(field: RuleField, value: string): void {
-    const next = changed(field, value);
-    const following = fieldAfter(fieldsIn(next ?? program), field);
+    const next = changedProgram(
+      state,
+      program,
+      { groupId, index, condition },
+      field,
+      value,
+    );
+    const following = fieldAfter(
+      fieldsOf(next ?? program, groupId, index),
+      field,
+    );
     // After the last field the panel stays on it, the keyboard on the cell now chosen.
     if (following === null) setCursor(null);
     else moveTo(following);
@@ -366,138 +605,22 @@ export function RulePanelView({
     if (next !== null) onCommit(next);
   }
 
-  function gridKey(event: KeyboardEvent<HTMLDivElement>): void {
-    const cells = cellsOf(grid.current);
-    const at = cells.indexOf(event.target as HTMLElement);
-    if (at < 0 || pick === null) return;
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const cell = flat[at];
-      if (cell !== undefined && !cell.greyed) choose(active, cell.value);
-      return;
-    }
-    if (!event.key.startsWith("Arrow")) return;
-    event.preventDefault();
-    const to = cellAfterKey(
-      pick.map((section) => section.cells.length),
-      columnsOf(active),
-      at,
-      event.key,
-    );
-    setCursor(to);
-    cells[to]?.focus();
-  }
-
-  function gridFocus(event: FocusEvent<HTMLDivElement>): void {
-    const at = cellsOf(grid.current).indexOf(event.target);
-    if (at >= 0 && at !== cursor) setCursor(at);
-  }
-
-  function renderGrid(field: RuleField, sections: FieldPick) {
-    let cellsBefore = 0;
-    return (
-      <div
-        // The sections of the conditions bear no names, so a line parts them (D-290).
-        className={
-          field === "condition" ? "rule-panel-pick parted" : "rule-panel-pick"
-        }
-        role="group"
-        aria-label={FIELD_LABELS[field]}
-        ref={grid}
-        onKeyDown={gridKey}
-        onFocus={gridFocus}
-      >
-        {sections.map((section, at) => (
-          <div className="rule-panel-section" key={section.name ?? at}>
-            {section.name === null ? null : (
-              <h4 className="rule-panel-section-name">{section.name}</h4>
-            )}
-            <div
-              className={
-                columnsOf(field) === 2
-                  ? "rule-panel-cells two-columns"
-                  : "rule-panel-cells"
-              }
-            >
-              {section.cells.map((cell) => {
-                // The cells of the grid are counted through all its sections, as `flat` counts them.
-                const index = cellsBefore;
-                cellsBefore += 1;
-                const time =
-                  field === "action"
-                    ? actionTime(state, cell.value as Action["kind"])
-                    : null;
-                return (
-                  <div className="rule-panel-cell" key={cell.value}>
-                    <ReactPickCell
-                      text={cell.label}
-                      icon={
-                        field === "action"
-                          ? ACTIONS[cell.value as Action["kind"]].icon
-                          : undefined
-                      }
-                      chosen={cell.chosen}
-                      greyed={cell.greyed}
-                      reason={cell.reason}
-                      onPick={() => choose(field, cell.value)}
-                      // Only the cell the keyboard stands on is in the order of Tab, so Tab leaves the grid.
-                      tabIndex={index === tabbable ? 0 : -1}
-                    />
-                    {time === null ? null : (
-                      <span className="rule-panel-time">{time}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
+  /** The row of one field: its number field, its grid while it is open, or its value and a button that opens it. */
   function renderField(field: RuleField) {
     const label = FIELD_LABELS[field];
     if (field === "number") {
-      const number = conditionNumber(condition?.kind ?? "always");
-      if (number === null || condition === undefined || !("value" in condition))
-        return null;
-      // The unit comes from the condition's data, beside the field and not in the field itself.
-      const def: ConditionDef = CONDITIONS[condition.kind];
+      if (condition === undefined) return null;
       return (
-        <div className="rule-panel-field" key={field}>
-          <span className="rule-panel-label">{label}</span>
-          <span className="rule-panel-value">
-            <span
-              className="rule-panel-number"
-              onFocus={() => {
-                if (active !== "number") moveTo("number");
-              }}
-              onKeyDown={(event) => {
-                // The field commits a changed number on Enter itself; the panel then moves on, also
-                // where the number stays as it was. The key press is consumed here: the focus goes to
-                // a cell of the next pick during this event, and a browser would otherwise deliver the
-                // same Enter to that cell and pick it.
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                const following = fieldAfter(fields, "number");
-                if (following !== null) moveTo(following);
-              }}
-            >
-              <ReactNumberField
-                label={label}
-                number={number}
-                value={condition.value}
-                rule={(text, held) => readNumberField(text, held, number)}
-                onCommit={commitNumber}
-                inputRef={numberInput}
-              />
-            </span>
-            {def.unit === undefined ? null : (
-              <span className="rule-panel-unit">{def.unit}</span>
-            )}
-          </span>
-        </div>
+        <NumberRow
+          key={field}
+          label={label}
+          condition={condition}
+          active={active}
+          after={fieldAfter(fields, "number")}
+          moveTo={moveTo}
+          onCommit={commitNumber}
+          inputRef={numberInput}
+        />
       );
     }
     const fieldPick = pickOf(
@@ -515,7 +638,16 @@ export function RulePanelView({
       <div className="rule-panel-field" key={field}>
         <span className="rule-panel-label">{label}</span>
         {field === active ? (
-          renderGrid(field, fieldPick)
+          <PickGrid
+            state={state}
+            field={field}
+            sections={fieldPick}
+            cursor={cursor}
+            tabbable={tabbable}
+            gridRef={grid}
+            onCursor={setCursor}
+            onChoose={(value) => choose(field, value)}
+          />
         ) : (
           <span className="rule-panel-value">
             <ReactButton
@@ -553,28 +685,13 @@ export function RulePanelView({
       </div>
       {copy ? <p className="rule-panel-note">{COPY_NOTE}</p> : null}
       {index === null ? (
-        <div className="rule-panel-field">
-          <span className="rule-panel-label">Nazwa grupy</span>
-          <span
-            className="rule-panel-name"
-            onFocus={() => {
-              if (name === null) setName(group.name);
-            }}
-            onBlur={commitName}
-            onKeyDown={(event) => {
-              if (event.key !== "Enter") return;
-              event.preventDefault();
-              commitName();
-              moveTo("condition");
-            }}
-          >
-            <ReactTextField
-              label="Nazwa grupy"
-              value={name ?? group.name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </span>
-        </div>
+        <GroupNameField
+          groupName={group.name}
+          name={name}
+          setName={setName}
+          commitName={commitName}
+          moveTo={moveTo}
+        />
       ) : null}
       {fields.map(renderField)}
     </section>

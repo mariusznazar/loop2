@@ -1405,6 +1405,16 @@ The deployment workflow gives the script of its deployment step every value from
 - **Part:** deployment
 - **Violated:** no
 
+## function-and-file-size
+
+No function and no file of the code the rule of size covers is longer than the threshold that rule gives, other than the exceptions it names, as ESLint reports them with its two size rules alone, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-425
+- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Violated:** yes
+
 ## Withdrawn identifiers
 
 | Identifier | Why | Successors |

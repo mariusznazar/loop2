@@ -20,7 +20,8 @@
  * a browser cancels because the scene is hidden, leaves the mage standing at the walk's place, so a
  * scene shown again does not walk it from where it set out. An effect, the wolf's run in and the return
  * of the tint that a browser cancels the same way are over too, so a scene shown again does not play
- * them from their start.
+ * them from their start. What the scene keeps from reading to reading, and its advance from one reading
+ * to the next, stand in `scene-memory.ts`.
  *
  * The mage that gathers bends in a loop at its place, on a third sheet of its own that takes the idle
  * sheet's place for the whole action (D-364). The end of a gathering shows an effect of an ordinary
@@ -62,14 +63,19 @@ import type { GameEvent } from "../sim/game.js";
 import { SCENE, SCENE_EFFECTS } from "../sim/data/scene.js";
 import type { GameState } from "../sim/types.js";
 import {
-  creatureEffect,
-  creaturePlace,
-  momentBegins,
-  sceneDrawing,
-  sceneEffect,
-  scuffleCloud,
-  tintShown,
-} from "./scene-picture.js";
+  advanceMemory,
+  creatureEffectEnded,
+  creatureStands,
+  effectEnded,
+  firstMemory,
+  momentSettled,
+  placeOf,
+  tintReturned,
+  walkEnded,
+  walkStarted,
+} from "./scene-memory.js";
+import type { Facing, Shown } from "./scene-memory.js";
+import { sceneDrawing, scuffleCloud } from "./scene-picture.js";
 import type {
   CreaturePlace,
   SceneCreature,
@@ -79,7 +85,6 @@ import type {
   SceneMoment,
   SceneSprite,
   ScenePlacedSprite,
-  TintShown,
 } from "./scene-picture.js";
 
 export type SceneProps = {
@@ -100,36 +105,6 @@ export type SceneProps = {
    */
   onEffectEnd?: () => void;
 };
-
-/** The way the mage faces; its sheets face right. */
-type Facing = "right" | "left";
-
-/**
- * How the scene shows the mage, kept from reading to reading: the left edge of its frame where it
- * stands or walks to, in the scene's pixels; where a walk started, or null while it stands; the way it
- * faces; and the number of the walk, or of the placing at a first draw or a map run started, which keys
- * the mage's element, so each starts on a new one, its badge included.
- */
-type Shown = {
-  x: number;
-  from: number | null;
-  facing: Facing;
-  walk: number;
-};
-
-/**
- * The effect the scene shows, with the number that keys its element: each new effect starts on an
- * element of its own, and the number tells the effect that has ended from a newer one.
- */
-type Effects<Kind> = { serial: number; shown: Kind | null };
-
-/**
- * The moment in which time stands still that the scene shows, kept from reading to reading: its key,
- * and whether its effect plays. It plays only in the reading in which the moment begins; a scene drawn
- * again on the same moment, or on one that has played, stands on its last image, which is the style of
- * the elements with no animation, so that nothing but the effect is ever an animation (D-322).
- */
-type MomentShown = { key: string; playing: boolean };
 
 /**
  * One scene pixel as a percentage of the frame's width and of its height, with six decimals, so that
@@ -519,12 +494,109 @@ function fallFacing(mageX: number, frame: SceneSprite): Facing {
 }
 
 /**
- * Where the drawing leads the mage: the place of its goal, or, where its goal is to stay, the place it
- * has reached, which `reached` gives and which is read only where the goal is to stay (D-318, D-319).
+ * The box of the mage's frame where it stands or walks to, in percentages of the frame, and on a walk
+ * the offset it starts from, which CSS runs to none; the carrier of the badge takes the same box.
  */
-function placeOf(drawing: SceneDrawing, reached: () => number): number {
-  const { goal } = drawing.mage;
-  return goal.kind === "at" ? goal.place.x : reached();
+function mageBox(drawing: SceneDrawing, shown: Shown): CSSProperties {
+  const { idle } = drawing.mage;
+  const box = boxOf(
+    { ...idle, x: shown.x, y: SCENE.groundLine },
+    drawing.background,
+  );
+  if (shown.from === null) return box;
+  return {
+    ...box,
+    "--walk-start": percent(shown.from - shown.x, idle.width),
+  } as CSSProperties;
+}
+
+/**
+ * The ground of the scene, which its memory does not touch: the picture of the forest at the size the
+ * scene is drawn at, the props and the campfire, where one stands.
+ */
+function Ground({
+  drawing,
+  width,
+  height,
+}: {
+  drawing: SceneDrawing;
+  width: number;
+  height: number;
+}) {
+  const frame = drawing.background;
+  return (
+    <>
+      <img
+        className="scene-background"
+        src={frame.href}
+        alt=""
+        width={width}
+        height={height}
+      />
+      {drawing.props.map((prop) => (
+        <div
+          key={prop.resource}
+          className="scene-prop"
+          data-resource={prop.resource}
+          style={boxOf(prop, frame)}
+        >
+          <Sheet sprite={prop} />
+        </div>
+      ))}
+      {drawing.fire === null ? null : (
+        <div
+          className="scene-fire"
+          data-burning={drawing.fire.burning ? "true" : "false"}
+          style={boxOf(drawing.fire, frame)}
+        >
+          <Sheet sprite={drawing.fire} />
+        </div>
+      )}
+    </>
+  );
+}
+
+/** A handler of the end of an element's own animation, which the ends of its children's animations do not reach. */
+function ownEnd(
+  then: (element: HTMLDivElement) => void,
+): (event: AnimationEvent<HTMLDivElement>) => void {
+  return (event) => {
+    if (event.target === event.currentTarget) then(event.currentTarget);
+  };
+}
+
+/**
+ * What the scene does where the browser cancels an animation of one of its parts, as it does when the
+ * scene is hidden: it ends the walk, the effect of the moment of `key`, the creature's effect or run in,
+ * the effect of a gathering's end or the return of the tint, as the end of that animation would.
+ */
+type Cancels = {
+  walk: () => void;
+  moment: (key: string) => void;
+  creature: () => void;
+  effect: () => void;
+  tint: () => void;
+};
+
+/** The scene's element's ref, which listens on it for a cancelled animation of any of its parts. */
+function watchCancel(ends: Cancels) {
+  return (scene: HTMLDivElement | null) => {
+    if (scene === null) return;
+    const cancelled = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (target.matches(".scene-mage[data-walking]")) ends.walk();
+      else if (target.matches(".scene-moment-master"))
+        ends.moment(target.getAttribute("data-moment-key") ?? "");
+      else if (target.matches(".scene-creature-effect")) ends.creature();
+      else if (target.matches(".scene-effect")) ends.effect();
+      else if (target.matches(".scene-creature[data-entering]"))
+        ends.creature();
+      else if (target.matches(".scene-tint[data-returning]")) ends.tint();
+    };
+    scene.addEventListener("animationcancel", cancelled);
+    return () => scene.removeEventListener("animationcancel", cancelled);
+  };
 }
 
 /**
@@ -562,136 +634,25 @@ export function Scene({
   onEffectEnd,
 }: SceneProps) {
   const drawing = sceneDrawing(state);
-  const [shown, setShown] = useState<Shown | null>(null);
-  const [seenEvents, setSeenEvents] = useState(events);
-  const [lastState, setLastState] = useState(state);
-  const [effects, setEffects] = useState<Effects<SceneEffect>>({
-    serial: 0,
-    shown: null,
-  });
-  const [creatureEffects, setCreatureEffects] = useState<
-    Effects<SceneCreatureEffect>
-  >({ serial: 0, shown: null });
-  const [tint, setTint] = useState<TintShown | null>(null);
-  const [moment, setMoment] = useState<MomentShown | null>(null);
+  const [kept, setKept] = useState(() => firstMemory(state, events));
   const mageRef = useRef<HTMLDivElement>(null);
 
-  // Adjusted while rendering, as the props change: a first draw, and a map run started among new
-  // events, place the mage at its place at once.
-  let current = shown;
-  const fresh = events !== seenEvents;
-  if (fresh) setSeenEvents(events);
-  const started = fresh && events.some((e) => e.kind === "mapRunStarted");
-  if (drawing !== null && (current === null || started)) {
-    current = {
-      x: placeOf(drawing, () => SCENE.clearingX),
-      from: null,
-      facing: current?.facing ?? "right",
-      walk: (current?.walk ?? 0) + 1,
-    };
-    setShown(current);
-  }
+  // Advanced while rendering, as the props change: what the scene keeps meets the state and the events
+  // of this reading, and the render that follows draws from what it then keeps (`advanceMemory`).
+  const memory = advanceMemory(kept, state, drawing, events);
+  if (memory !== kept) setKept(memory);
+  const { shown, effects, creatureEffects, tint, moment } = memory;
 
   const frameWidth = drawing?.mage.idle.width ?? 0;
   // Where the mage is led: where its goal is to stay, the place its walk under way has brought it to,
   // so that it stops there and does not run on to the place of that walk (D-318, D-319).
-  const walked = current;
   const next =
-    drawing === null || walked === null
+    drawing === null || shown === null
       ? null
-      : placeOf(drawing, () => reachedX(mageRef.current, walked, frameWidth));
-
-  // Where the creature that attacks stands, from the place the mage stands at: the mage turns toward
-  // it where it stands still and keeps the way it faces after the fight (D-316).
-  const place =
-    drawing === null || drawing.creature === null || current === null
-      ? null
-      : creaturePlace(
-          current.x,
-          frameWidth,
-          drawing.creature.bite.width,
-          drawing.background.width,
-        );
-  if (
-    place !== null &&
-    current !== null &&
-    current.from === null &&
-    current.facing !== place.side
-  ) {
-    current = { ...current, facing: place.side };
-    setShown(current);
-  }
-
-  // The effect of a gathering's end, from the previous reading and the events of this one, made only
-  // where the scene goes on: an effect whose turn comes at a stop is overdue and dropped (D-317). A
-  // map run started, or no map run, leaves none.
-  let effect = effects;
-  let creatureFx = creatureEffects;
-  if (drawing === null || started) {
-    if (effect.shown !== null) {
-      effect = { ...effect, shown: null };
-      setEffects(effect);
-    }
-    if (creatureFx.shown !== null) {
-      creatureFx = { ...creatureFx, shown: null };
-      setCreatureEffects(creatureFx);
-    }
-  } else if (state !== lastState) {
-    if (fresh && drawing.standing === "going" && current !== null) {
-      // The effect belongs to the mage that gathered, at the place it stands or walks to at the previous
-      // reading, and not at where the action that starts in this reading leads it.
-      const made = sceneEffect(lastState, state, events, current.x);
-      if (made !== null) {
-        effect = { serial: effect.serial + 1, shown: made };
-        setEffects(effect);
-      }
-      // The creature's effect of the same reading is kept apart: the minute that ends a gathering can
-      // also bring the attack, and each effect belongs to its own part of the scene.
-      const madeCreature = creatureEffect(
-        lastState,
-        state,
-        events,
-        current.x,
-        frameWidth,
-        drawing.background.width,
-      );
-      if (madeCreature !== null) {
-        creatureFx = { serial: creatureFx.serial + 1, shown: madeCreature };
-        setCreatureEffects(creatureFx);
-      }
-    }
-  }
-  if (state !== lastState) setLastState(state);
-
-  // The tint of the light, from the streak and the completion of the reading: it stands at once at a
-  // first draw and at a map run started, and otherwise follows the reading as `tintShown` gives.
-  let lit = tint;
-  if (drawing === null) {
-    if (lit !== null) {
-      lit = null;
-      setTint(lit);
-    }
-  } else {
-    lit = tintShown(tint, drawing.tint, drawing.standing, started);
-    if (lit !== tint) setTint(lit);
-  }
-  // The moment in which time stands still, a discovery, a death or a completion: its effect plays in
-  // the reading whose events carry it and, as the first draw of a scene has no such events, not at a
-  // redraw, after a return to the screen or a load, where the scene stands on its last image at once.
-  let held = moment;
-  if (drawing === null || drawing.moment === null) {
-    if (moment !== null) {
-      held = null;
-      setMoment(held);
-    }
-  } else if (moment === null || moment.key !== drawing.moment.key) {
-    held = {
-      key: drawing.moment.key,
-      playing: fresh && momentBegins(drawing.standing, events),
-    };
-    setMoment(held);
-  }
-  const pending = current !== null && next !== current.x ? next : null;
+      : placeOf(drawing, () => reachedX(mageRef.current, shown, frameWidth));
+  // Where the creature that attacks stands, from the place the mage stands at (D-316).
+  const place = creatureStands(drawing, shown);
+  const pending = shown !== null && next !== shown.x ? next : null;
 
   // A new place starts a walk from where the mage stands now, which only the browser knows on the
   // way: the walk's offset reached is read from the element before the new walk replaces it, and the
@@ -699,161 +660,68 @@ export function Scene({
   useLayoutEffect(() => {
     if (pending === null || shown === null) return;
     const from = reachedX(mageRef.current, shown, frameWidth);
-    setShown(
-      from === pending
-        ? { ...shown, x: pending, from: null }
-        : {
-            ...shown,
-            x: pending,
-            from,
-            facing: pending > from ? "right" : "left",
-            walk: shown.walk + 1,
-          },
-    );
+    setKept((now) => walkStarted(now, shown, pending, from));
   }, [pending, shown, frameWidth]);
 
-  if (drawing === null || current === null || lit === null) return null;
+  if (drawing === null || shown === null || tint === null) return null;
   const frame = drawing.background;
-  const playing = held?.playing === true;
-  const mage: ScenePlacedSprite = {
-    ...drawing.mage.idle,
-    x: current.x,
-    y: SCENE.groundLine,
-  };
-  const walk = current.walk;
-  const walking = current.from !== null;
-  const mageStyle = walking
-    ? ({
-        ...boxOf(mage, frame),
-        "--walk-start": percent((current.from ?? 0) - current.x, frameWidth),
-      } as CSSProperties)
-    : boxOf(mage, frame);
-  // The walk has ended where CSS has run it to its place, or was cut by the scene being hidden, which
-  // cancels it where it stands: the mage stands at the walk's place from now on, so a scene hidden and
-  // shown again, which starts its animations anew, does not walk it again from where it set out.
-  const walkEnded = () =>
-    setShown((now) =>
-      now !== null && now.walk === walk && now.from !== null
-        ? { ...now, from: null }
-        : now,
-    );
-  const onAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
-    walkEnded();
-  };
-  // An effect has ended where its own animation has run out, or where the scene was hidden while it
-  // ran, which cancels it: it is dropped, so a scene hidden and shown again, which starts its
-  // animations anew, does not play an effect that is overdue (D-317).
-  const effectOver = (serial: number) =>
-    setEffects((now) =>
-      now.serial === serial ? { ...now, shown: null } : now,
-    );
-  const creatureOver = (serial: number) =>
-    setCreatureEffects((now) =>
-      now.serial === serial ? { ...now, shown: null } : now,
-    );
-  const effectEnded =
-    (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
-      if (event.target !== event.currentTarget) return;
-      effectOver(serial);
-    };
-  const creatureEnded =
-    (serial: number) => (event: AnimationEvent<HTMLDivElement>) => {
-      if (event.target !== event.currentTarget) return;
-      creatureOver(serial);
-    };
-  // A return to the cool tint that has run to its end, or was cut by the scene being hidden, is over:
-  // the layer stands where it is from now on, so a scene hidden and shown again, which starts its
-  // animations anew, does not run it again.
-  const tintSerial = lit.serial;
-  const tintOver = () =>
-    setTint((now) =>
-      now !== null && now.serial === tintSerial && now.from !== null
-        ? { ...now, from: null }
-        : now,
-    );
-  const tintReturned = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
-    tintOver();
-  };
+  const playing = moment?.playing === true;
+  const walk = shown.walk;
+  const walking = shown.from !== null;
+  const mageStyle = mageBox(drawing, shown);
+  // A walk, an effect or a return of the tint ends where its own animation has run out, or where the
+  // scene was hidden while it ran, which cancels it, and what the scene keeps no longer plays it, so a
+  // scene hidden and shown again, which starts its animations anew, does not play it again (D-317).
+  const walkOver = () => setKept((now) => walkEnded(now, walk));
+  const effectSerial = effects.serial;
+  const effectOver = () => setKept((now) => effectEnded(now, effectSerial));
+  const creatureSerial = creatureEffects.serial;
+  const creatureOver = () =>
+    setKept((now) => creatureEffectEnded(now, creatureSerial));
+  const tintSerial = tint.serial;
+  const tintOver = () => setKept((now) => tintReturned(now, tintSerial));
   // The effect of a moment has ended where its last animation has run out, or where the scene was
   // hidden while it ran, which cancels the animations: from then on the scene stands on the last image,
   // so a scene hidden and shown again does not play it afresh, and the game view is told.
   const settle = (key: string) => {
-    if (held === null || held.key !== key || !held.playing) return;
-    setMoment({ ...held, playing: false });
+    if (moment === null || moment.key !== key || !moment.playing) return;
+    setKept((now) => momentSettled(now, moment));
     onEffectEnd?.();
   };
-  const momentEnded = (event: AnimationEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
-    settle(event.currentTarget.getAttribute("data-moment-key") ?? "");
-  };
-  const watchCancel = (scene: HTMLDivElement | null) => {
-    if (scene === null) return;
-    const cancelled = (event: Event) => {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      if (target.matches(".scene-mage[data-walking]")) walkEnded();
-      else if (target.matches(".scene-moment-master"))
-        settle(target.getAttribute("data-moment-key") ?? "");
-      else if (target.matches(".scene-creature-effect"))
-        creatureOver(creatureFx.serial);
-      else if (target.matches(".scene-effect")) effectOver(effect.serial);
-      else if (target.matches(".scene-creature[data-entering]"))
-        creatureOver(creatureFx.serial);
-      else if (target.matches(".scene-tint[data-returning]")) tintOver();
-    };
-    scene.addEventListener("animationcancel", cancelled);
-    return () => scene.removeEventListener("animationcancel", cancelled);
-  };
+  const momentEnded = ownEnd((element) =>
+    settle(element.getAttribute("data-moment-key") ?? ""),
+  );
+  const effectEnd = ownEnd(effectOver);
+  const creatureEnd = ownEnd(creatureOver);
   const tintStyle = {
-    "--tint": lit.shown,
-    ...(lit.from === null ? {} : { "--tint-start": lit.from }),
+    "--tint": tint.shown,
+    ...(tint.from === null ? {} : { "--tint-start": tint.from }),
   } as CSSProperties;
   // The badge of one action is one element from reading to reading, so its bar fills on; a new action,
   // which starts at a later minute, gets one of its own, which starts empty.
   const action = state.run?.current?.startMinute;
   return (
     <div
-      ref={watchCancel}
+      ref={watchCancel({
+        walk: walkOver,
+        moment: settle,
+        creature: creatureOver,
+        effect: effectOver,
+        tint: tintOver,
+      })}
       className="scene"
       aria-hidden="true"
       data-standing={drawing.standing}
       data-moment={drawing.moment?.kind}
       data-moment-playing={playing ? "" : undefined}
     >
-      <img
-        className="scene-background"
-        src={frame.href}
-        alt=""
-        width={width}
-        height={height}
-      />
-      {drawing.props.map((prop) => (
-        <div
-          key={prop.resource}
-          className="scene-prop"
-          data-resource={prop.resource}
-          style={boxOf(prop, frame)}
-        >
-          <Sheet sprite={prop} />
-        </div>
-      ))}
-      {drawing.fire === null ? null : (
-        <div
-          className="scene-fire"
-          data-burning={drawing.fire.burning ? "true" : "false"}
-          style={boxOf(drawing.fire, frame)}
-        >
-          <Sheet sprite={drawing.fire} />
-        </div>
-      )}
-      {effect.shown === null || effect.shown.kind !== "dust" ? null : (
+      <Ground drawing={drawing} width={width} height={height} />
+      {effects.shown === null || effects.shown.kind !== "dust" ? null : (
         <Effect
-          key={`effect-${effect.serial}`}
-          effect={effect.shown}
+          key={`effect-${effectSerial}`}
+          effect={effects.shown}
           frame={frame}
-          onEnd={effectEnded(effect.serial)}
+          onEnd={effectEnd}
         />
       )}
       {drawing.creature === null || place === null ? null : (
@@ -863,21 +731,21 @@ export function Scene({
           place={place}
           frame={frame}
           entering={
-            creatureFx.shown?.kind === "creatureIn" &&
-            creatureFx.shown.key === drawing.creature.key &&
+            creatureEffects.shown?.kind === "creatureIn" &&
+            creatureEffects.shown.key === drawing.creature.key &&
             (drawing.standing === "going" || drawing.standing === "paused")
           }
-          onEnd={creatureEnded(creatureFx.serial)}
+          onEnd={creatureEnd}
         />
       )}
-      {creatureFx.shown === null ||
-      (creatureFx.shown.kind !== "creatureDown" &&
-        creatureFx.shown.kind !== "creatureOut") ? null : (
+      {creatureEffects.shown === null ||
+      (creatureEffects.shown.kind !== "creatureDown" &&
+        creatureEffects.shown.kind !== "creatureOut") ? null : (
         <CreatureEffect
-          key={`creature-effect-${creatureFx.serial}`}
-          effect={creatureFx.shown}
+          key={`creature-effect-${creatureSerial}`}
+          effect={creatureEffects.shown}
           frame={frame}
-          onEnd={creatureEnded(creatureFx.serial)}
+          onEnd={creatureEnd}
         />
       )}
       <div
@@ -889,11 +757,11 @@ export function Scene({
         data-bend-facing={drawing.mage.bendFacing ?? undefined}
         data-facing={
           drawing.moment?.kind === "death"
-            ? fallFacing(current.x, frame)
-            : current.facing
+            ? fallFacing(shown.x, frame)
+            : shown.facing
         }
         style={mageStyle}
-        onAnimationEnd={onAnimationEnd}
+        onAnimationEnd={ownEnd(walkOver)}
       >
         <div className="scene-mage-sprite">
           <Sheet sprite={drawing.mage.idle} className="scene-mage-idle" />
@@ -919,20 +787,20 @@ export function Scene({
           frame={frame}
         />
       )}
-      {effect.shown === null || effect.shown.kind !== "flight" ? null : (
+      {effects.shown === null || effects.shown.kind !== "flight" ? null : (
         <Effect
-          key={`effect-${effect.serial}`}
-          effect={effect.shown}
+          key={`effect-${effectSerial}`}
+          effect={effects.shown}
           frame={frame}
-          onEnd={effectEnded(effect.serial)}
+          onEnd={effectEnd}
         />
       )}
       <div
-        key={`tint-${lit.serial}`}
+        key={`tint-${tintSerial}`}
         className="scene-tint"
-        data-returning={lit.from === null ? undefined : ""}
+        data-returning={tint.from === null ? undefined : ""}
         style={tintStyle}
-        onAnimationEnd={tintReturned}
+        onAnimationEnd={ownEnd(tintOver)}
       />
       {drawing.moment?.kind === "death" && drawing.moment.cold ? (
         <div
