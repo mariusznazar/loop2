@@ -821,7 +821,7 @@ Before its first check, the test of the quality checks makes the environment `.r
 
 ### D-425 — How large may a function and a file of the code be?
 
-A function holds at most 200 lines of code and a file at most 800, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it. The limit on a function covers every file that ESLint checks under D-29 — the application, the scripts, the tests, the JavaScript of the three agent-workflow directories D-29 names and the two root configuration files — and the limit on a file covers the same files outside `tests/`.
+A function holds at most 200 lines of code and a file at most 800, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it. The limit on a function covers every file that ESLint checks under D-29 — the application, the scripts, the tests, the balance instrument, the JavaScript of the three agent-workflow directories D-29 names and the two root configuration files — and the limit on a file covers the same files outside `tests/`.
 
 Two exceptions stand whole over a threshold and no other does: the function `accountRoutes` in `src/server/account-routes.ts`, which is the one function that registers the routes of the server, nearly all of its lines being functions nested in it, and the file `src/browser/sim/saved-game.ts`, which keeps the whole turning of a saved document into game state, or into a refusal, in one checked file at a trust boundary. Adding an exception takes a human-accepted change of this decision.
 
@@ -830,7 +830,7 @@ The rule runs as an ESLint run of its own, with the two size rules of ESLint alo
 - **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28
-- **Verification:** invariants: function-and-file-size. tests: the thresholds of 200 lines of a function and 800 of a file, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it; the limit on a function reaching the application, the scripts, the tests and the agent-workflow directories the linter of D-29 reaches, and the limit on a file off in the tests; the two exceptions standing whole and no other function or file. An agent compares a change with the part no invariant and no test holds:
+- **Verification:** invariants: function-and-file-size. tests: the thresholds of 200 lines of a function and 800 of a file, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it; the limit on a function reaching the application, the scripts, the tests, the balance instrument and the agent-workflow directories the linter of D-29 reaches, and the limit on a file off in the tests; the two exceptions standing whole and no other function or file. An agent compares a change with the part no invariant and no test holds:
   - complies: a size rule that the run of the rule applies and that the run on `eslint.config.mjs` does not
   - violates: `max-lines-per-function` or `max-lines` added to `eslint.config.mjs`, or the run of the rule widened to the rule set of D-29, with no human-accepted change of D-29; a function or a file added to the exceptions of the run's configuration, or given a limit of its own, with no change of this decision
 - **Origin:** none
