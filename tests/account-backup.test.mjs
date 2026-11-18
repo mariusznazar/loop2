@@ -98,6 +98,22 @@ function sha256(buffer) {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
+// A database of the server whose pages after the first are garbage: it reads
+// as a database of the current version and fails on the first table it reads.
+async function makeCorruptDatabase(path) {
+  const made = new AccountDatabase(path);
+  made.createAccount("player@example.test", "hash");
+  made.close();
+  const bytes = await readFile(path);
+  await writeFile(
+    path,
+    Buffer.concat([
+      bytes.subarray(0, 4096),
+      Buffer.alloc(bytes.length - 4096, 255),
+    ]),
+  );
+}
+
 const standin = new URL("./account-database-check-standin.mjs", import.meta.url)
   .href;
 
@@ -382,16 +398,16 @@ test("a missing database file creates nothing and ends with its own code", async
   assert.deepEqual(await readdir(temporary), []);
 });
 
-test("a database that cannot be opened and a temporary directory that cannot be made each end with the database-failure code, an empty standard output and no secret in the message", async (t) => {
+test("a damaged database and a temporary directory that cannot be made each end with the database-failure code, an empty standard output and no secret in the message", async (t) => {
   const box = await sandbox(t);
   const { path, temporary, directory } = box;
-  const garbage = join(directory, "garbage-secret-name.sqlite");
-  await writeFile(garbage, "this is not an SQLite database at all, padding");
-  const broken = await runBackup([word], garbage, temporary);
+  const damaged = join(directory, "damaged-secret-name.sqlite");
+  await makeCorruptDatabase(damaged);
+  const broken = await runBackup([word], damaged, temporary);
   assert.equal(broken.code, 1, broken.stderr);
   assert.equal(broken.stdout.length, 0);
   assert.notEqual(broken.stderr, "");
-  assert.doesNotMatch(broken.stderr, /garbage-secret-name|not a database/i);
+  assert.doesNotMatch(broken.stderr, /damaged-secret-name|malformed/i);
   assert.deepEqual(await readdir(temporary), [], "nothing stays behind");
 
   seedDatabase(box).close();
@@ -400,6 +416,93 @@ test("a database that cannot be opened and a temporary directory that cannot be 
   assert.equal(result.code, 1, result.stderr);
   assert.equal(result.stdout.length, 0);
   assert.doesNotMatch(result.stderr, /no[\\/]such|accounts\.sqlite/);
+});
+
+// D-231, D-112. Faults: a file the server never set up given tables by the
+// command, or refused with another code than a missing file, or taken for a
+// database whose backup is whole.
+test("a file in which the server set up no tables is refused with the code of a missing file, writes nothing in it and leaves nothing on standard output", async (t) => {
+  // decision: D-231 "That command opens only an existing database file"
+  // decision: D-112 "The blocking command of D-137 and the backup command of D-231 open only a file in which the server has set up its tables"
+  const { temporary, directory } = await sandbox(t);
+  const empty = join(directory, "empty-secret-name.sqlite");
+  await writeFile(empty, "");
+  const garbage = join(directory, "garbage-secret-name.sqlite");
+  await writeFile(garbage, "this is not an SQLite database at all");
+  const foreign = join(directory, "foreign-secret-name.sqlite");
+  const raw = new DatabaseSync(foreign);
+  raw.exec("CREATE TABLE notes (text TEXT)");
+  raw.close();
+  const listing = (await readdir(directory)).sort();
+  const before = new Map();
+  for (const path of [empty, garbage, foreign])
+    before.set(path, sha256(await readFile(path)));
+
+  for (const path of [empty, garbage, foreign]) {
+    const result = await runBackup([word], path, temporary);
+    assert.equal(result.code, 3, path + result.stderr);
+    assert.equal(result.stdout.length, 0, `${path} printed to stdout`);
+    assert.match(result.stderr, /names no existing account database file/);
+    assert.doesNotMatch(result.stderr, /run the command again/);
+    assert.doesNotMatch(result.stderr, /secret-name|not a database/i);
+    assert.equal(sha256(await readFile(path)), before.get(path), path);
+  }
+  assert.deepEqual(
+    (await readdir(directory)).sort(),
+    listing,
+    "no -wal, -shm or new file appeared",
+  );
+  assert.deepEqual(await readdir(temporary), []);
+});
+
+// D-231. Faults: the advice to run the command again on a failure a second run
+// does not mend, or no advice where the database was only busy.
+test("the backup command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
+  // decision: D-430 "When the blocking command of D-137 or the backup command of D-231 cannot open or change the database for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
+  // decision: D-231 "That command opens only an existing database file"
+  const box = await sandbox(t);
+  const { path, temporary, directory } = box;
+  seedDatabase(box).close();
+
+  const lock = new DatabaseSync(path);
+  let busy;
+  try {
+    lock.exec("BEGIN IMMEDIATE");
+    busy = await runBackup([word], path, temporary);
+  } finally {
+    lock.exec("ROLLBACK");
+    lock.close();
+  }
+  assert.equal(busy.code, 1, busy.stderr);
+  assert.equal(busy.stdout.length, 0);
+  assert.match(busy.stderr, /busy for longer than the wait allows/);
+  assert.match(busy.stderr, /No backup was made; run the command again\./);
+
+  const newer = join(directory, "newer.sqlite");
+  const made = new DatabaseSync(newer);
+  made.exec("CREATE TABLE accounts (id TEXT); PRAGMA user_version = 7");
+  made.close();
+  const newerBefore = sha256(await readFile(newer));
+  const damaged = join(directory, "damaged.sqlite");
+  await makeCorruptDatabase(damaged);
+
+  for (const [label, target] of [
+    ["a newer schema", newer],
+    ["a damaged file", damaged],
+  ]) {
+    const result = await runBackup([word], target, temporary);
+    assert.equal(result.code, 1, `${label}: ${result.stderr}`);
+    assert.equal(result.stdout.length, 0, label);
+    assert.match(result.stderr, /No backup was made\./);
+    assert.doesNotMatch(result.stderr, /run the command again/, label);
+  }
+  assert.equal(
+    sha256(await readFile(newer)),
+    newerBefore,
+    "the newer schema stays",
+  );
+  assert.deepEqual(await readdir(temporary), []);
 });
 
 // D-233, D-252. Faults: the failure's reason left out, so the operator reads
@@ -411,10 +514,10 @@ test("a failed backup adds the error's kind and code to standard error, and noth
   // decision: D-233 "`/var/log/loop2-backup.log` holds each attempt's start and end, the weekday file and size of each encrypted backup and the stage and exit code of a failure, with no player's data"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
   const box = await sandbox(t);
-  const garbage = join(box.directory, "garbage-secret-name.sqlite");
-  await writeFile(garbage, "this is not an SQLite database at all, padding");
+  const damaged = join(box.directory, "damaged-secret-name.sqlite");
+  await makeCorruptDatabase(damaged);
 
-  const result = await runBackup([word], garbage, box.temporary);
+  const result = await runBackup([word], damaged, box.temporary);
 
   assert.equal(result.code, 1, result.stderr);
   assert.match(result.stderr, /No backup was made/);
@@ -425,10 +528,10 @@ test("a failed backup adds the error's kind and code to standard error, and noth
     failure: "backup-database",
     kind: "Error",
     code: "ERR_SQLITE_ERROR",
-    errcode: 26,
+    errcode: 11,
     place: "account-backup.run",
   });
-  assert.doesNotMatch(result.stderr, /garbage-secret-name|not a database/i);
+  assert.doesNotMatch(result.stderr, /damaged-secret-name|malformed/i);
 });
 
 // The stand-in of account-database-check's tests makes the removal of the

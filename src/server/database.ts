@@ -208,6 +208,29 @@ interface DatabaseOptions {
   cleanupIntervalMs?: number;
   busyTimeoutMs?: number;
   onCleanupError?: (error: Error) => void;
+  // Only the server sets up a new database. An operator's command that opens
+  // with this option refuses a file in which the server has set up no tables
+  // and writes nothing in it (D-112).
+  existingOnly?: boolean;
+}
+
+const NOT_ACCOUNT_DATABASE = "NOT_ACCOUNT_DATABASE";
+const SQLITE_NOTADB = 26;
+
+function notAccountDatabase(): ReasonedFailure {
+  return new ReasonedFailure(
+    NOT_ACCOUNT_DATABASE,
+    "The file holds no account database",
+  );
+}
+
+// Whether an error is the refusal of an opening that may only find a database
+// when the file holds none: it is empty, is no SQLite database, or is one that
+// carries no schema version of the server's.
+export function isNotAccountDatabase(error: unknown): boolean {
+  return (
+    error instanceof ReasonedFailure && error.code === NOT_ACCOUNT_DATABASE
+  );
 }
 
 function boundedInteger(value: number, maximum: number): number {
@@ -227,7 +250,7 @@ const backupRate = 2 ** 31 - 1;
 const SQLITE_BUSY = 5;
 const RETRY_PAUSE = new Int32Array(new SharedArrayBuffer(4));
 
-function isBusy(error: unknown): boolean {
+export function isDatabaseBusy(error: unknown): boolean {
   return (
     typeof error === "object" &&
     error !== null &&
@@ -240,6 +263,7 @@ export class AccountDatabase {
   private readonly connection: DatabaseSync;
   private readonly now: () => number;
   private readonly cleanupTimer: ReturnType<typeof setInterval>;
+  private readonly existingOnly: boolean;
   private closed = false;
 
   constructor(path: string, options: DatabaseOptions = {}) {
@@ -249,9 +273,14 @@ export class AccountDatabase {
     );
     const timeout = boundedInteger(options.busyTimeoutMs ?? 1000, 5000);
     this.now = options.now ?? Date.now;
+    this.existingOnly = options.existingOnly ?? false;
     this.connection = new DatabaseSync(path, { timeout });
     try {
       this.connection.exec("PRAGMA foreign_keys = ON");
+      // Before the journal mode changes, so that a file refused for its schema
+      // stays as it was; the transaction of initializeSchema reads the version
+      // again, which is the reading that two processes cannot both act on.
+      this.checkSchemaVersionBeforeChanges();
       this.enableWriteAheadLog(timeout);
       this.connection.exec("PRAGMA synchronous = FULL");
       this.initializeSchema();
@@ -289,7 +318,8 @@ export class AccountDatabase {
         this.connection.exec("PRAGMA journal_mode = WAL");
         return;
       } catch (error) {
-        if (!isBusy(error) || performance.now() >= deadline) throw error;
+        if (!isDatabaseBusy(error) || performance.now() >= deadline)
+          throw error;
         Atomics.wait(RETRY_PAUSE, 0, 0, 10);
       }
     }
@@ -309,24 +339,50 @@ export class AccountDatabase {
     return result;
   }
 
+  // The schema version the file holds, where this opening may go on with it:
+  // 0 is a new database, which an opening that may only find a database refuses,
+  // and a version above the current one, or one that is no version, is refused.
+  private readSchemaVersion(): number {
+    const version = this.connection
+      .prepare("PRAGMA user_version")
+      .get()?.user_version;
+    if (
+      typeof version !== "number" ||
+      !Number.isSafeInteger(version) ||
+      version < 0 ||
+      version > currentVersion
+    ) {
+      throw new ReasonedFailure(
+        "UNSUPPORTED_SCHEMA",
+        "Unsupported account database schema",
+      );
+    }
+    if (version === 0 && this.existingOnly) throw notAccountDatabase();
+    return version;
+  }
+
+  // The first read of the file, outside any transaction and before the journal
+  // mode changes, which writes to a file that is empty or a database of
+  // another journal mode. A file that is no SQLite database fails here, and an
+  // opening that may only find a database reports that as its own refusal.
+  private checkSchemaVersionBeforeChanges(): void {
+    try {
+      this.readSchemaVersion();
+    } catch (error) {
+      if (
+        this.existingOnly &&
+        (error as { errcode?: unknown }).errcode === SQLITE_NOTADB
+      )
+        throw notAccountDatabase();
+      throw error;
+    }
+  }
+
   // Version 0 is a new database. The version is read inside the transaction
   // that migrates, so two processes opening one database cannot both migrate it.
   private initializeSchema(): void {
     this.transaction(() => {
-      const version = this.connection
-        .prepare("PRAGMA user_version")
-        .get()?.user_version;
-      if (
-        typeof version !== "number" ||
-        !Number.isSafeInteger(version) ||
-        version < 0 ||
-        version > currentVersion
-      ) {
-        throw new ReasonedFailure(
-          "UNSUPPORTED_SCHEMA",
-          "Unsupported account database schema",
-        );
-      }
+      const version = this.readSchemaVersion();
       if (version === currentVersion) return;
       for (const step of schemaSteps.slice(version)) this.connection.exec(step);
       this.connection.exec(`PRAGMA user_version = ${currentVersion}`);
