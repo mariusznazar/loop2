@@ -1,0 +1,47 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/balance/campaign.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a player whose first program does not solve the first map stays on it: no loop, no purchase, nothing solved (119.1102ms)
+✖ the first map is solved by hand before the loop starts, in at least the real time its game minutes take at the pace (29.7766ms)
+✔ the player returns once a day: the days of the record run from 1 to the days of the campaign, each map is tried only on a return (15.9208ms)
+✔ each solved map had its opening map solved before it (36.5558ms)
+✔ no purchase is made that the points of its tree do not cover, and the record of purchases agrees with the ranks held (50.957ms)
+✔ a player who buys nothing holds no rank, and a purchase only comes from a list that names it (51.937ms)
+✔ an attempt whose need of the chest can never be met is never made (9.1452ms)
+✔ the same seed gives the same campaign (28.0906ms)
+✔ the sum of campaigns counts them and takes its means from the campaigns it sums (33.0372ms)
+✔ the three players of Skraj lasu name programs of the reference file, maps and ranks the game has, and ask for the chest their programs take (0.3536ms)
+✔ a player naming a program the registry lacks is refused (0.3336ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 455.8544
+
+✖ failing tests:
+
+test at tests\balance\campaign.test.mjs:72:1
+✖ the first map is solved by hand before the loop starts, in at least the real time its game minutes take at the pace (29.7766ms)
+  AssertionError [ERR_ASSERTION]: seed 1
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:80:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

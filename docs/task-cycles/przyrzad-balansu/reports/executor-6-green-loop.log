@@ -1,0 +1,21 @@
+﻿
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/balance/loop.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a loop of zero hours starts one map run and leaves the chest with what the take list did not take (8.1693ms)
+✔ on each seed the readings of a loop never fall in completions or in the count of its map runs (18.4971ms)
+✔ the loop balance of each seed agrees with the game's own count: completions and the final chest (71.6471ms)
+✔ the balance of a loop of zero hours is one map run that took its pieces and put none (1.3746ms)
+✔ the summary per checkpoint counts the seeds and takes its stopped share from the readings it sums (23.1694ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 198.8144

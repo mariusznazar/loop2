@@ -1,0 +1,6 @@
+src/browser/kitchen-sink/kitchen-sink.tsx:956: File has too many lines (890). Maximum allowed is 800.
+src/browser/view/app.ts:248: Function 'startApp' has too many lines (449). Maximum allowed is 200.
+src/browser/view/programs-entry.ts:81: Function 'createProgramsEntry' has too many lines (245). Maximum allowed is 200.
+src/browser/view/programs-entry.ts:102: Method 'build' has too many lines (225). Maximum allowed is 200.
+4 functions and files over a threshold in 297 files
+exit 0
