@@ -531,6 +531,147 @@ test(
   },
 );
 
+const json = (value) => () => JSON.stringify(value);
+
+const countRows = (f, table) =>
+  f.inspection.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;
+
+const confirmedAccounts = (f) =>
+  f.inspection
+    .prepare(
+      "SELECT count(*) AS n FROM accounts WHERE email_confirmed_at IS NOT NULL",
+    )
+    .get().n;
+
+const resetAccountState = (f, accountId) =>
+  f.inspection
+    .prepare(
+      "SELECT password_hash AS hash, (SELECT spent FROM emailed_links WHERE account_id = accounts.id AND purpose = 'password-reset') AS spent FROM accounts WHERE id = ?",
+    )
+    .get(accountId);
+
+// The refusals of one guarded route, each with the headers it changes, its body and the status it
+// must get. Every one is refused before the account, the session or the password work.
+function refusedVariants(fields, accountId) {
+  return [
+    ["missing origin", { Origin: undefined }, null, 403],
+    ["null origin", { Origin: "null" }, null, 403],
+    ["foreign origin", { Origin: "https://evil.example" }, null, 403],
+    ["suffix origin", { Origin: `${origin}.evil` }, null, 403],
+    ["origin with path", { Origin: `${origin}/` }, null, 403],
+    ["origin without port", { Origin: "https://game.example.test" }, null, 403],
+    ["malformed origin", { Origin: `${origin}:1` }, null, 403],
+    ["duplicate origin", { Origin: [origin, origin] }, null, 403],
+    ["missing media", { "Content-Type": undefined }, null, 415],
+    ["text media", { "Content-Type": "text/plain" }, null, 415],
+    [
+      "form media",
+      { "Content-Type": "application/x-www-form-urlencoded" },
+      null,
+      415,
+    ],
+    [
+      "parameterized media",
+      { "Content-Type": "application/json;other=value" },
+      null,
+      415,
+    ],
+    [
+      "duplicate media",
+      { "Content-Type": ["application/json", "application/json"] },
+      null,
+      415,
+    ],
+    ["compressed", { "Content-Encoding": "gzip" }, null, 415],
+    [
+      "duplicate encoding",
+      { "Content-Encoding": ["identity", "identity"] },
+      null,
+      415,
+    ],
+    ["oversized", {}, json({ ...fields, padding: "x".repeat(16 * 1024) }), 413],
+    ["empty body", {}, () => "", 400],
+    ["broken body", {}, () => "{", 400],
+    ["array body", {}, json([fields]), 400],
+    ["scalar body", {}, () => "7", 400],
+    ["null body", {}, () => "null", 400],
+    ["unexpected field", {}, json({ ...fields, accountId }), 400],
+    ...Object.keys(fields).flatMap((name) => [
+      ["missing " + name, {}, json({ ...fields, [name]: undefined }), 400],
+      ["numeric " + name, {}, json({ ...fields, [name]: 7 }), 400],
+      ["array " + name, {}, json({ ...fields, [name]: [fields[name]] }), 400],
+    ]),
+  ];
+}
+
+// Controls: the same bodies with every guard satisfied do change state, the report
+// is written, and the reset request, admitted, hands a message on.
+async function guardedControls(
+  f,
+  {
+    cookie,
+    live,
+    token,
+    routes,
+    logged,
+    accounts,
+    confirmedBefore,
+    resetBefore,
+    resetting,
+  },
+) {
+  const valid = {
+    ...proxyHeaders,
+    Origin: origin,
+    "Content-Type": "application/json",
+  };
+  for (const [path, fields, expected] of [
+    ["/api/email-confirmation-message", {}, 200],
+    ["/api/email-confirmation", { token }, 204],
+    ["/api/logout", {}, 204],
+    ["/api/session", routes[1][1], 200],
+    ["/api/accounts", routes[0][1], 201],
+    ["/api/password-reset", routes[6][1], 204],
+    ["/api/browser-failure", routes[7][1], 204],
+  ]) {
+    const response = await f.send(path, {
+      method: "POST",
+      headers: { ...valid, Cookie: cookie },
+      body: JSON.stringify(fields),
+    });
+    assert.equal(response.status, expected, `${path} control`);
+  }
+  assert.equal(f.runtime.database.readSession(live), null);
+  assert.equal(countRows(f, "accounts"), accounts + 1);
+  assert.equal(browserLines(logged).length, 1, "the report was written");
+  assert.equal(confirmedAccounts(f), confirmedBefore + 1);
+  const resetAfter = resetAccountState(f, resetting.id);
+  assert.notEqual(resetAfter.hash, resetBefore.hash, "the password was set");
+  assert.equal(resetAfter.spent, 1, "the reset link was spent");
+  assert.deepEqual(
+    f.mailer.messages.slice(0, 1).map((message) => message.to),
+    ["synthetic@example.test"],
+  );
+  // The reset request, admitted, answers 204 and hands a message on after it.
+  const handed = f.mailer.messages.length;
+  const asked = await f.send("/api/password-reset-message", {
+    method: "POST",
+    headers: valid,
+    body: JSON.stringify({ email: "reset@example.test" }),
+  });
+  assert.equal(asked.status, 204, "reset request control");
+  for (
+    let wait = 0;
+    wait < 200 && f.mailer.messages.length === handed;
+    wait += 1
+  )
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(
+    f.mailer.messages.slice(handed).map((message) => message.to),
+    ["reset@example.test"],
+  );
+}
+
 test(
   "refused state-changing requests change no account or session and do no password work",
   { timeout: 20000 },
@@ -553,8 +694,7 @@ test(
     const stored = f.runtime.database.readSession(live);
     // D-101: a request with a valid session renews that same session, refused or not.
     const renewal = signedCookie(live, f.keys[0]);
-    const count = (table) =>
-      f.inspection.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;
+    const count = (table) => countRows(f, table);
     // A link of another account, so that confirming it and asking for a
     // message to the session's account would both succeed.
     const linked = f.runtime.database.createAccount(
@@ -562,12 +702,7 @@ test(
       f.runtime.dummyHash,
     );
     const token = issueLink(f, linked.id);
-    const confirmed = () =>
-      f.inspection
-        .prepare(
-          "SELECT count(*) AS n FROM accounts WHERE email_confirmed_at IS NOT NULL",
-        )
-        .get().n;
+    const confirmed = () => confirmedAccounts(f);
     // An account with a confirmed address, so that a request for a reset
     // link to it would record a link and hand a message on if it were admitted.
     const resetting = f.runtime.database.createAccount(
@@ -583,12 +718,7 @@ test(
     // the hash and spend the link if its request were admitted.
     const resetToken = issueLink(f, resetting.id, "password-reset");
     const newSecret = "a password the guards must not let through";
-    const resetState = () =>
-      f.inspection
-        .prepare(
-          "SELECT password_hash AS hash, (SELECT spent FROM emailed_links WHERE account_id = accounts.id AND purpose = 'password-reset') AS spent FROM accounts WHERE id = ?",
-        )
-        .get(resetting.id);
+    const resetState = () => resetAccountState(f, resetting.id);
     const resetBefore = resetState();
     const confirmedBefore = confirmed();
     const accounts = count("accounts");
@@ -622,73 +752,11 @@ test(
       guardedAccountPaths,
       "precondition: the routes of this case are those the check of the route table lists",
     );
-    const json = (value) => () => JSON.stringify(value);
-    const variants = (fields) => [
-      ["missing origin", { Origin: undefined }, null, 403],
-      ["null origin", { Origin: "null" }, null, 403],
-      ["foreign origin", { Origin: "https://evil.example" }, null, 403],
-      ["suffix origin", { Origin: `${origin}.evil` }, null, 403],
-      ["origin with path", { Origin: `${origin}/` }, null, 403],
-      [
-        "origin without port",
-        { Origin: "https://game.example.test" },
-        null,
-        403,
-      ],
-      ["malformed origin", { Origin: `${origin}:1` }, null, 403],
-      ["duplicate origin", { Origin: [origin, origin] }, null, 403],
-      ["missing media", { "Content-Type": undefined }, null, 415],
-      ["text media", { "Content-Type": "text/plain" }, null, 415],
-      [
-        "form media",
-        { "Content-Type": "application/x-www-form-urlencoded" },
-        null,
-        415,
-      ],
-      [
-        "parameterized media",
-        { "Content-Type": "application/json;other=value" },
-        null,
-        415,
-      ],
-      [
-        "duplicate media",
-        { "Content-Type": ["application/json", "application/json"] },
-        null,
-        415,
-      ],
-      ["compressed", { "Content-Encoding": "gzip" }, null, 415],
-      [
-        "duplicate encoding",
-        { "Content-Encoding": ["identity", "identity"] },
-        null,
-        415,
-      ],
-      [
-        "oversized",
-        {},
-        json({ ...fields, padding: "x".repeat(16 * 1024) }),
-        413,
-      ],
-      ["empty body", {}, () => "", 400],
-      ["broken body", {}, () => "{", 400],
-      ["array body", {}, json([fields]), 400],
-      ["scalar body", {}, () => "7", 400],
-      ["null body", {}, () => "null", 400],
-      [
-        "unexpected field",
-        {},
-        json({ ...fields, accountId: f.account.id }),
-        400,
-      ],
-      ...Object.keys(fields).flatMap((name) => [
-        ["missing " + name, {}, json({ ...fields, [name]: undefined }), 400],
-        ["numeric " + name, {}, json({ ...fields, [name]: 7 }), 400],
-        ["array " + name, {}, json({ ...fields, [name]: [fields[name]] }), 400],
-      ]),
-    ];
     for (const [path, fields] of routes) {
-      for (const [label, changes, body, expected] of variants(fields)) {
+      for (const [label, changes, body, expected] of refusedVariants(
+        fields,
+        f.account.id,
+      )) {
         const headers = {
           ...proxyHeaders,
           Origin: origin,
@@ -734,57 +802,17 @@ test(
         assert.deepEqual(browserLines(logged), [], `${name}: no report line`);
       }
     }
-    // Controls: the same bodies with every guard satisfied do change state.
-    const valid = {
-      ...proxyHeaders,
-      Origin: origin,
-      "Content-Type": "application/json",
-    };
-    for (const [path, fields, expected] of [
-      ["/api/email-confirmation-message", {}, 200],
-      ["/api/email-confirmation", { token }, 204],
-      ["/api/logout", {}, 204],
-      ["/api/session", routes[1][1], 200],
-      ["/api/accounts", routes[0][1], 201],
-      ["/api/password-reset", routes[6][1], 204],
-      ["/api/browser-failure", routes[7][1], 204],
-    ]) {
-      const response = await f.send(path, {
-        method: "POST",
-        headers: { ...valid, Cookie: cookie },
-        body: JSON.stringify(fields),
-      });
-      assert.equal(response.status, expected, `${path} control`);
-    }
-    assert.equal(f.runtime.database.readSession(live), null);
-    assert.equal(count("accounts"), accounts + 1);
-    assert.equal(browserLines(logged).length, 1, "the report was written");
-    assert.equal(confirmed(), confirmedBefore + 1);
-    const resetAfter = resetState();
-    assert.notEqual(resetAfter.hash, resetBefore.hash, "the password was set");
-    assert.equal(resetAfter.spent, 1, "the reset link was spent");
-    assert.deepEqual(
-      f.mailer.messages.slice(0, 1).map((message) => message.to),
-      ["synthetic@example.test"],
-    );
-    // The reset request, admitted, answers 204 and hands a message on after it.
-    const handed = f.mailer.messages.length;
-    const asked = await f.send("/api/password-reset-message", {
-      method: "POST",
-      headers: valid,
-      body: JSON.stringify({ email: "reset@example.test" }),
+    await guardedControls(f, {
+      cookie,
+      live,
+      token,
+      routes,
+      logged,
+      accounts,
+      confirmedBefore,
+      resetBefore,
+      resetting,
     });
-    assert.equal(asked.status, 204, "reset request control");
-    for (
-      let wait = 0;
-      wait < 200 && f.mailer.messages.length === handed;
-      wait += 1
-    )
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    assert.deepEqual(
-      f.mailer.messages.slice(handed).map((message) => message.to),
-      ["reset@example.test"],
-    );
   },
 );
 
