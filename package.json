@@ -10,6 +10,7 @@
     "typecheck": "node scripts/build.mjs --check",
     "build": "node scripts/build.mjs",
     "kitchen-sink": "node scripts/kitchen-sink.mjs",
+    "balance": "node scripts/build.mjs && node balance/cli.mjs",
     "start": "node dist/server/main.js",
     "dev": "npm run build && npm start",
     "local": "npm run build && node scripts/local-start.mjs",
