@@ -303,13 +303,15 @@ sprawdzanie w głowie autora (D-95); nie osłabiamy audytu.
 
 ### Flaky tests
 
-- **Decision:** D-73
+- **Decision:** D-73 · D-432
 - **Invariant:** none
 - **Good:** Powtórzenie służy ustaleniu przyczyny różnych wyników na tym samym kodzie.
 - **Bad:** Późniejszy sukces usuwa z raportu wcześniejszą porażkę.
 
 Ponowne uruchomienie niestabilnego testu służy diagnozie, nigdy uzyskaniu
 zielonej bramki. Wyłączenie lub usunięcie podlega Changing an existing test.
+Test padający losowo bez ustalonej przyczyny dostaje wpis w rejestrze
+`tests/flaky-tests.md`, a wpis znika, gdy przyczyna się wyjaśni.
 
 ### Tests on a document imitation
 
@@ -456,6 +458,7 @@ może pokazywać rzeczywiście różne ryzyka.
 - `tests/quality/`
 - `tests/deploy/`
 - `tests/agent_workflow/`
+- `tests/flaky-tests.md`
 - `tests/http.test.mjs`
 - `tests/transport.test.mjs`
 - `tests/account-storage.test.mjs`
