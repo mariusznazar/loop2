@@ -75,6 +75,7 @@ function cellsOf(table) {
     );
 }
 
+// decision: D-428 "For each game map an overlay adds and each reference program, the map check of the balance instrument prints the share of map runs solved on the seeds 1 to 500, the median game minutes of the solved map runs, the failures by cause and the balance of the earning loop"
 test("the table has one column for each figure of the check and one row per map and program, the map by its name in the game's data", () => {
   const [header, first, second] = cellsOf(renderTable(MADE_UP_ROWS, BASIS));
   assert.equal(header.length, 9);
@@ -119,6 +120,7 @@ test("the table has one column for each figure of the check and one row per map 
   ]);
 });
 
+// decision: D-428 "The table holds no condition, action or rule of any program"
 test("the table holds no text of a program's rules: no identifier of a reference program, and no condition, action or group name of the program appears in it", () => {
   const row = measureRow({
     mapId: "forest",
@@ -278,6 +280,7 @@ test("the check refuses no overlay, a map the overlays do not add and a program 
   assert.equal(MAPS.wasteland, undefined);
 });
 
+// decision: D-428 "It names each program by a label, `P1`, `P2` and so on, the program's place in the whole list of reference programs that the command `programs` prints, and never by the program's identifier"
 test("the check names each program by its number in the whole list of reference programs, whatever rows the flags narrow to, and prints no identifier", () => {
   const options = {
     practice: {},

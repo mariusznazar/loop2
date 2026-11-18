@@ -321,6 +321,7 @@ test("a sweep command gives the summary the engine gives for the same flags, and
   assert.equal(capped.header.seeds, "1-12");
 });
 
+// decision: D-429 "The instrument prints each result, or writes it to the file that a flag of its command names, and writes no file into the repository of its own accord"
 test("a sweep prints its result and writes no file, and with --out it writes the whole result, with the rows of the seeds, to that file alone", () => {
   const given = options({
     seeds: seedRange(1, 3),
@@ -503,6 +504,7 @@ test("a campaign command plays the player a description names, by its identifier
   );
 });
 
+// decision: D-429 "The instrument prints each result, or writes it to the file that a flag of its command names, and writes no file into the repository of its own accord"
 test("the programs command prints every reference program in the game's words, and with --out writes each as a file of the game's shape and all in words", () => {
   const plain = runCommand("programs", parseArgs(["programs"]).options);
   assert.deepEqual(plain.files, []);
