@@ -432,7 +432,7 @@ The coding guidelines loop2 adopts, the exemplar files of each kind of code, the
 
 Loop2 adopts the coding-guideline templates of its pinned the-way, while deferring automatic formatting of Python and Bash and separate exemplars for building, deployment, entry points, HTML and CSS; the session, saved-game and mail exemplars were selected with their first implementations (D-115, D-213, D-162), and any deferred existing kind is compared before its exemplar is selected. For the adopted linters, full-compliance source invariants apply without a transitional per-file no-regression invariant. The general coding quality checks cover all code, tests included, while testing rules and exemplars by level stand in `guidelines/testing.md`, together with the explicit-time example from `tests/sim/time.test.mjs`, which is no additional exemplar.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** none
 - **Verification:** tests: that ESLint, Ruff and ShellCheck fail the gate on any report in any file they check, with no allowance for a file that broke a rule before; that ESLint and Prettier reach the test files of the parts in their scope as they reach the other files. An agent compares a change with the part no test holds:
@@ -710,7 +710,7 @@ with a string literal, in Python `import` and `from … import` statements and a
 file and the line, an import of a built file under `dist/` is matched to its source under `src/`,
 and a package or a module from outside the repository is the file of no part.
 
-- **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
+- **Scope:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow · test-helpers
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: cross-part-imports. tests: the forms the test reads as imports —
@@ -752,7 +752,7 @@ pass unchecked, and by that road an import of the view came into a test of the s
 
 loop2 names a place on the author's disk outside the repository, such as the folder of its projects in the notes, the list of its tasks and the rules of a task's line, by the entry that stands for it under `loop2` in the locations file `~/.the-way/locations.json`, which are the entries `projects`, `tasks` and `task-rules`, and no file git tracks holds an absolute path on that disk. No file git tracks names a note the author keeps outside the repository or the folder it lies in, or a file of a repository its readers cannot reach, such as the private repository of the old loop game; what a reader needs of such a source stands in the foundation or in the file itself.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, product-foundation, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, product-foundation, test-helpers
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: tracked-file-private-paths · tracked-file-private-names. An agent compares a change with the part no invariant holds:
@@ -832,7 +832,7 @@ The rule runs as an ESLint run of its own, with the two size rules of ESLint alo
 - **Relations:** derives from D-28
 - **Verification:** invariants: function-and-file-size. tests: the thresholds of 200 lines of a function and 800 of a file, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it; the limit on a function reaching the application, the scripts, the tests, the balance instrument and the agent-workflow directories the linter of D-29 reaches, and the limit on a file off in the tests; the two exceptions standing whole and no other function or file. An agent compares a change with the part no invariant and no test holds:
   - complies: a size rule that the run of the rule applies and that the run on `eslint.config.mjs` does not
-  - violates: `max-lines-per-function` or `max-lines` added to `eslint.config.mjs`, or the run of the rule widened to the rule set of D-29, with no human-accepted change of D-29; a function or a file added to the exceptions of the run's configuration, or given a limit of its own, with no change of this decision
+  - violates: `max-lines-per-function` or `max-lines` added to `eslint.config.mjs`, or the run of the rule widened to the rule set of D-29, with no human-accepted change of D-29; a function or a file added to the exceptions of the run's configuration, or given a limit of its own, with no change of this decision; the files under `balance/` left out of the limit on a file, with no change of this decision
 - **Origin:** none
 
 *Rationale:* Nothing in the gate stopped a function or a file from growing: the set of the linter has no rule of size, and a review sees the difference of a change and never the sum, so each addition looked small. The line is the measure because it sees what a reader meets. A count of branches or of statements passes a long flat function, and the application has one of 596 lines with three branches. The thresholds were set after a trial run on the product's own code as it stood on 2026-11-13, a measurement the product's own people made and whose record is not open to a reader of the repository, counting lines of code without comments and blank lines. In the application seven functions broke 200 lines, nine broke 150, and the same seven broke every threshold from 200 to 295; in the tests one function broke 200; in the scripts none broke 150. Fifteen files of the application broke 500 lines and one broke 800; in the scripts none broke 800; of the tests, 19 files broke 800 and every added case grows them, so the tests stand outside the limit on a file. 200 is the lowest threshold that leaves that set unchanged, so it keeps the limit as tight as the code allows without more exceptions. A function that stands a line under it asks for a split or an exception at the next line it grows. The two exceptions are the two cases where a split costs more than the length: a function whose length is nearly all functions nested in it, and a file that holds a trust boundary whole where it can be read at once. Any other code over a threshold that a change cannot bring under it without harm is put to the human as a proposed exception, and the change never enters one itself. The run is its own because the rule set of the linter is held to one set by D-29, and the invariant of this rule reads as violated while code stands over a threshold, so its test is marked as an expected failure; marked in the run of the linter, that test would take the whole check of the linter off the gate. Accepted with it: a second ESLint run in the gate, which parses the same files again.
@@ -861,7 +861,7 @@ The testing discipline loop2 adopts: the levels, shape and exemplars of tests, t
 
 Loop2 adopts the testing-guideline template of its pinned the-way in full, with only the departures of D-74, D-75, D-76, D-77, D-78, D-79, D-82, D-163, D-235, D-273 and D-422. Its testing rules and the recipes of its levels stand in `guidelines/testing.md`, read before writing or changing a test.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** none
 - **Verification:** an agent compares a change with the decision:
@@ -921,7 +921,7 @@ Permanent refusal tests for font files and the local interface preview server ar
 
 `npm test` without arguments runs the full gate; `npm test -- <test file>` accepts exactly one test file and runs only it, building the game first for Node but not for Python, without other tests, the foundation check or the check of the instruction files. A focused run with no executed test or a file that is not a test fails, and only the full gate suffices before a request. There is no configuration file limiting the whole run; a whole-run limit is reconsidered on a concrete problem with diagnosis time or a hanging run, while new or changed tests still bound their own waiting.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** invariants: focused-test-execution. tests: `npm test` without arguments running the build, the Node tests, the Python tests, the foundation check and the check of the instruction files; with one test file, refusing a second file and running only the one, after a build for a Node file and with none for a Python file, with no other test, no foundation check and no check of the instruction files, a failure of that file failing the run. An agent compares a change with the part no invariant and no test holds:
@@ -936,7 +936,7 @@ Permanent refusal tests for font files and the local interface preview server ar
 
 A new or changed test case has a name describing its behaviour and condition, and readable preparation, action and assertion phases protecting one behaviour; it may use a table of explicitly named variants of that behaviour. It neither reproduces the product algorithm nor chooses its expectation from the obtained result.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** an agent compares a change with the decision:
@@ -966,7 +966,7 @@ The npm registry has no separate contract test: the real dependency audit in the
 
 Loop2 tests stand at three levels: unit test and integration test as defined in its glossary, and smoke test in its ordinary meaning. A smoke test starts the built application through its entry point or a container and checks readiness or a simple response, without proving a complete game journey; a level follows the resources exercised, not the test directory.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** an agent compares a change with the decision:
@@ -981,7 +981,7 @@ Loop2 tests stand at three levels: unit test and integration test as defined in 
 
 The expectation of a test comes from the loop2 foundation — its decisions, invariants and glossary — from a relation the code under test does not compute, or from a crash counted as a failure; a human's judgement is a source once a decision of the foundation holds it. What a test needs of the requirement it checks stands in the foundation, so no comment is required to name the source of a value, a test comment names as the source of an expectation no document outside the foundation — a task document and a copy of one kept in the record of a task cycle included — and a comment that carries nothing the code needs is not written.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** narrows D-73
 - **Verification:** an agent compares a change with the decision:
@@ -996,7 +996,7 @@ The expectation of a test comes from the loop2 foundation — its decisions, inv
 
 Tests keep Node and Python, their existing directories, and the names `*.test.mjs` and `test_*.py`. Every `*.test.mjs` file under `tests/` is selected by `npm test`, and the gate's runner, `.the-way/gate/run_tests.py`, runs each directory that holds a `test_*.py` file git tracks, so a new `test_*.py` file runs once git tracks it.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** derives from D-73
 - **Verification:** invariants: node-test-selection. An agent compares a change with the part no invariant holds:
@@ -1011,7 +1011,7 @@ Tests keep Node and Python, their existing directories, and the names `*.test.mj
 
 A new or changed simulation test supplies explicit state, elapsed time and seed and uses the real game random generator without waiting for game minutes on the computer. A test of file or HTTP failure uses real temporary files or a real local server, waits for a readiness event or condition with a time limit and error handling, and cleans up its files, servers and processes even after failure; polling a condition is allowed, and controlled responses test reactions to forced failures without proving the replaced operation. The HTTP helper in `tests/http.test.mjs` keeps these waiting and cleanup rules.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** derives from D-73 · derives from D-04 · derives from D-22
 - **Verification:** an agent compares a change with the decision:
@@ -1026,7 +1026,7 @@ A new or changed simulation test supplies explicit state, elapsed time and seed 
 
 The unit exemplar is the case "the count of a hand-made backpack is the pieces of all items together" in `tests/sim/traits.test.mjs`, for explicit data and independent arithmetic, not time or a whole game. The integration exemplar is "raw and encoded traversal cannot expose files outside dist/public" in `tests/http.test.mjs`, for real requests and visible refusal, not the whole file or its timeout and cleanup helpers. The smoke exemplar is `test_occupied_address_exits_without_reporting_ready` in `tests/invariants/test_account_server_occupied_address.py`, for normal-start controls around forced refusal, not full HTTP, container or gameplay evidence.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow, test-helpers
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow, test-helpers
 - **Based on:** none
 - **Relations:** derives from D-81
 - **Verification:** an agent compares a change with the decision:
@@ -1879,7 +1879,7 @@ progress of a game and no housekeeping, and an agent adds alone an item that fit
 identifier of a thing included, while anything that points to a person takes the human's consent.
 A change of the role of an account and each operation of the owner panel are such changes: each leaves one line with the number of the account changed, written after a change only, and no address and no number of the account of the owner who acted.
 
-- **Scope:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Scope:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28
 - **Verification:** tests: the rules on failures and logs as the server and the operator's commands
@@ -1945,7 +1945,7 @@ through the default print of Node.js or Python, which writes what nothing handle
 `deploy/loop2-backup` and `scripts/restore-trial.mjs` already have a last-resort handling of their own, which the sentences of this decision above ask no more of, though
 the last two touch those data and write no kind or code.
 
-- **Scope:** browser-view · account-server · build-tools · deployment
+- **Scope:** browser-view · account-server · build-tools · balance-tools · deployment
 - **Based on:** node-uncaught-default-print · python-uncaught-default-print · html-exception-reporting
 - **Relations:** derives from D-252
 - **Verification:** tests: the server, `account-block`, `account-previous-save`, `account-role` and
@@ -11491,18 +11491,18 @@ The reference programs, the programs that the tests of the simulation and the ba
 
 ### D-428 — What does the map check of the balance instrument print?
 
-For each game map an overlay adds and each reference program, the map check of the balance instrument prints the share of map runs solved on the seeds 1 to 500, the median game minutes of the solved map runs, the failures by cause and the balance of the earning loop, which is what a map run takes from the chest, what it puts into it and how often the character dies. The table holds no condition, action or rule of any program.
+For each game map an overlay adds and each reference program, the map check of the balance instrument prints the share of map runs solved on the seeds 1 to 500, the median game minutes of the solved map runs, the failures by cause and the balance of the earning loop, which is what a map run takes from the chest, what it puts into it and how often the character dies. The table holds no condition, action or rule of any program. It names each program by a label, `P1`, `P2` and so on, the program's place in the whole list of reference programs that the command `programs` prints, and never by the program's identifier, which can state the rules of its program in other words.
 
 - **Scope:** balance-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a row of the table with the share solved, the median minutes, the deaths by cause and the runs at the cap, and the pieces taken, the pieces put in and the share of deaths of the earning loop, for one map and one reference program
-  - violates: a row or a column that shows the rules of a program, or the conditions or the actions it holds; a table without the balance of the earning loop
+- **Verification:** tests: the table's columns, one for each figure of the check, the balance of the earning loop among them; a row holding the figures of its own map and its own program, the program measured with the chest its take list asks and the earning loop started with the resurrection ready; no identifier of a reference program and no text of its rules in the table; a program named by its place in the whole list of reference programs, whatever rows a flag narrows the check to. An agent compares a change with the part no test holds:
+  - complies: a row for each map an overlay adds and each reference program, with the share solved measured on the seeds 1 to 500
+  - violates: a share solved measured on other seeds, or a map an overlay adds or a reference program left out of the rows, with no change of this decision
 - **Origin:** none
 
-*Rationale:* the table goes to a person who is to play the game, and a program that solves a map would give that person the solution; the share, the minutes, the causes of failure and the balance say how the map behaves, and the programs stay with the agent. The balance of the earning loop stands in the same table because it is wanted for every map, so no map needs a separate command of the loop.
-*Rejected:* a table without the balance of the earning loop — the balance would have to be computed with a separate command of the loop for each map; a table without a skill that describes the instrument — the session that defines a package would look for the commands itself and guess how to work with them.
+*Rationale:* the table goes to a person who is to play the game, and a program that solves a map would give that person the solution; the share, the minutes, the causes of failure and the balance say how the map behaves, and the programs stay with the agent. The balance of the earning loop stands in the same table because it is wanted for every map, so no map needs a separate command of the loop. A name can say what a program does in other words, so the table names a program by a label that says nothing of it, and the agent keeps the key from label to name.
+*Rejected:* a table without the balance of the earning loop — the balance would have to be computed with a separate command of the loop for each map; a table without a skill that describes the instrument — the session that defines a package would look for the commands itself and guess how to work with them; names for the reference programs that say nothing of their rules, the table keeping the names — every program written later would have to keep its name free of its rules, and the tests, the player descriptions and the skill that name the programs would change, while a label closes the leak in the one place where the table is made.
 
 ### D-429 — Do the results of the balance instrument's measurements enter the repository?
 
@@ -11511,8 +11511,8 @@ The results of the measurements of the balance instrument do not enter the repos
 - **Scope:** balance-tools
 - **Based on:** none
 - **Relations:** none
-- **Verification:** an agent compares a change with the decision:
-  - complies: a command of the instrument that prints its result, or writes it to the path given in a flag
+- **Verification:** tests: a sweep and the command that lists the reference programs printing their result and writing no file, and with `--out` writing to the path given and to no other. An agent compares a change with the part no test holds:
+  - complies: any other command of the instrument that prints its result, or writes it to the path given in a flag
   - violates: a command of the instrument that writes a result to a fixed path in the repository; a file of results of a measurement committed beside the instrument
 - **Origin:** none
 

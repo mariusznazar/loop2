@@ -582,7 +582,7 @@ Every `*.test.mjs` file under `tests/` is selected for execution by `npm test`.
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-83
-- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow
 - **Violated:** no
 
 ## focused-test-execution
