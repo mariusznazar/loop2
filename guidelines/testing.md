@@ -1,7 +1,7 @@
 # Testing guidelines — loop2
 
 - **Discipline:** testing
-- **Applies to:** simulation · browser-view · account-server · build-tools · deployment · agent-workflow · test-helpers
+- **Applies to:** simulation · browser-view · account-server · build-tools · balance-tools · deployment · agent-workflow · test-helpers
 
 ## When to read
 
@@ -35,6 +35,7 @@ Poziom wynika z zasobów używanych przez test, nie z katalogu.
 | browser-view | W obliczaniu rysunku i list z danych gry oraz w zdarzeniach, fokusie i SVG prawdziwej przeglądarki, których ani ręczny model dokumentu, ani gotowa imitacja (jsdom) nie dowodzi. |
 | account-server | W połączeniach: HTTP, plikach gry i starcie procesu. |
 | build-tools | W połączeniach: plikach, procesach i rejestrze npm. |
+| balance-tools | W obliczeniach na zbudowanej symulacji gry: przebiegach rozgrywek z danego ziarna, ich sumach i zgodności wyniku z tym, co daje sama gra. |
 | deployment | W połączeniach: git, kontenerze i serwerze. |
 | agent-workflow | W zgodności plików repozytorium: kopiach skilli i instrukcjach. |
 | test-helpers | W połączeniach: poleceniach, procesach i plikach repozytorium, które uruchamia dla testów innych części. |
@@ -358,8 +359,8 @@ mutacyjnego ma osobną kontrolę `tests/quality/test_mutation_test_selection.py`
 
 ### unit test
 
-- **Purpose:** Reguły symulacji i logika widoku w pamięci, także kilku funkcji razem; bez sieci, plików danych testu, procesów i przeglądarki. Import zbudowanego modułu nie jest operacją na danych testowych w pliku. Test ekranu w React idzie na jsdom przez `tests/view/page-document.mjs` i bierze z niego `assert`, tak samo pomocnik na jsdom. Ręczny model dokumentu ani jsdom nie dowodzi prawdziwych zdarzeń, fokusu ani SVG. (D-81, D-88, D-264, D-268)
-- **Files:** `tests/sim/` i `tests/view/`, pliki `*.test.mjs`, bez `tests/view/page-document.test.mjs` i `tests/view/memory-limit.test.mjs`, które uruchamiają procesy (integration test); poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
+- **Purpose:** Reguły symulacji, logika widoku i obliczenia przyrządu pomiarowego balansu na zbudowanej symulacji w pamięci, także kilku funkcji razem; bez sieci, plików danych testu, procesów i przeglądarki. Import zbudowanego modułu nie jest operacją na danych testowych w pliku. Test ekranu w React idzie na jsdom przez `tests/view/page-document.mjs` i bierze z niego `assert`, tak samo pomocnik na jsdom. Ręczny model dokumentu ani jsdom nie dowodzi prawdziwych zdarzeń, fokusu ani SVG. (D-81, D-88, D-264, D-268)
+- **Files:** `tests/sim/`, `tests/view/` i `tests/balance/`, pliki `*.test.mjs`, bez `tests/view/page-document.test.mjs` i `tests/view/memory-limit.test.mjs`, które uruchamiają procesy (integration test); poziomu nie wyznacza katalog. Włączanie do bramki opisuje Test files in the gate. (D-83)
 - **Shape:** Nazwa opisuje zachowanie i warunek; przygotowanie, działanie, sprawdzenie; jedno zachowanie, ewentualnie tabela jawnie nazwanych wariantów. Bez odtwarzania algorytmu produktu i wybierania oczekiwania po wyniku. (D-78)
 - **Doubles:** Brak zależności zewnętrznych do zastąpienia; kod pod testem i generator gry pozostają rzeczywiste. Własne zastępniki dokumentu tracą tylko pliki testów ekranów w React; test innego ekranu zachowuje swój. (D-84, D-264)
 - **Data:** Każdy przypadek ma własne dane, które zmienia; wspólne tylko niemodyfikowane dane i przygotowanie. Wartość rozstrzygająca oczekiwanie stoi w przypadku. (D-73)
@@ -447,6 +448,7 @@ może pokazywać rzeczywiście różne ryzyka.
 - `.the-way/gate/run_tests.py`
 - `tests/sim/`
 - `tests/view/`
+- `tests/balance/`
 - `tests/view/page-document.mjs`
 - `tests/view/memory-limit.mjs`
 - `tests/view/memory-limit.test.mjs`
