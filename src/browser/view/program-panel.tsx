@@ -15,7 +15,13 @@
  * groups is one memory of the page, `createFolding`, which the page makes once and gives to both
  * panels. Nothing runs when the module is imported.
  */
-import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  type RefObject,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MAPS } from "../sim/data/maps.js";
@@ -389,6 +395,201 @@ function EndQuestionSlot({
 }
 
 /**
+ * The head of the screen of a map run: the list „Program:” with the switch of the character, the
+ * list's actions, the question of „Zakończ” while it stands, the copy's section with its save buttons
+ * and the name field above the editor. A component of its own, so that ProgramPanelView stays under
+ * the threshold of a function; it holds no state, and it asks for every change through its props.
+ */
+type RunHeadProps = {
+  state: GameState;
+  /** The list's position of what the panel shows: „copy” or a saved program's number. */
+  value: string;
+  /** The saved program „Przełącz postać na ten program” switches to; null where that button does not stand. */
+  switchTo: ProgramId | null;
+  copyShown: boolean;
+  unsaved: boolean;
+  endQuestion: EndQuestionSource | null;
+  naming: Naming | null;
+  refusal: ProgramNameRefusal | null;
+  actions: PanelActions;
+  list: RefObject<HTMLSelectElement | null>;
+  renameButton: RefObject<HTMLButtonElement | null>;
+  deleteButton: RefObject<HTMLButtonElement | null>;
+  nameInput: RefObject<HTMLInputElement | null>;
+  onRename: () => void;
+  onSaveNew: () => void;
+  onSaveName: () => void;
+  onRemove: () => void;
+  onNameChange: (value: string) => void;
+};
+
+function RunHead({
+  state,
+  value,
+  switchTo,
+  copyShown,
+  unsaved,
+  endQuestion,
+  naming,
+  refusal,
+  actions,
+  list,
+  renameButton,
+  deleteButton,
+  nameInput,
+  onRename,
+  onSaveNew,
+  onSaveName,
+  onRemove,
+  onNameChange,
+}: RunHeadProps) {
+  const run = state.run;
+  const owner =
+    copyShown && run
+      ? programById(state.programs, run.copy.programId)
+      : undefined;
+  const lacks =
+    copyShown && owner !== undefined && programHasChangesCopyLacks(state);
+  return (
+    <>
+      <div className="program-list">
+        <span className="program-list-label">Program:</span>
+        <ReactSelectList
+          label="Program:"
+          options={programListOptions(state)}
+          value={value}
+          selectRef={list}
+          onChange={(event) =>
+            actions.show(
+              event.target.value === COPY_VALUE
+                ? { kind: "copy" }
+                : { kind: "saved", programId: Number(event.target.value) },
+            )
+          }
+        />
+      </div>
+      {switchTo === null ? null : (
+        <ReactButton
+          text="Przełącz postać na ten program"
+          kind="destructive"
+          onClick={() => {
+            actions.switchProgram(switchTo);
+            // The button is gone now; focus goes to the list.
+            list.current?.focus();
+          }}
+        />
+      )}
+      <div className="program-actions">
+        <ReactButton text="Nowy program" onClick={actions.createProgram} />
+        {copyShown ? null : (
+          <>
+            <ReactButton
+              text="Zmień nazwę"
+              buttonRef={renameButton}
+              onClick={onRename}
+            />
+            {/* „Usuń” deletes the program: a destructive button (D-44). */}
+            <ReactButton
+              text="Usuń"
+              kind="destructive"
+              buttonRef={deleteButton}
+              disabled={state.programs.length === 1}
+              onClick={onRemove}
+            />
+          </>
+        )}
+      </div>
+      {endQuestion === null ? null : (
+        <EndQuestionSlot state={state} source={endQuestion} />
+      )}
+      {copyShown && run ? (
+        <div className="copy-section">
+          <h2 className="copy-heading">
+            {`Kopia: ${owner ? owner.name : (run.copy.deletedName ?? "")}`}
+          </h2>
+          {unsaved ? (
+            <p className="copy-line">Niezapisane zmiany w kopii.</p>
+          ) : null}
+          <div className="copy-save">
+            {owner ? (
+              <ReactButton
+                text="Zapisz w programie"
+                disabled={!unsaved}
+                onClick={() => {
+                  actions.saveCopy();
+                  // The button is inactive now; focus goes to the list.
+                  list.current?.focus();
+                }}
+              />
+            ) : null}
+            <ReactButton
+              text="Zapisz jako nowy program"
+              disabled={!unsaved}
+              onClick={onSaveNew}
+            />
+            {owner ? (
+              <ReactButton
+                text="Porzuć zmiany"
+                kind="destructive"
+                disabled={!unsaved}
+                onClick={() => {
+                  actions.discardCopy();
+                  list.current?.focus();
+                }}
+              />
+            ) : null}
+            {lacks && owner ? (
+              <p className="copy-line">
+                {copyLacksSentence(owner.name, unsaved)}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+      {naming === null ? null : (
+        <div className="program-name">
+          <ReactTextField
+            label="Nazwa programu"
+            hint="Nazwa programu"
+            error={refusal === null ? null : NAME_MESSAGES[refusal]}
+            value={naming.value}
+            onChange={(event) => onNameChange(event.target.value)}
+            inputRef={nameInput}
+          />
+          <ReactButton text="Zapisz" onClick={onSaveName} />
+        </div>
+      )}
+    </>
+  );
+}
+
+/**
+ * The head of the screen Programy: the sentence about a waiting map run, when the game state holds
+ * one, and the name of the saved program the page names. It holds no state.
+ */
+function ProgramsHead({
+  state,
+  shown,
+}: {
+  state: GameState;
+  shown: ShownProgram;
+}) {
+  const run = state.run;
+  const saved =
+    shown.kind === "saved"
+      ? (programById(state.programs, shown.programId) ?? state.programs[0])
+      : state.programs[0];
+  return (
+    <>
+      {run === null ? null : (
+        <p className="program-run-note">{runNoteText(run)}</p>
+      )}
+      <h2 className="program-title">{saved.name}</h2>
+    </>
+  );
+}
+
+/**
  * The panel drawn from the game state and the program shown. In `run` mode it holds the list
  * „Program:”, the actions of the list, the copy's section and the name field above the editor; in
  * `programs` mode the sentence of a waiting map run, the program's name and its trip plan. Both hold
@@ -443,10 +644,6 @@ export function ProgramPanelView({
   const run = state.run;
   const content = shownContent(state, shown);
   const copyShown = shown.kind === "copy" && run !== null;
-  const owner =
-    copyShown && run
-      ? programById(state.programs, run.copy.programId)
-      : undefined;
   const unsaved = copyShown && copyHasUnsavedChanges(state);
 
   // The name field and the open rule belong to the program shown: another shown leaves them, and a
@@ -529,6 +726,10 @@ export function ProgramPanelView({
     }
   }
 
+  function changeName(value: string): void {
+    if (naming !== null) setNaming({ ...naming, value });
+  }
+
   function remove(): void {
     if (shown.kind !== "saved" || state.programs.length === 1) return;
     actions.deleteProgram(shown.programId);
@@ -542,15 +743,10 @@ export function ProgramPanelView({
     setOpen(null);
   }
 
-  const switchStands =
-    run !== null && shown.kind === "saved" && canSwitchTo(state, shown);
-  const lacks =
-    copyShown && owner !== undefined && programHasChangesCopyLacks(state);
-  const saved =
-    shown.kind === "saved"
-      ? (programById(state.programs, shown.programId) ?? state.programs[0])
-      : state.programs[0];
-
+  const switchTo =
+    run !== null && shown.kind === "saved" && canSwitchTo(state, shown)
+      ? shown.programId
+      : null;
   const rulePanel =
     followed !== null ? (
       <RulePanelView
@@ -563,131 +759,35 @@ export function ProgramPanelView({
       />
     ) : null;
 
-  const runHead =
+  const head =
     mode === "run" ? (
-      <>
-        <div className="program-list">
-          <span className="program-list-label">Program:</span>
-          <ReactSelectList
-            label="Program:"
-            options={programListOptions(state)}
-            value={key}
-            selectRef={list}
-            onChange={(event) =>
-              actions.show(
-                event.target.value === COPY_VALUE
-                  ? { kind: "copy" }
-                  : { kind: "saved", programId: Number(event.target.value) },
-              )
-            }
-          />
-        </div>
-        {switchStands && shown.kind === "saved" ? (
-          <ReactButton
-            text="Przełącz postać na ten program"
-            kind="destructive"
-            onClick={() => {
-              actions.switchProgram(shown.programId);
-              // The button is gone now; focus goes to the list.
-              list.current?.focus();
-            }}
-          />
-        ) : null}
-        <div className="program-actions">
-          <ReactButton text="Nowy program" onClick={actions.createProgram} />
-          {copyShown ? null : (
-            <>
-              <ReactButton
-                text="Zmień nazwę"
-                buttonRef={renameButton}
-                onClick={toggleRename}
-              />
-              {/* „Usuń” deletes the program: a destructive button (D-44). */}
-              <ReactButton
-                text="Usuń"
-                kind="destructive"
-                buttonRef={deleteButton}
-                disabled={state.programs.length === 1}
-                onClick={remove}
-              />
-            </>
-          )}
-        </div>
-        {endQuestion === null ? null : (
-          <EndQuestionSlot state={state} source={endQuestion} />
-        )}
-        {copyShown && run ? (
-          <div className="copy-section">
-            <h2 className="copy-heading">
-              {`Kopia: ${owner ? owner.name : (run.copy.deletedName ?? "")}`}
-            </h2>
-            {unsaved ? (
-              <p className="copy-line">Niezapisane zmiany w kopii.</p>
-            ) : null}
-            <div className="copy-save">
-              {owner ? (
-                <ReactButton
-                  text="Zapisz w programie"
-                  disabled={!unsaved}
-                  onClick={() => {
-                    actions.saveCopy();
-                    // The button is inactive now; focus goes to the list.
-                    list.current?.focus();
-                  }}
-                />
-              ) : null}
-              <ReactButton
-                text="Zapisz jako nowy program"
-                disabled={!unsaved}
-                onClick={toggleSaveNew}
-              />
-              {owner ? (
-                <ReactButton
-                  text="Porzuć zmiany"
-                  kind="destructive"
-                  disabled={!unsaved}
-                  onClick={() => {
-                    actions.discardCopy();
-                    list.current?.focus();
-                  }}
-                />
-              ) : null}
-              {lacks && owner ? (
-                <p className="copy-line">
-                  {copyLacksSentence(owner.name, unsaved)}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-        {naming === null ? null : (
-          <div className="program-name">
-            <ReactTextField
-              label="Nazwa programu"
-              hint="Nazwa programu"
-              error={refusal === null ? null : NAME_MESSAGES[refusal]}
-              value={naming.value}
-              onChange={(event) =>
-                setNaming({ ...naming, value: event.target.value })
-              }
-              inputRef={nameInput}
-            />
-            <ReactButton text="Zapisz" onClick={saveName} />
-          </div>
-        )}
-      </>
+      <RunHead
+        state={state}
+        value={key}
+        switchTo={switchTo}
+        copyShown={copyShown}
+        unsaved={unsaved}
+        endQuestion={endQuestion}
+        naming={naming}
+        refusal={refusal}
+        actions={actions}
+        list={list}
+        renameButton={renameButton}
+        deleteButton={deleteButton}
+        nameInput={nameInput}
+        onRename={toggleRename}
+        onSaveNew={toggleSaveNew}
+        onSaveName={saveName}
+        onRemove={remove}
+        onNameChange={changeName}
+      />
     ) : (
-      <>
-        {run === null ? null : (
-          <p className="program-run-note">{runNoteText(run)}</p>
-        )}
-        <h2 className="program-title">{saved.name}</h2>
-      </>
+      <ProgramsHead state={state} shown={shown} />
     );
 
   return (
     <>
-      {runHead}
+      {head}
       <div className="program-editing" ref={editing}>
         {mode === "programs" ? (
           <TripPlanView
