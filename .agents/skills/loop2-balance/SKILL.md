@@ -102,15 +102,16 @@ Every map goes through this check before a package is defined.
    identifier stay with the agent. A row reads:
 
    ```
-   | <map name> | P22 | <share> % | <minutes> | <cause n, cause n> | <runs> | <pieces> | <pieces> | <share> % |
+   | <map name> | P<n> | <share> % | <minutes> | <cause n, cause n> | <runs> | <pieces> | <pieces> | <share> % |
    ```
 
    Every row runs with a new character's skills unless `--practice` or `--ranks` say otherwise, and
    those flags apply to all rows alike. A program that needs a branch of the skills measures near
-   zero without it: `P22` lives on the branch „Czysty płomień” and on Pustkowie solved 0 of 50
-   seeds without it and 47 of 50 with `--ranks cleanFlame=1`. Run such a program again with
-   `--ranks` and `--programs <identifier>` and tell the person that its row was measured with the
-   branch, before the person reads a row near zero as "the map cannot be passed".
+   zero without it. Where the comment of a program in `tests/sim/reference-programs.mjs` says it
+   depends on a branch, run it again with `--ranks` and `--programs <identifier>`, and tell the
+   person only that the row was measured with the skills the program needs. Name no branch, no
+   skill and no rank to the person, who is not to learn which of the character's skills passes a
+   map. That sentence keeps a row near zero from reading as "the map cannot be passed".
 4. The programs in the table are the reference programs. Beyond them, the agent tries to write a
    program that passes the map without the thing the map asks about, for example a map that asks for
    defeated wolf attacks, with a program that avoids the fights. Write each attempt as a file of the
