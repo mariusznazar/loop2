@@ -549,10 +549,12 @@ like a JSON line of the command pass into the file with the words the address ca
   where the database stayed busy longer than the wait; for any other failure of the database, a
   newer schema or a damaged file for example, the sentence gives no such advice, since a second
   run does not mend it; 2 wrong arguments, or an address without a single `@` with text on both
-  sides; 3 `LOOP2_DATABASE_PATH` names no existing account database file: no file, or a file in
-  which the server has set up no tables, whether it is empty, is no SQLite database or is one with
-  no schema version. The command never creates a database and writes nothing in such a file; only
-  the server sets a new one up; 4 no account has that address.
+  sides; 3 `LOOP2_DATABASE_PATH` names no existing account database file (the sentence says so
+  where there is no file), or names a file that exists but holds no account database set up by the
+  server (the sentence says that where the file is empty, is no SQLite database or is one with no
+  schema version). The command never sets up a database and writes nothing in such a file; the
+  commands `account-previous-save` and `account-role` do not refuse such a file, and set up a new
+  database in it; 4 no account has that address.
 - **What it touches.** It opens the account database beside the running application, makes one
   short change and closes it; the application keeps serving. It prints no password hash or
   session identifier, and of a database error only its kind and code. The address stays in the
