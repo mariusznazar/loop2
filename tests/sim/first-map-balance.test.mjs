@@ -2,14 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ACTIONS } from "../../dist/browser/sim/data/actions.js";
 import { CONDITIONS } from "../../dist/browser/sim/data/conditions.js";
-import { MAPS } from "../../dist/browser/sim/data/maps.js";
 import {
   advanceMinutes,
   createCharacter,
   send,
   setProgram,
 } from "../../dist/browser/sim/game.js";
-import { programFromRules } from "./program-fixture.mjs";
+import { forestDecent, forestNaive } from "./reference-programs.mjs";
 import { newKnowingGame } from "./understanding-fixture.mjs";
 
 // What a player who writes a program must be able to rely on in the first map: a loss there is a
@@ -28,40 +27,6 @@ const SEED_COUNT = 500;
  * long after minute 480. A map run still open after this many game minutes counts as not solved.
  */
 const MINUTES = 5000;
-const [stick, berry] = MAPS[mapId].resources.map((resource) => resource.id);
-
-const ALWAYS = { kind: "always" };
-const rule = (condition, action) => ({ condition, action });
-const below = (kind, value) => ({ kind, value });
-const itemBelow = (item, value) => ({ kind: "itemBelow", item, value });
-const gather = (resource) => ({ kind: "gather", resource });
-const walkTo = (resource) => ({ kind: "walkTo", resource });
-
-/** Six rules: the editor's first thoughts of a new player, the character never leaves its tile. */
-const NAIVE_PROGRAM = programFromRules(
-  rule(ALWAYS, { kind: "explore" }),
-  rule(below("satietyBelow", 50), { kind: "eat" }),
-  rule(below("temperatureBelow", 36.5), { kind: "lightCampfire" }),
-  rule(ALWAYS, { kind: "craftCampfire" }),
-  rule(itemBelow(stick, 8), gather(stick)),
-  rule(ALWAYS, gather(berry)),
-);
-
-/** Twelve rules: eats, keeps a campfire and goes back to it, looks for sticks and berries when low. */
-const DECENT_PROGRAM = programFromRules(
-  rule(below("satietyBelow", 50), { kind: "eat" }),
-  rule(below("satietyBelow", 50), gather(berry)),
-  rule(below("satietyBelow", 50), walkTo(berry)),
-  rule(below("temperatureBelow", 36), { kind: "lightCampfire" }),
-  rule(below("temperatureBelow", 35.5), { kind: "walkToCampfire" }),
-  rule(below("campfireLeftBelow", 1), { kind: "craftCampfire" }),
-  rule(itemBelow(stick, 8), gather(stick)),
-  rule(itemBelow(stick, 8), walkTo(stick)),
-  rule(itemBelow(berry, 3), gather(berry)),
-  rule(itemBelow(berry, 3), walkTo(berry)),
-  rule(ALWAYS, { kind: "explore" }),
-  rule(ALWAYS, { kind: "wander" }),
-);
 
 /** How many of the named seeds the program solves Skraj lasu on, each map run played from the entrance. */
 function solvedSeeds(program) {
@@ -94,8 +59,8 @@ test("precondition: the game these map runs start from holds every action and co
 });
 
 test("precondition: the two programs have the six and the twelve rules they are named for", () => {
-  assert.equal(NAIVE_PROGRAM.groups[0].rules.length, 6);
-  assert.equal(DECENT_PROGRAM.groups[0].rules.length, 12);
+  assert.equal(forestNaive.groups[0].rules.length, 6);
+  assert.equal(forestDecent.groups[0].rules.length, 12);
 });
 
 test("a map run on each of the named seeds takes its own seed", () => {
@@ -109,7 +74,7 @@ test("a map run on each of the named seeds takes its own seed", () => {
 
 // invariant: first-map-balance
 test("on Skraj lasu the decent program solves the map on at least 95 % of the named seeds", () => {
-  const solved = solvedSeeds(DECENT_PROGRAM);
+  const solved = solvedSeeds(forestDecent);
   assert.ok(
     solved >= 0.95 * SEED_COUNT,
     `solved ${solved} of ${SEED_COUNT} seeds`,
@@ -118,7 +83,7 @@ test("on Skraj lasu the decent program solves the map on at least 95 % of the na
 
 // invariant: first-map-balance
 test("on Skraj lasu the naive program solves the map on at most half of the named seeds", () => {
-  const solved = solvedSeeds(NAIVE_PROGRAM);
+  const solved = solvedSeeds(forestNaive);
   assert.ok(
     solved <= 0.5 * SEED_COUNT,
     `solved ${solved} of ${SEED_COUNT} seeds`,
