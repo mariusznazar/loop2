@@ -1636,7 +1636,7 @@ An agent uses Playwright MCP, the fallback way of D-417, only from a session of 
 When another program holds the port the local start picked for its server by the time the server listens, the start ends as it ends when its server cannot start: the server writes its own failure line and the start ends with the server's exit code. The start announces no address, passes no request of a browser to that program and tries no other port; a person or an agent runs `npm run local` again and gets a new port.
 
 - **Scope:** build-tools · agent-workflow
-- **Based on:** none
+- **Based on:** https://nodejs.org/docs/latest-v24.x/api/diagnostics_channel.html § Built-in Channels, NET — "Stability: 1 - Experimental"; read 2026-11-18
 - **Relations:** derives from D-255
 - **Verification:** tests: a start whose server finds its port held by a program of another process ending with the server's one failure line and its exit code, with no address, no ready server and no proxy of the start left standing for a browser.
 - **Origin:** none
