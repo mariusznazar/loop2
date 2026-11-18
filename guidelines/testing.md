@@ -303,15 +303,24 @@ sprawdzanie w głowie autora (D-95); nie osłabiamy audytu.
 
 ### Flaky tests
 
-- **Decision:** D-73 · D-432
+- **Decision:** D-73
 - **Invariant:** none
 - **Good:** Powtórzenie służy ustaleniu przyczyny różnych wyników na tym samym kodzie.
 - **Bad:** Późniejszy sukces usuwa z raportu wcześniejszą porażkę.
 
 Ponowne uruchomienie niestabilnego testu służy diagnozie, nigdy uzyskaniu
 zielonej bramki. Wyłączenie lub usunięcie podlega Changing an existing test.
-Test padający losowo bez ustalonej przyczyny dostaje wpis w rejestrze
-`tests/flaky-tests.md`, a wpis znika, gdy przyczyna się wyjaśni.
+
+### Register of flaky tests
+
+- **Decision:** D-432
+- **Invariant:** none
+- **Good:** Test, który padł losowo bez związku ze zmianą kodu i którego przyczyny nie ustalono, ma wpis w rejestrze z nazwą, próbami i tym, na co patrzeć.
+- **Bad:** Wiedza o takim teście zostaje tylko w raporcie zamkniętego cyklu albo w komentarzu przy teście.
+
+Test padający losowo bez związku ze zmianą kodu i bez ustalonej przyczyny
+dostaje wpis w rejestrze `tests/flaky-tests.md`, a wpis znika, gdy przyczyna
+się wyjaśni.
 
 ### Tests on a document imitation
 

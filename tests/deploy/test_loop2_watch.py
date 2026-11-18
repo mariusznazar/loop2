@@ -1169,9 +1169,11 @@ class TheDockerCommands(WithFixture):
 
     def test_a_docker_that_never_answers_is_cut_off_and_read_as_down(self):
         # decision: D-356 "A watcher script on the server, outside the game container, run by cron every few minutes, reads the state and the health of the game's containers"
-        # The break: a limit that cuts the quick `inspect` calls of a busy computer, so that a
-        # healthy game is read as down; one limit covers `inspect` and `logs` alike.
-        for pattern, wait in (("inspect *", "1"), ("logs *", "5")):
+        wait_that_cuts_inspect = "1"
+        wait_that_leaves_inspect_time_to_answer = "5"
+        waits = (("inspect *", wait_that_cuts_inspect),
+                 ("logs *", wait_that_leaves_inspect_time_to_answer))
+        for pattern, wait in waits:
             with self.subTest(pattern):
                 fixture = self.primed()
                 fixture.write_copy(DOCKER_WAIT_SECONDS=wait, KILL_WAIT_SECONDS="1")

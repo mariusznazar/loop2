@@ -9,9 +9,8 @@ rozdział „Flaky tests”.
 ## Zasada wspólna
 
 Przy porażce testu z tego rejestru zachowaj cały zapis padniętego przebiegu (log bramki albo
-wyjście testu) i dopiero potem uruchamiaj go ponownie. Przy teście okna strażnika i przy teście
-sygnału kopii jedyną wskazówką był ślad w zapisie jednego padniętego przebiegu. Ponowne
-uruchomienie służy diagnozie, nigdy zielonej bramce.
+wyjście testu), bo przy teście okna strażnika i przy teście sygnału kopii jedyną wskazówką był
+ślad w zapisie jednego padniętego przebiegu.
 
 ## Skąd pochodzą liczby
 
@@ -26,17 +25,17 @@ Warunki prób poprzedniego cyklu, każdy test w części z nich: każde uruchomi
 procesie i policzone; sam; pod ok. 40 wirującymi procesami node (2 na procesor logiczny); pod
 24 pętlami startującymi bez przerwy krótkie procesy (ponad 30 tysięcy startów); pod pętlami
 uruchamiającymi całe pliki testów; pod obciążeniem dysku, gdzie test z niego korzysta. Żadne
-obciążenie nie wywołało porażki.
+obciążenie nie wywołało porażki badanego testu.
 
 ## `tests/transport.test.mjs`, „transport refuses ambiguous proxy metadata before loading live sessions”
 
-- **Porażka:** `HTTP deadline exceeded` po 7678 ms przy terminie 5000 ms, w pierwszym pełnym
-  przebiegu w PR #88. Sam przypadek trwa 0,53–0,70 s.
+- **Porażka:** `HTTP deadline exceeded` po 7678 ms (czas całego przypadku) przy terminie 5000 ms,
+  w pierwszym pełnym przebiegu w PR #88. Sam przypadek trwa 0,53–0,70 s.
 - **Przyczyna:** nieustalona. Hipoteza, nie wynik: jedno żądanie zawisło na 5 s albo dłużej.
 - **Co próbowano:** 150 z 150 osobnych uruchomień w pięciu warunkach, 105 z 105 kopii z
   pomiarami, pięć przebiegów całego etapu Node. Pod 80 wirującymi procesami przypadek trwał
   5,8–9,4 s, a najwolniejsze pojedyncze żądanie nie przekroczyło 0,9 s. Pięć warunków według
-  raportu wykonawcy kroku 18, który przeczytano: sam; pod innymi testami Node w pętli; pod 40
+  raportu wykonawcy kroku 18: sam; pod innymi testami Node w pętli; pod 40
   i pod 80 wirującymi procesami node; pod 20 procesami zapisującymi pliki i wiersze SQLite.
 - **Na co patrzeć:** które żądanie przekroczyło termin. Metodę i ścieżkę podaje komunikat
   błędu pomocnika żądań: `HTTP deadline exceeded: <metoda> <ścieżka>`.
@@ -50,9 +49,11 @@ obciążenie nie wywołało porażki.
 - **Przyczyna:** nieustalona. Hipoteza: Windows nie uruchomił procesu atrapy pod obciążeniem.
   W tym samym przebiegu bramki druga atrapa też milczała, przebieg był o ok. 45% wolniejszy od
   sąsiednich, a w innych logach projektu Windows nie uruchamiał procesów z kodem 0xC0000142.
-- **Co próbowano:** 150 z 150 osobnych uruchomień w pięciu warunkach, 6 w przebiegach całego
-  pliku pod najcięższym obciążeniem, 1000 startów atrapy samej i 400 pod pętlami startów, bez
-  złego startu.
+- **Co próbowano:** 150 z 150 osobnych uruchomień w pięciu warunkach, po 30 uruchomień (według
+  raportu wykonawcy kroku 19): sam; pod 40 wirującymi procesami node; pod 24 pętlami startującymi
+  krótkie procesy; pod 6 pętlami całych plików; pod 6 pętlami całych plików razem z 40
+  wirującymi procesami. Do tego 6 w przebiegach całego pliku pod najcięższym obciążeniem, 1000
+  startów atrapy samej i 400 pod pętlami startów, bez złego startu.
 - **Na co patrzeć:** czy brakuje wpisu którejś atrapy, choć strażnik ją wywołał; czy inne
   atrapy tego przebiegu też milczą; jak długo trwał przebieg wobec sąsiednich.
 
@@ -73,8 +74,9 @@ obciążenie nie wywołało porażki.
 
 ## `tests/account-api.test.mjs`, „reportBrowserFailure posts the three words as one JSON POST to the report path, with no keepalive, same-origin credentials and no redirect”
 
-- **Porażka:** raz na `2 !== 1`, w sprawdzeniu liczby zarejestrowanych żądań (wtedy linia 1221),
-  pod skrajnym, łączonym obciążeniem w uruchomieniach wykonawcy kroku 18 poprzedniego cyklu.
+- **Porażka:** raz na `2 !== 1`, w sprawdzeniu `assert.equal(seen.length, 1)`, linia 1234
+  (przypadek zaczyna się w linii 1221), pod skrajnym, łączonym obciążeniem w uruchomieniach
+  wykonawcy kroku 18 poprzedniego cyklu.
 - **Przyczyna:** nieustalona. Test nie był badany.
 - **Co próbowano:** nic.
 - **Na co patrzeć:** który przypadek pada i czy obciążenie jest jedyną wspólną cechą.
