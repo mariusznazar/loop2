@@ -28,12 +28,23 @@ const FUNCTION_EXCEPTION = {
 };
 
 // Every pattern some entry of the linter's configuration gives to `files` is a file the linter
-// lints, and the entries that hold only `ignores` are its global ignores.
+// lints, and the entries that hold only `ignores` (and a `name`) are its global ignores. An entry
+// whose `ignores` ESLint reads as local to it, one that holds `files` or another key beside
+// `ignores`, is a form this run cannot read the way the linter does, so it stops the run.
 function lintedPatterns(config) {
   const files = [];
   const ignores = [];
   for (const entry of config) {
-    if (entry.files !== undefined) {
+    if (entry.ignores !== undefined) {
+      const onlyIgnores = Object.keys(entry).every(
+        (key) => key === "ignores" || key === "name",
+      );
+      if (!onlyIgnores)
+        throw new Error(
+          "eslint.config.mjs holds an entry with ignores beside other keys, which this run cannot read",
+        );
+      ignores.push(...entry.ignores);
+    } else if (entry.files !== undefined) {
       for (const pattern of entry.files) {
         if (typeof pattern !== "string")
           throw new Error(
@@ -41,8 +52,6 @@ function lintedPatterns(config) {
           );
         if (!files.includes(pattern)) files.push(pattern);
       }
-    } else if (entry.ignores !== undefined) {
-      ignores.push(...entry.ignores);
     }
   }
   return { files, ignores };
