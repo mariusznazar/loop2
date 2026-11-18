@@ -1,0 +1,21 @@
+== 1 panel opened by + reguła
+"Zawsze | button pick-cell selected | tab=0"
+"Warunek / Zawsze || Czynność / Eksploruj"
+== 2 after ArrowRight, ArrowDown
+"Zdrowie poniżej | button pick-cell | tab=0"
+"Warunek / Zawsze || Czynność / Eksploruj"
+== 3 after Enter on that cell
+" |  | tab=0"
+"Warunek / Zdrowie poniżej || Liczba / pkt || Czynność / Eksploruj"
+== 4 after typing 35 and Enter
+"Eksploruj | button pick-cell selected | tab=0"
+"Warunek / Zdrowie poniżej || Liczba / pkt || Czynność / Ruch"
+== 5 after four ArrowRight in action grid
+"Obchódgałąź niewykupiona | button pick-cell greyed | tab=0"
+"Warunek / Zdrowie poniżej || Liczba / pkt || Czynność / Ruch"
+== 6 after Enter on the cell reached
+"Obchódgałąź niewykupiona | button pick-cell greyed | tab=0"
+"Warunek / Zdrowie poniżej || Liczba / pkt || Czynność / Ruch"
+== 7 after close button
+"⋮⋮1.1Zdrowie poniżej 35 pkt→Eksploruj20  | rule-list-row bar-unmet | tab=0"
+""

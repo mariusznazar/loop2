@@ -1,0 +1,6 @@
+before local-ignores exit 0 
+before files-and-ignores exit 0 
+before global-with-name exit 0 
+after local-ignores exit 1 Error: eslint.config.mjs holds an entry with ignores beside other keys, which this run cannot read
+after files-and-ignores exit 1 Error: eslint.config.mjs holds an entry with ignores beside other keys, which this run cannot read
+after global-with-name exit 0 
