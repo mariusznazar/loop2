@@ -3,6 +3,8 @@ import { normalizeEmail } from "./account-policy.js";
 import {
   AccountDatabase,
   type BlockOutcome,
+  isDatabaseBusy,
+  isNotAccountDatabase,
   type UnblockOutcome,
 } from "./database.js";
 import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
@@ -15,17 +17,27 @@ import { installLastResort, writeEvent, writeFailure } from "./log-line.js";
 //
 // It opens the existing account database of LOOP2_DATABASE_PATH beside the
 // running server, with the server's own opening rules, makes one change in one
-// transaction and closes it. It reads no other setting and prints no password
+// transaction and closes it. A file in which the server has set up no tables,
+// whether empty, no SQLite database or one with no schema version, is no
+// account database: the command refuses it as a missing file and writes
+// nothing in it (D-112). It reads no other setting and prints no password
 // hash or session identifier, and of a database error its kind and code alone.
 
 const usage =
   "Usage: node dist/server/account-block.js block|unblock <email address>";
 
 // Exit codes: 0 the account is in the requested state; otherwise nothing changed.
+// 3 stands for a path that names no account database, a missing file or a file
+// the server never set up, each with a sentence of its own; 1 for any other
+// failure of the database.
 const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitNoAccount = 4;
+const noFileSentence =
+  "LOOP2_DATABASE_PATH names no existing account database file. Nothing changed.";
+const noTablesSentence =
+  "LOOP2_DATABASE_PATH names a file that exists but holds no account database set up by the server. Nothing changed.";
 
 installLastResort("account-block");
 
@@ -58,15 +70,11 @@ function existingFile(path: string | undefined): string | null {
 }
 
 const path = existingFile(process.env.LOOP2_DATABASE_PATH);
-if (path === null)
-  stop(
-    exitNoDatabase,
-    "LOOP2_DATABASE_PATH names no existing account database file. Nothing changed.",
-  );
+if (path === null) stop(exitNoDatabase, noFileSentence);
 
 let result: BlockOutcome | UnblockOutcome;
 try {
-  const database = new AccountDatabase(path);
+  const database = new AccountDatabase(path, { existingOnly: true });
   try {
     result =
       action === "block"
@@ -76,10 +84,14 @@ try {
     database.close();
   }
 } catch (error) {
+  if (isNotAccountDatabase(error)) stop(exitNoDatabase, noTablesSentence);
   writeFailure("account-block", "account-block.change", error);
+  // A second run helps only where the database was busy past the wait.
   stop(
     exitDatabaseFailure,
-    "The account database could not be opened or changed, for example while it was busy for longer than the wait allows. Nothing changed; run the command again.",
+    isDatabaseBusy(error)
+      ? "The account database could not be opened or changed while it was busy for longer than the wait allows. Nothing changed; run the command again."
+      : "The account database could not be opened or changed. Nothing changed.",
   );
 }
 

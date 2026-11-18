@@ -3,7 +3,11 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
-import { AccountDatabase } from "./database.js";
+import {
+  AccountDatabase,
+  isDatabaseBusy,
+  isNotAccountDatabase,
+} from "./database.js";
 import { installLastResort, writeFailure } from "./log-line.js";
 
 // The backup script, or the operator, writes one consistent backup of the account
@@ -14,7 +18,9 @@ import { installLastResort, writeFailure } from "./log-line.js";
 // The output holds every address and password hash, so the command does
 // nothing without that one fixed word and prints nothing to standard output
 // then (D-231). It opens the existing database of LOOP2_DATABASE_PATH beside
-// the running server, as account-block.ts does (D-112), backs it up into a
+// the running server, as account-block.ts does (D-112), and refuses a file in
+// which the server has set up no tables as it refuses a missing file, writing
+// nothing in it; it backs the database up into a
 // private temporary directory, closes it, streams the finished file out and
 // removes the directory, also after a failure and after a reader that goes
 // away; a signal that kills the process leaves it. Standard output carries the
@@ -27,11 +33,19 @@ const fixedWord = "--to-standard-output";
 // Exit codes: 0 only after the last byte of the backup has left and its
 // temporary directory is removed. Exit 1 also ends a whole backup whose
 // directory cannot be removed: the copy is left in the container, and the
-// command says so once, as its own failure (D-354).
+// command says so once, as its own failure (D-354). Exit 3 stands for a path
+// that names no account database, a missing file or a file the server never
+// set up, each with a sentence of its own; exit 1 for any other failure of the
+// database. The backup script treats every non-zero code as a failure and
+// reads no number.
 const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitOutputFailure = 4;
+const noFileSentence =
+  "LOOP2_DATABASE_PATH names no existing account database file. Nothing was written.";
+const noTablesSentence =
+  "LOOP2_DATABASE_PATH names a file that exists but holds no account database set up by the server. Nothing was written.";
 
 installLastResort("account-backup");
 
@@ -53,9 +67,7 @@ async function run(): Promise<number> {
   }
   const path = existingFile(process.env.LOOP2_DATABASE_PATH);
   if (path === null) {
-    console.error(
-      "LOOP2_DATABASE_PATH names no existing account database file. Nothing was written.",
-    );
+    console.error(noFileSentence);
     return exitNoDatabase;
   }
 
@@ -68,7 +80,7 @@ async function run(): Promise<number> {
       // mkdtemp creates the directory readable by its owner alone.
       directory = await mkdtemp(join(tmpdir(), "loop2-backup-"));
       const backupPath = join(directory, "backup.sqlite");
-      const database = new AccountDatabase(path);
+      const database = new AccountDatabase(path, { existingOnly: true });
       try {
         await database.backupTo(backupPath);
       } finally {
@@ -106,13 +118,17 @@ async function run(): Promise<number> {
     // failure, reported as a database failure below.
     if (removal !== undefined && !whole) throw removal.error;
   } catch (error) {
-    writeFailure(
-      "backup-database",
-      "account-backup.run",
-      removal !== undefined ? removal.error : error,
-    );
+    if (removal === undefined && isNotAccountDatabase(error)) {
+      console.error(noTablesSentence);
+      return exitNoDatabase;
+    }
+    const cause = removal !== undefined ? removal.error : error;
+    writeFailure("backup-database", "account-backup.run", cause);
+    // A second run helps only where the database was busy past the wait.
     console.error(
-      "The account database could not be opened or backed up, for example while it was busy for longer than the wait allows. No backup was made; run the command again.",
+      isDatabaseBusy(cause)
+        ? "The account database could not be opened or backed up while it was busy for longer than the wait allows. No backup was made; run the command again."
+        : "The account database could not be opened or backed up. No backup was made.",
     );
     return exitDatabaseFailure;
   }

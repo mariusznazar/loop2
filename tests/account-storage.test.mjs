@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -12,6 +19,7 @@ import session from "express-session";
 import {
   AccountDatabase,
   BlockedSessionRefusal,
+  isDatabaseBusy,
 } from "../dist/server/database.js";
 import { SqliteSessionStore } from "../dist/server/session-store.js";
 
@@ -200,6 +208,154 @@ test("schema reopen preserves accounts and sessions and rejects a newer version 
     raw.prepare("SELECT count(*) AS count FROM sessions").get().count,
     1,
   );
+});
+
+// The directory and file path of a database a test makes by hand, with its
+// cleanup. `snapshot` reads what a refused opening must leave as it was: the
+// file's bytes and the names beside it, a -wal or -shm file included.
+async function handmadeFile(t, name) {
+  const directory = await mkdtemp(join(tmpdir(), "loop2-handmade-"));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  return {
+    directory,
+    path: join(directory, name),
+    async snapshot() {
+      return {
+        bytes: await readFile(join(directory, name)),
+        names: (await readdir(directory)).sort(),
+      };
+    },
+  };
+}
+
+function journalModeOf(path) {
+  const check = new DatabaseSync(path, { readOnly: true });
+  try {
+    return check.prepare("PRAGMA journal_mode").get().journal_mode;
+  } finally {
+    check.close();
+  }
+}
+
+// invariant: account-database-schema
+test("opening a database of an unknown newer schema refuses it and leaves the file as it was, its journal mode included", async (t) => {
+  // decision: D-112 "The version is read, and an unknown newer schema refused, before the journal mode of the file changes, so that the refused file stays as it was"
+  const file = await handmadeFile(t, "newer.sqlite");
+  // A database of newer code in SQLite's default journal mode, which is not
+  // the write-ahead log the server switches a database to.
+  const raw = new DatabaseSync(file.path);
+  raw.exec("CREATE TABLE accounts (id TEXT); PRAGMA user_version = 7");
+  raw.close();
+  assert.equal(journalModeOf(file.path), "delete", "precondition");
+  const before = await file.snapshot();
+
+  for (const options of [{}, { existingOnly: true }]) {
+    assert.throws(
+      () => new AccountDatabase(file.path, options),
+      /Unsupported.*schema/,
+    );
+    const after = await file.snapshot();
+    assert.ok(after.bytes.equals(before.bytes), "the bytes of the file");
+    assert.deepEqual(after.names, before.names, "no file beside it");
+    assert.equal(journalModeOf(file.path), "delete");
+  }
+});
+
+test("opening that may only find a database refuses a file in which the server set up no tables, writes nothing in it, and an opening of the server sets it up", async (t) => {
+  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
+  const foreign = async (file) => {
+    const raw = new DatabaseSync(file.path);
+    raw.exec("CREATE TABLE notes (text TEXT); INSERT INTO notes VALUES ('x')");
+    raw.close();
+  };
+  for (const [label, name, prepare] of [
+    ["an empty file", "empty.sqlite", (file) => writeFile(file.path, "")],
+    [
+      "a file that is no SQLite database",
+      "garbage.sqlite",
+      (file) => writeFile(file.path, "this is not an SQLite database at all"),
+    ],
+    ["a SQLite database with no schema version", "foreign.sqlite", foreign],
+  ]) {
+    const file = await handmadeFile(t, name);
+    await prepare(file);
+    const before = await file.snapshot();
+
+    assert.throws(
+      () => new AccountDatabase(file.path, { existingOnly: true }),
+      { code: "NOT_ACCOUNT_DATABASE" },
+      label,
+    );
+
+    const after = await file.snapshot();
+    assert.ok(after.bytes.equals(before.bytes), `${label}: the bytes`);
+    assert.deepEqual(after.names, before.names, `${label}: no file beside it`);
+  }
+
+  // The control: the server's own opening, with no such option, sets an empty
+  // file up as a new database.
+  const empty = await handmadeFile(t, "new.sqlite");
+  await writeFile(empty.path, "");
+  const server = new AccountDatabase(empty.path);
+  try {
+    assert.ok(server.createAccount("new@example.test", "hash"));
+  } finally {
+    server.close();
+  }
+  const found = new AccountDatabase(empty.path, { existingOnly: true });
+  try {
+    assert.ok(found.findAccountByEmail("new@example.test"), "now it is found");
+  } finally {
+    found.close();
+  }
+});
+
+test("an opening that may only find a database tells a corrupt file, a newer schema and a busy file from a file that is no account database", async (t) => {
+  // decision: D-112 "The version is read, and an unknown newer schema refused, before the journal mode of the file changes, so that the refused file stays as it was"
+  const file = await handmadeFile(t, "corrupt.sqlite");
+  const made = new AccountDatabase(file.path);
+  made.createAccount("a@example.test", "hash");
+  made.close();
+  const bytes = await readFile(file.path);
+  // Page 1 holds the header, so the file still reads as a database of its
+  // version; the pages after it are garbage.
+  await writeFile(
+    file.path,
+    Buffer.concat([
+      bytes.subarray(0, 4096),
+      Buffer.alloc(bytes.length - 4096, 255),
+    ]),
+  );
+  assert.throws(
+    () => new AccountDatabase(file.path, { existingOnly: true }),
+    (error) => error.errcode === 11 && error.code !== "NOT_ACCOUNT_DATABASE",
+  );
+
+  const raw = new DatabaseSync(file.path);
+  raw.exec("PRAGMA user_version = 7");
+  raw.close();
+  assert.throws(() => new AccountDatabase(file.path, { existingOnly: true }), {
+    code: "UNSUPPORTED_SCHEMA",
+  });
+
+  const busy = await handmadeFile(t, "busy.sqlite");
+  const holder = new AccountDatabase(busy.path);
+  const writer = new DatabaseSync(busy.path);
+  try {
+    writer.exec("BEGIN IMMEDIATE");
+    assert.throws(
+      () =>
+        new AccountDatabase(busy.path, {
+          existingOnly: true,
+          busyTimeoutMs: 100,
+        }),
+      (error) => isDatabaseBusy(error),
+    );
+  } finally {
+    writer.close();
+    holder.close();
+  }
+  assert.equal(isDatabaseBusy(new Error("another")), false);
 });
 
 // invariant: account-database-schema
@@ -3156,21 +3312,39 @@ test("the operator's command writes one event with the account's number for a ch
   );
 });
 
+// A database of the server whose pages after the first are garbage: it reads
+// as a database of the current version and fails on the first table it reads.
+async function makeCorruptDatabase(file) {
+  const made = new AccountDatabase(file.path);
+  made.createAccount("player@example.test", "hash");
+  made.close();
+  const bytes = await readFile(file.path);
+  await writeFile(
+    file.path,
+    Buffer.concat([
+      bytes.subarray(0, 4096),
+      Buffer.alloc(bytes.length - 4096, 255),
+    ]),
+  );
+}
+
 // D-252, D-354. Faults: the failure's reason left out, so the operator only
-// hears to try again; SQLite's message or the file's path in the output; a
+// hears that it failed; SQLite's message or the file's path in the output; a
 // sentence dropped, so the operator no longer reads what happened.
 test("a database failure of the operator's command adds the error's kind and code and nothing of its text", async (t) => {
   // decision: D-252 "Loop2 adopts all six rules on failures and logs of the coding template of its pinned the-way and departs from none of them"
   // decision: D-252 "A log line of its Node.js code is one JSON object on one line, written through `console` with no library and under fixed field names"
   // decision: D-354 "The sentence by which a service command of the account server, `account-block`, `account-previous-save`, `account-role` or `account-backup`, answers the operator is no log line: the log line of such a command is its JSON line of D-252 alone, and the sentence stays beside it"
-  const { path } = await fixture(t);
-  const garbage = join(path, "..", "garbage-secret-name.sqlite");
-  await writeFile(garbage, "this is not an SQLite database at all, padding");
+  const file = await handmadeFile(t, "corrupt-secret-name.sqlite");
+  await makeCorruptDatabase(file);
 
-  const run = await runBlockCommand(["block", "player@example.test"], garbage);
+  const run = await runBlockCommand(
+    ["block", "player@example.test"],
+    file.path,
+  );
 
   assert.equal(run.code, 1, run.output);
-  assert.match(run.stderr, /Nothing changed; run the command again\./);
+  assert.match(run.stderr, /Nothing changed\./);
   const [line] = run.stderr.split(/\r?\n/).filter((text) => text[0] === "{");
   const { failure, kind, code, errcode, place } = JSON.parse(line);
   assert.deepEqual(
@@ -3179,12 +3353,120 @@ test("a database failure of the operator's command adds the error's kind and cod
       failure: "account-block",
       kind: "Error",
       code: "ERR_SQLITE_ERROR",
-      errcode: 26,
+      errcode: 11,
       place: "account-block.change",
     },
-    "SQLite's number 26 says the file is no database",
+    "SQLite's number 11 says the file is damaged",
   );
-  assert.doesNotMatch(run.output, /garbage-secret-name|not a database/i);
+  assert.doesNotMatch(run.output, /corrupt-secret-name|malformed/i);
+});
+
+// D-137, D-112. Faults: a file the server never set up given tables by the
+// command, or refused with another code than a missing file, or reported as a
+// database failure that asks for a second run.
+test("the operator's command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
+  // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
+  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
+  const refusals = [];
+  for (const [label, name, prepare] of [
+    [
+      "an empty file",
+      "empty-secret-name.sqlite",
+      (file) => writeFile(file.path, ""),
+    ],
+    [
+      "a file that is no SQLite database",
+      "garbage-secret-name.sqlite",
+      (file) => writeFile(file.path, "this is not an SQLite database at all"),
+    ],
+    [
+      "a SQLite database with no schema version",
+      "foreign-secret-name.sqlite",
+      (file) => {
+        const raw = new DatabaseSync(file.path);
+        raw.exec("CREATE TABLE notes (text TEXT)");
+        raw.close();
+      },
+    ],
+  ]) {
+    const file = await handmadeFile(t, name);
+    await prepare(file);
+    const before = await file.snapshot();
+
+    for (const action of ["block", "unblock"]) {
+      const run = await runBlockCommand(
+        [action, "player@example.test"],
+        file.path,
+      );
+
+      assert.equal(run.code, 3, `${label}, ${action}: ${run.output}`);
+      assert.match(
+        run.stderr,
+        /names a file that exists but holds no account database set up by the server\. Nothing changed\./,
+      );
+      assert.doesNotMatch(run.stderr, /names no existing/);
+      assert.doesNotMatch(run.stderr, /run the command again/);
+      refusals.push(run);
+    }
+    const after = await file.snapshot();
+    assert.ok(after.bytes.equals(before.bytes), `${label}: the bytes`);
+    assert.deepEqual(after.names, before.names, `${label}: no file beside it`);
+  }
+  for (const run of refusals)
+    assert.doesNotMatch(run.output, /secret-name|not a database/i);
+});
+
+// D-137. Faults: the advice to run the command again on a failure a second run
+// does not mend, or no advice where the database was only busy.
+test("the operator's command advises to run it again only when the database was busy longer than the wait allows", async (t) => {
+  // decision: D-430 "When the blocking command of D-137 or the backup command of D-231 cannot open or change the database for a reason other than a file in which the server has set up no tables"
+  // decision: D-430 "The sentence advises to run the command again only where the database stayed busy longer than the bounded busy timeout of D-112 allowed"
+  // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
+  const { path, database, raw, account } = await fixture(t);
+  const unchanged = () =>
+    assert.equal(database.findAccountById(account.id).blocked, false);
+
+  // Another connection holds the write lock past the command's busy timeout.
+  raw.exec("BEGIN IMMEDIATE");
+  let busy;
+  try {
+    busy = await runBlockCommand(["block", "player@example.test"], path);
+  } finally {
+    raw.exec("ROLLBACK");
+  }
+  assert.equal(busy.code, 1, busy.output);
+  assert.match(busy.stderr, /busy for longer than the wait allows/);
+  assert.match(busy.stderr, /Nothing changed; run the command again\./);
+  unchanged();
+
+  const newer = await handmadeFile(t, "newer.sqlite");
+  const made = new DatabaseSync(newer.path);
+  made.exec("CREATE TABLE accounts (id TEXT); PRAGMA user_version = 7");
+  made.close();
+  const newerBefore = await newer.snapshot();
+  const damaged = await handmadeFile(t, "damaged.sqlite");
+  await makeCorruptDatabase(damaged);
+
+  for (const [label, file] of [
+    ["a newer schema", newer],
+    ["a damaged file", damaged],
+  ]) {
+    const run = await runBlockCommand(
+      ["block", "player@example.test"],
+      file.path,
+    );
+
+    assert.equal(run.code, 1, `${label}: ${run.output}`);
+    assert.match(run.stderr, /Nothing changed\./);
+    assert.doesNotMatch(run.stderr, /run the command again/, label);
+    assert.match(run.stderr, /"failure":"account-block"/);
+  }
+  const newerAfter = await newer.snapshot();
+  assert.ok(
+    newerAfter.bytes.equals(newerBefore.bytes),
+    "the newer schema stays",
+  );
+  assert.deepEqual(newerAfter.names, newerBefore.names);
 });
 
 // D-253. Faults: no handler, so the default print writes the
@@ -3327,7 +3609,12 @@ test("the operator's command changes nothing on a usage error, an unknown addres
       ["block", "player@example.test"],
       databasePath,
     );
-    assert.notEqual(run.code, 0, label);
+    assert.equal(run.code, 3, label);
+    assert.match(
+      run.stderr,
+      /names no existing account database file\. Nothing changed\./,
+      label,
+    );
     assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
     refusals.push(run);
   }

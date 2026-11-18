@@ -767,7 +767,7 @@ Production startup without all valid account settings and every startup with par
 
 ## account-database-schema
 
-Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, emailed link, saved game state and previous save and their values kept, preserves them on reopen, and refuses an unknown newer schema before readiness without changing its version or records.
+Opening an account database initializes the current schema version atomically, moves an existing older known version to it atomically with every account, the previous-save privilege of each included, session, emailed link, saved game state and previous save and their values kept, preserves them on reopen, and refuses an unknown newer schema before readiness, leaving the file as it was, its version, records and journal mode included.
 
 - **Method:** test
 - **Rests on:** node-sqlite-database
