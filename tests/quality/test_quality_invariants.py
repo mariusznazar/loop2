@@ -15,7 +15,7 @@ WEB = "{ts,tsx,mts,cts,js,jsx,mjs,cjs,html,css}"
 # fails the check, but a brace alternative may: the HTML and CSS of tests/sim and tests/view stand
 # beside their scripts. test_source_tool_scope.py keeps the patterns to the scope.
 PRETTIER_PATTERNS = [f"src/browser/**/*.{WEB}", f"src/server/**/*.{SCRIPT}",
-                     f"scripts/**/*.{SCRIPT}", f"tests/**/*.{SCRIPT}",
+                     f"scripts/**/*.{SCRIPT}", f"tests/**/*.{SCRIPT}", f"balance/**/*.{SCRIPT}",
                      f"tests/{{sim,view}}/**/*.{WEB}", "{eslint,prettier}.config.mjs"]
 # The flags of the Prettier check; the scope test runs the same check on made-up files (D-32).
 PRETTIER_FLAGS = ["--check", "--no-config", "--no-editorconfig", "--ignore-path", ".gitignore"]
@@ -75,7 +75,7 @@ class QualityInvariants(unittest.TestCase):
 
     def test_prettier_source_format(self):
         # invariant: prettier-source-format
-        # decision: D-32 "All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server, build-tools and deployment and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`"
+        # decision: D-32 "All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server, build-tools, balance-tools and deployment and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`"
         self.assert_passes("node", "node_modules/prettier/bin/prettier.cjs", *PRETTIER_FLAGS,
                            *PRETTIER_PATTERNS)
 

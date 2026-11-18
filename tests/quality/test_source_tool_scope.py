@@ -1,5 +1,5 @@
 """Invariant tests: ESLint, Prettier and the LF rules of `.gitattributes` reach every TypeScript and
-JavaScript file of the five parts D-29 and D-32 both name, `SCOPE_PARTS`, according to the part
+JavaScript file of the six parts D-29 and D-32 both name, `SCOPE_PARTS`, according to the part
 map. The scope of ESLint is wider than the other two: besides the files of those parts it holds
 every script file under three directories of agent-workflow, which D-29 names,
 `ESLINT_DIRECTORIES`.
@@ -26,7 +26,8 @@ sys.path.insert(0, str(ROOT / "tests" / "invariants"))
 import loop2_invariant_support as support
 from test_quality_invariants import PRETTIER_FLAGS, PRETTIER_PATTERNS
 
-SCOPE_PARTS = ("browser-view", "simulation", "account-server", "build-tools", "deployment")
+SCOPE_PARTS = ("browser-view", "simulation", "account-server", "build-tools", "balance-tools",
+               "deployment")
 SCRIPT_SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 # The directories of agent-workflow whose script files D-29 puts in the scope of ESLint besides the
 # files of SCOPE_PARTS, as plain path prefixes.
