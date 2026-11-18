@@ -1,5 +1,6 @@
 // The command line of the balance instrument: `npm run balance -- <command> [flags]`, which builds
-// the game and runs this file. The commands are `sweep`, `trace`, `loop`, `campaign` and `programs`;
+// the game and runs this file. The commands are `sweep`, `trace`, `loop`, `campaign`, `programs` and
+// `check-map`;
 // `node balance/cli.mjs help` lists the flags of each. A command prints its result on standard
 // output, or writes it to the file the flag `--out` names; the instrument writes nothing else and
 // nothing into the repository unless a flag names a path there (D-429). A command lays the
@@ -20,6 +21,7 @@ import { MAPS } from "../dist/browser/sim/data/maps.js";
 import { checkProgram } from "../dist/browser/sim/programs.js";
 import { REFERENCE_PROGRAMS } from "../tests/sim/reference-programs.mjs";
 import { campaignSweep, programsOf } from "./campaign.mjs";
+import { measureRow, renderTable } from "./check-map.mjs";
 import { describePrograms } from "./describe.mjs";
 import { buildSkills, seedRange, sweep } from "./engine.mjs";
 import { loopSweep } from "./loop.mjs";
@@ -64,6 +66,7 @@ const COMMAND_FLAGS = {
   ],
   campaign: ["player", "seeds", "overlay", "out"],
   programs: ["out"],
+  "check-map": ["overlay", "maps", "programs", "practice", "ranks", "out"],
 };
 
 /** The flags that stand alone, with no value after them. */
@@ -90,6 +93,8 @@ ${Object.entries(COMMAND_FLAGS)
 --hours       real hours of the loop's readings, as 8,24,72
 --no-resurrection  start the loop with the team's resurrection spent
 --player      a player description: an identifier of balance/players/ or a file
+--maps        the maps of the overlays to check, as wasteland,deadZone; default all of them
+--programs    identifiers of the reference programs to check; default all of them
 --out         a file for the result (a directory for programs); with it nothing is printed
 `;
 
@@ -170,6 +175,8 @@ function readOptions(raw) {
     hours: raw.hours === undefined ? undefined : parseHours(raw.hours),
     resurrection: raw["no-resurrection"] !== true,
     player: raw.player,
+    maps: raw.maps?.split(","),
+    programs: raw.programs?.split(","),
     out: raw.out,
   };
 }
@@ -392,17 +399,65 @@ function runPrograms(options) {
   return { printed: "", files };
 }
 
+/**
+ * The map check: a row for each map the overlays add and each reference program (or those the flags
+ * name), the table printed or written. The maps and programs are checked before any measurement.
+ */
+function runCheckMap(options, overlays) {
+  if (overlays.length === 0)
+    throw new UsageError(
+      "--overlay is needed: the map check measures the maps an overlay adds",
+    );
+  const added = [
+    ...new Set(overlays.flatMap((overlay) => Object.keys(overlay.MAPS ?? {}))),
+  ];
+  const mapIds = options.maps ?? added;
+  const unknownMap = mapIds.find((id) => !added.includes(id));
+  if (unknownMap !== undefined)
+    throw new UsageError(`--maps: ${unknownMap} is no map the overlays add`);
+  const programIds = options.programs ?? Object.keys(REFERENCE_PROGRAMS);
+  const unknownProgram = programIds.find(
+    (id) => !Object.hasOwn(REFERENCE_PROGRAMS, id),
+  );
+  if (unknownProgram !== undefined)
+    throw new UsageError(
+      `--programs: ${unknownProgram} is no reference program (the programs command lists them)`,
+    );
+  let skills;
+  try {
+    skills = buildSkills({ practice: options.practice, ranks: options.ranks });
+  } catch (error) {
+    throw new UsageError(`--practice or --ranks: ${error.message}`);
+  }
+  const rows = mapIds.flatMap((mapId) =>
+    programIds.map((programId) =>
+      measureRow({
+        mapId,
+        programId,
+        program: REFERENCE_PROGRAMS[programId],
+        skills,
+      }),
+    ),
+  );
+  return delivered(options, renderTable(rows));
+}
+
 const COMMANDS = {
   sweep: runSweep,
   trace: runTrace,
   loop: runLoop,
   campaign: runCampaign,
   programs: runPrograms,
+  "check-map": runCheckMap,
 };
 
-/** Lays the overlay files on the game's data in order, runs `work`, and restores the data in reverse. */
+/**
+ * Lays the overlay files on the game's data in order, runs `work` with the overlays read, and
+ * restores the data in reverse.
+ */
 function withOverlays(files, work) {
   const restores = [];
+  const loaded = [];
   try {
     for (const file of files) {
       let overlay;
@@ -413,9 +468,10 @@ function withOverlays(files, work) {
           `--overlay: ${file} cannot be read: ${error.message}`,
         );
       }
+      loaded.push(overlay);
       restores.push(applyOverlay(overlay));
     }
-    return work();
+    return work(loaded);
   } finally {
     for (const restore of restores.reverse()) restore();
   }
@@ -429,7 +485,9 @@ function withOverlays(files, work) {
 export function runCommand(command, options) {
   if (!Object.hasOwn(COMMANDS, command))
     throw new UsageError(`unknown command ${command}`);
-  return withOverlays(options.overlays ?? [], () => COMMANDS[command](options));
+  return withOverlays(options.overlays ?? [], (overlays) =>
+    COMMANDS[command](options, overlays),
+  );
 }
 
 function main(argv) {
