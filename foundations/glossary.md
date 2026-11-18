@@ -286,3 +286,9 @@ The previous-save privilege is the flag the operator, or an owner from the owner
 An owner is an account whose role is `owner`, the role that lets its holder use the owner panel of the game and that only a human gives, with the command `account-role`; every other account has the role `player`.
 
 - **Not:** the person who reaches the server and runs its commands — "operator"
+
+## overlay
+
+An overlay is a file that changes the game's data in memory for the time of one measurement of the balance instrument, such as by adding a game map or changing the numbers of one, and leaves the game's data files untouched.
+
+- **Not:** none

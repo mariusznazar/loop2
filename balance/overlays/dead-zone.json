@@ -1,0 +1,26 @@
+{
+  "description": "The dead zone, a map the earlier game had after Las, set down here as a further map of this game. Its numbers are those of the earlier game's map of that name: a grid of 5 by 5 tiles with a random entrance, an air of 37 °C, three wolves, and a wolf attack with a chance of 0.015 a game minute once 90 game minutes have passed since the last one. It has no streak to hold; it is solved by three beaten wolf attacks. Its resources are those of Las — głębiej in this game. Not carried over: the fading of the mage's skills and the wear of sticks of the earlier game, which this game does not have; and the three wolves are one kind of attacker here, as in the wolf pack of Las.",
+  "MAPS": {
+    "deadZone": {
+      "name": "Martwa strefa",
+      "width": 5,
+      "height": 5,
+      "entrance": null,
+      "ambientTemperature": 37,
+      "stepMinutes": 5,
+      "resources": [
+        { "id": "stick", "density": 0.7, "stock": 12, "renewMinutes": 30 },
+        { "id": "berry", "density": 0.5, "stock": 8, "renewMinutes": 40 },
+        { "id": "moss", "density": 0.4, "stock": 6, "renewMinutes": 60 },
+        { "id": "fiber", "density": 0.4, "stock": 6, "renewMinutes": 60 }
+      ],
+      "attackers": [
+        { "id": "wolf", "chancePerMinute": 0.015, "cooldownMinutes": 90 }
+      ],
+      "solving": { "defeatedAttacks": 3 },
+      "solvingText": "trzy pokonane napaści wilka",
+      "completionText": "Martwa strefa rozwiązana",
+      "opensAfter": "forest"
+    }
+  }
+}

@@ -89,7 +89,7 @@ The part is the account and save server: it serves the built game, handles the H
 
 ## build-tools
 
-The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, checks the simulation's types under a configuration of their own, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the operator's computer, starts the game on the developer's machine over HTTPS with a database made for that start, builds and serves the browser view's kitchen-sink page on the developer's machine, and starts Docker Desktop, where it is installed, for a test of the test gate that needs a Docker daemon when none answers.
+The part installs dependencies, runs the test gate and mutation analysis, checks code quality and types, checks the simulation's types under a configuration of their own, audits introduced dependency versions, builds and launches the application, launches the password measurement of a built application image and judges it, launches the restore trial of a decrypted database backup on the operator's computer, runs the balance instrument over a build of the game, starts the game on the developer's machine over HTTPS with a database made for that start, builds and serves the browser view's kitchen-sink page on the developer's machine, and starts Docker Desktop, where it is installed, for a test of the test gate that needs a Docker daemon when none answers.
 
 - **Files:** /package.json
   /package-lock.json
@@ -117,15 +117,24 @@ The part installs dependencies, runs the test gate and mutation analysis, checks
   tests/invariants/test_cross_part_imports.py
   tests/invariants/test_local_start_access.py
   tests/password-measurement.test.mjs
-- **Depends on:** browser-view · simulation · account-server · product-foundation
+- **Depends on:** browser-view · simulation · account-server · balance-tools · product-foundation
 - **Trust boundary:** /package-lock.json
   scripts/audit_dependencies.py
   scripts/kitchen-sink.mjs
   scripts/local-start.mjs
 
+## balance-tools
+
+The part measures the balance of the game outside the browser: it runs the game's built simulation, from one map run to sweeps of many seeds, earning loops and the campaign of a player, with the reference programs of the tests of the simulation and with overlays that change the game's data in memory, and it holds the player descriptions a campaign follows and the tests that keep its instrument in agreement with the game.
+
+- **Files:** balance/**
+  tests/balance/**
+- **Depends on:** simulation
+- **Trust boundary:** none
+
 ## agent-workflow
 
-The part directs and records the work performed on this repository, and holds the workflow of GitHub Actions that runs the one command of tests on every pull request into `main`, on Linux. It also holds the skill to play the game, which composes the game state it plays from functions of the simulation; that is why it may depend on the simulation.
+The part directs and records the work performed on this repository, and holds the workflow of GitHub Actions that runs the one command of tests on every pull request into `main`, on Linux. It also holds the skill to play the game, which composes the game state it plays from functions of the simulation; that is why it may depend on the simulation. It holds as well the skill to measure the balance of the game, which runs the balance instrument and reads the reference programs of the tests of the simulation; that is why it may depend on `balance-tools`.
 
 - **Files:** AGENTS.md
   CLAUDE.md
@@ -139,7 +148,7 @@ The part directs and records the work performed on this repository, and holds th
   guidelines/**
   src/browser/AGENTS.md
   .github/workflows/tests.yml
-- **Depends on:** product-foundation · deployment · build-tools · simulation
+- **Depends on:** product-foundation · deployment · build-tools · simulation · balance-tools
 - **Trust boundary:** .github/workflows/tests.yml
 
 ## product-foundation

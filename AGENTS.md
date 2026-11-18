@@ -14,6 +14,8 @@ When working in `src/browser/`, read `src/browser/AGENTS.md`.
 
 To run the game on this computer or operate it in a real browser, read `.claude/skills/loop2-play/SKILL.md`.
 
+To measure the game's balance, check a map before a package is defined, or run the balance instrument, read `.claude/skills/loop2-balance/SKILL.md`.
+
 Before adding or changing a picture or an effect of the scene, read `.claude/skills/loop2-scene-art/SKILL.md`.
 
 Every test of this repository runs with `npm test`. A fresh directory gets the environment of Ruff and ShellCheck, `.runs/quality-venv`, at the first run of the tests, from `requirements-quality.txt`; that needs Python 3.9 or newer and network access to the Python Package Index, and where it cannot be made the quality test fails with one message that says so.

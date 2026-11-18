@@ -15,7 +15,8 @@ import unittest
 import docker_gate
 
 ROOT = Path(__file__).resolve().parents[1]
-NODE_TESTS = ["tests/*.test.mjs", "tests/sim/*.test.mjs", "tests/view/*.test.mjs"]
+NODE_TESTS = ["tests/*.test.mjs", "tests/sim/*.test.mjs", "tests/view/*.test.mjs",
+              "tests/balance/*.test.mjs"]
 
 
 def command(*arguments):

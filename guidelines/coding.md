@@ -1,7 +1,7 @@
 # Coding guidelines — loop2
 
 - **Discipline:** coding
-- **Applies to:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow · test-helpers
+- **Applies to:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow · test-helpers
 
 ## When to read
 
@@ -34,8 +34,8 @@ Wytyczne przyjmują szablony przypiętego the-way zgodnie z D-28.
 - **Good:** Nowe pliki spełniają blokujące reguły bez komentarzy wyciszających.
 - **Bad:** Kod narusza blokującą regułę albo wycisza ją komentarzem lub w konfiguracji.
 
-Wzorce plików `eslint.config.mjs` obejmują każdy plik TS/JS pięciu części, które
-D-29 wymienia, i każdy plik JavaScript z trzech katalogów agent-workflow, które
+Wzorce plików `eslint.config.mjs` obejmują każdy plik TS/JS sześciu części, które
+D-29 wymienia, `balance-tools` (`balance/` i `tests/balance/`) wśród nich, i każdy plik JavaScript z trzech katalogów agent-workflow, które
 D-29 nazywa. Nowy plik w jednym z tych trzech katalogów obejmują bez zmiany
 konfiguracji; nowy skrypt gdzie indziej w agent-workflow nie. Tego pilnuje test
 `tests/quality/test_source_tool_scope.py`: plik, który nie dostaje zestawów

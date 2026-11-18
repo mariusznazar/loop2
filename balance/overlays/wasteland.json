@@ -1,0 +1,21 @@
+{
+  "description": "The wasteland, a map the earlier game had after Las, set down here as a further map of this game. Its numbers are those of the earlier game's map of that name: a grid of 5 by 5 tiles with a random entrance, an air of 5 °C, a streak of 480 game minutes, no attacks, and a carry-in budget of 10 pieces. Its only resource is berries, sparse, as in the earlier game. Not carried over: the stone of the earlier game, since this game has no such resource, and the spells of the earlier game other than the flame, since this game has no other spells.",
+  "MAPS": {
+    "wasteland": {
+      "name": "Pustkowie",
+      "carryIn": 10,
+      "width": 5,
+      "height": 5,
+      "entrance": null,
+      "ambientTemperature": 5,
+      "stepMinutes": 5,
+      "resources": [
+        { "id": "berry", "density": 0.3, "stock": 6, "renewMinutes": 60 }
+      ],
+      "solving": { "streak": 480 },
+      "solvingText": "480 minut bez utraty zdrowia od zimna i głodu i bez zmiany programu",
+      "completionText": "Pustkowie rozwiązane",
+      "opensAfter": "forest"
+    }
+  }
+}

@@ -407,12 +407,12 @@ whatever their amounts, at every game minute, whatever programs they run under.
 
 ## eslint-source-rules
 
-Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, and every JavaScript file under `.claude/hooks/`, `.claude/skills/loop2-play/` and `.agents/skills/loop2-play/`, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
+Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools, balance-tools and deployment, according to the part map, and every JavaScript file under `.claude/hooks/`, `.claude/skills/loop2-play/` and `.agents/skills/loop2-play/`, receives from `eslint.config.mjs` the rules of the sets @eslint/js and typescript-eslint publish and neither breaks a rule that configuration applies nor carries an inline configuration comment, as ESLint 10.12.0 reports them at error or warning, whatever bulk-suppressions file stands in the repository.
 
 - **Method:** test
 - **Rests on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Derives from:** D-29
-- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow
 - **Violated:** no
 
 ## ruff-source-rules
@@ -437,12 +437,12 @@ No Bash script the test of this invariant names gets a ShellCheck 0.11.0 report 
 
 ## prettier-source-format
 
-Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, according to the part map, is matched by the patterns of this invariant's test and kept at LF line endings by `.gitattributes`, and every file those patterns match stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
+Every TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools, balance-tools and deployment, according to the part map, is matched by the patterns of this invariant's test and kept at LF line endings by `.gitattributes`, and every file those patterns match stands as Prettier 3.9.10 leaves it with its default options, LF line endings included.
 
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-32
-- **Part:** browser-view · simulation · account-server · build-tools · deployment
+- **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment
 - **Violated:** no
 
 ## introduced-npm-vulnerabilities
@@ -582,7 +582,7 @@ Every `*.test.mjs` file under `tests/` is selected for execution by `npm test`.
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-83
-- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow
 - **Violated:** no
 
 ## focused-test-execution
@@ -1412,8 +1412,18 @@ No function and no file of the code the rule of size covers is longer than the t
 - **Method:** test
 - **Rests on:** none
 - **Derives from:** D-425
-- **Part:** browser-view · simulation · account-server · build-tools · deployment · agent-workflow
+- **Part:** browser-view · simulation · account-server · build-tools · balance-tools · deployment · agent-workflow
 - **Violated:** yes
+
+## instrument-game-agreement
+
+A map run of one seed, from one starting game state with one program and the equipment its trip plan takes from the chest, ends in the same game minute, with the same outcome, the same cause of that outcome and the same practice gained, whether it is run through the game's own functions or through the balance instrument of the part `balance-tools`.
+
+- **Method:** test
+- **Rests on:** none
+- **Derives from:** D-22
+- **Part:** simulation · balance-tools
+- **Violated:** no
 
 ## Withdrawn identifiers
 

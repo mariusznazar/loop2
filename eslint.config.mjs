@@ -7,7 +7,13 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL(".", import.meta.url));
 const extensions = "{js,mjs,cjs,jsx,ts,mts,cts,tsx}";
 const typedExtensions = "{ts,mts,cts,tsx}";
-const directories = ["src/browser", "src/server", "scripts", "tests"];
+const directories = [
+  "src/browser",
+  "src/server",
+  "scripts",
+  "tests",
+  "balance",
+];
 const sourceFiles = directories.map(
   (directory) => `${directory}/**/*.${extensions}`,
 );
@@ -72,9 +78,11 @@ function program(configPath, includes, extraOptions = {}) {
 const programs = [
   program("tsconfig.browser.json", ["src/browser/**/*"]),
   program("tsconfig.server.json", ["src/server/**/*"]),
-  program("tsconfig.browser.json", ["scripts/**/*", "tests/**/*"], {
-    types: ["node"],
-  }),
+  program(
+    "tsconfig.browser.json",
+    ["scripts/**/*", "tests/**/*", "balance/**/*"],
+    { types: ["node"] },
+  ),
 ];
 
 export default [
@@ -102,6 +110,7 @@ export default [
       `src/server/**/*.${extensions}`,
       `scripts/**/*.${extensions}`,
       `tests/**/*.${extensions}`,
+      `balance/**/*.${extensions}`,
       "*.config.mjs",
       ...scriptFiles,
     ],
