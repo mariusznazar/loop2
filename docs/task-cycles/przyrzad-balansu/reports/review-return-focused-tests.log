@@ -1,0 +1,62 @@
+﻿
+=== tests/balance/check-map.test.mjs
+âś” the earning loop of a row starts with the resurrection ready, which changes its balance for this program and these seeds (272.1791ms)
+âś” a map an overlay adds is measured under its name in the game's data, and the overlay is restored after the measurement (9.0644ms)
+âś” the check refuses no overlay, a map the overlays do not add and a program that is no reference program, before any measurement (1.1068ms)
+âś” the check names each program by its number in the whole list of reference programs, whatever rows the flags narrow to, and prints no identifier (2116.7249ms)
+â„ą tests 7
+â„ą suites 0
+â„ą pass 7
+â„ą fail 0
+â„ą cancelled 0
+â„ą skipped 0
+â„ą todo 0
+â„ą duration_ms 2528.7973
+EXIT tests/balance/check-map.test.mjs = 0
+=== tests/balance/cli.test.mjs
+âś” a trace prints the lines of the engine's map run and ends in the outcome the engine gives for the seed (4.6347ms)
+âś” a loop command gives the readings the loop gives for the same flags, and --practice and --no-resurrection reach the loop (169.0566ms)
+âś” a campaign command plays the player a description names, by its identifier in the instrument's own list (143.8304ms)
+âś” the programs command prints every reference program in the game's words, and with --out writes each as a file of the game's shape and all in words (2.2099ms)
+â„ą tests 20
+â„ą suites 0
+â„ą pass 20
+â„ą fail 0
+â„ą cancelled 0
+â„ą skipped 0
+â„ą todo 0
+â„ą duration_ms 591.9636
+EXIT tests/balance/cli.test.mjs = 0
+=== tests/invariants/test_cross_part_imports.py
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/invariants/test_cross_part_imports.py
+
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 1.109s
+
+OK
+EXIT tests/invariants/test_cross_part_imports.py = 0
+=== tests/quality/test_node_test_selection.py
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/quality/test_node_test_selection.py
+
+.
+----------------------------------------------------------------------
+Ran 1 test in 2.093s
+
+OK
+EXIT tests/quality/test_node_test_selection.py = 0
+=== tests/quality/test_function_and_file_size.py
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/quality/test_function_and_file_size.py
+
+.x
+----------------------------------------------------------------------
+Ran 2 tests in 5.260s
+
+OK (expected failures=1)
+EXIT tests/quality/test_function_and_file_size.py = 0

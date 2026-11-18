@@ -1,0 +1,9 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/agent_workflow/test_tracked_file_private_paths.py
+
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.564s
+
+OK

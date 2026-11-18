@@ -1,0 +1,46 @@
+﻿
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/balance/loop.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✔ a loop of zero hours starts one map run and leaves the chest with what the take list did not take (8.0085ms)
+✔ on each seed the readings of a loop never fall in completions or in the count of its map runs (18.2895ms)
+✖ the loop balance of each seed agrees with the game's own count: completions and the final chest (65.9802ms)
+✔ the balance of a loop of zero hours is one map run that took its pieces and put none (1.3258ms)
+✔ the summary per checkpoint counts the seeds and takes its stopped share from the readings it sums (21.4368ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 192.2964
+
+✖ failing tests:
+
+test at tests\balance\loop.test.mjs:79:1
+✖ the loop balance of each seed agrees with the game's own count: completions and the final chest (65.9802ms)
+  AssertionError [ERR_ASSERTION]: seed 1
+  
+  9 !== 1
+  
+      at file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/loop.test.mjs:98:12
+      at Array.forEach (<anonymous>)
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/loop.test.mjs:88:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

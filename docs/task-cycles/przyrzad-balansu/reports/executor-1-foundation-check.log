@@ -1,0 +1,14 @@
+foundations/decisions.md:450: `balance-tools` names no part
+foundations/decisions.md:495: `balance-tools` names no part
+foundations/decisions.md:830: `balance-tools` names no part
+foundations/decisions.md:11481: `balance-tools` names no part
+foundations/decisions.md:11496: `balance-tools` names no part
+foundations/decisions.md:11511: `balance-tools` names no part
+foundations/invariants.md:415: `balance-tools` names no part
+foundations/invariants.md:445: `balance-tools` names no part
+foundations/invariants.md:1415: `balance-tools` names no part
+foundations/invariants.md:1425: `balance-tools` names no part
+tests/quality/test_quality_invariants.py:78: the quotation stands in no binding sentence of `D-32`
+foundations/invariants.md:408: listed: `eslint-source-rules` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/quality/test_quality_invariants.py, tests/quality/test_source_tool_scope.py): name it in the request, saying what the sentence now says
+foundations/invariants.md:438: listed: `prettier-source-format` reads `test` and its sentence is changed by this change, while no file citing it changed (tests/quality/test_quality_invariants.py, tests/quality/test_source_tool_scope.py): name it in the request, saying what the sentence now says
+11 errors

@@ -1,0 +1,513 @@
+
+> loop2@0.0.0 test
+> python -B scripts/test.py tests/balance/campaign.test.mjs
+
+
+> loop2@0.0.0 build
+> node scripts/build.mjs
+
+✖ a player whose first program does not solve the first map stays on it: no loop, no purchase, nothing solved (4.1229ms)
+✖ the first map is solved by hand before the loop starts, in at least the real time its game minutes take at the pace (0.1712ms)
+✖ the player returns once a day: the days of the record run from 1 to the days of the campaign, each map is tried only on a return (0.7354ms)
+✖ each solved map had its opening map solved before it (0.2794ms)
+✔ no purchase is made that the points of its tree do not cover, and the record of purchases agrees with the ranks held (0.2635ms)
+✔ a player who buys nothing holds no rank, and a purchase only comes from a list that names it (0.181ms)
+✖ an attempt whose need of the chest can never be met is never made (0.1977ms)
+✔ the same seed gives the same campaign (0.1823ms)
+✖ the sum of campaigns counts them and takes its means from the campaigns it sums (0.287ms)
+✖ the three players of Skraj lasu name programs of the reference file, maps and ranks the game has, and ask for the chest their programs take (2.2994ms)
+✖ a player naming a program the registry lacks is refused (0.265ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 3
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 76.3427
+
+✖ failing tests:
+
+test at tests\balance\campaign.test.mjs:57:1
+✖ a player whose first program does not solve the first map stays on it: no loop, no purchase, nothing solved (4.1229ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(log.firstMapAttempts >= 1)
+  
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:64:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:72:1
+✖ the first map is solved by hand before the loop starts, in at least the real time its game minutes take at the pace (0.1712ms)
+  AssertionError [ERR_ASSERTION]: seed 1
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:75:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:88:1
+✖ the player returns once a day: the days of the record run from 1 to the days of the campaign, each map is tried only on a return (0.7354ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   1,
+  -   2,
+  -   3
+  - ]
+  
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:90:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 1, 2, 3 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:99:1
+✖ each solved map had its opening map solved before it (0.2794ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(log.final.solvedMaps.length >= 2)
+  
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:101:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:145:1
+✖ an attempt whose need of the chest can never be met is never made (0.1977ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(log.final.solvedMaps.includes(FIRST_MAP))
+  
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:151:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:160:1
+✖ the sum of campaigns counts them and takes its means from the campaigns it sums (0.287ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   undefined,
+  +   undefined,
+  +   undefined
+  -   1,
+  -   2,
+  -   3
+    ]
+  
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:166:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ undefined, undefined, undefined ],
+    expected: [ 1, 2, 3 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:184:1
+✖ the three players of Skraj lasu name programs of the reference file, maps and ranks the game has, and ask for the chest their programs take (2.2994ms)
+  AssertionError [ERR_ASSERTION]: edge-daily-best first
+  + actual - expected
+  
+  + undefined
+  - {
+  -   groups: [
+  -     {
+  -       condition: {
+  -         kind: 'always'
+  -       },
+  -       id: 1,
+  -       name: 'Jedzenie',
+  -       rules: [
+  -         {
+  -           action: {
+  -             kind: 'eat'
+  -           },
+  -           condition: {
+  -             kind: 'satietyBelow',
+  -             value: 75
+  -           },
+  -           id: 1
+  -         }
+  -       ]
+  -     },
+  -     {
+  -       condition: {
+  -         kind: 'satietyBelow',
+  -         value: 65
+  -       },
+  -       id: 2,
+  -       name: 'Głód',
+  -       rules: [
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'berry'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 1
+  -           },
+  -           id: 2
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'walkTo',
+  -             resource: 'berry'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 1
+  -           },
+  -           id: 3
+  -         }
+  -       ]
+  -     },
+  -     {
+  -       condition: {
+  -         kind: 'satietyBelow',
+  -         value: 60
+  -       },
+  -       id: 3,
+  -       name: 'Szukaj jedzenia',
+  -       rules: [
+  -         {
+  -           action: {
+  -             kind: 'explore'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 1
+  -           },
+  -           id: 4
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'wander'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 1
+  -           },
+  -           id: 5
+  -         }
+  -       ]
+  -     },
+  -     {
+  -       condition: {
+  -         kind: 'temperatureBelow',
+  -         value: 36
+  -       },
+  -       id: 4,
+  -       name: 'Zimno',
+  -       rules: [
+  -         {
+  -           action: {
+  -             kind: 'lightCampfire'
+  -           },
+  -           condition: {
+  -             kind: 'always'
+  -           },
+  -           id: 6
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 7
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'walkTo',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 8
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'walkToCampfire'
+  -           },
+  -           condition: {
+  -             kind: 'always'
+  -           },
+  -           id: 9
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'craftCampfire'
+  -           },
+  -           condition: {
+  -             kind: 'always'
+  -           },
+  -           id: 10
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 6
+  -           },
+  -           id: 11
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'walkTo',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 6
+  -           },
+  -           id: 12
+  -         }
+  -       ]
+  -     },
+  -     {
+  -       condition: {
+  -         kind: 'always'
+  -       },
+  -       id: 5,
+  -       name: 'Zapasy',
+  -       rules: [
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 13
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'berry'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 14
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 8
+  -           },
+  -           id: 15
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'gather',
+  -             resource: 'berry'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 4
+  -           },
+  -           id: 16
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'walkTo',
+  -             resource: 'stick'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 17
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'walkTo',
+  -             resource: 'berry'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 18
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'explore'
+  -           },
+  -           condition: {
+  -             kind: 'always'
+  -           },
+  -           id: 19
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'wander'
+  -           },
+  -           condition: {
+  -             item: 'stick',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 20
+  -         },
+  -         {
+  -           action: {
+  -             kind: 'wander'
+  -           },
+  -           condition: {
+  -             item: 'berry',
+  -             kind: 'itemBelow',
+  -             value: 2
+  -           },
+  -           id: 21
+  -         }
+  -       ]
+  -     }
+  -   ],
+  -   nextGroupId: 6,
+  -   nextRuleId: 22,
+  -   tripPlan: {
+  -     bring: [
+  -       {
+  -         count: 15,
+  -         item: 'stick'
+  -       },
+  -       {
+  -         count: 15,
+  -         item: 'berry'
+  -       },
+  -       {
+  -         count: 15,
+  -         item: 'moss'
+  -       },
+  -       {
+  -         count: 15,
+  -         item: 'fiber'
+  -       }
+  -     ],
+  -     take: []
+  -   }
+  - }
+  
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:190:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { tripPlan: { take: [], bring: [Array] }, groups: [ [Object], [Object], [Object], [Object], [Object] ], nextGroupId: 6, nextRuleId: 22 },
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\balance\campaign.test.mjs:210:1
+✖ a player naming a program the registry lacks is refused (0.265ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///.runs/ of the main checkout/worktrees/przyrzad-balansu/tests/balance/campaign.test.mjs:212:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /nope/,
+    operator: 'throws',
+    diff: 'simple'
+  }

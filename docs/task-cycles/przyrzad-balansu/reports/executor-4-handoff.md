@@ -1,0 +1,40 @@
+# Handoff - executor of slice 4 (`make-change`, "a slice, or the retry of a slice")
+
+You make one slice of a planned change in a task cycle of the-way. The orchestrator dispatches you
+on behalf of the person who requested this cycle, who delegated every intermediate choice to it.
+Nothing here is the human's approval.
+
+- Worktree (work only from its root): `.runs/ of the main checkout/worktrees/przyrzad-balansu`, branch `task/przyrzad-balansu`. Your base is `d4675de8e17f06fbc89278458bbe3d3cbb171f1f` (`git rev-parse HEAD` now); commit on this branch only.
+- Method: `.the-way/task-cycle/change/SKILL.md`, whole; your variant: "a slice, or the retry of a slice". Read a file it names only when its step comes.
+- Plan (whole file, `.runs/task-cycles/przyrzad-balansu/plan.md`): your slice's section is copied below word for word; its *Foundation entries* (lines 7-27), *Choices* (the end of the file) and the passages of the task its *Read* names are read from the files, at the lines the *Read* gives. Frozen task: `.runs/task-cycles/przyrzad-balansu/task-frozen.md`. No spec.
+- Answers of step 4: trust boundary no; irreversible operation no. Class of your model: `same`.
+- Your directory for working copies: `.runs/executor-4/`.
+- Report: `.runs/task-cycles/przyrzad-balansu/reports/executor-4-report.md`.
+- You never run the product's full gate (`npm test` with no file argument) - its run is the orchestrator's. Run only the focused checks of your slice.
+- Commits by path (`git add <path> ...`, never `git add -A`, `git add .` or `git commit -a`), messages in English in the repository's style (`type: :emoji: ...`).
+- The foundation entries of the plan were written before your slice (commit `333b945b`): D-427, D-428, D-429, the glossary term `overlay`, the invariant `instrument-game-agreement`, the changed D-378, and the part `balance-tools` added to the *Scope* of D-29, D-32, D-425. The ranges in `foundations/decisions.md` of the entries your *Read* names stand as the plan gives them, except the new entries: D-378 `foundations/decisions.md:7075-7089`, D-427 `:11477-11491` (D-428 and D-429 follow it); `foundations/invariants.md`: `instrument-game-agreement` `:1418-1427`. Where a range differs, find the entry by its heading.
+- D-80 is withdrawn: never cite it.
+- The author's notes lie outside the repository at `a file of the author's private notes` (its `the balance instrument's notes folder/` and `the progression critique's notes folder/` directories). Where your *Read* names a file of the notes by a relative name, it lies there. Read and copy from them what the code needs, in your own words and in English; **no file of the repository, comment, test, entry or commit message may name a note, a folder or a file of those notes, or the old game's private repository** (D-362, invariants `tracked-file-private-paths` and `tracked-file-private-names`).
+- Where the plan's *Foundation entries* paragraph says the foundation check reports known lines until a later slice, those lines are expected; any other report is yours to fix.
+- Slices 1-3 are made (commits `62b73c35`, `0d48e760`, `f6b096e1`, `d4675de8`); the part `balance-tools` stands in `foundations/part_map.md` and under the linter, the formatter and the size rule. You change only `guidelines/coding.md` and `guidelines/testing.md`, through the two maintain skills read as files, as your slice says. Name in your report every place of the two files that counts the parts or names the files the linter reaches, as you find it, and what you left unchanged and why.
+- Unread-material rule for you: where a file your *Read* names stays unread or part-read, list it in **Unread material** - do not write `none` beside such a file.
+
+## Your slice (copied word for word from the plan)
+
+### Slice 4 — the guidelines of code and tests cover the part
+
+- **Goal:** through `the-way-maintain-coding-guidelines` and `the-way-maintain-testing-guidelines`, each read as its `SKILL.md` and the pinned procedure it names, in the mode for an agent of the task cycle: `guidelines/coding.md` names `balance-tools` in its *Applies to*, and its paragraph on the files the linter reaches counts the part; `guidelines/testing.md` names it in its *Applies to* and in its table of parts, where its complexity lies in calculations on the game's simulation, and its unit-test recipe counts `tests/balance/` among its files. The coding skill judges whether the instrument's code is a kind of its own; where it finds one, the slice writes what the skill asks and says so in its report, and where it finds none, the report says why.
+- **Change:** `guidelines/coding.md` · `guidelines/testing.md`
+- **Read:** `.runs/task-cycles/przyrzad-balansu/task-frozen.md:38-38` To do 10 · `.runs/task-cycles/przyrzad-balansu/task-frozen.md:61-65` Questions to settle, Question 3 · `.runs/task-cycles/przyrzad-balansu/plan.md:157-174` Choices · `foundations/part_map.md` · `foundations/decisions.md:431-445` D-28 · D-29 and D-32 as the foundation step changed them · `foundations/decisions.md:860-873` D-73 · `foundations/decisions.md:965-978` D-81 · `foundations/decisions.md:1025-1038` D-85 · `.claude/skills/the-way-maintain-coding-guidelines/SKILL.md` · `.the-way/product-guidelines/coding/SKILL.md` · `.the-way/product-guidelines/coding/orchestrated_mode.md` · `.the-way/product-guidelines/coding/kinds.md` · `.claude/skills/the-way-maintain-testing-guidelines/SKILL.md` · `.the-way/product-guidelines/testing/SKILL.md` · `.the-way/product-guidelines/testing/orchestrated_mode.md` · `.the-way/product-guidelines/reading.md` · `tests/sim/acceptance.test.mjs` · the files of balance/ and tests/balance/ that Slices 2 and 3 made
+- **Model:** same — the skills judge the guidelines of the whole product, whether the instrument's code is a kind of its own included
+- **Risk:** none
+- **Checks:** `python -B .the-way/elements/common/foundation_check.py` · `npm test -- tests/quality/test_quality_invariants.py` · the checks the two maintain skills name for the guidelines they change
+- **Depends on:** Slice 3
+
+## Working copies (word for word, WAY-148)
+
+An agent of the cycle that makes a working copy to check something — a worktree of a commit, a clone, a script, a screenshot, a prepared input of a test — makes it in a directory of its own directly under the ignored `.runs/` of the task's worktree, the directory its handoff names; never in the system's temporary directory, in the scratch directory of a session or in the main checkout of the repository. The screenshot that a screenshot tool, such as the Playwright server, saves by itself under its session's directory is moved into the agent's directory and the original removed, except a screenshot that is shown to the human: that one goes where `task-cycle/change/ui_check.md` says, to the place the product's foundation settles for screenshots, and into the agent's directory only where no such place is settled. The files that a product's own tools and tests make by themselves are no working copy of the agent and stay outside this rule. Before the agent returns, each time it returns, it removes its copy — a worktree with `git worktree remove --force`, then `git worktree prune` — keeps in `reports/` beside its report what the report needs, and states in the report where each copy stood and that it was removed. Where a removal fails, the agent finishes all the same and names in the report the remainder, with its full path and the reason it stayed.
+
+## Report
+
+At the path above, as the method gives it: status, commits, each check with its command and exit code, the own-work check, **Unread material** (what this handoff or your *Read* names that stayed unread or was read in part, or `none`), **Searches not found or unclear** (each thing looked for and not found or unclear, or `none`), your reaches beyond the handoff, and your working copies (where each stood and that it was removed). Return: status, commits, a one-line check result naming what failed or did not run, the report's path.

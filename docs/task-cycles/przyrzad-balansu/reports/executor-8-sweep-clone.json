@@ -1,0 +1,79 @@
+{
+  "header": {
+    "command": "sweep",
+    "map": "forest",
+    "program": "forestBest",
+    "seeds": "1-500",
+    "chest": {},
+    "skills": {
+      "practice": {},
+      "ranks": {}
+    },
+    "overlays": [],
+    "cap": null
+  },
+  "summary": {
+    "runs": 500,
+    "solved": 359,
+    "solvedShare": 71.8,
+    "solveMinute": {
+      "n": 359,
+      "min": 654,
+      "p10": 691,
+      "median": 754,
+      "p90": 838,
+      "max": 1501
+    },
+    "deaths": {
+      "cold": {
+        "n": 141,
+        "minute": {
+          "n": 141,
+          "min": 243,
+          "p10": 265,
+          "median": 338,
+          "p90": 369,
+          "max": 777
+        }
+      }
+    },
+    "capped": 0,
+    "firstFire": {
+      "n": 374,
+      "min": 170,
+      "p10": 205,
+      "median": 265,
+      "p90": 340,
+      "max": 365
+    },
+    "noFire": 126,
+    "practicePerSolved": {
+      "exploration": 1.58,
+      "smallItemGathering": 41.69,
+      "eating": 17.58,
+      "campfireCrafting": 1,
+      "flameSpell": 5.11
+    },
+    "lootPerSolved": {
+      "stick": 5.88,
+      "berry": 2.02
+    },
+    "backpackAtSolve": {
+      "stick": 5.88,
+      "berry": 2.02,
+      "moss": 0,
+      "fiber": 0
+    },
+    "timeShare": {
+      "explore": 6.7,
+      "gather": 74.1,
+      "wander": 0.9,
+      "eat": 11.2,
+      "craftCampfire": 2.7,
+      "lightCampfire": 2.9,
+      "walkTo": 1,
+      "wait": 0.3,
+      "walkToCampfire": 0.2
+    }
+  }
+}
