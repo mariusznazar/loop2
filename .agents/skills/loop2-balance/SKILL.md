@@ -28,7 +28,7 @@ with it standard output holds the result alone.
 | `trace` | Plays one map run of one seed and writes it as lines a person reads | the lines, the last one `end: <outcome> at minute N` with the cause where there is one |
 | `loop` | Runs the earning loop through the game's own `startLoop` and `catchUp` for real hours | header and readings per checkpoint; with `--out` also each run |
 | `campaign` | Plays one player from an empty account through the game's own actions | header and summary; with `--out` also the log of each campaign |
-| `programs` | Lists the reference programs in the words the game shows the player | the list; with `--out DIR` one `<identifier>.json` per program and one file of all of them in words |
+| `programs` | Lists the reference programs in the words the game shows the player, each headed by its label `P1`, `P2`... and its identifier: the key to the labels of the map check's table | the list; with `--out DIR` one `<identifier>.json` per program and one file of all of them in words |
 | `check-map` | Checks the maps an overlay adds against every reference program (below) | one Markdown table |
 | `help` | Lists each command's flags | the usage text |
 
@@ -91,12 +91,26 @@ Every map goes through this check before a package is defined.
    It prints one row for each map the overlay adds and each reference program (23 programs, about 55
    seconds for one map). Narrow it with `--maps <id>` and `--programs <id,id>`, or write the table
    with `--out <path>` outside the tracked files.
-3. The columns are: the map's name in the game's data, the program's identifier, the share solved on
+3. The columns are: the map's name in the game's data, the program's label, the share solved on
    seeds 1-500, the median game minutes of the solved runs, the deaths by cause and the runs at the
    cap, and the earning loop over 24 real hours on seeds 1-100 with resurrection ready: pieces taken
    from the chest per map run, pieces put into it per map run, and the share of map runs that end in
-   death. The table shows no condition, action or rule of any program: the person who plays the game
-   gets this table, and the programs stay with the agent.
+   death. The label is `P1`, `P2`... : the program's number in the list that `programs` prints, the
+   same whichever programs `--programs` narrows to. The table shows no condition, action, rule or
+   identifier of any program, because an identifier can state the rules of its program in other
+   words: the person who plays the game gets this table, and the programs and the key from label to
+   identifier stay with the agent. A row reads:
+
+   ```
+   | <map name> | P22 | <share> % | <minutes> | <cause n, cause n> | <runs> | <pieces> | <pieces> | <share> % |
+   ```
+
+   Every row runs with a new character's skills unless `--practice` or `--ranks` say otherwise, and
+   those flags apply to all rows alike. A program that needs a branch of the skills measures near
+   zero without it: `P22` lives on the branch „Czysty płomień” and on Pustkowie solved 0 of 50
+   seeds without it and 47 of 50 with `--ranks cleanFlame=1`. Run such a program again with
+   `--ranks` and `--programs <identifier>` and tell the person that its row was measured with the
+   branch, before the person reads a row near zero as "the map cannot be passed".
 4. The programs in the table are the reference programs. Beyond them, the agent tries to write a
    program that passes the map without the thing the map asks about, for example a map that asks for
    defeated wolf attacks, with a program that avoids the fights. Write each attempt as a file of the
@@ -109,7 +123,10 @@ Every map goes through this check before a package is defined.
    ```
 
    A file that is no program of the game stops the command with its reason. The attempts' programs
-   stay with the agent: they go into no table and no request for the person.
+   stay with the agent: they go into no table and no request for the person. Their results go to the
+   person: for each attempt a row like the table's, with the share solved, the median minutes and
+   the deaths by cause, under a neutral label of its own (`A1`, `A2`...), never under the file's
+   name or a word of what the attempt does.
 
 ## Where results go
 

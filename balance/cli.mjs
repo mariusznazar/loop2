@@ -22,7 +22,7 @@ import { checkProgram } from "../dist/browser/sim/programs.js";
 import { REFERENCE_PROGRAMS } from "../tests/sim/reference-programs.mjs";
 import { campaignSweep, programsOf } from "./campaign.mjs";
 import { measureRow, renderTable } from "./check-map.mjs";
-import { describePrograms } from "./describe.mjs";
+import { describePrograms, programLabels } from "./describe.mjs";
 import { buildSkills, seedRange, sweep } from "./engine.mjs";
 import { loopSweep } from "./loop.mjs";
 import { applyOverlay, readOverlay } from "./overlay.mjs";
@@ -429,11 +429,12 @@ function runCheckMap(options, overlays) {
   } catch (error) {
     throw new UsageError(`--practice or --ranks: ${error.message}`);
   }
+  const labels = programLabels(REFERENCE_PROGRAMS);
   const rows = mapIds.flatMap((mapId) =>
     programIds.map((programId) =>
       measureRow({
         mapId,
-        programId,
+        programLabel: labels[programId],
         program: REFERENCE_PROGRAMS[programId],
         skills,
       }),

@@ -263,8 +263,9 @@ test("a condition or an action the data does not hold is refused with a sentence
 
 test("the descriptions of all reference programs make one text, one description after another", () => {
   const text = describePrograms(REFERENCE_PROGRAMS);
-  for (const id of Object.keys(REFERENCE_PROGRAMS))
-    assert.ok(text.includes(`**${id}**`), id);
+  Object.keys(REFERENCE_PROGRAMS).forEach((id, index) =>
+    assert.ok(text.includes(`**P${index + 1} ${id}**`), id),
+  );
 });
 
 function options(extra) {
@@ -505,8 +506,9 @@ test("a campaign command plays the player a description names, by its identifier
 test("the programs command prints every reference program in the game's words, and with --out writes each as a file of the game's shape and all in words", () => {
   const plain = runCommand("programs", parseArgs(["programs"]).options);
   assert.deepEqual(plain.files, []);
-  for (const id of Object.keys(REFERENCE_PROGRAMS))
-    assert.ok(plain.printed.includes(`**${id}**`), id);
+  Object.keys(REFERENCE_PROGRAMS).forEach((id, index) =>
+    assert.ok(plain.printed.includes(`**P${index + 1} ${id}**`), id),
+  );
   const directory = path.join("somewhere", "programs");
   const written = runCommand(
     "programs",

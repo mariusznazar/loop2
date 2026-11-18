@@ -1,7 +1,9 @@
 // The map check of the balance instrument: for each map an overlay adds and each reference program,
 // the share solved on seeds 1-500, the median game minutes of the solved map runs, the failures by
 // cause, and the balance of the earning loop over 24 real hours on seeds 1-100 with resurrection
-// ready. The table is Markdown and holds no condition, action or rule of any program (D-428). A
+// ready. The table is Markdown and holds no condition, action or rule of any program (D-428); it
+// names a program by a neutral label, because an identifier can state the rules of its program in
+// other words, and the key from label to identifier is what the `programs` command prints. A
 // program's chest is the one its take list asks, so a program is measured with what it brings.
 
 import { MAPS } from "../dist/browser/sim/data/maps.js";
@@ -28,13 +30,13 @@ export function chestOf(program) {
 }
 
 /**
- * The row of one map and one program: the sweep's figures and the earning loop's balance, from the
- * game's own simulation run through the engine. The chest is the program's take list; the skills
- * are the ones given, a new character's where none are.
+ * The row of one map and one program, which the row names by its neutral label: the sweep's figures
+ * and the earning loop's balance, from the game's own simulation run through the engine. The chest
+ * is the program's take list; the skills are the ones given, a new character's where none are.
  */
 export function measureRow({
   mapId,
-  programId,
+  programLabel,
   program,
   skills,
   sweepSeeds = CHECK_SWEEP_SEEDS,
@@ -61,7 +63,7 @@ export function measureRow({
   return {
     mapId,
     mapName: MAPS[mapId].name,
-    programId,
+    programLabel,
     runs: summary.runs,
     solvedShare: summary.solvedShare,
     solveMedian: summary.solveMinute?.median ?? null,
@@ -110,7 +112,7 @@ function causesOf(deaths) {
 function cellsOf(row) {
   return [
     row.mapName,
-    row.programId,
+    row.programLabel,
     share(row.solvedShare),
     plain(row.solveMedian),
     causesOf(row.deaths),

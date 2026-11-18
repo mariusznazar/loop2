@@ -9,7 +9,12 @@ import { runCommand } from "../../balance/cli.mjs";
 import { buildSkills, seedRange, sweep } from "../../balance/engine.mjs";
 import { loopBalance } from "../../balance/loop.mjs";
 import { applyOverlay, readOverlay } from "../../balance/overlay.mjs";
-import { forestBest, forestLoopWithStock } from "../sim/reference-programs.mjs";
+import {
+  forestBest,
+  forestDeepBest,
+  forestLoopWithStock,
+  REFERENCE_PROGRAMS,
+} from "../sim/reference-programs.mjs";
 
 // The map check of the balance instrument: one table with a row per map and program, its columns
 // and its figures. The table holds no text of a program's rules, and each row is the measurement of
@@ -28,7 +33,7 @@ const MADE_UP_ROWS = [
   {
     mapId: "wasteland",
     mapName: "Pustkowie",
-    programId: "demoAlpha",
+    programLabel: "P1",
     runs: 500,
     solvedShare: 71.8,
     solveMedian: 754,
@@ -44,7 +49,7 @@ const MADE_UP_ROWS = [
   {
     mapId: "deadZone",
     mapName: "Martwa strefa",
-    programId: "demoBeta",
+    programLabel: "P2",
     runs: 500,
     solvedShare: 0,
     solveMedian: null,
@@ -92,7 +97,7 @@ test("the table has one column for each figure of the check and one row per map 
   );
   assert.deepEqual(first, [
     "Pustkowie",
-    "demoAlpha",
+    "P1",
     "71.8 %",
     "754",
     "cold 141, wolf 3",
@@ -103,7 +108,7 @@ test("the table has one column for each figure of the check and one row per map 
   ]);
   assert.deepEqual(second, [
     "Martwa strefa",
-    "demoBeta",
+    "P2",
     "0 %",
     "—",
     "none",
@@ -114,10 +119,10 @@ test("the table has one column for each figure of the check and one row per map 
   ]);
 });
 
-test("the table holds no text of a program's rules: no condition, action or group name of the program appears in it", () => {
+test("the table holds no text of a program's rules: no identifier of a reference program, and no condition, action or group name of the program appears in it", () => {
   const row = measureRow({
     mapId: "forest",
-    programId: "forestBest",
+    programLabel: "P4",
     program: forestBest,
     skills: buildSkills(),
     sweepSeeds: seedRange(1, 3),
@@ -126,9 +131,11 @@ test("the table holds no text of a program's rules: no condition, action or grou
   });
   const table = renderTable([row], BASIS);
   assert.ok(
-    table.includes("forestBest"),
-    "the row of the program is in the table",
+    cellsOf(table)[1].includes("P4"),
+    "the row of the program is in the table under its label",
   );
+  for (const id of Object.keys(REFERENCE_PROGRAMS))
+    assert.ok(!table.includes(id), `the table holds the identifier ${id}`);
   const words = [];
   for (const group of forestBest.groups) {
     words.push(group.name);
@@ -146,33 +153,37 @@ test("a row of one map and one program with few seeds comes from the measurement
   const skills = buildSkills();
   const sweepSeeds = seedRange(1, 4);
   const loopSeeds = seedRange(1, 2);
+  // forestDeepBest takes eight sticks and seven berries from the chest, so a row that loses the chest
+  // of its sweep or of its loop measures another program than the one the table names.
+  const chest = { stick: 8, berry: 7 };
   const row = measureRow({
-    mapId: "forest",
-    programId: "forestBest",
-    program: forestBest,
+    mapId: "forestDeep",
+    programLabel: "P10",
+    program: forestDeepBest,
     skills,
     sweepSeeds,
     loopSeeds,
     hours: 2,
   });
   const { summary } = sweep({
-    mapId: "forest",
-    program: forestBest,
+    mapId: "forestDeep",
+    program: forestDeepBest,
     seeds: sweepSeeds,
     skills,
-    chest: { stick: 8, berry: 7 },
+    chest,
   });
   const balance = loopBalance({
-    mapId: "forest",
-    program: forestBest,
+    mapId: "forestDeep",
+    program: forestDeepBest,
     seeds: loopSeeds,
     hours: 2,
     skills,
-    chest: { stick: 8, berry: 7 },
+    chest,
     resurrectionReady: true,
   });
-  assert.equal(row.mapName, MAPS.forest.name);
-  assert.equal(row.programId, "forestBest");
+  assert.deepEqual(chestOf(forestDeepBest), chest);
+  assert.equal(row.mapName, MAPS.forestDeep.name);
+  assert.equal(row.programLabel, "P10");
   assert.equal(row.runs, 4);
   assert.equal(row.solvedShare, summary.solvedShare);
   assert.equal(row.solveMedian, summary.solveMinute?.median ?? null);
@@ -206,7 +217,7 @@ test("the earning loop of a row starts with the resurrection ready, which change
   );
   const row = measureRow({
     mapId: "forest",
-    programId: "forestLoopWithStock",
+    programLabel: "P6",
     program: forestLoopWithStock,
     skills,
     sweepSeeds: seedRange(1, 2),
@@ -224,7 +235,7 @@ test("a map an overlay adds is measured under its name in the game's data, and t
   try {
     const row = measureRow({
       mapId: "wasteland",
-      programId: "forestBest",
+      programLabel: "P4",
       program: forestBest,
       skills: buildSkills(),
       sweepSeeds: seedRange(1, 2),
@@ -265,4 +276,20 @@ test("the check refuses no overlay, a map the overlays do not add and a program 
     /noSuchProgram/,
   );
   assert.equal(MAPS.wasteland, undefined);
+});
+
+test("the check names each program by its number in the whole list of reference programs, whatever rows the flags narrow to, and prints no identifier", () => {
+  const options = {
+    practice: {},
+    ranks: {},
+    out: undefined,
+    overlays: [overlayFile("wasteland.json")],
+    programs: ["forestDeepBest"],
+  };
+  const { printed } = runCommand("check-map", options);
+  const [, row] = cellsOf(printed);
+  assert.equal(row[0], "Pustkowie");
+  assert.equal(row[1], "P10");
+  for (const id of Object.keys(REFERENCE_PROGRAMS))
+    assert.ok(!printed.includes(id), `the table holds the identifier ${id}`);
 });

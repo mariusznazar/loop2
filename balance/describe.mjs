@@ -89,11 +89,26 @@ export function describeProgram(name, program) {
   return lines.join("\n");
 }
 
-/** Every program of `registry` (identifier to program) described, one after another. */
+/**
+ * The neutral label of each program of `registry` (identifier to program): `P1` for the first, `P2`
+ * for the second, in the order of the registry. The map check names a program by this label, because
+ * an identifier can state the rules of its program in other words (D-428).
+ */
+export function programLabels(registry) {
+  return Object.fromEntries(
+    Object.keys(registry).map((id, index) => [id, `P${index + 1}`]),
+  );
+}
+
+/**
+ * Every program of `registry` (identifier to program) described, one after another, each headed by
+ * its neutral label and its identifier, so the list is the key from a label of the table to a program.
+ */
 export function describePrograms(registry) {
+  const labels = programLabels(registry);
   return (
     Object.entries(registry)
-      .map(([id, program]) => describeProgram(id, program))
+      .map(([id, program]) => describeProgram(`${labels[id]} ${id}`, program))
       .join("\n\n") + "\n"
   );
 }
