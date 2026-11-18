@@ -766,8 +766,8 @@ Przegląd zmiany edytora czyta role każdej jego części wobec tej reguły.
 - **Bad:** Pasek postępu nad głową maga w `warning` albo w `text-strong`; ikona czynności narysowana wprost na drzewach; tekst, przycisk albo reakcja na kliknięcie na scenie; błysk, który rozjaśnia albo przyciemnia całą scenę na chwilę; plakietka nad głową pod warstwą odcienia; szron pod nią; las w pełnym złocie przy passie wymaganej, a nie dopiero po rozwiązaniu; efekt odkrycia, śmierci albo rozwiązania, który gra od nowa przy każdym ponownym narysowaniu sceny albo w pętli; chłodna warstwa po śmierci z głodu; ruch ognia, gdy gra efekt chwili; obłok szamotaniny, który zakrywa maga i wilka, albo błysk w nim; martwy wilk leżący w scenie do następnej napaści; bieg wilka dłuższy niż 300 ms.
 
 Scena przebiegu mapy to obraz lasu z rekwizytami, ogniskiem, magiem i, w minutach starcia, wilkiem. Stoi
-w `src/browser/view/scene.tsx` i `src/browser/view/scene-picture.ts`, a jej
-ruch i szarości w `src/browser/run-screen.css`; nazwy plików obrazków postaci,
+w `src/browser/view/scene.tsx`, `src/browser/view/scene-memory.ts` i
+`src/browser/view/scene-picture.ts`, a jej ruch i szarości w `src/browser/run-screen.css`; nazwy plików obrazków postaci,
 stworzeń i zasobów leżą w danych gry, w `src/browser/sim/data/scene.ts`, nie w kodzie
 widoku (D-316).
 Scena jest obrazem: nie ma na niej tekstu ani przycisku, kod nie daje jej

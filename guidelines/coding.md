@@ -253,8 +253,7 @@ nadaje użytkownikowi, wchodzi tylko za zgodą człowieka, jako nowe znaczenie.
 - **Good:** Zmiana sprowadza funkcję pod próg, przenosząc jej część do osobnej funkcji albo pliku, a przebieg reguły niczego o niej nie zgłasza.
 - **Bad:** Zmiana dopisuje wiersze do funkcji albo pliku, które stoją już nad progiem, albo dopisuje wyjątek bez zmiany decyzji.
 
-Progi dla funkcji i dla pliku oraz dwa wyjątki stoją w D-425 i tu się ich nie
-powtarza. Test `tests/quality/test_function_and_file_size.py` uruchamia
+Progi i wyjątki stoją w D-425 i tu się ich nie powtarza. Test `tests/quality/test_function_and_file_size.py` uruchamia
 `tests/quality/eslint-size-rules.mjs`, przebieg ESLint z samymi dwiema regułami
 rozmiaru, osobny od przebiegu na `eslint.config.mjs` z `### Linter`, i gdy
 oblewa, wymienia każdą funkcję i każdy plik nad progiem z miejscem i rozmiarem.
