@@ -445,9 +445,9 @@ Loop2 adopts the coding-guideline templates of its pinned the-way, while deferri
 
 ### D-29 — Which rules check TypeScript and JavaScript?
 
-Every application, script and test TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools and deployment, and every JavaScript file of agent-workflow under `.claude/hooks/`, `.claude/skills/loop2-play/` and `.agents/skills/loop2-play/`, passes local pinned ESLint 10.12.0 run with `--max-warnings 0` on `eslint.config.mjs`, which applies @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` unchanged, with globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, all within the one shared npm package and lockfile. That configuration sets `linterOptions.noInlineConfig`, so an inline configuration comment fails the check, and ignores only dependencies, generated files, the submodule and temporary work results, while the check runs with an empty bulk-suppressions file of its own, so an `eslint-suppressions.json` in the repository hides no report; a test keeps its file patterns to that scope, asking ESLint which rules each file of the scope receives and comparing them with the sets of @eslint/js and typescript-eslint themselves, and review keeps its rules to those sets. Changing the rule set takes a human-accepted change of this decision.
+Every application, script and test TypeScript and JavaScript file of browser-view, simulation, account-server, build-tools, balance-tools and deployment, and every JavaScript file of agent-workflow under `.claude/hooks/`, `.claude/skills/loop2-play/` and `.agents/skills/loop2-play/`, passes local pinned ESLint 10.12.0 run with `--max-warnings 0` on `eslint.config.mjs`, which applies @eslint/js 10.0.1 `recommended` and, for TypeScript, typescript-eslint 8.71.2 flat `recommendedTypeChecked` unchanged, with globals 17.13.0 and TypeScript API 6.0.2 for the parser while application compilation stays on TypeScript 7, all within the one shared npm package and lockfile. That configuration sets `linterOptions.noInlineConfig`, so an inline configuration comment fails the check, and ignores only dependencies, generated files, the submodule and temporary work results, while the check runs with an empty bulk-suppressions file of its own, so an `eslint-suppressions.json` in the repository hides no report; a test keeps its file patterns to that scope, asking ESLint which rules each file of the scope receives and comparing them with the sets of @eslint/js and typescript-eslint themselves, and review keeps its rules to those sets. Changing the rule set takes a human-accepted change of this decision.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow
 - **Based on:** eslint-recommended-rules · typescript-eslint-typechecked-rules
 - **Relations:** derives from D-06
 - **Verification:** invariants: eslint-source-rules. An agent compares a change with the part no invariant holds:
@@ -490,9 +490,9 @@ Every standalone Bash script in the code parts, extensionless scripts included, 
 
 ### D-32 — How is web code formatted?
 
-All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server, build-tools and deployment and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`: its default nonexperimental options — two spaces, semicolons, preferred double quotes, target width 80 and LF on every platform — with no ignore file of its own able to hide a file; Markdown, icons, generated files, dependencies, the submodule and temporary work results are excluded. The editor's `prettier.config.mjs` sets no option, narrow repository attributes preserve LF for that scope on Windows, a test keeps the check's file patterns and those attributes to the TypeScript and JavaScript of that scope, asking Prettier which files its patterns check and git which line ending each file gets, and review keeps `prettier-ignore` comments out of covered code.
+All application, script and test TypeScript and JavaScript in browser-view, simulation, account-server, build-tools, balance-tools and deployment and browser HTML and CSS pass `--check` of local pinned Prettier 3.9.10 run with `--no-config --no-editorconfig --ignore-path .gitignore`: its default nonexperimental options — two spaces, semicolons, preferred double quotes, target width 80 and LF on every platform — with no ignore file of its own able to hide a file; Markdown, icons, generated files, dependencies, the submodule and temporary work results are excluded. The editor's `prettier.config.mjs` sets no option, narrow repository attributes preserve LF for that scope on Windows, a test keeps the check's file patterns and those attributes to the TypeScript and JavaScript of that scope, asking Prettier which files its patterns check and git which line ending each file gets, and review keeps `prettier-ignore` comments out of covered code.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment
 - **Based on:** none
 - **Relations:** none
 - **Verification:** invariants: prettier-source-format. tests: the HTML and CSS of the browser view standing as Prettier leaves them with its default options. An agent compares a change with the part no invariant and no test holds:
@@ -827,7 +827,7 @@ Two exceptions stand whole over a threshold and no other does: the function `acc
 
 The rule runs as an ESLint run of its own, with the two size rules of ESLint alone, apart from the run on `eslint.config.mjs` that D-29 holds; that run leaves the rule set of D-29 and its configuration as they are, and is no change of D-29.
 
-- **Scope:** browser-view, simulation, account-server, build-tools, deployment, agent-workflow
+- **Scope:** browser-view, simulation, account-server, build-tools, balance-tools, deployment, agent-workflow
 - **Based on:** none
 - **Relations:** derives from D-28
 - **Verification:** invariants: function-and-file-size. tests: the thresholds of 200 lines of a function and 800 of a file, lines counted without comments and blank lines and the lines of a nested function counted in the function that holds it; the limit on a function reaching the application, the scripts, the tests and the agent-workflow directories the linter of D-29 reaches, and the limit on a file off in the tests; the two exceptions standing whole and no other function or file. An agent compares a change with the part no invariant and no test holds:
@@ -7072,20 +7072,20 @@ In a game minute outside combat in which the mage's satiety, taken after its fal
 *Rationale:* the rate of 0.5 a game minute and the satiety of 60 are those of the old loop game's data, and its tests compare the satiety with the threshold after the fall of the same game minute, as this decision does. The place of the game minute in which the energy comes back is D-71's, and the cap and the full start of a map run are D-176's.
 *Rejected:* unknown
 
-### D-378 — Can a program of the closed lists keep the mage alive on Las?
+### D-378 — Can a program of the closed lists solve Las?
 
-On Las a program built of the closed lists of conditions and actions keeps the mage alive for 480 game minutes, paying nature energy for its lightings as well as sticks, on at least one seed that a test of the simulation names, and the empty program dies there.
+On Las a program built of the closed lists of conditions and actions solves the map, paying nature energy for its lightings, on at least one seed that a test of the simulation names, and the empty program dies there.
 
 - **Scope:** simulation
 - **Based on:** none
 - **Relations:** derives from D-63
-- **Verification:** tests: on Las, on the seed a test names, a program of the kinds of the closed
-  lists of conditions and actions living through 480 game minutes, lighting, feeding and eating,
-  with nature energy spent on its lightings, and the empty program dying there.
+- **Verification:** tests: on Las, on the seed a test names, a program built of the kinds of the
+  closed lists of conditions and actions reaching a completion with nature energy spent on its
+  lightings, and the empty program dying there.
 - **Origin:** none
 
-*Rationale:* Las is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: weighing it on many seeds is left to a later change. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
-*Rejected:* unknown
+*Rationale:* Las is passed by writing a program, so the data of Las leave room for a program that passes it, and a test of the simulation shows that one does by the map being solved, not by the mage staying alive: a program that survives the streak without completing the map would show nothing of whether Las can be passed, and a change of numbers that made Las unsolvable by any such program is then reported by the test. Lighting cost sticks alone until the spell took nature energy as well, and Las was then easier than it is meant to be; the price in nature energy changes the action that the program lights with, so the same check stands after it. One seed says little of the difficulty of the map: the share of seeds a program solves is measured by the balance instrument over many seeds, and this test names one. Accepted with it: Las — głębiej carries no such requirement, so no one requires that a program with nature energy can close it.
+*Rejected:* only replacing the program, the test going on checking survival alone — the program solves Las, but nothing guards that; leaving the test as it is — it goes on suggesting that a program which only survives passes the map.
 
 ### D-379 — What are the curves of practice, and the effects and prices of the branches, of the eight character skills?
 
@@ -11469,6 +11469,55 @@ The human judges, at the request that brings an effect of the scene, whether its
 
 *Rationale:* D-271 measures the colour of an effect against the ground it stands on, and a colour that stands out from the ground may still be lost at the prop beside which the effect stands, or behind an element that lies over it. Whether the player sees the effect there depends on which pixels of the prop lie under it and which element lies over it, so a single number cannot settle it, and the numbers and the picture tell the human what to look at. A threshold written with no decision to give it makes an effect other than the one chosen: a ratio that only a dark colour passes turns a light speck into a dark one. Accepted with it: an effect that stands out little from its prop, or is covered by another element, reaches the main branch where the human accepts it at the request; the cloud of dust in a brown taken from the sticks, which is lost on the sticks, and the cloud of dust at the fibre, which hides behind the mage, stay in the game as they are.
 *Rejected:* a new rule in D-271 that an effect stands out also from the prop it stands at and is not covered by another element of the scene — the scene breaks it in two places, so the change would grow by a correction of the dust in the code of the scene or become a task of its own, and a threshold for a prop would still have to be found.
+
+## Balance measurement
+
+How the balance instrument, which measures how the game's maps are solved, takes its programs, what its map check prints and where its results go.
+
+### D-427 — Where do the reference programs stand?
+
+The reference programs, the programs that the tests of the simulation and the balance instrument run to see how a map is solved, stand in one file of the tests of the simulation, `tests/sim/reference-programs.mjs`, and both read them from it. The balance instrument is the tool of the part `balance-tools` that runs the game's built simulation outside the browser; no test of the simulation and no file of the instrument holds a copy of a reference program of its own.
+
+- **Scope:** simulation, balance-tools
+- **Based on:** none
+- **Relations:** derives from D-351
+- **Verification:** an agent compares a change with the decision:
+  - complies: a new reference program written in the file of the reference programs and read from it by a test of the simulation and by the instrument
+  - violates: a test of the simulation, or a file of the instrument, that writes a reference program in itself, or reads one from a file of test data on the disk
+- **Origin:** none
+
+*Rationale:* a test that guards a program and an instrument that measures it guard and measure the same thing only if both run one program. The file stands in the simulation because the simulation depends on no other part, so its tests may import only a file of their own part, while the part of the instrument depends on the simulation and may import from it (D-351).
+*Rejected:* adding the reference programs of the instrument to the tests now, in parallel with the other changes that write programs into the same tests — three changes alter the same test and the same decision, so merging them makes conflicts, and the same programs would stand in two or three copies that can drift apart; the instrument with copies of its own — cheaper, but a test guards one copy and the instrument measures another.
+
+### D-428 — What does the map check of the balance instrument print?
+
+For each game map an overlay adds and each reference program, the map check of the balance instrument prints the share of map runs solved on the seeds 1 to 500, the median game minutes of the solved map runs, the failures by cause and the balance of the earning loop, which is what a map run takes from the chest, what it puts into it and how often the character dies. The table holds no condition, action or rule of any program.
+
+- **Scope:** balance-tools
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a row of the table with the share solved, the median minutes, the deaths by cause and the runs at the cap, and the pieces taken, the pieces put in and the share of deaths of the earning loop, for one map and one reference program
+  - violates: a row or a column that shows the rules of a program, or the conditions or the actions it holds; a table without the balance of the earning loop
+- **Origin:** none
+
+*Rationale:* the table goes to a person who is to play the game, and a program that solves a map would give that person the solution; the share, the minutes, the causes of failure and the balance say how the map behaves, and the programs stay with the agent. The balance of the earning loop stands in the same table because it is wanted for every map, so no map needs a separate command of the loop.
+*Rejected:* a table without the balance of the earning loop — the balance would have to be computed with a separate command of the loop for each map; a table without a skill that describes the instrument — the session that defines a package would look for the commands itself and guess how to work with them.
+
+### D-429 — Do the results of the balance instrument's measurements enter the repository?
+
+The results of the measurements of the balance instrument do not enter the repository. The instrument prints each result, or writes it to the file that a flag of its command names, and writes no file into the repository of its own accord.
+
+- **Scope:** balance-tools
+- **Based on:** none
+- **Relations:** none
+- **Verification:** an agent compares a change with the decision:
+  - complies: a command of the instrument that prints its result, or writes it to the path given in a flag
+  - violates: a command of the instrument that writes a result to a fixed path in the repository; a file of results of a measurement committed beside the instrument
+- **Origin:** none
+
+*Rationale:* a result says how the game stood at one commit, and the numbers of the maps are requirements of the game that stand in its decisions and its data (D-388, D-18) and whose expectations a test takes from the foundation (D-82); a file of results in the repository would be read as a requirement while only a measurement of the past stands in it, and would go stale with the next change of the game.
+*Rejected:* taking everything the analyses behind the instrument kept, results and one-time scripts included — a great deal of code that nobody runs a second time, each file of which has to pass the checks of style and gets a part of the map.
 
 ## Withdrawn identifiers
 
