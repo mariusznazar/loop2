@@ -208,9 +208,10 @@ interface DatabaseOptions {
   cleanupIntervalMs?: number;
   busyTimeoutMs?: number;
   onCleanupError?: (error: Error) => void;
-  // Only the server sets up a new database. An operator's command that opens
-  // with this option refuses a file in which the server has set up no tables
-  // and writes nothing in it (D-112).
+  // An opening with this option never sets up a new database: it refuses a
+  // file in which the server has set up no tables and writes nothing in it
+  // (D-112). Only the blocking and the backup commands open with it; the
+  // commands of D-400 and D-410 still set up a database in such a file.
   existingOnly?: boolean;
 }
 

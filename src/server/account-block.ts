@@ -28,13 +28,16 @@ const usage =
 
 // Exit codes: 0 the account is in the requested state; otherwise nothing changed.
 // 3 stands for a path that names no account database, a missing file or a file
-// the server never set up; 1 for any other failure of the database.
+// the server never set up, each with a sentence of its own; 1 for any other
+// failure of the database.
 const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitNoAccount = 4;
-const noDatabaseSentence =
+const noFileSentence =
   "LOOP2_DATABASE_PATH names no existing account database file. Nothing changed.";
+const noTablesSentence =
+  "LOOP2_DATABASE_PATH names a file that exists but holds no account database set up by the server. Nothing changed.";
 
 installLastResort("account-block");
 
@@ -67,7 +70,7 @@ function existingFile(path: string | undefined): string | null {
 }
 
 const path = existingFile(process.env.LOOP2_DATABASE_PATH);
-if (path === null) stop(exitNoDatabase, noDatabaseSentence);
+if (path === null) stop(exitNoDatabase, noFileSentence);
 
 let result: BlockOutcome | UnblockOutcome;
 try {
@@ -81,7 +84,7 @@ try {
     database.close();
   }
 } catch (error) {
-  if (isNotAccountDatabase(error)) stop(exitNoDatabase, noDatabaseSentence);
+  if (isNotAccountDatabase(error)) stop(exitNoDatabase, noTablesSentence);
   writeFailure("account-block", "account-block.change", error);
   // A second run helps only where the database was busy past the wait.
   stop(

@@ -388,7 +388,11 @@ test("a missing database file creates nothing and ends with its own code", async
     const label = `target ${JSON.stringify(target)}`;
     assert.equal(result.code, 3, label + result.stderr);
     assert.equal(result.stdout.length, 0, `${label} printed to stdout`);
-    assert.notEqual(result.stderr, "");
+    assert.match(
+      result.stderr,
+      /names no existing account database file\. Nothing was written\./,
+      label,
+    );
   }
   assert.deepEqual(
     (await readdir(directory)).sort(),
@@ -423,7 +427,7 @@ test("a damaged database and a temporary directory that cannot be made each end 
 // database whose backup is whole.
 test("a file in which the server set up no tables is refused with the code of a missing file, writes nothing in it and leaves nothing on standard output", async (t) => {
   // decision: D-231 "That command opens only an existing database file"
-  // decision: D-112 "The blocking command of D-137 and the backup command of D-231 open only a file in which the server has set up its tables"
+  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
   const { temporary, directory } = await sandbox(t);
   const empty = join(directory, "empty-secret-name.sqlite");
   await writeFile(empty, "");
@@ -442,7 +446,11 @@ test("a file in which the server set up no tables is refused with the code of a 
     const result = await runBackup([word], path, temporary);
     assert.equal(result.code, 3, path + result.stderr);
     assert.equal(result.stdout.length, 0, `${path} printed to stdout`);
-    assert.match(result.stderr, /names no existing account database file/);
+    assert.match(
+      result.stderr,
+      /names a file that exists but holds no account database set up by the server\. Nothing was written\./,
+    );
+    assert.doesNotMatch(result.stderr, /names no existing/);
     assert.doesNotMatch(result.stderr, /run the command again/);
     assert.doesNotMatch(result.stderr, /secret-name|not a database/i);
     assert.equal(sha256(await readFile(path)), before.get(path), path);

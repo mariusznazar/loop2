@@ -262,7 +262,7 @@ test("opening a database of an unknown newer schema refuses it and leaves the fi
 });
 
 test("opening that may only find a database refuses a file in which the server set up no tables, writes nothing in it, and an opening of the server sets it up", async (t) => {
-  // decision: D-112 "The blocking command of D-137 and the backup command of D-231 open only a file in which the server has set up its tables"
+  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
   const foreign = async (file) => {
     const raw = new DatabaseSync(file.path);
     raw.exec("CREATE TABLE notes (text TEXT); INSERT INTO notes VALUES ('x')");
@@ -3366,7 +3366,7 @@ test("a database failure of the operator's command adds the error's kind and cod
 // database failure that asks for a second run.
 test("the operator's command refuses a file in which the server set up no tables with the code of a missing file, and writes nothing in it", async (t) => {
   // decision: D-137 "The operator blocks and unblocks a player account, named by its email address normalized as at login, with a command run in the `loop2` container, which reports that the account was blocked or unblocked, that it was already in the state asked for, or that no account has that address, and which changes nothing when it refuses"
-  // decision: D-112 "The blocking command of D-137 and the backup command of D-231 open only a file in which the server has set up its tables"
+  // decision: D-112 "Beyond the rules above, the blocking command of D-137 and the backup command of D-231 never set up a new database"
   const refusals = [];
   for (const [label, name, prepare] of [
     [
@@ -3400,8 +3400,11 @@ test("the operator's command refuses a file in which the server set up no tables
       );
 
       assert.equal(run.code, 3, `${label}, ${action}: ${run.output}`);
-      assert.match(run.stderr, /names no existing account database file/);
-      assert.match(run.stderr, /Nothing changed\./);
+      assert.match(
+        run.stderr,
+        /names a file that exists but holds no account database set up by the server\. Nothing changed\./,
+      );
+      assert.doesNotMatch(run.stderr, /names no existing/);
       assert.doesNotMatch(run.stderr, /run the command again/);
       refusals.push(run);
     }
@@ -3606,7 +3609,12 @@ test("the operator's command changes nothing on a usage error, an unknown addres
       ["block", "player@example.test"],
       databasePath,
     );
-    assert.notEqual(run.code, 0, label);
+    assert.equal(run.code, 3, label);
+    assert.match(
+      run.stderr,
+      /names no existing account database file\. Nothing changed\./,
+      label,
+    );
     assert.ok(run.output.trim() !== "", `${label}: the refusal is reported`);
     refusals.push(run);
   }

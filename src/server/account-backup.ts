@@ -35,14 +35,17 @@ const fixedWord = "--to-standard-output";
 // directory cannot be removed: the copy is left in the container, and the
 // command says so once, as its own failure (D-354). Exit 3 stands for a path
 // that names no account database, a missing file or a file the server never
-// set up; exit 1 for any other failure of the database. The backup script
-// treats every non-zero code as a failure and reads no number.
+// set up, each with a sentence of its own; exit 1 for any other failure of the
+// database. The backup script treats every non-zero code as a failure and
+// reads no number.
 const exitDatabaseFailure = 1;
 const exitUsage = 2;
 const exitNoDatabase = 3;
 const exitOutputFailure = 4;
-const noDatabaseSentence =
+const noFileSentence =
   "LOOP2_DATABASE_PATH names no existing account database file. Nothing was written.";
+const noTablesSentence =
+  "LOOP2_DATABASE_PATH names a file that exists but holds no account database set up by the server. Nothing was written.";
 
 installLastResort("account-backup");
 
@@ -64,7 +67,7 @@ async function run(): Promise<number> {
   }
   const path = existingFile(process.env.LOOP2_DATABASE_PATH);
   if (path === null) {
-    console.error(noDatabaseSentence);
+    console.error(noFileSentence);
     return exitNoDatabase;
   }
 
@@ -116,7 +119,7 @@ async function run(): Promise<number> {
     if (removal !== undefined && !whole) throw removal.error;
   } catch (error) {
     if (removal === undefined && isNotAccountDatabase(error)) {
-      console.error(noDatabaseSentence);
+      console.error(noTablesSentence);
       return exitNoDatabase;
     }
     const cause = removal !== undefined ? removal.error : error;
