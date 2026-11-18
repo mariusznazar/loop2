@@ -4,7 +4,7 @@ Rejestr testów loop2, które padły raz na kilka pełnych przebiegów testów, 
 zmianą kodu, i których przyczyny nie ustalono. Wpis to nazwa testu, co próbowano (z liczbami
 uruchomień i warunkami) i na co patrzeć w przebiegu, który padnie. Wpis znika, gdy przyczyna
 się wyjaśni. Wpisu szuka się po nazwie testu. Zasadę rejestru podaje `guidelines/testing.md`,
-rozdział „Flaky tests”.
+reguła „Register of flaky tests”.
 
 ## Zasada wspólna
 
