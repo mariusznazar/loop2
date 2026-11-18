@@ -311,6 +311,17 @@ sprawdzanie w głowie autora (D-95); nie osłabiamy audytu.
 Ponowne uruchomienie niestabilnego testu służy diagnozie, nigdy uzyskaniu
 zielonej bramki. Wyłączenie lub usunięcie podlega Changing an existing test.
 
+### Register of flaky tests
+
+- **Decision:** D-432
+- **Invariant:** none
+- **Good:** Test, który padł losowo bez związku ze zmianą kodu i którego przyczyny nie ustalono, ma wpis w rejestrze z nazwą, próbami i tym, na co patrzeć.
+- **Bad:** Wiedza o takim teście zostaje tylko w raporcie zamkniętego cyklu albo w komentarzu przy teście.
+
+Test padający losowo bez związku ze zmianą kodu i bez ustalonej przyczyny
+dostaje wpis w rejestrze `tests/flaky-tests.md`, a wpis znika, gdy przyczyna
+się wyjaśni.
+
 ### Tests on a document imitation
 
 - **Decision:** D-264 · D-268
@@ -456,6 +467,7 @@ może pokazywać rzeczywiście różne ryzyka.
 - `tests/quality/`
 - `tests/deploy/`
 - `tests/agent_workflow/`
+- `tests/flaky-tests.md`
 - `tests/http.test.mjs`
 - `tests/transport.test.mjs`
 - `tests/account-storage.test.mjs`

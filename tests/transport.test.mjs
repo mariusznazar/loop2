@@ -132,7 +132,10 @@ async function fixture(t, mode = "cloudflare-tunnel") {
         },
       );
       const timer = setTimeout(
-        () => outgoing.destroy(new Error("HTTP deadline exceeded")),
+        () =>
+          outgoing.destroy(
+            new Error(`HTTP deadline exceeded: ${method} ${path}`),
+          ),
         5000,
       );
       outgoing.on("error", (error) => {

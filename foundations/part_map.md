@@ -145,6 +145,7 @@ The part directs and records the work performed on this repository, and holds th
   .gitmodules
   .the-way
   tests/agent_workflow/**
+  tests/flaky-tests.md
   guidelines/**
   src/browser/AGENTS.md
   .github/workflows/tests.yml
