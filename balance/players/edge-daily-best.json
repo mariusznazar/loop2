@@ -1,0 +1,50 @@
+{
+  "name": "edge-daily-best",
+  "description": "A player who comes back once a day and plays the best reference program found for each map. Skraj lasu, the first map, is tried by hand until it is solved; its earning loop then runs until the last map of the list is solved. The player cashes the loop in when its points would buy a rank of the list, or when the next map is due. The next map is tried only while the team's resurrection is ready: Las with nothing taken from the chest, Las — głębiej with eight sticks and seven berries.",
+  "days": 28,
+  "checkHours": [24],
+  "pace": 16,
+  "cashIn": "whenPoints",
+  "firstMap": "forestEdge",
+  "buyOrder": [
+    "keenEye",
+    "keenEye",
+    "keenEye",
+    "quickMeal",
+    "quickMeal",
+    "quickMeal",
+    "quickHand",
+    "quickHand",
+    "quickHand",
+    "fullHand",
+    "practicedStep",
+    "neatConstruction",
+    "carefulFeeding",
+    "strongerStrike",
+    "strongerStrike",
+    "strongerStrike",
+    "agileDodge",
+    "agileDodge",
+    "heavierKick"
+  ],
+  "programs": {
+    "first": "forestBest",
+    "loop": "forestBest",
+    "forest": "forestBest",
+    "deep": "forestDeepBest"
+  },
+  "attempts": [
+    {
+      "map": "forest",
+      "program": "forest",
+      "needChest": {},
+      "needResurrection": true
+    },
+    {
+      "map": "forestDeep",
+      "program": "deep",
+      "needChest": { "stick": 8, "berry": 7 },
+      "needResurrection": true
+    }
+  ]
+}

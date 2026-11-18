@@ -38,7 +38,7 @@ function meanNumber(list, read) {
 }
 
 /** The points of the levels above 1 summed over all trees: what a character has earned so far. */
-function earnedPoints(skills) {
+export function earnedPoints(skills) {
   return Object.keys(SKILLS).reduce(
     (sum, id) => sum + skillProgress(skills, id).level - 1,
     0,

@@ -1,0 +1,217 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { BALANCE } from "../../dist/browser/sim/data/balance.js";
+import { MAPS } from "../../dist/browser/sim/data/maps.js";
+import { BRANCHES, SKILLS } from "../../dist/browser/sim/data/skills.js";
+import {
+  campaignSweep,
+  playCampaign,
+  programsOf,
+} from "../../balance/campaign.mjs";
+import best from "../../balance/players/edge-daily-best.json" with { type: "json" };
+import decent from "../../balance/players/edge-daily-decent.json" with { type: "json" };
+import stock from "../../balance/players/edge-daily-decent-stock.json" with { type: "json" };
+import { REFERENCE_PROGRAMS } from "../sim/reference-programs.mjs";
+
+// The campaign of a player over many days, checked against relations the campaign code does not
+// compute: the first map is solved before any loop starts, no purchase is made that the points do
+// not cover, a map is tried only with what its attempt asks for, and the sums agree with the
+// campaigns they sum. The campaigns here are short, on one to three seeds.
+
+const FIRST_MAP = "forestEdge";
+
+/** The player with the given fields changed, for a short campaign. */
+function shortPlayer(player, changes) {
+  return { ...player, days: 3, ...changes };
+}
+
+/** One campaign of the player on the seed, with its programs from the reference programs. */
+function play(player, seed) {
+  return playCampaign({
+    player,
+    programs: programsOf(player, REFERENCE_PROGRAMS),
+    seed,
+  });
+}
+
+/** The points a tree has earned at the practice: one for each threshold of its levels reached. */
+function earnedIn(skillId, practice) {
+  return SKILLS[skillId].thresholds.filter((threshold) => practice >= threshold)
+    .length;
+}
+
+/** The points the ranks of the branches of one tree cost, from the costs of the game's data. */
+function spentIn(skillId, ranks) {
+  return Object.entries(ranks)
+    .filter(([branchId]) => BRANCHES[branchId].skill === skillId)
+    .reduce(
+      (sum, [branchId, rank]) =>
+        sum +
+        BRANCHES[branchId].costs
+          .slice(0, rank)
+          .reduce((total, cost) => total + cost, 0),
+      0,
+    );
+}
+
+test("a player whose first program does not solve the first map stays on it: no loop, no purchase, nothing solved", () => {
+  const player = shortPlayer(best, {
+    days: 0.02,
+    programs: { ...best.programs, first: "emptyProgram" },
+  });
+  const log = play(player, 1);
+  assert.equal(log.firstMapSolvedRealMinutes, null);
+  assert.ok(log.firstMapAttempts >= 1);
+  assert.equal(log.loopCompletions, 0);
+  assert.deepEqual(log.daily, []);
+  assert.deepEqual(log.bought, []);
+  assert.deepEqual(log.final.solvedMaps, []);
+  assert.deepEqual(log.final.chest, {});
+});
+
+test("the first map is solved by hand before the loop starts, in at least the real time its game minutes take at the pace", () => {
+  for (const seed of [1, 2]) {
+    const log = play(shortPlayer(best), seed);
+    assert.ok(log.final.solvedMaps.includes(FIRST_MAP), `seed ${seed}`);
+    assert.notEqual(log.firstMapSolvedRealMinutes, null, `seed ${seed}`);
+    assert.ok(log.firstMapAttempts >= 1, `seed ${seed}`);
+    const realSeconds = log.firstMapSolvedRealMinutes * 60;
+    const gameMinutesPerSecond = BALANCE.gameMinutesPerRealSecond * best.pace;
+    assert.ok(
+      realSeconds >= log.firstMapGameMinutes / gameMinutesPerSecond,
+      `seed ${seed}`,
+    );
+    assert.ok(realSeconds < 24 * 60 * 60, `seed ${seed}`);
+  }
+});
+
+test("the player returns once a day: the days of the record run from 1 to the days of the campaign, each map is tried only on a return", () => {
+  const log = play(shortPlayer(best), 1);
+  assert.deepEqual(
+    log.daily.map((row) => row.day),
+    [1, 2, 3],
+  );
+  assert.ok(log.attemptsByMap.forest >= 1);
+  for (const day of Object.values(log.solvedDayByMap))
+    assert.ok(day >= 1 && day <= 3);
+});
+
+test("each solved map had its opening map solved before it", () => {
+  const log = play(shortPlayer(best, { days: 10 }), 1);
+  assert.ok(log.final.solvedMaps.length >= 2);
+  log.final.solvedMaps.forEach((mapId, index) => {
+    const opener = MAPS[mapId].opensAfter;
+    if (opener === undefined) return;
+    assert.ok(
+      log.final.solvedMaps.slice(0, index).includes(opener),
+      `${mapId} after ${opener}`,
+    );
+  });
+});
+
+test("no purchase is made that the points of its tree do not cover, and the record of purchases agrees with the ranks held", () => {
+  for (const seed of [1, 2]) {
+    const log = play(shortPlayer(best, { days: 10 }), seed);
+    for (const skillId of Object.keys(SKILLS)) {
+      assert.ok(
+        spentIn(skillId, log.final.ranks) <=
+          earnedIn(skillId, log.final.practice[skillId] ?? 0),
+        `seed ${seed}, ${skillId}`,
+      );
+    }
+    const held = Object.values(log.final.ranks).reduce(
+      (sum, rank) => sum + rank,
+      0,
+    );
+    assert.equal(log.bought.length, held, `seed ${seed}`);
+    for (const [branchId, rank] of Object.entries(log.final.ranks))
+      assert.equal(
+        log.bought.filter((bought) => bought === branchId).length,
+        rank,
+        `seed ${seed}, ${branchId}`,
+      );
+  }
+});
+
+test("a player who buys nothing holds no rank, and a purchase only comes from a list that names it", () => {
+  const none = play(shortPlayer(best, { days: 10, buyOrder: [] }), 1);
+  assert.deepEqual(none.bought, []);
+  assert.deepEqual(none.final.ranks, {});
+  const some = play(shortPlayer(best, { days: 10 }), 1);
+  for (const branchId of some.bought)
+    assert.ok(best.buyOrder.includes(branchId), branchId);
+});
+
+test("an attempt whose need of the chest can never be met is never made", () => {
+  const impossible = {
+    ...best.attempts[0],
+    needChest: { stick: BALANCE.chestCapacity + 1 },
+  };
+  const log = play(shortPlayer(best, { attempts: [impossible] }), 1);
+  assert.ok(log.final.solvedMaps.includes(FIRST_MAP));
+  assert.deepEqual(log.attemptsByMap, {});
+  assert.deepEqual(log.final.solvedMaps, [FIRST_MAP]);
+});
+
+test("the same seed gives the same campaign", () => {
+  assert.deepEqual(play(shortPlayer(decent), 3), play(shortPlayer(decent), 3));
+});
+
+test("the sum of campaigns counts them and takes its means from the campaigns it sums", () => {
+  const seeds = [1, 2, 3];
+  const player = shortPlayer(best);
+  const programs = programsOf(player, REFERENCE_PROGRAMS);
+  const { summary, logs } = campaignSweep({ player, programs, seeds });
+  assert.equal(logs.length, seeds.length);
+  assert.deepEqual(
+    logs.map((log) => log.seed),
+    seeds,
+  );
+  assert.equal(summary.campaigns, seeds.length);
+  const boughtMean =
+    logs.reduce((sum, log) => sum + log.bought.length, 0) / seeds.length;
+  assert.equal(summary.boughtMean, Math.round(boughtMean * 100) / 100);
+  assert.deepEqual(
+    summary.byDay.map((row) => row.day),
+    [1, 2, 3],
+  );
+  const dayTwo = summary.byDay[1];
+  const chestMean =
+    logs.reduce((sum, log) => sum + log.daily[1].chest, 0) / seeds.length;
+  assert.equal(dayTwo.chest, Math.round(chestMean * 100) / 100);
+});
+
+test("the three players of Skraj lasu name programs of the reference file, maps and ranks the game has, and ask for the chest their programs take", () => {
+  for (const player of [best, decent, stock]) {
+    assert.equal(player.firstMap, FIRST_MAP, player.name);
+    assert.ok(player.description.length > 0, player.name);
+    const programs = programsOf(player, REFERENCE_PROGRAMS);
+    for (const [role, id] of Object.entries(player.programs))
+      assert.equal(
+        programs[role],
+        REFERENCE_PROGRAMS[id],
+        `${player.name} ${role}`,
+      );
+    for (const attempt of player.attempts) {
+      assert.ok(MAPS[attempt.map], `${player.name} ${attempt.map}`);
+      for (const { item, count } of programs[attempt.program].tripPlan.take)
+        assert.ok(
+          (attempt.needChest[item] ?? 0) >= count,
+          `${player.name} ${attempt.map} ${item}`,
+        );
+    }
+    for (const branchId of new Set(player.buyOrder)) {
+      const wanted = player.buyOrder.filter((each) => each === branchId).length;
+      assert.ok(BRANCHES[branchId], `${player.name} ${branchId}`);
+      assert.ok(
+        wanted <= BRANCHES[branchId].costs.length,
+        `${player.name} ${branchId}`,
+      );
+    }
+  }
+});
+
+test("a player naming a program the registry lacks is refused", () => {
+  const player = { ...best, programs: { ...best.programs, first: "nope" } };
+  assert.throws(() => programsOf(player, REFERENCE_PROGRAMS), /nope/);
+});
