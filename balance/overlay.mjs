@@ -2,7 +2,7 @@
 // one measurement. The tables are the objects the game's own modules read, imported from the built
 // simulation, so a laid number reaches a map run of the engine. Nothing is written to a file: the
 // game's data files are only read, and the overlay is restored in memory when the measurement ends
-// (invariant instrument-game-agreement; glossary term overlay).
+// (glossary term overlay; D-18).
 
 import { readFileSync } from "node:fs";
 import { ACTIONS } from "../dist/browser/sim/data/actions.js";

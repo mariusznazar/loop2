@@ -1,9 +1,9 @@
 // The campaign mode of the balance instrument: the road of one player from an empty account over
 // many real days, through the game's own functions (`send`, `advanceMinutes`, `settleDeath`,
 // `settleCompletion`, `end`, `startLoop`, `catchUp`, `stopLoop` and `buyBranch`), with no number of
-// the game copied (invariant instrument-game-agreement). The player is a description (balance/players/):
-// how often the player comes back, the manual pace, what the player buys and in what order, when the
-// next map is tried and with what in the chest, and which program goes where. The time the player
+// the game copied. The player is a description (balance/players/): how often the player comes back,
+// the manual pace, what the player buys and in what order, when the next map is tried and with what
+// in the chest, and which program goes where. The time the player
 // needs to write a program is not modelled: every program is ready at the first second.
 //
 // A description holds:

@@ -1,19 +1,16 @@
 // The trace of one map run of the balance instrument: each started action with the body's numbers,
 // and the deaths, completions, attacks and campfires going out, in lines a human reads. It starts the
-// map run as the engine does and steps it with the game's own `stepMinute`, so the trace ends in the
-// outcome the engine gives for the same seed (invariant instrument-game-agreement). Names come from the
-// data where it holds them: the labels of actions, the names of resources and items, of creatures.
+// map run through the engine's own `startOf` and steps it with the game's own `stepMinute`, so the
+// trace ends in the outcome the engine gives for the same seed (invariant instrument-game-agreement).
+// Names come from the data where it holds them: the labels of actions, the names of resources and
+// items, of creatures.
 
 import { ACTIONS } from "../dist/browser/sim/data/actions.js";
 import { CREATURES } from "../dist/browser/sim/data/creatures.js";
 import { ITEMS } from "../dist/browser/sim/data/items.js";
-import { MAPS } from "../dist/browser/sim/data/maps.js";
 import { RESOURCES } from "../dist/browser/sim/data/resources.js";
-import { programOf } from "../dist/browser/sim/game.js";
-import { teamProgram } from "../dist/browser/sim/programs.js";
-import { mapRunEnded, newMapRun, stepMinute } from "../dist/browser/sim/run.js";
-import { takeTrip } from "../dist/browser/sim/trip.js";
-import { buildSkills, makeState, prerequisitesOf } from "./engine.mjs";
+import { mapRunEnded, stepMinute } from "../dist/browser/sim/run.js";
+import { buildSkills, makeState, prerequisitesOf, startOf } from "./engine.mjs";
 
 /** A map run still open after this many game minutes ends as a run at the cap. */
 const DEFAULT_CAP_MINUTES = 4000;
@@ -86,31 +83,14 @@ export function trace(options) {
     chest = {},
     capMinutes = DEFAULT_CAP_MINUTES,
   } = options;
-  const map = MAPS[mapId];
   const state = makeState({
     program,
     skills,
     chest,
     solvedMaps: prerequisitesOf(mapId),
   });
-  const [character] = state.team.characters;
-  const checked = teamProgram(state).program;
-  const equipment = takeTrip(
-    checked.tripPlan,
-    state.team.chest,
-    character.traits.carryingCapacity,
-    map,
-  );
-  const reduced = programOf(state, checked, character.id, skills);
-  const started = newMapRun(
-    map,
-    seed,
-    reduced,
-    { mapId, characterId: character.id },
-    { ...character.traits },
-    skills,
-    equipment.backpack,
-  );
+  const started = startOf(state, mapId, seed, skills);
+  const { map, reduced } = started;
   let run = started.run;
   const lines = [];
   let waits = 0;

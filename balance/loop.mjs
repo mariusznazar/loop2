@@ -2,7 +2,7 @@
 // loop of one character for given real hours on a list of seeds, with the loop clock of the instrument
 // (a fixed real moment). It reads at each checkpoint what the game holds, and gives the balance of the
 // loop per map run: the pieces its map runs take from the chest, the pieces they put into it and the
-// share of map runs ended in death. It copies no number of the game (invariant instrument-game-agreement).
+// share of map runs ended in death. It copies no number of the game.
 
 import { BALANCE } from "../dist/browser/sim/data/balance.js";
 import { SKILLS } from "../dist/browser/sim/data/skills.js";

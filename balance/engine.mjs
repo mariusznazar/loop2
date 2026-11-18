@@ -100,8 +100,11 @@ export function makeState({
   return program ? setProgram(state, program).state : state;
 }
 
-/** The map run's start: the layout of the seed, with the equipment the take list draws from the chest. */
-function startOf(state, mapId, seed, skills) {
+/**
+ * The map run's start: the layout of the seed, with the equipment the take list draws from the chest,
+ * and the events the start gives. The engine and the trace both start a map run through it.
+ */
+export function startOf(state, mapId, seed, skills) {
   const map = MAPS[mapId];
   if (!map) throw new Error(`run: no map ${mapId}`);
   const [character] = state.team.characters;
@@ -113,7 +116,7 @@ function startOf(state, mapId, seed, skills) {
     map,
   );
   const reduced = programOf(state, program, character.id, skills);
-  const { run } = newMapRun(
+  const { run, events } = newMapRun(
     map,
     seed,
     reduced,
@@ -122,7 +125,7 @@ function startOf(state, mapId, seed, skills) {
     skills,
     equipment.backpack,
   );
-  return { map, program, equipment, reduced, run };
+  return { map, program, equipment, reduced, run, events };
 }
 
 /** What a map run shows beside its end, gathered minute by minute while it is stepped. */
