@@ -95,8 +95,10 @@ CONTROL_FILES = {
         "function accountRoutes", "export function accountRoutes")
         + function_source("otherRoute", 201)),
     "src/server/other-routes.ts": function_source("accountRoutes", 201),
-    # the scripts and the agent-workflow directories the linter of D-29 reaches
+    # the scripts, the code of the balance instrument and the agent-workflow directories the linter
+    # of D-29 reaches
     "scripts/over-file.mjs": file_source(801),
+    "balance/over-function.mjs": function_source("overBalanceFunction", 201),
     ".claude/hooks/over-hook.js": function_source("overHook", 201),
     # no inline comment and no suppressions file hides a report
     "src/browser/view/hidden.ts": ("/* eslint-disable max-lines-per-function */\n"
@@ -124,6 +126,8 @@ CONTROL_REPORTS = {
     ("src/server/other-routes.ts",
      "Function 'accountRoutes' has too many lines (201). Maximum allowed is 200."),
     ("scripts/over-file.mjs", "File has too many lines (801). Maximum allowed is 800."),
+    ("balance/over-function.mjs",
+     "Function 'overBalanceFunction' has too many lines (201). Maximum allowed is 200."),
     (".claude/hooks/over-hook.js",
      "Function 'overHook' has too many lines (201). Maximum allowed is 200."),
     ("src/browser/view/hidden.ts",
