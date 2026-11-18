@@ -394,12 +394,6 @@ function EndQuestionSlot({
   );
 }
 
-/**
- * The head of the screen of a map run: the list „Program:” with the switch of the character, the
- * list's actions, the question of „Zakończ” while it stands, the copy's section with its save buttons
- * and the name field above the editor. A component of its own, so that ProgramPanelView stays under
- * the threshold of a function; it holds no state, and it asks for every change through its props.
- */
 type RunHeadProps = {
   state: GameState;
   /** The list's position of what the panel shows: „copy” or a saved program's number. */
@@ -423,6 +417,12 @@ type RunHeadProps = {
   onNameChange: (value: string) => void;
 };
 
+/**
+ * The head of the screen of a map run: the list „Program:” with the switch of the character, the
+ * list's actions, the question of „Zakończ” while it stands, the copy's section with its save buttons
+ * and the name field above the editor. A component of its own, so that ProgramPanelView stays under
+ * the threshold of a function; it holds no state, and it asks for every change through its props.
+ */
 function RunHead({
   state,
   value,
