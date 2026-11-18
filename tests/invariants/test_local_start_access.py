@@ -13,7 +13,10 @@ stand-in, each for a reason the real server cannot give:
 - the case of a stop with no built game: a stand-in that holds no writer of failure lines;
 - the cases of a request the server drops, of an answer it breaks off after its headers (by
   closing the connection, and by resetting it) and of a request it holds while the browser
-  leaves: stand-ins that fail on demand.
+  leaves: stand-ins that fail on demand;
+- the case of a port another program took: a stand-in that starts that program, a process of its
+  own that takes the port the start picked, and then runs the real built server, which finds the
+  port in use.
 The other cases run the real built server."""
 
 import json
@@ -96,6 +99,22 @@ createServer((request) => {
 # A server that holds its whole process, as a start busy on its way up does.
 BUSY_SERVER = STAND_IN_SERVER + """
 Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4000);
+"""
+
+# The server of a start whose port another program took between the start's picking it and the
+# server's listening. The program is a process of its own that takes every connection and says
+# nothing; the real built server, moved to main-built.js, then runs and finds the port in use.
+PORT_TAKEN_SERVER = """import { spawn } from "node:child_process";
+
+const program = spawn(process.execPath, ["--input-type=module", "-e", `
+  import { createServer } from "node:net";
+  createServer((socket) => socket.end())
+    .listen(Number(process.argv[2]), process.argv[1], () => console.log("held"));
+`, process.env.LOOP2_LISTEN_HOST, process.env.LOOP2_LISTEN_PORT],
+  { stdio: ["ignore", "pipe", "inherit"] });
+process.on("exit", () => program.kill());
+await new Promise((resolve) => program.stdout.once("data", resolve));
+await import("./main-built.js");
 """
 
 PASSWORD = "synthetic-local-password"
@@ -573,6 +592,32 @@ class LocalStart(unittest.TestCase):
         self.assertEqual(process.returncode, 1, output)
         self.assertNotIn(b"Local game:", output)
         self.assertEqual(output.count(b'"failure":'), 1, "the server's own line, and no second")
+
+    def test_a_port_another_program_took_ends_the_start_with_the_servers_failure_and_no_address(self):
+        # decision: D-431 "When another program holds the port the local start picked for its server by the time the server listens, the start ends as it ends when its server cannot start"
+        # decision: D-431 "The start announces no address, passes no request of a browser to that program and tries no other port"
+        code, output = self.copy.npm("run", "build")
+        self.assertEqual(code, 0, output)
+        os.rename(self.copy.file("dist/server/main.js"), self.copy.file("dist/server/main-built.js"))
+        write_stand_in(self.copy, PORT_TAKEN_SERVER)
+        start = Start(self.copy, ["node", "scripts/local-start.mjs"], wait=False)
+        self.starts.append(start)
+        deadline = time.monotonic() + START_TIMEOUT
+        while (start.process.poll() is None and "Local game:" not in start.output()
+               and time.monotonic() < deadline):
+            time.sleep(0.1)
+        output = start.output()
+        self.assertNotIn("Local game:", output, "the address of a game that is not there")
+        self.assertEqual(start.process.returncode, 1, output)
+        lines = [line for line in output.splitlines() if '"failure":' in line]
+        self.assertEqual(len(lines), 1, f"the server's own line, and no second:\n{output}")
+        self.assertEqual(json.loads(lines[0])["failure"], "server-listen")
+        self.assertEqual(json.loads(lines[0])["code"], "EADDRINUSE")
+        self.assertNotRegex(output, SERVER_LINE, "no server was ready")
+        [name] = directories(self.copy)
+        proxy_port = int(name.split("-")[1])
+        self.assertFalse(accepts_connections("127.0.0.1", proxy_port),
+                         "the proxy of the start stands no longer, so no request reaches that program")
 
     def test_a_request_the_server_drops_gets_502_and_leaves_one_line_with_its_cause(self):
         code, output = self.copy.npm("run", "build")

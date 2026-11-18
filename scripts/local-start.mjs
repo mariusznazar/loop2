@@ -32,6 +32,8 @@
 // Exit codes: 0 stopped, 1 the start failed or a start did not stop, 2 refused.
 import { execFileSync } from "node:child_process";
 import { X509Certificate, randomBytes } from "node:crypto";
+import { subscribe } from "node:diagnostics_channel";
+import { once } from "node:events";
 import {
   existsSync,
   lstatSync,
@@ -228,27 +230,51 @@ async function freePort() {
   return port;
 }
 
-function acceptsConnections(port) {
-  return new Promise((resolve) => {
-    const socket = connect(port, HOST);
-    socket.once("connect", () => {
-      socket.destroy();
-      resolve(true);
-    });
-    socket.once("error", () => resolve(false));
-  });
-}
-
 function sleep(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-// The built server sets the exit code when it cannot start and goes on running
-// when it can; it has nothing else to wait on here, in its own process.
+// The clients whose connection to the server's port a server of this process took,
+// each by its own port. Node.js publishes every connection a server takes, so a
+// program of another process that holds the port, which the built server then
+// cannot listen on, takes none of them.
+const connectionsTaken = new Set();
+
+function watchConnectionsTo(serverPort) {
+  subscribe("net.server.socket", ({ socket }) => {
+    if (socket.localPort === serverPort)
+      connectionsTaken.add(socket.remotePort);
+  });
+}
+
+// Whether a connection to the port is taken by this process's own server. A port
+// that takes a connection proves nothing: the port was free when it was picked,
+// and another program may hold it by the time the server listens.
+async function ownServerTakesConnection(port) {
+  const socket = connect(port, HOST);
+  try {
+    await once(socket, "connect");
+    const deadline = Date.now() + PROOF_TIMEOUT_MS;
+    while (!connectionsTaken.has(socket.localPort)) {
+      if (process.exitCode !== undefined || Date.now() >= deadline)
+        return false;
+      await sleep(10);
+    }
+    return true;
+  } catch {
+    return false;
+  } finally {
+    socket.destroy();
+  }
+}
+
+// The built server sets the exit code when it cannot start, a port taken by
+// another program included, and goes on running when it can; it has nothing else
+// to wait on here, in its own process.
 async function waitForServer(port) {
   const deadline = Date.now() + READY_TIMEOUT_MS;
   while (process.exitCode === undefined && Date.now() < deadline) {
-    if (await acceptsConnections(port)) return true;
+    if (await ownServerTakesConnection(port)) return true;
     await sleep(50);
   }
   return false;
@@ -384,6 +410,7 @@ async function start() {
     process.once(signal, () => process.exit(0));
 
   Object.assign(process.env, serverSettings(directory, origin, serverPort));
+  watchConnectionsTo(serverPort);
   await import(pathToFileURL(join(root, "dist", "server", "main.js")).href);
   if (!(await waitForServer(serverPort))) {
     // A server that gave up has written its own line and set the exit code.
